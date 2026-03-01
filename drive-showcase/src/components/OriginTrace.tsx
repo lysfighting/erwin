@@ -254,29 +254,42 @@ function useForceLayout(width: number, height: number) {
       target: e.target,
     }))
 
+    // Pin the 5 drive-concept nodes at a deterministic pentagon.
+    // This anchors clusters and prevents asymmetric drift caused by random
+    // initial positions + strong repulsion pushing nodes to viewport edges.
+    const driveNodes = simNodes.filter((n) => n.type === 'drive-concept')
+    const pentagonR = Math.min(width, height) * 0.19
+    driveNodes.forEach((node, i) => {
+      const angle = (i * (2 * Math.PI)) / driveNodes.length - Math.PI / 2
+      node.fx = width / 2 + pentagonR * Math.cos(angle)
+      node.fy = height / 2 + pentagonR * Math.sin(angle)
+    })
+
     forceSimulation<SimNode>(simNodes)
       .force(
         'link',
         forceLink<SimNode, SimLink>(simLinks)
           .id((d) => d.id)
-          .distance(148)
-          .strength(0.8),
+          .distance(115)
+          .strength(1.0),
       )
-      .force('charge', forceManyBody<SimNode>().strength(-620))
+      .force('charge', forceManyBody<SimNode>().strength(-280))
       .force('center', forceCenter<SimNode>(width / 2, height / 2))
       .force(
         'collision',
-        forceCollide<SimNode>().radius((d) => (d.type === 'drive-concept' ? 64 : 54)),
+        forceCollide<SimNode>().radius((d) => (d.type === 'drive-concept' ? 50 : 44)),
       )
       .stop()
       .tick(400)
 
-    // Clamp to safe viewport area
-    const pad = 90
-    simNodes.forEach((n) => {
-      n.x = Math.max(pad, Math.min(width - pad, n.x ?? width / 2))
-      n.y = Math.max(pad, Math.min(height - pad, n.y ?? height / 2))
-    })
+    // Soft clamp for source nodes only — drive concepts are already pinned
+    const pad = 60
+    simNodes
+      .filter((n) => n.type === 'historical-source')
+      .forEach((n) => {
+        n.x = Math.max(pad, Math.min(width - pad, n.x ?? width / 2))
+        n.y = Math.max(pad, Math.min(height - pad, n.y ?? height / 2))
+      })
 
     return { nodes: simNodes, links: simLinks }
   }, [width, height])
