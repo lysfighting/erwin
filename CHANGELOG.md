@@ -9,6 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - 2026-03-02
+
+### Added
+- **`_project/` — Project Intelligence Layer** — three-layer information architecture:
+  - `GOALS.md` — Vision + quarterly OKRs (the north star, read at session start)
+  - `CURRENT.md` — Living status document (moved from `docs/CURRENT_STATE.md`)
+  - `ROADMAP.md` — Milestone plan with version targets
+  - `ideas/` — Idea Garden with four maturity stages (Seed/Sprout/Plant/Fruit)
+    - `INBOX.md` — Raw captures, processed weekly
+    - `skills/` — Drive-skill-like skill ideas
+    - `meta/` — Universal cross-project patterns
+  - `decisions/` — ADRs (moved from `docs/decisions/`)
+  - `sessions/` — Conversation logs (moved from `docs/sessions/`)
+  - `issues/` — Lightweight issue tracking (ISS-NNNN naming)
+  - `releases/` — Narrative release notes
+- **`.claude/rules/`** — Modular Claude Code instruction files
+  - `git-conventions.md` — Commit format, scope definitions
+  - `ai-workflow.md` — Session protocol, what to do at start/end
+- **`docs/project-management-architecture.md`** — Full design specification
+- **`_project/ideas/meta/project-management-template.md`** — Seed idea for universal project template skill
+
+### Changed
+- **`reference-skills/` → `reference/`** — cleaner naming; signals read-only source material
+- **`CLAUDE.md`** — Updated paths, added GOALS reference, cleaner structure
+- **`_project/CURRENT.md`** — Updated to reflect new structure and next tasks
+
+### Rationale
+The docs/ directory was a mix of project management files (CURRENT_STATE.md, sessions/,
+decisions/) and technical documentation (architecture docs, analysis). This creates confusion
+when navigating as a project manager vs. as a developer. The `_project/` layer creates a
+dedicated home for all project intelligence, while `docs/` becomes pure technical documentation.
+Additionally, the user correctly identified that the entire `_project/` pattern is a universal
+capability for AI-assisted projects — captured as a Sprout idea in `_project/ideas/meta/`.
+
+---
+
 ## [0.2.0] - 2026-03-02
 
 ### Added

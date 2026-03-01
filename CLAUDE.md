@@ -1,17 +1,18 @@
 # erwin — Project Context for Claude
 
-> **Read this first at the start of every session.**
-> After reading this, read `docs/CURRENT_STATE.md` for what's happening NOW.
+> **Read this first. Then read `_project/CURRENT.md` for what's happening NOW.**
 
 ---
 
 ## What is this project?
 
-**erwin** is an educational web platform that teaches people to understand, internalize, and
-create their own [drive-skill](https://github.com/Zzzzz-0/drive-skill.git)-style AI agent
-orchestration skills.
+**erwin** — educational platform for understanding and creating AI agent orchestration skills.
 
-Primary goal: **傻瓜进来看一眼就知道这个 skill 有什么用，并能创建自己的版本。**
+- **Phase 1 (now)**: Make drive-skill visually understandable to anyone (V2 showcase)
+- **Phase 2 (next)**: Create the first erwin-original skill
+- **Vision**: Anyone who encounters drive-skill can build their own version in 30 minutes
+
+See `_project/GOALS.md` for OKRs and north star.
 
 ---
 
@@ -19,80 +20,75 @@ Primary goal: **傻瓜进来看一眼就知道这个 skill 有什么用，并能
 
 ```
 erwin/
-├── CLAUDE.md                  ← YOU ARE HERE (read first)
-├── CHANGELOG.md               ← project version history
-├── drive-showcase/            ← React/Vite/TS web app (main work area)
-│   ├── src/
-│   │   ├── sections/          ← 18 content sections
-│   │   ├── components/        ← shared components
-│   │   ├── contexts/          ← LangContext, AnnotationContext
-│   │   └── i18n/translations.ts
-│   └── CHANGELOG.md           ← drive-showcase version history
-├── reference-skills/
-│   └── drive-skill/           ← source material (don't edit)
-│       ├── commands/drive.md  ← ~2000 lines, the heart of everything
-│       └── pantheon/          ← 1000+ thinkers knowledge base
-└── docs/
-    ├── CURRENT_STATE.md       ← READ THIS for current task status
-    ├── sessions/              ← conversation artifacts by date
-    ├── decisions/             ← Architecture Decision Records (ADRs)
-    ├── drive-skill-analysis.md
-    ├── visual-enhancement-architecture.md
-    └── drive-showcase-v2-architecture.md  ← V2 design (approved)
+├── CLAUDE.md               ← YOU ARE HERE
+├── CHANGELOG.md            ← Project version history
+│
+├── _project/               ← Project Intelligence Layer
+│   ├── GOALS.md            ← Vision + OKRs (read when you lose direction)
+│   ├── CURRENT.md          ← Living status (read every session start)
+│   ├── ROADMAP.md          ← Milestone plan
+│   ├── ideas/              ← Idea Garden (INBOX.md → skills/ or meta/)
+│   ├── decisions/          ← ADRs (NNNN-title.md)
+│   ├── sessions/           ← AI conversation logs (YYYY-MM-DD.md)
+│   ├── issues/             ← Bug/feature tracking (ISS-NNNN-title.md)
+│   └── releases/           ← Narrative release notes
+│
+├── docs/                   ← Technical Documentation
+│   └── *.md                ← Architecture, analysis, research
+│
+├── drive-showcase/         ← Code Artifact (React web app)
+│   ├── src/sections/       ← 18 content sections
+│   ├── src/components/     ← Shared components
+│   └── CHANGELOG.md        ← App-level changelog
+│
+└── reference/              ← Source Material (READ-ONLY)
+    └── drive-skill/        ← drive.md + pantheon + hooks + sounds
 ```
 
 ---
 
 ## Tech Stack
 
-- **Frontend**: React 19.2, TypeScript, Vite 7.3, Tailwind CSS 4.2, Framer Motion 12.34
+- **Frontend**: React 19.2, TypeScript, Vite 7.3, Tailwind 4.2, Framer Motion 12.34
 - **Dev**: `cd drive-showcase && npm run dev` (port 5173)
-- **Build**: `cd drive-showcase && npm run build`
 
 ---
 
-## Current Architecture Plan (V2)
+## Approved V2 Architecture
 
-The approved V2 design is in `docs/drive-showcase-v2-architecture.md`.
+See `docs/drive-showcase-v2-architecture.md`. Four-Act structure:
+- ACT I: 震撼 — ExecutionSimulator before/after
+- ACT II: 理解 — 5 PrincipleCards + OriginTrace
+- ACT III: 深度 — 18 existing sections (preserved)
+- ACT IV: 创造 — SkillBuilder → export skill.md
 
-**Four-Act Structure**:
-- ACT I: 震撼 (15s) — ExecutionSimulator comparison
-- ACT II: 理解 (5min) — 5 PrincipleCards with embedded demos + OriginTrace
-- ACT III: 深度 (optional) — all 18 existing sections (preserved)
-- ACT IV: 创造 — SkillBuilder for creating your own skill.md
-
-**3 new core components to build**:
-1. `ExecutionSimulator` — stateful animation showing drive execution
-2. `OriginTrace` — force-directed graph tracing design philosophy origins
-3. `SkillBuilder` — fill-in builder that exports skill.md
+3 new components: `ExecutionSimulator`, `OriginTrace`, `SkillBuilder`
 
 ---
 
-## Workflow Rules
+## Session Protocol
 
-1. **Before coding**: Read `docs/CURRENT_STATE.md` to know what's in progress
-2. **After decisions**: Write an ADR in `docs/decisions/`
-3. **After each session**: Update `docs/CURRENT_STATE.md` and `docs/sessions/YYYY-MM-DD.md`
-4. **After features**: Update `drive-showcase/CHANGELOG.md` + root `CHANGELOG.md`
-5. **Commit convention**: `type(scope): description` (feat/fix/docs/refactor/chore)
+**Start**: read `_project/CURRENT.md` → optionally read `_project/GOALS.md`
+**End**: update `_project/CURRENT.md` → write session log → update CHANGELOG → git commit
 
 ---
 
-## Key Files to Know
+## Key Files Quick Reference
 
-| File | Purpose |
-|------|---------|
-| `reference-skills/drive-skill/commands/drive.md` | Source truth for all drive concepts (~2000 lines) |
-| `drive-showcase/src/App.tsx` | Root component, section ordering |
-| `drive-showcase/src/i18n/translations.ts` | All text content (EN + ZH) |
-| `docs/CURRENT_STATE.md` | Current session's task state |
-| `docs/drive-showcase-v2-architecture.md` | V2 approved design |
+| What | Where |
+|------|-------|
+| Current task | `_project/CURRENT.md` |
+| Project vision | `_project/GOALS.md` |
+| V2 design spec | `docs/drive-showcase-v2-architecture.md` |
+| ADRs | `_project/decisions/` |
+| drive-skill source | `reference/drive-skill/commands/drive.md` |
+| React app root | `drive-showcase/src/App.tsx` |
 
 ---
 
-## What NOT to do
+## What NOT to Do
 
-- Don't edit `reference-skills/drive-skill/` — it's source material only
-- Don't rely on session memory for continuity — always read CURRENT_STATE.md first
-- Don't create new UI libraries — stick to existing stack
+- Don't edit `reference/` — source material only
+- Don't rely on session memory — always read CURRENT.md first
+- Don't add new UI libraries (exception: d3-force already approved)
 - Don't break existing 18 sections when adding V2 content
