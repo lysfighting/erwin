@@ -12,45 +12,55 @@
 
 ## Current Phase
 
-**Phase**: Project structure reorganization → v0.3.0
+**Phase**: V2 Showcase Implementation — Phase 1 DONE, Phase 2 next
 
 ## What Was Just Completed
 
-1. V2 architecture design — `docs/drive-showcase-v2-architecture.md`
-2. Git initialized + v0.2.0 version management system
-3. Project management architecture designed — `docs/project-management-architecture.md`
-4. Structural reorganization:
-   - Created `_project/` (goals, ideas, decisions, sessions, issues, releases)
-   - Renamed `reference-skills/` → `reference/`
-   - Created `.claude/rules/` for modular Claude instructions
-   - Updated CLAUDE.md with new paths
+1. **V2 Phase 1: Four-Act Structure** (2026-03-02, Drive Mode session)
+   - `App.tsx` restructured into ACT I/II/III/IV layout
+   - `NavBar.tsx` updated with 4 act anchor links
+   - `ExecutionSimulator.tsx` — before/after parallel execution comparison (ACT I)
+   - `PrincipleCards.tsx` — 5 principle cards with expandable detail (ACT II)
+   - `ActIIIWrapper.tsx` — collapsible wrapper for 15 deep sections (ACT III)
+   - Build: 455 modules, 0 TypeScript errors
 
 ## Active Task / What's In Progress
 
-Completing v0.3.0 commit (this session).
+V2 Phase 2 planning — OriginTrace + animation enhancements.
 
 ## Next Session Should Start With
 
 1. Read this file ✓
-2. Read `_project/GOALS.md` (remember the north star)
-3. **First V2 implementation task**: Refactor `drive-showcase/src/App.tsx` for four-act structure
-   - See `docs/drive-showcase-v2-architecture.md` for full design
+2. Read `_project/GOALS.md` (north star)
+3. **V2 Phase 2 top priority**: Build `OriginTrace` component
+   - D3 force-directed graph (d3-force already approved, not installed yet)
+   - Install: `cd drive-showcase && npm install d3-force`
+   - See `docs/drive-showcase-v2-architecture.md` → Component Two: OriginTrace
+   - Deploy in ACT II, after PrincipleCards
 
 ## Implementation Roadmap
 
-### v0.3.0 — Project Structure (now)
+### v0.3.0 — Project Structure ✅
 - [x] `_project/` layer with GOALS, CURRENT, ROADMAP, ideas, decisions, sessions, issues
 - [x] Rename reference-skills/ → reference/
 - [x] `.claude/rules/` for modular instructions
-- [x] CLAUDE.md updated
-- [ ] CHANGELOG.md updated + commit
+- [x] CHANGELOG.md updated + committed
 
-### v1.0.0 — V2 Showcase (3 weeks)
-- [ ] ACT I/II/III/IV navigation in App.tsx
-- [ ] ExecutionSimulator component (3 scenarios)
-- [ ] PrincipleCards (5 cards)
-- [ ] OriginTrace (d3-force philosophy graph)
-- [ ] SkillBuilder (form → skill.md download)
+### v0.4.0 — V2 Phase 1: Four-Act Structure ✅
+- [x] ACT I/II/III/IV navigation in App.tsx
+- [x] ExecutionSimulator MVP (before/after comparison)
+- [x] PrincipleCards (5 cards with thought sources)
+- [x] ActIIIWrapper (collapsible deep content)
+
+### v0.5.0 — V2 Phase 2: Deep Interaction (next)
+- [ ] OriginTrace (d3-force philosophy graph, ACT II)
+- [ ] ExecutionSimulator: message flow animation enhancement
+- [ ] SwarmTopologySection: add interactive message flow
+
+### v1.0.0 — V2 Phase 3: Creation Path
+- [ ] SkillBuilder (form → skill.md download, ACT IV)
+- [ ] DesignPatternLibrary (3-5 reusable pattern cards)
+- [ ] CaseStudies (2-3 skill variant examples)
 
 ## Known Issues / Blockers
 

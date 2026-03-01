@@ -15,6 +15,12 @@ const translations = {
   'nav.prompt-eng':   { en: 'Prompt Eng',  zh: '提示工程' },
   'nav.references':   { en: 'References',  zh: '参考' },
 
+  // ── NavBar Act Links ──
+  'nav.act-i':        { en: 'ACT I 震撼',   zh: 'ACT I 震撼' },
+  'nav.act-ii':       { en: 'ACT II 理解',  zh: 'ACT II 理解' },
+  'nav.act-iii':      { en: 'ACT III 深度', zh: 'ACT III 深度' },
+  'nav.act-iv':       { en: 'ACT IV 创造',  zh: 'ACT IV 创造' },
+
   // ── Hero ──
   'hero.line1':       { en: 'I am an assistant.',      zh: '我是一名助手。' },
   'hero.line2':       { en: 'I wait for instructions.',zh: '我等待指令。' },

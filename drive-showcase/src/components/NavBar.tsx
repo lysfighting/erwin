@@ -3,41 +3,28 @@ import { useState, useEffect } from 'react'
 import { useLang, type Lang } from '../contexts/LangContext'
 import { t } from '../i18n/translations'
 
-const sectionIds = [
-  { id: 'hero',         key: 'nav.home' as const },
-  { id: 'demo',         key: 'nav.demo' as const },
-  { id: 'mechanics',    key: 'nav.mechanics' as const },
-  { id: 'architecture', key: 'nav.architecture' as const },
-  { id: 'phases',       key: 'nav.phases' as const },
-  { id: 'swarm',        key: 'nav.swarm' as const },
-  { id: 'waves',        key: 'nav.waves' as const },
-  { id: 'six-steps',    key: 'nav.six-steps' as const },
-  { id: 'philosophy',           key: 'nav.philosophy' as const },
-  { id: 'deep-reasoning',       key: 'nav.deep-reasoning' as const },
-  { id: 'direction-validation', key: 'nav.direction-validation' as const },
-  { id: 'pantheon',             key: 'nav.pantheon' as const },
-  { id: 'self-review',  key: 'nav.self-review' as const },
-  { id: 'anti-patterns', key: 'nav.antipatterns' as const },
-  { id: 'self-drive',   key: 'nav.self-drive' as const },
-  { id: 'architect',    key: 'nav.architect' as const },
-  { id: 'prompt-eng',   key: 'nav.prompt-eng' as const },
-  { id: 'references',   key: 'nav.references' as const },
+const actLinks = [
+  { id: 'act-i',   key: 'nav.act-i' as const },
+  { id: 'act-ii',  key: 'nav.act-ii' as const },
+  { id: 'act-iii', key: 'nav.act-iii' as const },
+  { id: 'act-iv',  key: 'nav.act-iv' as const },
 ]
 
+
 export function NavBar() {
-  const [activeSection, setActiveSection] = useState('hero')
+  const [activeAct, setActiveAct] = useState('act-i')
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 })
   const { lang, setLang } = useLang()
 
   useEffect(() => {
     const observers: IntersectionObserver[] = []
-    sectionIds.forEach(({ id }) => {
+    actLinks.forEach(({ id }) => {
       const el = document.getElementById(id)
       if (!el) return
       const observer = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) setActiveSection(id) },
-        { rootMargin: '-40% 0px -50% 0px' }
+        ([entry]) => { if (entry.isIntersecting) setActiveAct(id) },
+        { rootMargin: '-30% 0px -60% 0px' }
       )
       observer.observe(el)
       observers.push(observer)
@@ -61,19 +48,19 @@ export function NavBar() {
           DRIVE SKILL
         </a>
 
-        {/* Section links — scrollable on smaller screens */}
-        <div className="flex gap-0.5 overflow-x-auto flex-1 px-1 scrollbar-hide">
-          {sectionIds.map((s) => (
+        {/* Act navigation links */}
+        <div className="flex gap-1 flex-1 px-1">
+          {actLinks.map((act) => (
             <a
-              key={s.id}
-              href={`#${s.id}`}
-              className={`flex-shrink-0 px-2.5 py-1 text-xs rounded transition-all font-mono ${
-                activeSection === s.id
+              key={act.id}
+              href={`#${act.id}`}
+              className={`flex-shrink-0 px-3 py-1 text-xs rounded transition-all font-mono ${
+                activeAct === act.id
                   ? 'text-gold bg-gold/10'
                   : 'text-text-secondary hover:text-text-primary hover:bg-bg-card'
               }`}
             >
-              {t(s.key, lang)}
+              {t(act.key, lang)}
             </a>
           ))}
         </div>
