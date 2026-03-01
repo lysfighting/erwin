@@ -1,0 +1,17 @@
+# Secrets — never commit real tokens
+config/self-drive.json
+
+# Cache
+tts-cache/
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Editor
+*.swp
+*.swo
+*~

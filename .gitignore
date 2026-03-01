@@ -1,0 +1,30 @@
+# Dependencies
+drive-showcase/node_modules/
+drive-showcase/dist/
+
+# Secrets
+*.env
+.env.*
+self-drive.json
+config/self-drive.json
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Editor
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build artifacts
+drive-showcase/dist/
