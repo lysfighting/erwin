@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0] - 2026-03-02 (V2 Phase 2 — OriginTrace)
+
+### Added — `drive-showcase/`
+- **`OriginTrace`** — d3-force directed graph showing drive-skill's intellectual genealogy (ACT II, after PrincipleCards). 15 nodes: 5 drive-concept nodes (matching PrincipleCards group colors A-E) + 10 historical source nodes (OODA Loop, Cybernetics, Mission Command, Mythical Man-Month, CPM/PERT, Amdahl's Law, Information Theory, Agile Manifesto, 孙子兵法, Double Diamond). Click any node to open a detail panel showing the origin description and how it manifests in drive-skill. `motion.svg` whileInView fade-in, `motion.g` stagger entrance, edge highlighting on hover/select.
+
+### Changed — `drive-showcase/`
+- **`App.tsx`** — OriginTrace deployed in ACT II after PrincipleCards (previously placeholder comment).
+
+### Dependencies
+- `d3-force` added to dependencies
+- `@types/d3-force` added to devDependencies
+
+### Rationale
+OriginTrace completes the ACT II "理解" experience: PrincipleCards explain the WHAT of each principle, OriginTrace traces the WHY (intellectual lineage). Together they answer "what does drive-skill do?" and "where did these ideas come from?"
+
+---
+
 ## [0.4.0] - 2026-03-02 (V2 Phase 1 — Four-Act Structure)
 
 ### Added — `drive-showcase/`

@@ -24,6 +24,7 @@ import { ReferencesSection } from './sections/ReferencesSection'
 import { NavBar } from './components/NavBar'
 import { SectionDivider } from './components/SectionDivider'
 import { ActIIIWrapper } from './components/ActIIIWrapper'
+import { OriginTrace } from './components/OriginTrace'
 import { useLang } from './contexts/LangContext'
 import { t } from './i18n/translations'
 
@@ -65,8 +66,10 @@ function AppInner() {
           <PrincipleCards />
         </div>
 
-        {/* OriginTrace placeholder */}
-        {/* <OriginTrace /> */}
+        <SectionDivider />
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <OriginTrace />
+        </div>
       </div>
 
       <SectionDivider />

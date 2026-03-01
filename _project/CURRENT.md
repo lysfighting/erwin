@@ -6,13 +6,13 @@
 
 ## Project Status
 
-- **Version**: 0.3.0 (in progress)
+- **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-02
 - **Last Session**: [2026-03-02](sessions/2026-03-02.md)
 
 ## Current Phase
 
-**Phase**: V2 Showcase Implementation — Phase 1 DONE, Phase 2 next
+**Phase**: V2 Showcase Implementation — Phase 2 in progress (OriginTrace done)
 
 ## What Was Just Completed
 
@@ -24,19 +24,28 @@
    - `ActIIIWrapper.tsx` — collapsible wrapper for 15 deep sections (ACT III)
    - Build: 455 modules, 0 TypeScript errors
 
+2. **V2 Phase 2: OriginTrace** (2026-03-02, Drive Mode session)
+   - `OriginTrace.tsx` — d3-force directed graph, 15 nodes, 10 edges (new, ACT II)
+   - 5 drive-concept nodes (gold/blue/green/purple/cyan matching PrincipleCards)
+   - 10 historical source nodes with click-to-expand detail panel
+   - Deployed in ACT II after PrincipleCards with SectionDivider
+   - d3-force + @types/d3-force installed
+   - Build: 489 modules, 0 TypeScript errors
+
 ## Active Task / What's In Progress
 
-V2 Phase 2 planning — OriginTrace + animation enhancements.
+V2 Phase 2 remainder + Phase 3 planning.
 
 ## Next Session Should Start With
 
 1. Read this file ✓
 2. Read `_project/GOALS.md` (north star)
-3. **V2 Phase 2 top priority**: Build `OriginTrace` component
-   - D3 force-directed graph (d3-force already approved, not installed yet)
-   - Install: `cd drive-showcase && npm install d3-force`
-   - See `docs/drive-showcase-v2-architecture.md` → Component Two: OriginTrace
-   - Deploy in ACT II, after PrincipleCards
+3. **V2 Phase 2 secondary** (optional): ExecutionSimulator message flow animation
+   - Add colored packet animation (gold=DISPATCH, green=RETURN, purple=BROADCAST)
+   - See `docs/drive-showcase-v2-architecture.md` → 消息层 (Canvas)
+4. **V2 Phase 3 priority**: SkillBuilder — fastest path to user value exit
+   - ACT IV builder: form → skill.md download
+   - See `docs/drive-showcase-v2-architecture.md` → 组件四: SkillBuilder
 
 ## Implementation Roadmap
 
@@ -52,8 +61,8 @@ V2 Phase 2 planning — OriginTrace + animation enhancements.
 - [x] PrincipleCards (5 cards with thought sources)
 - [x] ActIIIWrapper (collapsible deep content)
 
-### v0.5.0 — V2 Phase 2: Deep Interaction (next)
-- [ ] OriginTrace (d3-force philosophy graph, ACT II)
+### v0.5.0 — V2 Phase 2: Deep Interaction (in progress)
+- [x] OriginTrace (d3-force philosophy graph, ACT II) ✅
 - [ ] ExecutionSimulator: message flow animation enhancement
 - [ ] SwarmTopologySection: add interactive message flow
 
