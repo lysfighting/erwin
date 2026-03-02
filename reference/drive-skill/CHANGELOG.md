@@ -5,13 +5,27 @@ All notable changes to the Drive Skill will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-03-01
+
+### Added
+- **Slack Question Relay** — when user doesn't respond to AskUserQuestion within 60 seconds, automatically forwards the question to Slack DM with formatted options
+- **Slack-question-mode** — after answering via Slack, subsequent questions are forwarded immediately (no 60s wait) for seamless consecutive Q&A
+- **Terminal input injection** — Slack replies are injected back into the terminal via TIOCSTI ioctl (primary) or AppleScript keystroke simulation (fallback)
+- **PreToolUse/PostToolUse hooks** — `question-relay-hook.sh` intercepts AskUserQuestion tool calls to manage the relay lifecycle
+- **`slack-question-relay.py`** — background relay script: format → send → listen → inject
+- **Subagent filtering** — relay only activates for main agent questions, not teammate AskUserQuestion calls
+
+### Changed
+- **settings.json template** — added PreToolUse/PostToolUse hooks for AskUserQuestion
+- **install.sh** — installs question-relay-hook.sh and slack-question-relay.py, merges new hooks into existing settings
+
 ## [3.0.0] - 2026-02-26
 
 ### Added
 - **Full-suite one-click installer** — `install.sh` sets up everything with symlinks, settings merge, and shell config
 - **Self-Drive skill** — perpetual improvement loop with Slack/Telegram async communication
 - **Architect skill** — 6-phase system architecture design process
-- **Notification hook** (`notify.sh`) — macOS banners + TTS voice + Body Zero desktop pet reactions
+- **Notification hook** (`notify.sh`) — macOS banners + TTS voice
 - **Bundled sound effects** (`sounds/`) — 5 pre-generated TTS voice files, no API key needed
 - **Slack messaging** — `slack-send.py`, `slack-listen.py` (Socket Mode), `slack-poll.py` (API fallback)
 - **Telegram messaging** — `telegram-send.py`, `telegram-poll.py` (long-poll)
@@ -74,7 +88,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Scaling Mindset** — Bitter Lesson, learning-first alternatives, anti-patterns of rule obsession
 - **Direction Validation Protocol** — visual confirmation with Mermaid/ASCII, path enumeration
 - **Self-Adversarial Review** — 6-axis review before marking any task complete
-- **Body Zero Integration** — desktop pet companion with HTTP notification protocol
 - **Notification System** — bundled voice announcements via hooks
 - **Team Shutdown Protocol** — graceful shutdown with SendMessage + TeamDelete
 - **Anti-patterns** — comprehensive list of Drive Mode anti-patterns

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Claude Code notification — bundled TTS voice + macOS banner + Body Zero
+# Claude Code notification — bundled TTS voice + macOS banner
 # Plays pre-generated sound files from ~/.claude/sounds/
 # Skips subagent notifications.
 
@@ -70,6 +70,10 @@ case "$HOOK_EVENT" in
         SOUND_FILE="$SOUNDS_DIR/waiting-for-input.mp3"
         NEEDS_VOICE=true
         ;;
+      auth_success)
+        SUMMARY="Authentication successful"
+        # No sound — success, no user action needed
+        ;;
       *)
         SUMMARY=$(short "$MESSAGE")
         [ -z "$SUMMARY" ] && SUMMARY="Needs attention"
@@ -95,6 +99,7 @@ case "$HOOK_EVENT" in
   *)
     SUMMARY="Needs attention"
     SOUND_FILE="$SOUNDS_DIR/needs-attention.mp3"
+    NEEDS_VOICE=true
     ;;
 esac
 
@@ -108,26 +113,5 @@ osascript -e "display notification \"${ESCAPED_SUMMARY}\" with title \"${ESCAPED
 if [ "$NEEDS_VOICE" = "true" ] && [ -f "$SOUND_FILE" ]; then
   afplay "$SOUND_FILE" &
 fi
-
-# ── Body Zero desktop pet notification ──
-BZ_TYPE=""
-case "$HOOK_EVENT" in
-  Notification)
-    case "$NOTIF_TYPE" in
-      permission_prompt) BZ_TYPE="permission" ;;
-      elicitation_dialog) BZ_TYPE="question" ;;
-      idle_prompt) BZ_TYPE="idle" ;;
-      *) BZ_TYPE="idle" ;;
-    esac
-    ;;
-  Stop) BZ_TYPE="complete" ;;
-  TeammateIdle) BZ_TYPE="idle" ;;
-  *) BZ_TYPE="idle" ;;
-esac
-
-curl -s -X POST "http://localhost:19198/notify" \
-  -H "Content-Type: application/json" \
-  -d "{\"event\": \"$HOOK_EVENT\", \"title\": \"$ESCAPED_SUMMARY\", \"text\": \"$(basename "$SOUND_FILE" .mp3 2>/dev/null)\", \"type\": \"$BZ_TYPE\"}" \
-  >/dev/null 2>&1 &
 
 exit 0

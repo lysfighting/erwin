@@ -10,10 +10,10 @@ set -e
 #   - Hierarchical swarm execution (drive skill)
 #   - Perpetual improvement loop (self-drive skill)
 #   - System architecture design (architect skill)
+#   - Cognitive coaching & user growth (improve-user skill)
 #   - 众神殿 (Pantheon) — 1000+ greatest minds as reasoning reference
 #   - Voice notifications (bundled sound effects)
 #   - macOS notification banners
-#   - Desktop pet companion (Body Zero, optional)
 #   - Slack/Telegram async communication
 #   - In-process teammate mode by default
 #
@@ -102,9 +102,7 @@ print_step "Python3 found: $(python3 --version)"
 print_header "Step 1: Directory Setup"
 
 mkdir -p "$COMMANDS_DIR"
-mkdir -p "$CLAUDE_DIR/sounds"
 print_step "Created $COMMANDS_DIR"
-print_step "Created $CLAUDE_DIR/sounds"
 
 # ─── Install commands (symlinks) ───
 
@@ -133,6 +131,7 @@ install_command() {
 install_command "drive.md"
 install_command "self-drive.md"
 install_command "architect.md"
+install_command "improve-user.md"
 
 # ─── Install Pantheon (众神殿) ───
 
@@ -194,6 +193,7 @@ install_hook() {
 }
 
 install_hook "notify.sh"
+install_hook "question-relay-hook.sh"
 
 # ─── Install sound files ───
 
@@ -203,25 +203,24 @@ SOUNDS_SRC="$SCRIPT_DIR/sounds"
 SOUNDS_DST="$CLAUDE_DIR/sounds"
 
 if [ -d "$SOUNDS_SRC" ]; then
-  for mp3_file in "$SOUNDS_SRC"/*.mp3; do
-    fname=$(basename "$mp3_file")
-    dst_file="$SOUNDS_DST/$fname"
-
-    if [ -L "$dst_file" ]; then
-      current_target=$(readlink "$dst_file")
-      if [ "$current_target" = "$mp3_file" ]; then
-        print_skip "$fname — already linked"
-        continue
-      fi
-      rm "$dst_file"
-    elif [ -f "$dst_file" ]; then
-      # Overwrite bundled sounds silently
-      rm "$dst_file"
+  if [ -L "$SOUNDS_DST" ]; then
+    current_target=$(readlink "$SOUNDS_DST")
+    if [ "$current_target" = "$SOUNDS_SRC" ]; then
+      print_skip "sounds/ — already linked"
+    else
+      rm "$SOUNDS_DST"
+      ln -s "$SOUNDS_SRC" "$SOUNDS_DST"
+      print_step "sounds/ — relinked to $SOUNDS_SRC"
     fi
-
-    ln -s "$mp3_file" "$dst_file"
-    print_step "$fname — installed (symlink)"
-  done
+  elif [ -d "$SOUNDS_DST" ]; then
+    # Migrate from per-file symlinks to directory symlink
+    rm -rf "$SOUNDS_DST"
+    ln -s "$SOUNDS_SRC" "$SOUNDS_DST"
+    print_step "sounds/ — migrated to directory symlink"
+  else
+    ln -s "$SOUNDS_SRC" "$SOUNDS_DST"
+    print_step "sounds/ — installed (symlink)"
+  fi
 else
   print_skip "Sounds directory not found in repo — skipping"
 fi
@@ -256,6 +255,7 @@ install_messaging "slack-listen.py"
 install_messaging "slack-poll.py"
 install_messaging "telegram-send.py"
 install_messaging "telegram-poll.py"
+install_messaging "slack-question-relay.py"
 
 # ─── Install self-drive config template ───
 
@@ -320,6 +320,21 @@ for hook_name in ["Notification", "Stop", "TeammateIdle"]:
             existing["hooks"][hook_name].extend(template["hooks"][hook_name])
             changed = True
 
+# Ensure question relay hooks (PreToolUse / PostToolUse for AskUserQuestion)
+for hook_name in ["PreToolUse", "PostToolUse"]:
+    if hook_name not in existing["hooks"]:
+        existing["hooks"][hook_name] = template["hooks"][hook_name]
+        changed = True
+    else:
+        has_relay = any(
+            h.get("command", "").endswith("question-relay-hook.sh")
+            for entry in existing["hooks"][hook_name]
+            for h in entry.get("hooks", [])
+        )
+        if not has_relay:
+            existing["hooks"][hook_name].extend(template["hooks"][hook_name])
+            changed = True
+
 if changed:
     with open(settings_path, "w") as f:
         json.dump(existing, f, indent=2)
@@ -376,35 +391,9 @@ else
   print_skip "Shell already configured"
 fi
 
-# ─── Optional: Body Zero Desktop Pet ───
-
-print_header "Step 7: Body Zero Desktop Pet (Optional)"
-
-print_info "Body Zero is a desktop pet companion that reacts to drive events."
-print_info "It's an Electron app that sits on your screen during drive sessions."
-echo ""
-
-# Check if body_zero already exists
-BODY_ZERO_DIR=""
-if [ -d "$HOME/Desktop/building/body_zero" ]; then
-  BODY_ZERO_DIR="$HOME/Desktop/building/body_zero"
-  print_skip "Body Zero already installed at $BODY_ZERO_DIR"
-elif [ -d "$SCRIPT_DIR/../body_zero" ]; then
-  BODY_ZERO_DIR="$SCRIPT_DIR/../body_zero"
-  print_skip "Body Zero found at $BODY_ZERO_DIR"
-fi
-
-if [ -z "$BODY_ZERO_DIR" ]; then
-  print_info "Body Zero is not installed."
-  print_info "To install it later, clone the body_zero repo and run:"
-  print_info "  cd body_zero && npm install && ./launch.sh"
-  print_info ""
-  print_info "Then use the -body flag with drive: /drive -body <your mission>"
-fi
-
 # ─── Voice Notifications ───
 
-print_header "Step 8: Voice Notifications"
+print_header "Step 7: Voice Notifications"
 
 SOUND_COUNT=$(ls "$SOUNDS_DST"/*.mp3 2>/dev/null | wc -l | tr -d ' ')
 if [ "$SOUND_COUNT" -gt 0 ]; then
@@ -415,7 +404,7 @@ fi
 
 # ─── Optional: Slack Setup ───
 
-print_header "Step 9: Self-Drive Slack Integration (Optional)"
+print_header "Step 8: Self-Drive Slack Integration (Optional)"
 
 if [ -f "$CLAUDE_DIR/self-drive.json" ]; then
   HAS_SLACK=$(python3 -c "
@@ -440,16 +429,18 @@ fi
 print_header "Installation Complete"
 
 echo -e "  ${BOLD}Installed skills:${NC}"
-echo -e "    ${GREEN}/drive${NC}      — Hierarchical swarm execution (team lead mode)"
-echo -e "    ${GREEN}/self-drive${NC} — Perpetual autonomous improvement loop"
-echo -e "    ${GREEN}/architect${NC}  — System architecture design process"
+echo -e "    ${GREEN}/drive${NC}         — Hierarchical swarm execution (team lead mode)"
+echo -e "    ${GREEN}/self-drive${NC}    — Perpetual autonomous improvement loop"
+echo -e "    ${GREEN}/architect${NC}     — System architecture design process"
+echo -e "    ${GREEN}/improve-user${NC}  — Cognitive coach: blind spots, knowledge gaps, growth"
 echo ""
 echo -e "  ${BOLD}Installed knowledge:${NC}"
 echo -e "    ${GREEN}众神殿${NC}     — 1000+ greatest minds across human civilization"
 echo -e "               Used by /drive Deep Reasoning Protocol for inspiration"
 echo ""
 echo -e "  ${BOLD}Installed hooks:${NC}"
-echo -e "    ${GREEN}notify.sh${NC}  — macOS banners + bundled voice + Body Zero pet"
+echo -e "    ${GREEN}notify.sh${NC}              — macOS banners + bundled voice"
+echo -e "    ${GREEN}question-relay-hook.sh${NC} — Slack fallback for unanswered questions"
 echo -e "  ${BOLD}Installed sounds:${NC}"
 echo -e "    ${GREEN}5 mp3 files${NC} — pre-generated TTS (no API key needed)"
 echo ""
@@ -460,7 +451,7 @@ echo ""
 echo -e "  ${BOLD}Configured:${NC}"
 echo -e "    ${GREEN}Agent Teams${NC}     — enabled (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1)"
 echo -e "    ${GREEN}Teammate Mode${NC}  — in-process by default (visible swarm)"
-echo -e "    ${GREEN}Hooks${NC}          — Notification + Stop + TeammateIdle → notify.sh"
+echo -e "    ${GREEN}Hooks${NC}          — Notification + Stop + TeammateIdle + Question Relay"
 echo -e "    ${GREEN}Output Tokens${NC}  — maximized (1,000,000)"
 echo ""
 echo -e "  ${BOLD}Optional (configure later):${NC}"
@@ -469,14 +460,13 @@ if [ "$HAS_SLACK" = "yes" ]; then
 else
   echo -e "    ${YELLOW}Slack${NC}          — edit ~/.claude/self-drive.json for self-drive"
 fi
-echo -e "    ${YELLOW}Body Zero${NC}     — desktop pet companion (separate install)"
 echo ""
 echo -e "  ${BOLD}Quick start:${NC}"
 echo -e "    ${CYAN}claude${NC}                              # launches with teammate mode"
 echo -e "    ${CYAN}/drive implement auth module${NC}         # drive mode"
-echo -e "    ${CYAN}/drive -body fix the login bug${NC}       # drive + desktop pet"
 echo -e "    ${CYAN}/self-drive${NC}                          # perpetual improvement loop"
 echo -e "    ${CYAN}/architect design a new API layer${NC}    # architecture design"
+echo -e "    ${CYAN}/improve-user${NC}                        # cognitive coaching session"
 echo ""
 echo -e "  ${BOLD}All files are symlinked${NC} — edit them in this repo,"
 echo -e "  commit, and push for version control."
