@@ -41,7 +41,9 @@
 1. Update `_project/CURRENT.md`
 2. Write `_project/sessions/YYYY-MM-DD.md`
 3. Update `CHANGELOG.md` if features completed
-4. Run: `git add -A && git commit -m "type(scope): description"`
+4. Update `~/.claude/projects/-Users-liyasong-Project-collov-erwin/memory/MEMORY.md`
+   — 新发现的规律、用户偏好、技术陷阱、项目特有知识（非项目状态，是 Claude 的认知积累）
+5. Run: `git add -A && git commit -m "type(scope): description"`
 
 ## File Size Limits
 
