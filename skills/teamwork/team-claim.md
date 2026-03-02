@@ -72,7 +72,8 @@ MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/.*mc_label: *
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 ```
 
-Verify `GH_USER` is in the team roster. If not → "You ({GH_USER}) are not in the team roster. Add yourself to `$TEAMWORK_DIR/config.yml` first." → **STOP**
+Verify `GH_USER` is in the team roster (check both `team:` and `members:` sections).
+If not → "You ({GH_USER}) are not in the team roster. Run `/team` to join — it will ask your role and add you." → **STOP**
 
 ---
 

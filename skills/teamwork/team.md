@@ -115,10 +115,65 @@ else
 fi
 ```
 
-- If `DASHBOARD` → Jump to **Step 6: Dashboard** (use whichever config dir was found)
-- If `INIT` → Continue to **Step 2: Initialize**
+- If `DASHBOARD` → Continue to **Step 1b: Check Membership**
+- If `INIT` → Jump to **Step 2: Initialize**
 
 **Note**: Both `.teamwork/` and `.teamspace/` are supported as config directories. The system uses whichever exists. New installations default to `.teamwork/`.
+
+---
+
+## Step 1b: Check Membership
+
+Read the config and check if `GH_USER` is in the team roster.
+
+**Config format detection:**
+- If config has `team:` section (erwin v2 format) → look for `github: {GH_USER}` in team list
+- If config has `members:` section (.teamspace format) → look for `github: {GH_USER}` in members list
+
+If `GH_USER` is found in roster → Jump to **Step 6: Dashboard**
+
+If `GH_USER` is NOT in roster → **onboard new member:**
+
+1. Welcome message: "Welcome! You ({GH_USER}) are not yet in the team roster."
+
+2. Read available roles from config:
+   - If config has `roles:` section → list role options from there
+   - If config has `team:` section → extract unique roles already in use, offer those + "Other"
+   - If no roles defined → ask freeform
+
+3. Use `AskUserQuestion` to pick a role:
+   ```
+   question: "What's your role on this team?"
+   options:
+     {For each role in config's roles section:}
+     - label: "{role.label}"
+       description: "{role.description}"
+   ```
+
+4. Add the user to config:
+   - For erwin v2 format (`team:` section): append new entry
+     ```yaml
+     - github: {GH_USER}
+       role: {selected_role_id}
+     ```
+   - For .teamspace format (`members:` section): append new entry
+     ```yaml
+     - id: {GH_USER}
+       name: "{GH_USER}"
+       role: {selected_role_id}
+       github: {GH_USER}
+     ```
+
+5. Commit the config change:
+   ```bash
+   git add $TEAMWORK_DIR/config.yml
+   git commit -m "feat(teamwork): add {GH_USER} as {role} to team roster"
+   git push
+   ```
+
+6. Output: "Added you to the team as **{role.label}**. Showing dashboard..."
+
+7. Continue to **Step 6: Dashboard**
 
 ---
 
