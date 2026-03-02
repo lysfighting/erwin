@@ -8,60 +8,45 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-02
-- **Last Session**: [2026-03-02](sessions/2026-03-02.md)
+- **Last Session**: [2026-03-02](sessions/2026-03-02.md) (Session H)
 
 ## Current Phase
 
-**Phase**: V2 Showcase Implementation — Phase 2 in progress (OriginTrace done)
+**Phase**: V2 Showcase Implementation — Phase 2 in progress + erwin framework identity solidifying
 
 ## What Was Just Completed
 
-1. **V2 Phase 1: Four-Act Structure** (2026-03-02, Drive Mode session)
-   - `App.tsx` restructured into ACT I/II/III/IV layout
-   - `ExecutionSimulator.tsx`, `PrincipleCards.tsx`, `ActIIIWrapper.tsx`
+1. **ADR-0008: /new-project → /erwin-init rename + redesign** (Session H, Drive Mode)
+   - Skill identity reframed: from scaffolding tool to cognitive infrastructure installer
+   - Zero-question Phase 1, optional Phase 2 GOALS.md conversation
+   - Naming convention: `erwin-` prefix for framework-core skills only
+   - 18 files changed, all doc references updated, install.sh verified
+   - ADR-0006 marked superseded, session logs preserved as history
 
-2. **V2 Phase 2: OriginTrace** (2026-03-02, Drive Mode session)
-   - `OriginTrace.tsx` — d3-force directed graph, 15 nodes, 10 edges (ACT II)
-
-3. **Meta: Project Intelligence Infrastructure** (2026-03-02, Session E + F)
-   - `ai-workflow.md` — principle-based CURRENT.md trigger (action-cost model, not time-based)
-   - `skills/erwin-init/` — `/erwin-init` skill v1.0.0 (version-controlled in repo)
-   - `skills/visual-test/` — `/visual-test` skill v1.0.0 (version-controlled in repo)
-   - `install.sh` — symlink installer; `git pull` auto-updates installed skills
-   - `_project/decisions/0006-new-project-skill.md` — ADR-0006 (new-project skill)
-   - `_project/decisions/0007-skills-incubator-structure.md` — ADR-0007 (incubator structure)
-   - `docs/erwin-skills-incubator-architecture.md` — full architecture design
-   - `~/.claude/projects/.../memory/MEMORY.md` — Claude auto-memory initialized for erwin
+2. **erwin as vibe coding framework** — identity discussion (Session H, /architect)
+   - erwin = vibe coding framework with cognitive self-evolution
+   - `/erwin-init` = the framework installer (not a scaffolding tool)
+   - Hard boundary: never touches code, never asks tech stack
 
 ## Active Task / What's In Progress
 
-Skills incubator structure implemented. Next: SkillBuilder (OKR KR3) or continue V2 Phase 2.
+ADR-0008 implementation done. Next: SkillBuilder (OKR KR3) or bundle optimization.
 
 ## Next Session Should Start With
 
-1. Read this file ✓
+1. Read this file
 2. **V2 Phase 3 priority**: SkillBuilder (OKR KR3, currently 0%)
    - ACT IV builder: form → skill.md download
    - See `docs/drive-showcase-v2-architecture.md` → 组件四: SkillBuilder
-3. **Optional V2 Phase 2**: ExecutionSimulator message flow animation
-   - Add colored packet animation (gold=DISPATCH, green=RETURN, purple=BROADCAST)
+3. **Tech health**: Bundle code splitting (604KB → ~250KB, React.lazy for ACT III)
+4. **Optional**: Session-end automation via Claude Code hooks
 
 ## Implementation Roadmap
 
 ### v0.3.0 — Project Structure ✅
-- [x] `_project/` layer with GOALS, CURRENT, ROADMAP, ideas, decisions, sessions, issues
-- [x] Rename reference-skills/ → reference/
-- [x] `.claude/rules/` for modular instructions
-- [x] CHANGELOG.md updated + committed
-
 ### v0.4.0 — V2 Phase 1: Four-Act Structure ✅
-- [x] ACT I/II/III/IV navigation in App.tsx
-- [x] ExecutionSimulator MVP (before/after comparison)
-- [x] PrincipleCards (5 cards with thought sources)
-- [x] ActIIIWrapper (collapsible deep content)
-
 ### v0.5.0 — V2 Phase 2: Deep Interaction (in progress)
-- [x] OriginTrace (d3-force philosophy graph, ACT II) ✅
+- [x] OriginTrace (d3-force philosophy graph, ACT II)
 - [ ] ExecutionSimulator: message flow animation enhancement
 - [ ] SwarmTopologySection: add interactive message flow
 
@@ -71,16 +56,13 @@ Skills incubator structure implemented. Next: SkillBuilder (OKR KR3) or continue
 - [ ] CaseStudies (2-3 skill variant examples)
 
 ### v1.1.0 — Multi-Skill Platform (post-v1.0 backlog)
-> Currently showcase only shows drive-skill. To show erwin as a skills platform:
-- [ ] **P1** SkillGallery section — one demo card per released skill in `skills/`
-  - `/erwin-init`: animated file tree showing what the skill creates
-  - `/visual-test`: before/after screenshot + 7-step loop diagram
-- [ ] **P2** Hero section rebrand — "erwin: AI skill incubator" (drive = first skill, not the only skill)
-- [ ] **P3** Skills index — table of all skills (released + incubating) with install commands
+- [ ] SkillGallery section (one demo card per released skill)
+- [ ] Hero section rebrand ("erwin: AI skill incubator")
+- [ ] Skills index (table of all skills with install commands)
 
 ## Known Issues / Blockers
 
-None currently.
+- 604KB single-chunk bundle — needs code splitting before adding more components
 
 ## File Locations
 
