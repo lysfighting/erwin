@@ -196,6 +196,16 @@ quality:
 
 ### 4c: Write `.github/ISSUE_TEMPLATE/mission.yml`
 
+**First, check if Issue template already exists:**
+
+```bash
+ls .github/ISSUE_TEMPLATE/mission*.yml 2>/dev/null
+```
+
+If exists → read it, ask user whether to keep or regenerate (same as CI detection).
+
+If not exists → generate:
+
 ```yaml
 name: Mission Contract
 description: Structured task for team execution
@@ -213,6 +223,18 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: size
+    attributes:
+      label: Estimated Size
+      options:
+        - S (1-2 hours)
+        - M (half-day to 1 day)
+        - L (2-3 days)
+        - XL (needs splitting)
+    validations:
+      required: true
+
   - type: textarea
     id: objective
     attributes:
@@ -222,21 +244,24 @@ body:
       required: true
 
   - type: textarea
-    id: subtasks
+    id: acceptance
     attributes:
-      label: Sub-tasks
-      description: Break down into checkable items
-      value: |
-        - [ ] Task 1
-        - [ ] Task 2
+      label: Success Criteria
+      description: What must be true for this mission to be DONE? Use checkboxes.
+      placeholder: |
+        - [ ] Criterion 1 — concrete, verifiable
+        - [ ] Criterion 2 — ...
     validations:
       required: true
 
   - type: textarea
-    id: acceptance
+    id: subtasks
     attributes:
-      label: Acceptance Criteria
-      description: How do we know this is done?
+      label: Sub-tasks
+      description: Break down the work into specific steps.
+      placeholder: |
+        - [ ] Step 1
+        - [ ] Step 2
     validations:
       required: true
 
@@ -244,14 +269,25 @@ body:
     id: context
     attributes:
       label: Context & References
-      description: Relevant files, docs, links
+      description: Relevant files, docs, links, related issues.
+      placeholder: "Relevant files: src/..., Related to #..."
 
-  - type: input
-    id: test_command
+  - type: textarea
+    id: constraints
     attributes:
-      label: Test Command
-      description: Command to verify this mission
-      placeholder: "npm test -- --grep auth"
+      label: Constraints
+      description: Any limitations, dependencies, or things NOT to do.
+      placeholder: "Must not break existing API..."
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification Method
+      description: How to verify this mission is complete (test commands, manual checks).
+      placeholder: |
+        ```bash
+        npm test -- --grep auth
+        ```
 ```
 
 ### 4d: Write `.github/workflows/ci.yml`
