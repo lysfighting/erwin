@@ -6,11 +6,69 @@ description: "Initialize GitHub-first teamwork system or show team dashboard. Ru
 
 > GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are quality gates.
 
-**Two modes:**
-1. **First run** (no config found): Initialize teamwork system — detect project, configure team, generate CI/hooks/templates
-2. **Subsequent runs**: Show team dashboard from GitHub data
-
 **User input**: $ARGUMENTS
+
+**Argument routing:**
+
+| Input | Action |
+|-------|--------|
+| (empty) | Auto: first run → Init, subsequent → Dashboard |
+| `help` | Show quick-start guide for new users |
+| `init` | Force re-initialize (even if config exists) |
+
+---
+
+## Route by Argument
+
+Parse `$ARGUMENTS`:
+- If `help` → jump to **Operation Help**
+- If `init` → jump to **Step 0** (skip config check, force init)
+- If empty → continue to **Step 0** (auto-detect init vs dashboard)
+
+---
+
+## Operation Help
+
+Output the following guide directly to the user, then **STOP**:
+
+```
+TEAMWORK — Quick Start Guide
+═══════════════════════════════════════════
+
+SETUP (one time):
+  /team                 Auto-detect project, create config + CI + labels
+
+DAILY WORKFLOW:
+  /team                 See dashboard (who's working on what)
+  /team-claim #N        Claim Issue #N → generate Contract + branch
+  /team-claim           Auto-pick highest priority unassigned Issue
+  /team-claim list      Browse available missions
+  /team-drive           Execute mission (sub-tasks → test → commit loop)
+  /team-ship            Push + create PR (auto-closes Issue on merge)
+
+AFTER MERGE:
+  /team-ship done       Close Issue, update labels, clean up
+  /team-ship review     AI code review on current PR
+  /team-ship sync       Rebase branch on latest main
+
+LIFECYCLE:
+  Issue → /team-claim → Contract + branch
+       → /team-drive → implement + test + commit
+       → /team-ship  → PR (Closes #N)
+       → /team-ship done → Issue closed, back to main
+
+CONFIG:
+  .teamwork/config.yml  (or .teamspace/config.yml)
+  Edit team members, test/lint commands, quality gates directly.
+
+REQUIREMENTS:
+  gh (GitHub CLI)       gh auth login
+  git remote            git remote add origin <url>
+
+MORE INFO:
+  ONBOARDING.md         Full tutorial with examples
+═══════════════════════════════════════════
+```
 
 ---
 

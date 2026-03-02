@@ -16,12 +16,36 @@ description: "Ship your completed mission — push, create PR with Issue linking
 | `done` | Post-merge cleanup (close Issue, update labels, clean worktree) |
 | `review` | AI code review on current PR |
 | `sync` | Rebase current branch on main |
+| `help` | Show usage guide |
 
 ---
 
 ## Route by Argument
 
 Parse `$ARGUMENTS`:
+- If `help` → output the following and **STOP**:
+
+```
+/team-ship — Deliver your mission
+
+USAGE:
+  /team-ship            Push + create PR + CI check + cleanup
+  /team-ship done       After PR merge: close Issue, update labels, clean worktree
+  /team-ship review     AI review current PR (correctness/security/architecture/quality)
+  /team-ship sync       Rebase current branch on latest main
+
+SHIP FLOW:
+  1. Pre-flight: verify branch, sub-tasks done, tests pass
+  2. Push branch to GitHub
+  3. Create PR with "Closes #N" (auto-closes Issue on merge)
+  4. Watch CI (if configured)
+  5. Request review (if configured)
+  6. Clean up local Contract, label Issue status:review
+
+AFTER MERGE:
+  /team-ship done closes the Issue, labels status:done, returns to main.
+```
+
 - If `done` → jump to **Operation Done**
 - If `review` → jump to **Operation Review**
 - If `sync` → jump to **Operation Sync**

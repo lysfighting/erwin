@@ -15,7 +15,30 @@ description: "Claim a GitHub Issue as your mission. Generates AI execution contr
 | `#42` or `42` | Claim specific Issue |
 | `list` | Browse available mission Issues |
 | `create "title"` | Create new Issue from mission template |
+| `help` | Show usage guide |
 | (empty) | Auto-select next unassigned Issue by priority (P0 > P1 > P2 > P3) |
+
+If `$ARGUMENTS` is `help`, output the following and **STOP**:
+
+```
+/team-claim — Claim a GitHub Issue as your mission
+
+USAGE:
+  /team-claim           Auto-pick highest priority unassigned Issue
+  /team-claim #42       Claim specific Issue
+  /team-claim list      Browse available missions
+  /team-claim create "title"   Create new Issue from template
+
+WHAT HAPPENS:
+  1. Fetches Issue from GitHub
+  2. Generates AI-enriched Mission Contract (.teamwork/active/MISSION-N.md)
+     — scans project to discover relevant files (Context Files)
+  3. Creates branch: mission/{issue}-{slug}-{user}
+  4. Assigns you on GitHub + posts claim comment
+  5. Labels Issue: status:wip
+
+NEXT: /team-drive to start executing
+```
 
 ---
 

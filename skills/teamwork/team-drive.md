@@ -8,6 +8,29 @@ description: "Execute your claimed mission using drive methodology. Reads your M
 
 **User input**: $ARGUMENTS
 
+If `$ARGUMENTS` is `help`, output the following and **STOP**:
+
+```
+/team-drive — Execute your claimed mission
+
+USAGE:
+  /team-drive           Read Contract, execute sub-tasks with verify loop
+
+WHAT HAPPENS:
+  1. Reads your Mission Contract (.teamwork/active/MISSION-N.md)
+  2. Verifies you're on the correct branch
+  3. For each unchecked sub-task:
+     — Read context files → implement → run tests → commit
+     — Checks off sub-task in Contract with timestamp
+  4. After all sub-tasks: verify acceptance criteria + self-review
+  5. Can be interrupted — progress saved via checkboxes
+
+PREREQUISITES:
+  Run /team-claim first to generate a Contract.
+
+NEXT: /team-ship to deliver via PR
+```
+
 ---
 
 ## Step 0: Find Active Contract
