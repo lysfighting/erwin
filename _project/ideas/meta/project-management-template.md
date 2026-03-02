@@ -1,9 +1,9 @@
 # Idea: Universal Project Management Template (Meta-Skill)
 
-- **Stage**: Sprout 🌿
+- **Stage**: Plant 🌱
 - **Created**: 2026-03-02
-- **ADR**: (pending)
-- **Issue**: (pending)
+- **ADR**: ADR-0006 (`_project/decisions/0006-new-project-skill.md`)
+- **Implemented**: `~/.claude/commands/new-project.md`
 
 ---
 

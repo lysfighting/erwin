@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Meta / Cross-Project
+- **`~/.claude/commands/new-project.md`** — `/new-project` Claude Code skill: bootstraps any new project with the full `_project/` intelligence layer (GOALS, CURRENT, ROADMAP, ideas, decisions, sessions, issues, releases), `CLAUDE.md`, `.claude/rules/` (ai-workflow + git-conventions), `CHANGELOG.md`, and Claude auto-memory (`~/.claude/projects/{hash}/memory/MEMORY.md`). Asks 4 questions (name, description, tech stack, language), creates all files with templates, runs `git init` + first commit. The erwin project methodology is now portable.
+- **`_project/decisions/0006-new-project-skill.md`** — ADR-0006 documenting /new-project skill design decisions (skill location, structure forced vs. configurable, memory path computation).
+- **`~/.claude/projects/-Users-liyasong-Project-collov-erwin/memory/MEMORY.md`** — Claude auto-memory initialized for the erwin project. Now auto-loaded each conversation.
+
 ### Changed — `.claude/rules/`
-- **`ai-workflow.md`** — 将 "Session Start 读 CURRENT.md" 改为原则驱动的触发条件。不再罗列场景，改为一个判断测试：「行动如果方向错了，撤销成本高吗？」高成本行动（写代码、做决策、动手前）必须先读；纯对话（解释概念、讨论方案）无需读。设计思想来自 drive-skill 的 Cardinal Rule（方向偏差是唯一值得停下来的理由）。
+- **`ai-workflow.md`** — 将 "Session Start 读 CURRENT.md" 改为原则驱动的触发条件。不再罗列场景，改为一个判断测试：「行动如果方向错了，撤销成本高吗？」高成本行动（写代码、做决策、动手前）必须先读；纯对话（解释概念、讨论方案）无需读。设计思想来自 drive-skill 的 Cardinal Rule（方向偏差是唯一值得停下来的理由）。Added step 4 to Session End: update MEMORY.md.
 
 ---
 
