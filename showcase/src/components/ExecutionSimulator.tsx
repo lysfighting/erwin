@@ -74,6 +74,93 @@ function SequentialSide({ playing, runKey }: { playing: boolean; runKey: number 
   )
 }
 
+// Topology node positions (280x90 viewBox)
+const TOPO = {
+  TL:  { x: 140, y: 15, color: '#f59e0b', label: 'Team Lead' },
+  STL: { x: 140, y: 45, color: '#3b82f6', label: 'STL' },
+  W1:  { x: 70,  y: 75, color: '#22c55e', label: 'Worker-1' },
+  W2:  { x: 210, y: 75, color: '#22c55e', label: 'Worker-2' },
+} as const
+
+const DISPATCH_COLOR = '#22c55e'
+const RETURN_COLOR = '#3b82f6'
+
+// Dot animation paths: [startNode, endNode, delay, color]
+const DOT_PATHS: { from: keyof typeof TOPO; to: keyof typeof TOPO; delay: number; color: string }[] = [
+  // Dispatch: TL → STL → Workers
+  { from: 'TL', to: 'STL', delay: 0.1, color: DISPATCH_COLOR },
+  { from: 'STL', to: 'W1', delay: 0.3, color: DISPATCH_COLOR },
+  { from: 'STL', to: 'W2', delay: 0.4, color: DISPATCH_COLOR },
+  // Return: Workers → STL → TL
+  { from: 'W1', to: 'STL', delay: 0.7, color: RETURN_COLOR },
+  { from: 'W2', to: 'STL', delay: 0.75, color: RETURN_COLOR },
+  { from: 'STL', to: 'TL', delay: 0.9, color: RETURN_COLOR },
+]
+
+function TopologyDiagram({ playing, runKey }: { playing: boolean; runKey: number }) {
+  return (
+    <div className="mb-4">
+      <svg viewBox="0 0 280 100" className="w-full max-w-[280px] overflow-hidden">
+        {/* Connection lines */}
+        <line x1={TOPO.TL.x} y1={TOPO.TL.y} x2={TOPO.STL.x} y2={TOPO.STL.y}
+          stroke="#4b5563" strokeWidth={1} strokeDasharray="4 3" />
+        <line x1={TOPO.STL.x} y1={TOPO.STL.y} x2={TOPO.W1.x} y2={TOPO.W1.y}
+          stroke="#4b5563" strokeWidth={1} strokeDasharray="4 3" />
+        <line x1={TOPO.STL.x} y1={TOPO.STL.y} x2={TOPO.W2.x} y2={TOPO.W2.y}
+          stroke="#4b5563" strokeWidth={1} strokeDasharray="4 3" />
+
+        {/* Nodes */}
+        {Object.values(TOPO).map((node) => (
+          <g key={node.label}>
+            <circle cx={node.x} cy={node.y} r={8} fill={node.color} opacity={0.85} />
+            <text x={node.x} y={node.y + 4} textAnchor="middle" fill={node.color}
+              fontSize={6} fontFamily="monospace" dy="12">
+              {node.label}
+            </text>
+          </g>
+        ))}
+
+        {/* Glow filter */}
+        <defs>
+          <filter id="dotGlow">
+            <feDropShadow dx={0} dy={0} stdDeviation={2} floodOpacity={0.8} />
+          </filter>
+        </defs>
+
+        {/* Animated flow dots */}
+        {playing && (
+          <g key={runKey}>
+            {DOT_PATHS.map((path, i) => {
+              const from = TOPO[path.from]
+              const to = TOPO[path.to]
+              return (
+                <motion.circle
+                  key={`${runKey}-dot-${i}`}
+                  r={4}
+                  fill={path.color}
+                  filter="url(#dotGlow)"
+                  initial={{ cx: from.x, cy: from.y, opacity: 0 }}
+                  animate={{
+                    cx: to.x,
+                    cy: to.y,
+                    opacity: [0, 1, 1, 0],
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    delay: path.delay,
+                    ease: 'easeInOut',
+                    opacity: { times: [0, 0.1, 0.85, 1] },
+                  }}
+                />
+              )
+            })}
+          </g>
+        )}
+      </svg>
+    </div>
+  )
+}
+
 function ParallelSide({ playing, runKey }: { playing: boolean; runKey: number }) {
   return (
     <div className="flex-1 min-w-0">
@@ -83,6 +170,8 @@ function ParallelSide({ playing, runKey }: { playing: boolean; runKey: number })
           With drive-skill
         </h3>
       </div>
+
+      <TopologyDiagram playing={playing} runKey={runKey} />
 
       <div className="space-y-3">
         {WITH_TASKS.map((task, i) => (

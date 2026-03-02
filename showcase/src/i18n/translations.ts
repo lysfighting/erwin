@@ -210,6 +210,86 @@ const translations = {
     zh: '大多数 AI 工具使用 3 句话的提示词。Drive Skill 使用了 1,980 行共 112KB。以下是每一层背后的工程推理——以及为什么每一层都不可或缺。',
   },
 
+  // ── SkillBuilder ──
+  'sb.title':     { en: 'Skill Builder', zh: '技能构建器' },
+  'sb.subtitle':  {
+    en: 'Configure your own Claude Code skill and download a ready-to-use skill.md file.',
+    zh: '配置你自己的 Claude Code 技能，下载即用的 skill.md 文件。',
+  },
+  'sb.step1':     { en: 'Identity', zh: '身份' },
+  'sb.step2':     { en: 'Model', zh: '模型' },
+  'sb.step3':     { en: 'Phases', zh: '阶段' },
+  'sb.step4':     { en: 'Rules', zh: '规则' },
+  'sb.step5':     { en: 'Tools', zh: '工具' },
+  'sb.back':      { en: '← Back', zh: '← 上一步' },
+  'sb.next':      { en: 'Next →', zh: '下一步 →' },
+  'sb.download':  { en: 'Download skill.md', zh: '下载 skill.md' },
+  'sb.preview.title': { en: '▾ Preview skill.md', zh: '▾ 预览 skill.md' },
+
+  // Step 1: Meta
+  'sb.meta.name':    { en: 'Skill Name', zh: '技能名称' },
+  'sb.meta.trigger': { en: 'Trigger Word', zh: '触发词' },
+  'sb.meta.desc':    { en: 'Description', zh: '描述' },
+
+  // Step 2: Execution Model
+  'sb.model.intro':  {
+    en: 'How should your skill execute tasks?',
+    zh: '你的技能应该如何执行任务？',
+  },
+  'sb.model.single':           { en: 'Single Agent', zh: '单一 Agent' },
+  'sb.model.single.desc':      {
+    en: 'One agent works sequentially. Best for focused, context-heavy tasks.',
+    zh: '一个 Agent 顺序执行。适合需要深度上下文的专注任务。',
+  },
+  'sb.model.hierarchical':     { en: 'Hierarchical Swarm', zh: '分层蜂群' },
+  'sb.model.hierarchical.desc': {
+    en: 'Team Lead + Sub-Team-Leads + workers. Maximum parallelism for complex missions.',
+    zh: '指挥官 + 子队长 + 执行者。复杂任务的最大并行度。',
+  },
+  'sb.model.pipeline':         { en: 'Pipeline', zh: '流水线' },
+  'sb.model.pipeline.desc':    {
+    en: 'Staged execution where each stage feeds the next. Good for sequential workflows.',
+    zh: '分阶段执行，每阶段输出传递给下一阶段。适合有序工作流。',
+  },
+  'sb.model.custom':           { en: 'Custom', zh: '自定义' },
+  'sb.model.custom.desc':      {
+    en: 'Define your own execution model from scratch.',
+    zh: '从零开始定义你自己的执行模型。',
+  },
+
+  // Step 3: Phases
+  'sb.phases.intro': {
+    en: 'Toggle phases and customize their descriptions.',
+    zh: '开关各阶段并自定义描述。',
+  },
+
+  // Step 4: Rules
+  'sb.rules.intro': {
+    en: 'Select the behavioral rules for your skill.',
+    zh: '选择技能的行为规则。',
+  },
+  'sb.rules.neverStop':       { en: 'Cardinal Rule: Never Stop', zh: '基本规则：永不停止' },
+  'sb.rules.neverStop.desc':  {
+    en: 'The loop never breaks. Keep executing until the mission is complete.',
+    zh: '循环永不中断。持续执行直到任务完成。',
+  },
+  'sb.rules.broadcast':      { en: 'Broadcast Protocol', zh: '广播协议' },
+  'sb.rules.broadcast.desc': {
+    en: 'Announce every dispatch and return. Makes execution visible.',
+    zh: '广播每次任务分发和返回。让执行过程可见。',
+  },
+  'sb.rules.direction':      { en: 'Direction Validation', zh: '方向验证' },
+  'sb.rules.direction.desc': {
+    en: 'Checkpoint every 3 tasks to verify alignment with mission goals.',
+    zh: '每 3 个任务检查一次，验证是否与任务目标对齐。',
+  },
+
+  // Step 5: Tools
+  'sb.tools.intro': {
+    en: 'Select which tools your skill is allowed to use.',
+    zh: '选择你的技能可以使用的工具。',
+  },
+
   // ── Footer ──
   'footer.built': {
     en: 'Interactive Showcase built with React + Framer Motion + Tailwind CSS',

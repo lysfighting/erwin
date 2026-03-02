@@ -1,26 +1,18 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useLang } from '../contexts/LangContext'
 import { t } from '../i18n/translations'
 
-export function HeroSection() {
-  const { lang } = useLang()
+function HeroAnimation({ lang }: { lang: 'en' | 'zh' }) {
   const [phase, setPhase] = useState<'typing' | 'shatter' | 'reform'>('typing')
   const [lineIndex, setLineIndex] = useState(0)
   const [charIndex, setCharIndex] = useState(0)
 
-  const typewriterTexts = [
+  const typewriterTexts = useMemo(() => [
     t('hero.line1', lang),
     t('hero.line2', lang),
     t('hero.line3', lang),
-  ]
-
-  // Reset animation when language changes
-  useEffect(() => {
-    setPhase('typing')
-    setLineIndex(0)
-    setCharIndex(0)
-  }, [lang])
+  ], [lang])
 
   useEffect(() => {
     if (phase !== 'typing') return
@@ -57,7 +49,7 @@ export function HeroSection() {
   ]
 
   return (
-    <section id="hero" className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+    <>
       {/* Background grid */}
       <div className="absolute inset-0 opacity-5">
         <div className="w-full h-full" style={{
@@ -182,6 +174,15 @@ export function HeroSection() {
           )}
         </AnimatePresence>
       </div>
+    </>
+  )
+}
+
+export function HeroSection() {
+  const { lang } = useLang()
+  return (
+    <section id="hero" className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+      <HeroAnimation key={lang} lang={lang} />
     </section>
   )
 }

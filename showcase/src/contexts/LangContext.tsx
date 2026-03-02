@@ -14,6 +14,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
   return <LangContext.Provider value={{ lang, setLang }}>{children}</LangContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useLang() {
   return useContext(LangContext)
 }

@@ -29,14 +29,21 @@ const nodes: NodeData[] = [
   { id: 'be-2', label: 'API-Y', role: 'inner', color: '#22c55e', x: 560, y: 300, parentId: 'stl-be', delay: 1.4 },
 ]
 
-function SwarmNode({ node, isVisible }: { node: NodeData; isVisible: boolean }) {
+function SwarmNode({ node, isVisible, onClick, isDimmed }: {
+  node: NodeData
+  isVisible: boolean
+  onClick?: () => void
+  isDimmed?: boolean
+}) {
   const size = node.role === 'inner' ? 28 : node.id === 'lead' ? 44 : 36
 
   return (
     <motion.g
       initial={{ opacity: 0, scale: 0 }}
-      animate={isVisible ? { opacity: 1, scale: 1 } : {}}
+      animate={isVisible ? { opacity: isDimmed ? 0.3 : 1, scale: 1 } : {}}
       transition={{ delay: node.delay, duration: 0.4, type: 'spring', stiffness: 200 }}
+      onClick={(e) => { e.stopPropagation(); onClick?.() }}
+      style={{ cursor: 'pointer' }}
     >
       {/* Pulse ring for active nodes */}
       {isVisible && (
@@ -90,7 +97,9 @@ function SwarmNode({ node, isVisible }: { node: NodeData; isVisible: boolean }) 
   )
 }
 
-function ConnectionLine({ from, to, delay, isVisible }: { from: NodeData; to: NodeData; delay: number; isVisible: boolean }) {
+function ConnectionLine({ from, to, delay, isVisible, dimmed }: {
+  from: NodeData; to: NodeData; delay: number; isVisible: boolean; dimmed?: boolean
+}) {
   return (
     <motion.line
       x1={from.x}
@@ -101,8 +110,67 @@ function ConnectionLine({ from, to, delay, isVisible }: { from: NodeData; to: No
       strokeWidth={1.5}
       strokeDasharray="4 4"
       initial={{ pathLength: 0, opacity: 0 }}
-      animate={isVisible ? { pathLength: 1, opacity: 0.4 } : {}}
+      animate={isVisible ? { pathLength: 1, opacity: dimmed ? 0.08 : 0.4 } : {}}
       transition={{ delay, duration: 0.5 }}
+    />
+  )
+}
+
+// Message flow animation data
+const MESSAGE_COLORS = { dispatch: '#22c55e', return: '#3b82f6' }
+
+interface MessageFlow {
+  fromId: string
+  toId: string
+  color: string
+  delay: number // seconds from trigger
+}
+
+const autoPlayMessages: MessageFlow[] = [
+  // Phase 1: Team Lead dispatches to STLs + tester
+  { fromId: 'lead', toId: 'stl-fe', color: MESSAGE_COLORS.dispatch, delay: 2.0 },
+  { fromId: 'lead', toId: 'stl-be', color: MESSAGE_COLORS.dispatch, delay: 2.3 },
+  { fromId: 'lead', toId: 'tester', color: MESSAGE_COLORS.dispatch, delay: 2.6 },
+  // Phase 2: STLs dispatch to inner subagents
+  { fromId: 'stl-fe', toId: 'fe-1', color: MESSAGE_COLORS.dispatch, delay: 3.5 },
+  { fromId: 'stl-fe', toId: 'fe-2', color: MESSAGE_COLORS.dispatch, delay: 3.7 },
+  { fromId: 'stl-fe', toId: 'fe-3', color: MESSAGE_COLORS.dispatch, delay: 3.9 },
+  { fromId: 'stl-be', toId: 'be-1', color: MESSAGE_COLORS.dispatch, delay: 3.8 },
+  { fromId: 'stl-be', toId: 'be-2', color: MESSAGE_COLORS.dispatch, delay: 4.0 },
+  // Phase 3: Returns
+  { fromId: 'fe-1', toId: 'stl-fe', color: MESSAGE_COLORS.return, delay: 5.5 },
+  { fromId: 'be-1', toId: 'stl-be', color: MESSAGE_COLORS.return, delay: 5.7 },
+  { fromId: 'stl-fe', toId: 'lead', color: MESSAGE_COLORS.return, delay: 6.5 },
+  { fromId: 'stl-be', toId: 'lead', color: MESSAGE_COLORS.return, delay: 6.7 },
+]
+
+function MessageDot({ fromNode, toNode, color, delay }: {
+  fromNode: NodeData
+  toNode: NodeData
+  color: string
+  delay: number
+}) {
+  const goingDown = fromNode.y < toNode.y
+  const startY = fromNode.y + (goingDown ? 20 : -20)
+  const endY = toNode.y + (goingDown ? -20 : 20)
+
+  return (
+    <motion.circle
+      r={4}
+      fill={color}
+      style={{ filter: `drop-shadow(0 0 4px ${color})` }}
+      initial={{ cx: fromNode.x, cy: startY, opacity: 0 }}
+      animate={{
+        cx: [fromNode.x, toNode.x],
+        cy: [startY, endY],
+        opacity: [0, 1, 1, 0],
+      }}
+      transition={{
+        duration: 0.8,
+        delay,
+        ease: 'easeInOut',
+        opacity: { duration: 0.8, times: [0, 0.15, 0.85, 1] },
+      }}
     />
   )
 }
@@ -121,15 +189,47 @@ export function SwarmTopologySection() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   const [visibleBroadcasts, setVisibleBroadcasts] = useState<number[]>([])
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null)
+  const [messageKey, setMessageKey] = useState(0)
 
+  // Broadcast feed timers
   useEffect(() => {
     if (!isInView) return
-    broadcasts.forEach((b, i) => {
+    const timers = broadcasts.map((b, i) =>
       setTimeout(() => {
         setVisibleBroadcasts(prev => [...prev, i])
       }, b.delay * 1000)
-    })
+    )
+    return () => timers.forEach(clearTimeout)
   }, [isInView])
+
+  // Reset message animation when activeNodeId changes
+  useEffect(() => {
+    setMessageKey(k => k + 1)
+  }, [activeNodeId])
+
+  // Compute messages to show based on active node
+  const messagesToShow = activeNodeId
+    ? autoPlayMessages.filter(m => m.fromId === activeNodeId || m.toId === activeNodeId)
+    : autoPlayMessages
+
+  // Compute which nodes/connections are involved with active node
+  const isNodeInvolved = (nodeId: string) => {
+    if (!activeNodeId) return true
+    if (nodeId === activeNodeId) return true
+    return autoPlayMessages.some(m =>
+      (m.fromId === activeNodeId && m.toId === nodeId) ||
+      (m.toId === activeNodeId && m.fromId === nodeId)
+    )
+  }
+
+  const isConnectionInvolved = (fromId: string, toId: string) => {
+    if (!activeNodeId) return true
+    return autoPlayMessages.some(m =>
+      (m.fromId === activeNodeId || m.toId === activeNodeId) &&
+      ((m.fromId === fromId && m.toId === toId) || (m.fromId === toId && m.toId === fromId))
+    )
+  }
 
   return (
     <section id="swarm" className="min-h-screen py-24 px-4">
@@ -192,7 +292,11 @@ export function SwarmTopologySection() {
         <div ref={ref} className="grid lg:grid-cols-5 gap-8">
           {/* Topology visualization */}
           <div className="lg:col-span-3 bg-bg-card border border-border rounded-lg p-4 overflow-hidden">
-            <svg viewBox="0 0 800 380" className="w-full">
+            <svg
+              viewBox="0 0 800 380"
+              className="w-full"
+              onClick={() => setActiveNodeId(null)}
+            >
               {/* Connection lines */}
               {nodes.filter(n => n.parentId).map(node => {
                 const parent = nodes.find(n => n.id === node.parentId)!
@@ -203,13 +307,54 @@ export function SwarmTopologySection() {
                     to={node}
                     delay={node.delay - 0.2}
                     isVisible={isInView}
+                    dimmed={!!activeNodeId && !isConnectionInvolved(parent.id, node.id)}
+                  />
+                )
+              })}
+              {/* Message flow dots */}
+              {isInView && messagesToShow.map((msg, i) => {
+                const from = nodes.find(n => n.id === msg.fromId)!
+                const to = nodes.find(n => n.id === msg.toId)!
+                const delay = activeNodeId ? i * 0.3 : msg.delay
+                return (
+                  <MessageDot
+                    key={`msg-${messageKey}-${msg.fromId}-${msg.toId}`}
+                    fromNode={from}
+                    toNode={to}
+                    color={msg.color}
+                    delay={delay}
                   />
                 )
               })}
               {/* Nodes */}
               {nodes.map(node => (
-                <SwarmNode key={node.id} node={node} isVisible={isInView} />
+                <SwarmNode
+                  key={node.id}
+                  node={node}
+                  isVisible={isInView}
+                  onClick={() => setActiveNodeId(prev => prev === node.id ? null : node.id)}
+                  isDimmed={!!activeNodeId && !isNodeInvolved(node.id)}
+                />
               ))}
+              {/* Active node indicator */}
+              {activeNodeId && isInView && (() => {
+                const node = nodes.find(n => n.id === activeNodeId)
+                if (!node) return null
+                const size = node.role === 'inner' ? 28 : node.id === 'lead' ? 44 : 36
+                return (
+                  <motion.circle
+                    cx={node.x}
+                    cy={node.y}
+                    r={size / 2 + 6}
+                    fill="none"
+                    stroke={node.color}
+                    strokeWidth={2}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0.3, 0.8, 0.3] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                )
+              })()}
               {/* Legend */}
               <g>
                 {[
@@ -225,6 +370,10 @@ export function SwarmTopologySection() {
                 ))}
               </g>
             </svg>
+            {/* Click hint */}
+            <p className="text-center text-xs text-text-muted mt-2 font-mono">
+              {activeNodeId ? `Focused: ${nodes.find(n => n.id === activeNodeId)?.label} — click elsewhere to reset` : 'Click any node to see its message flow'}
+            </p>
           </div>
 
           {/* Broadcast feed */}

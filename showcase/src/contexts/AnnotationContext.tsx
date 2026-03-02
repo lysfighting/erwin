@@ -65,11 +65,12 @@ export function AnnotationProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAnnotations() {
   return useContext(AnnotationContext)
 }
 
-/** Export all annotations as a Markdown document for /self-drive */
+// eslint-disable-next-line react-refresh/only-export-components
 export function exportAnnotationsMarkdown(annotations: Annotation[]): string {
   if (annotations.length === 0) {
     return '# Drive Showcase Annotations\n\n_(no annotations yet)_'

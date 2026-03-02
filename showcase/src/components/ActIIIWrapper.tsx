@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const sectionTopics = [
@@ -98,7 +98,13 @@ export function ActIIIWrapper({ children }: { children: React.ReactNode }) {
                 ← Hide Deep Content
               </button>
             </div>
-            {children}
+            <Suspense fallback={
+              <div className="max-w-6xl mx-auto px-4 py-16 text-center">
+                <div className="text-text-muted font-mono text-sm animate-pulse">Loading sections...</div>
+              </div>
+            }>
+              {children}
+            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>
