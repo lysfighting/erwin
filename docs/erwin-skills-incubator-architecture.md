@@ -102,7 +102,7 @@ erwin/
 │   └── decisions/
 │       └── 0007-skills-incubator-structure.md  ← NEW ADR
 │
-├── drive-showcase/        ← Unchanged
+├── showcase/        ← Unchanged
 ├── docs/                  ← Add this document
 └── reference/             ← Unchanged
 ```
@@ -264,7 +264,7 @@ graph TB
         IDEAS["_project/ideas/skills/\n(Seed→Plant stages)"]
         INCUBATE[".claude/commands/\n(Fruit-in-progress)"]
         RELEASED["skills/\n(Released skills)"]
-        SHOWCASE["drive-showcase/\n(React app)"]
+        SHOWCASE["showcase/\n(React app)"]
 
         IDEAS -->|"promote when Plant"| INCUBATE
         INCUBATE -->|"promote when Fruit"| RELEASED

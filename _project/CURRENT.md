@@ -83,4 +83,4 @@ None currently.
 | ADRs | `_project/decisions/` |
 | V2 architecture | `docs/drive-showcase-v2-architecture.md` |
 | drive-skill source | `reference/drive-skill/commands/drive.md` |
-| App root | `drive-showcase/src/App.tsx` |
+| App root | `showcase/src/App.tsx` |

@@ -26,7 +26,7 @@ const AnnotationContext = createContext<AnnotationContextValue>({
   getByTarget: () => [],
 })
 
-const STORAGE_KEY = 'drive-showcase-annotations'
+const STORAGE_KEY = 'erwin-showcase-annotations'
 
 export function AnnotationProvider({ children }: { children: ReactNode }) {
   const [annotations, setAnnotations] = useState<Annotation[]>(() => {

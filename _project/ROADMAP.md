@@ -4,7 +4,7 @@
 
 ---
 
-## Milestone 1: drive-showcase V2 (3 weeks)
+## Milestone 1: showcase V2 (3 weeks)
 
 **Goal**: Interactive showcase that makes drive-skill understandable to anyone
 **Target**: v1.0.0 of the interactive platform

@@ -8,7 +8,7 @@
 
 **erwin** has two identities:
 
-1. **Showcase** — Educational platform for understanding drive-skill (React web app in `drive-showcase/`)
+1. **Showcase** — Educational platform for understanding drive-skill (React web app in `showcase/`)
 2. **Skills Factory** — Incubator for new Claude Code skills (`skills/` directory)
 
 Skills pipeline: `_project/ideas/skills/` (ideas) → `.claude/commands/` (incubation) → `skills/` (released)
@@ -47,7 +47,7 @@ erwin/
 ├── docs/                   ← Technical Documentation
 │   └── *.md                ← Architecture, analysis, research
 │
-├── drive-showcase/         ← Code Artifact (React web app)
+├── showcase/         ← Code Artifact (React web app)
 │   ├── src/sections/       ← 18 content sections
 │   ├── src/components/     ← Shared components
 │   └── CHANGELOG.md        ← App-level changelog
@@ -61,7 +61,7 @@ erwin/
 ## Tech Stack
 
 - **Frontend**: React 19.2, TypeScript, Vite 7.3, Tailwind 4.2, Framer Motion 12.34
-- **Dev**: `cd drive-showcase && npm run dev` (port 5173)
+- **Dev**: `cd showcase && npm run dev` (port 5173)
 
 ---
 
@@ -96,7 +96,7 @@ See `docs/drive-showcase-v2-architecture.md`. Four-Act structure:
 | Skill ideas pipeline | `_project/ideas/skills/` |
 | Released skills | `skills/` |
 | drive-skill source | `reference/drive-skill/commands/drive.md` |
-| React app root | `drive-showcase/src/App.tsx` |
+| React app root | `showcase/src/App.tsx` |
 
 ---
 

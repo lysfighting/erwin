@@ -30,10 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0] - 2026-03-02 (V2 Phase 2 — OriginTrace)
 
-### Added — `drive-showcase/`
+### Added — `showcase/`
 - **`OriginTrace`** — d3-force directed graph showing drive-skill's intellectual genealogy (ACT II, after PrincipleCards). 15 nodes: 5 drive-concept nodes (matching PrincipleCards group colors A-E) + 10 historical source nodes (OODA Loop, Cybernetics, Mission Command, Mythical Man-Month, CPM/PERT, Amdahl's Law, Information Theory, Agile Manifesto, 孙子兵法, Double Diamond). Click any node to open a detail panel showing the origin description and how it manifests in drive-skill. `motion.svg` whileInView fade-in, `motion.g` stagger entrance, edge highlighting on hover/select.
 
-### Changed — `drive-showcase/`
+### Changed — `showcase/`
 - **`App.tsx`** — OriginTrace deployed in ACT II after PrincipleCards (previously placeholder comment).
 
 ### Dependencies
@@ -47,12 +47,12 @@ OriginTrace completes the ACT II "理解" experience: PrincipleCards explain the
 
 ## [0.4.0] - 2026-03-02 (V2 Phase 1 — Four-Act Structure)
 
-### Added — `drive-showcase/`
+### Added — `showcase/`
 - **`ExecutionSimulator`** — Before/after animated comparison component (ACT I). Sequential vs parallel execution shown with Framer Motion progress bars, "3x faster" callout, replay button.
 - **`PrincipleCards`** — Five Core Principles component (ACT II). Each card shows Chinese/English name, summary, expandable detail, and historical "thought sources" (OODA Loop, Mission Command, Amdahl's Law, Shannon, Sun Tzu).
 - **`ActIIIWrapper`** — Collapsible wrapper for 15 deep sections (ACT III). Collapsed by default, shows section index, expands with Framer Motion animation.
 
-### Changed — `drive-showcase/`
+### Changed — `showcase/`
 - **`App.tsx`** — Restructured from flat 18-section scroll into Four-Act layout (ACT I 震撼 / ACT II 理解 / ACT III 深度 / ACT IV 创造). DemoSection replaced by ExecutionSimulator. ClaudeMechanicsSection moved to ACT II.
 - **`NavBar.tsx`** — Replaced 18 individual section links with 4 Act anchor links (ACT I-IV), with intersection-observer-based active tracking.
 - **`i18n/translations.ts`** — Added nav translation keys for four acts (en + zh).
@@ -119,12 +119,12 @@ by reading CLAUDE.md + docs/CURRENT_STATE.md rather than depending on volatile A
 ## [0.1.0] - 2026-03-01
 
 ### Added
-- **drive-showcase** — React/Vite/TypeScript web app showcasing drive-skill
+- **showcase** — React/Vite/TypeScript web app showcasing drive-skill
   - 18 sections covering all aspects of drive.md, self-drive.md, architect.md
   - Bilingual (EN/ZH) with LangContext
   - Framer Motion animations throughout
   - Annotation system
-  - CHANGELOG.md for drive-showcase itself
+  - CHANGELOG.md for showcase itself
 - **reference-skills/drive-skill/** — local copy of the drive-skill repository
   - commands/: drive.md, self-drive.md, architect.md
   - hooks/: notify.sh
@@ -137,5 +137,5 @@ by reading CLAUDE.md + docs/CURRENT_STATE.md rather than depending on volatile A
   - visual-enhancement-architecture.md
 
 ### Rationale
-Initial state of the erwin project at the point of git initialization. The drive-showcase
+Initial state of the erwin project at the point of git initialization. The showcase
 had reached v1.3.0 (full content parity with drive.md) and was ready for V2 visual upgrade.

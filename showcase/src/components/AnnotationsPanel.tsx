@@ -25,7 +25,7 @@ export function AnnotationsPanel() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `drive-showcase-annotations-${new Date().toISOString().split('T')[0]}.md`
+    a.download = `erwin-showcase-annotations-${new Date().toISOString().split('T')[0]}.md`
     a.click()
     URL.revokeObjectURL(url)
   }
