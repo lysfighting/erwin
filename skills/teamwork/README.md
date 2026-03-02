@@ -11,6 +11,10 @@ GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are 
 | `/team-drive` | Execute mission from Contract | During work: AI-assisted execution |
 | `/team-ship` | Push, create PR, check CI, cleanup | When done: deliver via Pull Request |
 
+## Onboarding
+
+**New to teamwork?** Read [ONBOARDING.md](ONBOARDING.md) — a step-by-step tutorial from zero to first PR, with examples and screenshots of every command's output.
+
 ## Quick Start
 
 ### First Time Setup

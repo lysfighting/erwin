@@ -24,33 +24,58 @@ echo "======================"
 
 mkdir -p "$TARGET_DIR"
 
+# Clean up renamed/removed skills (v1 → v2 migrations)
+DEPRECATED_SKILLS=(teamwork team-get-mission team-complete)
+for old_skill in "${DEPRECATED_SKILLS[@]}"; do
+  old_dst="$TARGET_DIR/$old_skill.md"
+  if [[ -L "$old_dst" ]]; then
+    rm "$old_dst"
+    echo -e "${YELLOW}  Removed deprecated: /$old_skill${NC}"
+  fi
+done
+
+install_single_file() {
+  local src="$1"
+  local filename="$(basename "$src" .md)"
+  local dst="$TARGET_DIR/$filename.md"
+
+  # Backup if exists and is NOT already a symlink
+  if [[ -f "$dst" && ! -L "$dst" ]]; then
+    mv "$dst" "$dst.bak"
+    echo -e "${YELLOW}  Backed up: $dst → $dst.bak${NC}"
+  elif [[ -L "$dst" ]]; then
+    rm "$dst"
+  fi
+
+  ln -sf "$src" "$dst"
+  echo -e "${GREEN}✅ /$filename${NC} → $src"
+}
+
 install_skill() {
   local name="$1"
-  local src="$SKILLS_DIR/$name/$name.md"
-  local dst="$TARGET_DIR/$name.md"
+  local skill_dir="$SKILLS_DIR/$name"
 
-  if [[ ! -d "$SKILLS_DIR/$name" ]]; then
+  if [[ ! -d "$skill_dir" ]]; then
     echo -e "${RED}✗ Skill not found: $name${NC}"
     echo "  Available: $(ls "$SKILLS_DIR" | grep -v README | tr '\n' ' ')"
     return 1
   fi
 
-  if [[ ! -f "$src" ]]; then
-    echo -e "${RED}✗ Skill file missing: $src${NC}"
+  # Find all .md files that are skills (exclude README, CHANGELOG)
+  local found=0
+  for md_file in "$skill_dir"/*.md; do
+    [[ -f "$md_file" ]] || continue
+    local basename="$(basename "$md_file")"
+    [[ "$basename" == "README.md" ]] && continue
+    [[ "$basename" == "CHANGELOG.md" ]] && continue
+    install_single_file "$md_file"
+    ((found++))
+  done
+
+  if [[ $found -eq 0 ]]; then
+    echo -e "${RED}✗ No skill files found in: $skill_dir${NC}"
     return 1
   fi
-
-  # Backup if exists and is NOT already a symlink to this exact file
-  if [[ -f "$dst" && ! -L "$dst" ]]; then
-    mv "$dst" "$dst.bak"
-    echo -e "${YELLOW}  Backed up: $dst → $dst.bak${NC}"
-  elif [[ -L "$dst" ]]; then
-    # Already a symlink — just replace it (may point to old location)
-    rm "$dst"
-  fi
-
-  ln -sf "$src" "$dst"
-  echo -e "${GREEN}✅ /$name${NC} → $src"
 }
 
 if [[ $# -eq 0 ]]; then
