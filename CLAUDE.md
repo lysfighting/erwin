@@ -6,11 +6,14 @@
 
 ## What is this project?
 
-**erwin** — educational platform for understanding and creating AI agent orchestration skills.
+**erwin** has two identities:
 
-- **Phase 1 (now)**: Make drive-skill visually understandable to anyone (V2 showcase)
-- **Phase 2 (next)**: Create the first erwin-original skill
-- **Vision**: Anyone who encounters drive-skill can build their own version in 30 minutes
+1. **Showcase** — Educational platform for understanding drive-skill (React web app in `drive-showcase/`)
+2. **Skills Factory** — Incubator for new Claude Code skills (`skills/` directory)
+
+Skills pipeline: `_project/ideas/skills/` (ideas) → `.claude/commands/` (incubation) → `skills/` (released)
+
+Install all erwin skills: `./install.sh`
 
 See `_project/GOALS.md` for OKRs and north star.
 
@@ -22,16 +25,24 @@ See `_project/GOALS.md` for OKRs and north star.
 erwin/
 ├── CLAUDE.md               ← YOU ARE HERE
 ├── CHANGELOG.md            ← Project version history
+├── install.sh              ← Skills installer (symlinks to ~/.claude/commands/)
+│
+├── skills/                 ← Skills Factory (source of truth for all erwin skills)
+│   ├── README.md           ← Skill index + contribution guide
+│   ├── new-project/        ← /new-project skill (v1.0.0)
+│   └── visual-test/        ← /visual-test skill (v1.0.0)
 │
 ├── _project/               ← Project Intelligence Layer
 │   ├── GOALS.md            ← Vision + OKRs (read when you lose direction)
 │   ├── CURRENT.md          ← Living status (read every session start)
 │   ├── ROADMAP.md          ← Milestone plan
-│   ├── ideas/              ← Idea Garden (INBOX.md → skills/ or meta/)
+│   ├── ideas/skills/       ← Skill ideas pipeline (Seed→Sprout→Plant→Fruit)
 │   ├── decisions/          ← ADRs (NNNN-title.md)
 │   ├── sessions/           ← AI conversation logs (YYYY-MM-DD.md)
 │   ├── issues/             ← Bug/feature tracking (ISS-NNNN-title.md)
 │   └── releases/           ← Narrative release notes
+│
+├── .claude/commands/       ← Skill incubation (project-level, pre-release)
 │
 ├── docs/                   ← Technical Documentation
 │   └── *.md                ← Architecture, analysis, research
@@ -80,7 +91,10 @@ See `docs/drive-showcase-v2-architecture.md`. Four-Act structure:
 | Current task | `_project/CURRENT.md` |
 | Project vision | `_project/GOALS.md` |
 | V2 design spec | `docs/drive-showcase-v2-architecture.md` |
+| Skills incubator design | `docs/erwin-skills-incubator-architecture.md` |
 | ADRs | `_project/decisions/` |
+| Skill ideas pipeline | `_project/ideas/skills/` |
+| Released skills | `skills/` |
 | drive-skill source | `reference/drive-skill/commands/drive.md` |
 | React app root | `drive-showcase/src/App.tsx` |
 

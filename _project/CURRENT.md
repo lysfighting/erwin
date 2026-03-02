@@ -25,14 +25,17 @@
 
 3. **Meta: Project Intelligence Infrastructure** (2026-03-02, Session E + F)
    - `ai-workflow.md` — principle-based CURRENT.md trigger (action-cost model, not time-based)
-   - `~/.claude/commands/new-project.md` — `/new-project` skill created (portable bootstrap)
-   - `_project/decisions/0006-new-project-skill.md` — ADR-0006 written
-   - `_project/ideas/meta/project-management-template.md` — promoted Sprout → Plant
+   - `skills/new-project/` — `/new-project` skill v1.0.0 (version-controlled in repo)
+   - `skills/visual-test/` — `/visual-test` skill v1.0.0 (version-controlled in repo)
+   - `install.sh` — symlink installer; `git pull` auto-updates installed skills
+   - `_project/decisions/0006-new-project-skill.md` — ADR-0006 (new-project skill)
+   - `_project/decisions/0007-skills-incubator-structure.md` — ADR-0007 (incubator structure)
+   - `docs/erwin-skills-incubator-architecture.md` — full architecture design
    - `~/.claude/projects/.../memory/MEMORY.md` — Claude auto-memory initialized for erwin
 
 ## Active Task / What's In Progress
 
-V2 Phase 2 remainder + Phase 3 planning. Meta infrastructure complete.
+Skills incubator structure implemented. Next: SkillBuilder (OKR KR3) or continue V2 Phase 2.
 
 ## Next Session Should Start With
 
