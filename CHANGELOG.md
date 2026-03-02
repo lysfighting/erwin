@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — `.claude/rules/`
+- **`ai-workflow.md`** — 将 "Session Start 读 CURRENT.md" 改为原则驱动的触发条件。不再罗列场景，改为一个判断测试：「行动如果方向错了，撤销成本高吗？」高成本行动（写代码、做决策、动手前）必须先读；纯对话（解释概念、讨论方案）无需读。设计思想来自 drive-skill 的 Cardinal Rule（方向偏差是唯一值得停下来的理由）。
+
 ---
 
 ## [0.5.0] - 2026-03-02 (V2 Phase 2 — OriginTrace)

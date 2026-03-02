@@ -4,11 +4,31 @@
 
 # AI Session Workflow Protocol
 
-## Session Start (mandatory, 5 min)
+## 何时读 CURRENT.md — 原则优先，不罗列场景
 
-1. Read `_project/CURRENT.md` — what's in progress
-2. Read `_project/GOALS.md` — verify we're aligned with north star
-3. Read relevant ADR(s) if working on a specific component
+**一个判断测试**：「我现在的行动，如果方向错了，需要撤销多少工作？」
+
+- **撤销成本高** → 先读 `_project/CURRENT.md`（30秒），再行动
+- **撤销成本低** → 直接做，无需读
+
+**必须先读**（行动产出不可逆结果）：
+- 即将写代码、创建或修改文件
+- 即将做架构或技术决策
+- 用户说「继续」「下一步」「做吧」「drive」
+- 对话开始后第一次实质性行动
+
+**无需读**（纯对话，不留痕迹）：
+- 解释概念、回答技术问题
+- 讨论方案但尚未决定动手
+
+> 核心逻辑来自 drive-skill 的 Cardinal Rule：永不停止，除非检测到方向偏差。
+> 读 CURRENT.md 是在行动前排除「方向偏差」的最小成本手段。
+
+## 同步读取（与 CURRENT.md 一起）
+
+当读 CURRENT.md 时，同步读：
+- `_project/GOALS.md` — 验证与北极星对齐
+- 相关 ADR — 如果即将改动某个有决策记录的组件
 
 ## During Session
 
@@ -34,7 +54,7 @@
 
 ## What Not To Do
 
-- Don't rely on session memory for continuity — always read CURRENT.md first
+- Don't skip CURRENT.md before irreversible actions — stale context = direction error
 - Don't skip the session-end update — stale CURRENT.md = broken continuity
 - Don't add large images or binary files to docs/ or _project/
 - Don't edit reference/ directory files (read-only source material)
