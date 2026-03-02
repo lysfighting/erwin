@@ -12,27 +12,26 @@
 
 ## Current Phase
 
-**Phase**: Teamwork v2 architecture complete, pending implementation
+**Phase**: Teamwork v2 implemented, ready for validation
 
 ## What Was Just Completed
 
-1. **Teamwork v2 Architecture** (Session K, /architect)
-   - GitHub-first redesign: Issues as source of truth, PRs as delivery gates
-   - Ephemeral Mission Contracts as AI execution views (方案 D)
-   - Three-layer quality gates: git hooks + Actions CI + branch protection
-   - Full architecture doc: `docs/teamwork-v2-architecture.md`
-   - ADR-0010: supersedes ADR-0009 (v1 repo-centric design)
-   - Analyzed vi-agent's `.claude` implementation as reference
+1. **Teamwork v2 Implementation** (Session K continued, /self-drive → /drive)
+   - 4 skill files written: `/team`, `/team-claim`, `/team-drive`, `/team-ship`
+   - v1 skills removed: `/teamwork`, `/team-get-mission`, `/team-complete`
+   - README.md, CHANGELOG.md updated (skill-level + root-level)
+   - install.sh verified — 4 symlinks correct, stale v1 symlinks cleaned
+   - Architecture: `docs/teamwork-v2-architecture.md` (ADR-0010)
 
 ## Active Task / What's In Progress
 
-Architecture design complete. Implementation not started.
+Teamwork v2 skills complete. Next: validate on vi-agent project, or address stale docs.
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **Teamwork v2 implementation**: Start Phase 1 — `/team` skill (init + dashboard)
-3. Validate on `../vi-agent` project
+2. **Validate teamwork v2** on `../vi-agent` project (`/team` init)
+3. OR clean up stale docs (teamwork-architecture.md v1 deprecation, install.sh orphan cleanup)
 4. OR continue **V2 Showcase** (Phase 2/3 remaining tasks below)
 
 ## Implementation Roadmap
