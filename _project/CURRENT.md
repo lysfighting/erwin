@@ -8,50 +8,44 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-02
-- **Last Session**: [2026-03-02](sessions/2026-03-02.md) (Session H)
+- **Last Session**: [2026-03-02-K](sessions/2026-03-02-K.md) (Session K)
 
 ## Current Phase
 
-**Phase**: V2 Showcase Implementation — Phase 2 in progress + erwin framework identity solidifying
+**Phase**: Teamwork v2 architecture complete, pending implementation
 
 ## What Was Just Completed
 
-1. **ADR-0008: /new-project → /erwin-init rename + redesign** (Session H, Drive Mode)
-   - Skill identity reframed: from scaffolding tool to cognitive infrastructure installer
-   - Zero-question Phase 1, optional Phase 2 GOALS.md conversation
-   - Naming convention: `erwin-` prefix for framework-core skills only
-   - 18 files changed, all doc references updated, install.sh verified
-   - ADR-0006 marked superseded, session logs preserved as history
-
-2. **erwin as vibe coding framework** — identity discussion (Session H, /architect)
-   - erwin = vibe coding framework with cognitive self-evolution
-   - `/erwin-init` = the framework installer (not a scaffolding tool)
-   - Hard boundary: never touches code, never asks tech stack
+1. **Teamwork v2 Architecture** (Session K, /architect)
+   - GitHub-first redesign: Issues as source of truth, PRs as delivery gates
+   - Ephemeral Mission Contracts as AI execution views (方案 D)
+   - Three-layer quality gates: git hooks + Actions CI + branch protection
+   - Full architecture doc: `docs/teamwork-v2-architecture.md`
+   - ADR-0010: supersedes ADR-0009 (v1 repo-centric design)
+   - Analyzed vi-agent's `.claude` implementation as reference
 
 ## Active Task / What's In Progress
 
-ADR-0008 implementation done. Next: SkillBuilder (OKR KR3) or bundle optimization.
+Architecture design complete. Implementation not started.
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **V2 Phase 3 priority**: SkillBuilder (OKR KR3, currently 0%)
-   - ACT IV builder: form → skill.md download
-   - See `docs/drive-showcase-v2-architecture.md` → 组件四: SkillBuilder
-3. **Tech health**: Bundle code splitting (604KB → ~250KB, React.lazy for ACT III)
-4. **Optional**: Session-end automation via Claude Code hooks
+2. **Teamwork v2 implementation**: Start Phase 1 — `/team` skill (init + dashboard)
+3. Validate on `../vi-agent` project
+4. OR continue **V2 Showcase** (Phase 2/3 remaining tasks below)
 
 ## Implementation Roadmap
 
-### v0.3.0 — Project Structure ✅
-### v0.4.0 — V2 Phase 1: Four-Act Structure ✅
 ### v0.5.0 — V2 Phase 2: Deep Interaction (in progress)
 - [x] OriginTrace (d3-force philosophy graph, ACT II)
+- [x] Bundle code splitting (627KB → 221KB, React.lazy + vendor chunks)
+- [x] Code health sweep (ESLint clean, semantic HTML)
 - [ ] ExecutionSimulator: message flow animation enhancement
 - [ ] SwarmTopologySection: add interactive message flow
 
 ### v1.0.0 — V2 Phase 3: Creation Path
-- [ ] SkillBuilder (form → skill.md download, ACT IV)
+- [x] SkillBuilder (form → skill.md download, ACT IV)
 - [ ] DesignPatternLibrary (3-5 reusable pattern cards)
 - [ ] CaseStudies (2-3 skill variant examples)
 
@@ -62,7 +56,7 @@ ADR-0008 implementation done. Next: SkillBuilder (OKR KR3) or bundle optimizatio
 
 ## Known Issues / Blockers
 
-- 604KB single-chunk bundle — needs code splitting before adding more components
+- OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 
 ## File Locations
 

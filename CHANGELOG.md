@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Skills Factory
+- **Teamwork v2 architecture** — GitHub-first redesign (ADR-0010). Issues as task source, ephemeral Mission Contracts as AI execution views, auto-generated Actions CI + git hooks + Issue templates. Full design at `docs/teamwork-v2-architecture.md`. Supersedes v1 (ADR-0009).
+
+### Added — Showcase
+- **SkillBuilder MVP** (ACT IV) — 5-step form to create custom Claude Code skills: Meta, Execution Model, Phases, Rules, Tools. Real-time preview with collapsible panel. Download generates valid skill.md with substantive prompt engineering content. Full i18n (EN/ZH).
+  - `showcase/src/lib/skillTemplate.ts` — types + template generation (~310 lines)
+  - `showcase/src/components/SkillBuilder.tsx` — stepper form + preview + download (~527 lines)
+  - ~80 new translation keys in `showcase/src/i18n/translations.ts`
+
+### Changed — Showcase (Performance)
+- **Bundle code splitting** — 627KB single chunk → 221KB main + vendor chunks + 20 lazy-loaded chunks. React.lazy() for 19 components (15 ACT III sections + 3 ACT II components + SkillBuilder). Vendor splitting (react, framer-motion) in vite.config.ts. Vite 500KB warning eliminated.
+
+### Fixed — Showcase (Code Health)
+- **HeroSection** — fixed `react-hooks/set-state-in-effect` error by extracting `HeroAnimation` inner component with `key={lang}` reset pattern. Fixed `exhaustive-deps` warning with `useMemo`.
+- **Context files** — suppressed `react-refresh/only-export-components` false positives for hook exports.
+- **Semantic HTML** — added `<header>`, `<main>`, `<section aria-label>` landmarks to App.tsx.
+
 ### Changed — Skills Factory
 - **`/new-project` → `/erwin-init`** — Renamed and redesigned per ADR-0008: from scaffolding tool to cognitive infrastructure installer. Zero-question entry, optional GOALS.md conversation. `erwin-` prefix reserved for framework-core skills.
 
