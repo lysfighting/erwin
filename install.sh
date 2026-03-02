@@ -68,6 +68,7 @@ install_skill() {
     local basename="$(basename "$md_file")"
     [[ "$basename" == "README.md" ]] && continue
     [[ "$basename" == "CHANGELOG.md" ]] && continue
+    [[ "$basename" == "ONBOARDING.md" ]] && continue
     install_single_file "$md_file"
     ((found++))
   done
