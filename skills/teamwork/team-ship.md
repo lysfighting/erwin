@@ -93,6 +93,7 @@ ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 
 - If no Contract found AND no `.mission` file → "No active mission. Nothing to ship." → **STOP**
 - If no Contract but `.mission` exists → use Issue number from `.mission` to locate Contract or fetch Issue directly.
+- **Worktree fallback**: If in worktree mode and Contract not found locally, check the main repo's `$TEAMWORK_DIR/active/` directory (parent of worktree path).
 - If multiple Contracts found → "Multiple active contracts found. Keep one, remove the rest." → **STOP**
 
 Read the Contract file fully. Extract from YAML frontmatter:
@@ -323,7 +324,8 @@ Next steps:
 Locate the Issue number from (in priority order):
 1. Active Contract (`$TEAMWORK_DIR/active/MISSION-*.md` frontmatter)
 2. `.mission` file (worktree mode)
-3. Current branch name (extract from `mission/{issue}-{slug}`)
+3. Current branch name — extract first numeric segment after `/` (works for both `mission/42-slug` and `bugfix/T-044-slug` patterns)
+4. `$ARGUMENTS` — if user passes `done #42` or `done 42`
 
 If no Issue found → "Cannot determine Issue. Provide Issue number: `/team-ship done #42`" → **STOP**
 

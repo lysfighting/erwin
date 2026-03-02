@@ -14,6 +14,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `/team-drive` — execute mission from Contract with sub-task verification loop
   - `/team-ship` — push → create PR (auto-closes Issue) → watch CI → cleanup Contract
 - **Teamwork v2 architecture** — GitHub-first redesign (ADR-0010). Issues as task source, ephemeral Mission Contracts as AI execution views, auto-generated Actions CI + git hooks + Issue templates. Full design at `docs/teamwork-v2-architecture.md`. Supersedes v1 (ADR-0009).
+- **Teamwork v2.1 — vi-agent feature absorption** — 6 features from vi-agent's `.teamspace` system:
+  - Prefixed labels (`status:wip`, `priority:P1`, `status:blocked`, `status:done`)
+  - Claim comment visibility (team transparency via `gh issue comment`)
+  - Optional worktree isolation (parallel development per mission)
+  - Optional version management (version labels + dashboard progress)
+  - `/team-ship done` (post-merge cleanup), `/team-ship review` (AI code review), `/team-ship sync` (rebase)
+- **Teamwork v2.1 architect review** — 13 bug fixes:
+  - 3 critical: worktree contract access, Issue template label mismatch, branch pattern hardcoding
+  - 3 high: config format collision, missing config health check, branch name parsing
+  - 5 medium: sed pattern consistency, git staging guidance, worktree detection logic
+  - 2 flow bugs: Step 1b→1c routing, $BRANCH_PATTERN extraction
 
 ### Removed — Skills Factory
 - **Teamwork v1 skills** — `/teamwork`, `/team-get-mission`, `/team-complete` removed (replaced by v2)

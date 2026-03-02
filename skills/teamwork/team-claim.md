@@ -68,7 +68,7 @@ Read `$TEAMWORK_DIR/config.yml` → extract team roster, conventions, project se
 
 ```bash
 # Read mission label from config (teamspace uses mc_label, teamwork v2 defaults to "mission")
-MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/.*mc_label: *//' | sed 's/ *#.*//' | tr -d '"' || echo "mission")
+MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/^[^:]*://' | sed 's/^ *//' | sed 's/ *#.*//' | tr -d '"' || echo "mission")
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 ```
 
@@ -215,14 +215,22 @@ Use `Glob` and `Grep` with keywords from the Issue title and objective to discov
 
 ## Step 5: Create Branch (+ optional worktree)
 
-Read branch pattern from config: `conventions.branch_pattern`
-Read `worktree.enabled` from config (default: false).
+Read branch pattern from config: `conventions.branch_pattern` (or `worktree.branch_pattern` for `.teamspace` configs).
+Default: `"mission/{issue}-{slug}-{user}"`.
+
+Read worktree config: if `worktree:` section exists in config → treat as enabled (unless `worktree.enabled` is explicitly `false`). If no `worktree:` section → disabled.
 
 Generate branch name:
 ```bash
 # Slugify the title: lowercase, replace spaces with hyphens, remove special chars, truncate
 SLUG=$(echo "{ISSUE_TITLE}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-' | head -c 30)
-BRANCH="mission/{ISSUE_NUMBER}-${SLUG}-${GH_USER}"
+
+# Read branch pattern from config (check conventions.branch_pattern, then worktree.branch_pattern)
+BRANCH_PATTERN=$(grep 'branch_pattern:' $TEAMWORK_DIR/config.yml | head -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+[ -z "$BRANCH_PATTERN" ] && BRANCH_PATTERN="mission/{issue}-{slug}-{user}"
+
+# Substitute placeholders: {issue}→ISSUE_NUMBER, {slug}→SLUG, {user}→GH_USER, {type}→"mission"
+BRANCH=$(echo "$BRANCH_PATTERN" | sed "s/{issue}/$ISSUE_NUMBER/;s/{slug}/$SLUG/;s/{user}/$GH_USER/;s/{type}/mission/;s/{task-id}/$ISSUE_NUMBER/")
 ```
 
 **If worktree enabled:**
@@ -231,6 +239,10 @@ REPO_NAME=$(basename $(pwd))
 WORKTREE_PATH="../${REPO_NAME}-wt-${SLUG}"
 git worktree add -b "$BRANCH" "$WORKTREE_PATH"
 echo "{ISSUE_NUMBER}" > "$WORKTREE_PATH/.mission"
+
+# Contract is gitignored (active/), so copy it into the worktree
+mkdir -p "$WORKTREE_PATH/$TEAMWORK_DIR/active"
+cp "$TEAMWORK_DIR/active/MISSION-${ISSUE_NUMBER}.md" "$WORKTREE_PATH/$TEAMWORK_DIR/active/"
 ```
 
 **If worktree disabled (default):**

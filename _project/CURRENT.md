@@ -8,31 +8,38 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-02
-- **Last Session**: [2026-03-02-K](sessions/2026-03-02-K.md) (Session K)
+- **Last Session**: [2026-03-02-L](sessions/2026-03-02-L.md) (Session L)
 
 ## Current Phase
 
-**Phase**: Teamwork v2 implemented, ready for validation
+**Phase**: Teamwork v2.1 — architect-reviewed, tested, ready for E2E validation
 
 ## What Was Just Completed
 
-1. **Teamwork v2 Implementation** (Session K continued, /self-drive → /drive)
-   - 4 skill files written: `/team`, `/team-claim`, `/team-drive`, `/team-ship`
-   - v1 skills removed: `/teamwork`, `/team-get-mission`, `/team-complete`
-   - README.md, CHANGELOG.md updated (skill-level + root-level)
-   - install.sh verified — 4 symlinks correct, stale v1 symlinks cleaned
-   - Architecture: `docs/teamwork-v2-architecture.md` (ADR-0010)
+1. **Teamwork v2.1 Architect Review** (Session L)
+   - Found 11 bugs via cross-referencing 4 skill files against vi_agent's real config
+   - Fixed all 11: 3 critical (worktree contract, template label, branch hardcoding), 3 high, 5 medium
+   - Self-drive verification: 3 parallel scouts confirmed 10/11 fixes correct, found 1 more bug (fixed)
+   - Fixed 2 additional flow bugs: Step 1b→1c routing + $BRANCH_PATTERN extraction
+
+2. **Previous sessions (I-K)**:
+   - SkillBuilder MVP complete (Session I) — ACT IV form + download
+   - Bundle splitting done (Session J) — 627KB → 221KB
+   - Teamwork v2.0 design + implementation (Session K)
+   - v2.1 vi-agent feature absorption (6 features) + vi_agent validation
 
 ## Active Task / What's In Progress
 
-Teamwork v2 skills complete. Next: validate on vi-agent project, or address stale docs.
+All teamwork skill fixes applied. Ready for:
+- E2E flow validation on vi_agent (/team → /team-claim → /team-drive → /team-ship)
+- OR placeholder naming standardization across 4 skill files
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **Validate teamwork v2** on `../vi-agent` project (`/team` init)
-3. OR clean up stale docs (teamwork-architecture.md v1 deprecation, install.sh orphan cleanup)
-4. OR continue **V2 Showcase** (Phase 2/3 remaining tasks below)
+2. **E2E validate** teamwork on `../vi_agent` (full lifecycle test)
+3. OR standardize placeholder naming across skill files
+4. OR continue V2 Showcase (Phase 2/3 remaining tasks)
 
 ## Implementation Roadmap
 
@@ -48,14 +55,15 @@ Teamwork v2 skills complete. Next: validate on vi-agent project, or address stal
 - [ ] DesignPatternLibrary (3-5 reusable pattern cards)
 - [ ] CaseStudies (2-3 skill variant examples)
 
-### v1.1.0 — Multi-Skill Platform (post-v1.0 backlog)
-- [ ] SkillGallery section (one demo card per released skill)
-- [ ] Hero section rebrand ("erwin: AI skill incubator")
-- [ ] Skills index (table of all skills with install commands)
+### Skills Factory
+- [x] Teamwork v2.0 — 4 GitHub-first skills
+- [x] Teamwork v2.1 — 6 vi-agent features + 13 bug fixes
+- [ ] Teamwork E2E validation on vi_agent
 
 ## Known Issues / Blockers
 
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
+- Placeholder naming inconsistent across teamwork skill files ({N} vs {ISSUE_NUMBER} vs {issue})
 
 ## File Locations
 
@@ -65,5 +73,6 @@ Teamwork v2 skills complete. Next: validate on vi-agent project, or address stal
 | Idea garden | `_project/ideas/` |
 | ADRs | `_project/decisions/` |
 | V2 architecture | `docs/drive-showcase-v2-architecture.md` |
-| drive-skill source | `reference/drive-skill/commands/drive.md` |
+| Teamwork architecture | `docs/teamwork-v2-architecture.md` |
+| Teamwork skills | `skills/teamwork/` |
 | App root | `showcase/src/App.tsx` |

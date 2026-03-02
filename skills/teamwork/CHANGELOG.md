@@ -2,6 +2,25 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.1.1] — 2026-03-02
+
+### Fixed — Architect Review (13 bugs)
+
+- **CRITICAL**: Contract inaccessible from worktree (active/ gitignored → added copy-to-worktree step)
+- **CRITICAL**: Issue template hardcoded "mission" label → now uses `{MISSION_LABEL}` from config
+- **CRITICAL**: Branch pattern hardcoded `mission/...` → reads `conventions.branch_pattern` from config
+- **HIGH**: `team:` key format collision (erwin=member list, vi-agent=metadata) → check `members:` first
+- **HIGH**: Missing config health check → added Step 1c with non-blocking warning
+- **HIGH**: Operation Done assumes `mission/` branch prefix → generic numeric extraction
+- **MEDIUM**: Worktree `enabled` flag missing → section presence = enabled
+- **MEDIUM**: sed greedy pattern `'s/.*'` → all normalized to `'s/^[^:]*://'`
+- **MEDIUM**: `git add -A` in team-drive → changed to specific file staging
+- **FIX**: `cp` command used `{N}` instead of `${ISSUE_NUMBER}`
+- **FIX**: Step 1b→1c routing contradiction (found users bypassed health check)
+- **FIX**: `$BRANCH_PATTERN` extraction command missing
+
+---
+
 ## [2.1.0] — 2026-03-02
 
 ### Added — vi-agent Feature Absorption

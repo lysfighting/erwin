@@ -126,11 +126,14 @@ fi
 
 Read the config and check if `GH_USER` is in the team roster.
 
-**Config format detection:**
-- If config has `team:` section (erwin v2 format) → look for `github: {GH_USER}` in team list
-- If config has `members:` section (.teamspace format) → look for `github: {GH_USER}` in members list
+**Config format detection** (handle two schemas):
+- If config has `members:` section → use it (`.teamspace` format: `members:` is the member list)
+- Else if config has `team:` as an ARRAY of `{github, role}` → use it (erwin v2 format)
+- Note: `.teamspace` configs have `team:` as metadata `{name, repo}`, NOT a member list — always check `members:` first
 
-If `GH_USER` is found in roster → Jump to **Step 6: Dashboard**
+Look for `github: {GH_USER}` (erwin) or `github: {GH_USER}` + `id: {GH_USER}` (.teamspace) in the member list.
+
+If `GH_USER` is found in roster → Jump to **Step 1c: Config Health Check**
 
 If `GH_USER` is NOT in roster → **onboard new member:**
 
@@ -173,7 +176,32 @@ If `GH_USER` is NOT in roster → **onboard new member:**
 
 6. Output: "Added you to the team as **{role.label}**. Showing dashboard..."
 
-7. Continue to **Step 6: Dashboard**
+7. Continue to **Step 1c: Config Health Check**
+
+---
+
+## Step 1c: Config Health Check
+
+After confirming membership, verify that the config has the fields needed by other skills. Check for:
+
+| Field | Used by | Default if missing |
+|-------|---------|-------------------|
+| `project.test_command` | team-drive, team-ship | warn "No test command" |
+| `project.lint_command` | git hooks | warn "No lint command" |
+| `conventions.branch_pattern` | team-claim | `"mission/{issue}-{slug}-{user}"` |
+| `conventions.base_branch` | team-ship | `"main"` |
+| `label_prefix` or `github.label_prefix` | all skills | `status:`, `priority:` |
+
+If critical fields are missing (no `project:` section at all, no `conventions.branch_pattern`), output a warning:
+
+```
+⚠ Config is missing some fields used by teamwork skills:
+  - project.test_command: tests won't run during /team-drive and /team-ship
+  - conventions.branch_pattern: will use default "mission/{issue}-{slug}-{user}"
+  Tip: run /team init to regenerate a complete config.
+```
+
+This is a **non-blocking warning** — continue to **Step 6: Dashboard**.
 
 ---
 
@@ -348,12 +376,14 @@ ls .github/ISSUE_TEMPLATE/mission*.yml 2>/dev/null
 
 If exists → read it, ask user whether to keep or regenerate (same as CI detection).
 
-If not exists → generate:
+If not exists → generate.
+
+**Read `mc_label` from config** (default: `"mission"`). Use this value in the template labels:
 
 ```yaml
 name: Mission Contract
 description: Structured task for team execution
-labels: ["mission", "status:queued"]
+labels: ["{MISSION_LABEL}", "status:queued"]
 body:
   - type: dropdown
     id: priority
@@ -547,7 +577,7 @@ For other languages or if language not detected, generate a minimal workflow wit
 set -e
 CONFIG="$([ -f .teamwork/config.yml ] && echo .teamwork/config.yml || echo .teamspace/config.yml)"
 [ -f "$CONFIG" ] || exit 0
-LINT_CMD=$(grep 'lint_command:' "$CONFIG" | sed 's/.*lint_command: *//' | sed 's/ *#.*//' | tr -d '"')
+LINT_CMD=$(grep 'lint_command:' "$CONFIG" | sed 's/^[^:]*://' | sed 's/^ *//' | sed 's/ *#.*//' | tr -d '"')
 if [ -n "$LINT_CMD" ]; then
   echo "Running lint..."
   eval "$LINT_CMD"
@@ -561,7 +591,7 @@ fi
 set -e
 CONFIG="$([ -f .teamwork/config.yml ] && echo .teamwork/config.yml || echo .teamspace/config.yml)"
 [ -f "$CONFIG" ] || exit 0
-TEST_CMD=$(grep 'test_command:' "$CONFIG" | sed 's/.*test_command: *//' | sed 's/ *#.*//' | tr -d '"')
+TEST_CMD=$(grep 'test_command:' "$CONFIG" | sed 's/^[^:]*://' | sed 's/^ *//' | sed 's/ *#.*//' | tr -d '"')
 if [ -n "$TEST_CMD" ]; then
   echo "Running tests..."
   eval "$TEST_CMD"
@@ -665,7 +695,7 @@ Read the mission label from config. If config has `mc_label` field → use it. I
 # Determine the mission label from config
 # teamwork v2 schema: label is "mission"
 # teamspace schema: look for mc_label field (e.g., "mission-contract")
-MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/.*mc_label: *//' | sed 's/ *#.*//' | tr -d '"' || echo "mission")
+MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/^[^:]*://' | sed 's/^ *//' | sed 's/ *#.*//' | tr -d '"' || echo "mission")
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 
 # Determine label prefixes from config
@@ -690,7 +720,7 @@ gh pr list --json number,title,author,headRefName,statusCheckRollup,reviewDecisi
 gh pr list --state merged --base main --json author --limit 100
 
 # Version progress (if versions.current configured)
-# CURRENT_VERSION=$(grep 'current:' $TEAMWORK_DIR/config.yml | tail -1 | sed 's/.*: *//' | tr -d '"')
+# CURRENT_VERSION=$(grep 'current:' $TEAMWORK_DIR/config.yml | tail -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
 # if [ -n "$CURRENT_VERSION" ]; then
 #   gh issue list --label "$MISSION_LABEL" --label "version:${CURRENT_VERSION}" --json state --limit 100
 # fi
@@ -715,7 +745,7 @@ Milestone: {active milestone} ({closed}/{total} = {pct}%)
      {If idle:} Idle (last merged: #{last_merged_pr})
 
 QUEUED:
-  {Issues with label "mission" that are unassigned or status:queued}
+  {Issues with label "$MISSION_LABEL" that are unassigned or status:queued}
      #{N} {title} [{priority}]
 
 MERGE COUNT:
