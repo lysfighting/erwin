@@ -2,6 +2,38 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.3.0] — 2026-03-03
+
+### Added — Issue Sync & Lifecycle Comments
+
+- **Issue freshness detection** — Contract stores `issue_content_hash` (SHA256 of title+body at claim time). `/team-drive` checks hash on entry; if Issue content changed, shows current body and asks user to Update Contract / Continue / Abort. Uses content hash instead of `updatedAt` to avoid false positives from our own comments, label changes, and assignee changes.
+- **Dashboard [UPDATED] badge** — `/team` dashboard marks claimed Issues with `[UPDATED]` if content hash differs from Contract.
+- **Lifecycle comments** — 3 key events posted as Issue comments for team visibility:
+  - `/team-claim`: "Claimed by @user" (already existed)
+  - `/team-drive` completion: "All sub-tasks complete — ready for review"
+  - `/team-ship` PR creation: "PR #N created — {url}"
+- All freshness checks and comments are **non-fatal** — network failures warn but don't block execution.
+- Backward compatible: pre-v2.3.0 Contracts without `issue_content_hash` skip freshness check silently.
+
+### Changed
+
+- All skills bumped to v2.3.0
+
+---
+
+## [2.2.0] — 2026-03-03
+
+### Added
+
+- **`/team-issue`** — New skill: turn natural language into standardized GitHub Issues (mission-contract format). AI-enriches description with title, priority, size, domain, sub-tasks, and relevant files from codebase scan. Preview before publish.
+
+### Changed
+
+- **`/team-claim`** — Removed inline `create "title"` subcommand. Issue creation now handled by dedicated `/team-issue` skill (single responsibility).
+- All skills bumped to v2.2.0
+
+---
+
 ## [2.1.1] — 2026-03-02
 
 ### Fixed — Architect Review (13 bugs)
