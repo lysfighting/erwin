@@ -29,26 +29,38 @@ GH_USER=$(gh api user --jq '.login' 2>/dev/null)
 - If fails → "Not authenticated. Run `gh auth login` first." → **STOP**
 
 ```bash
-# Config
-[ -f .teamwork/config.yml ] || echo "NO_CONFIG"
+# Config (support both directory names)
+if [ -f .teamwork/config.yml ]; then
+  TEAMWORK_DIR=".teamwork"
+elif [ -f .teamspace/config.yml ]; then
+  TEAMWORK_DIR=".teamspace"
+else
+  echo "NO_CONFIG"
+fi
 ```
 
 - If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
 
-Read `.teamwork/config.yml` → extract team roster, conventions, project settings.
+Read `$TEAMWORK_DIR/config.yml` → extract team roster, conventions, project settings.
 
-Verify `GH_USER` is in the team roster. If not → "You ({GH_USER}) are not in the team roster. Add yourself to `.teamwork/config.yml` first." → **STOP**
+```bash
+# Read mission label from config (teamspace uses mc_label, teamwork v2 defaults to "mission")
+MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/.*mc_label: *//' | sed 's/ *#.*//' | tr -d '"' || echo "mission")
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
+```
+
+Verify `GH_USER` is in the team roster. If not → "You ({GH_USER}) are not in the team roster. Add yourself to `$TEAMWORK_DIR/config.yml` first." → **STOP**
 
 ---
 
 ## Step 1: Check Active Mission
 
 ```bash
-ls .teamwork/active/MISSION-*.md 2>/dev/null
+ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 ```
 
 If any Contract exists → read it, display the active mission info.
-- "You already have an active mission: #{issue} — {title}. Complete it with `/team-ship` first, or remove `.teamwork/active/MISSION-{N}.md` to abandon."
+- "You already have an active mission: #{issue} — {title}. Complete it with `/team-ship` first, or remove `$TEAMWORK_DIR/active/MISSION-{N}.md` to abandon."
 - **STOP** (enforce one-at-a-time rule)
 
 ---
@@ -58,7 +70,7 @@ If any Contract exists → read it, display the active mission info.
 ### If `list`:
 
 ```bash
-gh issue list --label mission --state open --json number,title,labels,assignees,milestone --limit 20
+gh issue list --label "$MISSION_LABEL" --state open --json number,title,labels,assignees,milestone --limit 20
 ```
 
 Filter to show:
@@ -78,12 +90,12 @@ Use `AskUserQuestion` to let user pick one, then proceed to Step 3 with the sele
 ### If `create "title"`:
 
 ```bash
-gh issue create --title "{title}" --label mission --template mission.yml
+gh issue create --title "{title}" --label "$MISSION_LABEL" --template mission.yml
 ```
 
 If the Issue template prompts are not filled, open the browser:
 ```bash
-gh issue create --title "{title}" --label mission --web
+gh issue create --title "{title}" --label "$MISSION_LABEL" --web
 ```
 
 Output the created Issue number and suggest: "Issue created. Run `/team-claim #{N}` to claim it."
@@ -96,7 +108,7 @@ Extract Issue number. Proceed to Step 3.
 ### If empty:
 
 ```bash
-gh issue list --label mission --state open --assignee "" --json number,title,labels --limit 10
+gh issue list --label "$MISSION_LABEL" --state open --assignee "" --json number,title,labels --limit 10
 ```
 
 Sort by priority (P0 first, then P1, P2, P3). Pick the first one.
@@ -129,7 +141,7 @@ If the Issue body is freeform (not from template), use AI understanding to extra
 
 ## Step 4: Generate Mission Contract
 
-Create `.teamwork/active/MISSION-{N}.md` with this structure:
+Create `$TEAMWORK_DIR/active/MISSION-{N}.md` with this structure:
 
 ```markdown
 ---
@@ -214,7 +226,7 @@ MISSION CLAIMED
 Issue:    #{N} — {title}
 Priority: {P1}
 Branch:   {branch name}
-Contract: .teamwork/active/MISSION-{N}.md
+Contract: $TEAMWORK_DIR/active/MISSION-{N}.md
 
 Objective:
   {objective summary}

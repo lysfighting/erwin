@@ -20,20 +20,26 @@ GH_USER=$(gh api user --jq '.login' 2>/dev/null)
 - If fails → "Not authenticated. Run `gh auth login` first." → **STOP**
 
 ```bash
-# Config
-[ -f .teamwork/config.yml ] || echo "NO_CONFIG"
+# Config (support both directory names)
+if [ -f .teamwork/config.yml ]; then
+  TEAMWORK_DIR=".teamwork"
+elif [ -f .teamspace/config.yml ]; then
+  TEAMWORK_DIR=".teamspace"
+else
+  echo "NO_CONFIG"
+fi
 ```
 
 - If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
 
-Read `.teamwork/config.yml` → extract project settings, conventions, quality preferences.
+Read `$TEAMWORK_DIR/config.yml` → extract project settings, conventions, quality preferences.
 
 ---
 
 ## Step 1: Find Active Contract
 
 ```bash
-ls .teamwork/active/MISSION-*.md 2>/dev/null
+ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 ```
 
 - If no Contract found → "No active mission. Nothing to ship." → **STOP**
@@ -223,7 +229,7 @@ If label operations fail, warn but continue.
 ### 7b: Remove Contract
 
 ```bash
-rm .teamwork/active/MISSION-{issue}.md
+rm $TEAMWORK_DIR/active/MISSION-{issue}.md
 ```
 
 The Contract has served its purpose. The PR body now contains the essential information. If the PR is rejected and the mission needs to be reworked, re-run `/team-claim #{issue}` to regenerate a fresh Contract.

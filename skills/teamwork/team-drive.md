@@ -13,7 +13,20 @@ description: "Execute your claimed mission using drive methodology. Reads your M
 ## Step 0: Find Active Contract
 
 ```bash
-ls .teamwork/active/MISSION-*.md 2>/dev/null
+# Detect config directory
+if [ -f .teamwork/config.yml ]; then
+  TEAMWORK_DIR=".teamwork"
+elif [ -f .teamspace/config.yml ]; then
+  TEAMWORK_DIR=".teamspace"
+else
+  echo "NO_CONFIG"
+fi
+```
+
+- If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
+
+```bash
+ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 ```
 
 - If no Contract found → "No active mission. Run `/team-claim` first." → **STOP**
@@ -199,7 +212,7 @@ Next: /team-ship to create PR and deliver
 
 - Config missing → "Run `/team` first to initialize teamwork." → **STOP**
 - Contract references files that don't exist → warn, skip those context files
-- Test command not defined → warn "No test command configured. Add `test_command` to `.teamwork/config.yml`."
+- Test command not defined → warn "No test command configured. Add `test_command` to `$TEAMWORK_DIR/config.yml`."
 - Git conflicts → resolve them, then continue
 - If execution is interrupted (user stops mid-task), the Contract preserves progress via checkboxes — next `/team-drive` run picks up where it left off
 
@@ -210,7 +223,7 @@ Next: /team-ship to create PR and deliver
 This skill provides a **lightweight drive-like experience** focused on the Mission Contract. For full drive mode (with Phase 0 briefing, team assembly, wave decomposition), use `/drive` directly and pass the Contract path as context:
 
 ```
-/drive Execute the mission defined in .teamwork/active/MISSION-{N}.md
+/drive Execute the mission defined in $TEAMWORK_DIR/active/MISSION-{N}.md
 ```
 
 `/team-drive` is the **quick path** — it skips Phase 0 (the Contract IS the briefing) and executes directly. Use it for straightforward missions. Use full `/drive` for complex missions that need deeper planning.

@@ -7,7 +7,7 @@ description: "Initialize GitHub-first teamwork system or show team dashboard. Ru
 > GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are quality gates.
 
 **Two modes:**
-1. **First run** (no `.teamwork/config.yml`): Initialize teamwork system — detect project, configure team, generate CI/hooks/templates
+1. **First run** (no config found): Initialize teamwork system — detect project, configure team, generate CI/hooks/templates
 2. **Subsequent runs**: Show team dashboard from GitHub data
 
 **User input**: $ARGUMENTS
@@ -44,17 +44,31 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
 ## Step 1: Route — Init or Dashboard?
 
 ```bash
-[ -f .teamwork/config.yml ] && echo "DASHBOARD" || echo "INIT"
+# Check for existing teamwork config (support both directory names)
+if [ -f .teamwork/config.yml ]; then
+  echo "DASHBOARD"
+  TEAMWORK_DIR=".teamwork"
+elif [ -f .teamspace/config.yml ]; then
+  echo "DASHBOARD"
+  TEAMWORK_DIR=".teamspace"
+else
+  echo "INIT"
+  TEAMWORK_DIR=".teamwork"
+fi
 ```
 
-- If `DASHBOARD` → Jump to **Step 6: Dashboard**
+- If `DASHBOARD` → Jump to **Step 6: Dashboard** (use whichever config dir was found)
 - If `INIT` → Continue to **Step 2: Initialize**
+
+**Note**: Both `.teamwork/` and `.teamspace/` are supported as config directories. The system uses whichever exists. New installations default to `.teamwork/`.
 
 ---
 
 ## Step 2: Detect Project
 
-Auto-detect language and tooling by checking for marker files:
+Auto-detect language and tooling by checking for marker files.
+
+**First, check root-level markers:**
 
 | Marker File | Language | Test | Lint | Build |
 |-------------|----------|------|------|-------|
@@ -68,9 +82,33 @@ Auto-detect language and tooling by checking for marker files:
 ls package.json pyproject.toml setup.py go.mod Cargo.toml pom.xml build.gradle 2>/dev/null
 ```
 
-Store detected `LANGUAGE`, `TEST_CMD`, `LINT_CMD`, `BUILD_CMD`.
+**If no root markers found, check for monorepo structure:**
 
-If `package.json` exists, also check for scripts:
+```bash
+# Scan one level deep for service directories with their own marker files
+ls */package.json */pyproject.toml */setup.py */go.mod */Cargo.toml */requirements.txt 2>/dev/null
+```
+
+If multiple services found → this is a **monorepo**. Set `IS_MONOREPO=true` and detect EACH service:
+
+```bash
+# For each subdirectory with a marker file, detect its language
+for dir in */; do
+  if [ -f "$dir/package.json" ]; then
+    echo "$dir: node"
+  elif [ -f "$dir/pyproject.toml" ] || [ -f "$dir/requirements.txt" ]; then
+    echo "$dir: python"
+  elif [ -f "$dir/go.mod" ]; then
+    echo "$dir: go"
+  fi
+done
+```
+
+For monorepos, store a `services` list with per-service language/commands. The primary language is the most common one across services. Test/lint/build commands should reference the monorepo structure (e.g., `cd api-server && pytest`).
+
+Store detected `LANGUAGE`, `TEST_CMD`, `LINT_CMD`, `BUILD_CMD`, and optionally `IS_MONOREPO`, `SERVICES[]`.
+
+**If root-level `package.json` exists, also check for scripts:**
 ```bash
 node -e "const p=require('./package.json'); console.log(JSON.stringify(p.scripts||{}))" 2>/dev/null
 ```
@@ -120,10 +158,12 @@ options:
 ### 4a: Create directory structure
 
 ```bash
-mkdir -p .teamwork/active .github/ISSUE_TEMPLATE .github/workflows .githooks
+mkdir -p $TEAMWORK_DIR/active .github/ISSUE_TEMPLATE .github/workflows .githooks
 ```
 
-### 4b: Write `.teamwork/config.yml`
+(Where `$TEAMWORK_DIR` is `.teamwork` for new installations, or whichever was detected in Step 1.)
+
+### 4b: Write `$TEAMWORK_DIR/config.yml`
 
 Write based on detected project info + user answers:
 
@@ -216,7 +256,37 @@ body:
 
 ### 4d: Write `.github/workflows/ci.yml`
 
-Generate based on detected language:
+**First, check if CI already exists:**
+
+```bash
+ls .github/workflows/ci.yml .github/workflows/CI.yml .github/workflows/*.yml 2>/dev/null
+```
+
+- If `.github/workflows/ci.yml` (or similar) already exists → **DO NOT overwrite**. Read the existing file, display a summary, and ask: "CI workflow already exists. Keep existing? Or regenerate?" (via AskUserQuestion). If the user keeps existing, skip to Step 4e.
+- If no CI workflow exists → generate based on detected language:
+
+**For monorepo projects** (`IS_MONOREPO=true`), generate a multi-service CI that runs each service's checks in a separate job:
+
+```yaml
+name: CI
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  # One job per detected service
+  {service-name}:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - # language-specific setup
+      - run: cd {service-dir} && {lint-cmd}
+      - run: cd {service-dir} && {test-cmd}
+```
+
+**For single-language projects**, generate based on detected language:
 
 **Node/TypeScript:**
 ```yaml
@@ -295,9 +365,9 @@ For other languages or if language not detected, generate a minimal workflow wit
 #!/bin/bash
 # Teamwork v2 — local quality gate (fast)
 set -e
-CONFIG=".teamwork/config.yml"
+CONFIG="$([ -f .teamwork/config.yml ] && echo .teamwork/config.yml || echo .teamspace/config.yml)"
 [ -f "$CONFIG" ] || exit 0
-LINT_CMD=$(grep 'lint_command:' "$CONFIG" | sed 's/.*lint_command: *//' | tr -d '"')
+LINT_CMD=$(grep 'lint_command:' "$CONFIG" | sed 's/.*lint_command: *//' | sed 's/ *#.*//' | tr -d '"')
 if [ -n "$LINT_CMD" ]; then
   echo "Running lint..."
   eval "$LINT_CMD"
@@ -309,9 +379,9 @@ fi
 #!/bin/bash
 # Teamwork v2 — local quality gate (thorough)
 set -e
-CONFIG=".teamwork/config.yml"
+CONFIG="$([ -f .teamwork/config.yml ] && echo .teamwork/config.yml || echo .teamspace/config.yml)"
 [ -f "$CONFIG" ] || exit 0
-TEST_CMD=$(grep 'test_command:' "$CONFIG" | sed 's/.*test_command: *//' | tr -d '"')
+TEST_CMD=$(grep 'test_command:' "$CONFIG" | sed 's/.*test_command: *//' | sed 's/ *#.*//' | tr -d '"')
 if [ -n "$TEST_CMD" ]; then
   echo "Running tests..."
   eval "$TEST_CMD"
@@ -334,6 +404,7 @@ Append if not already present:
 ```
 # Teamwork ephemeral contracts
 .teamwork/active/
+.teamspace/active/
 ```
 
 ---
@@ -370,7 +441,7 @@ If branch protection fails (e.g., free plan limitations), warn but continue — 
 ## Step 5c: Commit and Push
 
 ```bash
-git add .teamwork/config.yml .github/ .githooks/ .gitignore
+git add $TEAMWORK_DIR/config.yml .github/ .githooks/ .gitignore
 git commit -m "feat(teamwork): initialize GitHub-first teamwork v2
 
 Generate config, CI workflow, Issue template, git hooks.
@@ -388,13 +459,22 @@ Read data from GitHub and config, then display formatted dashboard.
 
 ### 6a: Read config
 ```bash
-cat .teamwork/config.yml
+cat $TEAMWORK_DIR/config.yml
 ```
 
 ### 6b: Fetch GitHub data
+
+Read the mission label from config. If config has `mc_label` field → use it. If config has the teamwork v2 schema → use `mission`. Default: `mission`.
+
 ```bash
+# Determine the mission label from config
+# teamwork v2 schema: label is "mission"
+# teamspace schema: look for mc_label field (e.g., "mission-contract")
+MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/.*mc_label: *//' | sed 's/ *#.*//' | tr -d '"' || echo "mission")
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
+
 # All mission issues
-gh issue list --label mission --json number,title,assignees,labels,state,milestone --limit 50
+gh issue list --label "$MISSION_LABEL" --json number,title,assignees,labels,state,milestone --limit 50
 
 # Open PRs
 gh pr list --json number,title,author,headRefName,statusCheckRollup,reviewDecision --limit 20
