@@ -6,7 +6,7 @@ Claude Code skills created and maintained by the erwin project.
 
 | Skill | Description | Version |
 |-------|-------------|---------|
-| [/new-project](new-project/) | Bootstrap any project with full AI intelligence layer | 1.0.0 |
+| [/erwin-init](erwin-init/) | Bootstrap any project with full AI intelligence layer | 1.0.0 |
 | [/visual-test](visual-test/) | Screenshot-driven visual bug detection and fixing | 1.0.0 |
 
 ## Install All Skills
@@ -22,7 +22,7 @@ Installs all skills globally via symlinks to `~/.claude/commands/`. Updates auto
 ## Install Individual Skills
 
 ```bash
-./install.sh new-project    # install only /new-project
+./install.sh erwin-init     # install only /erwin-init
 ./install.sh visual-test    # install only /visual-test
 ```
 
@@ -30,7 +30,7 @@ Installs all skills globally via symlinks to `~/.claude/commands/`. Updates auto
 
 Remove symlinks from `~/.claude/commands/`:
 ```bash
-rm ~/.claude/commands/new-project.md
+rm ~/.claude/commands/erwin-init.md
 rm ~/.claude/commands/visual-test.md
 ```
 

@@ -3,7 +3,7 @@
 - **Stage**: Plant 🌱
 - **Created**: 2026-03-02
 - **ADR**: ADR-0006 (`_project/decisions/0006-new-project-skill.md`)
-- **Implemented**: `~/.claude/commands/new-project.md`
+- **Implemented**: `~/.claude/commands/erwin-init.md`
 
 ---
 
@@ -24,7 +24,7 @@ sessions to design it. Other projects shouldn't have to reinvent this.
 
 If we extract the `_project/` structure as a portable template + install script, any project
 can bootstrap professional knowledge management in 5 minutes. This could become a Claude Code
-skill (`/new-project`) that sets up the complete infrastructure.
+skill (`/erwin-init`) that sets up the complete infrastructure.
 
 ---
 
@@ -56,7 +56,7 @@ CHANGELOG.md               ← Empty with instructions
 
 ## The Skill Design
 
-A `/new-project` or `/init-project` skill would:
+A `/erwin-init` skill would:
 
 1. Ask: project name, description, team size, tech stack
 2. Create the `_project/` structure

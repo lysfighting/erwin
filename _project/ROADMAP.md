@@ -38,7 +38,7 @@
 
 **Goal**: Extract _project/ structure as a reusable template
 **Deliverable**: `reference/project-template/` + install script
-**Candidate skill**: `/new-project` skill
+**Candidate skill**: `/erwin-init` skill
 
 ---
 

@@ -25,7 +25,7 @@
 
 3. **Meta: Project Intelligence Infrastructure** (2026-03-02, Session E + F)
    - `ai-workflow.md` — principle-based CURRENT.md trigger (action-cost model, not time-based)
-   - `skills/new-project/` — `/new-project` skill v1.0.0 (version-controlled in repo)
+   - `skills/erwin-init/` — `/erwin-init` skill v1.0.0 (version-controlled in repo)
    - `skills/visual-test/` — `/visual-test` skill v1.0.0 (version-controlled in repo)
    - `install.sh` — symlink installer; `git pull` auto-updates installed skills
    - `_project/decisions/0006-new-project-skill.md` — ADR-0006 (new-project skill)
@@ -69,6 +69,14 @@ Skills incubator structure implemented. Next: SkillBuilder (OKR KR3) or continue
 - [ ] SkillBuilder (form → skill.md download, ACT IV)
 - [ ] DesignPatternLibrary (3-5 reusable pattern cards)
 - [ ] CaseStudies (2-3 skill variant examples)
+
+### v1.1.0 — Multi-Skill Platform (post-v1.0 backlog)
+> Currently showcase only shows drive-skill. To show erwin as a skills platform:
+- [ ] **P1** SkillGallery section — one demo card per released skill in `skills/`
+  - `/erwin-init`: animated file tree showing what the skill creates
+  - `/visual-test`: before/after screenshot + 7-step loop diagram
+- [ ] **P2** Hero section rebrand — "erwin: AI skill incubator" (drive = first skill, not the only skill)
+- [ ] **P3** Skills index — table of all skills (released + incubating) with install commands
 
 ## Known Issues / Blockers
 

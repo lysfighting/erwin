@@ -267,10 +267,10 @@ and eventually become:
 **What makes it universal**:
 - No project-specific content in the structure
 - All project-specific content lives inside the files, not the structure
-- Can be applied by running `cp -r reference/project-template/ new-project/_project/`
+- Can be applied by running `cp -r reference/project-template/ my-project/_project/`
 
-**Future skill idea** 🌱: `/new-project` — a Claude Code skill that scaffolds a new project with
-this entire `_project/` structure pre-populated from a template.
+**Implemented**: `/erwin-init` — a Claude Code skill that initializes any project with
+this entire `_project/` cognitive framework. See ADR-0008.
 
 ---
 

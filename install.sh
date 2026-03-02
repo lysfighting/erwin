@@ -5,7 +5,7 @@
 #
 # Usage:
 #   ./install.sh              # install all skills
-#   ./install.sh new-project  # install one skill by name
+#   ./install.sh erwin-init   # install one skill by name
 
 set -euo pipefail
 

@@ -29,7 +29,7 @@ erwin/
 │
 ├── skills/                 ← Skills Factory (source of truth for all erwin skills)
 │   ├── README.md           ← Skill index + contribution guide
-│   ├── new-project/        ← /new-project skill (v1.0.0)
+│   ├── erwin-init/         ← /erwin-init skill (v1.0.0)
 │   └── visual-test/        ← /visual-test skill (v1.0.0)
 │
 ├── _project/               ← Project Intelligence Layer

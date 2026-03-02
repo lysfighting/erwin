@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-erwin has dual identity: (1) a React showcase explaining drive-skill, and (2) a skills factory producing new Claude Code commands. Currently the factory side is invisible — `new-project.md` and `visual-test.md` live in `~/.claude/commands/` with no version control, no update mechanism, and no documentation. This architecture formalizes erwin as a skills incubator: skills live in the git repo, are symlink-installed globally, and follow a clear idea-to-release pipeline.
+erwin has dual identity: (1) a React showcase explaining drive-skill, and (2) a skills factory producing new Claude Code commands. Currently the factory side is invisible — `erwin-init.md` and `visual-test.md` live in `~/.claude/commands/` with no version control, no update mechanism, and no documentation. This architecture formalizes erwin as a skills incubator: skills live in the git repo, are symlink-installed globally, and follow a clear idea-to-release pipeline.
 
 ---
 
@@ -31,7 +31,7 @@ _project/ideas/skills/ (Seed → Sprout → Plant stages)
   │
   ▼  (when Fruit 🍎: working, tested, documented)
 skills/{name}/ (RELEASED)
-  │  • new-project/, visual-test/, ...
+  │  • erwin-init/, visual-test/, ...
   │  • each has: skill.md + README.md + CHANGELOG.md
   │
   ▼  (after ./install.sh)
@@ -57,7 +57,7 @@ skills/{name}/ (RELEASED)
 
 ### Decision 3: Per-skill CHANGELOG + project aggregate
 **Chosen**: Each skill has its own `CHANGELOG.md`; project `CHANGELOG.md` aggregates
-**Rationale**: When `new-project` has a breaking change, users need to know the version. Skill-specific changelogs enable independent versioning.
+**Rationale**: When `erwin-init` has a breaking change, users need to know the version. Skill-specific changelogs enable independent versioning.
 
 ### Decision 4: install.sh symlink-based (not copy)
 **Chosen**: `ln -sf skills/{name}/{name}.md ~/.claude/commands/`
@@ -75,8 +75,8 @@ erwin/
 │
 ├── skills/                ← NEW: source of truth for all erwin skills
 │   ├── README.md          ← Skill index + contribution guide
-│   ├── new-project/
-│   │   ├── new-project.md     ← THE SKILL (moved from ~/.claude/commands/)
+│   ├── erwin-init/
+│   │   ├── erwin-init.md      ← THE SKILL (moved from ~/.claude/commands/)
 │   │   ├── README.md          ← Usage, examples, requirements
 │   │   └── CHANGELOG.md       ← Skill version history
 │   └── visual-test/
@@ -118,7 +118,7 @@ erwin/
 #
 # Usage:
 #   ./install.sh           # install all skills
-#   ./install.sh new-project    # install one skill
+#   ./install.sh erwin-init     # install one skill
 
 set -euo pipefail
 
@@ -194,7 +194,7 @@ Skills follow semantic versioning:
 ```markdown
 ## [0.6.0] — 2026-03-02
 ### Skills
-- new: /new-project v1.0.0 — bootstrap any project with AI intelligence layer
+- new: /erwin-init v1.0.0 — bootstrap any project with AI intelligence layer
 - new: /visual-test v1.0.0 — visual bug detection via Playwright screenshots
 ```
 
@@ -224,7 +224,7 @@ erwin already has full self-learning infrastructure:
 3. **CURRENT.md** — living status, read at session start
 4. **GOALS.md + ROADMAP.md** — north star prevents drift
 
-The `/new-project` skill propagates this infrastructure to any new project. This IS the self-learning system — no additional infra needed.
+The `/erwin-init` skill propagates this infrastructure to any new project. This IS the self-learning system — no additional infra needed.
 
 Optional enhancement (not in MVP): PostToolUse hook that auto-captures session summaries. Deferred to a separate mission.
 
@@ -233,7 +233,7 @@ Optional enhancement (not in MVP): PostToolUse hook that auto-captures session s
 ## Implementation Roadmap
 
 ### Phase 1 (MVP — this session, ~1 hour)
-1. Create `skills/new-project/` with new-project.md + README.md + CHANGELOG.md
+1. Create `skills/erwin-init/` with erwin-init.md + README.md + CHANGELOG.md
 2. Create `skills/visual-test/` with visual-test.md + README.md + CHANGELOG.md
 3. Create `skills/README.md` (skill index)
 4. Create `install.sh`
@@ -272,7 +272,7 @@ graph TB
 
     INSTALL["install.sh"]
     GLOBAL["~/.claude/commands/\n(installed globally)"]
-    ANY["Any project\n/new-project\n/visual-test"]
+    ANY["Any project\n/erwin-init\n/visual-test"]
 
     RELEASED --> INSTALL
     INSTALL -->|"symlink"| GLOBAL
@@ -301,6 +301,6 @@ graph TB
 
 **npm-based distribution**: Package skills as npm packages with semver. Rejected: absurd indirection. npm is for JavaScript, not Claude Code markdown skills.
 
-**Project-level only (`.claude/commands/` only)**: Skills work only inside erwin, not globally. Rejected: the core value of `/visual-test` and `/new-project` is that they work in ANY project.
+**Project-level only (`.claude/commands/` only)**: Skills work only inside erwin, not globally. Rejected: the core value of `/visual-test` and `/erwin-init` is that they work in ANY project.
 
 **No change (current state)**: Skills in `~/.claude/commands/` with no version control. Rejected: violates the "skills incubator" goal — skills should be tracked in erwin git history.

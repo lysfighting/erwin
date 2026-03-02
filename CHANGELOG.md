@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — Skills Factory
+- **`/new-project` → `/erwin-init`** — Renamed and redesigned per ADR-0008: from scaffolding tool to cognitive infrastructure installer. Zero-question entry, optional GOALS.md conversation. `erwin-` prefix reserved for framework-core skills.
+
 ### Added — Skills Factory
 - **`skills/`** — New: source of truth for all erwin Claude Code skills (ADR-0007)
-- **`skills/new-project/`** — `/new-project` v1.0.0: bootstraps any project with full `_project/` intelligence layer; now version-controlled in erwin repo with README + CHANGELOG
+- **`skills/erwin-init/`** — `/erwin-init` v2.0.0: initializes erwin cognitive framework for any project; now version-controlled in erwin repo with README + CHANGELOG
 - **`skills/visual-test/`** — `/visual-test` v1.0.0: screenshot-driven visual bug detection; now version-controlled in erwin repo with README + CHANGELOG
 - **`install.sh`** — Symlink-based skills installer: `./install.sh` → all skills globally available; `git pull` auto-updates installed skills
 - **`.claude/commands/`** — Project-level incubation stage for skills under development

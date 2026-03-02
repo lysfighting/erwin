@@ -8,7 +8,7 @@
 
 ## Context
 
-erwin produced two Claude Code skills (`/new-project`, `/visual-test`) but their source files lived only in `~/.claude/commands/` — outside the git repository, with no version control, no update mechanism, and no documentation. This contradicted erwin's goal of being a "skills incubator."
+erwin produced two Claude Code skills (`/erwin-init`, `/visual-test`) but their source files lived only in `~/.claude/commands/` — outside the git repository, with no version control, no update mechanism, and no documentation. This contradicted erwin's goal of being a "skills incubator."
 
 Additionally, `_project/ideas/skills/` was empty (the skills pipeline had no visible structure), and `visual-test-skill.md` was misplaced at `ideas/` root instead of `ideas/skills/`.
 

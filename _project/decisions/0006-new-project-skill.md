@@ -1,7 +1,7 @@
 # ADR-0006: /new-project Skill for Universal Project Bootstrap
 
 - **Date**: 2026-03-02
-- **Status**: Accepted
+- **Status**: Superseded by [ADR-0008](0008-erwin-init-redesign.md)
 - **Idea origin**: `_project/ideas/meta/project-management-template.md`
 - **Session**: `sessions/2026-03-02.md`
 
