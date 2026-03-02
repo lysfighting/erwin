@@ -62,7 +62,7 @@ Then run:
 | `.githooks/pre-commit` | Runs linter before each commit |
 | `.githooks/pre-push` | Runs tests before each push |
 
-4. Creates GitHub labels: `mission`, `P0`-`P3`, `in-progress`, `review`
+4. Creates GitHub labels: `mission`, `priority:P0`-`P3`, `status:queued`/`wip`/`review`/`done`/`blocked`
 5. Commits everything and pushes
 
 **After setup, running `/team` again shows the team dashboard:**
@@ -137,7 +137,7 @@ Or browse available missions:
    - **Test Command**: from config or Issue body
    - **Structured sub-tasks**: broken down from the Issue body
 3. Creates branch: `mission/42-add-user-auth-alice`
-4. Assigns you on GitHub, adds `in-progress` label
+4. Assigns you on GitHub, adds `status:wip` label, posts claim comment
 
 **Output:**
 
@@ -251,10 +251,11 @@ CI:     passing ✅
 Review: requested from alice
 
 Contract: cleaned up ✅
-Issue:    labeled "review" ✅
+Issue:    labeled "status:review" ✅
 ═══════════════════════════════════════
 Next steps:
-  - PR will auto-close Issue #42 on merge
+  - After merge: /team-ship done (close Issue, update labels)
+  - To AI-review PR: /team-ship review
   - To claim next mission: /team-claim
   - To see team status: /team
 ```
@@ -269,6 +270,7 @@ Once set up, the daily cycle is:
 Morning:    git pull → claude → /team (see dashboard) → /team-claim (pick task)
 Working:    /team-drive (execute with AI assistance)
 Done:       /team-ship (deliver PR)
+After merge:/team-ship done (close Issue, clean up)
 Repeat:     /team-claim (next task)
 ```
 
@@ -288,7 +290,9 @@ GitHub Issue (#42)
     ├── /team-ship ───→ Pull Request (Closes #42)
     │                     Push → PR → CI check → review request → cleanup
     │
-    └── Merge PR ─────→ Issue #42 auto-closed
+    ├── /team-ship done → Issue #42 closed, labels updated, worktree cleaned
+    │
+    └── Merge PR ─────→ Issue #42 auto-closed (if not already)
                          Branch auto-deleted (GitHub setting)
 ```
 
@@ -338,7 +342,7 @@ After `/team` init, your `.teamwork/config.yml` looks like:
 
 ```yaml
 schema_version: 1
-skill_version: 2.0.0
+skill_version: 2.1.0
 
 team:
   - github: alice
@@ -357,11 +361,24 @@ conventions:
   base_branch: main
   commit_format: "type(scope): description | Mission: #{issue}"
 
+label_prefix:
+  status: "status:"
+  priority: "priority:"
+  size: "size:"
+
 quality:
   hooks: true
   ci: true
   review_required: true
   branch_protection: true
+
+# Optional features:
+# worktree:
+#   enabled: true
+#   path_pattern: "../{repo}-wt-{slug}"
+# versions:
+#   current: "V1.0"
+#   lifecycle: [dev, qa, released]
 ```
 
 Edit this file to change team members, commands, or quality preferences. Changes take effect immediately (no re-init needed).

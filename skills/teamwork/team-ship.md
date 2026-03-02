@@ -8,6 +8,25 @@ description: "Ship your completed mission — push, create PR with Issue linking
 
 **User input**: $ARGUMENTS
 
+**Argument routing:**
+
+| Input | Action |
+|-------|--------|
+| (empty) | Full ship flow (push, PR, CI, cleanup) |
+| `done` | Post-merge cleanup (close Issue, update labels, clean worktree) |
+| `review` | AI code review on current PR |
+| `sync` | Rebase current branch on main |
+
+---
+
+## Route by Argument
+
+Parse `$ARGUMENTS`:
+- If `done` → jump to **Operation Done**
+- If `review` → jump to **Operation Review**
+- If `sync` → jump to **Operation Sync**
+- If empty or anything else → continue to **Step 0: Full Ship Flow**
+
 ---
 
 ## Step 0: Prerequisites
@@ -39,10 +58,17 @@ Read `$TEAMWORK_DIR/config.yml` → extract project settings, conventions, quali
 ## Step 1: Find Active Contract
 
 ```bash
+# Check for worktree mode
+if [ -f .mission ]; then
+  WORKTREE_MODE=true
+  MISSION_ISSUE=$(cat .mission)
+fi
+
 ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 ```
 
-- If no Contract found → "No active mission. Nothing to ship." → **STOP**
+- If no Contract found AND no `.mission` file → "No active mission. Nothing to ship." → **STOP**
+- If no Contract but `.mission` exists → use Issue number from `.mission` to locate Contract or fetch Issue directly.
 - If multiple Contracts found → "Multiple active contracts found. Keep one, remove the rest." → **STOP**
 
 Read the Contract file fully. Extract from YAML frontmatter:
@@ -174,7 +200,7 @@ Capture the PR number and URL from the output.
 ### 4d: Add labels
 
 ```bash
-gh pr edit {pr-number} --add-label review
+gh pr edit {pr-number} --add-label "status:review"
 ```
 
 If this fails (label doesn't exist), warn but continue.
@@ -221,7 +247,7 @@ If review is not required → skip this step.
 ### 7a: Update Issue labels
 
 ```bash
-gh issue edit {issue} --remove-label in-progress --add-label review
+gh issue edit {issue} --remove-label "status:wip" --add-label "status:review"
 ```
 
 If label operations fail, warn but continue.
@@ -253,14 +279,175 @@ Sub-tasks delivered:
   ...
 
 Contract: cleaned up ✅
-Issue:    labeled "review" ✅
+Issue:    labeled "status:review" ✅
 ═══════════════════════════════════════
 Next steps:
-  - PR will auto-close Issue #{issue} on merge (via "Closes #{issue}")
-  - Branch will auto-delete on merge (if GitHub setting enabled)
+  - After merge: /team-ship done (close Issue, update labels, clean worktree)
+  - To AI-review PR: /team-ship review
   - To claim next mission: /team-claim
   - To see team status: /team
 ```
+
+---
+
+## Operation Done (post-merge cleanup)
+
+> Triggered by `/team-ship done`. Verifies PR merged, closes Issue, cleans up worktree.
+
+### D1: Find the Issue
+
+Locate the Issue number from (in priority order):
+1. Active Contract (`$TEAMWORK_DIR/active/MISSION-*.md` frontmatter)
+2. `.mission` file (worktree mode)
+3. Current branch name (extract from `mission/{issue}-{slug}`)
+
+If no Issue found → "Cannot determine Issue. Provide Issue number: `/team-ship done #42`" → **STOP**
+
+### D2: Verify PR is merged
+
+```bash
+BRANCH=$(git branch --show-current)
+gh pr list --head "$BRANCH" --state merged --json number,url --limit 1
+```
+
+- If no merged PR found → "No merged PR found for branch `{branch}`. PR must be merged before running `done`." → **STOP**
+
+### D3: Close Issue
+
+```bash
+gh issue view {ISSUE_NUMBER} --json state --jq '.state'
+```
+
+If Issue is still open:
+```bash
+gh issue close {ISSUE_NUMBER} --reason completed
+```
+
+### D4: Update labels
+
+```bash
+gh issue edit {ISSUE_NUMBER} --remove-label "status:review" --remove-label "status:wip" --add-label "status:done"
+```
+
+### D5: Clean up worktree (if applicable)
+
+If `.mission` file exists (worktree mode):
+- Ask user: "Remove worktree at `{worktree_path}`?" via `AskUserQuestion`
+- If yes:
+  ```bash
+  WORKTREE_PATH=$(pwd)
+  cd {original_repo_path}
+  git worktree remove "$WORKTREE_PATH"
+  ```
+- If no: keep worktree, warn "Worktree kept. Remove manually with `git worktree remove {path}`."
+
+### D6: Return to main
+
+```bash
+git checkout main && git pull
+```
+
+### D7: Clean up Contract
+
+```bash
+rm -f $TEAMWORK_DIR/active/MISSION-{issue}.md
+```
+
+### D8: Output summary
+
+```
+MISSION DONE ✅
+═══════════════════════════════════════
+Issue:     #{issue} — {title} (closed)
+PR:        {pr-url} (merged)
+Labels:    status:done
+Worktree:  {removed/kept/not applicable}
+Branch:    returned to main
+═══════════════════════════════════════
+Next: /team-claim to pick up next mission
+      /team to see dashboard
+```
+
+---
+
+## Operation Review (AI PR review)
+
+> Triggered by `/team-ship review`. Fetches PR diff, reviews code, publishes review.
+
+### R1: Find PR
+
+```bash
+BRANCH=$(git branch --show-current)
+gh pr list --head "$BRANCH" --state open --json number,url --limit 1
+```
+
+If `$ARGUMENTS` contains a PR number → use that instead.
+If no open PR found → "No open PR found for branch `{branch}`." → **STOP**
+
+### R2: Get PR diff
+
+```bash
+gh pr diff {PR_NUMBER}
+```
+
+### R3: Read changed files
+
+For each file in the diff, read the full current content to understand context beyond just the diff hunks.
+
+### R4: AI Review
+
+Analyze the changes for:
+- **Correctness**: Logic errors, missing edge cases, off-by-one errors
+- **Security**: Injection vulnerabilities, exposed secrets, unsafe operations
+- **Architecture**: Coupling, separation of concerns, pattern consistency
+- **Quality**: Naming, readability, dead code, duplication
+- **Performance**: N+1 queries, unnecessary allocations, missing indexes
+
+### R5: Choose review action
+
+Use `AskUserQuestion`:
+```
+question: "What review action?"
+options:
+  - label: "Approve"
+    description: "Changes look good — approve the PR"
+  - label: "Request changes"
+    description: "Issues found — request fixes before merge"
+  - label: "Comment only"
+    description: "Leave feedback without approval decision"
+```
+
+### R6: Publish review
+
+```bash
+gh pr review {PR_NUMBER} --body "{review_body}" {--approve|--request-changes|--comment}
+```
+
+Output: "Review published on PR #{PR_NUMBER}: {approve/request-changes/comment}"
+
+---
+
+## Operation Sync (rebase on main)
+
+> Triggered by `/team-ship sync`. Rebases current branch on latest main.
+
+### S1: Verify on mission branch
+
+```bash
+BRANCH=$(git branch --show-current)
+```
+
+If on `main` → "Already on main. Nothing to sync." → **STOP**
+
+### S2: Fetch and rebase
+
+```bash
+git fetch origin main
+git rebase origin/main
+```
+
+- If rebase succeeds → "Branch `{branch}` rebased on latest main."
+- If rebase conflicts → "Rebase conflicts detected. Resolve them, then `git rebase --continue`." → **STOP** (do not abort automatically)
 
 ---
 
@@ -270,7 +457,7 @@ Next steps:
 - No active Contract → "No mission to ship. Run `/team-claim` first." → **STOP**
 - Incomplete sub-tasks → warn with list of remaining tasks → **STOP**
 - Tests fail → "Fix tests before shipping." → **STOP**
-- Push fails → suggest rebase, if still fails → **STOP**
+- Push fails → suggest rebase (`/team-ship sync`), if still fails → **STOP**
 - PR creation fails → "Failed to create PR. Check `gh auth status` and try again." → **STOP**
 - CI fails → warn but DO NOT stop (PR is already created, user can iterate)
 - Label/reviewer operations fail → warn but continue (non-fatal)

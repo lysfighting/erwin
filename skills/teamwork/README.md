@@ -10,6 +10,9 @@ GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are 
 | `/team-claim` | Claim a GitHub Issue as your mission | Pick your next task |
 | `/team-drive` | Execute mission from Contract | During work: AI-assisted execution |
 | `/team-ship` | Push, create PR, check CI, cleanup | When done: deliver via Pull Request |
+| `/team-ship done` | Post-merge cleanup | After PR merged: close Issue, clean worktree |
+| `/team-ship review` | AI code review on PR | Review PR for correctness, security, quality |
+| `/team-ship sync` | Rebase on main | Keep branch up to date with main |
 
 ## Onboarding
 
@@ -30,7 +33,8 @@ GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are 
 ```
 Morning:  git pull && claude → /team → /team-claim
 Working:  /team-drive
-Done:     /team-ship
+Done:     /team-ship → (after merge) /team-ship done
+Review:   /team-ship review
 ```
 
 ### Step by Step
@@ -56,6 +60,18 @@ Key principles:
 - **Three-layer quality gates** — git hooks (local) + GitHub Actions (CI) + branch protection (review)
 - **`gh` CLI as bridge** — all GitHub operations via authenticated CLI
 - **Wraps /drive** — Contract sub-tasks = drive execution plan
+- **Prefixed labels** — `status:wip`, `priority:P1`, `version:V1.0` — queryable, no collisions
+- **Full lifecycle** — claim → drive → ship → done (post-merge cleanup)
+
+## Optional Features
+
+All opt-in via `config.yml`:
+
+| Feature | Config Key | Default |
+|---------|-----------|---------|
+| Prefixed labels | `label_prefix` | Enabled (new installs) |
+| Git worktree isolation | `worktree.enabled` | `false` |
+| Version tracking | `versions.current` | Not set |
 
 ## What Gets Generated
 
@@ -63,7 +79,7 @@ Key principles:
 
 | File | Purpose |
 |------|---------|
-| `.teamwork/config.yml` | Team roster, project settings, conventions |
+| `.teamwork/config.yml` | Team roster, project settings, conventions, optional features |
 | `.github/ISSUE_TEMPLATE/mission.yml` | Structured Issue template for missions |
 | `.github/workflows/ci.yml` | CI workflow (lint + test + build) |
 | `.githooks/pre-commit` | Local lint on commit |
@@ -77,5 +93,5 @@ Key principles:
 
 ## Version
 
-- Skill version: 2.0.0
+- Skill version: 2.1.0
 - Config schema: 1

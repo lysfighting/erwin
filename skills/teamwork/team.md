@@ -151,6 +151,19 @@ options:
     description: "Full defense-in-depth: hooks + Actions + branch protection"
 ```
 
+**Question 3: Development isolation** (optional — ask if team size > 1)
+
+```
+question: "Development isolation strategy?"
+options:
+  - label: "Branch only (Recommended)"
+    description: "Simple branching — one working copy, switch between branches"
+  - label: "Git worktree"
+    description: "Parallel development — each mission gets its own working directory"
+```
+
+If "Git worktree" selected → set `worktree.enabled: true` in config.
+
 ---
 
 ## Step 4: Generate Files
@@ -169,7 +182,7 @@ Write based on detected project info + user answers:
 
 ```yaml
 schema_version: 1
-skill_version: 2.0.0
+skill_version: 2.1.0
 
 team:
   - github: {GH_USER}
@@ -187,12 +200,30 @@ conventions:
   base_branch: main
   commit_format: "type(scope): description | Mission: #{issue}"
 
+label_prefix:
+  status: "status:"
+  priority: "priority:"
+  size: "size:"
+
 quality:
   hooks: {true/false from Step 3}
   ci: {true/false from Step 3}
   review_required: {true/false from Step 3}
   branch_protection: {true/false from Step 3}
+
+# Optional: Git worktree isolation (from Question 3)
+# worktree:
+#   enabled: true
+#   path_pattern: "../{repo}-wt-{slug}"
+
+# Optional: Version tracking
+# versions:
+#   current: "V1.0"
+#   lifecycle: [dev, qa, released]
 ```
+
+If worktree was selected in Question 3, uncomment and enable the `worktree` section.
+If the project uses version tracking, uncomment and configure the `versions` section.
 
 ### 4c: Write `.github/ISSUE_TEMPLATE/mission.yml`
 
@@ -209,7 +240,7 @@ If not exists → generate:
 ```yaml
 name: Mission Contract
 description: Structured task for team execution
-labels: ["mission"]
+labels: ["mission", "status:queued"]
 body:
   - type: dropdown
     id: priority
@@ -449,15 +480,30 @@ Append if not already present:
 
 ### 5a: Create labels
 
+Read `label_prefix` from config. If config has `label_prefix` section → use those prefixes. If config has `github.label_prefix` (`.teamspace` format) → use those. Otherwise → no prefix (legacy fallback).
+
 ```bash
+# Category label (no prefix — it's a category, not a status)
 gh label create mission --color 0075ca --description "Team mission" --force
-gh label create P0 --color d73a4a --description "Critical priority" --force
-gh label create P1 --color e4e669 --description "High priority" --force
-gh label create P2 --color 0e8a16 --description "Medium priority" --force
-gh label create P3 --color cfd3d7 --description "Low priority" --force
-gh label create in-progress --color fbca04 --description "Currently being worked on" --force
-gh label create review --color 7057ff --description "Ready for review" --force
+
+# Priority labels (prefixed)
+gh label create "priority:P0" --color d73a4a --description "Critical priority" --force
+gh label create "priority:P1" --color e4e669 --description "High priority" --force
+gh label create "priority:P2" --color 0e8a16 --description "Medium priority" --force
+gh label create "priority:P3" --color cfd3d7 --description "Low priority" --force
+
+# Status labels (prefixed)
+gh label create "status:queued" --color c2e0c6 --description "Ready to be claimed" --force
+gh label create "status:wip" --color fbca04 --description "Currently being worked on" --force
+gh label create "status:review" --color 7057ff --description "Ready for review" --force
+gh label create "status:done" --color 0e8a16 --description "Completed" --force
+gh label create "status:blocked" --color d73a4a --description "Blocked by dependency" --force
+
+# Version label (if versions configured in config)
+# gh label create "version:${CURRENT_VERSION}" --color 006b75 --description "Version ${CURRENT_VERSION}" --force
 ```
+
+If `versions.current` is set in config, create the version label.
 
 ### 5b: Branch protection (if enabled)
 
@@ -509,15 +555,35 @@ Read the mission label from config. If config has `mc_label` field → use it. I
 MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/.*mc_label: *//' | sed 's/ *#.*//' | tr -d '"' || echo "mission")
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 
+# Determine label prefixes from config
+# Check label_prefix section first, then github.label_prefix (.teamspace), then no prefix
+# Note: sed 's/^[^:]*://' splits on FIRST colon only (values like "status:" contain colons)
+STATUS_PREFIX=$(grep '^\s*status:' $TEAMWORK_DIR/config.yml | head -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"' || echo "status:")
+PRIORITY_PREFIX=$(grep '^\s*priority:' $TEAMWORK_DIR/config.yml | head -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"' || echo "priority:")
+
 # All mission issues
 gh issue list --label "$MISSION_LABEL" --json number,title,assignees,labels,state,milestone --limit 50
+
+# WIP issues (for "working on" display)
+gh issue list --label "$MISSION_LABEL" --label "${STATUS_PREFIX}wip" --json number,title,assignees --limit 20
+
+# Review issues
+gh issue list --label "$MISSION_LABEL" --label "${STATUS_PREFIX}review" --json number,title,assignees --limit 20
 
 # Open PRs
 gh pr list --json number,title,author,headRefName,statusCheckRollup,reviewDecision --limit 20
 
 # Merge count per team member (merged PRs to base branch)
 gh pr list --state merged --base main --json author --limit 100
+
+# Version progress (if versions.current configured)
+# CURRENT_VERSION=$(grep 'current:' $TEAMWORK_DIR/config.yml | tail -1 | sed 's/.*: *//' | tr -d '"')
+# if [ -n "$CURRENT_VERSION" ]; then
+#   gh issue list --label "$MISSION_LABEL" --label "version:${CURRENT_VERSION}" --json state --limit 100
+# fi
 ```
+
+If `versions.current` is set, query version-tagged issues and calculate done/total percentage for the dashboard header.
 
 ### 6c: Format and display
 
@@ -525,17 +591,18 @@ Output a formatted dashboard like this:
 
 ```
 TEAM DASHBOARD — {repo name}
+{If versions configured:} Version: {current} ({done}/{total} tasks = {pct}%)
 Milestone: {active milestone} ({closed}/{total} = {pct}%)
 ════════════════════════════════════════════
 
 {For each team member from config.yml:}
   {username} ({role})
-     {If has assigned in-progress issue:} Working on: #{N} {title} [{priority}]
+     {If has assigned status:wip issue:} Working on: #{N} {title} [{priority}]
      {If has open PR:} PR: #{pr} — {CI status}
      {If idle:} Idle (last merged: #{last_merged_pr})
 
 QUEUED:
-  {Issues with label "mission" that are unassigned or not in-progress}
+  {Issues with label "mission" that are unassigned or status:queued}
      #{N} {title} [{priority}]
 
 MERGE COUNT:

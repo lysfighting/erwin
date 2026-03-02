@@ -153,6 +153,7 @@ priority: {PRIORITY}
 labels: [{labels}]
 branch: mission/{ISSUE_NUMBER}-{SLUG}-{GH_USER}
 milestone: "{MILESTONE or none}"
+version: "{VERSION from config, or omit if not configured}"
 claimed: {ISO_TIMESTAMP}
 ---
 
@@ -188,9 +189,10 @@ Use `Glob` and `Grep` with keywords from the Issue title and objective to discov
 
 ---
 
-## Step 5: Create Branch
+## Step 5: Create Branch (+ optional worktree)
 
 Read branch pattern from config: `conventions.branch_pattern`
+Read `worktree.enabled` from config (default: false).
 
 Generate branch name:
 ```bash
@@ -199,7 +201,15 @@ SLUG=$(echo "{ISSUE_TITLE}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd '
 BRANCH="mission/{ISSUE_NUMBER}-${SLUG}-${GH_USER}"
 ```
 
-Create and switch to the branch:
+**If worktree enabled:**
+```bash
+REPO_NAME=$(basename $(pwd))
+WORKTREE_PATH="../${REPO_NAME}-wt-${SLUG}"
+git worktree add -b "$BRANCH" "$WORKTREE_PATH"
+echo "{ISSUE_NUMBER}" > "$WORKTREE_PATH/.mission"
+```
+
+**If worktree disabled (default):**
 ```bash
 git checkout -b "$BRANCH"
 ```
@@ -209,10 +219,18 @@ git checkout -b "$BRANCH"
 ## Step 6: Assign Issue on GitHub
 
 ```bash
-gh issue edit {ISSUE_NUMBER} --add-assignee "$GH_USER" --add-label in-progress
+gh issue edit {ISSUE_NUMBER} --add-assignee "$GH_USER" --remove-label "status:queued" --add-label "status:wip"
 ```
 
 If assignee add fails (permissions), warn but continue — the local Contract is the source of truth for the claim.
+
+### 6b: Post claim comment
+
+```bash
+gh issue comment {ISSUE_NUMBER} --body "🚀 Claimed by @${GH_USER} — starting work on branch \`${BRANCH}\`"
+```
+
+Non-fatal: if comment fails, warn but continue.
 
 ---
 
@@ -227,6 +245,8 @@ Issue:    #{N} — {title}
 Priority: {P1}
 Branch:   {branch name}
 Contract: $TEAMWORK_DIR/active/MISSION-{N}.md
+{If worktree:} Worktree: {worktree path}
+{If worktree:} Hint: cd {worktree path} to work in isolation
 
 Objective:
   {objective summary}

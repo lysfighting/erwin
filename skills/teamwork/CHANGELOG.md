@@ -2,7 +2,28 @@
 
 All notable changes to the Teamwork skill set.
 
-## [Unreleased]
+## [2.1.0] — 2026-03-02
+
+### Added — vi-agent Feature Absorption
+
+Integrated 6 advantages from vi-agent's `.teamspace` system while keeping erwin's portability.
+
+- **Prefixed labels** — `status:wip`, `priority:P1`, `status:blocked`, `status:queued`, `status:done` (queryable, no collisions)
+- **Claim comment visibility** — `gh issue comment` posted when claiming an Issue for team transparency
+- **Worktree isolation** (optional) — `worktree.enabled: true` in config; creates isolated working directories per mission
+- **Version management** (optional) — `versions.current: "V1.0"` in config; version labels + dashboard progress tracking
+- **`/team-ship done`** — Post-merge cleanup: close Issue, update labels to `status:done`, clean worktree, return to main
+- **`/team-ship review`** — AI code review: fetch PR diff, analyze for correctness/security/architecture/quality/performance, publish `gh pr review`
+- **`/team-ship sync`** — Rebase current branch on latest main
+- **`.mission` file** — Worktree mode detection (Issue number stored in worktree root)
+
+### Changed
+
+- Labels upgraded from flat (`in-progress`, `P0`) to prefixed (`status:wip`, `priority:P0`)
+- Issue template now auto-applies `status:queued` label
+- Config schema extended with optional `label_prefix`, `worktree`, `versions` sections
+- `team-ship` now has argument routing: `done`, `review`, `sync` subcommands
+- Backward compatible: unprefixed labels still work for legacy configs
 
 ---
 

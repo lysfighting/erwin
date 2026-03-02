@@ -13,7 +13,13 @@ description: "Execute your claimed mission using drive methodology. Reads your M
 ## Step 0: Find Active Contract
 
 ```bash
-# Detect config directory
+# Detect worktree mode — .mission file contains Issue number
+if [ -f .mission ]; then
+  WORKTREE_MODE=true
+  MISSION_ISSUE=$(cat .mission)
+fi
+
+# Detect config directory (in worktree, may need to check parent repo)
 if [ -f .teamwork/config.yml ]; then
   TEAMWORK_DIR=".teamwork"
 elif [ -f .teamspace/config.yml ]; then
@@ -24,6 +30,7 @@ fi
 ```
 
 - If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
+- If in worktree mode (`WORKTREE_MODE=true`) → no branch switching needed in Step 1.
 
 ```bash
 ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
@@ -49,6 +56,9 @@ Extract from body:
 
 ## Step 1: Verify Branch
 
+**If worktree mode** (`WORKTREE_MODE=true`): skip branch check — worktree is already on the correct branch.
+
+**Otherwise:**
 ```bash
 CURRENT_BRANCH=$(git branch --show-current)
 ```
