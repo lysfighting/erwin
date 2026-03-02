@@ -1,5 +1,5 @@
 ---
-description: "Initialize GitHub-first teamwork system or show team dashboard. Run first to set up, then anytime for overview."
+description: "Team dashboard + init. First time? Try: /team help"
 ---
 
 # /team — Init + Dashboard (Teamwork v2)
@@ -13,7 +13,7 @@ description: "Initialize GitHub-first teamwork system or show team dashboard. Ru
 | Input | Action |
 |-------|--------|
 | (empty) | Auto: first run → Init, subsequent → Dashboard |
-| `help` | Show quick-start guide for new users |
+| `help` or `-h` | Show quick-start guide for new users |
 | `init` | Force re-initialize (even if config exists) |
 
 ---
@@ -21,7 +21,7 @@ description: "Initialize GitHub-first teamwork system or show team dashboard. Ru
 ## Route by Argument
 
 Parse `$ARGUMENTS`:
-- If `help` → jump to **Operation Help**
+- If `help` or `-h` → jump to **Operation Help**
 - If `init` → jump to **Step 0** (skip config check, force init)
 - If empty → continue to **Step 0** (auto-detect init vs dashboard)
 

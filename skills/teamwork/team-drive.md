@@ -1,5 +1,5 @@
 ---
-description: "Execute your claimed mission using drive methodology. Reads your Mission Contract and enters execution mode."
+description: "Execute mission from Contract. Try: /team-drive help"
 ---
 
 # /team-drive — Execute Mission
@@ -8,7 +8,7 @@ description: "Execute your claimed mission using drive methodology. Reads your M
 
 **User input**: $ARGUMENTS
 
-If `$ARGUMENTS` is `help`, output the following and **STOP**:
+If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
 ```
 /team-drive — Execute your claimed mission

@@ -1,5 +1,5 @@
 ---
-description: "Ship your completed mission — push, create PR with Issue linking, check CI, clean up Contract. The delivery step."
+description: "Ship mission → PR. Try: /team-ship help"
 ---
 
 # /team-ship — Deliver Mission
@@ -16,14 +16,14 @@ description: "Ship your completed mission — push, create PR with Issue linking
 | `done` | Post-merge cleanup (close Issue, update labels, clean worktree) |
 | `review` | AI code review on current PR |
 | `sync` | Rebase current branch on main |
-| `help` | Show usage guide |
+| `help` or `-h` | Show usage guide |
 
 ---
 
 ## Route by Argument
 
 Parse `$ARGUMENTS`:
-- If `help` → output the following and **STOP**:
+- If `help` or `-h` → output the following and **STOP**:
 
 ```
 /team-ship — Deliver your mission

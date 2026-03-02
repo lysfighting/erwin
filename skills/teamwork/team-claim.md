@@ -1,5 +1,5 @@
 ---
-description: "Claim a GitHub Issue as your mission. Generates AI execution contract, creates branch, assigns you."
+description: "Claim Issue → Contract → Branch. Try: /team-claim help"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -15,10 +15,10 @@ description: "Claim a GitHub Issue as your mission. Generates AI execution contr
 | `#42` or `42` | Claim specific Issue |
 | `list` | Browse available mission Issues |
 | `create "title"` | Create new Issue from mission template |
-| `help` | Show usage guide |
+| `help` or `-h` | Show usage guide |
 | (empty) | Auto-select next unassigned Issue by priority (P0 > P1 > P2 > P3) |
 
-If `$ARGUMENTS` is `help`, output the following and **STOP**:
+If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
 ```
 /team-claim — Claim a GitHub Issue as your mission
