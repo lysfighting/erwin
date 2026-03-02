@@ -190,7 +190,6 @@ export function SwarmTopologySection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   const [visibleBroadcasts, setVisibleBroadcasts] = useState<number[]>([])
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null)
-  const [messageKey, setMessageKey] = useState(0)
 
   // Broadcast feed timers
   useEffect(() => {
@@ -202,11 +201,6 @@ export function SwarmTopologySection() {
     )
     return () => timers.forEach(clearTimeout)
   }, [isInView])
-
-  // Reset message animation when activeNodeId changes
-  useEffect(() => {
-    setMessageKey(k => k + 1)
-  }, [activeNodeId])
 
   // Compute messages to show based on active node
   const messagesToShow = activeNodeId
@@ -318,7 +312,7 @@ export function SwarmTopologySection() {
                 const delay = activeNodeId ? i * 0.3 : msg.delay
                 return (
                   <MessageDot
-                    key={`msg-${messageKey}-${msg.fromId}-${msg.toId}`}
+                    key={`msg-${activeNodeId}-${msg.fromId}-${msg.toId}`}
                     fromNode={from}
                     toNode={to}
                     color={msg.color}

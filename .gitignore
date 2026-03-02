@@ -1,6 +1,9 @@
 # Dependencies
-drive-showcase/node_modules/
-drive-showcase/dist/
+**/node_modules/
+
+# Build artifacts
+**/dist/
+**/.vite/
 
 # Secrets
 *.env
@@ -25,6 +28,7 @@ __pycache__/
 # Logs
 *.log
 npm-debug.log*
+lint-output.txt
 
-# Build artifacts
-drive-showcase/dist/
+# Drive Mode working directories
+.claude/drive/

@@ -53,25 +53,6 @@ const translations = {
   },
   'demo.replay': { en: '↺ replay', zh: '↺ 重播' },
   'demo.playing': { en: '▶ playing...', zh: '▶ 播放中...' },
-  'demo.note1.phase':  { en: 'Phase 0',         zh: '阶段 0' },
-  'demo.note1.key':    { en: 'Research Swarm',   zh: '研究蜂群' },
-  'demo.note1.text': {
-    en: '3 parallel scouts launched simultaneously — no sequential reading. Results converge into Mission Contract before any code is written.',
-    zh: '3 个侦察 Agent 同时并行启动，无需顺序阅读。结果汇聚为任务契约，代码动工之前。',
-  },
-  'demo.note2.phase':  { en: 'Phase T + Loop',   zh: '阶段 T + 执行循环' },
-  'demo.note2.key':    { en: 'Two-Level Hierarchy', zh: '两级分层架构' },
-  'demo.note2.text': {
-    en: 'STL-auth spawns its own 3 inner subagents independently. You see all of them in terminal via Shift+Down. 8 parallel streams total.',
-    zh: 'STL-auth 自主生成 3 个内部子 Agent。通过 Shift+Down 可在终端看到全部。共 8 条并行执行流。',
-  },
-  'demo.note3.phase':  { en: 'Mission Complete', zh: '任务完成' },
-  'demo.note3.key':    { en: '3.2× Speedup',     zh: '3.2 倍加速' },
-  'demo.note3.text': {
-    en: 'Serial equivalent: ~45 min. Swarm wall-clock: ~14 min. The critical path ran on its own track, never blocking integration.',
-    zh: '串行等价耗时约 45 分钟，蜂群实际耗时约 14 分钟。关键路径独立运行，从不阻塞集成。',
-  },
-
   // ── Architecture ──
   'arch.title':    { en: 'Architecture', zh: '架构总览' },
   'arch.subtitle': {

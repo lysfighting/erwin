@@ -38,10 +38,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed — Showcase (Performance)
 - **Bundle code splitting** — 627KB single chunk → 221KB main + vendor chunks + 20 lazy-loaded chunks. React.lazy() for 19 components (15 ACT III sections + 3 ACT II components + SkillBuilder). Vendor splitting (react, framer-motion) in vite.config.ts. Vite 500KB warning eliminated.
 
+### Added — Showcase (Animation Enhancements)
+- **ExecutionSimulator topology** — 4-node SVG topology diagram (Team Lead → STL → Worker-1/Worker-2) with animated message flow dots (green dispatch, blue return) synced to simulation playback.
+- **SwarmTopologySection message flow** — 12 animated message dots flow along connection paths in 3 phases (dispatch → inner dispatch → return). Auto-plays on scroll into view. Click any node to focus its message paths (non-involved nodes/connections dim to 8% opacity). Click again or click background to reset.
+- **Consistent color coding** — dispatch=#22c55e (green), return=#3b82f6 (blue) across both components.
+
 ### Fixed — Showcase (Code Health)
+- **SwarmTopologySection** — fixed `react-hooks/set-state-in-effect` ESLint error by replacing `useEffect`+`setMessageKey` with `activeNodeId` in React key (same remount behavior, no effect).
 - **HeroSection** — fixed `react-hooks/set-state-in-effect` error by extracting `HeroAnimation` inner component with `key={lang}` reset pattern. Fixed `exhaustive-deps` warning with `useMemo`.
 - **Context files** — suppressed `react-refresh/only-export-components` false positives for hook exports.
 - **Semantic HTML** — added `<header>`, `<main>`, `<section aria-label>` landmarks to App.tsx.
+
+### Removed — Showcase (Dead Code)
+- **DemoSection.tsx** — removed orphaned 24KB component (not imported in App.tsx).
+- **9 dead i18n keys** — removed `demo.note1.*`, `demo.note2.*`, `demo.note3.*` from translations.ts (only used by removed DemoSection).
 
 ### Changed — Skills Factory
 - **`/new-project` → `/erwin-init`** — Renamed and redesigned per ADR-0008: from scaffolding tool to cognitive infrastructure installer. Zero-question entry, optional GOALS.md conversation. `erwin-` prefix reserved for framework-core skills.
