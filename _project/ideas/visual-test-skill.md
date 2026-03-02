@@ -1,7 +1,10 @@
 # Skill Idea: visual-test
 
-> Status: INBOX
-> Added: 2026-03-02
+- **Stage**: Fruit 🍎
+- **Created**: 2026-03-02
+- **Implemented**: `~/.claude/commands/visual-test.md`
+- **Dependency**: `@playwright/test` in `drive-showcase/devDependencies`, Chromium installed
+
 > Origin: OriginTrace layout bug was invisible to Claude until user shared a screenshot. A visual-test skill would have caught it automatically.
 
 ---
