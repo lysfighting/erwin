@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "2.3.2"
+version: "2.4.0"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -48,9 +48,11 @@ NEXT: /team-drive to start executing
 ```bash
 # Identity
 GH_USER=$(gh api user --jq '.login' 2>/dev/null)
+if [ -z "$GH_USER" ]; then
+  echo "ERROR: Cannot get GitHub user identity. Run 'gh auth login' first."
+  exit 1
+fi
 ```
-
-- If fails → "Not authenticated. Run `gh auth login` first." → **STOP**
 
 ```bash
 # Config (support both directory names)
@@ -69,7 +71,7 @@ Read `$TEAMWORK_DIR/config.yml` → extract team roster, conventions, project se
 
 ```bash
 # Read mission label from config (teamspace uses mc_label, teamwork v2 defaults to "mission")
-MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/^[^:]*://' | sed 's/^ *//' | sed 's/ *#.*//' | tr -d '"' || echo "mission")
+MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "mission" 2>/dev/null)
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 ```
 
@@ -85,7 +87,7 @@ ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 ```
 
 If any Contract exists → read it, display the active mission info.
-- "You already have an active mission: #{issue} — {title}. Complete it with `/team-ship` first, or remove `$TEAMWORK_DIR/active/MISSION-{N}.md` to abandon."
+- "You already have an active mission: #{issue} — {title}. Complete it with `/team-ship` first, or remove `$TEAMWORK_DIR/active/MISSION-{issue}.md` to abandon."
 - **STOP** (enforce one-at-a-time rule)
 
 ---
@@ -132,7 +134,7 @@ Proceed to Step 3 with the auto-selected Issue number.
 ## Step 3: Fetch Issue Details
 
 ```bash
-gh issue view {ISSUE_NUMBER} --json number,title,body,labels,milestone,assignees,url
+gh issue view {issue} --json number,title,body,labels,milestone,assignees,url
 ```
 
 Parse the Issue body. If the Issue was created with the mission template, extract structured fields:
@@ -144,11 +146,15 @@ Parse the Issue body. If the Issue was created with the mission template, extrac
 - **Test Command** from `### Verification Method` section or config `project.test_command`
 
 Also extract from the JSON response:
-- **Milestone** from `milestone.title` (if present)
+- **Milestone** — read from `milestone.title` field
 
-Also read from config:
 ```bash
-CURRENT_VERSION=$(grep 'current:' $TEAMWORK_DIR/config.yml | tail -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+# ISSUE_DATA is the full JSON from `gh issue view ... --json ...` above
+ISSUE_MILESTONE=$(echo "$ISSUE_DATA" | jq -r '.milestone.title // empty' 2>/dev/null)
+# Fall back to config versions.current if Issue has no milestone
+if [ -z "$ISSUE_MILESTONE" ]; then
+  ISSUE_MILESTONE=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
+fi
 ```
 
 If the Issue body is freeform (not from template), use AI understanding to extract:
@@ -160,24 +166,23 @@ If the Issue body is freeform (not from template), use AI understanding to extra
 
 ## Step 4: Generate Mission Contract
 
-Create `$TEAMWORK_DIR/active/MISSION-{N}.md` with this structure:
+Create `$TEAMWORK_DIR/active/MISSION-{issue}.md` with this structure:
 
 ```markdown
 ---
-issue: {ISSUE_NUMBER}
-url: {ISSUE_URL}
-title: "{ISSUE_TITLE}"
-assignee: {GH_USER}
-priority: {PRIORITY}
+issue: {issue}
+url: {url}
+title: "{title}"
+assignee: {user}
+priority: {priority}
 labels: [{labels}]
-branch: mission/{ISSUE_NUMBER}-{SLUG}-{GH_USER}
-milestone: "{milestone.title from Issue JSON, or 'none'}"
-version: "{CURRENT_VERSION from config — same as milestone if using versions.current, omit line if not configured}"
+branch: mission/{issue}-{slug}-{user}
+milestone: "{milestone — from Issue JSON, falls back to config versions.current, or 'none'}"
 claimed: {ISO_TIMESTAMP}
-issue_content_hash: "{SHA256 of ISSUE_TITLE + ISSUE_BODY at claim time}"
+issue_content_hash: "{SHA256 of title + body at claim time}"
 ---
 
-# MISSION-{N}: {ISSUE_TITLE}
+# MISSION-{issue}: {title}
 
 ## Objective
 {Extracted from Issue body}
@@ -219,10 +224,11 @@ Read worktree config: if `worktree:` section exists in config → treat as enabl
 Generate branch name:
 ```bash
 # Slugify the title: lowercase, replace spaces with hyphens, remove special chars, truncate
-SLUG=$(echo "{ISSUE_TITLE}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-' | head -c 30)
+SLUG=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-' | head -c 30)
 
-# Read branch pattern from config (check conventions.branch_pattern, then worktree.branch_pattern)
-BRANCH_PATTERN=$(grep 'branch_pattern:' $TEAMWORK_DIR/config.yml | head -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+# Read branch pattern from config
+BRANCH_PATTERN=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.branch_pattern "" 2>/dev/null)
+[ -z "$BRANCH_PATTERN" ] && BRANCH_PATTERN=$(bash ~/.claude/commands/scripts/tw-config.sh worktree.branch_pattern "mission/{issue}-{slug}-{user}" 2>/dev/null)
 [ -z "$BRANCH_PATTERN" ] && BRANCH_PATTERN="mission/{issue}-{slug}-{user}"
 
 # Substitute placeholders: {issue}→ISSUE_NUMBER, {slug}→SLUG, {user}→GH_USER, {type}→"mission"
@@ -234,16 +240,21 @@ BRANCH=$(echo "$BRANCH_PATTERN" | sed "s/{issue}/$ISSUE_NUMBER/;s/{slug}/$SLUG/;
 REPO_NAME=$(basename $(pwd))
 WORKTREE_PATH="../${REPO_NAME}-wt-${SLUG}"
 git worktree add -b "$BRANCH" "$WORKTREE_PATH"
-echo "{ISSUE_NUMBER}" > "$WORKTREE_PATH/.mission"
+echo "{issue}" > "$WORKTREE_PATH/.mission"
 
 # Contract is gitignored (active/), so copy it into the worktree
 mkdir -p "$WORKTREE_PATH/$TEAMWORK_DIR/active"
-cp "$TEAMWORK_DIR/active/MISSION-${ISSUE_NUMBER}.md" "$WORKTREE_PATH/$TEAMWORK_DIR/active/"
+cp "$TEAMWORK_DIR/active/MISSION-$ISSUE_NUMBER.md" "$WORKTREE_PATH/$TEAMWORK_DIR/active/"
 ```
 
 **If worktree disabled (default):**
 ```bash
-git checkout -b "$BRANCH"
+if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+  echo "Branch '$BRANCH' already exists. Switching to it."
+  git checkout "$BRANCH"
+else
+  git checkout -b "$BRANCH"
+fi
 ```
 
 ---
@@ -251,7 +262,7 @@ git checkout -b "$BRANCH"
 ## Step 6: Assign Issue on GitHub
 
 ```bash
-gh issue edit {ISSUE_NUMBER} --add-assignee "$GH_USER" --remove-label "status:queued" --add-label "status:wip"
+gh issue edit {issue} --add-assignee "$GH_USER" --remove-label "status:queued" --add-label "status:wip"
 ```
 
 If assignee add fails (permissions), warn but continue — the local Contract is the source of truth for the claim.
@@ -259,7 +270,7 @@ If assignee add fails (permissions), warn but continue — the local Contract is
 ### 6b: Post claim comment
 
 ```bash
-gh issue comment {ISSUE_NUMBER} --body "🚀 Claimed by @${GH_USER} — starting work on branch \`${BRANCH}\`"
+gh issue comment {issue} --body "🚀 Claimed by @${GH_USER} — starting work on branch \`${BRANCH}\`"
 ```
 
 Non-fatal: if comment fails, warn but continue.
@@ -273,10 +284,10 @@ Display a formatted briefing:
 ```
 MISSION CLAIMED
 ═══════════════════════════════════════
-Issue:    #{N} — {title}
-Priority: {P1}
-Branch:   {branch name}
-Contract: $TEAMWORK_DIR/active/MISSION-{N}.md
+Issue:    #{issue} — {title}
+Priority: {priority}
+Branch:   {branch}
+Contract: $TEAMWORK_DIR/active/MISSION-{issue}.md
 {If worktree:} Worktree: {worktree path}
 {If worktree:} Hint: cd {worktree path} to work in isolation
 
@@ -302,8 +313,8 @@ Next: /team-drive to start execution
 
 ## Error Handling
 
-- Issue not found → "Issue #{N} not found. Check the number." → **STOP**
+- Issue not found → "Issue #{issue} not found. Check the number." → **STOP**
 - Issue already assigned to someone else → warn but allow claiming (team member may be handing off)
-- Issue is closed → "Issue #{N} is already closed." → **STOP**
+- Issue is closed → "Issue #{issue} is already closed." → **STOP**
 - Branch already exists → "Branch {name} already exists. Switching to it." → `git checkout {branch}`
 - Network errors → "GitHub API error. Check your connection and `gh auth status`." → **STOP**

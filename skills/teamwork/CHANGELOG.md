@@ -2,6 +2,20 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.4.0] — 2026-03-03
+
+### Changed — Stability Hardening
+
+- **`scripts/tw-config.sh`** — New unified config parser. Replaces 15+ fragile sed chains across all skill files. Handles colon-containing values (label prefixes like `status:`), quoted strings, and nested YAML. Usage: `bash ~/.claude/commands/scripts/tw-config.sh project.test_command ""`.
+- **Placeholder normalization** — Single canonical naming convention across all 5 skills: `{issue}`, `{pr}`, `{user}`, `{branch}`, `{title}`, `{repo}`, `{milestone}`. Eliminates confusion between `{N}`, `{ISSUE_NUMBER}`, `{pr-number}`.
+- **team-ship pseudocode implemented** — tech-lead extraction (reads team roster for `role: tech-lead`), commit-type detection (prefix-based: fix/refactor/test/docs/feat), and base_branch reading were pseudocode in v2.3.x. Now real bash.
+- **Critical command verifications** — `gh api user` failure now fatal with clear message in all skills. `git checkout` verifies branch existence before switching. TEST_CMD empty check warns instead of silently passing.
+- **Issue bidirectional sync in team-drive** — After each sub-task is checked off in the Contract, the corresponding checkbox in the GitHub Issue body is updated. Team members see real-time progress on GitHub without visiting the branch. Non-fatal: network errors warn and continue.
+- **Version from Milestone (not config)** — team-claim reads Milestone from Issue JSON (`milestone.title`) instead of `config.yml versions.current`. Config fallback still works for backward compatibility. Removes need to keep `versions.current` in sync manually.
+- **REPO detection via `gh repo view`** — team-issue no longer requires a `repo:` field in config.yml. Uses `gh repo view --json nameWithOwner` auto-detection instead (same approach as other skills).
+
+---
+
 ## [2.3.3] — 2026-03-03
 
 ### Added — Script-Based Skill Architecture (Pilot)

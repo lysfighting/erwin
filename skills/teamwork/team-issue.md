@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "2.3.2"
+version: "2.4.0"
 ---
 
 # /team-issue — Create Mission Contract Issue
@@ -52,7 +52,7 @@ WHAT HAPPENS (update):
   3. Shows before/after diff for confirmation
   4. Updates Issue on GitHub
 
-NEXT: /team-claim #{N} to claim the created Issue
+NEXT: /team-claim #{issue} to claim the created Issue
 ```
 
 ---
@@ -61,8 +61,11 @@ NEXT: /team-claim #{N} to claim the created Issue
 
 ```bash
 GH_USER=$(gh api user --jq '.login' 2>/dev/null)
+if [ -z "$GH_USER" ]; then
+  echo "ERROR: Cannot get GitHub user identity. Run 'gh auth login' first."
+  exit 1
+fi
 ```
-- If fails → "Not authenticated. Run `gh auth login` first." → **STOP**
 
 ```bash
 if [ -f .teamwork/config.yml ]; then
@@ -79,7 +82,7 @@ Read `$TEAMWORK_DIR/config.yml` → extract `team.repo`, `github.mc_label`, doma
 
 ```bash
 # Extract current version/milestone if configured
-CURRENT_VERSION=$(grep 'current:' $TEAMWORK_DIR/config.yml | tail -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 ```
 - If `CURRENT_VERSION` is non-empty → Issues will be assigned to this milestone.
 
@@ -198,9 +201,9 @@ If cancel → **STOP**
 ## Step 5: Publish
 
 ```bash
-REPO=$(grep 'repo:' $TEAMWORK_DIR/config.yml | head -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
-MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/^[^:]*://' | sed 's/^ *//' | sed 's/ *#.*//' | tr -d '"')
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission-contract"
+REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
+MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "mission" 2>/dev/null)
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 ```
 
 ```bash
@@ -233,11 +236,11 @@ gh issue create \
 ```
 ISSUE CREATED
 ═══════════════════════════════════════
-Issue:  #{N} — {title}
+Issue:  #{issue} — {title}
 URL:    {issue URL}
 Labels: mission-contract, priority:{Pn}, domain:{domain}, size:{size}
 
-Next: /team-claim #{N} to claim this Issue
+Next: /team-claim #{issue} to claim this Issue
 ═══════════════════════════════════════
 ```
 
@@ -250,16 +253,16 @@ Next: /team-claim #{N} to claim this Issue
 ### U1: Fetch current Issue
 
 ```bash
-REPO=$(grep 'repo:' $TEAMWORK_DIR/config.yml | head -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
-gh issue view {ISSUE_NUMBER} --repo "$REPO" --json number,title,body,labels,state
+REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
+gh issue view {issue} --repo "$REPO" --json number,title,body,labels,state
 ```
 
-- If Issue not found → "Issue #{N} not found." → **STOP**
-- If Issue is closed → "Issue #{N} is closed. Reopen it first if you want to edit." → **STOP**
+- If Issue not found → "Issue #{issue} not found." → **STOP**
+- If Issue is closed → "Issue #{issue} is closed. Reopen it first if you want to edit." → **STOP**
 
 Display current Issue summary:
 ```
-CURRENT ISSUE #{N}
+CURRENT ISSUE #{issue}
 ──────────────────────────────────────
 Title:  {title}
 Labels: {labels}
@@ -290,7 +293,7 @@ Display the updated Issue:
 ```
 ISSUE UPDATE PREVIEW
 ═══════════════════════════════════════
-Issue:    #{N}
+Issue:    #{issue}
 Title:    {new title, or unchanged}
 
 Changes:
@@ -307,7 +310,7 @@ Use `AskUserQuestion` to confirm:
 ### U4: Apply update
 
 ```bash
-gh issue edit {ISSUE_NUMBER} \
+gh issue edit {issue} \
   --repo "$REPO" \
   --title "{new title}" \
   --body "{updated body}"
@@ -315,7 +318,7 @@ gh issue edit {ISSUE_NUMBER} \
 
 If labels changed (priority, size, domain):
 ```bash
-gh issue edit {ISSUE_NUMBER} --repo "$REPO" \
+gh issue edit {issue} --repo "$REPO" \
   --remove-label "priority:{old}" --add-label "priority:{new}" \
   --remove-label "size:{old}" --add-label "size:{new}"
 ```
@@ -325,7 +328,7 @@ gh issue edit {ISSUE_NUMBER} --repo "$REPO" \
 ```
 ISSUE UPDATED
 ═══════════════════════════════════════
-Issue:  #{N} — {title}
+Issue:  #{issue} — {title}
 URL:    {issue URL}
 
 Changes applied:
