@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "2.3.0"
+version: "2.3.1"
 ---
 
 # /team — Init + Dashboard (Teamwork v2)
@@ -730,8 +730,8 @@ gh issue list --label "$MISSION_LABEL" --json number,title,assignees,labels,stat
 # WIP issues (for "working on" display)
 gh issue list --label "$MISSION_LABEL" --label "${STATUS_PREFIX}wip" --json number,title,assignees --limit 20
 
-# Review issues
-gh issue list --label "$MISSION_LABEL" --label "${STATUS_PREFIX}review" --json number,title,assignees --limit 20
+# Review issues (shipped, PR open, awaiting merge)
+gh issue list --label "$MISSION_LABEL" --label "${STATUS_PREFIX}review" --json number,title,assignees,url --limit 20
 
 # Open PRs
 gh pr list --json number,title,author,headRefName,statusCheckRollup,reviewDecision --limit 20
@@ -763,6 +763,10 @@ Milestone: {active milestone} ({closed}/{total} = {pct}%)
      {If has assigned status:wip issue:} Working on: #{N} {title} [{priority}] {If ISSUE_STALE:} [UPDATED]
      {If has open PR:} PR: #{pr} — {CI status}
      {If idle:} Idle (last merged: #{last_merged_pr})
+
+UNDER REVIEW (PR open, awaiting merge):
+  {Issues with label "${STATUS_PREFIX}review" — show each:}
+     #{N} {title} [{assignee}]
 
 QUEUED:
   {Issues with label "$MISSION_LABEL" that are unassigned or status:queued}

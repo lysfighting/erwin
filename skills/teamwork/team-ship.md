@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "2.3.0"
+version: "2.3.1"
 ---
 
 # /team-ship — Deliver Mission
@@ -284,7 +284,15 @@ If review is not required → skip this step.
 gh issue edit {issue} --remove-label "status:wip" --add-label "status:review"
 ```
 
-If label operations fail, warn but continue.
+Then immediately verify the update:
+```bash
+CURRENT_LABELS=$(gh issue view {issue} --json labels --jq '[.labels[].name] | join(", ")')
+```
+
+- If output contains `status:review` AND does NOT contain `status:wip` → "Issue labeled status:review ✅ (labels: {CURRENT_LABELS})"
+- If `status:wip` is still present → "⚠ Label update incomplete. Issue still shows status:wip. Labels: {CURRENT_LABELS}. To fix manually: `gh issue edit {issue} --remove-label 'status:wip' --add-label 'status:review'`"
+- If `gh issue view` fails (network) → "⚠ Could not verify labels. Assume update succeeded."
+- Non-blocking in all cases: continue to 7b.
 
 ### 7b: Remove Contract
 
@@ -313,7 +321,7 @@ Sub-tasks delivered:
   ...
 
 Contract: cleaned up ✅
-Issue:    labeled "status:review" ✅
+Issue:    {CURRENT_LABELS from Step 7a — show actual labels, not assumed}
 ═══════════════════════════════════════
 Next steps:
   - After merge: /team-ship done (close Issue, update labels, clean worktree)

@@ -2,6 +2,16 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.3.1] — 2026-03-03
+
+### Fixed — Ship Status Lifecycle
+
+- **`/team-ship` label verification** — After updating Issue label from `status:wip` to `status:review`, immediately verifies via `gh issue view --json labels`. Shows actual labels in output instead of assumed ✅. If label update failed, shows diagnostic warning with manual fix command.
+- **`/team` dashboard REVIEW section** — Added `UNDER REVIEW (PR open, awaiting merge)` section between member status and QUEUED. Ships `status:review` issues are now visible on the dashboard instead of falling into a grey zone.
+- Both skills bumped to v2.3.1.
+
+---
+
 ## [2.3.0] — 2026-03-03
 
 ### Added — Issue Sync & Lifecycle Comments
