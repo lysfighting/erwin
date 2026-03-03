@@ -7,35 +7,31 @@
 ## Project Status
 
 - **Version**: 0.5.0 (in progress)
-- **Last Updated**: 2026-03-02
-- **Last Session**: [2026-03-02-M](sessions/2026-03-02-M.md) (Session M)
+- **Last Updated**: 2026-03-03
+- **Last Session**: [2026-03-03-N](sessions/2026-03-03-N.md) (Session N)
 
 ## Current Phase
 
-**Phase**: Teamwork v2.1 — architect-reviewed, tested, ready for E2E validation
+**Phase**: Teamwork v2.3 — 4 issues addressed in self-drive session, v2.3.3
 
 ## What Was Just Completed
 
-1. **Self-Drive Session M** — 2 missions completed:
-   - **Phase 2 Animation Enhancements**: ExecutionSimulator topology + message flow dots, SwarmTopologySection interactive message flow (auto-play + click-to-focus), /visual-test verified
-   - **Code Health Sweep**: Fixed ESLint error (SwarmTopology setState-in-effect), removed orphaned DemoSection.tsx (24KB), removed 9 dead demo.note* i18n keys. 0 ESLint errors, 0 TS errors.
+**Self-Drive Session N** — 4 teamwork issues fixed across 3 commits:
 
-2. **Previous sessions (I-L)**:
-   - Teamwork v2.1 architect review + 13 bug fixes (Session L)
-   - SkillBuilder MVP complete (Session I) — ACT IV form + download
-   - Bundle splitting done (Session J) — 627KB → 221KB
-   - Teamwork v2.0 design + implementation (Session K)
+1. **v2.3.1** — `/team-ship` status verification: label update now verified via `gh issue view`, output shows actual labels (not assumed). Dashboard gets UNDER REVIEW section for `status:review` issues.
+2. **v2.3.2** — Version management + issue format: milestone-based version tracking (`versions.current` → GitHub Milestone assignment on create), canonical field names (`Success Criteria`, `Context & References`, `### Objective`), dashboard shows milestone progress.
+3. **v2.3.3** — Script-based skill pilot: `scripts/setup-github-labels.sh` (idempotent, reads config), `install.sh` now installs `scripts/*.sh` to `$TARGET_DIR/scripts/`, `team.md` calls script first with fallback.
 
 ## Active Task / What's In Progress
 
-Self-Drive loop active. Phase 2 complete. Analyzing project for next proposals.
+None. Session N complete.
 
 ## Next Session Should Start With
 
 1. Read this file
-2. Continue Self-Drive loop (if session continues) or start new proposal round
-3. OR **E2E validate** teamwork on `../vi_agent`
-4. OR continue V2 Phase 3 remaining tasks
+2. **E2E validate** teamwork v2.3 on `../vi_agent` — run full flow: /team → /team-issue → /team-claim → /team-drive → /team-ship
+3. OR continue V2 Phase 3 showcase tasks (DesignPatternLibrary, CaseStudies)
+4. OR: Issue #3 still has room to grow — add more scripts (e.g., `tw-dashboard.sh`)
 
 ## Implementation Roadmap
 
@@ -54,12 +50,14 @@ Self-Drive loop active. Phase 2 complete. Analyzing project for next proposals.
 ### Skills Factory
 - [x] Teamwork v2.0 — 4 GitHub-first skills
 - [x] Teamwork v2.1 — 6 vi-agent features + 13 bug fixes
+- [x] Teamwork v2.3 — status fix + version management + format standardization + scripts
 - [ ] Teamwork E2E validation on vi_agent
 
 ## Known Issues / Blockers
 
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Placeholder naming inconsistent across teamwork skill files ({N} vs {ISSUE_NUMBER} vs {issue})
+- Teamwork v2.3: milestone creation (if it doesn't exist) needs manual step before /team-issue
 
 ## File Locations
 
@@ -71,4 +69,5 @@ Self-Drive loop active. Phase 2 complete. Analyzing project for next proposals.
 | V2 architecture | `docs/drive-showcase-v2-architecture.md` |
 | Teamwork architecture | `docs/teamwork-v2-architecture.md` |
 | Teamwork skills | `skills/teamwork/` |
+| Teamwork scripts | `skills/teamwork/scripts/` |
 | App root | `showcase/src/App.tsx` |
