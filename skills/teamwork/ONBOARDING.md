@@ -92,21 +92,24 @@ Commands: /team-claim #47 | /team-drive | /team-ship
 
 ---
 
-## Step 2: Create a Mission Issue
+## Step 2: Create a Mission Issue — `/team-issue`
 
-Go to GitHub and create a new Issue using the "Mission Contract" template that `/team` installed.
+Use `/team-issue` to turn a natural language description into a structured GitHub Issue:
 
-Fill in:
-- **Priority**: P1 (high)
-- **Objective**: What needs to be accomplished
-- **Sub-tasks**: Checklist of concrete steps
-- **Acceptance Criteria**: How to verify it's done
-- **Test Command**: e.g., `npm test -- --grep auth`
+```
+/team-issue Add user authentication with email + password
+```
 
-> **Tip**: You can also create Issues from the CLI:
-> ```
-> /team-claim create "Add user authentication"
-> ```
+Claude will:
+1. Ask clarifying questions (priority, scope, domain)
+2. AI-enrich the Issue body: objective, sub-tasks, success criteria, relevant files
+3. Preview the Issue before publishing
+4. Create it on GitHub with labels (`mission-contract`, `priority:P1`, `status:queued`)
+
+Or create Issues manually via the GitHub "Mission Contract" template that `/team` installed.
+
+> **Tip**: `/team-issue` requires `versions.current` to be set in config.yml if you want
+> the Issue auto-assigned to the current milestone.
 
 ---
 
@@ -272,6 +275,7 @@ Working:    /team-drive (execute with AI assistance)
 Done:       /team-ship (deliver PR)
 After merge:/team-ship done (close Issue, clean up)
 Repeat:     /team-claim (next task)
+Release:    /team-release (when milestone complete → tag + publish + next milestone)
 ```
 
 ---
@@ -342,7 +346,7 @@ After `/team` init, your `.teamwork/config.yml` looks like:
 
 ```yaml
 schema_version: 1
-skill_version: 2.1.0
+skill_version: 2.5.0
 
 team:
   - github: alice
@@ -378,7 +382,41 @@ quality:
 #   path_pattern: "../{repo}-wt-{slug}"
 # versions:
 #   current: "V1.0"
+#   spec_path: ".claude/drive/v1.0-definition/spec.md"  # enables AI audit in /team-release
 #   lifecycle: [dev, qa, released]
 ```
 
 Edit this file to change team members, commands, or quality preferences. Changes take effect immediately (no re-init needed).
+
+---
+
+## Step 6: Release a Version — `/team-release`
+
+When all missions in the current milestone are done:
+
+```
+/team-release
+```
+
+Flow:
+1. Checks milestone `V1.0` — shows open/closed Issue counts
+2. If `versions.spec_path` is configured, AI audits spec goals vs merged PRs (✅/⚠️/❌ per criterion)
+3. User confirmation
+4. `git tag V1.0` + push
+5. `gh release create V1.0 --generate-notes` — auto-generates release notes from PRs
+6. Closes GitHub Milestone `V1.0`
+7. Prompts for next version → creates Milestone `V1.1` → updates `versions.current` in config
+
+**Prerequisites:**
+- `versions.current: "V1.0"` in config.yml
+- GitHub Milestone `V1.0` must exist (`gh api repos/{REPO}/milestones --method POST --field title="V1.0"`)
+
+**With `spec_path` configured:**
+
+```yaml
+versions:
+  current: "V1.0"
+  spec_path: ".claude/drive/v1.0-definition/spec.md"
+```
+
+The spec file should have a `Success Criteria` section listing verifiable goals. `/team-release` reads these and checks each against merged PRs — giving you an audit before tagging.

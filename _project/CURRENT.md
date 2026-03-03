@@ -7,32 +7,33 @@
 ## Project Status
 
 - **Version**: 0.5.0 (in progress)
-- **Last Updated**: 2026-03-03
-- **Last Session**: [2026-03-03-P](sessions/2026-03-03-P.md) (Session P — E2E validation)
+- **Last Updated**: 2026-03-04
+- **Last Session**: [2026-03-04-Q](sessions/2026-03-04-Q.md) (Session Q — Teamwork v2.5.0)
 
 ## Current Phase
 
-**Phase**: Teamwork v2.4.1 — E2E validated on vi_agent
+**Phase**: Teamwork v2.5.0 — team-release + init idempotency fix
 
 ## What Was Just Completed
 
-**Session P** — E2E validation of teamwork v2.4 on vi_agent. Two bugs found and fixed (v2.4.1):
+**Session Q** — Teamwork v2.5.0 (full day of teamwork iteration):
 
-1. **tw-config.sh inline comment bug** — Values with trailing inline comments (e.g., `"mission-contract"  # label...`) were returned with garbage. Fixed `strip_val()` to extract quoted content directly, ignoring comments.
-2. **mc_label dual-schema support** — Skills called `mc_label` (flat) but vi_agent config has it at `github.mc_label` (nested). team-claim and team-issue now try both paths with fallback.
-3. **Full E2E flow verified** — Issue #27 created, claimed, driven (file created + bidirectional sync), shipped (PR #28), all artifacts cleaned up. vi_agent left in original state.
+1. **team.md v2.4.1 upgrade** — replaced all sed chains in dashboard with tw-config.sh calls (mc_label dual-schema, STATUS_PREFIX, PRIORITY_PREFIX, CURRENT_VERSION). skill_version template updated.
+2. **/team-release skill** — new `team-release.md` v2.5.0. Full version lifecycle: milestone check → AI audit (conditional on spec_path) → user confirm → git tag → gh release create --generate-notes → close milestone → next version setup.
+3. **/team init idempotency fix** — Step 4b now has MERGE MODE (config exists → preserve all sections, update skill_version, append missing) vs FRESH INSTALL (no config → full write). Eliminates destructive overwrite of custom configs.
+4. **Documentation sweep** — team.md help added /team-issue + /team-release + VERSION LIFECYCLE section. ONBOARDING.md: skill_version 2.1.0→2.5.0, Step 2 rewritten for /team-issue, Step 6 added for /team-release, daily workflow + versions comment updated.
 
 ## Active Task / What's In Progress
 
-None. Sessions O+P complete.
+None. Session Q complete.
 
 ## Next Session Should Start With
 
 1. Read this file
-2. Continue V2 Phase 3 showcase tasks (DesignPatternLibrary, CaseStudies)
+2. Continue V2 Phase 3 showcase tasks (DesignPatternLibrary, CaseStudies) — still blocking v1.0.0
 3. **Future teamwork missions**:
-   - `/team-release` skill (close Milestone → git tag → `gh release create --generate-notes`)
-   - `/team-drive` wrapping full `/drive` (thin wrapper, skip Phase 0)
+   - `/team-drive` wrapping full `/drive` (thin wrapper, skip Phase 0) — still unimplemented
+   - version_file support in team-release (package.json version bump) — deferred to v2.6
 
 ## Implementation Roadmap
 
@@ -54,12 +55,13 @@ None. Sessions O+P complete.
 - [x] Teamwork v2.3 — status fix + version management + format standardization + scripts
 - [x] Teamwork v2.4 — stability hardening + bidirectional sync + tw-config.sh
 - [x] Teamwork v2.4.1 — E2E validated on vi_agent + mc_label dual-schema + inline comment fix
+- [x] Teamwork v2.5.0 — team-release skill + init idempotency fix + doc sweep
 
 ## Known Issues / Blockers
 
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
-- Teamwork: milestone creation (if it doesn't exist) needs manual step before /team-issue (non-fatal warning works)
-- Teamwork: team.md (dashboard) still at v2.3.2 — team board feature deferred
+- Teamwork: initial milestone must be created manually (non-fatal warning in /team-issue)
+- Teamwork: version_file (package.json bump) not yet in team-release — deferred to v2.6
 
 ## File Locations
 

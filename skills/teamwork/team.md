@@ -41,6 +41,7 @@ SETUP (one time):
 
 DAILY WORKFLOW:
   /team                 See dashboard (who's working on what)
+  /team-issue           Create a mission Issue from natural language
   /team-claim #N        Claim Issue #N → generate Contract + branch
   /team-claim           Auto-pick highest priority unassigned Issue
   /team-claim list      Browse available missions
@@ -52,11 +53,15 @@ AFTER MERGE:
   /team-ship review     AI code review on current PR
   /team-ship sync       Rebase branch on latest main
 
+VERSION LIFECYCLE:
+  /team-release         Close milestone → git tag → GitHub Release → next version
+
 LIFECYCLE:
-  Issue → /team-claim → Contract + branch
-       → /team-drive → implement + test + commit
-       → /team-ship  → PR (Closes #N)
-       → /team-ship done → Issue closed, back to main
+  /team-issue → Issue → /team-claim → Contract + branch
+                     → /team-drive → implement + test + commit
+                     → /team-ship  → PR (Closes #N)
+                     → /team-ship done → Issue closed, back to main
+  All missions done? → /team-release → tag + release + next milestone
 
 CONFIG:
   .teamwork/config.yml  (or .teamspace/config.yml)
