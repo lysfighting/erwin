@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "2.4.1"
+version: "2.5.0"
 ---
 
 # /team — Init + Dashboard (Teamwork v2)
@@ -320,11 +320,96 @@ mkdir -p $TEAMWORK_DIR/active .github/ISSUE_TEMPLATE .github/workflows .githooks
 
 ### 4b: Write `$TEAMWORK_DIR/config.yml`
 
-Write based on detected project info + user answers:
+**First, check if config.yml already exists:**
+
+```bash
+ls $TEAMWORK_DIR/config.yml 2>/dev/null
+```
+
+---
+
+#### MERGE MODE (config exists)
+
+Preserve all existing content. Only update `skill_version` and append missing top-level sections.
+
+**Step 1 — Update skill_version in place:**
+
+```bash
+# Update skill_version line without touching anything else
+sed -i '' "s/^skill_version:.*/skill_version: 2.5.0/" $TEAMWORK_DIR/config.yml
+# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 2.5.0/" $TEAMWORK_DIR/config.yml
+```
+
+**Step 2 — Detect which top-level sections are missing:**
+
+```bash
+python3 -c "
+import yaml, sys
+with open('$TEAMWORK_DIR/config.yml') as f:
+    d = yaml.safe_load(f) or {}
+missing = [s for s in ['project', 'conventions', 'label_prefix', 'quality']
+           if s not in d]
+print('\n'.join(missing))
+"
+```
+
+**Step 3 — Append only missing sections to the file:**
+
+For each missing section, append the appropriate YAML block. Use the project info detected in Step 2 and answers from Step 3.
+
+Standard section templates to append as needed:
+
+```yaml
+# Appended by /team init upgrade
+project:
+  language: {LANGUAGE}
+  test_command: "{TEST_CMD}"
+  lint_command: "{LINT_CMD}"
+  build_command: "{BUILD_CMD}"
+```
+
+```yaml
+conventions:
+  branch_pattern: "mission/{issue}-{slug}-{user}"
+  base_branch: main
+  commit_format: "type(scope): description | Mission: #{issue}"
+```
+
+```yaml
+label_prefix:
+  status: "status:"
+  priority: "priority:"
+  size: "size:"
+```
+
+```yaml
+quality:
+  hooks: {true/false from Step 3}
+  ci: {true/false from Step 3}
+  review_required: {true/false from Step 3}
+  branch_protection: {true/false from Step 3}
+```
+
+**Step 4 — Show merge summary:**
+
+```
+✅ Config updated (merge mode — existing config preserved)
+   skill_version → 2.5.0
+   Preserved sections: {list of sections kept}
+   Added sections: {list of sections appended, or "(none — already complete)"}
+```
+
+Do NOT overwrite `team`/`members`, `github`, `worktree`, `versions`, `roles`, or any unrecognized section.
+
+---
+
+#### FRESH INSTALL (config does not exist)
+
+Write full config based on detected project info + user answers:
 
 ```yaml
 schema_version: 1
-skill_version: 2.4.1
+skill_version: 2.5.0
 
 team:
   - github: {GH_USER}
@@ -358,9 +443,10 @@ quality:
 #   enabled: true
 #   path_pattern: "../{repo}-wt-{slug}"
 
-# Optional: Version tracking
+# Optional: Version tracking (required for /team-release)
 # versions:
 #   current: "V1.0"
+#   spec_path: ".claude/drive/v1.0-definition/spec.md"  # optional: enables AI audit in /team-release
 #   lifecycle: [dev, qa, released]
 ```
 

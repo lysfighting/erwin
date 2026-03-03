@@ -2,6 +2,35 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.5.0] — 2026-03-04
+
+### Added — `/team-release` skill
+
+- **`team-release.md`** — New skill: close a version milestone, create git tag, publish GitHub Release, and prepare the next version. Full 11-step flow:
+  1. Pre-flight: detect config dir, read `versions.current` (required), `versions.spec_path` (optional)
+  2. Milestone check: show open/closed Issue counts, warn if open issues remain
+  3. AI audit: if `versions.spec_path` configured, compare spec Success Criteria vs merged PRs + closed Issues. Outputs ✅/⚠️/❌ per criterion
+  4. User confirmation before any mutations
+  5. `git tag {VERSION}` + `git push origin {VERSION}`
+  6. `gh release create {VERSION} --generate-notes` — auto-generates notes from merged PRs
+  7. Close GitHub Milestone
+  8. Prompt for next version name
+  9. Create next GitHub Milestone
+  10. Update `versions.current` in config.yml
+  11. Commit config change + push
+- Tag format: uses `versions.current` value exactly (e.g. `"V0.1"` → tag `"V0.1"`)
+- AI audit is conditional: only runs when `versions.spec_path` is set and file exists
+
+### Changed — `/team init` idempotency fix
+
+- **`team.md`** v2.4.1 → v2.5.0 — `Step 4b` now has two modes:
+  - **MERGE MODE** (config exists): preserves all existing sections, updates `skill_version` in-place via sed, appends only missing sections (`project`, `conventions`, `label_prefix`, `quality`). Explicitly does NOT touch `team`/`members`, `github`, `worktree`, `versions`, `roles`, or any custom sections.
+  - **FRESH INSTALL** (no config): writes full template (existing behavior, unchanged).
+  - Previous behavior: unconditional overwrite. Running `/team init` on a project with customized config (e.g. vi_agent's nested `github.mc_label` schema) would silently destroy all customizations.
+- **`team.md` config template** — added `spec_path` comment to `versions:` block, pointing to `/team-release` as consumer.
+
+---
+
 ## [2.4.1] — 2026-03-03
 
 ### Changed — Dashboard Upgrade (team.md v2.3.2 → v2.4.1)
