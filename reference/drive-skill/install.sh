@@ -132,6 +132,7 @@ install_command "drive.md"
 install_command "self-drive.md"
 install_command "architect.md"
 install_command "improve-user.md"
+install_command "reasoning-toolkit.md"
 
 # ─── Install Pantheon (众神殿) ───
 
