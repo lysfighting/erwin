@@ -4,6 +4,16 @@ All notable changes to the Teamwork skill set.
 
 ## [2.4.1] — 2026-03-03
 
+### Changed — Dashboard Upgrade (team.md v2.3.2 → v2.4.1)
+
+- **`team.md`** — Replaced all fragile `grep/sed` config chains in Step 6c with `tw-config.sh` calls. Four sed chains eliminated:
+  - `MISSION_LABEL` — now via `tw-config.sh github.mc_label` (dual-schema: teamspace first, then flat `mc_label`, then `"mission"` default)
+  - `STATUS_PREFIX` — now via `tw-config.sh label_prefix.status`
+  - `PRIORITY_PREFIX` — now via `tw-config.sh label_prefix.priority`
+  - `CURRENT_VERSION` — now via `tw-config.sh versions.current`
+- **`team.md` config template** — `skill_version` in generated `.teamspace/config.yml` template updated from `2.1.0` to `2.4.1`. New installs get correct version.
+- **`team.md` version** — Bumped from `2.3.2` to `2.4.1` (skips 2.4.0 — dashboard was deferred during stability hardening, now catches up).
+
 ### Fixed — E2E Validation on vi_agent
 
 - **`scripts/tw-config.sh`** — Fixed inline YAML comment stripping. Values like `mc_label: "mission-contract"  # comment` were returning `mission-contract"  # comment` instead of `mission-contract`. Now correctly extracts quoted value, ignoring trailing inline comment.

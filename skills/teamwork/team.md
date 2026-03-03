@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "2.3.2"
+version: "2.4.1"
 ---
 
 # /team — Init + Dashboard (Teamwork v2)
@@ -324,7 +324,7 @@ Write based on detected project info + user answers:
 
 ```yaml
 schema_version: 1
-skill_version: 2.1.0
+skill_version: 2.4.1
 
 team:
   - github: {GH_USER}
@@ -711,17 +711,16 @@ CURRENT_HASH=$(echo "${ISSUE_TITLE}${ISSUE_BODY}" | shasum -a 256 | cut -d' ' -f
 Read the mission label from config. If config has `mc_label` field → use it. If config has the teamwork v2 schema → use `mission`. Default: `mission`.
 
 ```bash
-# Determine the mission label from config
-# teamwork v2 schema: label is "mission"
-# teamspace schema: look for mc_label field (e.g., "mission-contract")
-MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/^[^:]*://' | sed 's/^ *//' | sed 's/ *#.*//' | tr -d '"' || echo "mission")
+# Determine the mission label — try github.mc_label (teamspace schema) then mc_label (teamwork schema)
+MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 
-# Determine label prefixes from config
-# Check label_prefix section first, then github.label_prefix (.teamspace), then no prefix
-# Note: sed 's/^[^:]*://' splits on FIRST colon only (values like "status:" contain colons)
-STATUS_PREFIX=$(grep '^\s*status:' $TEAMWORK_DIR/config.yml | head -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"' || echo "status:")
-PRIORITY_PREFIX=$(grep '^\s*priority:' $TEAMWORK_DIR/config.yml | head -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"' || echo "priority:")
+# Determine label prefixes from config (erwin schema: label_prefix.status; vi_agent: defaults)
+STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
+PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.priority "" 2>/dev/null)
+[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX="priority:"
 
 # All mission issues
 gh issue list --label "$MISSION_LABEL" --json number,title,assignees,labels,state,milestone --limit 50
@@ -739,7 +738,7 @@ gh pr list --json number,title,author,headRefName,statusCheckRollup,reviewDecisi
 gh pr list --state merged --base main --json author --limit 100
 
 # Version progress (if versions.current configured in config)
-CURRENT_VERSION=$(grep 'current:' $TEAMWORK_DIR/config.yml | tail -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 if [ -n "$CURRENT_VERSION" ]; then
   # Use GitHub Milestones for version progress tracking
   gh api repos/{REPO}/milestones --jq ".[] | select(.title == \"$CURRENT_VERSION\") | {open: .open_issues, closed: .closed_issues}"
