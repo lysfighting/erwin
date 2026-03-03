@@ -143,6 +143,24 @@ install_skill() {
     echo -e "${RED}✗ No skill files found in: $skill_dir${NC}"
     return 1
   fi
+
+  # Install scripts/ subdir if present
+  if [[ -d "$skill_dir/scripts" ]]; then
+    local scripts_dst="$TARGET_DIR/scripts"
+    mkdir -p "$scripts_dst"
+    for script in "$skill_dir/scripts/"*.sh; do
+      [[ -f "$script" ]] || continue
+      local script_name="$(basename "$script")"
+      local script_dst="$scripts_dst/$script_name"
+      if [[ "$INSTALL_MODE" == "copy" ]]; then
+        cp "$script" "$script_dst"
+      else
+        ln -sf "$script" "$script_dst"
+      fi
+      chmod +x "$script"  # ensure source is executable
+      echo -e "${GREEN}  📜 scripts/$script_name${NC}"
+    done
+  fi
 }
 
 if [[ $# -eq 0 ]]; then

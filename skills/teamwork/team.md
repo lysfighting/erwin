@@ -624,30 +624,29 @@ Append if not already present:
 
 ### 5a: Create labels
 
-Read `label_prefix` from config. If config has `label_prefix` section → use those prefixes. If config has `github.label_prefix` (`.teamspace` format) → use those. Otherwise → no prefix (legacy fallback).
+Use the `setup-github-labels.sh` script installed with teamwork:
 
 ```bash
-# Category label (no prefix — it's a category, not a status)
-gh label create mission --color 0075ca --description "Team mission" --force
+# Preferred: use installed script (reads config for prefixes, idempotent)
+bash ~/.claude/commands/scripts/setup-github-labels.sh
+```
 
-# Priority labels (prefixed)
+If the script is not available (e.g., installed without scripts):
+```bash
+# Fallback: inline label creation
+gh label create mission --color 0075ca --description "Team mission" --force
+gh label create "status:queued" --color c2e0c6 --description "Ready to be claimed" --force
+gh label create "status:wip" --color fbca04 --description "Currently being worked on" --force
+gh label create "status:review" --color 7057ff --description "PR open, awaiting merge" --force
+gh label create "status:done" --color 0e8a16 --description "Completed" --force
+gh label create "status:blocked" --color d73a4a --description "Blocked by dependency" --force
 gh label create "priority:P0" --color d73a4a --description "Critical priority" --force
 gh label create "priority:P1" --color e4e669 --description "High priority" --force
 gh label create "priority:P2" --color 0e8a16 --description "Medium priority" --force
 gh label create "priority:P3" --color cfd3d7 --description "Low priority" --force
-
-# Status labels (prefixed)
-gh label create "status:queued" --color c2e0c6 --description "Ready to be claimed" --force
-gh label create "status:wip" --color fbca04 --description "Currently being worked on" --force
-gh label create "status:review" --color 7057ff --description "Ready for review" --force
-gh label create "status:done" --color 0e8a16 --description "Completed" --force
-gh label create "status:blocked" --color d73a4a --description "Blocked by dependency" --force
-
-# Version label (if versions configured in config)
-# gh label create "version:${CURRENT_VERSION}" --color 006b75 --description "Version ${CURRENT_VERSION}" --force
 ```
 
-If `versions.current` is set in config, create the version label.
+If `versions.current` is set in config, also create the milestone via GitHub API (not a label — use Milestones).
 
 ### 5b: Branch protection (if enabled)
 

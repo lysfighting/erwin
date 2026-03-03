@@ -2,6 +2,17 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.3.3] — 2026-03-03
+
+### Added — Script-Based Skill Architecture (Pilot)
+
+- **`scripts/setup-github-labels.sh`** — Executable bash script that creates/updates all teamwork labels on GitHub. Reads label prefixes from `.teamwork/config.yml` automatically. Idempotent (uses `--force`). Run: `bash ~/.claude/commands/scripts/setup-github-labels.sh`
+- **`install.sh` scripts support** — `install_skill()` now detects and installs `scripts/*.sh` files from each skill directory to `$TARGET_DIR/scripts/`. Symlink mode: symlinks auto-update with `git pull`. Copy mode: copies standalone.
+- **`/team` label setup uses script** — Step 5a now calls the script first with inline fallback. Eliminates the fragile 10-command sequence the LLM had to interpret.
+- Establishes the pattern: skill folder = `.md` (AI brain) + `scripts/` (deterministic bash). LLM runs scripts; scripts do the mechanical work.
+
+---
+
 ## [2.3.2] — 2026-03-03
 
 ### Added — Version Management + Issue Format Standardization

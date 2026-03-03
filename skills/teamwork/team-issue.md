@@ -343,4 +343,4 @@ when they run /team-drive.
 
 - Empty description → "Please provide a description. Example: `/team-issue fix camera not working on Safari`" → **STOP**
 - GitHub API error → "Failed to create Issue. Check `gh auth status`." → **STOP**
-- Label not found → create Issue without that label, warn user to run `scripts/setup-github-labels.sh`
+- Label not found → create Issue without that label, warn user to run `bash ~/.claude/commands/scripts/setup-github-labels.sh` (installed with teamwork)
