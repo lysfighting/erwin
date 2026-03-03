@@ -2,6 +2,18 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.4.1] — 2026-03-03
+
+### Fixed — E2E Validation on vi_agent
+
+- **`scripts/tw-config.sh`** — Fixed inline YAML comment stripping. Values like `mc_label: "mission-contract"  # comment` were returning `mission-contract"  # comment` instead of `mission-contract`. Now correctly extracts quoted value, ignoring trailing inline comment.
+- **`team-claim.md`** — mc_label resolution now handles both config schemas: tries `github.mc_label` (teamspace/vi_agent schema) first, then `mc_label` (teamwork v2 schema), then defaults to `"mission"`. Fixes silent fallback to wrong label on vi_agent.
+- **`team-issue.md`** — Same mc_label dual-schema fix. Both `github.mc_label` and `mc_label` paths tried before falling back to default.
+
+Discovered and fixed during E2E validation run on `../vi_agent`. Full skill flow (issue → claim → drive → ship) verified non-destructively (Issue #27, PR #28, all closed/deleted post-test).
+
+---
+
 ## [2.4.0] — 2026-03-03
 
 ### Changed — Stability Hardening

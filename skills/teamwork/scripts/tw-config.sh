@@ -48,6 +48,23 @@ config_file = sys.argv[1]
 key_path = sys.argv[2]
 default = sys.argv[3] if len(sys.argv) > 3 else ""
 
+def strip_val(raw):
+    """Extract YAML scalar value, stripping quotes and inline comments."""
+    v = raw.strip()
+    if not v:
+        return ''
+    # If quoted: extract content between first matching pair of quotes
+    if v[0] in ('"', "'"):
+        q = v[0]
+        end = v.find(q, 1)
+        return v[1:end] if end > 0 else v.strip(q)
+    # Unquoted: strip inline comment (space + # ...)
+    for marker in ('  #', ' #'):
+        pos = v.find(marker)
+        if pos >= 0:
+            v = v[:pos]
+    return v.strip()
+
 def parse_simple_yaml(filepath):
     """Parse a subset of YAML: flat keys + 1-level nesting. No arrays."""
     result = {}
@@ -66,7 +83,7 @@ def parse_simple_yaml(filepath):
                 if not line.startswith(' ') and not line.startswith('\t') and ':' in line:
                     parts = line.split(':', 1)
                     section_key = parts[0].strip()
-                    section_val = parts[1].strip().strip('"').strip("'")
+                    section_val = strip_val(parts[1])
 
                     if section_val == '' or section_val == '|' or section_val == '>':
                         # Section header — subsequent indented lines belong to this section
@@ -83,7 +100,7 @@ def parse_simple_yaml(filepath):
                     stripped = line.strip()
                     parts = stripped.split(':', 1)
                     sub_key = parts[0].strip()
-                    sub_val = parts[1].strip().strip('"').strip("'") if len(parts) > 1 else ''
+                    sub_val = strip_val(parts[1]) if len(parts) > 1 else ''
                     if sub_val != '' and sub_val not in ('|', '>'):
                         result[current_section + '.' + sub_key] = sub_val
 

@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "2.4.0"
+version: "2.4.1"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -70,8 +70,9 @@ fi
 Read `$TEAMWORK_DIR/config.yml` → extract team roster, conventions, project settings.
 
 ```bash
-# Read mission label from config (teamspace uses mc_label, teamwork v2 defaults to "mission")
-MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "mission" 2>/dev/null)
+# Read mission label from config — try github.mc_label (teamspace schema) then mc_label (teamwork schema)
+MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 ```
 

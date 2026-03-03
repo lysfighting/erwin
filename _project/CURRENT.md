@@ -8,35 +8,29 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-03
-- **Last Session**: [2026-03-03-O](sessions/2026-03-03-O.md) (Session O)
+- **Last Session**: [2026-03-03-P](sessions/2026-03-03-P.md) (Session P — E2E validation)
 
 ## Current Phase
 
-**Phase**: Teamwork v2.4 — stability hardening + bidirectional sync
+**Phase**: Teamwork v2.4.1 — E2E validated on vi_agent
 
 ## What Was Just Completed
 
-**Self-Drive Session O** — 6 items prioritized and executed as Teamwork v2.4.0:
+**Session P** — E2E validation of teamwork v2.4 on vi_agent. Two bugs found and fixed (v2.4.1):
 
-1. **tw-config.sh** — New unified config parser script (`scripts/tw-config.sh`). Replaces 15+ fragile sed chains across all 5 skill files. Handles colon-containing values, quoted strings, nested YAML. Python3-based.
-2. **Placeholder normalization** — Single canonical convention: `{issue}`, `{pr}`, `{user}`, `{branch}` across all 5 skills.
-3. **team-ship pseudocode implemented** — tech-lead extraction, commit-type detection, base_branch reading were pseudocode before. Now real bash.
-4. **Critical command verifications** — `gh api user` fatal check, `git checkout` branch existence, TEST_CMD empty check.
-5. **Issue bidirectional sync** — `team-drive` writes sub-task completions back to GitHub Issue body during execution.
-6. **Version from Milestone** — `team-claim` reads milestone from Issue JSON, not config `versions.current`.
-
-Commit: `a0de18d feat(skills): teamwork v2.4.0 — stability hardening`
+1. **tw-config.sh inline comment bug** — Values with trailing inline comments (e.g., `"mission-contract"  # label...`) were returned with garbage. Fixed `strip_val()` to extract quoted content directly, ignoring comments.
+2. **mc_label dual-schema support** — Skills called `mc_label` (flat) but vi_agent config has it at `github.mc_label` (nested). team-claim and team-issue now try both paths with fallback.
+3. **Full E2E flow verified** — Issue #27 created, claimed, driven (file created + bidirectional sync), shipped (PR #28), all artifacts cleaned up. vi_agent left in original state.
 
 ## Active Task / What's In Progress
 
-None. Session O complete.
+None. Sessions O+P complete.
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **E2E validate** teamwork v2.4 on `../vi_agent` — run full flow: /team → /team-issue → /team-claim → /team-drive → /team-ship
-3. OR continue V2 Phase 3 showcase tasks (DesignPatternLibrary, CaseStudies)
-4. **Future missions** (from Session O discussion):
+2. Continue V2 Phase 3 showcase tasks (DesignPatternLibrary, CaseStudies)
+3. **Future teamwork missions**:
    - `/team-release` skill (close Milestone → git tag → `gh release create --generate-notes`)
    - `/team-drive` wrapping full `/drive` (thin wrapper, skip Phase 0)
 
@@ -58,13 +52,14 @@ None. Session O complete.
 - [x] Teamwork v2.0 — 4 GitHub-first skills
 - [x] Teamwork v2.1 — 6 vi-agent features + 13 bug fixes
 - [x] Teamwork v2.3 — status fix + version management + format standardization + scripts
-- [ ] Teamwork E2E validation on vi_agent
+- [x] Teamwork v2.4 — stability hardening + bidirectional sync + tw-config.sh
+- [x] Teamwork v2.4.1 — E2E validated on vi_agent + mc_label dual-schema + inline comment fix
 
 ## Known Issues / Blockers
 
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
-- Placeholder naming inconsistent across teamwork skill files ({N} vs {ISSUE_NUMBER} vs {issue})
-- Teamwork v2.3: milestone creation (if it doesn't exist) needs manual step before /team-issue
+- Teamwork: milestone creation (if it doesn't exist) needs manual step before /team-issue (non-fatal warning works)
+- Teamwork: team.md (dashboard) still at v2.3.2 — team board feature deferred
 
 ## File Locations
 

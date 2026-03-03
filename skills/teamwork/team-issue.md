@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "2.4.0"
+version: "2.4.1"
 ---
 
 # /team-issue — Create Mission Contract Issue
@@ -202,7 +202,9 @@ If cancel → **STOP**
 
 ```bash
 REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
-MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "mission" 2>/dev/null)
+# Try github.mc_label (teamspace schema) then mc_label (teamwork schema)
+MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 ```
 
