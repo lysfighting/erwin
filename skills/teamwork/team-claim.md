@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "2.3.0"
+version: "2.3.2"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -137,16 +137,24 @@ gh issue view {ISSUE_NUMBER} --json number,title,body,labels,milestone,assignees
 
 Parse the Issue body. If the Issue was created with the mission template, extract structured fields:
 - **Priority** from labels (P0/P1/P2/P3)
-- **Objective** from body
-- **Sub-tasks** from body (checkboxes)
-- **Acceptance Criteria** from body
-- **Context** from body
-- **Test Command** from body
+- **Objective** from `### Objective` section
+- **Sub-tasks** from `### Sub-tasks` section (checkboxes)
+- **Success Criteria** from `### Success Criteria` section (also accept `### Acceptance Criteria` for backward compat)
+- **Context** from `### Context & References` section (also accept `### Context`)
+- **Test Command** from `### Verification Method` section or config `project.test_command`
+
+Also extract from the JSON response:
+- **Milestone** from `milestone.title` (if present)
+
+Also read from config:
+```bash
+CURRENT_VERSION=$(grep 'current:' $TEAMWORK_DIR/config.yml | tail -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+```
 
 If the Issue body is freeform (not from template), use AI understanding to extract:
 - Objective: summarize what needs to be done
 - Sub-tasks: break down into checkable items
-- Acceptance criteria: infer from the description
+- Success criteria: infer from the description
 
 ---
 
@@ -163,8 +171,8 @@ assignee: {GH_USER}
 priority: {PRIORITY}
 labels: [{labels}]
 branch: mission/{ISSUE_NUMBER}-{SLUG}-{GH_USER}
-milestone: "{MILESTONE or none}"
-version: "{VERSION from config, or omit if not configured}"
+milestone: "{milestone.title from Issue JSON, or 'none'}"
+version: "{CURRENT_VERSION from config — same as milestone if using versions.current, omit line if not configured}"
 claimed: {ISO_TIMESTAMP}
 issue_content_hash: "{SHA256 of ISSUE_TITLE + ISSUE_BODY at claim time}"
 ---

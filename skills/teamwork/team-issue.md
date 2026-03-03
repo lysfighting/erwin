@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "2.3.0"
+version: "2.3.2"
 ---
 
 # /team-issue — Create Mission Contract Issue
@@ -77,6 +77,12 @@ fi
 
 Read `$TEAMWORK_DIR/config.yml` → extract `team.repo`, `github.mc_label`, domain list, priority list.
 
+```bash
+# Extract current version/milestone if configured
+CURRENT_VERSION=$(grep 'current:' $TEAMWORK_DIR/config.yml | tail -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+```
+- If `CURRENT_VERSION` is non-empty → Issues will be assigned to this milestone.
+
 ---
 
 ## Route: Create or Update?
@@ -117,10 +123,13 @@ Add these to the Context section as "Relevant files".
 
 ## Step 3: Generate Issue Body
 
-Format the Issue body to match the mission-contract template output:
+Format the Issue body using the canonical mission-contract structure:
 
 ```markdown
 ## Mission Contract
+
+### Objective
+{1-2 sentence summary of what needs to be done}
 
 ### Priority
 {P0|P1|P2|P3}
@@ -132,15 +141,15 @@ Format the Issue body to match the mission-contract template output:
 {domain}
 
 ### Success Criteria
-- [ ] Criterion 1
+- [ ] Criterion 1 — concrete, verifiable
 - [ ] Criterion 2
 
 ### Sub-tasks
 - [ ] Step 1
 - [ ] Step 2
 
-### Context
-{Background, relevant files, technical details}
+### Context & References
+{Background, relevant files, technical details, links}
 
 ### Constraints
 {Limitations, dependencies, things NOT to do}
@@ -150,6 +159,11 @@ Format the Issue body to match the mission-contract template output:
 # verification commands
 ```
 ```
+
+**Canonical field names** (always use these exactly — `team-claim` parses them by name):
+- `Success Criteria` (NOT "Acceptance Criteria")
+- `Context & References` (NOT "Context")
+- `Sub-tasks` (NOT "Tasks" or "Steps")
 
 ---
 
@@ -162,6 +176,7 @@ ISSUE PREVIEW
 ═══════════════════════════════════════
 Title:    {title}
 Labels:   mission-contract, priority:{Pn}, domain:{domain}, size:{size}, status:queued
+Milestone:{CURRENT_VERSION if set, else "none"}
 Priority: {Pn}
 Size:     {size}
 Domain:   {domain}
@@ -189,6 +204,14 @@ MISSION_LABEL=$(grep 'mc_label:' $TEAMWORK_DIR/config.yml | sed 's/^[^:]*://' | 
 ```
 
 ```bash
+# Add milestone if versions.current configured
+MILESTONE_FLAG=""
+if [ -n "$CURRENT_VERSION" ]; then
+  MILESTONE_FLAG="--milestone \"$CURRENT_VERSION\""
+fi
+```
+
+```bash
 gh issue create \
   --repo "$REPO" \
   --title "{title}" \
@@ -197,8 +220,11 @@ gh issue create \
   --label "status:queued" \
   --label "priority:{Pn}" \
   --label "domain:{domain}" \
-  --label "size:{size}"
+  --label "size:{size}" \
+  $MILESTONE_FLAG
 ```
+
+- If milestone assignment fails (milestone doesn't exist yet) → warn "Milestone '{CURRENT_VERSION}' not found on GitHub. Create it first: `gh api repos/{REPO}/milestones --method POST --field title='{CURRENT_VERSION}'`". Non-fatal: issue is still created without milestone.
 
 ---
 

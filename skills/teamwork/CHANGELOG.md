@@ -2,6 +2,18 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.3.2] — 2026-03-03
+
+### Added — Version Management + Issue Format Standardization
+
+- **Milestone-based version tracking** — If `versions.current` is set in config, `/team-issue` assigns the Issue to that GitHub Milestone. Dashboard now queries milestone progress (open/closed counts) and displays `Version X: N/M tasks done`.
+- **`/team` dashboard version header** — Reads `versions.current` from config, queries GitHub Milestones API for progress, shows `Version {name}: {closed}/{total} tasks done ({pct}%)` at top.
+- **Canonical mission-contract format** — `/team-issue` now generates a consistent structure: `### Objective` (new top section), `### Success Criteria` (canonical name), `### Context & References` (not "Context"). Field names documented as canonical so parsers don't drift.
+- **`/team-claim` backward-compatible parsing** — Reads `Success Criteria` (canonical) and `Acceptance Criteria` (legacy), `Context & References` and `Context` (legacy). Populates `version:` Contract frontmatter from `versions.current` config.
+- `team-issue`, `team-claim`, `team` bumped to v2.3.2. `team-ship` stays v2.3.1.
+
+---
+
 ## [2.3.1] — 2026-03-03
 
 ### Fixed — Ship Status Lifecycle

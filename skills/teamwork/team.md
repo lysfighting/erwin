@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "2.3.1"
+version: "2.3.2"
 ---
 
 # /team — Init + Dashboard (Teamwork v2)
@@ -739,11 +739,12 @@ gh pr list --json number,title,author,headRefName,statusCheckRollup,reviewDecisi
 # Merge count per team member (merged PRs to base branch)
 gh pr list --state merged --base main --json author --limit 100
 
-# Version progress (if versions.current configured)
-# CURRENT_VERSION=$(grep 'current:' $TEAMWORK_DIR/config.yml | tail -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
-# if [ -n "$CURRENT_VERSION" ]; then
-#   gh issue list --label "$MISSION_LABEL" --label "version:${CURRENT_VERSION}" --json state --limit 100
-# fi
+# Version progress (if versions.current configured in config)
+CURRENT_VERSION=$(grep 'current:' $TEAMWORK_DIR/config.yml | tail -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+if [ -n "$CURRENT_VERSION" ]; then
+  # Use GitHub Milestones for version progress tracking
+  gh api repos/{REPO}/milestones --jq ".[] | select(.title == \"$CURRENT_VERSION\") | {open: .open_issues, closed: .closed_issues}"
+fi
 ```
 
 If `versions.current` is set, query version-tagged issues and calculate done/total percentage for the dashboard header.
@@ -754,8 +755,8 @@ Output a formatted dashboard like this:
 
 ```
 TEAM DASHBOARD — {repo name}
-{If versions configured:} Version: {current} ({done}/{total} tasks = {pct}%)
-Milestone: {active milestone} ({closed}/{total} = {pct}%)
+{If CURRENT_VERSION set and milestone found:} Version {CURRENT_VERSION}: {closed}/{closed+open} tasks done ({pct}%)
+{If active GitHub milestone (non-version):} Milestone: {active milestone} ({closed}/{total} = {pct}%)
 ════════════════════════════════════════════
 
 {For each team member from config.yml:}
