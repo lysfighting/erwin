@@ -366,7 +366,7 @@ options:
   - label: "GitHub Actions CI"
     description: "Remote quality gates: lint + test + build on every PR"
   - label: "Branch protection"
-    description: "Require CI pass + PR review before merge to main"
+    description: "Require CI pass + PR review before merge to base branch"
   - label: "All of the above (Recommended)"
     description: "Full defense-in-depth: hooks + Actions + branch protection"
 ```
@@ -644,7 +644,25 @@ ls .github/workflows/ci.yml .github/workflows/CI.yml .github/workflows/*.yml 2>/
 ```
 
 - If `.github/workflows/ci.yml` (or similar) already exists → **DO NOT overwrite**. Read the existing file, display a summary, and ask: "CI workflow already exists. Keep existing? Or regenerate?" (via AskUserQuestion). If the user keeps existing, skip to Step 4e.
-- If no CI workflow exists → generate based on detected language:
+- If no CI workflow exists → generate based on detected language.
+
+**Branch triggers**: Use `{BASE_BRANCH}` from config (not hardcoded `main`). In dual-branch mode (when `RELEASE_BRANCH != BASE_BRANCH`), include both branches in `push` triggers so CI runs on release branch merges too:
+
+```yaml
+# Single-branch mode (default):
+on:
+  pull_request:
+    branches: [{BASE_BRANCH}]
+  push:
+    branches: [{BASE_BRANCH}]
+
+# Dual-branch mode (RELEASE_BRANCH configured):
+on:
+  pull_request:
+    branches: [{BASE_BRANCH}]
+  push:
+    branches: [{BASE_BRANCH}, {RELEASE_BRANCH}]
+```
 
 **For monorepo projects** (`IS_MONOREPO=true`), generate a multi-service CI that runs each service's checks in a separate job:
 
@@ -652,9 +670,9 @@ ls .github/workflows/ci.yml .github/workflows/CI.yml .github/workflows/*.yml 2>/
 name: CI
 on:
   pull_request:
-    branches: [main]
+    branches: [{BASE_BRANCH}]
   push:
-    branches: [main]
+    branches: [{BASE_BRANCH}]  # add {RELEASE_BRANCH} if dual-branch mode
 
 jobs:
   # One job per detected service
@@ -674,9 +692,9 @@ jobs:
 name: CI
 on:
   pull_request:
-    branches: [main]
+    branches: [{BASE_BRANCH}]
   push:
-    branches: [main]
+    branches: [{BASE_BRANCH}]
 
 jobs:
   quality:
@@ -698,9 +716,9 @@ jobs:
 name: CI
 on:
   pull_request:
-    branches: [main]
+    branches: [{BASE_BRANCH}]
   push:
-    branches: [main]
+    branches: [{BASE_BRANCH}]
 
 jobs:
   quality:
@@ -720,9 +738,9 @@ jobs:
 name: CI
 on:
   pull_request:
-    branches: [main]
+    branches: [{BASE_BRANCH}]
   push:
-    branches: [main]
+    branches: [{BASE_BRANCH}]
 
 jobs:
   quality:
@@ -818,11 +836,35 @@ gh label create "priority:P3" --color cfd3d7 --description "Low priority" --forc
 
 If `versions.current` is set in config, also create the milestone via GitHub API (not a label — use Milestones).
 
-### 5b: Branch protection (if enabled)
+### 5b: Repository merge settings
+
+Configure merge strategy and branch cleanup at the repo level:
+
+```bash
+gh api "repos/{REPO}" --method PATCH \
+  --field delete_branch_on_merge=true \
+  --field allow_squash_merge=true \
+  --field allow_merge_commit=false \
+  --field allow_rebase_merge=false \
+  --field squash_merge_commit_title=PR_TITLE \
+  --field squash_merge_commit_message=PR_BODY
+```
+
+- `delete_branch_on_merge` — auto-delete feature branch after PR merge (no stale branches)
+- `allow_squash_merge` only — one Issue = one squash commit on base branch, clean history
+- `squash_merge_commit_message=PR_BODY` — preserves `Closes #N` so Issue auto-closes on merge
+
+If API fails (permissions) → warn but continue. These can be set manually in GitHub Settings → General.
+
+### 5c: Branch protection (if enabled)
 
 ```bash
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-main}"
+RELEASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.release_branch "" 2>/dev/null)
+RELEASE_BRANCH="${RELEASE_BRANCH:-$BASE_BRANCH}"
+
+# Protect base branch (where PRs merge)
 gh api "repos/{REPO}/branches/$BASE_BRANCH/protection" \
   --method PUT \
   --field required_status_checks='{"strict":true,"contexts":["quality"]}' \
@@ -831,11 +873,24 @@ gh api "repos/{REPO}/branches/$BASE_BRANCH/protection" \
   --field restrictions=null
 ```
 
+**Dual-branch mode** — if `RELEASE_BRANCH != BASE_BRANCH`, also protect release branch:
+
+```bash
+if [ "$RELEASE_BRANCH" != "$BASE_BRANCH" ]; then
+  gh api "repos/{REPO}/branches/$RELEASE_BRANCH/protection" \
+    --method PUT \
+    --field required_status_checks='{"strict":true,"contexts":["quality"]}' \
+    --field enforce_admins=false \
+    --field required_pull_request_reviews='{"required_approving_review_count":1}' \
+    --field restrictions=null
+fi
+```
+
 If branch protection fails (e.g., free plan limitations), warn but continue — it's not a blocker.
 
 ---
 
-## Step 5c: Commit and Push
+### 5d: Commit and Push
 
 ```bash
 git add $TEAMWORK_DIR/config.yml .github/ .githooks/ .gitignore

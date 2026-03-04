@@ -26,9 +26,11 @@ All notable changes to the Teamwork skill set.
 
 - **`team-ship.md`** v2.4.0 → v2.6.0: sync operation, done operation, help text all use `$BASE_BRANCH` from config instead of hardcoded "main"
 - **`team.md`** v2.5.2 → v2.6.0:
+  - **New Step 5b: Repo merge settings** — auto-delete head branches, squash merge only, PR_BODY commit message (preserves `Closes #N`)
+  - **Step 5c: Dual-branch protection** — protects both base_branch AND release_branch in dual-branch mode
+  - **CI workflow templates** — use `{BASE_BRANCH}` placeholder instead of hardcoded `main`; dual-branch mode includes both branches in push triggers
   - Config health check table now includes `release_branch` and `deploy.staging_workflow`
   - Fresh install template includes commented `release_branch` and `deploy` sections
-  - Branch protection uses config `base_branch` instead of hardcoded "main"
   - Dashboard merge count uses config `base_branch`
   - All `skill_version` references updated to 2.6.0
 
