@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — Skills Factory
+- **Teamwork v2.7.0 — Script Extraction** (Von Neumann Mechanism-Content Separation):
+  - 4 new scripts: tw-git.sh (13 subcommands), tw-label.sh (4), tw-contract.sh (8), tw-pr.sh (7)
+  - 6 skill files refactored: deterministic operations → script calls, LLM judgment sections unchanged
+  - Design: scripts handle execution, skill.md handles orchestration + judgment
+  - ~64% of operations moved from LLM-interpreted prose to executable scripts
+
 ### Fixed — Skills Factory
 - **Teamwork v2.6.1 — Falsification Audit** (Popper's method applied across all 6 skill files + scripts):
   - 6 CRITICAL: freshness check always false-positive, PyYAML dependency, branch protection 422, CHANGELOG shell injection, stale merge, wrong push branch

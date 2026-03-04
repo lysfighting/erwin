@@ -8,31 +8,30 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-04
-- **Last Session**: [2026-03-04-U](sessions/2026-03-04-U.md) (Session U — Teamwork v2.6.1 Falsification Audit)
+- **Last Session**: [2026-03-04-V](sessions/2026-03-04-V.md) (Session V — Teamwork v2.7.0 Script Extraction)
 
 ## Current Phase
 
-**Phase**: Teamwork v2.6.1 完成 — 全文件审计 + 21 bug 修复
+**Phase**: Teamwork v2.7.0 完成 — Von Neumann 机制-内容分离
 
 ## What Was Just Completed
 
-**Session U** — Falsification Audit (Popper's method):
+**Session V** — Script Extraction (Von Neumann Mechanism-Content Separation):
 
-- Applied Popper/Descartes/Bacon to critical self-review of all teamwork skill files
-- 5 parallel audit agents reviewed 7 files → found ~80 bugs
-- Triaged and fixed 21 verified bugs (6 CRITICAL + 15 HIGH)
-- CRITICAL: freshness check, PyYAML dep, branch protection API, CHANGELOG injection, stale merge, wrong push branch
-- HIGH: init force, hardcoded labels (5 files), sed syntax, milestone quoting, undefined vars, missing --state
-- All skill files bumped to v2.6.1
+- Dialectical analysis of LLM dependency: 228 operations cataloged, 64% deterministic but 100% LLM-interpreted
+- Consulted pantheon (Von Neumann, Gödel, Shannon, Dijkstra) for theoretical framework
+- Created 4 new scripts: tw-git.sh (13), tw-label.sh (4), tw-contract.sh (8), tw-pr.sh (7)
+- Refactored all 6 skill .md files: deterministic ops → script calls, judgment stays in .md
+- All skill files bumped to v2.7.0
 
 ## Active Task / What's In Progress
 
-None — v2.6.1 audit complete.
+None — v2.7.0 script extraction complete.
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **vi_agent 实践验证** — 在 vi_agent 上运行 `/team init` 验证 v2.6.1 fixes
+2. **vi_agent 实践验证** — run `./install.sh teamwork` then test on vi_agent
 3. **继续闭环设计讨论**（按优先级排序）：
    - 自动化测试流程：AI QA 具体实现、工具选型、覆盖范围
    - IaC 归属：项目内 vs gcp-compute-infra，权限模型
@@ -64,6 +63,7 @@ None — v2.6.1 audit complete.
 - [x] Teamwork v2.5.1 — team-issue duplicate check (gh search + LLM semantic match)
 - [x] Teamwork v2.6.0 — dual-branch model + release safety gates + post-merge Action + config-driven refs
 - [x] Teamwork v2.6.1 — falsification audit: 6 critical + 15 high bug fixes across all files
+- [x] Teamwork v2.7.0 — script extraction: 4 scripts (32 subcommands) + 6 skill files refactored
 
 ## Known Issues / Blockers
 

@@ -2,6 +2,32 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.7.0] — 2026-03-04
+
+### Changed — Script Extraction (Von Neumann Mechanism-Content Separation)
+
+Extracted ~64% of deterministic operations from LLM-interpreted skill prose into reusable bash scripts. Skills now orchestrate + judge; scripts execute deterministic operations.
+
+**4 new scripts** in `scripts/`:
+- **tw-git.sh** — 13 subcommands: ensure-base, create-branch, current, protect-check, push, fetch, rebase, merge-to, tag, commit, worktree-add, worktree-remove, log-since
+- **tw-label.sh** — 4 subcommands: transition, set, verify, pr-label (config-aware status label state machine)
+- **tw-contract.sh** — 8 subcommands: teamwork-dir, find, read-field, hash, check-freshness, toggle-task, sync-checkbox, delete
+- **tw-pr.sh** — 7 subcommands: exists, commit-type, create, comment, watch, add-reviewer, verify-merged
+
+**6 skill files refactored** to call scripts instead of inline bash:
+- **team-claim.md**: branch creation → tw-git.sh, label transition → tw-label.sh
+- **team-drive.md**: freshness check → tw-contract.sh, protect check → tw-git.sh, checkbox toggle → tw-contract.sh, log review → tw-git.sh
+- **team-ship.md**: push → tw-git.sh, PR lifecycle → tw-pr.sh, labels → tw-label.sh, contract cleanup → tw-contract.sh, rebase → tw-git.sh
+- **team-release.md**: merge → tw-git.sh, tag → tw-git.sh, commit → tw-git.sh
+- **team-issue.md**: version bump only
+- **team.md**: freshness check → tw-contract.sh, version references updated
+
+**Design principles**:
+- Scripts accept LLM-generated content as parameters (pure I/O boundary)
+- Scripts self-discover config via SCRIPT_DIR + tw-config.sh
+- Subcommand pattern: `tw-{domain}.sh {subcommand} [args...]`
+- All scripts macOS compatible, meaningful exit codes, stderr for errors
+
 ## [2.6.1] — 2026-03-04
 
 ### Fixed — Falsification Audit (Popper's method applied across all skill files)

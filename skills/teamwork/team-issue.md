@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "2.6.1"
+version: "2.7.0"
 ---
 
 # /team-issue — Create Mission Contract Issue

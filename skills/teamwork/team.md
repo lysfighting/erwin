@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "2.6.1"
+version: "2.7.0"
 ---
 
 # /team — Init + Dashboard (Teamwork v2)
@@ -427,8 +427,8 @@ Preserve all existing content. Only update `skill_version` and append missing to
 
 ```bash
 # Update skill_version line without touching anything else
-sed -i '' "s/^skill_version:.*/skill_version: 2.6.1/" $TEAMWORK_DIR/config.yml
-# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 2.6.1/" $TEAMWORK_DIR/config.yml
+sed -i '' "s/^skill_version:.*/skill_version: 2.7.0/" $TEAMWORK_DIR/config.yml
+# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 2.7.0/" $TEAMWORK_DIR/config.yml
 ```
 
 **Step 2 — Detect which top-level sections are missing:**
@@ -497,7 +497,7 @@ Write full config based on detected project info + user answers:
 
 ```yaml
 schema_version: 1
-skill_version: 2.6.1
+skill_version: 2.7.0
 
 team:
   - github: {GH_USER}
@@ -1041,15 +1041,11 @@ For each `$TEAMWORK_DIR/active/MISSION-*.md` Contract:
 for CONTRACT_PATH in $TEAMWORK_DIR/active/MISSION-*.md; do
   [ -f "$CONTRACT_PATH" ] || continue
 
-  # Read issue number and content hash from Contract frontmatter
-  ISSUE_NUMBER=$(grep '^issue:' "$CONTRACT_PATH" | sed 's/^[^:]*://' | sed 's/^ *//')
-  CONTRACT_HASH=$(grep 'issue_content_hash:' "$CONTRACT_PATH" | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+  # Read issue number from Contract
+  ISSUE_NUMBER=$(bash ~/.claude/commands/scripts/tw-contract.sh read-field "$CONTRACT_PATH" issue 2>/dev/null)
 
-  # Fetch current Issue content and compute hash
-  ISSUE_DATA=$(gh issue view "$ISSUE_NUMBER" --json title,body 2>/dev/null)
-  ISSUE_TITLE=$(echo "$ISSUE_DATA" | jq -r '.title // ""')
-  ISSUE_BODY=$(echo "$ISSUE_DATA" | jq -r '.body // ""')
-  CURRENT_HASH=$(echo "${ISSUE_TITLE}${ISSUE_BODY}" | shasum -a 256 | cut -d' ' -f1)
+  # Check freshness via script (exit 0=FRESH, 1=STALE, 2=NO_HASH)
+  FRESHNESS=$(bash ~/.claude/commands/scripts/tw-contract.sh check-freshness "$CONTRACT_PATH" "$ISSUE_NUMBER" 2>/dev/null) || true
 done
 ```
 

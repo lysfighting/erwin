@@ -1,6 +1,6 @@
 ---
 description: "Release a version → git tag → GitHub Release → close Milestone. Try: /team-release help"
-version: "2.6.1"
+version: "2.7.0"
 ---
 
 # /team-release — Close a Version
@@ -265,14 +265,10 @@ LATEST_RUN=$(gh run list --workflow "$STAGING_WORKFLOW" --branch "$RELEASE_BRANC
 **If `BASE_BRANCH != RELEASE_BRANCH`** (dual-branch mode):
 
 ```bash
-git fetch origin "$BASE_BRANCH" "$RELEASE_BRANCH"
-git checkout "$RELEASE_BRANCH" && git pull origin "$RELEASE_BRANCH"
-git merge "origin/$BASE_BRANCH" --no-edit
-git push origin "$RELEASE_BRANCH"
+bash ~/.claude/commands/scripts/tw-git.sh merge-to "$RELEASE_BRANCH"
 ```
 
-- If merge conflicts → output error: `⛔ Merge conflict merging $BASE_BRANCH → $RELEASE_BRANCH. Resolve conflicts manually, then re-run /team-release.` → **STOP**
-- If push fails → output error and **STOP**
+- If exit 2 → merge conflict or push fail → `⛔ Merge conflict merging $BASE_BRANCH → $RELEASE_BRANCH. Resolve conflicts manually, then re-run /team-release.` → **STOP**
 - Output: `✅ Merged $BASE_BRANCH → $RELEASE_BRANCH`
 
 ---
@@ -282,30 +278,16 @@ git push origin "$RELEASE_BRANCH"
 Ensure on release branch and up to date:
 
 ```bash
-git checkout "$RELEASE_BRANCH"
-git pull origin "$RELEASE_BRANCH"
+git checkout "$RELEASE_BRANCH" && git pull origin "$RELEASE_BRANCH"
 ```
 
-Check if tag already exists, then create and push:
+Create and verify tag:
 
 ```bash
-if git rev-parse "$VERSION" >/dev/null 2>&1; then
-  echo "⚠ Tag '$VERSION' already exists locally. Skipping tag creation."
-elif git ls-remote --tags origin | grep -q "refs/tags/$VERSION$"; then
-  echo "⚠ Tag '$VERSION' already exists on remote. Skipping tag creation."
-else
-  git tag "$VERSION"
-  git push origin "$VERSION"
-fi
+bash ~/.claude/commands/scripts/tw-git.sh tag "$VERSION"
 ```
 
-Verify tag pushed:
-
-```bash
-git ls-remote --tags origin | grep {VERSION}
-```
-
-If verification fails → output error and STOP. Do not continue to release creation.
+If exit 2 → tag push verification failed → **STOP**. If tag already exists, script skips creation.
 
 Output: `✅ Tag {VERSION} pushed`
 
@@ -456,10 +438,9 @@ bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null
 If update succeeds → stage and commit. Note: in dual-branch mode, we're on `$RELEASE_BRANCH` from Step 5, so switch back to `$BASE_BRANCH` first:
 
 ```bash
-git checkout "$BASE_BRANCH" && git pull origin "$BASE_BRANCH"
-git add $TEAMWORK_DIR/config.yml
-git commit -m "chore(teamwork): bump version to $NEXT_VERSION after releasing $VERSION"
-git push origin "$BASE_BRANCH"
+bash ~/.claude/commands/scripts/tw-git.sh ensure-base
+bash ~/.claude/commands/scripts/tw-git.sh commit "chore(teamwork): bump version to $NEXT_VERSION after releasing $VERSION" $TEAMWORK_DIR/config.yml
+bash ~/.claude/commands/scripts/tw-git.sh push "$BASE_BRANCH"
 ```
 
 Output: `✅ Config updated: versions.current = {NEXT_VERSION}`
