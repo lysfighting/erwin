@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "2.5.1"
+version: "2.6.0"
 ---
 
 # /team-issue — Create Mission Contract Issue
@@ -14,6 +14,7 @@ version: "2.5.1"
 | Input | Action |
 |-------|--------|
 | Natural language description | AI-enrich → preview → publish (new Issue) |
+| `--milestone V0.2 <description>` | Create Issue and assign to specified milestone |
 | `#42 <changes>` or `update #42 <changes>` | Update existing Issue with described changes |
 | `#42` or `update #42` | View and interactively edit existing Issue |
 | `help` or `-h` | Show usage guide |
@@ -24,15 +25,19 @@ If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 /team-issue — Create a mission-contract Issue on GitHub
 
 USAGE:
-  /team-issue <description>           AI-enrich and publish as new GitHub Issue
-  /team-issue #42 <changes>           Update Issue #42 with described changes
-  /team-issue #42                     View and interactively edit Issue #42
-  /team-issue help                    Show this guide
+  /team-issue <description>                    AI-enrich and publish as new GitHub Issue
+  /team-issue --milestone V0.2 <description>   Create and assign to specified milestone
+  /team-issue #42 <changes>                    Update Issue #42 with described changes
+  /team-issue #42                              View and interactively edit Issue #42
+  /team-issue help                             Show this guide
+
+MILESTONE:
+  --milestone <name>   Override milestone (otherwise uses versions.current from config)
 
 EXAMPLES (create):
   /team-issue 共享 .env 导致多个 agent 抢 session，需要配置隔离
   /team-issue add rate limiting to the upload API
-  /team-issue fix: camera permission dialog not showing on iOS Safari
+  /team-issue --milestone V0.2 fix: camera permission dialog not showing on iOS Safari
 
 EXAMPLES (update):
   /team-issue #42 增加一个约束：不能修改公共 API
@@ -89,11 +94,28 @@ CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current 
 
 ---
 
-## Route: Create or Update?
+## Route: Parse Arguments
 
 Parse `$ARGUMENTS`:
-- If starts with `#N` or `update #N` → extract Issue number → jump to **Operation Update**
-- Otherwise → continue to **Step 1: Create** (new Issue flow)
+
+1. **Extract `--milestone` if present**:
+   - If `$ARGUMENTS` contains `--milestone <value>` → extract `<value>` as `MILESTONE_OVERRIDE`, remove flag from remaining args
+   - Milestone priority: `--milestone` arg > `versions.current` from config > none
+
+```bash
+MILESTONE_OVERRIDE=""
+if echo "$ARGUMENTS" | grep -q '\-\-milestone'; then
+  MILESTONE_OVERRIDE=$(echo "$ARGUMENTS" | sed 's/.*--milestone \+\([^ ]*\).*/\1/')
+  ARGUMENTS=$(echo "$ARGUMENTS" | sed 's/--milestone \+[^ ]*//' | sed 's/^ *//')
+fi
+
+# Final milestone: arg override > config > empty
+MILESTONE="${MILESTONE_OVERRIDE:-$CURRENT_VERSION}"
+```
+
+2. **Route remaining args**:
+   - If starts with `#N` or `update #N` → extract Issue number → jump to **Operation Update**
+   - Otherwise → continue to **Step 1: Create** (new Issue flow)
 
 ---
 
@@ -211,7 +233,7 @@ ISSUE PREVIEW
 ═══════════════════════════════════════
 Title:    {title}
 Labels:   mission-contract, priority:{Pn}, domain:{domain}, size:{size}, status:queued
-Milestone:{CURRENT_VERSION if set, else "none"}
+Milestone:{MILESTONE if set, else "none"}
 Priority: {Pn}
 Size:     {size}
 Domain:   {domain}
@@ -241,10 +263,10 @@ MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 
 ```
 
 ```bash
-# Add milestone if versions.current configured
+# Add milestone (from --milestone arg or versions.current config)
 MILESTONE_FLAG=""
-if [ -n "$CURRENT_VERSION" ]; then
-  MILESTONE_FLAG="--milestone \"$CURRENT_VERSION\""
+if [ -n "$MILESTONE" ]; then
+  MILESTONE_FLAG="--milestone \"$MILESTONE\""
 fi
 ```
 

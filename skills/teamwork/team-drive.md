@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "2.4.0"
+version: "2.6.0"
 ---
 
 # /team-drive — Execute Mission
@@ -166,6 +166,29 @@ Context Files:
 ```
 
 If all sub-tasks are already checked → "All sub-tasks complete. Run `/team-ship` to deliver." → **STOP**
+
+---
+
+## Step 2b: Branch Safety Check
+
+Before executing any code changes, verify you are NOT on a protected branch.
+
+```bash
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-main}"
+RELEASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.release_branch "" 2>/dev/null)
+RELEASE_BRANCH="${RELEASE_BRANCH:-$BASE_BRANCH}"
+CURRENT_BRANCH=$(git branch --show-current)
+
+if [ "$CURRENT_BRANCH" = "$BASE_BRANCH" ] || [ "$CURRENT_BRANCH" = "$RELEASE_BRANCH" ]; then
+  echo "⛔ SAFETY: You are on '$CURRENT_BRANCH' (protected branch)."
+  echo "  Switch to a feature branch first: /team-claim #{issue}"
+  # STOP — do not execute any code changes on protected branches
+fi
+```
+
+- If on protected branch → output warning and **STOP**
+- If on correct feature branch → continue
 
 ---
 

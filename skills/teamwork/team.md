@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "2.5.0"
+version: "2.6.0"
 ---
 
 # /team — Init + Dashboard (Teamwork v2)
@@ -16,6 +16,7 @@ version: "2.5.0"
 | (empty) | Auto: first run → Init, subsequent → Dashboard |
 | `help` or `-h` | Show quick-start guide for new users |
 | `init` | Force re-initialize (even if config exists) |
+| `queue` | Show all queued issues (full list, sorted by priority) |
 
 ---
 
@@ -24,6 +25,7 @@ version: "2.5.0"
 Parse `$ARGUMENTS`:
 - If `help` or `-h` → jump to **Operation Help**
 - If `init` → jump to **Step 0** (skip config check, force init)
+- If `queue` → jump to **Operation Queue**
 - If empty → continue to **Step 0** (auto-detect init vs dashboard)
 
 ---
@@ -41,6 +43,7 @@ SETUP (one time):
 
 DAILY WORKFLOW:
   /team                 See dashboard (who's working on what)
+  /team queue           Full list of queued issues, sorted by priority
   /team-issue           Create a mission Issue from natural language
   /team-claim #N        Claim Issue #N → generate Contract + branch
   /team-claim           Auto-pick highest priority unassigned Issue
@@ -51,7 +54,7 @@ DAILY WORKFLOW:
 AFTER MERGE:
   /team-ship done       Close Issue, update labels, clean up
   /team-ship review     AI code review on current PR
-  /team-ship sync       Rebase branch on latest main
+  /team-ship sync       Rebase branch on latest base branch
 
 VERSION LIFECYCLE:
   /team-release         Close milestone → git tag → GitHub Release → next version
@@ -60,7 +63,7 @@ LIFECYCLE:
   /team-issue → Issue → /team-claim → Contract + branch
                      → /team-drive → implement + test + commit
                      → /team-ship  → PR (Closes #N)
-                     → /team-ship done → Issue closed, back to main
+                     → /team-ship done → Issue closed, back to base branch
   All missions done? → /team-release → tag + release + next milestone
 
 CONFIG:
@@ -75,6 +78,74 @@ MORE INFO:
   ONBOARDING.md         Full tutorial with examples
 ═══════════════════════════════════════════
 ```
+
+---
+
+## Operation Queue
+
+Show the full list of queued issues, sorted by priority. Requires existing config (same prerequisite check as dashboard).
+
+### Prerequisite: config detection
+
+```bash
+if [ -f .teamwork/config.yml ]; then
+  TEAMWORK_DIR=".teamwork"
+elif [ -f .teamspace/config.yml ]; then
+  TEAMWORK_DIR=".teamspace"
+else
+  echo "No teamwork config found. Run /team init first."
+  # STOP
+fi
+```
+
+### Fetch and display
+
+```bash
+# Read mission label + priority prefix from config
+MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
+
+STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
+
+PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.priority "" 2>/dev/null)
+[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX="priority:"
+
+# Fetch all queued issues (unassigned or status:queued, open)
+gh issue list --label "$MISSION_LABEL" --state open --json number,title,labels,assignees --limit 100
+```
+
+Filter to issues that are unassigned OR have `status:queued` label. Sort by priority: P0 first → P1 → P2 → P3 → no priority last.
+
+Output formatted list:
+
+```
+QUEUED ISSUES — {repo name} ({total} issues)
+════════════════════════════════════════════
+
+P0 (critical):
+  #{N} {title}
+  #{N} {title}
+
+P1 (high):
+  #{N} {title}
+
+P2 (medium):
+  #{N} {title}
+  #{N} {title}
+
+P3 (low):
+  #{N} {title}
+
+No priority:
+  #{N} {title}
+
+════════════════════════════════════════════
+Claim: /team-claim #{N}
+```
+
+Omit priority groups that have zero issues. Then **STOP**.
 
 ---
 
@@ -195,7 +266,9 @@ After confirming membership, verify that the config has the fields needed by oth
 | `project.test_command` | team-drive, team-ship | warn "No test command" |
 | `project.lint_command` | git hooks | warn "No lint command" |
 | `conventions.branch_pattern` | team-claim | `"mission/{issue}-{slug}-{user}"` |
-| `conventions.base_branch` | team-ship | `"main"` |
+| `conventions.base_branch` | team-claim, team-ship, team-drive | `"main"` |
+| `conventions.release_branch` | team-release | `base_branch` value |
+| `deploy.staging_workflow` | team-release | `""` (skip staging check) |
 | `label_prefix` or `github.label_prefix` | all skills | `status:`, `priority:` |
 
 If critical fields are missing (no `project:` section at all, no `conventions.branch_pattern`), output a warning:
@@ -341,8 +414,8 @@ Preserve all existing content. Only update `skill_version` and append missing to
 
 ```bash
 # Update skill_version line without touching anything else
-sed -i '' "s/^skill_version:.*/skill_version: 2.5.0/" $TEAMWORK_DIR/config.yml
-# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 2.5.0/" $TEAMWORK_DIR/config.yml
+sed -i '' "s/^skill_version:.*/skill_version: 2.6.0/" $TEAMWORK_DIR/config.yml
+# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 2.6.0/" $TEAMWORK_DIR/config.yml
 ```
 
 **Step 2 — Detect which top-level sections are missing:**
@@ -377,6 +450,7 @@ project:
 conventions:
   branch_pattern: "mission/{issue}-{slug}-{user}"
   base_branch: main
+  # release_branch: main  # Set different from base_branch for dual-branch model (e.g. "main" when base_branch is "develop")
   commit_format: "type(scope): description | Mission: #{issue}"
 ```
 
@@ -414,7 +488,7 @@ Write full config based on detected project info + user answers:
 
 ```yaml
 schema_version: 1
-skill_version: 2.5.0
+skill_version: 2.6.0
 
 team:
   - github: {GH_USER}
@@ -430,7 +504,12 @@ project:
 conventions:
   branch_pattern: "mission/{issue}-{slug}-{user}"
   base_branch: main
+  # release_branch: main  # Set different from base_branch for dual-branch model
   commit_format: "type(scope): description | Mission: #{issue}"
+
+# Optional: Deployment pipeline (required for staging gate in /team-release)
+# deploy:
+#   staging_workflow: "deploy-staging.yml"  # GitHub Actions workflow name
 
 label_prefix:
   status: "status:"
@@ -742,7 +821,9 @@ If `versions.current` is set in config, also create the milestone via GitHub API
 ### 5b: Branch protection (if enabled)
 
 ```bash
-gh api repos/{REPO}/branches/main/protection \
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-main}"
+gh api "repos/{REPO}/branches/$BASE_BRANCH/protection" \
   --method PUT \
   --field required_status_checks='{"strict":true,"contexts":["quality"]}' \
   --field enforce_admins=false \
@@ -807,7 +888,7 @@ MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 
-# Determine label prefixes from config (erwin schema: label_prefix.status; vi_agent: defaults)
+# Determine label prefixes from config (flat schema: label_prefix.status; nested schema: defaults)
 STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
 [ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
 PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.priority "" 2>/dev/null)
@@ -826,7 +907,9 @@ gh issue list --label "$MISSION_LABEL" --label "${STATUS_PREFIX}review" --json n
 gh pr list --json number,title,author,headRefName,statusCheckRollup,reviewDecision --limit 20
 
 # Merge count per team member (merged PRs to base branch)
-gh pr list --state merged --base main --json author --limit 100
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-main}"
+gh pr list --state merged --base "$BASE_BRANCH" --json author --limit 100
 
 # Version progress (if versions.current configured in config)
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
@@ -858,9 +941,10 @@ UNDER REVIEW (PR open, awaiting merge):
   {Issues with label "${STATUS_PREFIX}review" — show each:}
      #{N} {title} [{assignee}]
 
-QUEUED:
-  {Issues with label "$MISSION_LABEL" that are unassigned or status:queued}
+QUEUED ({queued_count}):
+  {Issues unassigned or status:queued, sorted by priority (P0→P1→P2→P3→none), show top 5:}
      #{N} {title} [{priority}]
+  {If queued_count > 5:} ... and {queued_count - 5} more — run /team queue to see all
 
 MERGE COUNT:
   {username}: {count} | {username}: {count} | ...

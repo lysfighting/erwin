@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "2.4.0"
+version: "2.6.0"
 ---
 
 # /team-ship — Deliver Mission
@@ -16,7 +16,7 @@ version: "2.4.0"
 | (empty) | Full ship flow (push, PR, CI, cleanup) |
 | `done` | Post-merge cleanup (close Issue, update labels, clean worktree) |
 | `review` | AI code review on current PR |
-| `sync` | Rebase current branch on main |
+| `sync` | Rebase current branch on base branch |
 | `help` or `-h` | Show usage guide |
 
 ---
@@ -33,7 +33,7 @@ USAGE:
   /team-ship            Push + create PR + CI check + cleanup
   /team-ship done       After PR merge: close Issue, update labels, clean worktree
   /team-ship review     AI review current PR (correctness/security/architecture/quality)
-  /team-ship sync       Rebase current branch on latest main
+  /team-ship sync       Rebase current branch on latest base branch
 
 SHIP FLOW:
   1. Pre-flight: verify branch, sub-tasks done, tests pass
@@ -44,7 +44,7 @@ SHIP FLOW:
   6. Clean up local Contract, label Issue status:review
 
 AFTER MERGE:
-  /team-ship done closes the Issue, labels status:done, returns to main.
+  /team-ship done closes the Issue, labels status:done, returns to base branch.
 ```
 
 - If `done` → jump to **Operation Done**
@@ -432,7 +432,7 @@ If `.mission` file exists (worktree mode):
   ```
 - If no: keep worktree, warn "Worktree kept. Remove manually with `git worktree remove {path}`."
 
-### D6: Return to main
+### D6: Return to base branch
 
 ```bash
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
@@ -455,7 +455,7 @@ Issue:     #{issue} — {title} (closed)
 PR:        {pr-url} (merged)
 Labels:    status:done
 Worktree:  {removed/kept/not applicable}
-Branch:    returned to main
+Branch:    returned to $BASE_BRANCH
 ═══════════════════════════════════════
 Next: /team-claim to pick up next mission
       /team to see dashboard
@@ -520,26 +520,28 @@ Output: "Review published on PR #{pr}: {approve/request-changes/comment}"
 
 ---
 
-## Operation Sync (rebase on main)
+## Operation Sync (rebase on base branch)
 
-> Triggered by `/team-ship sync`. Rebases current branch on latest main.
+> Triggered by `/team-ship sync`. Rebases current branch on latest base branch.
 
 ### S1: Verify on mission branch
 
 ```bash
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-main}"
 BRANCH=$(git branch --show-current)
 ```
 
-If on `main` → "Already on main. Nothing to sync." → **STOP**
+If on `$BASE_BRANCH` → "Already on $BASE_BRANCH. Nothing to sync." → **STOP**
 
 ### S2: Fetch and rebase
 
 ```bash
-git fetch origin main
-git rebase origin/main
+git fetch origin "$BASE_BRANCH"
+git rebase "origin/$BASE_BRANCH"
 ```
 
-- If rebase succeeds → "Branch `{branch}` rebased on latest main."
+- If rebase succeeds → "Branch `{branch}` rebased on latest $BASE_BRANCH."
 - If rebase conflicts → "Rebase conflicts detected. Resolve them, then `git rebase --continue`." → **STOP** (do not abort automatically)
 
 ---

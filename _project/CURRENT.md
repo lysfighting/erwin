@@ -8,40 +8,39 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-04
-- **Last Session**: [2026-03-04-R](sessions/2026-03-04-R.md) (Session R — Teamwork 闭环设计讨论)
+- **Last Session**: [2026-03-04-T](sessions/2026-03-04-T.md) (Session T — Teamwork v2.6.0 实施完成)
 
 ## Current Phase
 
-**Phase**: Teamwork v2.6 设计 — "需求自动领取交付"闭环 + 环境策略
+**Phase**: Teamwork v2.6 完成 — 闭环设计实施交付
 
 ## What Was Just Completed
 
-**Session R** — Teamwork 闭环设计讨论（纯设计，无代码）:
+**Session T** — Teamwork v2.6.0 实施:
 
-全量讨论记录见 `sessions/2026-03-04-R.md`。达成 19 项设计共识，提炼 6 条设计原则。
-核心决策：squash merge + release tag only + Skill/Deploy 职责分离 + workflow_dispatch 部署 + 模式 A 环境策略。
+- **All 6 skill files updated** to v2.6.0 with dual-branch model + config-driven branch refs
+- team-drive: branch safety check (Step 2b)
+- team-release: staging gate + merge base→release + CHANGELOG append (Steps 4b, 5, 7b)
+- team-issue: --milestone parameter override
+- team-claim: explicit base_branch checkout before branching
+- team-ship: sync/done operations use config base_branch
+- team.md: config template + health check + branch protection all config-driven
+- **Zero project coupling** — all `vi_agent`/`erwin` references removed from skill files
+- CHANGELOG written for both teamwork/ and project root
 
 ## Active Task / What's In Progress
 
-**设计讨论进行中**，以下话题已完成，以下待续：
-
-已完成：合并机制、tag 策略、changelog、milestone 集成、环境策略、部署触发、风险分离
-待讨论：IaC 归属、自动循环上下文管理、vi-agent docs→issues、自动化测试
+None — v2.6.0 implementation complete.
 
 ## Next Session Should Start With
 
-1. Read this file + `sessions/2026-03-04-R.md`（全量讨论记录，19 项共识）
-2. **继续闭环设计讨论**（未完成话题）：
+1. Read this file
+2. **继续闭环设计讨论**（按优先级排序）：
+   - 自动化测试流程：AI QA 具体实现、工具选型、覆盖范围
    - IaC 归属：项目内 vs gcp-compute-infra，权限模型
-   - 自动循环上下文管理：leader context 积累、中断恢复
-   - vi-agent docs (product.md + system_v4.md) → 批量创建 milestone/issues
-   - 自动化测试流程（AI QA 具体实现）
-3. **设计讨论完成后 → 实施优先级**：
-   - `/team-ship done` → GitHub Action 化
-   - `/team-issue` 加 `--milestone` 参数
-   - `/team-release` 加 CHANGELOG.md 生成 + staging Action 检查
-   - `/team-drive` 加 "不在 main" 安全检查
-   - deploy.yml (workflow_dispatch) 骨架
+   - deploy Action 具体实现（依赖上面两项）
+   - vi-agent docs → milestone/issues（操作型，讨论量少）
+3. **vi_agent 实践验证** — 在 vi_agent 上运行 `/team init` 验证 v2.6.0 merge mode
 4. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
@@ -66,7 +65,7 @@
 - [x] Teamwork v2.4.1 — E2E validated on vi_agent + mc_label dual-schema + inline comment fix
 - [x] Teamwork v2.5.0 — team-release skill + init idempotency fix + doc sweep
 - [x] Teamwork v2.5.1 — team-issue duplicate check (gh search + LLM semantic match)
-- [ ] Teamwork v2.6 — 闭环设计（Session R 设计中）
+- [x] Teamwork v2.6.0 — dual-branch model + release safety gates + config-driven refs
 
 ## Known Issues / Blockers
 

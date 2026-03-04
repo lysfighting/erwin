@@ -2,6 +2,40 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.6.0] — 2026-03-04
+
+### Added — Dual-branch model + release safety gates
+
+- **Dual-branch support** — New `conventions.release_branch` config key enables base/release branch separation:
+  - When `release_branch == base_branch` (default) → single-branch mode, backward compatible with v2.5
+  - When different (e.g. base=develop, release=main) → dual-branch mode: `/team-release` merges base→release before tagging
+- **`team-release.md`** v2.5.0 → v2.6.0:
+  - **Staging deploy gate** (Step 4b): if `deploy.staging_workflow` configured, checks latest Action run status before tagging. Warns on failure, user can abort or proceed.
+  - **Merge base→release** (Step 5): in dual-branch mode, merges base into release branch before creating tag. Stops on conflict.
+  - **CHANGELOG append** (Step 7b): after `gh release create`, fetches release body and prepends to `CHANGELOG.md`. Non-fatal if fails.
+  - Renumbered steps 5-11 → 6-12 to accommodate new steps
+- **`team-drive.md`** v2.4.0 → v2.6.0:
+  - **Branch safety check** (Step 2b): prevents code execution on protected branches (base_branch or release_branch). Must be on feature branch.
+- **`team-claim.md`** v2.4.1 → v2.6.0:
+  - Explicitly checks out `base_branch` and pulls before creating feature branch (was implicit before)
+- **`team-issue.md`** v2.5.1 → v2.6.0:
+  - `--milestone` parameter: override milestone assignment per-issue (e.g. `/team-issue --milestone V0.2 fix camera`)
+  - Priority: `--milestone` arg > `versions.current` from config > none
+
+### Changed — Config-driven branch references
+
+- **`team-ship.md`** v2.4.0 → v2.6.0: sync operation, done operation, help text all use `$BASE_BRANCH` from config instead of hardcoded "main"
+- **`team.md`** v2.5.2 → v2.6.0:
+  - Config health check table now includes `release_branch` and `deploy.staging_workflow`
+  - Fresh install template includes commented `release_branch` and `deploy` sections
+  - Branch protection uses config `base_branch` instead of hardcoded "main"
+  - Dashboard merge count uses config `base_branch`
+  - All `skill_version` references updated to 2.6.0
+
+### Design principle
+
+All branch names, workflow names, and deployment behaviors are config-driven. Zero hardcoded project references in skill files. Generic design validated through vi_agent practice.
+
 ## [2.5.1] — 2026-03-04
 
 ### Added — `/team-issue` duplicate check

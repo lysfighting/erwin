@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "2.4.1"
+version: "2.6.0"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -221,6 +221,13 @@ Read branch pattern from config: `conventions.branch_pattern` (or `worktree.bran
 Default: `"mission/{issue}-{slug}-{user}"`.
 
 Read worktree config: if `worktree:` section exists in config → treat as enabled (unless `worktree.enabled` is explicitly `false`). If no `worktree:` section → disabled.
+
+Ensure you're on `base_branch` and up to date before creating the feature branch:
+```bash
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-main}"
+git checkout "$BASE_BRANCH" && git pull origin "$BASE_BRANCH"
+```
 
 Generate branch name:
 ```bash

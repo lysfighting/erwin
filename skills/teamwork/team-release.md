@@ -1,6 +1,6 @@
 ---
 description: "Release a version → git tag → GitHub Release → close Milestone. Try: /team-release help"
-version: "2.5.0"
+version: "2.6.0"
 ---
 
 # /team-release — Close a Version
@@ -88,14 +88,23 @@ fi
 SPEC_PATH=$(bash ~/.claude/commands/scripts/tw-config.sh versions.spec_path "" 2>/dev/null)
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-main}"
+RELEASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.release_branch "" 2>/dev/null)
+RELEASE_BRANCH="${RELEASE_BRANCH:-$BASE_BRANCH}"
+STAGING_WORKFLOW=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.staging_workflow "" 2>/dev/null)
 ```
+
+Determine branch mode:
+- If `RELEASE_BRANCH == BASE_BRANCH` → **single-branch mode** (tag directly on base branch)
+- If `RELEASE_BRANCH != BASE_BRANCH` → **dual-branch mode** (merge base→release before tagging)
 
 Output:
 ```
 /team-release
 Repo:     {REPO}
 Version:  {VERSION}
-Branch:   {BASE_BRANCH}
+Base:     {BASE_BRANCH}
+Release:  {RELEASE_BRANCH} {if same as BASE_BRANCH, show "(single-branch mode)"}
+Staging:  {STAGING_WORKFLOW if set, else "(no staging check configured)"}
 Spec:     {SPEC_PATH if set, else "(none — AI audit will be skipped)"}
 ```
 
@@ -199,10 +208,13 @@ Milestone:  {OPEN_COUNT} open / {CLOSED_COUNT} closed
 {AI audit results if ran, else "(audit skipped)"}
 
 This will:
-  1. git tag {VERSION} → push to origin
-  2. gh release create {VERSION} --generate-notes
-  3. Close GitHub Milestone "{VERSION}"
-  4. Prompt for next version → create Milestone → update config
+  1. {If dual-branch:} Merge {BASE_BRANCH} → {RELEASE_BRANCH}
+  2. {If STAGING_WORKFLOW:} Check staging deploy status
+  3. git tag {VERSION} → push to origin
+  4. gh release create {VERSION} --generate-notes
+  5. Update CHANGELOG.md
+  6. Close GitHub Milestone "{VERSION}"
+  7. Prompt for next version → create Milestone → update config
 ════════════════════════════════════════
 ```
 
@@ -219,13 +231,58 @@ Options: Proceed / Abort
 
 ---
 
-## Step 5: Git Tag
+## Step 4b: Staging Deploy Check (conditional)
 
-Ensure on base branch and up to date:
+**If `STAGING_WORKFLOW` is empty** → skip, output: `(Staging check skipped — no deploy.staging_workflow configured)`
+
+**If `STAGING_WORKFLOW` is set:**
 
 ```bash
-git checkout {BASE_BRANCH}
-git pull origin {BASE_BRANCH}
+LATEST_RUN=$(gh run list --workflow "$STAGING_WORKFLOW" --branch "$RELEASE_BRANCH" --limit 1 \
+  --json conclusion,displayTitle,createdAt 2>/dev/null)
+```
+
+- If no runs found → warn: `⚠ No staging deploy runs found for workflow '$STAGING_WORKFLOW' on branch '$RELEASE_BRANCH'. Proceed with caution.`
+- If latest run conclusion is `"success"` → output: `✅ Staging deploy passed: {displayTitle} ({createdAt})`
+- If latest run conclusion is NOT `"success"` → output warning:
+  ```
+  ⚠ Latest staging deploy did NOT succeed:
+    Workflow: {STAGING_WORKFLOW}
+    Status:   {conclusion}
+    Title:    {displayTitle}
+    Date:     {createdAt}
+
+  Releasing without a passing staging deploy is risky.
+  ```
+  Ask user: "Proceed anyway?" / "Abort" — If abort → **STOP**
+
+---
+
+## Step 5: Merge Base → Release (conditional, dual-branch mode only)
+
+**If `BASE_BRANCH == RELEASE_BRANCH`** → skip this step (single-branch mode)
+
+**If `BASE_BRANCH != RELEASE_BRANCH`** (dual-branch mode):
+
+```bash
+git checkout "$RELEASE_BRANCH" && git pull origin "$RELEASE_BRANCH"
+git merge "$BASE_BRANCH" --no-edit
+git push origin "$RELEASE_BRANCH"
+```
+
+- If merge conflicts → output error: `⛔ Merge conflict merging $BASE_BRANCH → $RELEASE_BRANCH. Resolve conflicts manually, then re-run /team-release.` → **STOP**
+- If push fails → output error and **STOP**
+- Output: `✅ Merged $BASE_BRANCH → $RELEASE_BRANCH`
+
+---
+
+## Step 6: Git Tag
+
+Ensure on release branch and up to date:
+
+```bash
+git checkout "$RELEASE_BRANCH"
+git pull origin "$RELEASE_BRANCH"
 ```
 
 Create and push tag:
@@ -247,7 +304,7 @@ Output: `✅ Tag {VERSION} pushed`
 
 ---
 
-## Step 6: GitHub Release
+## Step 7: GitHub Release
 
 ```bash
 gh release create {VERSION} \
@@ -264,7 +321,59 @@ If command fails → output error details. The tag exists — user can create th
 
 ---
 
-## Step 7: Close Milestone
+## Step 7b: Append to CHANGELOG.md
+
+Fetch the release body and prepend it to `CHANGELOG.md`:
+
+```bash
+RELEASE_BODY=$(gh release view "$VERSION" --json body --jq '.body' 2>/dev/null)
+```
+
+If `RELEASE_BODY` is non-empty and `CHANGELOG.md` exists (or should be created):
+
+```bash
+# Create CHANGELOG entry
+ENTRY="## $VERSION\n\n$RELEASE_BODY\n\n"
+
+if [ -f CHANGELOG.md ]; then
+  # Prepend after the first line (title) or at top
+  # Use temp file to avoid sed portability issues
+  python3 -c "
+import sys
+content = open('CHANGELOG.md').read()
+# Insert after first heading or at top
+lines = content.split('\n')
+insert_at = 0
+for i, line in enumerate(lines):
+    if line.startswith('# ') and i == 0:
+        insert_at = i + 1
+        continue
+    if line.startswith('## '):
+        insert_at = i
+        break
+    if i > 5:
+        insert_at = i
+        break
+entry = '''$ENTRY'''
+lines.insert(insert_at, entry.strip() + '\n')
+print('\n'.join(lines), end='')
+" > CHANGELOG.md.tmp && mv CHANGELOG.md.tmp CHANGELOG.md
+else
+  echo -e "# Changelog\n\n$ENTRY" > CHANGELOG.md
+fi
+
+git add CHANGELOG.md
+git commit -m "docs: update CHANGELOG.md for $VERSION"
+git push origin "$RELEASE_BRANCH"
+```
+
+Output: `✅ CHANGELOG.md updated with $VERSION release notes`
+
+If any step fails → warn but continue (CHANGELOG is nice-to-have, not a blocker).
+
+---
+
+## Step 8: Close Milestone
 
 If `MILESTONE_ID` is set:
 
@@ -287,11 +396,11 @@ If `MILESTONE_ID` is empty → output: `(No milestone to close — skipped)`
 
 ---
 
-## Step 8: Next Version
+## Step 9: Next Version
 
 Ask user: `What is the next version? (e.g. V0.2 — leave blank to skip)`
 
-**If blank → skip Steps 9 and 10.** Output: `(Skipped next version setup)`
+**If blank → skip Steps 10 and 11.** Output: `(Skipped next version setup)`
 
 **If provided (NEXT_VERSION):**
 
@@ -299,7 +408,7 @@ Validate: NEXT_VERSION must not equal VERSION. If same → warn and ask again.
 
 ---
 
-## Step 9: Create Next Milestone
+## Step 10: Create Next Milestone
 
 ```bash
 gh api repos/{REPO}/milestones \
@@ -313,7 +422,7 @@ If creation fails (e.g. milestone already exists) → warn but continue.
 
 ---
 
-## Step 10: Update Config
+## Step 11: Update Config
 
 Update `versions.current` in config:
 
@@ -337,14 +446,14 @@ If update succeeds → stage and commit:
 ```bash
 git add $TEAMWORK_DIR/config.yml
 git commit -m "chore(teamwork): bump version to $NEXT_VERSION after releasing $VERSION"
-git push origin {BASE_BRANCH}
+git push origin "$BASE_BRANCH"
 ```
 
 Output: `✅ Config updated: versions.current = {NEXT_VERSION}`
 
 ---
 
-## Step 11: Summary
+## Step 12: Summary
 
 ```
 RELEASE COMPLETE ✅
@@ -352,6 +461,9 @@ RELEASE COMPLETE ✅
 Released:     {VERSION}
 Release URL:  {release_url}
 Tag:          pushed to origin
+{If dual-branch:} Merge: {BASE_BRANCH} → {RELEASE_BRANCH} ✅
+{If STAGING_WORKFLOW:} Staging: passed ✅
+CHANGELOG:    updated ✅
 Milestone:    "{VERSION}" closed
 ════════════════════════════════════════
 Next version: {NEXT_VERSION}

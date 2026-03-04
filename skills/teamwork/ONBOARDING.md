@@ -346,7 +346,7 @@ After `/team` init, your `.teamwork/config.yml` looks like:
 
 ```yaml
 schema_version: 1
-skill_version: 2.5.0
+skill_version: 2.6.0
 
 team:
   - github: alice
@@ -363,6 +363,7 @@ project:
 conventions:
   branch_pattern: "mission/{issue}-{slug}-{user}"
   base_branch: main
+  # release_branch: main  # optional: set when using dual-branch mode (base ≠ release)
   commit_format: "type(scope): description | Mission: #{issue}"
 
 label_prefix:

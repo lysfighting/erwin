@@ -72,6 +72,7 @@ All opt-in via `config.yml`:
 | Prefixed labels | `label_prefix` | Enabled (new installs) |
 | Git worktree isolation | `worktree.enabled` | `false` |
 | Version tracking | `versions.current` | Not set |
+| Dual-branch mode | `conventions.release_branch` | Same as `base_branch` (single-branch) |
 
 ## What Gets Generated
 
@@ -93,5 +94,5 @@ All opt-in via `config.yml`:
 
 ## Version
 
-- Skill version: 2.1.0
+- Skill version: 2.6.0
 - Config schema: 1
