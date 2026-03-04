@@ -507,7 +507,8 @@ Every dispatch and completion MUST be announced. No silent agents.
 2. All teammates shut down (shutdown_request → confirmed → TeamDelete)
 3. Final verification: EACH Success Criterion verified by running/testing (you do this solo)
 4. Self-Adversarial Review of ENTIRE deliverable
-5. Cannot think of any improvement within scope
+5. Reusable lessons persisted to durable memory (auto memory / topic files)
+6. Cannot think of any improvement within scope
 
 ### Pre-Completion Check
 
@@ -528,6 +529,8 @@ MISSION_COMPLETE
 Waves: {N} | Peak parallelism: {N} | Tasks: {N} (Lead: {N}, STL: {N}, Leaf: {N})
 
 ### Key Decisions / Known Limitations (genuinely out of scope only)
+
+### Memory Δ: [lessons persisted to auto memory, if any]
 ```
 
 ### Post-Mission Ecosystem Scan (2-3 min)
