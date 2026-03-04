@@ -6,7 +6,7 @@
 #   bash tw-pr.sh commit-type TITLE                   # Infer feat/fix/refactor/test/docs
 #   bash tw-pr.sh create ISSUE TITLE BODY BASE BRANCH # Create PR, return number + url
 #   bash tw-pr.sh comment ISSUE TEXT                   # Post comment on Issue (non-fatal)
-#   bash tw-pr.sh watch PR [TIMEOUT]                   # Watch CI checks
+#   bash tw-pr.sh watch PR                               # Watch CI checks
 #   bash tw-pr.sh add-reviewer PR REVIEWER             # Request review (non-fatal)
 #   bash tw-pr.sh verify-merged BRANCH                 # Check if PR merged, print number+url
 #
@@ -30,8 +30,11 @@ cmd_exists() {
     exit 1
   fi
 
+  local base_flag=""
+  [ -n "$base" ] && base_flag="--base $base"
+
   local result
-  result=$(gh pr list --head "$branch" --state open --json number,url --limit 1 2>/dev/null) || {
+  result=$(gh pr list --head "$branch" $base_flag --state open --json number,url --limit 1 2>/dev/null) || {
     echo "ERROR: Could not query PRs" >&2
     exit 2
   }
@@ -60,13 +63,14 @@ cmd_commit_type() {
   local lower
   lower=$(echo "$title" | tr '[:upper:]' '[:lower:]')
 
-  if echo "$lower" | grep -qE '(fix|bug|hotfix|patch)'; then
+  # Use word-boundary matching to avoid false positives (e.g., "prefix" → fix)
+  if echo "$lower" | grep -qEw '(fix|bug|hotfix|patch)'; then
     echo "fix"
-  elif echo "$lower" | grep -qE '(refactor|clean|restructure)'; then
+  elif echo "$lower" | grep -qEw '(refactor|clean|restructure)'; then
     echo "refactor"
-  elif echo "$lower" | grep -qE '(test|spec)'; then
+  elif echo "$lower" | grep -qEw '(test|spec)'; then
     echo "test"
-  elif echo "$lower" | grep -qE '(doc|docs|readme)'; then
+  elif echo "$lower" | grep -qEw '(doc|docs|readme)'; then
     echo "docs"
   else
     echo "feat"
@@ -76,23 +80,23 @@ cmd_commit_type() {
 cmd_create() {
   local issue="${1:-}" title="${2:-}" body="${3:-}" base="${4:-}" branch="${5:-}"
   if [ -z "$issue" ] || [ -z "$title" ] || [ -z "$base" ] || [ -z "$branch" ]; then
-    echo "ERROR: create requires ISSUE, TITLE, BODY, BASE, BRANCH" >&2
+    echo "ERROR: create requires ISSUE, TITLE, BASE, BRANCH (BODY optional)" >&2
     exit 1
   fi
 
-  local result
-  result=$(gh pr create \
+  local url
+  url=$(gh pr create \
     --title "$title" \
     --body "$body" \
     --base "$base" \
-    --head "$branch" 2>&1) || {
-    echo "ERROR: PR creation failed: $result" >&2
+    --head "$branch" 2>/dev/null) || {
+    echo "ERROR: PR creation failed" >&2
     exit 2
   }
 
-  # gh pr create outputs the URL; extract PR number from it
-  local url="$result"
+  # gh pr create outputs the URL on stdout; extract PR number from last line
   local number
+  url=$(echo "$url" | tail -1)
   number=$(echo "$url" | grep -oE '[0-9]+$' || echo "")
 
   echo "$number $url"
@@ -101,8 +105,8 @@ cmd_create() {
 cmd_comment() {
   local issue="${1:-}" text="${2:-}"
   if [ -z "$issue" ] || [ -z "$text" ]; then
-    echo "ERROR: comment requires ISSUE and TEXT" >&2
-    exit 0  # Non-fatal
+    echo "WARNING: comment requires ISSUE and TEXT, skipping" >&2
+    return 0
   fi
 
   gh issue comment "$issue" --body "$text" 2>/dev/null || {
@@ -113,7 +117,7 @@ cmd_comment() {
 }
 
 cmd_watch() {
-  local pr="${1:-}" timeout="${2:-}"
+  local pr="${1:-}"
   if [ -z "$pr" ]; then
     echo "ERROR: watch requires PR number" >&2
     exit 1
@@ -132,8 +136,8 @@ cmd_watch() {
 cmd_add_reviewer() {
   local pr="${1:-}" reviewer="${2:-}"
   if [ -z "$pr" ] || [ -z "$reviewer" ]; then
-    echo "ERROR: add-reviewer requires PR and REVIEWER" >&2
-    exit 0  # Non-fatal
+    echo "WARNING: add-reviewer requires PR and REVIEWER, skipping" >&2
+    return 0
   fi
 
   gh pr edit "$pr" --add-reviewer "$reviewer" 2>/dev/null || {

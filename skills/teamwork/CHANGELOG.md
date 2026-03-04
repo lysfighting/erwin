@@ -2,6 +2,32 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.7.1] — 2026-03-04
+
+### Fixed — Script Testing Audit (21 bugs found, 14 fixed)
+
+Full-flow testing of 4 scripts (32 subcommands) + 6 skill files. 4 parallel test agents + cross-reference audit.
+
+**CRITICAL fixes:**
+- **tw-git.sh cmd_tag**: `git rev-parse "$version"` matched branches (not just tags) → false "already exists" skip. Fixed: `refs/tags/$version`
+- **tw-git.sh cmd_merge_to**: `checkout && pull` chain — checkout failure didn't trigger `set -e`, merge proceeded on wrong branch. Fixed: explicit `|| exit 2`
+
+**HIGH fixes:**
+- **tw-git.sh cmd_ensure_base**: silent success on checkout failure (same `&&` chain bug). Fixed: explicit error handling
+- **tw-git.sh cmd_create_branch**: sed metachar injection (`&`, `/`, `\` in slug). Fixed: bash `${//}` parameter expansion
+- **tw-git.sh cmd_rebase/merge_to**: `git fetch 2>/dev/null` with `set -e` killed script silently on network error. Fixed: `|| WARNING`
+- **tw-git.sh cmd_tag**: grep regex metacharacters in version (`.` = any char). Fixed: `grep -qF` (fixed string)
+- **tw-pr.sh cmd_commit_type**: substring matching false positives ("prefix"→fix, "specification"→test). Fixed: `grep -qEw` (word boundary)
+- **tw-contract.sh cmd_toggle_task**: reported success even when task N didn't exist. Fixed: `found` flag + exit 1
+
+**MEDIUM fixes:**
+- **tw-git.sh cmd_tag**: verification grep missing `$` anchor → false positive
+- **tw-git.sh cmd_push**: `2>&1` mixed stderr into stdout → polluted output
+- **tw-git.sh cmd_protect_check**: empty output on detached HEAD
+- **tw-label.sh cmd_transition**: "done" transition dropped FROM label when from ≠ wip/review
+- **tw-pr.sh cmd_exists**: BASE parameter accepted but never passed to `gh pr list`
+- **tw-pr.sh cmd_create**: error message claimed BODY required (actually optional); `2>&1` contaminated URL extraction
+
 ## [2.7.0] — 2026-03-04
 
 ### Changed — Script Extraction (Von Neumann Mechanism-Content Separation)

@@ -8,25 +8,25 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-04
-- **Last Session**: [2026-03-04-V](sessions/2026-03-04-V.md) (Session V — Teamwork v2.7.0 Script Extraction)
+- **Last Session**: [2026-03-04-W](sessions/2026-03-04-W.md) (Session W — Teamwork v2.7.1 Script Testing Audit)
 
 ## Current Phase
 
-**Phase**: Teamwork v2.7.0 完成 — Von Neumann 机制-内容分离
+**Phase**: Teamwork v2.7.1 完成 — 脚本测试审计
 
 ## What Was Just Completed
 
-**Session V** — Script Extraction (Von Neumann Mechanism-Content Separation):
+**Session W** — Script Testing Audit (21 bugs found, 14 fixed):
 
-- Dialectical analysis of LLM dependency: 228 operations cataloged, 64% deterministic but 100% LLM-interpreted
-- Consulted pantheon (Von Neumann, Gödel, Shannon, Dijkstra) for theoretical framework
-- Created 4 new scripts: tw-git.sh (13), tw-label.sh (4), tw-contract.sh (8), tw-pr.sh (7)
-- Refactored all 6 skill .md files: deterministic ops → script calls, judgment stays in .md
-- All skill files bumped to v2.7.0
+- 4 parallel test agents + 1 cross-reference auditor tested all 32 subcommands
+- 2 CRITICAL: tag rev-parse matched branches, merge-to on wrong branch
+- 6 HIGH: silent ensure-base, sed injection, fetch kills script, grep metachar, commit-type false positives, toggle-task false success
+- 6 MEDIUM: grep anchor, stderr, detached HEAD, label transition, PR base param, body validation
+- Cross-reference audit: .md-to-script interfaces clean, 5 orphan subcommands (not bugs)
 
 ## Active Task / What's In Progress
 
-None — v2.7.0 script extraction complete.
+None — v2.7.1 testing audit complete.
 
 ## Next Session Should Start With
 
@@ -64,6 +64,7 @@ None — v2.7.0 script extraction complete.
 - [x] Teamwork v2.6.0 — dual-branch model + release safety gates + post-merge Action + config-driven refs
 - [x] Teamwork v2.6.1 — falsification audit: 6 critical + 15 high bug fixes across all files
 - [x] Teamwork v2.7.0 — script extraction: 4 scripts (32 subcommands) + 6 skill files refactored
+- [x] Teamwork v2.7.1 — script testing audit: 21 bugs found, 14 fixed across 4 scripts
 
 ## Known Issues / Blockers
 

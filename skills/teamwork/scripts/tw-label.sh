@@ -54,11 +54,12 @@ cmd_transition() {
     usage
   fi
 
+  # Build remove list: always remove FROM label
   local remove_labels="--remove-label ${STATUS_PREFIX}${from}"
 
-  # Special case: done transition removes both wip AND review
+  # Special case: done transition also removes wip and review
   if [ "$to" = "done" ]; then
-    remove_labels="--remove-label ${STATUS_PREFIX}wip --remove-label ${STATUS_PREFIX}review"
+    remove_labels="--remove-label ${STATUS_PREFIX}${from} --remove-label ${STATUS_PREFIX}wip --remove-label ${STATUS_PREFIX}review"
   fi
 
   if gh issue edit "$issue" $remove_labels --add-label "${STATUS_PREFIX}${to}" 2>/dev/null; then

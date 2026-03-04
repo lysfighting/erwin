@@ -179,12 +179,17 @@ path, n, ts = sys.argv[1], int(sys.argv[2]), sys.argv[3]
 with open(path) as f:
     lines = f.readlines()
 count = 0
+found = False
 for i, line in enumerate(lines):
     if '- [ ] ' in line:
         count += 1
         if count == n:
             lines[i] = line.replace('- [ ] ', '- [x] ', 1).rstrip() + ' — ' + ts + '\n'
+            found = True
             break
+if not found:
+    print(f'ERROR: Task {n} not found ({count} unchecked tasks exist)', file=sys.stderr)
+    sys.exit(1)
 with open(path, 'w') as f:
     f.writelines(lines)
 print(f'Task {n} checked off at {ts}')

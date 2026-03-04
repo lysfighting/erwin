@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — Skills Factory
+- **Teamwork v2.7.1 — Script Testing Audit** (21 bugs found, 14 fixed across 4 scripts):
+  - 2 CRITICAL: tag check matched branches not tags, merge-to on wrong branch after checkout failure
+  - 6 HIGH: silent ensure-base failure, sed injection, fetch kills script, grep metachar, commit-type false positives, toggle-task false success
+  - 6 MEDIUM: missing grep anchor, stderr pollution, detached HEAD, label transition drop, unused PR base param, body validation message
+
 ### Changed — Skills Factory
 - **Teamwork v2.7.0 — Script Extraction** (Von Neumann Mechanism-Content Separation):
   - 4 new scripts: tw-git.sh (13 subcommands), tw-label.sh (4), tw-contract.sh (8), tw-pr.sh (7)

@@ -60,7 +60,13 @@ usage() {
 cmd_ensure_base() {
   local base
   base=$(_base_branch)
-  git checkout "$base" 2>/dev/null && git pull origin "$base" 2>/dev/null
+  git checkout "$base" 2>/dev/null || {
+    echo "ERROR: Could not checkout $base" >&2
+    exit 2
+  }
+  git pull origin "$base" 2>/dev/null || {
+    echo "WARNING: Could not pull $base, working with local copy" >&2
+  }
   echo "$base"
 }
 
@@ -73,7 +79,12 @@ cmd_create_branch() {
 
   local pattern branch
   pattern=$(_branch_pattern)
-  branch=$(echo "$pattern" | sed "s/{issue}/$issue/;s/{slug}/$slug/;s/{user}/$user/;s/{type}/mission/;s/{task-id}/$issue/")
+  # Use bash parameter expansion instead of sed to avoid metachar injection (&, /, \)
+  branch="${pattern//\{issue\}/$issue}"
+  branch="${branch//\{slug\}/$slug}"
+  branch="${branch//\{user\}/$user}"
+  branch="${branch//\{type\}/mission}"
+  branch="${branch//\{task-id\}/$issue}"
 
   if git show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
     echo "Branch '$branch' already exists. Switching to it." >&2
@@ -91,6 +102,10 @@ cmd_current() {
 cmd_protect_check() {
   local current base release
   current=$(git branch --show-current)
+  if [ -z "$current" ]; then
+    echo "OK: detached HEAD"
+    return 0
+  fi
   base=$(_base_branch)
   release=$(_release_branch)
 
@@ -105,7 +120,7 @@ cmd_push() {
   local branch="${1:-}"
   [ -z "$branch" ] && branch=$(git branch --show-current)
 
-  if git push -u origin "$branch" 2>&1; then
+  if git push -u origin "$branch"; then
     echo "Pushed: $branch"
   else
     echo "Push failed. Try: git pull --rebase origin $branch" >&2
@@ -127,11 +142,13 @@ cmd_rebase() {
   local target="${1:-}"
   [ -z "$target" ] && target=$(_base_branch)
 
-  git fetch origin "$target" 2>/dev/null
+  git fetch origin "$target" 2>/dev/null || {
+    echo "WARNING: Could not fetch $target, rebasing on local ref" >&2
+  }
   if git rebase "origin/$target"; then
     echo "Rebased on origin/$target"
   else
-    echo "Rebase conflicts detected. Resolve them, then: git rebase --continue" >&2
+    echo "Rebase failed. Resolve conflicts, then: git rebase --continue" >&2
     exit 2
   fi
 }
@@ -146,8 +163,16 @@ cmd_merge_to() {
   local base
   base=$(_base_branch)
 
-  git fetch origin "$base" "$target" 2>/dev/null
-  git checkout "$target" && git pull origin "$target" 2>/dev/null
+  git fetch origin "$base" "$target" 2>/dev/null || {
+    echo "WARNING: Could not fetch, working with local refs" >&2
+  }
+  git checkout "$target" || {
+    echo "ERROR: Could not checkout $target" >&2
+    exit 2
+  }
+  git pull origin "$target" 2>/dev/null || {
+    echo "WARNING: Could not pull $target, working with local copy" >&2
+  }
   if git merge "origin/$base" --no-edit; then
     git push origin "$target"
     echo "Merged $base → $target"
@@ -164,12 +189,12 @@ cmd_tag() {
     exit 1
   fi
 
-  # Check if tag already exists
-  if git rev-parse "$version" >/dev/null 2>&1; then
+  # Check if tag already exists (use refs/tags/ prefix to avoid matching branches)
+  if git rev-parse "refs/tags/$version" >/dev/null 2>&1; then
     echo "Tag '$version' already exists locally. Skipping." >&2
     return 0
   fi
-  if git ls-remote --tags origin | grep -q "refs/tags/${version}$"; then
+  if git ls-remote --tags origin | grep -qF "refs/tags/${version}"; then
     echo "Tag '$version' already exists on remote. Skipping." >&2
     return 0
   fi
@@ -177,8 +202,8 @@ cmd_tag() {
   git tag "$version"
   git push origin "$version"
 
-  # Verify
-  if git ls-remote --tags origin | grep -q "refs/tags/${version}"; then
+  # Verify (use -F for fixed string match to avoid regex metachar issues with dots)
+  if git ls-remote --tags origin | grep -qF "refs/tags/${version}"; then
     echo "Tag $version pushed and verified"
   else
     echo "ERROR: Tag $version push could not be verified" >&2
