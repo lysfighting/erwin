@@ -791,8 +791,11 @@ jobs:
         with:
           script: |
             const body = context.payload.pull_request.body || '';
-            const matches = body.match(/[Cc]loses?\s+#(\d+)/g) || [];
-            const numbers = matches.map(m => m.match(/#(\d+)/)[1]);
+            // Match all GitHub-recognized closing keywords
+            const pattern = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#(\d+)/gi;
+            const numbers = [...new Set(
+              [...body.matchAll(pattern)].map(m => parseInt(m[1], 10))
+            )];
 
             for (const num of numbers) {
               console.log(`Processing Issue #${num}`);
@@ -825,22 +828,29 @@ jobs:
               }
 
               // 3. Check milestone completion
+              // Race condition: GitHub may not have processed "Closes #N" yet,
+              // so milestone.open_issues count may be stale. Instead, query
+              // actual open issues and exclude the one we're closing.
               if (issue.data.milestone) {
-                const ms = await github.rest.issues.listMilestones({
-                  ...context.repo, state: 'open'
+                const openInMs = await github.rest.issues.listForRepo({
+                  ...context.repo,
+                  milestone: issue.data.milestone.number,
+                  state: 'open',
+                  per_page: 5
                 });
-                const milestone = ms.data.find(m => m.number === issue.data.milestone.number);
-                if (milestone && milestone.open_issues === 0) {
+                const othersOpen = openInMs.data.filter(i => i.number !== num);
+                if (othersOpen.length === 0) {
+                  const total = issue.data.milestone.closed_issues + issue.data.milestone.open_issues;
                   await github.rest.issues.createComment({
                     ...context.repo, issue_number: num,
-                    body: `🎉 Milestone **${milestone.title}** is now 100% complete (${milestone.closed_issues} issues closed). Ready for \`/team-release\`.`
+                    body: `🎉 Milestone **${issue.data.milestone.title}** is now 100% complete (${total} issues). Ready for \`/team-release\`.`
                   });
                 }
               }
             }
 
             if (numbers.length === 0) {
-              console.log('No "Closes #N" found in PR body — skipping cleanup');
+              console.log('No closing keywords found in PR body — skipping cleanup');
             }
 ```
 
