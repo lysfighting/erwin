@@ -14,8 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - team-drive: branch safety check prevents code execution on protected branches
   - team-claim: explicit base_branch checkout before feature branch creation
   - team-issue: `--milestone` parameter for per-issue milestone override
-  - team-ship: sync/done operations use config base_branch (no hardcoded "main")
-  - team.md: config template, health check, branch protection all config-driven
+  - team-ship: sync/done operations use config base_branch; done D3/D4 now fallback (Action-first)
+  - team.md: post-merge Action (auto-label + checkbox + milestone check), repo merge settings, config-driven branch protection + CI templates
   - Zero project coupling in skill files — fully generic design
 - **Teamwork v2.5.2 — Dashboard queue overflow fix**:
   - QUEUED section now sorted by priority (P0→P1→P2→P3→none) and truncated to top 5 with overflow count

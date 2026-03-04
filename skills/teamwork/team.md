@@ -269,7 +269,7 @@ After confirming membership, verify that the config has the fields needed by oth
 | `conventions.base_branch` | team-claim, team-ship, team-drive | `"main"` |
 | `conventions.release_branch` | team-release | `base_branch` value |
 | `deploy.staging_workflow` | team-release | `""` (skip staging check) |
-| `label_prefix` or `github.label_prefix` | all skills | `status:`, `priority:` |
+| `label_prefix` or `github.label_prefix` | all skills, post-merge Action | `status:`, `priority:` |
 
 If critical fields are missing (no `project:` section at all, no `conventions.branch_pattern`), output a warning:
 
@@ -757,7 +757,96 @@ jobs:
 
 For other languages or if language not detected, generate a minimal workflow with just checkout and a comment explaining what to add.
 
-### 4e: Write git hooks (if enabled)
+### 4e: Write `.github/workflows/post-merge.yml`
+
+**First, check if post-merge workflow already exists:**
+
+```bash
+ls .github/workflows/post-merge.yml 2>/dev/null
+```
+
+- If exists → read, ask "Keep existing? Or regenerate?" (same pattern as ci.yml)
+- If not exists → generate:
+
+Read label prefixes from config for substitution:
+
+```bash
+STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
+```
+
+```yaml
+name: Post-Merge Cleanup
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update linked Issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+            const matches = body.match(/[Cc]loses?\s+#(\d+)/g) || [];
+            const numbers = matches.map(m => m.match(/#(\d+)/)[1]);
+
+            for (const num of numbers) {
+              console.log(`Processing Issue #${num}`);
+
+              // 1. Update labels: remove wip/review → add done
+              const statusLabels = ['{STATUS_PREFIX}wip', '{STATUS_PREFIX}review'];
+              for (const label of statusLabels) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    ...context.repo, issue_number: num, name: label
+                  });
+                } catch (e) { /* label might not exist */ }
+              }
+              await github.rest.issues.addLabels({
+                ...context.repo, issue_number: num, labels: ['{STATUS_PREFIX}done']
+              });
+
+              // 2. Check all checkboxes in Issue body
+              const issue = await github.rest.issues.get({
+                ...context.repo, issue_number: num
+              });
+              if (issue.data.body) {
+                const updated = issue.data.body.replace(/- \[ \]/g, '- [x]');
+                if (updated !== issue.data.body) {
+                  await github.rest.issues.update({
+                    ...context.repo, issue_number: num, body: updated
+                  });
+                  console.log(`Checked ${(issue.data.body.match(/- \[ \]/g) || []).length} checkboxes`);
+                }
+              }
+
+              // 3. Check milestone completion
+              if (issue.data.milestone) {
+                const ms = await github.rest.issues.listMilestones({
+                  ...context.repo, state: 'open'
+                });
+                const milestone = ms.data.find(m => m.number === issue.data.milestone.number);
+                if (milestone && milestone.open_issues === 0) {
+                  await github.rest.issues.createComment({
+                    ...context.repo, issue_number: num,
+                    body: `🎉 Milestone **${milestone.title}** is now 100% complete (${milestone.closed_issues} issues closed). Ready for \`/team-release\`.`
+                  });
+                }
+              }
+            }
+
+            if (numbers.length === 0) {
+              console.log('No "Closes #N" found in PR body — skipping cleanup');
+            }
+```
+
+**Note**: `{STATUS_PREFIX}` is substituted at generation time with the value from config (default: `status:`). This means the generated workflow contains literal strings like `status:wip`, not template variables.
+
+### 4f: Write git hooks (if enabled)
 
 **`.githooks/pre-commit`:**
 ```bash
@@ -797,7 +886,7 @@ Configure git to use local hooks:
 git config core.hooksPath .githooks
 ```
 
-### 4f: Update `.gitignore`
+### 4g: Update `.gitignore`
 
 Append if not already present:
 ```

@@ -403,22 +403,31 @@ gh pr list --head "$BRANCH" --state merged --json number,url --limit 1
 
 - If no merged PR found → "No merged PR found for branch `{branch}`. PR must be merged before running `done`." → **STOP**
 
-### D3: Close Issue
+### D3: Close Issue (fallback — usually handled by "Closes #N" in PR)
 
 ```bash
-gh issue view {issue} --json state --jq '.state'
+ISSUE_STATE=$(gh issue view {issue} --json state --jq '.state' 2>/dev/null)
 ```
 
-If Issue is still open:
+If Issue is still open (GitHub "Closes #N" didn't fire, or PR body didn't include it):
 ```bash
 gh issue close {issue} --reason completed
 ```
 
-### D4: Update labels
+If already closed → skip, output: `(Issue already closed — handled by PR merge)`
 
+### D4: Update labels (fallback — usually handled by post-merge Action)
+
+```bash
+ISSUE_LABELS=$(gh issue view {issue} --json labels --jq '[.labels[].name] | join(",")' 2>/dev/null)
+```
+
+If `status:done` is NOT in labels (post-merge Action didn't run or failed):
 ```bash
 gh issue edit {issue} --remove-label "status:review" --remove-label "status:wip" --add-label "status:done"
 ```
+
+If `status:done` already present → skip, output: `(Labels already updated — handled by post-merge Action)`
 
 ### D5: Clean up worktree (if applicable)
 

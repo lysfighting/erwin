@@ -24,12 +24,15 @@ All notable changes to the Teamwork skill set.
 
 ### Changed — Config-driven branch references
 
-- **`team-ship.md`** v2.4.0 → v2.6.0: sync operation, done operation, help text all use `$BASE_BRANCH` from config instead of hardcoded "main"
+- **`team-ship.md`** v2.4.0 → v2.6.0:
+  - Sync operation, done operation, help text all use `$BASE_BRANCH` from config instead of hardcoded "main"
+  - **Done operation D3/D4 → fallback pattern**: checks if post-merge Action already handled label updates and Issue closure before acting. Skips with `(handled by PR merge)` / `(handled by post-merge Action)` messages.
 - **`team.md`** v2.5.2 → v2.6.0:
+  - **New Step 4e: Post-merge Action** — generates `.github/workflows/post-merge.yml` that auto-runs on PR merge: extracts `Closes #N` from PR body, updates labels (wip/review→done), checks all Issue checkboxes, checks milestone completion and comments when 100%
   - **New Step 5b: Repo merge settings** — auto-delete head branches, squash merge only, PR_BODY commit message (preserves `Closes #N`)
   - **Step 5c: Dual-branch protection** — protects both base_branch AND release_branch in dual-branch mode
   - **CI workflow templates** — use `{BASE_BRANCH}` placeholder instead of hardcoded `main`; dual-branch mode includes both branches in push triggers
-  - Config health check table now includes `release_branch` and `deploy.staging_workflow`
+  - Config health check table now includes `release_branch`, `deploy.staging_workflow`, and post-merge Action
   - Fresh install template includes commented `release_branch` and `deploy` sections
   - Dashboard merge count uses config `base_branch`
   - All `skill_version` references updated to 2.6.0

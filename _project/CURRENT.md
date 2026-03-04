@@ -16,22 +16,16 @@
 
 ## What Was Just Completed
 
-**Session T** — Teamwork v2.6.0 实施 + 举一反三审计:
+**Session T (continued)** — Post-merge Action + 闭环补全:
 
-- **All 6 skill files updated** to v2.6.0 with dual-branch model + config-driven branch refs
-- team-drive: branch safety check (Step 2b)
-- team-release: staging gate + merge base→release + CHANGELOG append (Steps 4b, 5, 7b)
-- team-issue: --milestone parameter override
-- team-claim: explicit base_branch checkout before branching
-- team-ship: sync/done operations use config base_branch
-- team.md: config template + health check + branch protection all config-driven
-- **Zero project coupling** — all `vi_agent`/`erwin` references removed from skill files
-- **举一反三追加**：auto-delete + squash merge + commit msg format + release_branch protection + CI 模板去硬编码
-- 对话过程详细记录（含关键转折点和推理链）
+- **team.md Step 4e**: post-merge.yml 生成（`actions/github-script@v7`）— auto-label, checkbox check-all, milestone completion comment
+- **team.md Step 5b**: repo merge settings (auto-delete branches, squash-only, PR_BODY commit msg)
+- **team-ship.md D3/D4**: 降级为 fallback（Action-first, manual-fallback）
+- 发现来源：vi_agent Issue #70 审查 — PR merged 但 checkbox/labels 未更新
 
 ## Active Task / What's In Progress
 
-None — v2.6.0 implementation complete (含追加 commit).
+None — v2.6.0 + post-merge Action complete.
 
 ## Next Session Should Start With
 
@@ -66,7 +60,7 @@ None — v2.6.0 implementation complete (含追加 commit).
 - [x] Teamwork v2.4.1 — E2E validated on vi_agent + mc_label dual-schema + inline comment fix
 - [x] Teamwork v2.5.0 — team-release skill + init idempotency fix + doc sweep
 - [x] Teamwork v2.5.1 — team-issue duplicate check (gh search + LLM semantic match)
-- [x] Teamwork v2.6.0 — dual-branch model + release safety gates + config-driven refs
+- [x] Teamwork v2.6.0 — dual-branch model + release safety gates + post-merge Action + config-driven refs
 
 ## Known Issues / Blockers
 
