@@ -16,7 +16,7 @@
 
 ## What Was Just Completed
 
-**Session T** — Teamwork v2.6.0 实施:
+**Session T** — Teamwork v2.6.0 实施 + 举一反三审计:
 
 - **All 6 skill files updated** to v2.6.0 with dual-branch model + config-driven branch refs
 - team-drive: branch safety check (Step 2b)
@@ -26,11 +26,12 @@
 - team-ship: sync/done operations use config base_branch
 - team.md: config template + health check + branch protection all config-driven
 - **Zero project coupling** — all `vi_agent`/`erwin` references removed from skill files
-- CHANGELOG written for both teamwork/ and project root
+- **举一反三追加**：auto-delete + squash merge + commit msg format + release_branch protection + CI 模板去硬编码
+- 对话过程详细记录（含关键转折点和推理链）
 
 ## Active Task / What's In Progress
 
-None — v2.6.0 implementation complete.
+None — v2.6.0 implementation complete (含追加 commit).
 
 ## Next Session Should Start With
 
@@ -70,7 +71,7 @@ None — v2.6.0 implementation complete.
 ## Known Issues / Blockers
 
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
-- Teamwork: version_file (package.json bump) not yet in team-release — deferred to v2.6
+- Teamwork: version_file (package.json bump) not yet in team-release — deferred to future version
 - Teamwork: /team-drive still unimplemented (thin wrapper over /drive)
 
 ## File Locations
