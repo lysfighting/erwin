@@ -8,32 +8,41 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-04
-- **Last Session**: [2026-03-04-Q](sessions/2026-03-04-Q.md) (Session Q — Teamwork v2.5.0)
+- **Last Session**: [2026-03-04-R](sessions/2026-03-04-R.md) (Session R — Teamwork 闭环设计讨论)
 
 ## Current Phase
 
-**Phase**: Teamwork v2.5.0 — team-release + init idempotency fix
+**Phase**: Teamwork v2.6 设计 — "需求自动领取交付"闭环 + 环境策略
 
 ## What Was Just Completed
 
-**Session Q** — Teamwork v2.5.0 (full day of teamwork iteration):
+**Session R** — Teamwork 闭环设计讨论（纯设计，无代码）:
 
-1. **team.md v2.4.1 upgrade** — replaced all sed chains in dashboard with tw-config.sh calls (mc_label dual-schema, STATUS_PREFIX, PRIORITY_PREFIX, CURRENT_VERSION). skill_version template updated.
-2. **/team-release skill** — new `team-release.md` v2.5.0. Full version lifecycle: milestone check → AI audit (conditional on spec_path) → user confirm → git tag → gh release create --generate-notes → close milestone → next version setup.
-3. **/team init idempotency fix** — Step 4b now has MERGE MODE (config exists → preserve all sections, update skill_version, append missing) vs FRESH INSTALL (no config → full write). Eliminates destructive overwrite of custom configs.
-4. **Documentation sweep** — team.md help added /team-issue + /team-release + VERSION LIFECYCLE section. ONBOARDING.md: skill_version 2.1.0→2.5.0, Step 2 rewritten for /team-issue, Step 6 added for /team-release, daily workflow + versions comment updated.
+全量讨论记录见 `sessions/2026-03-04-R.md`。达成 19 项设计共识，提炼 6 条设计原则。
+核心决策：squash merge + release tag only + Skill/Deploy 职责分离 + workflow_dispatch 部署 + 模式 A 环境策略。
 
 ## Active Task / What's In Progress
 
-None. Session Q complete.
+**设计讨论进行中**，以下话题已完成，以下待续：
+
+已完成：合并机制、tag 策略、changelog、milestone 集成、环境策略、部署触发、风险分离
+待讨论：IaC 归属、自动循环上下文管理、vi-agent docs→issues、自动化测试
 
 ## Next Session Should Start With
 
-1. Read this file
-2. Continue V2 Phase 3 showcase tasks (DesignPatternLibrary, CaseStudies) — still blocking v1.0.0
-3. **Future teamwork missions**:
-   - `/team-drive` wrapping full `/drive` (thin wrapper, skip Phase 0) — still unimplemented
-   - version_file support in team-release (package.json version bump) — deferred to v2.6
+1. Read this file + `sessions/2026-03-04-R.md`（全量讨论记录，19 项共识）
+2. **继续闭环设计讨论**（未完成话题）：
+   - IaC 归属：项目内 vs gcp-compute-infra，权限模型
+   - 自动循环上下文管理：leader context 积累、中断恢复
+   - vi-agent docs (product.md + system_v4.md) → 批量创建 milestone/issues
+   - 自动化测试流程（AI QA 具体实现）
+3. **设计讨论完成后 → 实施优先级**：
+   - `/team-ship done` → GitHub Action 化
+   - `/team-issue` 加 `--milestone` 参数
+   - `/team-release` 加 CHANGELOG.md 生成 + staging Action 检查
+   - `/team-drive` 加 "不在 main" 安全检查
+   - deploy.yml (workflow_dispatch) 骨架
+4. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
 
@@ -57,12 +66,13 @@ None. Session Q complete.
 - [x] Teamwork v2.4.1 — E2E validated on vi_agent + mc_label dual-schema + inline comment fix
 - [x] Teamwork v2.5.0 — team-release skill + init idempotency fix + doc sweep
 - [x] Teamwork v2.5.1 — team-issue duplicate check (gh search + LLM semantic match)
+- [ ] Teamwork v2.6 — 闭环设计（Session R 设计中）
 
 ## Known Issues / Blockers
 
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
-- Teamwork: initial milestone must be created manually (non-fatal warning in /team-issue)
 - Teamwork: version_file (package.json bump) not yet in team-release — deferred to v2.6
+- Teamwork: /team-drive still unimplemented (thin wrapper over /drive)
 
 ## File Locations
 
