@@ -7,37 +7,37 @@
 ## Project Status
 
 - **Version**: 0.5.0 (in progress)
-- **Last Updated**: 2026-03-04
-- **Last Session**: [2026-03-04-W](sessions/2026-03-04-W.md) (Session W — Teamwork v2.7.1 Script Testing Audit)
+- **Last Updated**: 2026-03-05
+- **Last Session**: [2026-03-05-X](sessions/2026-03-05-X.md) (Session X — vi_agent E2E Validation)
 
 ## Current Phase
 
-**Phase**: Teamwork v2.7.1 完成 — 脚本测试审计
+**Phase**: Teamwork v2.7.2 完成 — vi_agent E2E 验证
 
 ## What Was Just Completed
 
-**Session W** — Script Testing Audit (21 bugs found, 14 fixed):
+**Session X** — vi_agent E2E Validation (3 bugs found, 3 fixed):
 
-- 4 parallel test agents + 1 cross-reference auditor tested all 32 subcommands
-- 2 CRITICAL: tag rev-parse matched branches, merge-to on wrong branch
-- 6 HIGH: silent ensure-base, sed injection, fetch kills script, grep metachar, commit-type false positives, toggle-task false success
-- 6 MEDIUM: grep anchor, stderr, detached HEAD, label transition, PR base param, body validation
-- Cross-reference audit: .md-to-script interfaces clean, 5 orphan subcommands (not bugs)
+- Installed v2.7.1 scripts and tested all 4 scripts against vi_agent's `.teamspace/` config
+- 1 CRITICAL: `_branch_pattern()` `${p:-default}` with `{}` in default — bash parameter expansion closes at first unmatched `}`, garbling branch names (e.g., `mission/99-test-e2e-test-e2e-liya}` instead of `mission/99-test-e2e`)
+- 1 MEDIUM: `check-freshness` exits 3 (from read-field) instead of 2 (NO_HASH) — `exit` in function kills subshell before `|| true` fires
+- 1 LOW: protect-check USAGE comment said exit 1, actual code exits 3
+- Interface audit: all .md-to-script calls match, 5 orphan subcommands (same as v2.7.1)
+- Config reads, label ops, PR ops, contract ops all verified against vi_agent's dual schema
 
 ## Active Task / What's In Progress
 
-None — v2.7.1 testing audit complete.
+None — v2.7.2 vi_agent validation complete.
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **vi_agent 实践验证** — run `./install.sh teamwork` then test on vi_agent
-3. **继续闭环设计讨论**（按优先级排序）：
+2. **继续闭环设计讨论**（按优先级排序）：
    - 自动化测试流程：AI QA 具体实现、工具选型、覆盖范围
    - IaC 归属：项目内 vs gcp-compute-infra，权限模型
    - deploy Action 具体实现（依赖上面两项）
    - vi-agent docs → milestone/issues（操作型，讨论量少）
-4. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
+3. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
 
@@ -64,7 +64,8 @@ None — v2.7.1 testing audit complete.
 - [x] Teamwork v2.6.0 — dual-branch model + release safety gates + post-merge Action + config-driven refs
 - [x] Teamwork v2.6.1 — falsification audit: 6 critical + 15 high bug fixes across all files
 - [x] Teamwork v2.7.0 — script extraction: 4 scripts (32 subcommands) + 6 skill files refactored
-- [x] Teamwork v2.7.1 — script testing audit: 21 bugs found, 14 fixed across 4 scripts
+- [x] Teamwork v2.7.1 — script testing audit: 21 bugs found, 14+4 fixed across 4 scripts
+- [x] Teamwork v2.7.2 — vi_agent E2E validation: 3 bugs found, 3 fixed
 
 ## Known Issues / Blockers
 

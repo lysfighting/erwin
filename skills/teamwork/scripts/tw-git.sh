@@ -5,7 +5,7 @@
 #   bash tw-git.sh ensure-base                        # Checkout base_branch, pull latest
 #   bash tw-git.sh create-branch ISSUE SLUG USER      # Create branch from pattern
 #   bash tw-git.sh current                             # Print current branch name
-#   bash tw-git.sh protect-check                       # Exit 1 if on protected branch
+#   bash tw-git.sh protect-check                       # Exit 3 if on protected branch
 #   bash tw-git.sh push [BRANCH]                       # Push with -u (default: current branch)
 #   bash tw-git.sh fetch BRANCH [BRANCH2...]           # Fetch specified branches
 #   bash tw-git.sh rebase TARGET                        # Fetch + rebase on target
@@ -50,7 +50,12 @@ _branch_pattern() {
   if [ -z "$p" ]; then
     p=$(bash "$TW_CONFIG" worktree.branch_pattern "mission/{issue}-{slug}-{user}" 2>/dev/null)
   fi
-  echo "${p:-mission/{issue}-{slug}-{user}}"
+  # CRITICAL: Do NOT use ${p:-default} when default contains {} — bash closes
+  # parameter expansion at first unmatched }, appending leftover text to output.
+  if [ -z "$p" ]; then
+    p="mission/{issue}-{slug}-{user}"
+  fi
+  echo "$p"
 }
 
 usage() {

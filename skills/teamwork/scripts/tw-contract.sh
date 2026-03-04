@@ -133,9 +133,16 @@ cmd_check_freshness() {
     exit 1
   fi
 
+  # Pre-check file existence — cmd_read_field uses exit (not return),
+  # which kills the $(…) subshell before || true can fire.
+  if [ ! -f "$path" ]; then
+    echo "NO_HASH"
+    exit 2
+  fi
+
   # Read contract hash
   local contract_hash
-  contract_hash=$(cmd_read_field "$path" "issue_content_hash" 2>/dev/null || true)
+  contract_hash=$(cmd_read_field "$path" "issue_content_hash" 2>/dev/null) || true
 
   if [ -z "$contract_hash" ]; then
     echo "NO_HASH"  # Pre-v2.3.0 contract

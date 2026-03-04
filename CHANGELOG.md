@@ -8,10 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed — Skills Factory
-- **Teamwork v2.7.1 — Script Testing Audit** (21 bugs found, 14 fixed across 4 scripts):
+- **Teamwork v2.7.2 — vi_agent E2E Validation** (3 bugs found, 3 fixed):
+  - 1 CRITICAL: `_branch_pattern()` `${p:-default}` with `{}` in default — bash closes parameter expansion at first unmatched `}`, garbling branch names on any project with custom branch_pattern
+  - 1 MEDIUM: `check-freshness` with non-existent file exits 3 instead of 2 — `exit` in function kills `$(…)` subshell before `|| true` can fire; added pre-check + moved `|| true` outside subshell
+  - 1 LOW: `protect-check` USAGE comment said exit 1, actual code exits 3
+- **Teamwork v2.7.1 — Script Testing Audit** (21 bugs found, 14+4 fixed across 4 scripts):
   - 2 CRITICAL: tag check matched branches not tags, merge-to on wrong branch after checkout failure
   - 6 HIGH: silent ensure-base failure, sed injection, fetch kills script, grep metachar, commit-type false positives, toggle-task false success
   - 6 MEDIUM: missing grep anchor, stderr pollution, detached HEAD, label transition drop, unused PR base param, body validation message
+  - 4 LOW (fixed in follow-up): label verify substring, worktree-remove return 0, log-since feedback, branch_pattern double lookup
 
 ### Changed — Skills Factory
 - **Teamwork v2.7.0 — Script Extraction** (Von Neumann Mechanism-Content Separation):
