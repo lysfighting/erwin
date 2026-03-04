@@ -8,36 +8,39 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-05
-- **Last Session**: [2026-03-05-X](sessions/2026-03-05-X.md) (Session X — vi_agent E2E Validation)
+- **Last Session**: [2026-03-05-Y](sessions/2026-03-05-Y.md) (Session Y — Design Coding Skill 讨论 + /session-record)
 
 ## Current Phase
 
-**Phase**: Teamwork v2.7.2 完成 — vi_agent E2E 验证
+**Phase**: Design Coding Skill 多轮设计讨论中
 
 ## What Was Just Completed
 
-**Session X** — vi_agent E2E Validation (3 bugs found, 3 fixed):
+**Session Y** — Design Coding Skill 讨论 + /session-record skill:
 
-- Installed v2.7.1 scripts and tested all 4 scripts against vi_agent's `.teamspace/` config
-- 1 CRITICAL: `_branch_pattern()` `${p:-default}` with `{}` in default — bash parameter expansion closes at first unmatched `}`, garbling branch names (e.g., `mission/99-test-e2e-test-e2e-liya}` instead of `mission/99-test-e2e`)
-- 1 MEDIUM: `check-freshness` exits 3 (from read-field) instead of 2 (NO_HASH) — `exit` in function kills subshell before `|| true` fires
-- 1 LOW: protect-check USAGE comment said exit 1, actual code exits 3
-- Interface audit: all .md-to-script calls match, 5 orphan subcommands (same as v2.7.1)
-- Config reads, label ops, PR ops, contract ops all verified against vi_agent's dual schema
+- 8 轮深度讨论，确立 design coding skill 核心理念
+- **灵魂确立**: Taste > Rules > Trends（品味 > 规则 > 趋势）
+- 结构方案 v3（9 模块）：Manifesto, Output Standard, Reference Protocol, Visual Feedback Loop, Design Language, Pantheon, Quality Protocol, Anti-patterns, Execution
+- 参考范围扩展至 5 域：Nature / Art & Architecture / Mathematics / Digital / Philosophy
+- 艺术哲学体系：黄金比例、侘寂、間、Sprezzatura、格式塔、日神酒神
+- 新 skill: `/session-record` v1.0.0（完整对话记录模式）
+- 全程 session 记录：`_project/sessions/2026-03-05-Y.md`（580 行完整对话）
 
 ## Active Task / What's In Progress
 
-None — v2.7.2 vi_agent validation complete.
+Design Coding Skill — 讨论阶段（未进入实现）
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **继续闭环设计讨论**（按优先级排序）：
-   - 自动化测试流程：AI QA 具体实现、工具选型、覆盖范围
-   - IaC 归属：项目内 vs gcp-compute-infra，权限模型
-   - deploy Action 具体实现（依赖上面两项）
-   - vi-agent docs → milestone/issues（操作型，讨论量少）
-3. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
+2. **继续 Design Coding Skill 讨论**（按优先级排序）：
+   - Manifesto 具体信条（taste-first 已定为第一条，还需哪几条？）
+   - 独立 skill (A) vs 可与 /drive 组合的品味层 (B)？
+   - 众神殿人选——需分领域 web research
+   - Browser MCP 方案选型（已记录，不急）
+   - 9 模块是否太多？合并讨论
+3. **闭环设计讨论仍待继续**：自动化测试、IaC 归属、deploy Action、vi-agent docs
+4. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
 
@@ -54,6 +57,7 @@ None — v2.7.2 vi_agent validation complete.
 - [ ] CaseStudies (2-3 skill variant examples)
 
 ### Skills Factory
+- [x] /session-record v1.0.0 — full verbatim session recording skill
 - [x] Teamwork v2.0 — 4 GitHub-first skills
 - [x] Teamwork v2.1 — 6 vi-agent features + 13 bug fixes
 - [x] Teamwork v2.3 — status fix + version management + format standardization + scripts
