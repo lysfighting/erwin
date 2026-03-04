@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "2.4.1"
+version: "2.5.1"
 ---
 
 # /team-issue — Create Mission Contract Issue
@@ -41,10 +41,11 @@ EXAMPLES (update):
 
 WHAT HAPPENS (create):
   1. AI analyzes your description
-  2. Scans codebase for relevant files
-  3. Generates standardized mission-contract Issue body
-  4. Shows preview for your confirmation
-  5. Publishes to GitHub with correct labels
+  2. Searches existing Issues for duplicates (semantic match)
+  3. Scans codebase for relevant files
+  4. Generates standardized mission-contract Issue body
+  5. Shows preview for your confirmation
+  6. Publishes to GitHub with correct labels
 
 WHAT HAPPENS (update):
   1. Fetches current Issue from GitHub
@@ -110,6 +111,37 @@ From the user's natural language input, use AI reasoning to determine:
 8. **Context** — background info, related issues, technical details
 9. **Constraints** — limitations or things NOT to do
 10. **Verification** — how to verify completion
+
+---
+
+## Step 1b: Duplicate Check
+
+Before investing in body generation, search for existing Issues that may already cover this problem.
+
+**Extract 2-3 key terms** from the analyzed title/description (not the full title verbatim — wider net catches more).
+
+```bash
+gh issue list --search "{key terms}" --state open --json number,title,url --limit 10
+```
+
+**AI evaluates results**: Compare each returned Issue's title and purpose against the user's intent. Judge **semantic similarity**, not string match. "fix camera on Safari" and "iOS media permission broken" are the same problem even though they share zero words.
+
+**If potential duplicates found** → display and ask:
+
+```
+⚠️ POTENTIAL DUPLICATES FOUND
+──────────────────────────────────────
+#12  fix: camera permission not triggering on Safari
+#35  feat: add iOS Safari media support
+──────────────────────────────────────
+```
+
+Use `AskUserQuestion`:
+- "None of these — create new Issue" → continue to Step 2
+- "Update #N instead" → redirect to **Operation Update** with user's original description as the change
+- "Cancel" → **STOP**
+
+**If no results or no semantic match** → continue to Step 2 silently.
 
 ---
 

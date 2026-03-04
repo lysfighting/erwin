@@ -2,6 +2,18 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.5.1] — 2026-03-04
+
+### Added — `/team-issue` duplicate check
+
+- **`team-issue.md`** v2.4.1 → v2.5.1 — New **Step 1b: Duplicate Check** before Issue body generation:
+  - Extracts 2-3 key terms from analyzed title/description
+  - Runs `gh issue list --search` against open Issues
+  - AI evaluates results for **semantic similarity** (not string match)
+  - If duplicates found → `AskUserQuestion` with options: create anyway, update existing, or cancel
+  - If no match → proceeds silently (zero friction on happy path)
+- Help text updated: "WHAT HAPPENS (create)" now shows 6 steps including duplicate search
+
 ## [2.5.0] — 2026-03-04
 
 ### Added — `/team-release` skill

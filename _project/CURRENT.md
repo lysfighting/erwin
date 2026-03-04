@@ -56,6 +56,7 @@ None. Session Q complete.
 - [x] Teamwork v2.4 — stability hardening + bidirectional sync + tw-config.sh
 - [x] Teamwork v2.4.1 — E2E validated on vi_agent + mc_label dual-schema + inline comment fix
 - [x] Teamwork v2.5.0 — team-release skill + init idempotency fix + doc sweep
+- [x] Teamwork v2.5.1 — team-issue duplicate check (gh search + LLM semantic match)
 
 ## Known Issues / Blockers
 
