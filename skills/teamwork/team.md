@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "2.6.0"
+version: "2.6.1"
 ---
 
 # /team — Init + Dashboard (Teamwork v2)
@@ -116,7 +116,7 @@ PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.prio
 gh issue list --label "$MISSION_LABEL" --state open --json number,title,labels,assignees --limit 100
 ```
 
-Filter to issues that are unassigned OR have `status:queued` label. Sort by priority: P0 first → P1 → P2 → P3 → no priority last.
+Filter to issues that are unassigned OR have `${STATUS_PREFIX}queued` label. Sort by priority: P0 first → P1 → P2 → P3 → no priority last.
 
 Output formatted list:
 
@@ -179,21 +179,34 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
 ## Step 1: Route — Init or Dashboard?
 
 ```bash
-# Check for existing teamwork config (support both directory names)
-if [ -f .teamwork/config.yml ]; then
-  echo "DASHBOARD"
-  TEAMWORK_DIR=".teamwork"
-elif [ -f .teamspace/config.yml ]; then
-  echo "DASHBOARD"
-  TEAMWORK_DIR=".teamspace"
-else
+# Force init if $ARGUMENTS == "init"
+if [ "$ARGUMENTS" = "init" ]; then
   echo "INIT"
-  TEAMWORK_DIR=".teamwork"
+  # Preserve existing TEAMWORK_DIR if config found
+  if [ -f .teamwork/config.yml ]; then
+    TEAMWORK_DIR=".teamwork"
+  elif [ -f .teamspace/config.yml ]; then
+    TEAMWORK_DIR=".teamspace"
+  else
+    TEAMWORK_DIR=".teamwork"
+  fi
+else
+  # Auto-detect: config exists → dashboard, otherwise → init
+  if [ -f .teamwork/config.yml ]; then
+    echo "DASHBOARD"
+    TEAMWORK_DIR=".teamwork"
+  elif [ -f .teamspace/config.yml ]; then
+    echo "DASHBOARD"
+    TEAMWORK_DIR=".teamspace"
+  else
+    echo "INIT"
+    TEAMWORK_DIR=".teamwork"
+  fi
 fi
 ```
 
 - If `DASHBOARD` → Continue to **Step 1b: Check Membership**
-- If `INIT` → Jump to **Step 2: Initialize**
+- If `INIT` → Jump to **Step 2: Initialize** (Step 4b merge mode handles existing config)
 
 **Note**: Both `.teamwork/` and `.teamspace/` are supported as config directories. The system uses whichever exists. New installations default to `.teamwork/`.
 
@@ -414,21 +427,17 @@ Preserve all existing content. Only update `skill_version` and append missing to
 
 ```bash
 # Update skill_version line without touching anything else
-sed -i '' "s/^skill_version:.*/skill_version: 2.6.0/" $TEAMWORK_DIR/config.yml
-# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 2.6.0/" $TEAMWORK_DIR/config.yml
+sed -i '' "s/^skill_version:.*/skill_version: 2.6.1/" $TEAMWORK_DIR/config.yml
+# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 2.6.1/" $TEAMWORK_DIR/config.yml
 ```
 
 **Step 2 — Detect which top-level sections are missing:**
 
 ```bash
-python3 -c "
-import yaml, sys
-with open('$TEAMWORK_DIR/config.yml') as f:
-    d = yaml.safe_load(f) or {}
-missing = [s for s in ['project', 'conventions', 'label_prefix', 'quality']
-           if s not in d]
-print('\n'.join(missing))
-"
+# Detect missing top-level sections (no PyYAML dependency — pure grep)
+for section in project conventions label_prefix quality; do
+  grep -q "^${section}:" $TEAMWORK_DIR/config.yml || echo "$section"
+done
 ```
 
 **Step 3 — Append only missing sections to the file:**
@@ -473,7 +482,7 @@ quality:
 
 ```
 ✅ Config updated (merge mode — existing config preserved)
-   skill_version → 2.5.0
+   skill_version → 2.6.1
    Preserved sections: {list of sections kept}
    Added sections: {list of sections appended, or "(none — already complete)"}
 ```
@@ -488,7 +497,7 @@ Write full config based on detected project info + user answers:
 
 ```yaml
 schema_version: 1
-skill_version: 2.6.0
+skill_version: 2.6.1
 
 team:
   - github: {GH_USER}
@@ -554,7 +563,7 @@ If not exists → generate.
 ```yaml
 name: Mission Contract
 description: Structured task for team execution
-labels: ["{MISSION_LABEL}", "status:queued"]
+labels: ["{MISSION_LABEL}", "{STATUS_PREFIX}queued"]
 body:
   - type: dropdown
     id: priority
@@ -865,7 +874,7 @@ jobs:
 set -e
 CONFIG="$([ -f .teamwork/config.yml ] && echo .teamwork/config.yml || echo .teamspace/config.yml)"
 [ -f "$CONFIG" ] || exit 0
-LINT_CMD=$(grep 'lint_command:' "$CONFIG" | sed 's/^[^:]*://' | sed 's/^ *//' | sed 's/ *#.*//' | tr -d '"')
+LINT_CMD=$(grep -v '^\s*#' "$CONFIG" | grep 'lint_command:' | head -1 | sed 's/^[^:]*://' | sed 's/^ *//' | sed 's/ *#.*//' | tr -d '"')
 if [ -n "$LINT_CMD" ]; then
   echo "Running lint..."
   eval "$LINT_CMD"
@@ -879,7 +888,7 @@ fi
 set -e
 CONFIG="$([ -f .teamwork/config.yml ] && echo .teamwork/config.yml || echo .teamspace/config.yml)"
 [ -f "$CONFIG" ] || exit 0
-TEST_CMD=$(grep 'test_command:' "$CONFIG" | sed 's/^[^:]*://' | sed 's/^ *//' | sed 's/ *#.*//' | tr -d '"')
+TEST_CMD=$(grep -v '^\s*#' "$CONFIG" | grep 'test_command:' | head -1 | sed 's/^[^:]*://' | sed 's/^ *//' | sed 's/ *#.*//' | tr -d '"')
 if [ -n "$TEST_CMD" ]; then
   echo "Running tests..."
   eval "$TEST_CMD"
@@ -920,17 +929,20 @@ bash ~/.claude/commands/scripts/setup-github-labels.sh
 
 If the script is not available (e.g., installed without scripts):
 ```bash
-# Fallback: inline label creation
-gh label create mission --color 0075ca --description "Team mission" --force
-gh label create "status:queued" --color c2e0c6 --description "Ready to be claimed" --force
-gh label create "status:wip" --color fbca04 --description "Currently being worked on" --force
-gh label create "status:review" --color 7057ff --description "PR open, awaiting merge" --force
-gh label create "status:done" --color 0e8a16 --description "Completed" --force
-gh label create "status:blocked" --color d73a4a --description "Blocked by dependency" --force
-gh label create "priority:P0" --color d73a4a --description "Critical priority" --force
-gh label create "priority:P1" --color e4e669 --description "High priority" --force
-gh label create "priority:P2" --color 0e8a16 --description "Medium priority" --force
-gh label create "priority:P3" --color cfd3d7 --description "Low priority" --force
+# Fallback: inline label creation (read prefixes from config)
+STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "status:" 2>/dev/null)
+PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.priority "priority:" 2>/dev/null)
+
+gh label create "$MISSION_LABEL" --color 0075ca --description "Team mission" --force
+gh label create "${STATUS_PREFIX}queued" --color c2e0c6 --description "Ready to be claimed" --force
+gh label create "${STATUS_PREFIX}wip" --color fbca04 --description "Currently being worked on" --force
+gh label create "${STATUS_PREFIX}review" --color 7057ff --description "PR open, awaiting merge" --force
+gh label create "${STATUS_PREFIX}done" --color 0e8a16 --description "Completed" --force
+gh label create "${STATUS_PREFIX}blocked" --color d73a4a --description "Blocked by dependency" --force
+gh label create "${PRIORITY_PREFIX}P0" --color d73a4a --description "Critical priority" --force
+gh label create "${PRIORITY_PREFIX}P1" --color e4e669 --description "High priority" --force
+gh label create "${PRIORITY_PREFIX}P2" --color 0e8a16 --description "Medium priority" --force
+gh label create "${PRIORITY_PREFIX}P3" --color cfd3d7 --description "Low priority" --force
 ```
 
 If `versions.current` is set in config, also create the milestone via GitHub API (not a label — use Milestones).
@@ -940,7 +952,7 @@ If `versions.current` is set in config, also create the milestone via GitHub API
 Configure merge strategy and branch cleanup at the repo level:
 
 ```bash
-gh api "repos/{REPO}" --method PATCH \
+gh api "repos/$REPO" --method PATCH \
   --field delete_branch_on_merge=true \
   --field allow_squash_merge=true \
   --field allow_merge_commit=false \
@@ -964,24 +976,32 @@ RELEASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.releas
 RELEASE_BRANCH="${RELEASE_BRANCH:-$BASE_BRANCH}"
 
 # Protect base branch (where PRs merge)
-gh api "repos/{REPO}/branches/$BASE_BRANCH/protection" \
+gh api "repos/$REPO/branches/$BASE_BRANCH/protection" \
   --method PUT \
-  --field required_status_checks='{"strict":true,"contexts":["quality"]}' \
-  --field enforce_admins=false \
-  --field required_pull_request_reviews='{"required_approving_review_count":1}' \
-  --field restrictions=null
+  --input - <<EOF
+{
+  "required_status_checks": {"strict": true, "contexts": ["quality"]},
+  "enforce_admins": false,
+  "required_pull_request_reviews": {"required_approving_review_count": 1},
+  "restrictions": null
+}
+EOF
 ```
 
 **Dual-branch mode** — if `RELEASE_BRANCH != BASE_BRANCH`, also protect release branch:
 
 ```bash
 if [ "$RELEASE_BRANCH" != "$BASE_BRANCH" ]; then
-  gh api "repos/{REPO}/branches/$RELEASE_BRANCH/protection" \
+  gh api "repos/$REPO/branches/$RELEASE_BRANCH/protection" \
     --method PUT \
-    --field required_status_checks='{"strict":true,"contexts":["quality"]}' \
-    --field enforce_admins=false \
-    --field required_pull_request_reviews='{"required_approving_review_count":1}' \
-    --field restrictions=null
+    --input - <<EOF
+{
+  "required_status_checks": {"strict": true, "contexts": ["quality"]},
+  "enforce_admins": false,
+  "required_pull_request_reviews": {"required_approving_review_count": 1},
+  "restrictions": null
+}
+EOF
 fi
 ```
 
@@ -1015,16 +1035,22 @@ cat $TEAMWORK_DIR/config.yml
 
 ### 6b: Check Issue freshness for active Contracts
 
-If any `$TEAMWORK_DIR/active/MISSION-*.md` Contract exists:
+For each `$TEAMWORK_DIR/active/MISSION-*.md` Contract:
 
 ```bash
-# Read issue number and content hash from Contract frontmatter
-ISSUE_NUMBER=$(grep '^issue:' $CONTRACT_PATH | sed 's/^[^:]*://' | sed 's/^ *//')
-CONTRACT_HASH=$(grep 'issue_content_hash:' $CONTRACT_PATH | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+for CONTRACT_PATH in $TEAMWORK_DIR/active/MISSION-*.md; do
+  [ -f "$CONTRACT_PATH" ] || continue
 
-# Fetch current Issue content and compute hash
-ISSUE_DATA=$(gh issue view $ISSUE_NUMBER --json title,body 2>/dev/null)
-CURRENT_HASH=$(echo "${ISSUE_TITLE}${ISSUE_BODY}" | shasum -a 256 | cut -d' ' -f1)
+  # Read issue number and content hash from Contract frontmatter
+  ISSUE_NUMBER=$(grep '^issue:' "$CONTRACT_PATH" | sed 's/^[^:]*://' | sed 's/^ *//')
+  CONTRACT_HASH=$(grep 'issue_content_hash:' "$CONTRACT_PATH" | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+
+  # Fetch current Issue content and compute hash
+  ISSUE_DATA=$(gh issue view "$ISSUE_NUMBER" --json title,body 2>/dev/null)
+  ISSUE_TITLE=$(echo "$ISSUE_DATA" | jq -r '.title // ""')
+  ISSUE_BODY=$(echo "$ISSUE_DATA" | jq -r '.body // ""')
+  CURRENT_HASH=$(echo "${ISSUE_TITLE}${ISSUE_BODY}" | shasum -a 256 | cut -d' ' -f1)
+done
 ```
 
 - If `issue_content_hash` is not in Contract (pre-v2.3.0) → skip check
@@ -1069,13 +1095,13 @@ gh pr list --state merged --base "$BASE_BRANCH" --json author --limit 100
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 if [ -n "$CURRENT_VERSION" ]; then
   # Use GitHub Milestones for version progress tracking
-  gh api repos/{REPO}/milestones --jq ".[] | select(.title == \"$CURRENT_VERSION\") | {open: .open_issues, closed: .closed_issues}"
+  gh api "repos/$REPO/milestones" --jq ".[] | select(.title == \"$CURRENT_VERSION\") | {open: .open_issues, closed: .closed_issues}"
 fi
 ```
 
 If `versions.current` is set, query version-tagged issues and calculate done/total percentage for the dashboard header.
 
-### 6c: Format and display
+### 6d: Format and display
 
 Output a formatted dashboard like this:
 

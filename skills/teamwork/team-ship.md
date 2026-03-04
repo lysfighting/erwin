@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "2.6.0"
+version: "2.6.1"
 ---
 
 # /team-ship — Deliver Mission
@@ -79,6 +79,12 @@ fi
 - If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
 
 Read `$TEAMWORK_DIR/config.yml` → extract project settings, conventions, quality preferences.
+
+```bash
+# Read label prefixes from config
+STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
+```
 
 ---
 
@@ -192,7 +198,7 @@ git push -u origin {branch}
 ### 4a: Check for existing PR
 
 ```bash
-gh pr list --head {branch} --json number,url --limit 1
+gh pr list --head {branch} --state open --json number,url --limit 1
 ```
 
 If a PR already exists for this branch → skip PR creation, use existing PR. Display: "PR already exists: {url}"
@@ -228,6 +234,9 @@ Closes #{issue}
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-main}"
 
+# Extract Issue title from Contract frontmatter
+ISSUE_TITLE=$(grep '^title:' "$TEAMWORK_DIR/active/MISSION-{issue}.md" | sed 's/^title: *//' | tr -d '"')
+
 # Determine commit type from Issue title
 ISSUE_TITLE_LOWER=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]')
 if echo "$ISSUE_TITLE_LOWER" | grep -qE '(fix|bug|hotfix|patch)'; then
@@ -262,7 +271,7 @@ Non-fatal: if comment fails, warn but continue.
 ### 4e: Add labels
 
 ```bash
-gh pr edit {pr} --add-label "status:review"
+gh pr edit {pr} --add-label "${STATUS_PREFIX}review"
 ```
 
 If this fails (label doesn't exist), warn but continue.
@@ -329,7 +338,7 @@ If review is not required → skip this step.
 ### 7a: Update Issue labels
 
 ```bash
-gh issue edit {issue} --remove-label "status:wip" --add-label "status:review"
+gh issue edit {issue} --remove-label "${STATUS_PREFIX}wip" --add-label "${STATUS_PREFIX}review"
 ```
 
 Then immediately verify the update:
@@ -337,8 +346,8 @@ Then immediately verify the update:
 CURRENT_LABELS=$(gh issue view {issue} --json labels --jq '[.labels[].name] | join(", ")')
 ```
 
-- If output contains `status:review` AND does NOT contain `status:wip` → "Issue labeled status:review ✅ (labels: {CURRENT_LABELS})"
-- If `status:wip` is still present → "⚠ Label update incomplete. Issue still shows status:wip. Labels: {CURRENT_LABELS}. To fix manually: `gh issue edit {issue} --remove-label 'status:wip' --add-label 'status:review'`"
+- If output contains `${STATUS_PREFIX}review` AND does NOT contain `${STATUS_PREFIX}wip` → "Issue labeled ${STATUS_PREFIX}review ✅ (labels: {CURRENT_LABELS})"
+- If `${STATUS_PREFIX}wip` is still present → "⚠ Label update incomplete. Issue still shows ${STATUS_PREFIX}wip. Labels: {CURRENT_LABELS}. To fix manually: `gh issue edit {issue} --remove-label '${STATUS_PREFIX}wip' --add-label '${STATUS_PREFIX}review'`"
 - If `gh issue view` fails (network) → "⚠ Could not verify labels. Assume update succeeded."
 - Non-blocking in all cases: continue to 7b.
 
@@ -422,12 +431,12 @@ If already closed → skip, output: `(Issue already closed — handled by PR mer
 ISSUE_LABELS=$(gh issue view {issue} --json labels --jq '[.labels[].name] | join(",")' 2>/dev/null)
 ```
 
-If `status:done` is NOT in labels (post-merge Action didn't run or failed):
+If `${STATUS_PREFIX}done` is NOT in labels (post-merge Action didn't run or failed):
 ```bash
-gh issue edit {issue} --remove-label "status:review" --remove-label "status:wip" --add-label "status:done"
+gh issue edit {issue} --remove-label "${STATUS_PREFIX}review" --remove-label "${STATUS_PREFIX}wip" --add-label "${STATUS_PREFIX}done"
 ```
 
-If `status:done` already present → skip, output: `(Labels already updated — handled by post-merge Action)`
+If `${STATUS_PREFIX}done` already present → skip, output: `(Labels already updated — handled by post-merge Action)`
 
 ### D5: Clean up worktree (if applicable)
 

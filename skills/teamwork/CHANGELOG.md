@@ -2,6 +2,42 @@
 
 All notable changes to the Teamwork skill set.
 
+## [2.6.1] — 2026-03-04
+
+### Fixed — Falsification Audit (Popper's method applied across all skill files)
+
+**CRITICAL fixes:**
+- **team.md + team-drive.md**: Freshness check completely broken — `ISSUE_TITLE`/`ISSUE_BODY` never extracted from JSON, `CONTRACT_PATH` never defined. Hash always computed on empty string → false "ISSUE UPDATED" warning on every `/team-drive`. Fixed: added `jq` extraction + proper loop over Contract files.
+- **team.md**: Merge mode used `import yaml` (PyYAML) — not in Python stdlib. Fails on systems without PyYAML. Fixed: replaced with `grep -q "^${section}:"` (zero dependencies).
+- **team.md**: Branch protection `gh api --field` sent JSON objects as strings → 422 Validation Error. Fixed: switched to `--input` with heredoc for proper JSON body.
+- **team-release.md**: Shell injection in CHANGELOG Python script — release body with triple quotes breaks embedded `'''$ENTRY'''`. Fixed: write to temp file, pass as `sys.argv`.
+- **team-release.md**: `git merge "$BASE_BRANCH"` used stale local copy without fetch → release could miss latest code. Fixed: `git fetch` before merge, use `origin/$BASE_BRANCH`.
+- **team-release.md**: Version bump committed on `$RELEASE_BRANCH` but pushed to `$BASE_BRANCH` → wrong branch in dual-branch mode. Fixed: `git checkout "$BASE_BRANCH"` before config update commit.
+
+**HIGH fixes:**
+- **team.md**: `init` force mode promised in routing table but never implemented — `/team init` on existing project showed dashboard. Fixed: added `$ARGUMENTS == "init"` check in Step 1.
+- **team.md**: Version display in merge summary showed `2.5.0` (stale from v2.5). Fixed → `2.6.1`.
+- **team.md**: Issue template hardcoded `"status:queued"`. Fixed → `"{STATUS_PREFIX}queued"`.
+- **team.md**: Git hooks `grep` matched commented-out config lines + no `head -1`. Fixed: `grep -v '^\s*#'` + `head -1`.
+- **team.md**: `{REPO}` template syntax mixed with `$REPO` shell syntax in bash code. Fixed → all `$REPO`.
+- **team.md**: Duplicate section ID `6c` (two sections). Fixed → second renamed `6d`.
+- **team.md**: Fallback label creation hardcoded `"mission"` and `"status:*"`. Fixed → config-driven.
+- **team-issue.md**: macOS BSD sed `\+` syntax fails — `sed 's/.*--milestone \+\([^ ]*\).*/\1/'`. Fixed → `\+` replaced with `  *` (portable).
+- **team-issue.md**: `MILESTONE_FLAG="--milestone \"$MILESTONE\""` embeds literal escaped quotes → milestone assignment always fails. Fixed → `${MILESTONE:+--milestone "$MILESTONE"}` parameter expansion.
+- **team-issue.md**: References nonexistent `team.repo` config key. Fixed → proper `mc_label` + `STATUS_PREFIX` reads.
+- **team-ship.md**: All label operations hardcoded `status:` prefix. Fixed → reads `$STATUS_PREFIX` from config.
+- **team-ship.md**: `$ISSUE_TITLE` undefined in PR creation → commit type detection always defaulted to `feat`. Fixed → extract from Contract frontmatter.
+- **team-ship.md**: `gh pr list --head {branch}` without `--state open` could find closed PRs. Fixed → added `--state open`.
+- **team-claim.md**: Step 6 hardcoded `"status:queued"` / `"status:wip"`. Fixed → config-driven `${STATUS_PREFIX}`.
+- **team-release.md**: No check if tag already exists before `git tag`. Fixed → `git rev-parse` + `git ls-remote` guards.
+- **team-release.md**: `repos/{REPO}/milestones` template syntax in bash code. Fixed → `repos/$REPO/milestones`.
+- **setup-github-labels.sh**: Hardcoded `"mission"` label, ignoring `mc_label` config. Fixed → reads via `tw-config.sh` with fallback.
+- **setup-github-labels.sh**: `grep '^\s*status:'` could match wrong config line. Fixed → prefers `tw-config.sh`, fallback grep excludes comments.
+
+### Changed
+- All skill files bumped to v2.6.1
+- Post-merge Action regex (committed in previous session fix): expanded from `Close(s)` to all 9 GitHub closing keywords, added `parseInt` for proper number type, replaced milestone race condition workaround with `listForRepo` query
+
 ## [2.6.0] — 2026-03-04
 
 ### Added — Dual-branch model + release safety gates

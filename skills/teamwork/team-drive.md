@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "2.6.0"
+version: "2.6.1"
 ---
 
 # /team-drive — Execute Mission
@@ -93,10 +93,16 @@ ISSUE_DATA=$(gh issue view {issue} --json title,body 2>/dev/null)
 If fetch succeeds:
 
 ```bash
+# Extract title and body from JSON
+ISSUE_TITLE=$(echo "$ISSUE_DATA" | jq -r '.title // ""')
+ISSUE_BODY=$(echo "$ISSUE_DATA" | jq -r '.body // ""')
+
 # Compute hash of current Issue content
 CURRENT_HASH=$(echo "${ISSUE_TITLE}${ISSUE_BODY}" | shasum -a 256 | cut -d' ' -f1)
+
 # Compare with Contract's issue_content_hash
-CONTRACT_HASH=$(grep 'issue_content_hash:' $CONTRACT_PATH | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
+CONTRACT_PATH="$TEAMWORK_DIR/active/MISSION-{issue}.md"
+CONTRACT_HASH=$(grep 'issue_content_hash:' "$CONTRACT_PATH" | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"')
 ```
 
 If `issue_content_hash` is not in Contract (pre-v2.3.0 Contract) → skip check, continue.

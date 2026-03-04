@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — Skills Factory
+- **Teamwork v2.6.1 — Falsification Audit** (Popper's method applied across all 6 skill files + scripts):
+  - 6 CRITICAL: freshness check always false-positive, PyYAML dependency, branch protection 422, CHANGELOG shell injection, stale merge, wrong push branch
+  - 15 HIGH: init force unimplemented, hardcoded label prefixes (5 files), macOS sed syntax, milestone quoting, undefined variables, missing --state flags, tag existence check
+  - All skill files bumped to v2.6.1
+
 ### Changed — Skills Factory
 - **Teamwork v2.6.0 — Dual-branch model + release safety gates**:
   - Dual-branch support: `conventions.release_branch` enables base/release separation (backward compat when same)

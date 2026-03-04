@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "2.6.0"
+version: "2.6.1"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -270,7 +270,11 @@ fi
 ## Step 6: Assign Issue on GitHub
 
 ```bash
-gh issue edit {issue} --add-assignee "$GH_USER" --remove-label "status:queued" --add-label "status:wip"
+# Read label prefix from config
+STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
+
+gh issue edit {issue} --add-assignee "$GH_USER" --remove-label "${STATUS_PREFIX}queued" --add-label "${STATUS_PREFIX}wip"
 ```
 
 If assignee add fails (permissions), warn but continue — the local Contract is the source of truth for the claim.

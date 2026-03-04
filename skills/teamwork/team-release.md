@@ -1,6 +1,6 @@
 ---
 description: "Release a version → git tag → GitHub Release → close Milestone. Try: /team-release help"
-version: "2.6.0"
+version: "2.6.1"
 ---
 
 # /team-release — Close a Version
@@ -113,7 +113,7 @@ Spec:     {SPEC_PATH if set, else "(none — AI audit will be skipped)"}
 ## Step 2: Milestone Check
 
 ```bash
-MILESTONE_DATA=$(gh api repos/{REPO}/milestones \
+MILESTONE_DATA=$(gh api repos/$REPO/milestones \
   --jq ".[] | select(.title == \"$VERSION\")" 2>/dev/null)
 ```
 
@@ -265,8 +265,9 @@ LATEST_RUN=$(gh run list --workflow "$STAGING_WORKFLOW" --branch "$RELEASE_BRANC
 **If `BASE_BRANCH != RELEASE_BRANCH`** (dual-branch mode):
 
 ```bash
+git fetch origin "$BASE_BRANCH" "$RELEASE_BRANCH"
 git checkout "$RELEASE_BRANCH" && git pull origin "$RELEASE_BRANCH"
-git merge "$BASE_BRANCH" --no-edit
+git merge "origin/$BASE_BRANCH" --no-edit
 git push origin "$RELEASE_BRANCH"
 ```
 
@@ -285,11 +286,17 @@ git checkout "$RELEASE_BRANCH"
 git pull origin "$RELEASE_BRANCH"
 ```
 
-Create and push tag:
+Check if tag already exists, then create and push:
 
 ```bash
-git tag {VERSION}
-git push origin {VERSION}
+if git rev-parse "$VERSION" >/dev/null 2>&1; then
+  echo "⚠ Tag '$VERSION' already exists locally. Skipping tag creation."
+elif git ls-remote --tags origin | grep -q "refs/tags/$VERSION$"; then
+  echo "⚠ Tag '$VERSION' already exists on remote. Skipping tag creation."
+else
+  git tag "$VERSION"
+  git push origin "$VERSION"
+fi
 ```
 
 Verify tag pushed:
@@ -310,7 +317,7 @@ Output: `✅ Tag {VERSION} pushed`
 gh release create {VERSION} \
   --generate-notes \
   --title "{VERSION}" \
-  --repo {REPO}
+  --repo "$REPO"
 ```
 
 Capture and output the release URL.
@@ -332,16 +339,19 @@ RELEASE_BODY=$(gh release view "$VERSION" --json body --jq '.body' 2>/dev/null)
 If `RELEASE_BODY` is non-empty and `CHANGELOG.md` exists (or should be created):
 
 ```bash
-# Create CHANGELOG entry
-ENTRY="## $VERSION\n\n$RELEASE_BODY\n\n"
+# Write release body to temp file to avoid shell injection into Python
+echo "$RELEASE_BODY" > /tmp/release-body-$$.txt
 
 if [ -f CHANGELOG.md ]; then
-  # Prepend after the first line (title) or at top
-  # Use temp file to avoid sed portability issues
-  python3 -c "
+  # Insert new version entry after the title heading, before existing entries
+  python3 - "$VERSION" /tmp/release-body-$$.txt CHANGELOG.md << 'PYEOF'
 import sys
-content = open('CHANGELOG.md').read()
-# Insert after first heading or at top
+version = sys.argv[1]
+with open(sys.argv[2]) as f:
+    body = f.read()
+with open(sys.argv[3]) as f:
+    content = f.read()
+entry = f"\n## {version}\n\n{body}\n"
 lines = content.split('\n')
 insert_at = 0
 for i, line in enumerate(lines):
@@ -354,13 +364,15 @@ for i, line in enumerate(lines):
     if i > 5:
         insert_at = i
         break
-entry = '''$ENTRY'''
-lines.insert(insert_at, entry.strip() + '\n')
-print('\n'.join(lines), end='')
-" > CHANGELOG.md.tmp && mv CHANGELOG.md.tmp CHANGELOG.md
+lines.insert(insert_at, entry)
+with open(sys.argv[3], 'w') as f:
+    f.write('\n'.join(lines))
+PYEOF
 else
-  echo -e "# Changelog\n\n$ENTRY" > CHANGELOG.md
+  printf "# Changelog\n\n## %s\n\n%s\n" "$VERSION" "$RELEASE_BODY" > CHANGELOG.md
 fi
+
+rm -f /tmp/release-body-$$.txt
 
 git add CHANGELOG.md
 git commit -m "docs: update CHANGELOG.md for $VERSION"
@@ -378,7 +390,7 @@ If any step fails → warn but continue (CHANGELOG is nice-to-have, not a blocke
 If `MILESTONE_ID` is set:
 
 ```bash
-gh api repos/{REPO}/milestones/{MILESTONE_ID} \
+gh api repos/$REPO/milestones/{MILESTONE_ID} \
   --method PATCH \
   --field state=closed
 ```
@@ -386,7 +398,7 @@ gh api repos/{REPO}/milestones/{MILESTONE_ID} \
 Verify:
 
 ```bash
-gh api repos/{REPO}/milestones/{MILESTONE_ID} --jq '.state'
+gh api repos/$REPO/milestones/{MILESTONE_ID} --jq '.state'
 # Expected: "closed"
 ```
 
@@ -411,7 +423,7 @@ Validate: NEXT_VERSION must not equal VERSION. If same → warn and ask again.
 ## Step 10: Create Next Milestone
 
 ```bash
-gh api repos/{REPO}/milestones \
+gh api repos/$REPO/milestones \
   --method POST \
   --field title="{NEXT_VERSION}"
 ```
@@ -441,9 +453,10 @@ bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null
 # Expected: NEXT_VERSION
 ```
 
-If update succeeds → stage and commit:
+If update succeeds → stage and commit. Note: in dual-branch mode, we're on `$RELEASE_BRANCH` from Step 5, so switch back to `$BASE_BRANCH` first:
 
 ```bash
+git checkout "$BASE_BRANCH" && git pull origin "$BASE_BRANCH"
 git add $TEAMWORK_DIR/config.yml
 git commit -m "chore(teamwork): bump version to $NEXT_VERSION after releasing $VERSION"
 git push origin "$BASE_BRANCH"

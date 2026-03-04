@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "2.6.0"
+version: "2.6.1"
 ---
 
 # /team-issue — Create Mission Contract Issue
@@ -84,7 +84,17 @@ fi
 ```
 - If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
 
-Read `$TEAMWORK_DIR/config.yml` → extract `team.repo`, `github.mc_label`, domain list, priority list.
+Read `$TEAMWORK_DIR/config.yml` → extract `mc_label` (or `github.mc_label`), domain list, priority list.
+
+```bash
+# Read mission label + status prefix from config
+MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
+
+STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
+```
 
 ```bash
 # Extract current version/milestone if configured
@@ -105,8 +115,8 @@ Parse `$ARGUMENTS`:
 ```bash
 MILESTONE_OVERRIDE=""
 if echo "$ARGUMENTS" | grep -q '\-\-milestone'; then
-  MILESTONE_OVERRIDE=$(echo "$ARGUMENTS" | sed 's/.*--milestone \+\([^ ]*\).*/\1/')
-  ARGUMENTS=$(echo "$ARGUMENTS" | sed 's/--milestone \+[^ ]*//' | sed 's/^ *//')
+  MILESTONE_OVERRIDE=$(echo "$ARGUMENTS" | sed 's/.*--milestone  *\([^ ]*\).*/\1/')
+  ARGUMENTS=$(echo "$ARGUMENTS" | sed 's/--milestone  *[^ ]*//' | sed 's/^ *//')
 fi
 
 # Final milestone: arg override > config > empty
@@ -263,24 +273,17 @@ MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 
 ```
 
 ```bash
-# Add milestone (from --milestone arg or versions.current config)
-MILESTONE_FLAG=""
-if [ -n "$MILESTONE" ]; then
-  MILESTONE_FLAG="--milestone \"$MILESTONE\""
-fi
-```
-
-```bash
+# Build create command — add milestone if configured
 gh issue create \
   --repo "$REPO" \
   --title "{title}" \
   --body "{formatted body}" \
   --label "$MISSION_LABEL" \
-  --label "status:queued" \
+  --label "${STATUS_PREFIX}queued" \
   --label "priority:{Pn}" \
   --label "domain:{domain}" \
   --label "size:{size}" \
-  $MILESTONE_FLAG
+  ${MILESTONE:+--milestone "$MILESTONE"}
 ```
 
 - If milestone assignment fails (milestone doesn't exist yet) → warn "Milestone '{CURRENT_VERSION}' not found on GitHub. Create it first: `gh api repos/{REPO}/milestones --method POST --field title='{CURRENT_VERSION}'`". Non-fatal: issue is still created without milestone.

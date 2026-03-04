@@ -8,34 +8,36 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-04
-- **Last Session**: [2026-03-04-T](sessions/2026-03-04-T.md) (Session T — Teamwork v2.6.0 实施完成)
+- **Last Session**: [2026-03-04-U](sessions/2026-03-04-U.md) (Session U — Teamwork v2.6.1 Falsification Audit)
 
 ## Current Phase
 
-**Phase**: Teamwork v2.6 完成 — 闭环设计实施交付
+**Phase**: Teamwork v2.6.1 完成 — 全文件审计 + 21 bug 修复
 
 ## What Was Just Completed
 
-**Session T (continued)** — Post-merge Action + 闭环补全:
+**Session U** — Falsification Audit (Popper's method):
 
-- **team.md Step 4e**: post-merge.yml 生成（`actions/github-script@v7`）— auto-label, checkbox check-all, milestone completion comment
-- **team.md Step 5b**: repo merge settings (auto-delete branches, squash-only, PR_BODY commit msg)
-- **team-ship.md D3/D4**: 降级为 fallback（Action-first, manual-fallback）
-- 发现来源：vi_agent Issue #70 审查 — PR merged 但 checkbox/labels 未更新
+- Applied Popper/Descartes/Bacon to critical self-review of all teamwork skill files
+- 5 parallel audit agents reviewed 7 files → found ~80 bugs
+- Triaged and fixed 21 verified bugs (6 CRITICAL + 15 HIGH)
+- CRITICAL: freshness check, PyYAML dep, branch protection API, CHANGELOG injection, stale merge, wrong push branch
+- HIGH: init force, hardcoded labels (5 files), sed syntax, milestone quoting, undefined vars, missing --state
+- All skill files bumped to v2.6.1
 
 ## Active Task / What's In Progress
 
-None — v2.6.0 + post-merge Action complete.
+None — v2.6.1 audit complete.
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **继续闭环设计讨论**（按优先级排序）：
+2. **vi_agent 实践验证** — 在 vi_agent 上运行 `/team init` 验证 v2.6.1 fixes
+3. **继续闭环设计讨论**（按优先级排序）：
    - 自动化测试流程：AI QA 具体实现、工具选型、覆盖范围
    - IaC 归属：项目内 vs gcp-compute-infra，权限模型
    - deploy Action 具体实现（依赖上面两项）
    - vi-agent docs → milestone/issues（操作型，讨论量少）
-3. **vi_agent 实践验证** — 在 vi_agent 上运行 `/team init` 验证 v2.6.0 merge mode
 4. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
@@ -61,6 +63,7 @@ None — v2.6.0 + post-merge Action complete.
 - [x] Teamwork v2.5.0 — team-release skill + init idempotency fix + doc sweep
 - [x] Teamwork v2.5.1 — team-issue duplicate check (gh search + LLM semantic match)
 - [x] Teamwork v2.6.0 — dual-branch model + release safety gates + post-merge Action + config-driven refs
+- [x] Teamwork v2.6.1 — falsification audit: 6 critical + 15 high bug fixes across all files
 
 ## Known Issues / Blockers
 
