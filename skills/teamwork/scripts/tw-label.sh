@@ -109,7 +109,8 @@ cmd_verify() {
   }
 
   local expected_label="${STATUS_PREFIX}${expected}"
-  if echo "$labels" | grep -q "$expected_label"; then
+  # Use comma-delimited exact match to avoid substring false positives
+  if echo ",$labels," | grep -qF ",${expected_label},"; then
     echo "VERIFIED: $expected_label (labels: $labels)"
     return 0
   else

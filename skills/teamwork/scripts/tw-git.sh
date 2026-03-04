@@ -45,8 +45,11 @@ _release_branch() {
 
 _branch_pattern() {
   local p
+  # Try conventions.branch_pattern first, then worktree.branch_pattern (single call with fallback)
   p=$(bash "$TW_CONFIG" conventions.branch_pattern "" 2>/dev/null)
-  [ -z "$p" ] && p=$(bash "$TW_CONFIG" worktree.branch_pattern "" 2>/dev/null)
+  if [ -z "$p" ]; then
+    p=$(bash "$TW_CONFIG" worktree.branch_pattern "mission/{issue}-{slug}-{user}" 2>/dev/null)
+  fi
   echo "${p:-mission/{issue}-{slug}-{user}}"
 }
 
@@ -246,12 +249,13 @@ cmd_worktree_remove() {
   fi
   if [ -d "$path" ]; then
     git worktree remove "$path" 2>/dev/null || {
-      echo "WARNING: Could not remove worktree at $path" >&2
-      return 0
+      echo "WARNING: Could not remove worktree at $path (try --force)" >&2
+      return 2
     }
     echo "Removed worktree: $path"
   else
-    echo "Worktree path not found: $path" >&2
+    echo "WARNING: Worktree path not found: $path" >&2
+    return 0
   fi
 }
 
@@ -260,10 +264,16 @@ cmd_log_since() {
   [ -z "$base" ] && base=$(_base_branch)
 
   echo "=== Commits since $base ==="
-  git log --oneline "${base}..HEAD" 2>/dev/null || true
+  local commits
+  commits=$(git log --oneline "${base}..HEAD" 2>/dev/null) || true
+  if [ -z "$commits" ]; then
+    echo "(no commits)"
+  else
+    echo "$commits"
+  fi
   echo ""
   echo "=== Files changed ==="
-  git diff "${base}...HEAD" --stat 2>/dev/null || true
+  git diff "${base}...HEAD" --stat 2>/dev/null || echo "(no changes)"
 }
 
 # --- Main ---
