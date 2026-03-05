@@ -38,8 +38,13 @@
 
 ## Session End (mandatory, 10 min)
 
+**Recording level** — 用户可随时标记（默认 full）：
+- **full**（默认）— 完整 session log + CURRENT.md + CHANGELOG + MEMORY
+- **brief** — `"不用详细记录"` / `"压缩一下"` → session log 压缩为 10 行以内摘要（标题 + 关键结论 + 改了什么），其余不变
+- **skip** — `"这轮不用记录"` → 跳过 session log，仍更新 CURRENT.md（防断档）
+
 1. Update `_project/CURRENT.md`
-2. Write `_project/sessions/YYYY-MM-DD.md`
+2. Write `_project/sessions/YYYY-MM-DD.md`（按 recording level）
 3. Update `CHANGELOG.md` if features completed
 4. Update `~/.claude/projects/-Users-liyasong-Project-collov-erwin/memory/MEMORY.md`
    — 新发现的规律、用户偏好、技术陷阱、项目特有知识（非项目状态，是 Claude 的认知积累）
