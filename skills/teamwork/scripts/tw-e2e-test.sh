@@ -104,6 +104,7 @@ fi
 
 MC_LABEL=$(run_script tw-config.sh github.mc_label "" 2>/dev/null)
 [ -z "$MC_LABEL" ] && MC_LABEL=$(run_script tw-config.sh mc_label "" 2>/dev/null)
+[ -z "$MC_LABEL" ] && MC_LABEL=$(run_script tw-config.sh labels.mission "" 2>/dev/null)
 if [ -n "$MC_LABEL" ]; then
   pass "mc_label = $MC_LABEL"
 else
@@ -111,6 +112,7 @@ else
 fi
 
 STATUS_PREFIX=$(run_script tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(run_script tw-config.sh labels.status_prefix "" 2>/dev/null)
 [ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
 pass "status_prefix = $STATUS_PREFIX"
 

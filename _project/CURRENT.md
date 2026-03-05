@@ -8,7 +8,7 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-05
-- **Last Session**: [2026-03-05-Z](sessions/2026-03-05-Z.md) (Session Z — Release 流程完整性审计 + 需求记录)
+- **Last Session**: [2026-03-05-AB](sessions/2026-03-05-AB.md) (Session AB — Teamwork 竞品分析 + 战略定位)
 
 ## Current Phase
 
@@ -16,16 +16,13 @@
 
 ## What Was Just Completed
 
-**Session Z** — Release 流程完整性审计 + vi_agent init 缺口修复:
+**Session AB** — Teamwork 竞品分析 + 战略定位:
 
-- vi_agent init 4 个缺口修复：merge settings, post-merge workflow, skill_version 2.5.0→2.7.2
-- Branch protection 设置：require PR + review=0 + block force push（方案 2）
-- team.md Step 5c 修复：hardcoded → config-driven dynamic branch protection
-- 分支模型审计：单分支缺陷分析 + release branch 需求确立
-- team-release 能力审计：半成品（4/8 能力缺失）
-- Issue 版本追踪需求分析：found-in version label 机制设计
-- **18 项需求记录**（6 组 A-F）供后续 session 实现
-- Session log: `_project/sessions/2026-03-05-Z.md`（271 行完整记录）
+- 竞品深度调研：Vibe Kanban (BloopAI) + CCPM (automazeio)
+- Teamwork 定位明确：「AI 融入团队已有 GitHub 工作流」（非 agent 编排、非任务分解）
+- 可视化方案确定：GitHub Projects 外包全局看板 + 终端 ASCII 增强
+- 四个陷阱识别：不建 GUI、不做 agent 无关、不自建 issue 存储、不命令爆炸
+- Session log: `_project/sessions/2026-03-05-AB.md`
 
 ## Active Task / What's In Progress
 
@@ -43,8 +40,13 @@
    - D. Skill 适配（team-ship/team-claim 感知 release 分支）
    - E. Config schema（release_branch 从静态值改为模式）
    - 详见 `_project/sessions/2026-03-05-Z.md` 需求汇总
-4. **继续 Design Coding Skill 讨论**
-5. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
+4. **Teamwork 可视化增强**（Session AB 结论）：
+   - `/team init` 集成 GitHub Projects 看板（`gh project create`）
+   - `/team` board ASCII 汇总增强
+   - Review 路径加速（/team-ship 内嵌 diff feedback）
+   - 详见 `_project/sessions/2026-03-05-AB.md`
+5. **继续 Design Coding Skill 讨论**
+6. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
 

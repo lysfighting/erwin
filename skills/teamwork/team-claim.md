@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "2.7.0"
+version: "3.0.0"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -13,30 +13,29 @@ version: "2.7.0"
 
 | Input | Action |
 |-------|--------|
-| `#42` or `42` | Claim specific Issue |
-| `list` | Browse available mission Issues |
+| `#42` or `42` | Claim specific assigned Issue |
+| `list` | Browse MY assigned mission Issues |
 | `help` or `-h` | Show usage guide |
-| (empty) | Auto-select next unassigned Issue by priority (P0 > P1 > P2 > P3) |
+| (empty) | Show my assigned Issues and pick one |
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
 ```
-/team-claim — Claim a GitHub Issue as your mission
+/team-claim — Claim an assigned GitHub Issue as your mission
 
 USAGE:
-  /team-claim           Auto-pick highest priority unassigned Issue
-  /team-claim #42       Claim specific Issue
-  /team-claim list      Browse available missions
+  /team-claim           Show your assigned Issues and pick one
+  /team-claim #42       Claim specific assigned Issue
+  /team-claim list      Browse your assigned missions
 
 WHAT HAPPENS:
   1. Fetches Issue from GitHub
   2. Generates AI-enriched Mission Contract (.teamwork/active/MISSION-N.md)
      — scans project to discover relevant files (Context Files)
   3. Creates branch: mission/{issue}-{slug}-{user}
-  4. Assigns you on GitHub + posts claim comment
-  5. Labels Issue: status:wip
+  4. Posts claim comment on GitHub
 
-CREATE NEW ISSUES: Use /team-issue <description> instead
+NOTE: Issues are assigned via /team-issue (any team member can create and assign).
 
 NEXT: /team-drive to start executing
 ```
@@ -73,6 +72,7 @@ Read `$TEAMWORK_DIR/config.yml` → extract team roster, conventions, project se
 # Read mission label from config — try github.mc_label (teamspace schema) then mc_label (teamwork schema)
 MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh labels.mission "" 2>/dev/null)
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 ```
 
@@ -98,20 +98,20 @@ If any Contract exists → read it, display the active mission info.
 ### If `list`:
 
 ```bash
-gh issue list --label "$MISSION_LABEL" --state open --json number,title,labels,assignees,milestone --limit 20
+gh issue list --label "$MISSION_LABEL" --state open --assignee "$GH_USER" --json number,title,labels,milestone --limit 20
 ```
 
-Filter to show:
-- **Unassigned** Issues (available to claim)
-- **Assigned to you** but not yet in-progress
+Show Issues assigned to the current user.
 
 Format as numbered list:
 ```
-Available missions:
-  1. #42 Add user authentication [P1] — unassigned
-  2. #45 Add rate limiting [P1] — unassigned
-  3. #47 Write API docs [P2] — unassigned
+Your assigned missions:
+  1. #42 Add user authentication [P1]
+  2. #45 Add rate limiting [P1]
+  3. #47 Write API docs [P2]
 ```
+
+If none → "No missions assigned to you. Ask your team lead to assign one via `/team-issue`." → **STOP**
 
 Use `AskUserQuestion` to let user pick one, then proceed to Step 3 with the selected Issue number.
 
@@ -122,13 +122,14 @@ Extract Issue number. Proceed to Step 3.
 ### If empty:
 
 ```bash
-gh issue list --label "$MISSION_LABEL" --state open --assignee "" --json number,title,labels --limit 10
+gh issue list --label "$MISSION_LABEL" --state open --assignee "$GH_USER" --json number,title,labels --limit 10
 ```
 
-Sort by priority (P0 first, then P1, P2, P3). Pick the first one.
-If no unassigned Issues → "No available missions. Create one with `/team-issue <description>`." → **STOP**
+Show the user's assigned Issues sorted by priority (P0 first, then P1, P2, P3).
+If none → "No missions assigned to you. Ask your team lead to assign one via `/team-issue`." → **STOP**
 
-Proceed to Step 3 with the auto-selected Issue number.
+If only one → auto-select it and proceed to Step 3.
+If multiple → use `AskUserQuestion` to let user pick one, then proceed to Step 3.
 
 ---
 
@@ -253,19 +254,9 @@ Branch already created/switched by `tw-git.sh create-branch` above.
 
 ---
 
-## Step 6: Assign Issue on GitHub
+## Step 6: Post Claim Comment
 
-```bash
-# Assign Issue to user
-gh issue edit {issue} --add-assignee "$GH_USER" 2>/dev/null || echo "WARNING: Could not assign Issue (permissions)"
-
-# Label transition: queued → wip (reads prefix from config automatically)
-bash ~/.claude/commands/scripts/tw-label.sh transition {issue} queued wip
-```
-
-If assignee add fails (permissions), warn but continue — the local Contract is the source of truth for the claim.
-
-### 6b: Post claim comment
+In the push model, Issues are already assigned and labeled `status:wip` during `/team-issue` creation. No assignment or label transition needed here.
 
 ```bash
 gh issue comment {issue} --body "🚀 Claimed by @${GH_USER} — starting work on branch \`${BRANCH}\`"

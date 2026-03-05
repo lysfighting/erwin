@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "2.7.0"
+version: "3.0.0"
 ---
 
 # /team-drive — Execute Mission
@@ -190,7 +190,22 @@ Read the files listed in **Context Files** section of the Contract. Use `Glob` a
 Write the code, make the changes. Follow the project's existing patterns and conventions.
 
 ### 3d: Verify
-Run the test command from the Contract (or from config):
+
+#### Test Strategy
+
+Read config. If `project.services` exists (array of {name, language, test_command, lint_command}):
+  1. Determine which services are affected by current changes:
+     ```bash
+     BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+     BASE_BRANCH="${BASE_BRANCH:-main}"
+     CHANGED_FILES=$(git diff --name-only "origin/$BASE_BRANCH...HEAD")
+     ```
+  2. For each service in `project.services`, check if any changed file starts with the service directory path
+  3. For each affected service, run its `test_command`
+  4. If no service-specific command matches, fall back to `project.test_command`
+
+If no `project.services` in config:
+  Run `project.test_command` (existing behavior, unchanged):
 ```bash
 # From Contract's Test Command field, or fall back to config
 {TEST_CMD}
@@ -245,6 +260,20 @@ Go through each acceptance criterion from the Contract. For each one:
 - If not met → identify what's missing, add it as a new sub-task in the Contract, implement it
 
 ### 4b: Run full test suite
+
+Apply the same service-aware test strategy as Step 3d:
+
+Read config. If `project.services` exists:
+  1. Determine affected services from all changes on this branch:
+     ```bash
+     BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+     BASE_BRANCH="${BASE_BRANCH:-main}"
+     CHANGED_FILES=$(git diff --name-only "origin/$BASE_BRANCH...HEAD")
+     ```
+  2. For each affected service, run its `test_command`
+  3. If no service-specific command matches, fall back to `project.test_command`
+
+If no `project.services` in config:
 ```bash
 {TEST_CMD from config}
 ```

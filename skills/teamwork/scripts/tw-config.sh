@@ -94,10 +94,20 @@ def parse_simple_yaml(filepath):
                         current_section = section_key  # in case sub-keys follow
 
                 # Indented key: value (belongs to current_section)
+                # Only match DIRECT children (2-space or 1-tab indent, not deeper)
                 elif (line.startswith('  ') or line.startswith('\t')) and ':' in line:
                     if current_section is None:
                         continue
+                    # Skip deeply nested lines (4+ spaces or 2+ tabs)
+                    indent = len(line) - len(line.lstrip())
+                    if indent > 2 and not line.startswith('\t'):
+                        continue
+                    if line.startswith('\t') and indent > 1:
+                        continue
                     stripped = line.strip()
+                    # Skip YAML array items (- key: val)
+                    if stripped.startswith('-'):
+                        continue
                     parts = stripped.split(':', 1)
                     sub_key = parts[0].strip()
                     sub_val = strip_val(parts[1]) if len(parts) > 1 else ''

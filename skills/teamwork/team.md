@@ -1,11 +1,11 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "2.7.3"
+version: "3.0.0"
 ---
 
-# /team — Init + Dashboard (Teamwork v2)
+# /team — Init + Dashboard (Teamwork v3)
 
-> GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are quality gates.
+> GitHub-first team coordination. Push-based task assignment with role-based permissions.
 
 **User input**: $ARGUMENTS
 
@@ -14,9 +14,11 @@ version: "2.7.3"
 | Input | Action |
 |-------|--------|
 | (empty) | Auto: first run → Init, subsequent → Dashboard |
+| `#N` or number | Show MC #N details (branch, commits, PRs, criteria) |
 | `help` or `-h` | Show quick-start guide for new users |
+| `learn` | Show design philosophy, visual diagrams, and manual |
 | `init` | Force re-initialize (even if config exists) |
-| `queue` | Show all queued issues (full list, sorted by priority) |
+| `queue` | Show all open mission Issues (full list, sorted by priority) |
 
 ---
 
@@ -24,6 +26,8 @@ version: "2.7.3"
 
 Parse `$ARGUMENTS`:
 - If `help` or `-h` → jump to **Operation Help**
+- If `learn` → jump to **Operation Learn**
+- If starts with `#` or is a number → jump to **Operation MC Detail**
 - If `init` → jump to **Step 0** (skip config check, force init)
 - If `queue` → jump to **Operation Queue**
 - If empty → continue to **Step 0** (auto-detect init vs dashboard)
@@ -35,47 +39,162 @@ Parse `$ARGUMENTS`:
 Output the following guide directly to the user, then **STOP**:
 
 ```
-TEAMWORK — Quick Start Guide
+TEAMWORK v3.0.0 — AI-Native Team Coordination (Push Model)
+Author: liyasong + casey | Released: 2026-03-05
 ═══════════════════════════════════════════
 
 SETUP (one time):
   /team                 Auto-detect project, create config + CI + labels
 
 DAILY WORKFLOW:
-  /team                 See dashboard (who's working on what)
-  /team queue           Full list of queued issues, sorted by priority
-  /team-issue           Create a mission Issue from natural language
-  /team-claim #N        Claim Issue #N → generate Contract + branch
-  /team-claim           Auto-pick highest priority unassigned Issue
-  /team-claim list      Browse available missions
+  /team                 See role-based dashboard (leader=team view, member=my view)
+  /team #42             View MC #42 details (branch, commits, PRs)
+  /team-issue <desc>    Create MC (solo: self-assign; team: prompt for assignee)
+  /team-issue <desc> @user  Create MC + assign to @user
+  /team-issue fix #N    Fix untracked Issue (add teamwork labels)
+  /team-issue batch ... Batch create milestone + multiple MCs
+  /team-claim #N        Claim assigned Issue → generate Contract + branch
+  /team-claim list      Browse my assigned missions
   /team-drive           Execute mission (sub-tasks → test → commit loop)
   /team-ship            Push + create PR (auto-closes Issue on merge)
+  /team-ship review     AI code review on PR
 
 AFTER MERGE:
   /team-ship done       Close Issue, update labels, clean up
-  /team-ship review     AI code review on current PR
   /team-ship sync       Rebase branch on latest base branch
 
-VERSION LIFECYCLE:
-  /team-release         Close milestone → git tag → GitHub Release → next version
+RC LIFECYCLE:
+  /team-rc              Prepare: cut rc branch from develop → staging
+  /team-rc promote      Promote: squash merge rc → main, tag, GitHub Release
 
-LIFECYCLE:
-  /team-issue → Issue → /team-claim → Contract + branch
-                     → /team-drive → implement + test + commit
-                     → /team-ship  → PR (Closes #N)
-                     → /team-ship done → Issue closed, back to base branch
-  All missions done? → /team-release → tag + release + next milestone
+LIFECYCLE (Push Model):
+  /team-issue → assigns @member → Issue + branch created
+  /team-claim #N → Contract → /team-drive → /team-ship → PR
+  /team-rc → staging → /team-rc promote → production
+
+  Any team member can create Issues and assign to anyone.
+  Solo projects (1 member) auto-assign to self.
 
 CONFIG:
   .teamwork/config.yml  (or .teamspace/config.yml)
-  Edit team members, test/lint commands, quality gates directly.
+  Edit roles, members, notifications, quality gates directly.
 
 REQUIREMENTS:
   gh (GitHub CLI)       gh auth login
   git remote            git remote add origin <url>
+═══════════════════════════════════════════
+```
 
-MORE INFO:
-  ONBOARDING.md         Full tutorial with examples
+---
+
+## Operation Learn
+
+Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
+
+### Step L1: Locate manual files
+
+```bash
+# Check for manual files in docs/ (erwin-managed repos)
+# or in .teamwork/docs/ or .teamspace/docs/ (standalone repos)
+MANUAL=""
+GIT_MODEL=""
+
+for dir in docs .teamwork/docs .teamspace/docs; do
+  [ -f "$dir/teamwork-ai-manual.md" ] && MANUAL="$dir/teamwork-ai-manual.md"
+  [ -f "$dir/git-model-v0.1.0.md" ] && GIT_MODEL="$dir/git-model-v0.1.0.md"
+done
+```
+
+### Step L2: Present content
+
+**If `MANUAL` found** → Read the file and present its full content to the user. This file contains:
+- Why this model exists (AI commit frequency problem)
+- The Four Branches diagram
+- Why squash everything
+- RC lifecycle (the key innovation)
+- Complete end-to-end example
+- The Six Skills overview
+
+**If `GIT_MODEL` also found** → Mention it as deeper technical reference:
+```
+For the formal Git branching spec, see: {GIT_MODEL}
+```
+
+**If neither found** → Output the embedded overview below and **STOP**:
+
+```
+TEAMWORK — Design Philosophy
+═══════════════════════════════════════════
+
+WHY THIS MODEL?
+
+Traditional teams: 6 people, manageable commit frequency.
+Our reality: 6 people + AI assistants = 20-30x commit frequency.
+
+Problem with simple model (GitHub Flow):
+
+main ── feat/A ── feat/B ── feat/C ── feat/D ── feat/E ──►
+        (merge)   (merge)   (merge)   (merge)   (merge)
+
+        ↑ deploy staging here
+        │ while verifying, D and E merge in
+        │ deploy again → F and G merge in
+        └── you can never verify a stable snapshot
+
+Solution: separate dirty work (develop) from clean production (main).
+
+develop ── A ── B ── C ── D ── E ──►     ← AI noise goes here
+                        │
+                   rc/V0.1.0              ← frozen snapshot
+                        │
+main ────────────── [V0.1.0] ──►          ← only verified code
+
+THE FOUR BRANCHES:
+
+┌──────────┬──────────────┬───────────────────────┬───────────────────┐
+│ Branch   │ Role         │ Who writes to it      │ How clean?        │
+├──────────┼──────────────┼───────────────────────┼───────────────────┤
+│ main     │ Production   │ Only rc/* via PR      │ Always clean      │
+│ develop  │ Dev trunk    │ All feature PRs       │ CI-verified       │
+│ rc/*     │ Staging      │ Hotfixes only         │ Converging        │
+│ feat/*   │ Work         │ You                   │ Dirty             │
+└──────────┴──────────────┴───────────────────────┴───────────────────┘
+
+WHY SQUASH EVERYTHING?
+
+AI generates dozens of commits per feature. These are machine noise:
+
+  Without squash:  fix typo → WIP → try approach → revert → fix → forgot save
+  With squash:     feat: user login system (#42)
+
+RC LIFECYCLE (the key innovation):
+
+  /team-rc           → cut rc/V0.1.0 from develop (frozen)
+  verify on staging  → hotfix if needed (cherry-pick to develop)
+  /team-rc promote   → squash merge rc → main, tag V0.1.0, GitHub Release
+
+  Think of RC as a bus: missed this one? Take the next one.
+  Buses come frequently.
+
+DAILY FLOW:
+
+  /team-issue "用户登录"     → Issue #42 (create + assign + branch)
+  /team-issue fix #94        → Fix untracked Issue (add labels)
+  /team-claim 42             → Contract from develop
+  /team-drive                → Code, test, commit
+  /team-ship                 → PR → develop (squash)
+  /team-rc                   → Cut RC → staging
+  /team-rc promote           → Ship to production
+
+UNTRACKED ISSUES:
+
+  Issues assigned on GitHub but missing teamwork labels are "untracked".
+  /team dashboard shows them in UNTRACKED section.
+  Fix: /team-issue fix #N → adds mission + status + priority labels.
+
+═══════════════════════════════════════════
+Full manual: docs/teamwork-ai-manual.md
+Git model:   docs/git-model-v0.1.0.md
 ═══════════════════════════════════════════
 ```
 
@@ -83,7 +202,7 @@ MORE INFO:
 
 ## Operation Queue
 
-Show the full list of queued issues, sorted by priority. Requires existing config (same prerequisite check as dashboard).
+Show the full list of open mission issues, sorted by priority. Requires existing config (same prerequisite check as dashboard).
 
 ### Prerequisite: config detection
 
@@ -104,48 +223,122 @@ fi
 # Read mission label + priority prefix from config
 MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh labels.mission "" 2>/dev/null)
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 
 STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.status_prefix "" 2>/dev/null)
 [ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
 
 PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.priority "" 2>/dev/null)
+[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.priority_prefix "" 2>/dev/null)
 [ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX="priority:"
 
-# Fetch all queued issues (unassigned or status:queued, open)
+# Fetch all open mission issues
 gh issue list --label "$MISSION_LABEL" --state open --json number,title,labels,assignees --limit 100
 ```
 
-Filter to issues that are unassigned OR have `${STATUS_PREFIX}queued` label. Sort by priority: P0 first → P1 → P2 → P3 → no priority last.
+Sort by priority: P0 first → P1 → P2 → P3 → no priority last. Show assignee for each.
 
 Output formatted list:
 
 ```
-QUEUED ISSUES — {repo name} ({total} issues)
+OPEN MISSIONS — {repo name} ({total} issues)
 ════════════════════════════════════════════
 
 P0 (critical):
-  #{N} {title}
-  #{N} {title}
+  #{N} {title} [@{assignee} | unassigned]
 
 P1 (high):
-  #{N} {title}
+  #{N} {title} [@{assignee} | unassigned]
 
 P2 (medium):
-  #{N} {title}
-  #{N} {title}
+  #{N} {title} [@{assignee} | unassigned]
 
 P3 (low):
-  #{N} {title}
+  #{N} {title} [@{assignee} | unassigned]
 
 No priority:
-  #{N} {title}
+  #{N} {title} [@{assignee} | unassigned]
 
 ════════════════════════════════════════════
-Claim: /team-claim #{N}
+Details: /team #{N}
+Claim:   /team-claim #{N}
 ```
 
 Omit priority groups that have zero issues. Then **STOP**.
+
+---
+
+## Operation MC Detail
+
+> Triggered by `/team #42` or `/team 42`. Shows full details of a Mission Contract.
+
+### MD1: Parse Issue number
+
+Extract the numeric Issue number from `$ARGUMENTS` (strip `#` prefix if present).
+
+### MD2: Fetch Issue data
+
+```bash
+REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
+ISSUE_DATA=$(gh issue view $ISSUE_NUMBER --json number,title,body,labels,milestone,assignees,state,url)
+```
+
+If Issue not found → "Issue #$ISSUE_NUMBER not found." → **STOP**
+
+### MD3: Compute branch and check remote
+
+```bash
+# Read branch pattern from config
+BRANCH_PATTERN=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.branch_pattern "" 2>/dev/null)
+if [ -z "$BRANCH_PATTERN" ]; then
+  BRANCH_PATTERN="mission/{issue}-{slug}-{user}"
+fi
+
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-main}"
+
+# Search for branch matching this Issue number
+BRANCH=$(git ls-remote --heads origin "mission/${ISSUE_NUMBER}-*" 2>/dev/null | awk '{print $2}' | sed 's|refs/heads/||' | head -1)
+
+# If branch exists, get commit log
+if [ -n "$BRANCH" ]; then
+  COMMITS=$(git log "origin/$BASE_BRANCH..origin/$BRANCH" --oneline 2>/dev/null || echo "(fetch needed)")
+fi
+
+# Find related PRs
+RELATED_PRS=$(gh pr list --search "Closes #$ISSUE_NUMBER" --state all --json number,url,state,statusCheckRollup --limit 5 2>/dev/null)
+```
+
+### MD4: Format and display
+
+```
+MISSION CONTRACT — #{ISSUE_NUMBER}
+═══════════════════════════════════
+Title:     {title}
+Assignee:  @{assignee}
+Status:    {status label, e.g., wip/review/done}
+Priority:  {Pn from labels}
+Milestone: {milestone title or "none"}
+URL:       {issue url}
+─────────────────────────────────
+{Full Issue body}
+─────────────────────────────────
+BRANCH: {branch or "not found"}
+  Remote: {exists/not found}
+  Commits: {commit log or "no commits yet"}
+RELATED PRs: {list with state and CI status}
+═══════════════════════════════════
+```
+
+If branch exists and user is not currently on it, show:
+```
+Hint: git checkout {branch}
+      or /team-claim #{ISSUE_NUMBER} to generate Contract
+```
+
+Then **STOP**.
 
 ---
 
@@ -216,10 +409,11 @@ fi
 
 Read the config and check if `GH_USER` is in the team roster.
 
-**Config format detection** (handle two schemas):
-- If config has `members:` section → use it (`.teamspace` format: `members:` is the member list)
-- Else if config has `team:` as an ARRAY of `{github, role}` → use it (erwin v2 format)
+**Config format detection** (handle three schemas):
+- If config has `members:` section → use it (v3 format + `.teamspace` format: `members:` is the member list)
+- Else if config has `team:` as an ARRAY of `{github, role}` → use it (erwin v2 format, backward compat)
 - Note: `.teamspace` configs have `team:` as metadata `{name, repo}`, NOT a member list — always check `members:` first
+- **Role lookup**: If config has `roles:` section, look up the user's `role` value in `roles:` to find their `level` (leader/member). If no `roles:` section exists, treat everyone as leader (backward compat with schema v1).
 
 Look for `github: {GH_USER}` (erwin) or `github: {GH_USER}` + `id: {GH_USER}` (.teamspace) in the member list.
 
@@ -280,8 +474,8 @@ After confirming membership, verify that the config has the fields needed by oth
 | `project.lint_command` | git hooks | warn "No lint command" |
 | `conventions.branch_pattern` | team-claim | `"mission/{issue}-{slug}-{user}"` |
 | `conventions.base_branch` | team-claim, team-ship, team-drive | `"main"` |
-| `conventions.release_branch` | team-release | `base_branch` value |
-| `deploy.staging_workflow` | team-release | `""` (skip staging check) |
+| `conventions.production_branch` | team-rc, protect-check | `"main"` |
+| `deploy.staging_workflow` | team-rc | `""` (skip staging check) |
 | `label_prefix` or `github.label_prefix` | all skills, post-merge Action | `status:`, `priority:` |
 
 If critical fields are missing (no `project:` section at all, no `conventions.branch_pattern`), output a warning:
@@ -423,20 +617,34 @@ ls $TEAMWORK_DIR/config.yml 2>/dev/null
 
 Preserve all existing content. Only update `skill_version` and append missing top-level sections.
 
-**Step 1 — Update skill_version in place:**
+**Step 1 — Update skill_version and schema_version in place:**
 
 ```bash
 # Update skill_version line without touching anything else
-sed -i '' "s/^skill_version:.*/skill_version: 2.7.3/" $TEAMWORK_DIR/config.yml
-# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 2.7.3/" $TEAMWORK_DIR/config.yml
+sed -i '' "s/^skill_version:.*/skill_version: 3.0.0/" $TEAMWORK_DIR/config.yml
+# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.0.0/" $TEAMWORK_DIR/config.yml
+
+# Update schema_version if present
+if grep -q "^schema_version:" $TEAMWORK_DIR/config.yml; then
+  sed -i '' "s/^schema_version:.*/schema_version: 3/" $TEAMWORK_DIR/config.yml
+else
+  # Prepend schema_version before skill_version
+  sed -i '' "/^skill_version:/i\\
+schema_version: 3" $TEAMWORK_DIR/config.yml
+fi
 ```
 
 **Step 2 — Detect which top-level sections are missing:**
 
 ```bash
 # Detect missing top-level sections (no PyYAML dependency — pure grep)
-for section in project conventions label_prefix quality; do
-  grep -q "^${section}:" $TEAMWORK_DIR/config.yml || echo "$section"
+for section in project conventions label_prefix quality roles members notifications; do
+  if [ "$section" = "label_prefix" ]; then
+    # Accept either label_prefix: or labels: (vi_agent schema compat)
+    grep -q "^label_prefix:\|^labels:" $TEAMWORK_DIR/config.yml || echo "$section"
+  else
+    grep -q "^${section}:" $TEAMWORK_DIR/config.yml || echo "$section"
+  fi
 done
 ```
 
@@ -457,9 +665,9 @@ project:
 
 ```yaml
 conventions:
-  branch_pattern: "mission/{issue}-{slug}-{user}"
-  base_branch: main
-  # release_branch: main  # Set different from base_branch for dual-branch model (e.g. "main" when base_branch is "develop")
+  branch_pattern: "{type}/{task-id}-{slug}"
+  base_branch: develop
+  production_branch: main
   commit_format: "type(scope): description | Mission: #{issue}"
 ```
 
@@ -478,16 +686,53 @@ quality:
   branch_protection: {true/false from Step 3}
 ```
 
+```yaml
+roles:
+  - id: leader
+    level: leader
+    label: "Tech Lead"
+    description: "Task creation, review, release"
+  - id: engineer
+    level: member
+    label: "Engineer"
+    description: "Feature development"
+```
+
+```yaml
+members:
+  - github: {GH_USER}
+    name: "{GH_USER}"
+    role: leader
+```
+
+```yaml
+notifications:
+  enabled: false
+  channels:
+    - type: slack
+      channel: "#team"
+      webhook: ""
+      enabled: false
+    - type: feishu
+      webhook: ""
+      enabled: false
+  events:
+    mc.created: [slack, feishu]
+    mc.completed: [slack, feishu]
+    milestone.created: [slack, feishu]
+    milestone.done: [slack, feishu]
+```
+
 **Step 4 — Show merge summary:**
 
 ```
 ✅ Config updated (merge mode — existing config preserved)
-   skill_version → 2.6.1
+   schema_version → 3 | skill_version → 3.0.0
    Preserved sections: {list of sections kept}
    Added sections: {list of sections appended, or "(none — already complete)"}
 ```
 
-Do NOT overwrite `team`/`members`, `github`, `worktree`, `versions`, `roles`, or any unrecognized section.
+Do NOT overwrite `team`/`members`, `github`, `worktree`, `versions`, `roles`, `notifications`, or any unrecognized section.
 
 ---
 
@@ -496,12 +741,23 @@ Do NOT overwrite `team`/`members`, `github`, `worktree`, `versions`, `roles`, or
 Write full config based on detected project info + user answers:
 
 ```yaml
-schema_version: 1
-skill_version: 2.7.3
+schema_version: 3
+skill_version: 3.0.0
 
-team:
+roles:
+  - id: leader
+    level: leader
+    label: "Tech Lead"
+    description: "Task creation, assignment, review, release"
+  - id: engineer
+    level: member
+    label: "Engineer"
+    description: "Feature development"
+
+members:
   - github: {GH_USER}
-    role: tech-lead
+    name: "{GH_USER}"
+    role: leader
   # ... additional members from Step 3
 
 project:
@@ -509,14 +765,26 @@ project:
   test_command: "{TEST_CMD}"
   lint_command: "{LINT_CMD}"
   build_command: "{BUILD_CMD}"
+  # Optional: monorepo services (enables per-service testing in /team-drive, /team-ship)
+  # services:
+  #   - name: api
+  #     path: api/
+  #     language: python
+  #     test_command: "cd api && pytest"
+  #     lint_command: "cd api && ruff check ."
+  #   - name: web
+  #     path: web/
+  #     language: node
+  #     test_command: "cd web && npm test"
+  #     lint_command: "cd web && npm run lint"
 
 conventions:
-  branch_pattern: "mission/{issue}-{slug}-{user}"
-  base_branch: main
-  # release_branch: main  # Set different from base_branch for dual-branch model
+  branch_pattern: "{type}/{task-id}-{slug}"
+  base_branch: develop
+  production_branch: main
   commit_format: "type(scope): description | Mission: #{issue}"
 
-# Optional: Deployment pipeline (required for staging gate in /team-release)
+# Optional: Deployment pipeline (required for staging gate in /team-rc)
 # deploy:
 #   staging_workflow: "deploy-staging.yml"  # GitHub Actions workflow name
 
@@ -531,15 +799,31 @@ quality:
   review_required: {true/false from Step 3}
   branch_protection: {true/false from Step 3}
 
+notifications:
+  enabled: false
+  channels:
+    - type: slack
+      channel: "#team"
+      webhook: ""
+      enabled: false
+    - type: feishu
+      webhook: ""
+      enabled: false
+  events:
+    mc.created: [slack, feishu]
+    mc.completed: [slack, feishu]
+    milestone.created: [slack, feishu]
+    milestone.done: [slack, feishu]
+
 # Optional: Git worktree isolation (from Question 3)
 # worktree:
 #   enabled: true
 #   path_pattern: "../{repo}-wt-{slug}"
 
-# Optional: Version tracking (required for /team-release)
+# Optional: Version tracking (required for /team-rc)
 # versions:
 #   current: "V1.0"
-#   spec_path: ".claude/drive/v1.0-definition/spec.md"  # optional: enables AI audit in /team-release
+#   spec_path: ".claude/drive/v1.0-definition/spec.md"  # optional: enables AI audit in /team-rc
 #   lifecycle: [dev, qa, released]
 ```
 
@@ -563,7 +847,7 @@ If not exists → generate.
 ```yaml
 name: Mission Contract
 description: Structured task for team execution
-labels: ["{MISSION_LABEL}", "{STATUS_PREFIX}queued"]
+labels: ["{MISSION_LABEL}", "{STATUS_PREFIX}wip"]
 body:
   - type: dropdown
     id: priority
@@ -781,6 +1065,7 @@ Read label prefixes from config for substitution:
 
 ```bash
 STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.status_prefix "" 2>/dev/null)
 [ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
 ```
 
@@ -852,7 +1137,7 @@ jobs:
                   const total = issue.data.milestone.closed_issues + issue.data.milestone.open_issues;
                   await github.rest.issues.createComment({
                     ...context.repo, issue_number: num,
-                    body: `🎉 Milestone **${issue.data.milestone.title}** is now 100% complete (${total} issues). Ready for \`/team-release\`.`
+                    body: `🎉 Milestone **${issue.data.milestone.title}** is now 100% complete (${total} issues). Ready for \`/team-rc\`.`
                   });
                 }
               }
@@ -870,7 +1155,7 @@ jobs:
 **`.githooks/pre-commit`:**
 ```bash
 #!/bin/bash
-# Teamwork v2 — local quality gate (fast)
+# Teamwork v3 — local quality gate (fast)
 set -e
 CONFIG="$([ -f .teamwork/config.yml ] && echo .teamwork/config.yml || echo .teamspace/config.yml)"
 [ -f "$CONFIG" ] || exit 0
@@ -884,7 +1169,7 @@ fi
 **`.githooks/pre-push`:**
 ```bash
 #!/bin/bash
-# Teamwork v2 — local quality gate (thorough)
+# Teamwork v3 — local quality gate (thorough)
 set -e
 CONFIG="$([ -f .teamwork/config.yml ] && echo .teamwork/config.yml || echo .teamspace/config.yml)"
 [ -f "$CONFIG" ] || exit 0
@@ -930,8 +1215,12 @@ bash ~/.claude/commands/scripts/setup-github-labels.sh
 If the script is not available (e.g., installed without scripts):
 ```bash
 # Fallback: inline label creation (read prefixes from config)
-STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "status:" 2>/dev/null)
-PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.priority "priority:" 2>/dev/null)
+STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.status_prefix "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
+PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.priority "" 2>/dev/null)
+[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.priority_prefix "" 2>/dev/null)
+[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX="priority:"
 
 gh label create "$MISSION_LABEL" --color 0075ca --description "Team mission" --force
 gh label create "${STATUS_PREFIX}queued" --color c2e0c6 --description "Ready to be claimed" --force
@@ -957,6 +1246,7 @@ gh api "repos/$REPO" --method PATCH \
   --field allow_squash_merge=true \
   --field allow_merge_commit=false \
   --field allow_rebase_merge=false \
+  --field allow_auto_merge=true \
   --field squash_merge_commit_title=PR_TITLE \
   --field squash_merge_commit_message=PR_BODY
 ```
@@ -967,15 +1257,59 @@ gh api "repos/$REPO" --method PATCH \
 
 If API fails (permissions) → warn but continue. These can be set manually in GitHub Settings → General.
 
+### 5b2: Ensure develop branch exists
+
+If `base_branch` is not the current default branch (i.e., config says `develop` but repo only has `main`), create it:
+
+```bash
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "develop" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-develop}"
+
+# Check if base branch exists on remote
+if ! git ls-remote --heads origin "$BASE_BRANCH" | grep -q "$BASE_BRANCH"; then
+  # Create develop from current main
+  git checkout -b "$BASE_BRANCH"
+  git push -u origin "$BASE_BRANCH"
+  echo "Created $BASE_BRANCH branch from $(git branch --show-current)"
+fi
+
+# Set develop as GitHub default branch (so PRs target it by default)
+gh api "repos/$REPO" --method PATCH --field default_branch="$BASE_BRANCH"
+```
+
+If the branch already exists, skip. If API fails, warn but continue.
+
+### 5b3: Ensure production branch exists
+
+If `production_branch` differs from `base_branch` and doesn't exist on remote, create it from the current default branch (usually `main`):
+
+```bash
+PROD_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.production_branch "main" 2>/dev/null)
+PROD_BRANCH="${PROD_BRANCH:-main}"
+
+if [ "$PROD_BRANCH" != "$BASE_BRANCH" ]; then
+  if ! git ls-remote --heads origin "$PROD_BRANCH" | grep -q "$PROD_BRANCH"; then
+    # Create production branch from main (or current default)
+    DEFAULT_BRANCH=$(gh api "repos/$REPO" --jq '.default_branch' 2>/dev/null || echo "main")
+    git fetch origin "$DEFAULT_BRANCH"
+    git branch "$PROD_BRANCH" "origin/$DEFAULT_BRANCH"
+    git push -u origin "$PROD_BRANCH"
+    echo "Created $PROD_BRANCH branch from $DEFAULT_BRANCH"
+  fi
+fi
+```
+
+If the branch already exists, skip.
+
 ### 5c: Branch protection (if enabled)
 
 Read config flags to build the protection rule dynamically:
 
 ```bash
-BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
-BASE_BRANCH="${BASE_BRANCH:-main}"
-RELEASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.release_branch "" 2>/dev/null)
-RELEASE_BRANCH="${RELEASE_BRANCH:-$BASE_BRANCH}"
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "develop" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-develop}"
+PROD_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.production_branch "main" 2>/dev/null)
+PROD_BRANCH="${PROD_BRANCH:-main}"
 
 # Read quality flags — protection rule adapts to team's config
 CI_ENABLED=$(bash ~/.claude/commands/scripts/tw-config.sh quality.ci "false" 2>/dev/null)
@@ -1014,11 +1348,11 @@ gh api "repos/$REPO/branches/$BASE_BRANCH/protection" \
 EOF
 ```
 
-**Dual-branch mode** — if `RELEASE_BRANCH != BASE_BRANCH`, also protect release branch:
+Also protect production branch (main):
 
 ```bash
-if [ "$RELEASE_BRANCH" != "$BASE_BRANCH" ]; then
-  gh api "repos/$REPO/branches/$RELEASE_BRANCH/protection" \
+if [ "$PROD_BRANCH" != "$BASE_BRANCH" ]; then
+  gh api "repos/$REPO/branches/$PROD_BRANCH/protection" \
     --method PUT \
     --input - <<EOF
 {
@@ -1050,9 +1384,9 @@ If branch protection fails (e.g., free plan limitations), warn but continue — 
 
 ```bash
 git add $TEAMWORK_DIR/config.yml .github/ .githooks/ .gitignore
-git commit -m "feat(teamwork): initialize GitHub-first teamwork v2
+git commit -m "feat(teamwork): initialize GitHub-first teamwork v3
 
-Generate config, CI workflow, Issue template, git hooks.
+Generate config (schema v3), CI workflow, Issue template, git hooks.
 Team: {member list}"
 git push
 ```
@@ -1063,11 +1397,29 @@ Output: "Teamwork initialized! Next: create Issues using the Mission template, t
 
 ## Step 6: Dashboard
 
-Read data from GitHub and config, then display formatted dashboard.
+Read data from GitHub and config, then display a role-based formatted dashboard.
 
-### 6a: Read config
+### 6a: Read config + determine role
 ```bash
 cat $TEAMWORK_DIR/config.yml
+```
+
+**Determine current user's role level:**
+```bash
+# Count members
+MEMBER_COUNT=$(grep -c "github:" $TEAMWORK_DIR/config.yml 2>/dev/null || echo "1")
+
+# Solo mode: if only 1 member, show unified dashboard (no role distinction)
+if [ "$MEMBER_COUNT" -le 1 ]; then
+  USER_LEVEL="solo"
+else
+  # Find user's role in members, look up level in roles
+  # If config has roles: section → find user's role id → find role's level
+  # If no roles: section → treat everyone as leader (backward compat with schema v1)
+  USER_ROLE=$(# find GH_USER in members, get their role value)
+  USER_LEVEL=$(# find that role id in roles, get its level — "leader" or "member")
+  # If roles: section doesn't exist, USER_LEVEL="leader" (backward compat)
+fi
 ```
 
 ### 6b: Check Issue freshness for active Contracts
@@ -1099,12 +1451,15 @@ Read the mission label from config. If config has `mc_label` field → use it. I
 # Determine the mission label — try github.mc_label (teamspace schema) then mc_label (teamwork schema)
 MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
+[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh labels.mission "" 2>/dev/null)
 [ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
 
 # Determine label prefixes from config (flat schema: label_prefix.status; nested schema: defaults)
 STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.status_prefix "" 2>/dev/null)
 [ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
 PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.priority "" 2>/dev/null)
+[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.priority_prefix "" 2>/dev/null)
 [ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX="priority:"
 
 # All mission issues
@@ -1124,6 +1479,14 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 gh pr list --state merged --base "$BASE_BRANCH" --json author --limit 100
 
+# All open issues assigned to anyone (regardless of labels) — for untracked detection
+# Leader: fetch all assigned; Member: fetch only own
+if [ "$USER_LEVEL" = "leader" ] || [ "$USER_LEVEL" = "solo" ]; then
+  gh issue list --state open --json number,title,labels,assignees --limit 100
+else
+  gh issue list --assignee "$GH_USER" --state open --json number,title,labels --limit 50
+fi
+
 # Version progress (if versions.current configured in config)
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 if [ -n "$CURRENT_VERSION" ]; then
@@ -1132,38 +1495,90 @@ if [ -n "$CURRENT_VERSION" ]; then
 fi
 ```
 
+**Compute untracked issues**: Compare "all assigned to user" against "mission issues assigned to user". Issues that appear in the first set but NOT in the second are **untracked** — assigned on GitHub but missing the mission label, invisible to teamwork.
+
 If `versions.current` is set, query version-tagged issues and calculate done/total percentage for the dashboard header.
 
-### 6d: Format and display
+### 6d: Format and display (role-based)
 
-Output a formatted dashboard like this:
+Output a formatted dashboard based on user's role level.
+
+#### Solo / Leader Dashboard
 
 ```
-TEAM DASHBOARD — {repo name}
+TEAM DASHBOARD — {repo name} (v3.0.0)
 {If CURRENT_VERSION set and milestone found:} Version {CURRENT_VERSION}: {closed}/{closed+open} tasks done ({pct}%)
-{If active GitHub milestone (non-version):} Milestone: {active milestone} ({closed}/{total} = {pct}%)
 ════════════════════════════════════════════
 
-{For each team member from config.yml:}
-  {username} ({role})
+TEAM STATUS:
+{For each team member from config:}
+  {username} ({role label})
      {If has assigned status:wip issue:} Working on: #{N} {title} [{priority}] {If ISSUE_STALE:} [UPDATED]
      {If has open PR:} PR: #{pr} — {CI status}
-     {If idle:} Idle (last merged: #{last_merged_pr})
+     {If idle:} Idle — no active mission
 
-UNDER REVIEW (PR open, awaiting merge):
-  {Issues with label "${STATUS_PREFIX}review" — show each:}
-     #{N} {title} [{assignee}]
+UNDER REVIEW ({review_count}):
+  {Issues with label "${STATUS_PREFIX}review":}
+     #{N} {title} [@{assignee}]
 
-QUEUED ({queued_count}):
-  {Issues unassigned or status:queued, sorted by priority (P0→P1→P2→P3→none), show top 5:}
+UNASSIGNED ({unassigned_count}):
+  {Issues with no assignee, sorted by priority, show top 5:}
      #{N} {title} [{priority}]
-  {If queued_count > 5:} ... and {queued_count - 5} more — run /team queue to see all
+  {If unassigned_count > 5:} ... and {unassigned_count - 5} more — run /team queue to see all
+
+UNTRACKED ({untracked_count}):
+  {Issues assigned to team members but missing mission label — computed as:
+   all assigned open issues MINUS mission-labeled issues}
+     #{N} {title} [@{assignee}]
+  {If untracked_count > 0:} Fix: /team-issue fix #{N}
+  {If untracked_count == 0:} omit this section entirely
 
 MERGE COUNT:
   {username}: {count} | {username}: {count} | ...
 
+SUGGESTED NEXT ACTION:
+  {If untracked issues exist:} Fix untracked issues: /team-issue fix #{N}
+  {If unassigned issues exist:} Assign missions: /team-issue <desc> @user
+  {If all issues assigned:} Check review queue: /team-ship review
+  {If milestone near complete:} Prepare release: /team-rc
 ════════════════════════════════════════════
-Commands: /team-claim #{N} | /team-drive | /team-ship
+Commands: /team #N | /team-issue | /team-claim | /team-drive | /team-ship
+```
+
+#### Member Dashboard
+
+```
+MY DASHBOARD — {repo name} (v3.0.0)
+{If CURRENT_VERSION set:} Version {CURRENT_VERSION}: {closed}/{closed+open} tasks done ({pct}%)
+════════════════════════════════════════════
+
+MY MISSIONS:
+  {For each Issue assigned to GH_USER with status:wip:}
+     #{N} {title} [{priority}] {If ISSUE_STALE:} [UPDATED]
+     Branch: {branch}
+     {If has local Contract:} Contract: ready → /team-drive
+     {If no Contract:} Next: /team-claim #{N}
+
+  {If no wip missions:} No active missions assigned to you.
+
+MY PRs:
+  {For each open PR by GH_USER:}
+     #{pr} {title} — {CI status} {review decision}
+
+UNTRACKED ({untracked_count}):
+  {Issues assigned to GH_USER but missing mission label}
+     #{N} {title}
+  {If untracked_count > 0:} Fix: /team-issue fix #{N}
+  {If untracked_count == 0:} omit this section entirely
+
+SUGGESTED NEXT ACTION:
+  {If has untracked issues:} Fix untracked issues: /team-issue fix #{N}
+  {If has wip issue without Contract:} Claim your mission: /team-claim #{N}
+  {If has Contract:} Start execution: /team-drive
+  {If has completed mission:} Ship it: /team-ship
+  {If idle:} No missions assigned — ask your team lead
+════════════════════════════════════════════
+Commands: /team #N | /team-claim | /team-drive | /team-ship
 ```
 
 ---

@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "2.7.0"
+version: "3.0.0"
 ---
 
 # /team-ship — Deliver Mission
@@ -83,6 +83,7 @@ Read `$TEAMWORK_DIR/config.yml` → extract project settings, conventions, quali
 ```bash
 # Read label prefixes from config
 STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
+[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.status_prefix "" 2>/dev/null)
 [ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
 ```
 
@@ -160,6 +161,22 @@ git status --porcelain
 
 ### 2d: Run tests
 
+Read config for service-aware testing:
+
+```bash
+# Check if project has services configured
+# If project.services exists in config, run per-service tests for affected services
+# Otherwise fall back to project.test_command
+
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-main}"
+
+# Determine affected services from changes
+CHANGED_FILES=$(git diff --name-only "origin/$BASE_BRANCH...HEAD" 2>/dev/null)
+```
+
+Read `project.services` from config. For each service, check if any changed file is in that service's directory. Run the service's `test_command` for affected services. If no services configured, fall back to `project.test_command`:
+
 ```bash
 TEST_CMD=$(bash ~/.claude/commands/scripts/tw-config.sh project.test_command "" 2>/dev/null)
 if [ -z "$TEST_CMD" ]; then
@@ -171,7 +188,7 @@ else
 fi
 ```
 
-- If `$TEST_CMD` is non-empty and command exits non-zero → "Tests are failing. Fix them before shipping." → **STOP**
+- If any test command exits non-zero → "Tests are failing. Fix them before shipping." → **STOP**
 
 ---
 
@@ -257,6 +274,16 @@ bash ~/.claude/commands/scripts/tw-label.sh pr-label {pr} review
 ```
 
 If this fails (label doesn't exist), warn but continue.
+
+### 4f: Notification
+
+```bash
+bash ~/.claude/commands/scripts/tw-notify.sh mc.completed \
+  --issue "$ISSUE_NUMBER" --title "$TITLE" \
+  --assignee "$GH_USER" --pr "$PR_URL"
+```
+
+Non-fatal: if notification fails, warn but continue.
 
 ---
 

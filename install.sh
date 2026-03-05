@@ -76,7 +76,7 @@ echo ""
 mkdir -p "$TARGET_DIR"
 
 # Clean up renamed/removed skills (v1 → v2 migrations)
-DEPRECATED_SKILLS=(teamwork team-get-mission team-complete)
+DEPRECATED_SKILLS=(teamwork team-get-mission team-complete team-release)
 for old_skill in "${DEPRECATED_SKILLS[@]}"; do
   old_dst="$TARGET_DIR/$old_skill.md"
   if [[ -L "$old_dst" ]]; then
@@ -152,12 +152,14 @@ install_skill() {
       [[ -f "$script" ]] || continue
       local script_name="$(basename "$script")"
       local script_dst="$scripts_dst/$script_name"
+      # Remove existing symlink before copy (prevents "identical" error)
+      [[ -L "$script_dst" ]] && rm "$script_dst"
       if [[ "$INSTALL_MODE" == "copy" ]]; then
         cp "$script" "$script_dst"
       else
         ln -sf "$script" "$script_dst"
       fi
-      chmod +x "$script"  # ensure source is executable
+      chmod +x "$script_dst"
       echo -e "${GREEN}  📜 scripts/$script_name${NC}"
     done
   fi
