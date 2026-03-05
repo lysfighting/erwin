@@ -8,39 +8,43 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-05
-- **Last Session**: [2026-03-05-Y](sessions/2026-03-05-Y.md) (Session Y — Design Coding Skill 讨论 + /session-record)
+- **Last Session**: [2026-03-05-Z](sessions/2026-03-05-Z.md) (Session Z — Release 流程完整性审计 + 需求记录)
 
 ## Current Phase
 
-**Phase**: Design Coding Skill 多轮设计讨论中
+**Phase**: vi_agent 闭环完善 + Design Coding Skill 讨论并行
 
 ## What Was Just Completed
 
-**Session Y** — Design Coding Skill 讨论 + /session-record skill:
+**Session Z** — Release 流程完整性审计 + vi_agent init 缺口修复:
 
-- 8 轮深度讨论，确立 design coding skill 核心理念
-- **灵魂确立**: Taste > Rules > Trends（品味 > 规则 > 趋势）
-- 结构方案 v3（9 模块）：Manifesto, Output Standard, Reference Protocol, Visual Feedback Loop, Design Language, Pantheon, Quality Protocol, Anti-patterns, Execution
-- 参考范围扩展至 5 域：Nature / Art & Architecture / Mathematics / Digital / Philosophy
-- 艺术哲学体系：黄金比例、侘寂、間、Sprezzatura、格式塔、日神酒神
-- 新 skill: `/session-record` v1.0.0（完整对话记录模式）
-- 全程 session 记录：`_project/sessions/2026-03-05-Y.md`（580 行完整对话）
+- vi_agent init 4 个缺口修复：merge settings, post-merge workflow, skill_version 2.5.0→2.7.2
+- Branch protection 设置：require PR + review=0 + block force push（方案 2）
+- team.md Step 5c 修复：hardcoded → config-driven dynamic branch protection
+- 分支模型审计：单分支缺陷分析 + release branch 需求确立
+- team-release 能力审计：半成品（4/8 能力缺失）
+- Issue 版本追踪需求分析：found-in version label 机制设计
+- **18 项需求记录**（6 组 A-F）供后续 session 实现
+- Session log: `_project/sessions/2026-03-05-Z.md`（271 行完整记录）
 
 ## Active Task / What's In Progress
 
-Design Coding Skill — 讨论阶段（未进入实现）
+1. **vi_agent 分支问题**：工作目录在 `system_v5`，skill 更新在 `main`（已 push）
+2. Design Coding Skill — 讨论阶段（未进入实现）
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **继续 Design Coding Skill 讨论**（按优先级排序）：
-   - Manifesto 具体信条（taste-first 已定为第一条，还需哪几条？）
-   - 独立 skill (A) vs 可与 /drive 组合的品味层 (B)？
-   - 众神殿人选——需分领域 web research
-   - Browser MCP 方案选型（已记录，不急）
-   - 9 模块是否太多？合并讨论
-3. **闭环设计讨论仍待继续**：自动化测试、IaC 归属、deploy Action、vi-agent docs
-4. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
+2. **vi_agent 分支处理**：`system_v5` → merge main 或 checkout main
+3. **Teamwork 18 项需求实现**（按优先级）：
+   - A. Release 分支完整生命周期（prep, hotfix routing, backport, cleanup）
+   - B. Deploy workflow（deploy.yml, staging gate）
+   - C. Issue 版本追踪（found-in labels, version labels）
+   - D. Skill 适配（team-ship/team-claim 感知 release 分支）
+   - E. Config schema（release_branch 从静态值改为模式）
+   - 详见 `_project/sessions/2026-03-05-Z.md` 需求汇总
+4. **继续 Design Coding Skill 讨论**
+5. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
 
@@ -70,12 +74,15 @@ Design Coding Skill — 讨论阶段（未进入实现）
 - [x] Teamwork v2.7.0 — script extraction: 4 scripts (32 subcommands) + 6 skill files refactored
 - [x] Teamwork v2.7.1 — script testing audit: 21 bugs found, 14+4 fixed across 4 scripts
 - [x] Teamwork v2.7.2 — vi_agent E2E validation: 3 bugs found, 3 fixed
+- [x] Teamwork v2.7.3 — init audit: dynamic branch protection + post-merge workflow + vi_agent deploy
 
 ## Known Issues / Blockers
 
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Teamwork: version_file (package.json bump) not yet in team-release — deferred to future version
 - Teamwork: /team-drive still unimplemented (thin wrapper over /drive)
+- Teamwork: team-release 半成品 — 缺 release 分支创建/hotfix/backport/deploy（18 项需求待实现）
+- vi_agent: working directory on `system_v5` branch, skill updates on `main`
 
 ## File Locations
 

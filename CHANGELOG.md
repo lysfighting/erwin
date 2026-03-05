@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — Skills Factory
+- **Teamwork v2.7.3 — Init audit + dynamic branch protection**:
+  - team.md Step 5c: hardcoded branch protection → config-driven (`quality.ci` + `quality.review_required` → 4 combinations)
+  - Added `allow_force_pushes: false` + `allow_deletions: false` to protection rules
+  - vi_agent: created post-merge.yml workflow, updated skill_version 2.5.0 → 2.7.2, set merge settings (squash-only)
+  - vi_agent: branch protection enabled (require PR, review=0, no CI, block force push)
+  - 18 requirements documented for release branch lifecycle, deploy workflow, issue version tracking
+
 ### Fixed — Skills Factory
 - **Teamwork v2.7.2 — vi_agent E2E Validation** (3 bugs found, 3 fixed):
   - 1 CRITICAL: `_branch_pattern()` `${p:-default}` with `{}` in default — bash closes parameter expansion at first unmatched `}`, garbling branch names on any project with custom branch_pattern
