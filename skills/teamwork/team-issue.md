@@ -187,11 +187,11 @@ MILESTONE="${MILESTONE_OVERRIDE:-$CURRENT_VERSION}"
 
 ### Step 1: Determine Assignee
 
-**Solo mode** (members==1): Auto-assign to self (`$GH_USER`). No prompt needed.
+**If `@assignee` explicitly provided** (any mode): Use that assignee (already validated in Route step). This takes priority over solo mode auto-assign — the user explicitly chose a target.
 
-**Team mode** (members > 1):
-- If `@assignee` provided → use that assignee (already validated in Route step)
-- If no `@assignee` provided → Use `AskUserQuestion` to select assignee from config members list
+**Solo mode** (members==1, no `@assignee`): Auto-assign to self (`$GH_USER`). No prompt needed.
+
+**Team mode** (members > 1, no `@assignee`): Use `AskUserQuestion` to select assignee from config members list.
 
 Any team member can create Issues and assign to anyone — no role restriction.
 
@@ -297,20 +297,14 @@ Format the Issue body using the canonical mission-contract structure:
 Display the full Issue preview to the user:
 
 ```
-ISSUE PREVIEW
-═══════════════════════════════════════
-Title:     {title}
-Assignee:  @{assignee}
-Labels:    mission-contract, priority:{Pn}, domain:{domain}, size:{size}, status:wip
-Milestone: {MILESTONE if set, else "none"}
-Priority:  {Pn}
-Size:      {size}
-Domain:    {domain}
-
-Body:
-──────────────────────────────────────
+📋 PREVIEW ── {title} ──────────────────────
+Assignee:   @{assignee}
+{priority_dot} {Pn}  Size: {size}  Domain: {domain}
+Labels:     {MISSION_LABEL}, {STATUS_PREFIX}wip, priority:{Pn}, domain:{domain}, size:{size}
+Milestone:  {MILESTONE or "—"}
+────────────────────────────────────────────
 {formatted Issue body}
-──────────────────────────────────────
+────────────────────────────────────────────
 ```
 
 Use `AskUserQuestion` to confirm:
@@ -367,19 +361,15 @@ Non-fatal: if notification fails, warn but continue.
 ### Step 9: Output
 
 ```
-MC CREATED
-═══════════════════════════════════════
-Issue:     #{issue} — {title}
+📦 CREATED ── #{issue} {title} ─────────────
 Assignee:  @{assignee}
-Branch:    {branch}
+🔀 {branch}
+{priority_dot} {Pn}  Size: {size}  Milestone: {milestone or "—"}
 URL:       {issue URL}
-Labels:    mission-contract, priority:{Pn}, domain:{domain}, size:{size}
-Milestone: {milestone or "none"}
+{If notifications sent:} Notified: {channels}
 
-Notification sent to: {channels or "none configured"}
-
-Next: Assignee runs /team-claim #{issue} to generate Contract
-═══════════════════════════════════════
+────────────────────────────────────────────
+/team-claim #{issue} to generate Contract
 ```
 
 ---
@@ -397,40 +387,27 @@ gh issue view $N --repo "$REPO" --json number,title,body,labels,milestone,assign
 Format output:
 
 ```
-MISSION CONTRACT — #{N}
-═══════════════════════════════════════
-Title:     {title}
-Assignee:  @{assignee or "unassigned"}
-Status:    {status label}
-Priority:  {priority label}
-Size:      {size label}
-Milestone: {milestone or "none"}
-State:     {open/closed}
-URL:       {url}
-──────────────────────────────────────
+🎯 MC #{N} ── {title} ──────────────────────
+Assignee:   @{assignee or "unassigned"}
+{priority_dot} {Pn}  Size: {size}  Status: {status}
+Milestone:  {milestone or "—"}  State: {open/closed}
+URL:        {url}
+────────────────────────────────────────────
 {Full Issue body}
-──────────────────────────────────────
+────────────────────────────────────────────
 ```
 
 Check for branch and PRs:
 
 ```bash
-# Read branch convention from config
-BRANCH_PATTERN=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.branch_pattern "" 2>/dev/null)
-# Default: mission/{issue}-{slug}
-# Check for branch matching the issue number
 git ls-remote --heads origin "mission/${N}-*" 2>/dev/null
-```
-
-```bash
-# Check for related PRs
 gh pr list --repo "$REPO" --search "Closes #$N" --state all --json number,url,state --limit 5
 ```
 
 ```
-BRANCH: {branch or "not created"}
-RELATED PRs: {list or "none"}
-═══════════════════════════════════════
+🔀 BRANCH  {branch or "(not created)"}
+🔀 RELATED PRs  {list or "(none)"}
+────────────────────────────────────────────
 ```
 
 ---
@@ -448,12 +425,10 @@ gh issue comment $N --repo "$REPO" --body "$TEXT"
 Output:
 
 ```
-COMMENT ADDED
-═══════════════════════════════════════
-Issue:   #{N} — {title}
-Comment: {first 80 chars of text}...
-URL:     {comment URL}
-═══════════════════════════════════════
+💬 COMMENT ── #{N} {title} ─────────────────
+{first 80 chars of text}...
+URL: {comment URL}
+────────────────────────────────────────────
 ```
 
 ---
@@ -473,14 +448,11 @@ gh issue view {issue} --repo "$REPO" --json number,title,body,labels,state
 
 Display current Issue summary:
 ```
-CURRENT ISSUE #{issue}
-──────────────────────────────────────
-Title:  {title}
-Labels: {labels}
-
-Body:
+📋 CURRENT ── #{issue} {title} ─────────────
+Labels:  {labels}
+────────────────────────────────────────────
 {current body}
-──────────────────────────────────────
+────────────────────────────────────────────
 ```
 
 ### U2: Determine changes
@@ -502,15 +474,12 @@ Body:
 
 Display the updated Issue:
 ```
-ISSUE UPDATE PREVIEW
-═══════════════════════════════════════
-Issue:    #{issue}
-Title:    {new title, or unchanged}
+✏️ UPDATE PREVIEW ── #{issue} ───────────────
+Title:  {new title, or unchanged}
 
-Changes:
-──────────────────────────────────────
-{Show what changed — highlight modified sections}
-──────────────────────────────────────
+📝 CHANGES
+  {Show what changed — highlight modified sections}
+────────────────────────────────────────────
 ```
 
 Use `AskUserQuestion` to confirm:
@@ -537,18 +506,15 @@ gh issue edit {issue} --repo "$REPO" \
 ### U5: Output
 
 ```
-ISSUE UPDATED
-═══════════════════════════════════════
-Issue:  #{issue} — {title}
-URL:    {issue URL}
+✏️ UPDATED ── #{issue} {title} ──────────────
+URL:  {issue URL}
 
-Changes applied:
+📝 CHANGES
   {summary of what changed}
 
-Note: If this Issue is claimed, the assignee will see
-[UPDATED] on their dashboard and a freshness prompt
-when they run /team-drive.
-═══════════════════════════════════════
+Claimed assignees will see ⚡ on dashboard
+and a freshness prompt on /team-drive.
+────────────────────────────────────────────
 ```
 
 ---
@@ -568,16 +534,13 @@ gh issue view {issue} --repo "$REPO" --json number,title,body,labels,assignees,m
 
 Display current Issue:
 ```
-ADOPT CANDIDATE — #{issue}
-──────────────────────────────────────
-Title:     {title}
-Assignee:  @{assignee or "unassigned"}
-Labels:    {current labels or "none"}
-Milestone: {milestone or "none"}
-
-Body:
+🔍 ADOPT CANDIDATE ── #{issue} {title} ─────
+Assignee:   @{assignee or "unassigned"}
+Labels:     {current labels or "none"}
+Milestone:  {milestone or "—"}
+────────────────────────────────────────────
 {current body (first 20 lines)}
-──────────────────────────────────────
+────────────────────────────────────────────
 ```
 
 ### A2: Check existing labels
@@ -600,12 +563,10 @@ If ALL teamwork labels already present → "Issue #{issue} is already in teamwor
 ### A4: Preview fixion
 
 ```
-ADOPT PREVIEW
-═══════════════════════════════════════
-Issue:     #{issue} — {title}
+🔍 ADOPT PREVIEW ── #{issue} {title} ───────
 Assignee:  @{assignee or "unassigned"}
 
-Labels to add:
+🏷️ LABELS TO ADD
   + {MISSION_LABEL}
   + {STATUS_PREFIX}{status}
   + {PRIORITY_PREFIX}{priority}
@@ -613,9 +574,8 @@ Labels to add:
 
 {If milestone not set and CURRENT_VERSION exists:}
 Milestone: {CURRENT_VERSION} (from config)
-
-Body reformat: {yes — will restructure into MC format | no — keeping as-is}
-═══════════════════════════════════════
+Reformat:  {yes — MC structure | no — as-is}
+────────────────────────────────────────────
 ```
 
 Use `AskUserQuestion`:
@@ -671,17 +631,13 @@ fi
 ### A8: Output
 
 ```
-ISSUE ADOPTED
-═══════════════════════════════════════
-Issue:     #{issue} — {title}
-Assignee:  @{assignee or "unassigned"}
-Labels:    {all labels now on the issue}
-Branch:    {branch}
-Milestone: {milestone or "none"}
+✅ ADOPTED ── #{issue} {title} ──────────────
+Assignee:   @{assignee or "unassigned"}
+Labels:     {all labels}
+🔀 {branch}  Milestone: {milestone or "—"}
 
-This Issue now appears on /team dashboard.
-Next: /team-claim #{issue} to generate Contract
-═══════════════════════════════════════
+────────────────────────────────────────────
+/team-claim #{issue} to generate Contract
 ```
 
 ---
@@ -730,15 +686,15 @@ For each MC entry:
 ### B4: Preview Before Publishing
 
 ```
-MILESTONE + MC PREVIEW
+🏁 MILESTONE + MC PREVIEW
 ═══════════════════════════════════════
 Milestone: {title}
 Description: {desc}
 MCs to create: {count}
 
-  MC1: {title} → @{assignee} [{Pn}]
-  MC2: {title} → @{assignee} [{Pn}]
-  MC3: {title} → @{assignee} [{Pn}]
+  {priority_dot} MC1: {title} → @{assignee}
+  {priority_dot} MC2: {title} → @{assignee}
+  {priority_dot} MC3: {title} → @{assignee}
 ═══════════════════════════════════════
 ```
 
@@ -793,29 +749,25 @@ bash ~/.claude/commands/scripts/tw-notify.sh mc.created \
 ### B7: Output
 
 ```
-MILESTONE CREATED
-═══════════════════════════════════════
-Milestone: {title}
-URL:       {milestone_url}
-MCs:       {count} created
+🏁 MILESTONE ── {title} ────────────────────
+URL:  {milestone_url}
+MCs:  {count} created
 
-  #{N1} {title1} → @{assignee1} [branch: mission/{N1}-{slug}]
-  #{N2} {title2} → @{assignee2} [branch: mission/{N2}-{slug}]
+  #{N1}  {title1}  @{assignee1}  🔀 mission/{N1}-{slug}
+  #{N2}  {title2}  @{assignee2}  🔀 mission/{N2}-{slug}
+{If notifications:} Notified: {channels}
 
-Notifications sent to: {channels or "none configured"}
-═══════════════════════════════════════
-Next: /team to see dashboard
+────────────────────────────────────────────
+/team to see dashboard
 ```
 
 If milestone-only (no MCs):
 ```
-MILESTONE CREATED
-═══════════════════════════════════════
-Milestone: {title}
-URL:       {milestone_url}
+🏁 MILESTONE ── {title} ────────────────────
+URL:  {milestone_url}
 
-Add MCs: /team-issue <description> @assignee --milestone {title}
-═══════════════════════════════════════
+────────────────────────────────────────────
+/team-issue <desc> @user --milestone {title}
 ```
 
 ---

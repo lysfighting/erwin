@@ -349,27 +349,19 @@ The Contract has served its purpose. The PR body now contains the essential info
 ## Step 8: Output Delivery Summary
 
 ```
-MISSION SHIPPED
-═══════════════════════════════════════
-Issue:  #{issue} — {title}
-Branch: {branch}
-PR:     {pr-url}
-CI:     {passing/failing/not configured}
-Review: {requested from {reviewer} / not required}
+📦 SHIPPED ── #{issue} {title} ─────────────
+🔀 {branch}
+🔀 PR: {pr-url}
+{ci_icon} CI: {passing/failing/not configured}
+Review:    {requested from @{reviewer} / not required}
+Labels:    {actual current labels}
 
-Sub-tasks delivered:
-  [x] {task 1}
-  [x] {task 2}
-  ...
+📋 SUB-TASKS DELIVERED
+  ✅ {task 1}
+  ✅ {task 2}
 
-Contract: cleaned up ✅
-Issue:    {CURRENT_LABELS from Step 7a — show actual labels, not assumed}
-═══════════════════════════════════════
-Next steps:
-  - After merge: /team-ship done (close Issue, update labels, clean worktree)
-  - To AI-review PR: /team-ship review
-  - To claim next mission: /team-claim
-  - To see team status: /team
+────────────────────────────────────────────
+/team-ship done (after merge) │ /team-ship review │ /team
 ```
 
 ---
@@ -450,16 +442,15 @@ bash ~/.claude/commands/scripts/tw-contract.sh delete "$TEAMWORK_DIR/active/MISS
 ### D8: Output summary
 
 ```
-MISSION DONE ✅
-═══════════════════════════════════════
-Issue:     #{issue} — {title} (closed)
-PR:        {pr-url} (merged)
-Labels:    status:done
-Worktree:  {removed/kept/not applicable}
-Branch:    returned to $BASE_BRANCH
-═══════════════════════════════════════
-Next: /team-claim to pick up next mission
-      /team to see dashboard
+🏁 DONE ── #{issue} {title} ────────────────
+Issue:     closed
+🔀 PR: {pr-url} (merged)
+Labels:    {STATUS_PREFIX}done
+Worktree:  {removed/kept/n/a}
+Branch:    {BASE_BRANCH}
+
+────────────────────────────────────────────
+/team-claim (next mission) │ /team (dashboard)
 ```
 
 ---

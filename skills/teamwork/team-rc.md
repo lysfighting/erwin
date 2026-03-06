@@ -118,11 +118,9 @@ EXISTING_RC=$(git ls-remote --heads origin 'rc/*' 2>/dev/null | awk '{print $2}'
 **If `EXISTING_RC` is non-empty** → output and **STOP**:
 
 ```
-RC already in progress: {EXISTING_RC}
-
-Options:
-  - /team-rc promote    Ship this RC to production
-  - Delete it:          git push origin --delete {EXISTING_RC}
+⚠️ RC in progress: {EXISTING_RC}
+  🚀 /team-rc promote ── ship to production
+  ❌ git push origin --delete {EXISTING_RC} ── discard
 ```
 
 ### Step 3: Derive Next Version
@@ -178,22 +176,17 @@ Output: `Staging deploy triggered for rc/$NEXT_VERSION`
 ### Step 7: Summary
 
 ```
-RC PREPARED
-════════════════════════════════════
-Version:  {NEXT_VERSION}
-Branch:   rc/{NEXT_VERSION}
-Source:   {BASE_BRANCH}
+🚀 RC PREPARED ── {NEXT_VERSION} ───────────
+🔀 rc/{NEXT_VERSION}  ← {BASE_BRANCH}
 Staging:  {triggered / deploy manually}
-════════════════════════════════════
 
-Next steps:
+📋 NEXT STEPS
   1. Verify on staging
   2. Hotfix if needed:
-     - Branch from rc/{NEXT_VERSION}
-     - Fix → PR to rc/{NEXT_VERSION}
-     - Cherry-pick fix to {BASE_BRANCH}
+     branch from rc/{NEXT_VERSION} → PR → cherry-pick to {BASE_BRANCH}
   3. /team-rc promote
-════════════════════════════════════
+
+────────────────────────────────────────────
 ```
 
 ---
@@ -249,19 +242,16 @@ LATEST_RUN=$(gh run list --workflow "$STAGING_WORKFLOW" --branch "$RC_BRANCH" --
 ### Step P4: Confirmation
 
 ```
-PROMOTE SUMMARY
-════════════════════════════════════
-Version:    {VERSION}
-RC Branch:  {RC_BRANCH}
-Target:     {PROD_BRANCH}
+🚀 PROMOTE ── {VERSION} ────────────────────
+🔀 {RC_BRANCH} → {PROD_BRANCH}
 
-This will:
-  1. Create PR: {RC_BRANCH} → {PROD_BRANCH} (squash merge)
-  2. Tag {VERSION} on {PROD_BRANCH}
-  3. Create GitHub Release
-  4. Check milestone completion
-  5. Delete {RC_BRANCH}
-════════════════════════════════════
+📋 ACTIONS
+  1. PR: {RC_BRANCH} → {PROD_BRANCH} (squash)
+  2. 🏷️ Tag {VERSION} on {PROD_BRANCH}
+  3. 📦 GitHub Release
+  4. 🏁 Check milestone
+  5. 🗑️ Delete {RC_BRANCH}
+────────────────────────────────────────────
 ```
 
 Ask user: `Proceed? / Abort` — If abort → **STOP**
@@ -429,18 +419,15 @@ git branch -d "$RC_BRANCH" 2>/dev/null || true  # remote already deleted by --de
 ### Step P12: Summary
 
 ```
-RC PROMOTED
-════════════════════════════════════
-Version:    {VERSION}
-Tag:        {VERSION} (on {PROD_BRANCH})
-PR:         #{PR_NUMBER} (squash merged)
-Release:    {release_url}
+🏁 PROMOTED ── {VERSION} ───────────────────
+🏷️ Tag: {VERSION} (on {PROD_BRANCH})
+🔀 PR:  #{PR_NUMBER} (squash merged)
+📦 Release: {release_url}
 RC Branch:  {RC_BRANCH} (deleted)
 Milestone:  {VERSION_PREFIX} — {status}
-════════════════════════════════════
 
-Reminder: Cherry-pick any rc hotfixes to {BASE_BRANCH} if not already done.
+⚠️ Cherry-pick any rc hotfixes to {BASE_BRANCH} if not done.
 
-Next: /team-rc to prepare the next release candidate
-════════════════════════════════════
+────────────────────────────────────────────
+/team-rc to prepare next RC
 ```
