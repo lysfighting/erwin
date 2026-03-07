@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "3.1.0"
+version: "3.2.1"
 ---
 
 # /team-issue — Mission Contract Issue Manager
@@ -25,7 +25,7 @@ version: "3.1.0"
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
 ```
-/team-issue — Mission Contract Issue Manager (v3.1.0)
+/team-issue — Mission Contract Issue Manager (v3.2.1)
 
 USAGE:
   /team-issue <description>                    Create MC (solo: self-assign; team: prompt)
@@ -99,28 +99,16 @@ fi
 ```
 
 ```bash
-if [ -f .teamwork/config.yml ]; then
-  TEAMWORK_DIR=".teamwork"
-elif [ -f .teamspace/config.yml ]; then
-  TEAMWORK_DIR=".teamspace"
-else
-  echo "NO_CONFIG"
-fi
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || {
+  echo "No teamwork config found. Run /team init first."
+  # STOP
+}
 ```
-- If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
 
 Read `$TEAMWORK_DIR/config.yml` → extract labels, members, roles.
 
 ```bash
-# Read mission label + status prefix from config
-MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh labels.mission "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
-
-STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.status_prefix "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
+eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)"
 ```
 
 ```bash
@@ -177,9 +165,7 @@ MILESTONE="${MILESTONE_OVERRIDE:-$CURRENT_VERSION}"
 # Resolve short milestone name to full GitHub title (prefix match)
 # e.g. "V0.1" → "V0.1 — AI Camera Pipeline"
 if [ -n "$MILESTONE" ]; then
-  MILESTONE_FULL=$(gh api "repos/$REPO/milestones" \
-    --jq ".[] | select(.title | startswith(\"$MILESTONE\")) | .title" 2>/dev/null | head -1)
-  [ -n "$MILESTONE_FULL" ] && MILESTONE="$MILESTONE_FULL"
+  MILESTONE=$(bash ~/.claude/commands/scripts/tw-git.sh milestone-resolve "$MILESTONE" 2>/dev/null)
 fi
 ```
 
@@ -308,7 +294,7 @@ Display the full Issue preview to the user:
 📋 PREVIEW ── {title} ──────────────────────
 Assignee:   @{assignee}
 {priority_dot} {Pn}  Size: {size}  Domain: {domain}
-Labels:     {MISSION_LABEL}, {STATUS_PREFIX}wip, priority:{Pn}, domain:{domain}, size:{size}
+Labels:     {MISSION_LABEL}, {STATUS_PREFIX}wip, {PRIORITY_PREFIX}{Pn}, domain:{domain}, size:{size}
 Milestone:  {MILESTONE or "—"}
 ────────────────────────────────────────────
 {formatted Issue body}
@@ -330,7 +316,7 @@ gh issue create \
   --body "{formatted body}" \
   --label "$MISSION_LABEL" \
   --label "${STATUS_PREFIX}wip" \
-  --label "priority:{Pn}" \
+  --label "${PRIORITY_PREFIX}{Pn}" \
   --label "domain:{domain}" \
   --label "size:{size}" \
   --assignee "{assignee_github}" \
@@ -344,14 +330,10 @@ Extract Issue number from output URL.
 ### Step 7: Create Branch
 
 ```bash
-# Slugify title
-SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-' | head -c 30)
-BRANCH="mission/${ISSUE_NUMBER}-${SLUG}"
-
-# Create and push branch from latest base branch
-git fetch origin "$BASE_BRANCH"
-git branch "$BRANCH" "origin/$BASE_BRANCH"
-git push -u origin "$BRANCH"
+SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$TITLE")
+bash ~/.claude/commands/scripts/tw-git.sh ensure-base
+BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
+git push -u origin "$BRANCH" 2>/dev/null || true
 ```
 
 If branch already exists → warn but continue (non-fatal).
@@ -507,7 +489,7 @@ gh issue edit {issue} \
 If labels changed (priority, size, domain):
 ```bash
 gh issue edit {issue} --repo "$REPO" \
-  --remove-label "priority:{old}" --add-label "priority:{new}" \
+  --remove-label "${PRIORITY_PREFIX}{old}" --add-label "${PRIORITY_PREFIX}{new}" \
   --remove-label "size:{old}" --add-label "size:{new}"
 ```
 
@@ -568,7 +550,7 @@ If ALL teamwork labels already present → "Issue #{issue} is already in teamwor
 - **Size** — S/M/L/XL (default M)
 - **Status** — default `wip` if assigned, `queued` if unassigned
 
-### A4: Preview fixion
+### A4: Preview
 
 ```
 🔍 ADOPT PREVIEW ── #{issue} {title} ───────
@@ -604,10 +586,10 @@ gh issue edit {issue} --repo "$REPO" \
 
 If milestone should be set:
 ```bash
-# Resolve short name to full milestone title (prefix match)
-MILESTONE_FULL=$(gh api "repos/$REPO/milestones" \
-  --jq ".[] | select(.title | startswith(\"$CURRENT_VERSION\")) | .title" 2>/dev/null | head -1)
-gh issue edit {issue} --repo "$REPO" --milestone "${MILESTONE_FULL:-$CURRENT_VERSION}"
+if [ -n "$CURRENT_VERSION" ]; then
+  MILESTONE=$(bash ~/.claude/commands/scripts/tw-git.sh milestone-resolve "$CURRENT_VERSION" 2>/dev/null)
+fi
+gh issue edit {issue} --repo "$REPO" --milestone "${MILESTONE:-$CURRENT_VERSION}"
 ```
 
 ### A6: Reformat body (if selected)
@@ -629,11 +611,10 @@ gh issue edit {issue} --repo "$REPO" --body "{reformatted body}"
 EXISTING_BRANCH=$(git ls-remote --heads origin "mission/${ISSUE_NUMBER}-*" 2>/dev/null | awk '{print $2}' | sed 's|refs/heads/||' | head -1)
 
 if [ -z "$EXISTING_BRANCH" ]; then
-  SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-' | head -c 30)
-  BRANCH="mission/${ISSUE_NUMBER}-${SLUG}"
-  git fetch origin "$BASE_BRANCH"
-  git branch "$BRANCH" "origin/$BASE_BRANCH"
-  git push -u origin "$BRANCH"
+  SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$TITLE")
+  bash ~/.claude/commands/scripts/tw-git.sh ensure-base
+  BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
+  git push -u origin "$BRANCH" 2>/dev/null || true
 else
   BRANCH="$EXISTING_BRANCH"
 fi
@@ -688,9 +669,9 @@ If milestone already exists → warn "Milestone '$MILESTONE_TITLE' already exist
 ```bash
 # Resolve short name to full milestone title (prefix match)
 # Handles case where milestone exists with longer title (e.g. "V0.2 — User System")
-MILESTONE_FULL=$(gh api "repos/$REPO/milestones" \
-  --jq ".[] | select(.title | startswith(\"$MILESTONE_TITLE\")) | .title" 2>/dev/null | head -1)
-[ -n "$MILESTONE_FULL" ] && MILESTONE_TITLE="$MILESTONE_FULL"
+if [ -n "$MILESTONE_TITLE" ]; then
+  MILESTONE_TITLE=$(bash ~/.claude/commands/scripts/tw-git.sh milestone-resolve "$MILESTONE_TITLE" 2>/dev/null)
+fi
 ```
 
 ### B3: Batch MC Creation (if MC list provided)
@@ -733,7 +714,9 @@ gh issue create \
   --body "{body}" \
   --label "$MISSION_LABEL" \
   --label "${STATUS_PREFIX}wip" \
-  --label "priority:{Pn}" \
+  --label "${PRIORITY_PREFIX}{Pn}" \
+  --label "domain:{domain}" \
+  --label "size:{size}" \
   --assignee "{assignee_github}" \
   --milestone "${MILESTONE_TITLE}"
 ```
@@ -741,11 +724,10 @@ gh issue create \
 Extract Issue number, then create branch:
 
 ```bash
-SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-' | head -c 30)
-BRANCH="mission/${ISSUE_NUMBER}-${SLUG}"
-git fetch origin "$BASE_BRANCH"
-git branch "$BRANCH" "origin/$BASE_BRANCH"
-git push -u origin "$BRANCH"
+SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$TITLE")
+bash ~/.claude/commands/scripts/tw-git.sh ensure-base
+BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
+git push -u origin "$BRANCH" 2>/dev/null || true
 ```
 
 If individual MC creation fails → warn, continue with remaining MCs.

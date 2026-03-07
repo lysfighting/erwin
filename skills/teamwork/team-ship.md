@@ -66,14 +66,10 @@ fi
 ```
 
 ```bash
-# Config (support both directory names)
-if [ -f .teamwork/config.yml ]; then
-  TEAMWORK_DIR=".teamwork"
-elif [ -f .teamspace/config.yml ]; then
-  TEAMWORK_DIR=".teamspace"
-else
-  echo "NO_CONFIG"
-fi
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || {
+  echo "No teamwork config found. Run /team init first."
+  # STOP
+}
 ```
 
 - If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
@@ -81,10 +77,7 @@ fi
 Read `$TEAMWORK_DIR/config.yml` → extract project settings, conventions, quality preferences.
 
 ```bash
-# Read label prefixes from config
-STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.status_prefix "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
+eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)"
 ```
 
 ---
@@ -155,8 +148,7 @@ git status --porcelain
 
 - If there are uncommitted changes → warn: "You have uncommitted changes. Committing them now."
   ```bash
-  git add -A
-  git commit -m "chore: pre-ship cleanup | Mission: #{issue}"
+  bash ~/.claude/commands/scripts/tw-git.sh commit "chore: pre-ship cleanup | Mission: #${ISSUE_NUMBER}"
   ```
 
 ### 2d: Run tests

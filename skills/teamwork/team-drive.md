@@ -50,13 +50,7 @@ if [ -f .mission ]; then
 fi
 
 # Detect config directory (in worktree, may need to check parent repo)
-if [ -f .teamwork/config.yml ]; then
-  TEAMWORK_DIR=".teamwork"
-elif [ -f .teamspace/config.yml ]; then
-  TEAMWORK_DIR=".teamspace"
-else
-  echo "NO_CONFIG"
-fi
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || echo "NO_CONFIG"
 ```
 
 - If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
@@ -96,7 +90,7 @@ FRESHNESS=$(bash ~/.claude/commands/scripts/tw-contract.sh check-freshness "$CON
 
 - Exit 0 + "FRESH" → Issue unchanged, continue
 - Exit 0 + "NETWORK_ERROR" → warn "Could not check Issue freshness (network error). Continuing with existing Contract." → **continue** (non-fatal)
-- Exit 2 + "NO_HASH" → pre-v2.3.0 Contract, skip check, continue
+- Exit 2 + "NO_HASH" → legacy Contract without hash, skip check, continue
 - Exit 1 + "STALE" → Issue modified since claim:
 
 If `FRESHNESS` is `STALE`:

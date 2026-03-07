@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.0.0"
+version: "3.2.1"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -26,7 +26,7 @@ Parse `$ARGUMENTS`:
 - If `help` or `-h` → output the following and **STOP**:
 
 ```
-/team-rc — Release Candidate Lifecycle (Teamwork v3.0.0)
+/team-rc — Release Candidate Lifecycle (Teamwork v3.2.1)
 Author: liyasong + casey | 2026-03-05
 
 USAGE:
@@ -73,14 +73,10 @@ CONFIG:
 Detect config directory:
 
 ```bash
-if [ -f .teamspace/config.yml ]; then
-  TEAMWORK_DIR=".teamspace"
-elif [ -f .teamwork/config.yml ]; then
-  TEAMWORK_DIR=".teamwork"
-else
-  echo "ERROR: No config found. Run /team to initialize."
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || {
+  echo "No teamwork config found. Run /team init first."
   # STOP
-fi
+}
 ```
 
 Read required values:
@@ -112,34 +108,23 @@ STAGING_WORKFLOW=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.staging_w
 ### Step 2: RC Uniqueness Check
 
 ```bash
-EXISTING_RC=$(git ls-remote --heads origin 'rc/*' 2>/dev/null | awk '{print $2}' | sed 's|refs/heads/||')
+RC_BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh find-rc 2>/dev/null)
+RC_EXIT=$?
+# RC_EXIT: 0=found one (RC_BRANCH has name), 1=none found, 3=multiple found
 ```
 
-**If `EXISTING_RC` is non-empty** → output and **STOP**:
+**If `RC_EXIT` is 0 (rc branch exists)** → output and **STOP**:
 
 ```
-⚠️ RC in progress: {EXISTING_RC}
+⚠️ RC in progress: {RC_BRANCH}
   🚀 /team-rc promote ── ship to production
-  ❌ git push origin --delete {EXISTING_RC} ── discard
+  ❌ git push origin --delete {RC_BRANCH} ── discard
 ```
 
 ### Step 3: Derive Next Version
 
 ```bash
-git fetch --tags origin 2>/dev/null
-
-# Match only clean version tags (V0.1.0, V0.1.1, ...) — exclude pre-release like V0.1.0-beta
-LAST_TAG=$(git tag -l "${VERSION_PREFIX}.*" --sort=-v:refname \
-  | grep -E "^${VERSION_PREFIX}\.[0-9]+$" | head -1)
-
-if [ -z "$LAST_TAG" ]; then
-  NEXT_VERSION="${VERSION_PREFIX}.0"
-else
-  PATCH=$(echo "$LAST_TAG" | awk -F. '{print $NF}')
-  NEXT_PATCH=$((PATCH + 1))
-  PREFIX=$(echo "$LAST_TAG" | sed 's/\.[0-9]*$//')
-  NEXT_VERSION="${PREFIX}.${NEXT_PATCH}"
-fi
+NEXT_VERSION=$(bash ~/.claude/commands/scripts/tw-git.sh next-version "$VERSION_PREFIX")
 ```
 
 ### Step 4: Verify Develop CI
@@ -200,29 +185,28 @@ Same config reads as Prepare Step 1 (REPO, VERSION_PREFIX, BASE_BRANCH, PROD_BRA
 ### Step P2: Find Active RC Branch
 
 ```bash
-EXISTING_RC=$(git ls-remote --heads origin 'rc/*' 2>/dev/null | awk '{print $2}' | sed 's|refs/heads/||')
+RC_BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh find-rc 2>/dev/null)
+RC_EXIT=$?
+# RC_EXIT: 0=found one (RC_BRANCH has name), 1=none found, 3=multiple found
 ```
 
-**If empty** → output and **STOP**:
+**If `RC_EXIT` is 1 (none found)** → output and **STOP**:
 
 ```
 No active RC branch found. Run /team-rc to prepare one first.
 ```
 
-**If more than one line** (multiple rc branches — abnormal state) → output and **STOP**:
+**If `RC_EXIT` is 3 (multiple found)** → output and **STOP**:
 
 ```
-ERROR: Multiple RC branches found:
-{list each}
-
-Only one RC should exist at a time. Delete the stale one(s) and retry.
+ERROR: Multiple RC branches found. Only one RC should exist at a time.
+Delete the stale one(s) and retry.
 ```
 
 Extract version from branch name:
 
 ```bash
-VERSION=$(echo "$EXISTING_RC" | sed 's|rc/||')
-RC_BRANCH="rc/$VERSION"
+VERSION=$(echo "$RC_BRANCH" | sed 's|rc/||')
 ```
 
 ### Step P3: Staging Check (optional)
@@ -372,11 +356,15 @@ Non-fatal: if notification fails, warn but continue.
 ### Step P9: Milestone Check
 
 ```bash
-MILESTONE_DATA=$(gh api "repos/$REPO/milestones" \
-  --jq ".[] | select(.title | startswith(\"$VERSION_PREFIX\"))" 2>/dev/null)
+MILESTONE_FULL=$(bash ~/.claude/commands/scripts/tw-git.sh milestone-resolve "$VERSION_PREFIX" 2>/dev/null)
 ```
 
-Note: uses `startswith` so milestone "V0.1" matches "V0.1", "V0.1 — AI Camera", etc.
+Then query the resolved milestone by exact title:
+
+```bash
+MILESTONE_DATA=$(gh api "repos/$REPO/milestones" \
+  --jq ".[] | select(.title == \"$MILESTONE_FULL\")" 2>/dev/null)
+```
 
 **If milestone found:**
 
@@ -393,11 +381,11 @@ MILESTONE_NUMBER=$(echo "$MILESTONE_DATA" | jq -r '.number')
     --method PATCH --field state=closed
   ```
 
-  Output: `Milestone "$VERSION_PREFIX" closed (all issues complete)`
+  Output: `Milestone "$MILESTONE_FULL" closed (all issues complete)`
 
-- If `OPEN_COUNT > 0` → output: `Milestone "$VERSION_PREFIX": $CLOSED_COUNT closed, $OPEN_COUNT still open`
+- If `OPEN_COUNT > 0` → output: `Milestone "$MILESTONE_FULL": $CLOSED_COUNT closed, $OPEN_COUNT still open`
 
-**If no milestone:** `(No milestone "$VERSION_PREFIX" found — skipped)`
+**If no milestone:** `(No milestone "$MILESTONE_FULL" found — skipped)`
 
 ### Step P10: Cherry-pick Reminder
 
@@ -424,7 +412,7 @@ git branch -d "$RC_BRANCH" 2>/dev/null || true  # remote already deleted by --de
 🔀 PR:  #{PR_NUMBER} (squash merged)
 📦 Release: {release_url}
 RC Branch:  {RC_BRANCH} (deleted)
-Milestone:  {VERSION_PREFIX} — {status}
+Milestone:  {MILESTONE_FULL} — {status}
 
 ⚠️ Cherry-pick any rc hotfixes to {BASE_BRANCH} if not done.
 

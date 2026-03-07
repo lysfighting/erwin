@@ -1,4 +1,4 @@
-# Teamwork Skills (v2 — GitHub-first)
+# Teamwork Skills (v3 — GitHub-first)
 
 GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are quality gates.
 
@@ -7,12 +7,14 @@ GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are 
 | Skill | Purpose | When to Use |
 |-------|---------|-------------|
 | `/team` | Init system + show dashboard | First time setup, daily overview |
+| `/team-issue` | Create/view/update/batch Issues | Create missions, manage Issues |
 | `/team-claim` | Claim a GitHub Issue as your mission | Pick your next task |
 | `/team-drive` | Execute mission from Contract | During work: AI-assisted execution |
 | `/team-ship` | Push, create PR, check CI, cleanup | When done: deliver via Pull Request |
 | `/team-ship done` | Post-merge cleanup | After PR merged: close Issue, clean worktree |
 | `/team-ship review` | AI code review on PR | Review PR for correctness, security, quality |
-| `/team-ship sync` | Rebase on main | Keep branch up to date with main |
+| `/team-ship sync` | Rebase on base branch | Keep branch up to date |
+| `/team-rc` | Release candidate lifecycle | Prepare staging, promote to production |
 
 ## Onboarding
 
@@ -35,14 +37,17 @@ Morning:  git pull && claude → /team → /team-claim
 Working:  /team-drive
 Done:     /team-ship → (after merge) /team-ship done
 Review:   /team-ship review
+Release:  /team-rc → verify staging → /team-rc promote
 ```
 
 ### Step by Step
 
 1. `/team` → see team dashboard (who's working on what, queued missions)
-2. `/team-claim` → claim a GitHub Issue, generate AI-enriched Mission Contract, create branch
-3. `/team-drive` → read Contract, execute sub-tasks systematically with verification
-4. `/team-ship` → push branch, create PR (auto-closes Issue on merge), clean up Contract
+2. `/team-issue` → create mission Issues from natural language
+3. `/team-claim` → claim a GitHub Issue, generate AI-enriched Mission Contract, create branch
+4. `/team-drive` → read Contract, execute sub-tasks systematically with verification
+5. `/team-ship` → push branch, create PR (auto-closes Issue on merge), clean up Contract
+6. `/team-rc` → cut RC branch, verify on staging, promote to production
 
 ## Requirements
 
@@ -60,8 +65,9 @@ Key principles:
 - **Three-layer quality gates** — git hooks (local) + GitHub Actions (CI) + branch protection (review)
 - **`gh` CLI as bridge** — all GitHub operations via authenticated CLI
 - **Wraps /drive** — Contract sub-tasks = drive execution plan
-- **Prefixed labels** — `status:wip`, `priority:P1`, `version:V1.0` — queryable, no collisions
-- **Full lifecycle** — claim → drive → ship → done (post-merge cleanup)
+- **Prefixed labels** — `status:wip`, `priority:P1` — queryable, no collisions
+- **Milestones for versions** — `versions.current` maps to GitHub Milestone
+- **Full lifecycle** — issue → claim → drive → ship → done → rc
 
 ## Optional Features
 
@@ -72,7 +78,7 @@ All opt-in via `config.yml`:
 | Prefixed labels | `label_prefix` | Enabled (new installs) |
 | Git worktree isolation | `worktree.enabled` | `false` |
 | Version tracking | `versions.current` | Not set |
-| Dual-branch mode | `conventions.release_branch` | Same as `base_branch` (single-branch) |
+| Dual-branch mode | `conventions.production_branch` | Same as `base_branch` (single-branch) |
 
 ## What Gets Generated
 
@@ -94,5 +100,5 @@ All opt-in via `config.yml`:
 
 ## Version
 
-- Skill version: 2.6.0
-- Config schema: 1
+- Skill version: 3.2.1
+- Config schema: 3

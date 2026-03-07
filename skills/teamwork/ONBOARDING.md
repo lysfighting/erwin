@@ -104,7 +104,7 @@ Claude will:
 1. Ask clarifying questions (priority, scope, domain)
 2. AI-enrich the Issue body: objective, sub-tasks, success criteria, relevant files
 3. Preview the Issue before publishing
-4. Create it on GitHub with labels (`mission-contract`, `priority:P1`, `status:queued`)
+4. Create it on GitHub with labels (`mission`, `priority:P1`, `status:wip`)
 
 Or create Issues manually via the GitHub "Mission Contract" template that `/team` installed.
 
@@ -140,7 +140,7 @@ Or browse available missions:
    - **Test Command**: from config or Issue body
    - **Structured sub-tasks**: broken down from the Issue body
 3. Creates branch: `mission/42-add-user-auth-alice`
-4. Assigns you on GitHub, adds `status:wip` label, posts claim comment
+4. Posts claim comment on GitHub Issue
 
 **Output:**
 
@@ -275,7 +275,7 @@ Working:    /team-drive (execute with AI assistance)
 Done:       /team-ship (deliver PR)
 After merge:/team-ship done (close Issue, clean up)
 Repeat:     /team-claim (next task)
-Release:    /team-release (when milestone complete → tag + publish + next milestone)
+Release:    /team-rc (prepare RC → verify staging → promote to production)
 ```
 
 ---
@@ -346,7 +346,7 @@ After `/team` init, your `.teamwork/config.yml` looks like:
 
 ```yaml
 schema_version: 1
-skill_version: 2.6.0
+skill_version: 3.2.1
 
 team:
   - github: alice
@@ -363,7 +363,7 @@ project:
 conventions:
   branch_pattern: "mission/{issue}-{slug}-{user}"
   base_branch: main
-  # release_branch: main  # optional: set when using dual-branch mode (base ≠ release)
+  production_branch: main  # optional: set when using dual-branch mode (base ≠ production)
   commit_format: "type(scope): description | Mission: #{issue}"
 
 label_prefix:
@@ -383,7 +383,7 @@ quality:
 #   path_pattern: "../{repo}-wt-{slug}"
 # versions:
 #   current: "V1.0"
-#   spec_path: ".claude/drive/v1.0-definition/spec.md"  # enables AI audit in /team-release
+#   spec_path: ".claude/drive/v1.0-definition/spec.md"  # enables AI audit in /team-rc
 #   lifecycle: [dev, qa, released]
 ```
 
@@ -391,33 +391,21 @@ Edit this file to change team members, commands, or quality preferences. Changes
 
 ---
 
-## Step 6: Release a Version — `/team-release`
+## Step 6: Release — `/team-rc`
 
 When all missions in the current milestone are done:
 
 ```
-/team-release
+/team-rc              # Prepare: cut rc branch, deploy staging
+/team-rc promote      # Promote: squash merge rc → main, tag, release
 ```
 
 Flow:
-1. Checks milestone `V1.0` — shows open/closed Issue counts
-2. If `versions.spec_path` is configured, AI audits spec goals vs merged PRs (✅/⚠️/❌ per criterion)
-3. User confirmation
-4. `git tag V1.0` + push
-5. `gh release create V1.0 --generate-notes` — auto-generates release notes from PRs
-6. Closes GitHub Milestone `V1.0`
-7. Prompts for next version → creates Milestone `V1.1` → updates `versions.current` in config
+1. `/team-rc` — cuts `rc/V1.0.x` branch from develop, triggers staging deploy
+2. Verify on staging, apply hotfixes if needed
+3. `/team-rc promote` — squash merges rc → main, tags, creates GitHub Release, closes milestone
 
 **Prerequisites:**
 - `versions.current: "V1.0"` in config.yml
+- `conventions.base_branch: "develop"` and `conventions.production_branch: "main"`
 - GitHub Milestone `V1.0` must exist (`gh api repos/{REPO}/milestones --method POST --field title="V1.0"`)
-
-**With `spec_path` configured:**
-
-```yaml
-versions:
-  current: "V1.0"
-  spec_path: ".claude/drive/v1.0-definition/spec.md"
-```
-
-The spec file should have a `Success Criteria` section listing verifiable goals. `/team-release` reads these and checks each against merged PRs — giving you an audit before tagging.

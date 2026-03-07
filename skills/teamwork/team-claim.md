@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "3.0.1"
+version: "3.2.1"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -55,13 +55,10 @@ fi
 
 ```bash
 # Config (support both directory names)
-if [ -f .teamwork/config.yml ]; then
-  TEAMWORK_DIR=".teamwork"
-elif [ -f .teamspace/config.yml ]; then
-  TEAMWORK_DIR=".teamspace"
-else
-  echo "NO_CONFIG"
-fi
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || {
+  echo "No teamwork config found. Run /team init first."
+  # STOP
+}
 ```
 
 - If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
@@ -69,11 +66,8 @@ fi
 Read `$TEAMWORK_DIR/config.yml` → extract team roster, conventions, project settings.
 
 ```bash
-# Read mission label from config — try github.mc_label (teamspace schema) then mc_label (teamwork schema)
-MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh labels.mission "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
+eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)"
+# Now MISSION_LABEL, STATUS_PREFIX, PRIORITY_PREFIX are set
 ```
 
 Verify `GH_USER` is in the team roster (check both `team:` and `members:` sections).
@@ -194,7 +188,7 @@ labels: [{labels}]
 branch: mission/{issue}-{slug}-{user}
 milestone: "{milestone — from Issue JSON, falls back to config versions.current, or 'none'}"
 claimed: {ISO_TIMESTAMP}
-issue_content_hash: "{SHA256 of title + body at claim time}"
+issue_content_hash: "$(bash ~/.claude/commands/scripts/tw-contract.sh hash "$TITLE" "$BODY")"
 ---
 
 # MISSION-{issue}: {title}
@@ -244,7 +238,7 @@ bash ~/.claude/commands/scripts/tw-git.sh ensure-base
 Generate branch name and create branch:
 ```bash
 # Slugify the title: lowercase, replace spaces with hyphens, remove special chars, truncate
-SLUG=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-' | head -c 30)
+SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$ISSUE_TITLE")
 
 # Create branch from config pattern (handles pattern substitution + existing branch detection)
 BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER" "$SLUG" "$GH_USER")

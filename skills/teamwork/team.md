@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.1.0"
+version: "3.2.1"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -41,7 +41,7 @@ Parse `$ARGUMENTS`:
 Output the following guide directly to the user, then **STOP**:
 
 ```
-TEAMWORK v3.1.0 — AI-Native Team Coordination (Push Model)
+TEAMWORK v3.2.1 — AI-Native Team Coordination (Push Model)
 Author: liyasong + casey | Released: 2026-03-06
 ═══════════════════════════════════════════
 
@@ -181,32 +181,18 @@ Show the full list of open mission issues, sorted by priority. Requires existing
 ### Prerequisite: config detection
 
 ```bash
-if [ -f .teamwork/config.yml ]; then
-  TEAMWORK_DIR=".teamwork"
-elif [ -f .teamspace/config.yml ]; then
-  TEAMWORK_DIR=".teamspace"
-else
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || {
   echo "No teamwork config found. Run /team init first."
   # STOP
-fi
+}
 ```
 
 ### Fetch and display
 
 ```bash
 # Read mission label + priority prefix from config
-MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh labels.mission "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
-
-STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.status_prefix "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
-
-PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.priority "" 2>/dev/null)
-[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.priority_prefix "" 2>/dev/null)
-[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX="priority:"
+eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)"
+# Now MISSION_LABEL, STATUS_PREFIX, PRIORITY_PREFIX are set
 
 # Fetch all open mission issues
 gh issue list --label "$MISSION_LABEL" --state open --json number,title,labels,assignees --limit 100
@@ -350,26 +336,14 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
 # Force init if $ARGUMENTS == "init"
 if [ "$ARGUMENTS" = "init" ]; then
   echo "INIT"
-  # Preserve existing TEAMWORK_DIR if config found
-  if [ -f .teamwork/config.yml ]; then
-    TEAMWORK_DIR=".teamwork"
-  elif [ -f .teamspace/config.yml ]; then
-    TEAMWORK_DIR=".teamspace"
-  else
-    TEAMWORK_DIR=".teamwork"
-  fi
+  # Preserve existing TEAMWORK_DIR if config found, else default
+  TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || TEAMWORK_DIR=".teamwork"
 else
   # Auto-detect: config exists → dashboard, otherwise → init
-  if [ -f .teamwork/config.yml ]; then
-    echo "DASHBOARD"
-    TEAMWORK_DIR=".teamwork"
-  elif [ -f .teamspace/config.yml ]; then
-    echo "DASHBOARD"
-    TEAMWORK_DIR=".teamspace"
-  else
+  TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) && echo "DASHBOARD" || {
     echo "INIT"
     TEAMWORK_DIR=".teamwork"
-  fi
+  }
 fi
 ```
 
@@ -596,8 +570,8 @@ Preserve all existing content. Only update `skill_version` and append missing to
 
 ```bash
 # Update skill_version line without touching anything else
-sed -i '' "s/^skill_version:.*/skill_version: 3.1.0/" $TEAMWORK_DIR/config.yml
-# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.1.0/" $TEAMWORK_DIR/config.yml
+sed -i '' "s/^skill_version:.*/skill_version: 3.2.1/" $TEAMWORK_DIR/config.yml
+# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.2.1/" $TEAMWORK_DIR/config.yml
 
 # Update schema_version if present
 if grep -q "^schema_version:" $TEAMWORK_DIR/config.yml; then
@@ -702,7 +676,7 @@ notifications:
 
 ```
 ✅ Config updated (merge mode — existing config preserved)
-   schema_version → 3 | skill_version → 3.1.0
+   schema_version → 3 | skill_version → 3.2.1
    Preserved sections: {list of sections kept}
    Added sections: {list of sections appended, or "(none — already complete)"}
 ```
@@ -717,7 +691,7 @@ Write full config based on detected project info + user answers:
 
 ```yaml
 schema_version: 3
-skill_version: 3.1.0
+skill_version: 3.2.1
 
 roles:
   - id: leader
@@ -914,7 +888,7 @@ ls .github/workflows/ci.yml .github/workflows/CI.yml .github/workflows/*.yml 2>/
 - If `.github/workflows/ci.yml` (or similar) already exists → **DO NOT overwrite**. Read the existing file, display a summary, and ask: "CI workflow already exists. Keep existing? Or regenerate?" (via AskUserQuestion). If the user keeps existing, skip to Step 4e.
 - If no CI workflow exists → generate based on detected language.
 
-**Branch triggers**: Use `{BASE_BRANCH}` from config (not hardcoded `main`). In dual-branch mode (when `RELEASE_BRANCH != BASE_BRANCH`), include both branches in `push` triggers so CI runs on release branch merges too:
+**Branch triggers**: Use `$BASE_BRANCH` from config (not hardcoded `main`). In dual-branch mode (when `$PROD_BRANCH != $BASE_BRANCH`), include both branches in `push` triggers so CI runs on production branch merges too:
 
 ```yaml
 # Single-branch mode (default):
@@ -924,12 +898,12 @@ on:
   push:
     branches: [{BASE_BRANCH}]
 
-# Dual-branch mode (RELEASE_BRANCH configured):
+# Dual-branch mode (PROD_BRANCH differs from BASE_BRANCH):
 on:
   pull_request:
     branches: [{BASE_BRANCH}]
   push:
-    branches: [{BASE_BRANCH}, {RELEASE_BRANCH}]
+    branches: [{BASE_BRANCH}, {PROD_BRANCH}]
 ```
 
 **For monorepo projects** (`IS_MONOREPO=true`), generate a multi-service CI that runs each service's checks in a separate job:
@@ -940,7 +914,7 @@ on:
   pull_request:
     branches: [{BASE_BRANCH}]
   push:
-    branches: [{BASE_BRANCH}]  # add {RELEASE_BRANCH} if dual-branch mode
+    branches: [{BASE_BRANCH}]  # add {PROD_BRANCH} if dual-branch mode
 
 jobs:
   # One job per detected service
@@ -1039,9 +1013,7 @@ ls .github/workflows/post-merge.yml 2>/dev/null
 Read label prefixes from config for substitution:
 
 ```bash
-STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.status_prefix "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
+eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)"
 ```
 
 ```yaml
@@ -1190,12 +1162,7 @@ bash ~/.claude/commands/scripts/setup-github-labels.sh
 If the script is not available (e.g., installed without scripts):
 ```bash
 # Fallback: inline label creation (read prefixes from config)
-STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.status_prefix "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
-PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.priority "" 2>/dev/null)
-[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.priority_prefix "" 2>/dev/null)
-[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX="priority:"
+eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)"
 
 gh label create "$MISSION_LABEL" --color 0075ca --description "Team mission" --force
 gh label create "${STATUS_PREFIX}queued" --color c2e0c6 --description "Ready to be claimed" --force
@@ -1381,20 +1348,9 @@ cat $TEAMWORK_DIR/config.yml
 
 **Determine current user's role level:**
 ```bash
-# Count members
-MEMBER_COUNT=$(grep -c "github:" $TEAMWORK_DIR/config.yml 2>/dev/null || echo "1")
-
-# Solo mode: if only 1 member, show unified dashboard (no role distinction)
-if [ "$MEMBER_COUNT" -le 1 ]; then
-  USER_LEVEL="solo"
-else
-  # Find user's role in members, look up level in roles
-  # If config has roles: section → find user's role id → find role's level
-  # If no roles: section → treat everyone as leader (backward compat with schema v1)
-  USER_ROLE=$(# find GH_USER in members, get their role value)
-  USER_LEVEL=$(# find that role id in roles, get its level — "leader" or "member")
-  # If roles: section doesn't exist, USER_LEVEL="leader" (backward compat)
-fi
+USER_LEVEL=$(bash ~/.claude/commands/scripts/tw-config.sh get-user-level "$GH_USER" 2>/dev/null)
+USER_LEVEL="${USER_LEVEL:-leader}"
+# USER_LEVEL is "solo", "leader", or "member"
 ```
 
 ### 6b: Check Issue freshness for active Contracts
@@ -1413,7 +1369,7 @@ for CONTRACT_PATH in $TEAMWORK_DIR/active/MISSION-*.md; do
 done
 ```
 
-- If `issue_content_hash` is not in Contract (pre-v2.3.0) → skip check
+- If `issue_content_hash` is not in Contract (legacy) → skip check
 - If `gh issue view` fails (network) → skip check (non-fatal)
 - If `CURRENT_HASH ≠ CONTRACT_HASH` → set `ISSUE_STALE=true` for this Issue
 - If hashes match → Issue content unchanged since claim
@@ -1423,17 +1379,8 @@ done
 Read the mission label and label prefixes from config:
 
 ```bash
-MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh labels.mission "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
-
-STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.status_prefix "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
-PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.priority "" 2>/dev/null)
-[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh labels.priority_prefix "" 2>/dev/null)
-[ -z "$PRIORITY_PREFIX" ] && PRIORITY_PREFIX="priority:"
+eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)"
+# Now MISSION_LABEL, STATUS_PREFIX, PRIORITY_PREFIX are set
 
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-main}"
@@ -1457,9 +1404,15 @@ gh issue list --state open --json number,title,labels,assignees --limit 100
 gh pr list --state merged --base "$BASE_BRANCH" --json author --limit 100
 
 # Call 5 (if CURRENT_VERSION set): Milestone progress
-# Use startswith for prefix matching — config stores short name (e.g. "V0.1")
-# but milestone title may be longer (e.g. "V0.1 — AI Camera Pipeline")
-gh api "repos/$REPO/milestones" --jq ".[] | select(.title | startswith(\"$CURRENT_VERSION\")) | {open: .open_issues, closed: .closed_issues}"
+if [ -n "$CURRENT_VERSION" ]; then
+  MILESTONE_FULL=$(bash ~/.claude/commands/scripts/tw-git.sh milestone-resolve "$CURRENT_VERSION" 2>/dev/null)
+  gh api "repos/$REPO/milestones" --jq ".[] | select(.title == \"$MILESTONE_FULL\") | {open: .open_issues, closed: .closed_issues}"
+fi
+```
+
+```bash
+# Call 6: Local mission branches with merged PRs (cleanup detection)
+bash ~/.claude/commands/scripts/tw-git.sh list-merged-branches 2>/dev/null
 ```
 
 **Client-side filtering** from Call 1 results (no extra API calls):
@@ -1499,6 +1452,11 @@ TEAM DASHBOARD ── {repo name} ──────────────
 ⚠️ UNTRACKED ({count})
   #{N}  {title}  @{assignee}
   Fix: /team-issue fix #{N}
+  {Omit entire section if count == 0}
+
+🧹 NEEDS CLEANUP ({count})
+  {branch} — PR #{pr} merged
+  💡 Run: /team-ship done
   {Omit entire section if count == 0}
 
 📊 MERGES  {user}:{n}  {user}:{n}  ...
@@ -1549,6 +1507,11 @@ MY DASHBOARD ── {repo name} ────────────────
   Fix: /team-issue fix #{N}
   {Omit entire section if count == 0}
 
+🧹 NEEDS CLEANUP ({count})
+  {branch} — PR #{pr} merged
+  💡 Run: /team-ship done
+  {Omit entire section if count == 0}
+
 ────────────────────────────────────────────
 👥 TEAM WIP ({count})
   {priority_dot}  #{N}  {title}  @{assignee}
@@ -1582,25 +1545,17 @@ Same as dashboard: config must exist, `gh` must be authenticated, must be in a g
 GH_USER=$(gh api user --jq '.login' 2>/dev/null)
 
 # Config
-if [ -f .teamwork/config.yml ]; then
-  TEAMWORK_DIR=".teamwork"
-elif [ -f .teamspace/config.yml ]; then
-  TEAMWORK_DIR=".teamspace"
-else
-  echo "NO_CONFIG"
-fi
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || {
+  echo "Teamwork not initialized. Run /team first."
+  # STOP
+}
 
 # Read config values
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-main}"
-MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh github.mc_label "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL=$(bash ~/.claude/commands/scripts/tw-config.sh mc_label "" 2>/dev/null)
-[ -z "$MISSION_LABEL" ] && MISSION_LABEL="mission"
-STATUS_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh label_prefix.status "" 2>/dev/null)
-[ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
+eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)"
+# Now MISSION_LABEL, STATUS_PREFIX, PRIORITY_PREFIX are set
 ```
-
-If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
 
 ### Data Collection Phase
 
