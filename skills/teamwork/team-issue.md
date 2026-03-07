@@ -173,6 +173,14 @@ fi
 
 # Final milestone: arg override > config > empty
 MILESTONE="${MILESTONE_OVERRIDE:-$CURRENT_VERSION}"
+
+# Resolve short milestone name to full GitHub title (prefix match)
+# e.g. "V0.1" → "V0.1 — AI Camera Pipeline"
+if [ -n "$MILESTONE" ]; then
+  MILESTONE_FULL=$(gh api "repos/$REPO/milestones" \
+    --jq ".[] | select(.title | startswith(\"$MILESTONE\")) | .title" 2>/dev/null | head -1)
+  [ -n "$MILESTONE_FULL" ] && MILESTONE="$MILESTONE_FULL"
+fi
 ```
 
 **Extract @assignee** (if present in remaining args):
@@ -596,7 +604,10 @@ gh issue edit {issue} --repo "$REPO" \
 
 If milestone should be set:
 ```bash
-gh issue edit {issue} --repo "$REPO" --milestone "$CURRENT_VERSION"
+# Resolve short name to full milestone title (prefix match)
+MILESTONE_FULL=$(gh api "repos/$REPO/milestones" \
+  --jq ".[] | select(.title | startswith(\"$CURRENT_VERSION\")) | .title" 2>/dev/null | head -1)
+gh issue edit {issue} --repo "$REPO" --milestone "${MILESTONE_FULL:-$CURRENT_VERSION}"
 ```
 
 ### A6: Reformat body (if selected)
@@ -674,6 +685,14 @@ MILESTONE_URL=$(gh api "repos/$REPO/milestones" --method POST \
 
 If milestone already exists → warn "Milestone '$MILESTONE_TITLE' already exists" but continue (use existing).
 
+```bash
+# Resolve short name to full milestone title (prefix match)
+# Handles case where milestone exists with longer title (e.g. "V0.2 — User System")
+MILESTONE_FULL=$(gh api "repos/$REPO/milestones" \
+  --jq ".[] | select(.title | startswith(\"$MILESTONE_TITLE\")) | .title" 2>/dev/null | head -1)
+[ -n "$MILESTONE_FULL" ] && MILESTONE_TITLE="$MILESTONE_FULL"
+```
+
 ### B3: Batch MC Creation (if MC list provided)
 
 For each MC entry:
@@ -716,7 +735,7 @@ gh issue create \
   --label "${STATUS_PREFIX}wip" \
   --label "priority:{Pn}" \
   --assignee "{assignee_github}" \
-  --milestone "$MILESTONE_TITLE"
+  --milestone "${MILESTONE_TITLE}"
 ```
 
 Extract Issue number, then create branch:

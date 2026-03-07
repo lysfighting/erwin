@@ -1486,7 +1486,9 @@ gh issue list --state open --json number,title,labels,assignees --limit 100
 gh pr list --state merged --base "$BASE_BRANCH" --json author --limit 100
 
 # Call 5 (if CURRENT_VERSION set): Milestone progress
-gh api "repos/$REPO/milestones" --jq ".[] | select(.title == \"$CURRENT_VERSION\") | {open: .open_issues, closed: .closed_issues}"
+# Use startswith for prefix matching — config stores short name (e.g. "V0.1")
+# but milestone title may be longer (e.g. "V0.1 — AI Camera Pipeline")
+gh api "repos/$REPO/milestones" --jq ".[] | select(.title | startswith(\"$CURRENT_VERSION\")) | {open: .open_issues, closed: .closed_issues}"
 ```
 
 **Client-side filtering** from Call 1 results (no extra API calls):
