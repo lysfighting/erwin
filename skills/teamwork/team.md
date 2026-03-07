@@ -106,22 +106,42 @@ for dir in docs .teamwork/docs .teamspace/docs; do
   [ -f "$dir/teamwork-ai-manual.md" ] && MANUAL="$dir/teamwork-ai-manual.md"
   [ -f "$dir/git-model-v0.1.0.md" ] && GIT_MODEL="$dir/git-model-v0.1.0.md"
 done
+true  # ensure exit 0 even if last [ -f ] fails
 ```
 
 ### Step L2: Present content
 
-**If `MANUAL` found** → Read the file and present its full content to the user. This file contains:
-- Why this model exists (AI commit frequency problem)
-- The Four Branches diagram
-- Why squash everything
-- RC lifecycle (the key innovation)
-- Complete end-to-end example
-- The Six Skills overview
+**If `MANUAL` found** → Read the file, then output a **concise summary** (NOT the full file — it can be 1000+ lines). Structure:
 
-**If `GIT_MODEL` also found** → Mention it as deeper technical reference:
 ```
-For the formal Git branching spec, see: {GIT_MODEL}
+📖 TEAMWORK — Design Philosophy
+═══════════════════════════════════════════
+Source: {MANUAL}
+
+▸ WHY THIS MODEL
+  {2-3 sentence summary of the AI commit frequency problem}
+
+▸ THE FOUR BRANCHES
+  main (production) ← rc/* (staging) ← develop (dev trunk) ← feat/* (work)
+
+▸ WHY SQUASH
+  {1 sentence: AI noise → one clean commit per issue}
+
+▸ RC LIFECYCLE
+  /team-rc → cut rc from develop → verify staging → /team-rc promote → tag + release
+
+▸ THE SIX SKILLS
+  /team → /team-issue → /team-claim → /team-drive → /team-ship → /team-rc
+
+▸ DEEP DIVE
+  Full manual: {MANUAL} ({line_count} lines)
+  Git model:   {GIT_MODEL or "—"}
+═══════════════════════════════════════════
 ```
+
+Read the file to extract the key points, but DO NOT dump the entire file to the user. The summary should be 30-50 lines max.
+
+**If `GIT_MODEL` also found** → Include the path in the DEEP DIVE section (already shown above).
 
 **If neither found** → Output the embedded overview below and **STOP**:
 
