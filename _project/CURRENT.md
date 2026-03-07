@@ -7,8 +7,8 @@
 ## Project Status
 
 - **Version**: 0.5.0 (in progress)
-- **Last Updated**: 2026-03-05
-- **Last Session**: [2026-03-05-AB](sessions/2026-03-05-AB.md) (Session AB — Teamwork 竞品分析 + 战略定位)
+- **Last Updated**: 2026-03-07
+- **Last Session**: [2026-03-07-AC](sessions/2026-03-07-AC.md) (Session AC — 视觉统一 + milestone 回流 + 闭环讨论)
 
 ## Current Phase
 
@@ -16,13 +16,13 @@
 
 ## What Was Just Completed
 
-**Session AB** — Teamwork 竞品分析 + 战略定位:
+**Session AC** — Teamwork v3.2.0 视觉统一 + milestone 回流 + 闭环讨论:
 
-- 竞品深度调研：Vibe Kanban (BloopAI) + CCPM (automazeio)
-- Teamwork 定位明确：「AI 融入团队已有 GitHub 工作流」（非 agent 编排、非任务分解）
-- 可视化方案确定：GitHub Projects 外包全局看板 + 终端 ASCII 增强
-- 四个陷阱识别：不建 GUI、不做 agent 无关、不自建 issue 存储、不命令爆炸
-- Session log: `_project/sessions/2026-03-05-AB.md`
+- 6 个 skill 文件统一 emoji visual encoding（priority dots, section icons, CI icons, progress bar）
+- Dashboard 性能优化（7-8 串行 API → 4-5 并行）
+- vi_agent milestone 前缀匹配 hotfix 回流 erwin（4 处，含 1 处两边都漏的 batch gap）
+- 闭环讨论：`/team-wrap`（反向闭环）三条路径确定 + 正向闭环延后
+- Session log: `_project/sessions/2026-03-07-AC.md`
 
 ## Active Task / What's In Progress
 
@@ -77,13 +77,14 @@
 - [x] Teamwork v2.7.1 — script testing audit: 21 bugs found, 14+4 fixed across 4 scripts
 - [x] Teamwork v2.7.2 — vi_agent E2E validation: 3 bugs found, 3 fixed
 - [x] Teamwork v2.7.3 — init audit: dynamic branch protection + post-merge workflow + vi_agent deploy
+- [x] Teamwork v3.2.0 — unified emoji visual encoding + milestone prefix matching backport
 
 ## Known Issues / Blockers
 
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Teamwork: version_file (package.json bump) not yet in team-release — deferred to future version
-- Teamwork: /team-drive still unimplemented (thin wrapper over /drive)
-- Teamwork: team-release 半成品 — 缺 release 分支创建/hotfix/backport/deploy（18 项需求待实现）
+- Teamwork: `/team-wrap` 反向闭环待实现（三条路径设计已确定）
+- Teamwork: 正向闭环自动化待设计（Session R 架构 + Session AC 切入点讨论）
 - vi_agent: working directory on `system_v5` branch, skill updates on `main`
 
 ## File Locations
