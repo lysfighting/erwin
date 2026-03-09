@@ -1,7 +1,7 @@
 # /team doctor — Design Spec
 
 > Local git health diagnostics for teamwork. Subcommand of `/team`, not a new skill.
-> Status: Design complete, ready for implementation.
+> Status: Implemented (v3.4.0). This doc serves as the design rationale and reference.
 
 ---
 
@@ -566,7 +566,7 @@ SUMMARY: 🔴 2 critical │ 🟡 6 warnings │ 🟢 1 cleanup
 ### Estimated size:
 - ~200-250 lines added to team.md
 - 0 new files
-- Version bump: 3.0.0 → 3.1.0
+- Initially shipped as v3.1.0, enhanced in v3.4.0 (fix mode, help, vs Remote, Check 8)
 
 ---
 
