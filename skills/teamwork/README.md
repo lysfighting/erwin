@@ -100,6 +100,15 @@ All opt-in via `config.yml` (except worktree, which is per-user):
 |------|---------|
 | `.teamwork/active/MISSION-{N}.md` | AI-enriched execution Contract (ephemeral) |
 
+## Development Utilities
+
+Scripts in `scripts/` not called by skills directly — used for maintenance:
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `tw-bump-version.sh` | Bump version across all skill files, README, ONBOARDING, manual | `bash scripts/tw-bump-version.sh 3.6.0` |
+| `tw-e2e-test.sh` | End-to-end validation harness (creates test Issue, claims, drives, ships, cleans up) | `bash scripts/tw-e2e-test.sh` |
+
 ## Version
 
 - Skill version: 3.5.1
