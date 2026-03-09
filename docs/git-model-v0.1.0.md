@@ -1,6 +1,6 @@
 # Git Branching Model v0.1.0
 
-> **Status**: Draft — pending validation on vi_agent
+> **Status**: Archived — superseded by teamwork v3 implementation. See `teamwork-ai-manual.md` for current branch model.
 > **Date**: 2026-03-05
 > **Context**: AI-assisted team (6 people + AI = 20-30 equivalent commit frequency)
 > **See also**: ADR-0012

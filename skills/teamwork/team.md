@@ -116,8 +116,8 @@ REQUIREMENTS:
 
 DOCS (in erwin repo):
   docs/teamwork-ai-manual.md         Complete manual
-  docs/teamwork-v2-architecture.md   Architecture design
   docs/team-doctor-design.md         Doctor design spec
+  skills/teamwork/ONBOARDING.md      Onboarding guide
 ═══════════════════════════════════════════
 ```
 
@@ -373,7 +373,6 @@ Two layers of config — shared team settings vs personal preferences.
 ═══════════════════════════════════════════════════════════════
 DEEP DIVE (docs in erwin repo):
   docs/teamwork-ai-manual.md        ← Complete manual (15 chapters)
-  docs/teamwork-v2-architecture.md  ← Architecture design + ADR
   docs/team-doctor-design.md        ← Doctor design spec + examples
   skills/teamwork/ONBOARDING.md     ← Team onboarding guide
   skills/teamwork/CHANGELOG.md      ← Version history

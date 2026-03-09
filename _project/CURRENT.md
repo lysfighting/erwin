@@ -83,8 +83,7 @@
 
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Teamwork: version_file (package.json bump) not yet in team-release — deferred to future version
-- Teamwork: `/team-wrap` 反向闭环待实现（三条路径设计已确定）
-- Teamwork: 正向闭环自动化待设计（Session R 架构 + Session AC 切入点讨论）
+- Teamwork: `/team wrap` + `/team auto` 已实现 v3.3.0，经 3-agent 并行审计修复 16 bugs（3 CRITICAL + 8 HIGH）
 - vi_agent: working directory on `system_v5` branch, skill updates on `main`
 
 ## File Locations
@@ -95,7 +94,7 @@
 | Idea garden | `_project/ideas/` |
 | ADRs | `_project/decisions/` |
 | V2 architecture | `docs/drive-showcase-v2-architecture.md` |
-| Teamwork architecture | `docs/teamwork-v2-architecture.md` |
+| Teamwork architecture | `docs/teamwork-ai-manual.md` |
 | Teamwork skills | `skills/teamwork/` |
 | Teamwork scripts | `skills/teamwork/scripts/` |
 | App root | `showcase/src/App.tsx` |

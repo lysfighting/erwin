@@ -1,5 +1,6 @@
 # Drive Showcase: 视觉增强架构设计
 
+> **Status**: Archived — partially implemented (message flow animation done in v0.5.0). Remaining items (video, particle effects) deferred indefinitely.
 > 文档版本: 1.0
 > 生成时间: 2026-03-01
 > 范围: 视频/动效升级方案架构设计

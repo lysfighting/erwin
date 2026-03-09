@@ -59,7 +59,7 @@ Release:  /team-rc → verify staging → /team-rc promote
 
 ## Architecture
 
-See [docs/teamwork-v2-architecture.md](../../docs/teamwork-v2-architecture.md) for full design.
+See [docs/teamwork-ai-manual.md](../../docs/teamwork-ai-manual.md) for the complete manual.
 
 Key principles:
 - **GitHub Issues = source of truth** — tasks live where developers already work

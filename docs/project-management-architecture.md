@@ -1,5 +1,6 @@
 # Project Management Architecture
 
+> **Status**: Archived — implemented as `/erwin-init` skill (v1.0.0). See `skills/erwin-init/`.
 > The complete knowledge and management infrastructure for AI-assisted iterative development.
 > Version 1.0 | Date: 2026-03-02
 

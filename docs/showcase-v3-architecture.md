@@ -1,5 +1,7 @@
 # Showcase V3 Architecture — Hub + Multi-Showcase
 
+> **Status**: Archived — hub concept not implemented. Current showcase remains single-page V2 architecture (`drive-showcase-v2-architecture.md`).
+
 > erwin showcase 从单体 drive-skill 页面 → 多 showcase 导航枢纽
 
 ---
