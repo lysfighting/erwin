@@ -440,6 +440,42 @@ All teamwork output uses consistent emoji conventions:
 
 **Progress bar**: `█` filled, `░` empty (10 chars). E.g., 50% → `█████░░░░░`.
 
+### Shortcuts — Wrap & Auto (v3.3+)
+
+**`/team wrap`** — Retroactive closure. You already wrote code, now back-fill the teamwork flow.
+
+Auto-detects your code state and picks the right strategy:
+
+| State | What happened | Strategy |
+|-------|--------------|----------|
+| Uncommitted changes | You modified files but didn't commit | Stash → create Issue → claim branch → apply stash → drive → ship |
+| Committed, not pushed | You committed on current branch | Create Issue → claim branch → cherry-pick → reset original → drive → ship |
+| Already pushed | Code is on remote | Create Issue with `status:done` → close immediately (tracking only) |
+
+```
+/team wrap
+# Auto-detects state, generates issue title/priority from diff analysis
+# Previews plan → confirms → executes
+```
+
+**When to use**: You pair-programmed, prototyped, or fixed a bug without `/team-claim` first. Wrap retroactively gives it a proper Issue, branch, and PR.
+
+**`/team auto`** — One-shot forward closure. Claim → drive → ship in a single command.
+
+```
+/team auto #42     # Specific issue
+/team auto         # Pick from your assigned queue
+```
+
+**Flow**: Validates Issue → creates Contract + branch → executes all sub-tasks → runs tests → pushes → creates PR. Stops at PR creation — human merges.
+
+**When to use**: Small, well-defined tasks where the standard 4-step cycle (`claim → drive → ship → done`) feels like ceremony. Auto compresses it to one command.
+
+**Differences from standard flow**:
+- No interactive confirmations (assumes defaults)
+- Blocked sub-tasks are skipped with a note (asks "Ship partial?" at end)
+- Test failures trigger 3 auto-fix attempts before stopping
+
 ---
 
 ## Issue Lifecycle — State Machine
