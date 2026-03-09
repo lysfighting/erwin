@@ -100,5 +100,5 @@ All opt-in via `config.yml`:
 
 ## Version
 
-- Skill version: 3.4.1
+- Skill version: 3.4.2
 - Config schema: 3

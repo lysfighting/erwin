@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.4.1"
+version: "3.4.2"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -49,7 +49,7 @@ Parse `$ARGUMENTS`:
 Output the following guide directly to the user, then **STOP**:
 
 ```
-TEAMWORK v3.4.1 — AI-Native Team Coordination (Push Model)
+TEAMWORK v3.4.2 — AI-Native Team Coordination (Push Model)
 Author: liyasong + casey | Released: 2026-03-08
 ═══════════════════════════════════════════
 
@@ -125,7 +125,7 @@ Read and present the design philosophy behind this workflow. Output the content 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
 ```
-TEAMWORK v3.4.1 — Design Philosophy & Complete Guide
+TEAMWORK v3.4.2 — Design Philosophy & Complete Guide
 ═══════════════════════════════════════════════════════════════
 
 1. WHY THIS MODEL?
@@ -731,8 +731,8 @@ Preserve all existing content. Only update `skill_version` and append missing to
 
 ```bash
 # Update skill_version line without touching anything else
-sed -i '' "s/^skill_version:.*/skill_version: 3.4.1/" $TEAMWORK_DIR/config.yml
-# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.4.1/" $TEAMWORK_DIR/config.yml
+sed -i '' "s/^skill_version:.*/skill_version: 3.4.2/" $TEAMWORK_DIR/config.yml
+# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.4.2/" $TEAMWORK_DIR/config.yml
 
 # Update schema_version if present
 if grep -q "^schema_version:" $TEAMWORK_DIR/config.yml; then
@@ -867,7 +867,7 @@ Write full config based on detected project info + user answers:
 
 ```yaml
 schema_version: 3
-skill_version: 3.4.1
+skill_version: 3.4.2
 
 roles:
   - id: leader
@@ -1621,6 +1621,25 @@ fi
 
 ### 6d: Format and display (role-based)
 
+**⚠️ WORKTREE SECTION — MANDATORY CHECK before rendering dashboard:**
+
+If Call 8 found `WORKTREE_ENABLED=true`, you MUST include the `📂 WORKTREES` section in the dashboard output. This is NOT optional. Run these commands to get the data:
+
+```bash
+git config --local teamwork.worktree 2>/dev/null  # "true" = show section
+git worktree list  # get all worktrees
+pwd  # determine current location (★ marker)
+```
+
+If worktree mode is enabled, render this section right after the milestone progress bar:
+
+```
+📂 WORKTREES (worktree mode)
+  ★ {current worktree or main path} ← {branch} {→ #{issue} title if Contract matches │ (no mission)}
+    {other worktree path} ← {branch} {→ #{issue} title if Contract matches │ (no mission)}
+  {If current branch ≠ any Contract branch: ⚠️ context mismatch — cd {correct path}}
+```
+
 Output a formatted dashboard based on user's role level.
 
 #### Solo / Leader Dashboard
@@ -1628,14 +1647,7 @@ Output a formatted dashboard based on user's role level.
 ```
 TEAM DASHBOARD ── {repo name} ──────────────
 {If CURRENT_VERSION:} {VERSION}  {progress_bar}  {pct}%  {done}/{total}
-
-{If worktree enabled:}
-📂 WORKTREES (worktree mode)
-  {★ if current location} {main repo path} ← {branch} {If Contract: → #{issue} {title} │ Else: (no mission)}
-  {For each extra worktree:}
-  {★ if current location} {worktree path} ← {branch} {If branch matches a Contract: → #{issue} {title} │ Else: (no mission)}
-  {If current location's branch doesn't match ANY active Contract:}
-  ⚠️ You're here but your mission is elsewhere → cd {path where Contract's branch lives}
+{WORKTREE SECTION HERE — see mandatory check above}
 
 👥 TEAM ({member_count} members)
   {For each team member:}
@@ -1698,14 +1710,7 @@ TEAM DASHBOARD ── {repo name} ──────────────
 ```
 MY DASHBOARD ── {repo name} ────────────────
 {If CURRENT_VERSION:} {VERSION}  {progress_bar}  {pct}%  {done}/{total}
-
-{If worktree enabled:}
-📂 WORKTREES (worktree mode)
-  {★ if current location} {main repo path} ← {branch} {If Contract: → #{issue} {title} │ Else: (no mission)}
-  {For each extra worktree:}
-  {★ if current location} {worktree path} ← {branch} {If branch matches a Contract: → #{issue} {title} │ Else: (no mission)}
-  {If current location's branch doesn't match ANY active Contract:}
-  ⚠️ You're here but your mission is elsewhere → cd {path where Contract's branch lives}
+{WORKTREE SECTION HERE — see mandatory check above}
 
 🎯 MY MISSIONS
   🟢 #{N} {title} [{priority_dot}] {If STALE: ⚡}

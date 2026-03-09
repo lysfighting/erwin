@@ -2,6 +2,14 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.4.2] — 2026-03-09
+
+### Fixed — Worktree section LLM execution reliability
+
+Dashboard worktree section was being skipped by LLM (conditional template buried in long output).
+Restructured as mandatory pre-render check with explicit commands, placed before dashboard template.
+Deduplicated worktree template (single definition referenced by both leader/member dashboards).
+
 ## [3.4.1] — 2026-03-09
 
 ### Changed — Worktree mode: shared → local

@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.4.1"
+version: "3.4.2"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -27,7 +27,7 @@ Parse `$ARGUMENTS`:
 - If `help` or `-h` → output the following and **STOP**:
 
 ```
-/team-rc — Release Candidate Lifecycle (Teamwork v3.4.1)
+/team-rc — Release Candidate Lifecycle (Teamwork v3.4.2)
 Author: liyasong + casey | 2026-03-05
 
 USAGE:
