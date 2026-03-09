@@ -2,6 +2,25 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.5.1] — 2026-03-09
+
+### Fixed — Design review: logic gaps + docs alignment
+
+Full 5-scout audit of teamwork design. Scripts: 100% healthy. Skill consistency: verified.
+
+**Logic fixes:**
+- **team-ship**: base branch guard — `protect-check` before shipping prevents accidental ship from main/develop
+- **team-ship**: CI failure preserves Contract — no longer deletes Contract when CI fails,
+  allowing `/team-drive` → `/team-ship` iteration loop
+- **team-drive**: Contract-missing fallback — detects mission branch + open Issue and suggests
+  `/team-claim #N` recovery path instead of bare "STOP"
+
+**Documentation alignment:**
+- **teamwork-ai-manual.md**: version 3.4.0 → 3.5.0, date updated
+- **teamwork-v2-architecture.md**: marked as archived design document with pointer to current manual
+- **team-doctor-design.md**: added Check 8 (Remote Sync), updated "7 checks" → "8 checks"
+- **README.md**: added `/team doctor` row to skills table
+
 ## [3.5.0] — 2026-03-09
 
 ### Added — `/team config` + dashboard version + documentation completeness

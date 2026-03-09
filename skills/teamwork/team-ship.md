@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.5.0"
+version: "3.5.1"
 ---
 
 # /team-ship — Deliver Mission
@@ -61,6 +61,15 @@ AFTER MERGE:
 ---
 
 ## Step 0: Prerequisites
+
+```bash
+# Branch safety: never ship from protected branches
+CURRENT=$(git branch --show-current)
+bash ~/.claude/commands/scripts/tw-git.sh protect-check 2>/dev/null || {
+  echo "ERROR: You're on a protected branch ($CURRENT). Switch to a mission branch first."
+  # STOP
+}
+```
 
 ```bash
 # Identity
@@ -367,13 +376,21 @@ bash ~/.claude/commands/scripts/tw-label.sh verify {issue} review
 - If verify fails (network) → "⚠ Could not verify labels. Assume update succeeded."
 - Non-blocking in all cases: continue to 7b.
 
-### 7b: Remove Contract
+### 7b: Remove Contract (conditional on CI status)
+
+If CI passed OR CI was not configured → delete the Contract:
 
 ```bash
 bash ~/.claude/commands/scripts/tw-contract.sh delete "$TEAMWORK_DIR/active/MISSION-{issue}.md"
 ```
 
 The Contract has served its purpose. The PR body now contains the essential information. If the PR is rejected and the mission needs to be reworked, re-run `/team-claim #{issue}` to regenerate a fresh Contract.
+
+If CI failed → keep the Contract:
+
+```
+Contract preserved — run /team-drive to iterate on CI failures, then /team-ship again.
+```
 
 ---
 

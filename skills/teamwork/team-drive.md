@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.5.0"
+version: "3.5.1"
 ---
 
 # /team-drive — Execute Mission
@@ -61,7 +61,26 @@ TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/nu
 ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 ```
 
-- If no Contract found → "No active mission. Run `/team-claim` first." → **STOP**
+- If no Contract found → "No active mission. Run `/team-claim` first." Check for recoverable state before stopping:
+
+```bash
+# Check if there's a mission branch with an open Issue (recoverable state)
+CURRENT_BRANCH=$(git branch --show-current)
+if [[ "$CURRENT_BRANCH" == mission/* ]]; then
+  # Extract issue number from branch name
+  ISSUE_NUM=$(echo "$CURRENT_BRANCH" | grep -oE '[0-9]+' | head -1)
+  if [ -n "$ISSUE_NUM" ]; then
+    ISSUE_STATE=$(gh issue view "$ISSUE_NUM" --json state --jq '.state' 2>/dev/null)
+    if [ "$ISSUE_STATE" = "OPEN" ]; then
+      echo "Found open Issue #$ISSUE_NUM for this branch. Contract may have been deleted."
+      echo "Run /team-claim #$ISSUE_NUM to regenerate the Contract, then /team-drive again."
+    fi
+  fi
+fi
+```
+
+→ **STOP**
+
 - If multiple Contracts found → "Multiple active contracts found. This shouldn't happen. Keep one, remove the rest." → **STOP**
 
 Read the Contract file fully. Extract from YAML frontmatter:

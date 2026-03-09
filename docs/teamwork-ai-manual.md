@@ -1,6 +1,6 @@
 # Teamwork — The Complete Manual
 
-> **Version 3.4.0** | Author: liyasong + casey | 2026-03-08
+> **Version 3.5.0** | Author: liyasong + casey | 2026-03-09
 >
 > AI-Native Team Coordination for GitHub.
 > For humans and AI agents. Covers WHY, HOW, and the philosophy behind every decision.

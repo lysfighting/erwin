@@ -132,7 +132,7 @@ done
 gh issue list --label "$MISSION_LABEL" --state open --json number,title,body,assignees,labels --limit 50
 ```
 
-### Analysis Phase — 7 Diagnostic Checks
+### Analysis Phase — 8 Diagnostic Checks
 
 Each check produces findings with a severity level:
 
@@ -299,6 +299,30 @@ D. ORPHAN CONTRACTS
 - "fix camera on Safari" and "iOS media permission broken" are the same problem even with zero shared words
 - "add rate limiting" and "rate limit upload API" overlap but may be different scope — flag as potential, not definite
 - Issues sharing >50% sub-tasks are likely duplicates
+
+---
+
+#### Check 8: Remote Sync
+
+**Logic**: Local mission branches that are behind their remote tracking branch (`origin/{branch}`) have unsynced changes from other contributors or other machines.
+
+```
+For each local mission/* branch that has a remote tracking branch:
+  1. Fetch latest: git fetch --quiet (already done in data collection)
+  2. Compare: git rev-list --left-right --count origin/{branch}...{branch}
+     - Parse output: {behind}\t{ahead}
+  3. Thresholds:
+     - Local is behind remote by 1+ commits → 🟡 WARNING
+       "Branch {branch} is {N} commits behind origin/{branch}. Run `git pull` or `/team-ship sync`."
+     - Local is ahead of remote (unpushed commits) → 🟢 INFO
+       "Branch {branch} has {N} unpushed commits."
+     - In sync → OK (don't report)
+  4. Only report for branches with corresponding OPEN issues (skip orphans)
+```
+
+**Edge cases**:
+- No remote tracking branch → skip (branch hasn't been pushed yet, covered by Check 1/3)
+- Remote branch deleted but local exists → already caught by Check 1 (Orphan Branches)
 
 ---
 
@@ -532,7 +556,7 @@ SUMMARY: 🔴 2 critical │ 🟡 6 warnings │ 🟢 1 cleanup
 4. Write `## Operation Doctor` section with:
    - Prerequisites (reuse existing config detection pattern)
    - Data collection commands (13 bash commands)
-   - 7 diagnostic checks with analysis logic
+   - 8 diagnostic checks with analysis logic
    - 3-layer output format spec (tables → diagnosis → action plan)
 5. Update CHANGELOG
 6. Bump version in team.md frontmatter (3.0.0 → 3.1.0, minor feature)

@@ -8,6 +8,7 @@ GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are 
 |-------|---------|-------------|
 | `/team` | Init system + show dashboard | First time setup, daily overview |
 | `/team config` | View config + edit instructions | Check or change settings |
+| `/team doctor` | Health diagnostics + interactive fix | Check branch/worktree/issue health |
 | `/team-issue` | Create/view/update/batch Issues | Create missions, manage Issues |
 | `/team-claim` | Claim a GitHub Issue as your mission | Pick your next task |
 | `/team-drive` | Execute mission from Contract | During work: AI-assisted execution |
@@ -101,5 +102,5 @@ All opt-in via `config.yml` (except worktree, which is per-user):
 
 ## Version
 
-- Skill version: 3.5.0
+- Skill version: 3.5.1
 - Config schema: 3

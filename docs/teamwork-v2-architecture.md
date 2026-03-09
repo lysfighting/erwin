@@ -1,7 +1,7 @@
 # Teamwork v2 Architecture — GitHub-First Design
 
 > ADR companion: `_project/decisions/0010-teamwork-v2-github-first.md`
-> Status: **Design complete, pending implementation**
+> Status: ⚠️ **Archived design document** — see `docs/teamwork-ai-manual.md` for current v3.5+ implementation. This document describes the original v2.0 design phase.
 > Validates on: `vi-agent` project
 
 ---
