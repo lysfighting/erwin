@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "3.2.1"
+version: "3.4.1"
 ---
 
 # /team-issue — Mission Contract Issue Manager
@@ -25,7 +25,7 @@ version: "3.2.1"
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
 ```
-/team-issue — Mission Contract Issue Manager (v3.2.1)
+/team-issue — Mission Contract Issue Manager (v3.4.1)
 
 USAGE:
   /team-issue <description>                    Create MC (solo: self-assign; team: prompt)
@@ -66,7 +66,7 @@ WHAT HAPPENS (create):
   4. Generates mission-contract Issue body
   5. Shows preview for confirmation
   6. Publishes to GitHub with labels + assignee
-  7. Creates branch: mission/{issue}-{slug}
+  7. Creates branch: mission/{issue}-{slug}-{user}
   8. Notifies assignee via configured channels
 
 WHAT HAPPENS (fix):
@@ -112,16 +112,18 @@ eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)
 ```
 
 ```bash
-# Extract current version/milestone if configured
-CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
+# Read repo
+REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
 
 # Read base branch from config
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-main}"
 
-# Read repo
-REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
+# ⚠️ MILESTONE — DO NOT SKIP. Every Issue must bind to a milestone if versions.current is configured.
+CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 ```
+
+**⚠️ Milestone binding is mandatory when `versions.current` is configured.** The `CURRENT_VERSION` variable is used in Step 6 (`gh issue create --milestone`). If you skip reading it here, Issues will be created without a milestone — this is a bug, not acceptable behavior.
 
 ### Team Mode Detection
 
@@ -323,7 +325,7 @@ gh issue create \
   ${MILESTONE:+--milestone "$MILESTONE"}
 ```
 
-- If milestone assignment fails (milestone doesn't exist yet) → warn "Milestone '{MILESTONE}' not found on GitHub. Create it first: `gh api repos/{REPO}/milestones --method POST --field title='{MILESTONE}'`". Non-fatal: issue is still created without milestone.
+- If milestone assignment fails (milestone doesn't exist yet) → warn "Issue created without milestone. Create the milestone on GitHub first, then assign: `gh issue edit #{N} --milestone '{MILESTONE}'`. Or re-run `/team init` to set up milestones." Non-fatal: issue is still created without milestone.
 
 Extract Issue number from output URL.
 
@@ -584,12 +586,12 @@ gh issue edit {issue} --repo "$REPO" \
   --add-label "size:{size}"
 ```
 
-If milestone should be set:
+If milestone should be set and `CURRENT_VERSION` is configured:
 ```bash
 if [ -n "$CURRENT_VERSION" ]; then
   MILESTONE=$(bash ~/.claude/commands/scripts/tw-git.sh milestone-resolve "$CURRENT_VERSION" 2>/dev/null)
+  gh issue edit {issue} --repo "$REPO" --milestone "${MILESTONE:-$CURRENT_VERSION}"
 fi
-gh issue edit {issue} --repo "$REPO" --milestone "${MILESTONE:-$CURRENT_VERSION}"
 ```
 
 ### A6: Reformat body (if selected)
@@ -718,7 +720,7 @@ gh issue create \
   --label "domain:{domain}" \
   --label "size:{size}" \
   --assignee "{assignee_github}" \
-  --milestone "${MILESTONE_TITLE}"
+  ${MILESTONE_TITLE:+--milestone "$MILESTONE_TITLE"}
 ```
 
 Extract Issue number, then create branch:
@@ -777,7 +779,7 @@ URL:  {milestone_url}
 
 - Empty description → "Please provide a description. Example: `/team-issue camera not working on Safari`" → **STOP**
 - GitHub API error → "Failed to create Issue. Check `gh auth status`." → **STOP**
-- Label not found → create Issue without that label, warn user to run `bash ~/.claude/commands/scripts/setup-github-labels.sh` (installed with teamwork)
+- Label not found → create Issue without that label, warn "Labels missing. Run `/team init` to set up project labels."
 - No assignee (team mode) → AskUserQuestion to select from members list
 - Assignee not in config → "Member '@{mention}' not found. Available: {list}" → **STOP**
 - Branch already exists → warn but continue (non-fatal)

@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "3.2.1"
+version: "3.4.1"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -71,7 +71,7 @@ eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)
 ```
 
 Verify `GH_USER` is in the team roster (check both `team:` and `members:` sections).
-If not → "You ({GH_USER}) are not in the team roster. Run `/team` to join — it will ask your role and add you." → **STOP**
+If not → "You ({GH_USER}) are not in the team roster. Run `/team init` to re-initialize and add yourself." → **STOP**
 
 ---
 
@@ -81,18 +81,14 @@ If not → "You ({GH_USER}) are not in the team roster. Run `/team` to join — 
 ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 ```
 
-**Check worktree config:**
+**Check worktree config (local per-user setting):**
 ```bash
-# Read worktree setting: if worktree: section exists → enabled (unless worktree.enabled is explicitly false)
-WORKTREE_ENABLED=$(bash ~/.claude/commands/scripts/tw-config.sh worktree.enabled "" 2>/dev/null)
-if [ -z "$WORKTREE_ENABLED" ]; then
-  # Check if worktree: section exists at all (presence = enabled)
-  grep -q "^worktree:" $TEAMWORK_DIR/config.yml 2>/dev/null && WORKTREE_ENABLED="true" || WORKTREE_ENABLED="false"
-fi
+# Worktree mode is stored in local git config, not shared config.yml
+WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "false")
 ```
 
 **If worktree DISABLED (default):** If any Contract exists → read it, display the active mission info.
-- "You already have an active mission: #{issue} — {title}. Complete it with `/team-ship` first, or remove `$TEAMWORK_DIR/active/MISSION-{issue}.md` to abandon."
+- "You already have an active mission: #{issue} — {title}. Complete it with `/team-ship` first. To abandon: `rm $TEAMWORK_DIR/active/MISSION-{issue}.md` (you can re-claim the Issue later with `/team-claim`)."
 - **STOP** (enforce one-at-a-time rule)
 
 **If worktree ENABLED:** Allow multiple active Contracts. Each mission gets its own worktree directory, so parallel work is safe.
@@ -228,36 +224,65 @@ Use `Glob` and `Grep` with keywords from the Issue title and objective to discov
 Read branch pattern from config: `conventions.branch_pattern` (or `worktree.branch_pattern` for `.teamspace` configs).
 Default: `"mission/{issue}-{slug}-{user}"`.
 
-Read worktree config: if `worktree:` section exists in config → treat as enabled (unless `worktree.enabled` is explicitly `false`). If no `worktree:` section → disabled.
+Read worktree config from local git config: `git config --local teamwork.worktree` (per-user, not shared).
 
-Ensure you're on `base_branch` and up to date before creating the feature branch:
-```bash
-bash ~/.claude/commands/scripts/tw-git.sh ensure-base
-```
-
-Generate branch name and create branch:
 ```bash
 # Slugify the title: lowercase, replace spaces with hyphens, remove special chars, truncate
 SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$ISSUE_TITLE")
+```
 
-# Create branch from config pattern (handles pattern substitution + existing branch detection)
+**If worktree DISABLED (default):**
+
+Ensure you're on `base_branch` and up to date, then create branch:
+```bash
+bash ~/.claude/commands/scripts/tw-git.sh ensure-base
 BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
 ```
 
-**If worktree enabled:**
+**If worktree ENABLED:**
+
+⚠ Do NOT run `ensure-base` — it would `git checkout` the base branch, disrupting the current worktree's working state. Instead, create the worktree directly from the base branch ref:
+
 ```bash
-REPO_NAME=$(basename $(pwd))
-WORKTREE_PATH="../${REPO_NAME}-wt-${SLUG}"
-bash ~/.claude/commands/scripts/tw-git.sh worktree-add "$BRANCH" "$WORKTREE_PATH"
-echo "{issue}" > "$WORKTREE_PATH/.mission"
+# Derive main repo path (works from any worktree or the main repo)
+MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+REPO_NAME=$(basename "$MAIN_REPO")
+
+# Fetch latest base to ensure worktree starts from up-to-date base
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-main}"
+git fetch origin "$BASE_BRANCH" --quiet 2>/dev/null || true
+
+# Build branch name from config pattern
+BRANCH_PATTERN=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.branch_pattern "mission/{issue}-{slug}-{user}" 2>/dev/null)
+BRANCH=$(echo "$BRANCH_PATTERN" | sed "s/{issue}/$ISSUE_NUMBER/g; s/{slug}/$SLUG/g; s/{user}/$GH_USER/g")
+
+# Create worktree as sibling of main repo (not sibling of current worktree)
+WORKTREE_PATH="${MAIN_REPO}/../${REPO_NAME}-wt-${SLUG}"
+git worktree add -b "$BRANCH" "$WORKTREE_PATH" "origin/$BASE_BRANCH" 2>/dev/null || {
+  # Branch may already exist — try without -b
+  git worktree add "$WORKTREE_PATH" "$BRANCH" 2>/dev/null || {
+    echo "ERROR: Could not create worktree at $WORKTREE_PATH"
+    exit 1
+  }
+}
+
+echo "$ISSUE_NUMBER" > "$WORKTREE_PATH/.mission"
 
 # Contract is gitignored (active/), so copy it into the worktree
 mkdir -p "$WORKTREE_PATH/$TEAMWORK_DIR/active"
 cp "$TEAMWORK_DIR/active/MISSION-$ISSUE_NUMBER.md" "$WORKTREE_PATH/$TEAMWORK_DIR/active/"
+
+# Copy config into worktree (needed for /team-drive and /team-ship to find config)
+mkdir -p "$WORKTREE_PATH/$TEAMWORK_DIR"
+cp "$TEAMWORK_DIR/config.yml" "$WORKTREE_PATH/$TEAMWORK_DIR/"
 ```
 
-**If worktree disabled (default):**
-Branch already created/switched by `tw-git.sh create-branch` above.
+Key differences from non-worktree flow:
+1. **No `ensure-base`** — avoids disrupting current worktree
+2. **`git fetch` instead of `git pull`** — updates remote ref without touching working tree
+3. **`git worktree add -b BRANCH PATH origin/BASE`** — creates branch from latest remote base directly
+4. **Path uses `MAIN_REPO` parent** — worktrees are always siblings of main repo, never nested
 
 ---
 
@@ -298,6 +323,15 @@ Contract:  $TEAMWORK_DIR/active/MISSION-{issue}.md
   {list of relevant files}
 
 ────────────────────────────────────────────
+{If worktree:}
+⚡ NEXT STEP (worktree mode):
+  Open a NEW terminal tab and run:
+    cd {worktree_path} && claude
+  Then: /team-drive to execute │ /team-ship when done
+
+  ⚠ Do NOT run /team-drive in this terminal — it will
+  operate on the wrong working directory.
+{If not worktree:}
 /team-drive to execute │ /team-ship when done
 ```
 
@@ -308,5 +342,8 @@ Contract:  $TEAMWORK_DIR/active/MISSION-{issue}.md
 - Issue not found → "Issue #{issue} not found. Check the number." → **STOP**
 - Issue already assigned to someone else → warn but allow claiming (team member may be handing off)
 - Issue is closed → "Issue #{issue} is already closed." → **STOP**
-- Branch already exists → "Branch {name} already exists. Switching to it." → `git checkout {branch}`
+- Branch already exists:
+  - Check if corresponding Issue is still OPEN (via `gh issue view {issue} --json state --jq '.state'`)
+  - If Issue is CLOSED → warn: "⚠ Branch exists but Issue #{issue} is closed. This is an orphan branch. Run `/team doctor fix` to clean up, then `/team-claim` again." → **STOP**
+  - If Issue is OPEN → "Branch {name} already exists. Switching to it." → `git checkout {branch}`
 - Network errors → "GitHub API error. Check your connection and `gh auth status`." → **STOP**

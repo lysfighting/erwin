@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.2.0"
+version: "3.4.1"
 ---
 
 # /team-drive — Execute Mission
@@ -125,7 +125,13 @@ CURRENT_BRANCH=$(git branch --show-current)
 
 Compare with Contract's `branch` field.
 - If on wrong branch → `git checkout {contract.branch}`
-- If branch doesn't exist locally → "Branch {branch} not found. It may have been deleted. Re-run `/team-claim #{issue}` to recreate." → **STOP**
+- If branch doesn't exist locally → display the following and **STOP**:
+  ```
+  Branch {branch} not found locally. Options:
+    1. Restore from remote: git checkout -b {branch} origin/{branch}
+    2. Re-claim the mission: /team-claim #{issue}
+    Re-claiming will regenerate the Contract from the Issue. Committed changes are preserved on remote if pushed.
+  ```
 
 ---
 
@@ -155,6 +161,40 @@ Progress:  {progress_bar}  {done}/{total}
 ```
 
 If all sub-tasks are already checked → "All sub-tasks complete. Run `/team-ship` to deliver." → **STOP**
+
+---
+
+## Step 2a: Branch Readiness Check
+
+Before starting work, check branch sync status:
+
+```bash
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-main}"
+CURRENT_BRANCH=$(git branch --show-current)
+
+# Fetch latest remote refs first (otherwise rev-list uses stale data)
+git fetch origin --quiet 2>/dev/null || true
+
+# Check how far behind base
+BEHIND_BASE=$(git rev-list --count HEAD..origin/$BASE_BRANCH 2>/dev/null || echo "0")
+
+# Check how far behind own remote
+if git rev-parse --verify "origin/$CURRENT_BRANCH" >/dev/null 2>&1; then
+  BEHIND_REMOTE=$(git rev-list --count HEAD..origin/$CURRENT_BRANCH 2>/dev/null || echo "0")
+else
+  BEHIND_REMOTE="0"
+fi
+```
+
+Display branch readiness:
+
+- If `BEHIND_BASE` > 30 → 🔴 "Branch is {N} commits behind base. Rebase strongly recommended before starting work. Run `/team-ship sync` to rebase."
+- If `BEHIND_BASE` > 10 and ≤ 30 → 🟡 "Branch is {N} commits behind base. Consider running `/team-ship sync` before driving."
+- If `BEHIND_REMOTE` > 0 → 🟡 "Local branch is {N} commits behind remote. Run `git pull --rebase` to sync."
+- If all zero → no output needed (clean state)
+
+This is informational only — do NOT stop. Warn and continue. The user may choose to sync or not.
 
 ---
 
@@ -567,27 +607,31 @@ Before marking ANY task complete, attack your own work:
 
 Only after passing self-review:
 
-### Update Contract
+### Commit + Update Contract (atomic sequence)
+
+**⚠️ ALL THREE steps below are mandatory for EVERY sub-task. Do NOT skip steps 2-3. A committed sub-task with an unchecked Contract checkbox causes the next `/team-drive` run to waste time re-verifying completed work.**
+
+**Step 1: Commit code**
+```bash
+git add {specific files changed for this sub-task}
+git commit -m "{type}({scope}): {description} | Mission: #{issue}"
+```
+
+Use appropriate commit type: `feat`, `fix`, `refactor`, `test`, `docs`. **Do NOT push** — save pushes for `/team-ship`.
+
+**Step 2: Toggle checkbox in Contract** (immediately after commit, not later)
 ```bash
 bash ~/.claude/commands/scripts/tw-contract.sh toggle-task "$CONTRACT_PATH" {N}
 ```
 
-### Sync to GitHub Issue
+**Step 3: Sync checkbox to GitHub Issue**
 ```bash
 bash ~/.claude/commands/scripts/tw-contract.sh sync-checkbox $ISSUE_NUMBER "$SUBTASK_TEXT"
 ```
 
 Non-fatal: if sync fails, warn but continue.
 
-### Commit
-```bash
-git add {specific files changed for this sub-task}
-git commit -m "{type}({scope}): {description} | Mission: #{issue}"
-```
-
-Use appropriate commit type: `feat`, `fix`, `refactor`, `test`, `docs`.
-
-**Do NOT push** — save pushes for `/team-ship`.
+**Verify**: After toggling, visually confirm the checkbox is `[x]` in the Contract. If you completed multiple sub-tasks in one implementation, toggle ALL of them before moving on.
 
 ### Next task
 Move to the next unchecked sub-task (Sequential) or next wave task (Parallel/Team). In Team Mode, also check teammate status and unblock if needed.
@@ -651,7 +695,17 @@ When blocked:
 
 ## Completion Check
 
-After all sub-tasks are checked:
+### Checkbox Gate (mandatory — catches missed toggles)
+
+**Re-read the Contract file from disk** (Read tool, not memory). Count unchecked sub-tasks (`- [ ]`).
+
+- If ANY `- [ ]` sub-tasks remain:
+  1. For each unchecked task, verify whether the work was actually done (check git log, grep code)
+  2. If work is done → toggle the checkbox NOW (`tw-contract.sh toggle-task` + `sync-checkbox`)
+  3. If work is NOT done → execute the sub-task before proceeding
+  4. **Do NOT proceed to acceptance criteria until all checkboxes are `[x]`**
+
+This gate exists because LLMs sometimes complete code work but skip the checkbox toggle step. Re-reading the Contract from disk catches this.
 
 ### Verify acceptance criteria
 Go through each acceptance criterion from the Contract. For each one:

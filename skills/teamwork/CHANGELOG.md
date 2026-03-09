@@ -2,6 +2,67 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.4.1] — 2026-03-09
+
+### Changed — Worktree mode: shared → local
+
+Worktree mode moved from shared `config.yml` to per-user `git config --local teamwork.worktree true`.
+Each team member independently chooses their isolation strategy. Not committed to git.
+
+- **Dashboard**: always shows worktree map when enabled (not just when inside a worktree)
+  - ★ marks current location, MC association for each worktree
+  - ⚠️ context mismatch warning when current branch doesn't match active mission
+- **Init merge mode**: auto-migrates old `worktree:` section to `git config --local`
+- **Doctor Check 5**: detects idle worktrees (no mission, no issue), context mismatch
+- **Doctor Fix**: idle worktree gets "Remove / Remove + delete branch / Skip" options
+- **ship done**: added comment clarifying `ensure-base` already pulls latest
+
+## [3.4.0] — 2026-03-08
+
+### Added — Doctor Actionability Upgrade
+
+Three improvements to make `/team doctor` a workflow, not just a report.
+
+**`/team doctor fix`** — Interactive fix mode:
+- 🟢 Cleanup actions (orphan branches, prunable worktrees) auto-execute with summary
+- 🟡 Warning actions (stash drop, stale branches) confirm each via AskUserQuestion
+- 🔴 Critical actions confirm each with risk explanation
+- Cross-contamination always presents both options (discard vs preserve)
+
+**`/team doctor help`** — Self-contained usage guide:
+- Shows all checks, severity levels, typical workflow
+- No need to navigate back to `/team help` to understand doctor
+
+**vs Remote column** — Branch remote tracking:
+- New column in branch table shows ahead/behind vs `origin/{branch}`
+- Highlights when local branch is behind remote (most actionable for current branch)
+- New Check 8: Remote Sync diagnostic with pull/sync recommendations
+
+**Action Plan improvements:**
+- Actions now suggest teamwork commands where applicable (`/team-ship sync`, `/team-issue`, `/team-ship done`)
+- Report footer reminds user to run `/team doctor fix`
+
+### Added — Cross-Skill UX Audit (举一反三 from doctor bugs)
+
+Systematic audit found the same 3 structural defects across all skills. Fixed:
+
+**Subcommand help routes (5 new):**
+- `/team-ship done help`, `/team-ship review help`, `/team-ship sync help`
+- `/team-rc promote help`
+- `/team doctor help` (above)
+
+**Branch readiness warnings (2 skills):**
+- `team-drive` Step 2a: shows vs base + vs remote before starting work
+- `team-ship` Step 2a-bis: sync check before shipping (hard stop if >30 behind base)
+- `team-ship` Step 4a: shows existing PR status (CI, review, mergeable) before push
+
+**Error messages → actionable guidance (5 skills, ~12 fixes):**
+- `team-ship`: test failures → suggest `/team-drive`; push failures → suggest `/team-ship sync`; CI failures → explain push-to-update flow
+- `team-drive`: branch not found → two options (restore from remote / re-claim)
+- `team-claim`: active mission → explain abandon + re-claim; not in roster → `/team init`; branch exists but issue closed → `/team doctor fix`
+- `team-issue`: milestone not found → `gh issue edit` + `/team init`; labels missing → `/team init`
+- `team-rc`: CI abort → suggest fix + re-run; staging fail → suggest deploy first
+
 ## [2.7.1] — 2026-03-04
 
 ### Fixed — Script Testing Audit (21 bugs found, 14 fixed)

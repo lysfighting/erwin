@@ -1,6 +1,6 @@
 # Teamwork — The Complete Manual
 
-> **Version 3.1.0** | Author: liyasong + casey | 2026-03-06
+> **Version 3.4.0** | Author: liyasong + casey | 2026-03-08
 >
 > AI-Native Team Coordination for GitHub.
 > For humans and AI agents. Covers WHY, HOW, and the philosophy behind every decision.
@@ -324,8 +324,8 @@ feat/E:                          D ── (your work) ──
 ┌──────────────────────────────────────────────────────────────────┐
 │                     THE SIX SKILLS (v3 — Push Model)              │
 │                                                                    │
-│     /team              Init + Dashboard + Learn + MC Detail       │
-│       │                                                            │
+│     /team              Hub — Dashboard + Init + Doctor + Help      │
+│       │                     + Learn + Queue + Wrap + Auto          │
 │       ▼                                                            │
 │     /team-issue ──► Create + assign + branch (Push)               │
 │       │              Smart routing: create / comment / update /    │
@@ -344,6 +344,10 @@ feat/E:                          D ── (your work) ──
 │     /team-rc    ──► Prepare RC / Promote to production            │
 │                      (cut rc branch / squash → main → tag)        │
 │                                                                    │
+│  SHORTCUTS:                                                        │
+│     /team auto #N ── claim → drive → ship in one command          │
+│     /team wrap    ── code-first → retroactive issue + PR          │
+│                                                                    │
 │  Each skill is a PHASE in the lifecycle.                          │
 │  Together they form a complete loop.                              │
 │  The loop never breaks.                                           │
@@ -360,6 +364,10 @@ feat/E:                          D ── (your work) ──
 | | `/team learn` | Design philosophy + diagrams |
 | | `/team queue` | All open missions sorted by priority |
 | | `/team #42` | MC detail view (branch, commits, PRs, criteria) |
+| | `/team doctor` | Local git + issue health diagnostics (7 checks, 3-layer report) |
+| | `/team wrap` | Retroactive closure: code-first → auto-create issue + PR |
+| | `/team auto #42` | One-shot: claim → drive → ship in one command |
+| | `/team auto` | Pick from assigned queue, then auto |
 | `/team-issue` | `/team-issue {desc}` | Create Issue + assign + branch (Push) |
 | | `/team-issue {desc} @user` | Create and assign to specific member |
 | | `/team-issue #42` | View Issue details |
@@ -1145,10 +1153,8 @@ deploy:
 versions:
   current: "V0.1"
 
-# Git worktree isolation (optional)
-worktree:
-  enabled: true
-  path_pattern: "../{repo}-wt-{slug}"
+# Worktree mode is LOCAL (per-user, not in config.yml):
+#   git config --local teamwork.worktree true
 
 # Mission label (legacy, prefer labels.mission)
 # mc_label: "mission"
@@ -1160,7 +1166,7 @@ worktree:
 |---------|-------------|
 | v1 | `team:` as member array, flat `mc_label`, `label_prefix:` |
 | v2 | Added `deploy:`, `versions:`, `worktree:` |
-| v3 | Added `roles:`, `members:` (separate from `team:`), `notifications:`, `project.services[]`. `team:` = metadata. Push model default. |
+| v3 | Added `roles:`, `members:` (separate from `team:`), `notifications:`, `project.services[]`. `team:` = metadata. Push model default. Worktree moved to `git config --local` (per-user). |
 
 MERGE MODE (`/team init` on existing config): preserves all existing content, updates `skill_version` + `schema_version`, appends only missing sections. Safe to run on any existing config.
 

@@ -345,8 +345,8 @@ Each team member then:
 After `/team` init, your `.teamwork/config.yml` looks like:
 
 ```yaml
-schema_version: 1
-skill_version: 3.2.1
+schema_version: 3
+skill_version: 3.4.1
 
 team:
   - github: alice
@@ -378,9 +378,7 @@ quality:
   branch_protection: true
 
 # Optional features:
-# worktree:
-#   enabled: true
-#   path_pattern: "../{repo}-wt-{slug}"
+# Worktree mode is LOCAL (per-user): git config --local teamwork.worktree true
 # versions:
 #   current: "V1.0"
 #   spec_path: ".claude/drive/v1.0-definition/spec.md"  # enables AI audit in /team-rc

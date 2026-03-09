@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.2.1"
+version: "3.4.1"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -15,6 +15,7 @@ version: "3.2.1"
 |-------|--------|
 | (empty) | Prepare: cut rc branch from develop → staging |
 | `promote` | Promote: squash merge rc → main → tag → GitHub Release |
+| `promote help` | Show promote operation usage |
 | `help` or `-h` | Show usage guide |
 
 ---
@@ -26,7 +27,7 @@ Parse `$ARGUMENTS`:
 - If `help` or `-h` → output the following and **STOP**:
 
 ```
-/team-rc — Release Candidate Lifecycle (Teamwork v3.2.1)
+/team-rc — Release Candidate Lifecycle (Teamwork v3.4.1)
 Author: liyasong + casey | 2026-03-05
 
 USAGE:
@@ -61,6 +62,7 @@ CONFIG:
   deploy.staging_workflow: "deploy.yml"  (optional) Staging deploy workflow name
 ```
 
+- If `promote help` → jump to **Operation Promote Help**
 - If `promote` → jump to **Promote Flow**
 - Otherwise → **Prepare Flow**
 
@@ -136,7 +138,7 @@ LATEST_CI=$(gh run list --branch "$BASE_BRANCH" --limit 1 \
 
 - If `success` → `Develop CI: green`
 - If not `success` → warn: `Develop CI not green (${LATEST_CI}). Proceed with caution.`
-- Ask user: `Proceed? / Abort` — If abort → **STOP**
+- Ask user: `Proceed? / Abort` — If abort → **STOP**. If you abort, fix CI failures on `$BASE_BRANCH` and re-run `/team-rc`.
 
 ### Step 5: Cut RC Branch
 
@@ -219,7 +221,7 @@ LATEST_RUN=$(gh run list --workflow "$STAGING_WORKFLOW" --branch "$RC_BRANCH" --
 ```
 
 - If conclusion is `success` → `Staging: passed`
-- If not → warn with details, ask user `Proceed anyway? / Abort`
+- If not → warn with details, ask user `Proceed anyway? / Abort`. Deploy to staging first. Check your CI/CD pipeline or manually trigger deployment.
 
 **If not set:** `(Staging check skipped — no workflow configured)`
 
@@ -418,4 +420,42 @@ Milestone:  {MILESTONE_FULL} — {status}
 
 ────────────────────────────────────────────
 /team-rc to prepare next RC
+```
+
+---
+
+## Operation Promote Help
+
+> Triggered by `/team-rc promote help`.
+
+Output the following and **STOP**:
+
+```
+/team-rc promote — Promote RC to Production
+═══════════════════════════════════════════
+
+USAGE:
+  /team-rc promote          Promote current RC to production
+
+WHAT IT DOES:
+  1. Verify RC branch exists and CI is green
+  2. Verify staging deployment succeeded (if configured)
+  3. Squash merge RC → main (production branch)
+  4. Create git tag with version
+  5. Create GitHub Release with auto-generated notes
+  6. Clean up RC branch
+
+WHEN TO USE:
+  After RC has been tested on staging and approved.
+  Flow: /team-rc → (test staging) → /team-rc promote
+
+PREREQUISITES:
+  - RC branch must exist (created by /team-rc)
+  - CI must be green on RC branch
+  - Staging deploy must be successful (if quality.staging_gate configured)
+
+TROUBLESHOOTING:
+  "No RC branch found" → Run /team-rc first to cut an RC
+  "CI not green" → Fix failures on RC branch, push, wait for CI
+  "Staging not verified" → Deploy to staging first, verify manually
 ```
