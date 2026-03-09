@@ -11,7 +11,7 @@
 1. **Showcase** — Educational platform for understanding drive-skill (React web app in `showcase/`)
 2. **Skills Factory** — Incubator for new Claude Code skills (`skills/` directory)
 
-Skills pipeline: `_project/ideas/skills/` (ideas) → `.claude/commands/` (incubation) → `skills/` (released)
+Skills pipeline: `_project/ideas/skills/` (ideas) → `skills/` (released) → `install.sh` → `~/.claude/commands/`
 
 Install all erwin skills: `./install.sh`
 
@@ -30,7 +30,9 @@ erwin/
 ├── skills/                 ← Skills Factory (source of truth for all erwin skills)
 │   ├── README.md           ← Skill index + contribution guide
 │   ├── erwin-init/         ← /erwin-init skill (v1.0.0)
-│   └── visual-test/        ← /visual-test skill (v1.0.0)
+│   ├── visual-test/        ← /visual-test skill (v1.0.0)
+│   ├── session-record/     ← /session-record skill (v1.0.0)
+│   └── teamwork/           ← /team, /team-issue, /team-claim, /team-drive, /team-ship, /team-rc (v3.5.1)
 │
 ├── _project/               ← Project Intelligence Layer
 │   ├── GOALS.md            ← Vision + OKRs (read when you lose direction)
@@ -42,10 +44,10 @@ erwin/
 │   ├── issues/             ← Bug/feature tracking (ISS-NNNN-title.md)
 │   └── releases/           ← Narrative release notes
 │
-├── .claude/commands/       ← Skill incubation (project-level, pre-release)
-│
 ├── docs/                   ← Technical Documentation
-│   └── *.md                ← Architecture, analysis, research
+│   ├── README.md           ← Index (active/archived/research)
+│   ├── research/           ← One-time analysis and research reports
+│   └── *.md                ← Architecture docs, design specs
 │
 ├── showcase/         ← Code Artifact (React web app)
 │   ├── src/sections/       ← 18 content sections
@@ -95,6 +97,8 @@ See `docs/drive-showcase-v2-architecture.md`. Four-Act structure:
 | ADRs | `_project/decisions/` |
 | Skill ideas pipeline | `_project/ideas/skills/` |
 | Released skills | `skills/` |
+| Teamwork manual | `docs/teamwork-ai-manual.md` |
+| Docs index | `docs/README.md` |
 | drive-skill source | `reference/drive-skill/commands/drive.md` |
 | React app root | `showcase/src/App.tsx` |
 
