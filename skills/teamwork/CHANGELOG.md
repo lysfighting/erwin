@@ -2,6 +2,23 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.5.0] — 2026-03-09
+
+### Added — `/team config` + dashboard version + documentation completeness
+
+- **`/team config`**: new subcommand — shows current config.yml content, worktree status, edit instructions.
+  Gives users a clear entry point to view/modify settings without re-running init.
+- **Dashboard version**: both leader and member dashboards now show `Teamwork v{version}` in footer.
+  Version is read dynamically from `skill_version` in config (not hardcoded).
+- **Help updated**: added `/team config`, `/team init`, worktree section, removed hardcoded version.
+  Version now read from config via `tw-config.sh`.
+- **Learn updated**: added Section 11 "Config Management" — shared vs local config, edit workflow.
+  Version also dynamic.
+- **Init merge mode summary**: now shows actual `skill_version` (was hardcoded "3.4.0"),
+  includes `/team config` tip.
+- **Argument table**: added `config` entry in both routing table and header table.
+- **README/ONBOARDING/Manual**: added `/team config` references across all docs.
+
 ## [3.4.3] — 2026-03-09
 
 ### Fixed — Merge mode logic gaps + stale references

@@ -361,7 +361,8 @@ feat/E:                          D ── (your work) ──
 | `/team` | `/team` | Dashboard — who's working on what (role-based view) |
 | | `/team init` | Initialize teamwork in current repo |
 | | `/team help` | Quick start guide |
-| | `/team learn` | Design philosophy + diagrams |
+| | `/team learn` | Design philosophy + diagrams (11 sections) |
+| | `/team config` | View current config + edit instructions |
 | | `/team queue` | All open missions sorted by priority |
 | | `/team #42` | MC detail view (branch, commits, PRs, criteria) |
 | | `/team doctor` | Local git + issue health diagnostics (7 checks, 3-layer report) |

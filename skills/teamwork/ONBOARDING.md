@@ -342,11 +342,13 @@ Each team member then:
 
 ## Config Reference
 
+Run `/team config` to view your current config with edit instructions.
+
 After `/team` init, your `.teamwork/config.yml` looks like:
 
 ```yaml
 schema_version: 3
-skill_version: 3.4.3
+skill_version: 3.5.0
 
 team:
   - github: alice

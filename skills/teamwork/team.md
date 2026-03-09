@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.4.3"
+version: "3.5.0"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -17,6 +17,7 @@ version: "3.4.3"
 | `#N` or number | Show MC #N details (branch, commits, PRs, criteria) |
 | `help` or `-h` | Show quick-start guide for new users |
 | `learn` | Show design philosophy, visual diagrams, and manual |
+| `config` | View current config + edit instructions |
 | `init` | Force re-initialize (even if config exists) |
 | `queue` | Show all open mission Issues (full list, sorted by priority) |
 | `doctor` | Run local git + issue health diagnostics |
@@ -32,6 +33,7 @@ version: "3.4.3"
 Parse `$ARGUMENTS`:
 - If `help` or `-h` → jump to **Operation Help**
 - If `learn` → jump to **Operation Learn**
+- If `config` → jump to **Operation Config**
 - If starts with `#` or is a number → jump to **Operation MC Detail**
 - If `init` → jump to **Step 0** (skip config check, force init)
 - If `queue` → jump to **Operation Queue**
@@ -46,22 +48,32 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-Output the following guide directly to the user, then **STOP**:
+Read `skill_version` from config for the header:
+
+```bash
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || TEAMWORK_DIR=""
+if [ -n "$TEAMWORK_DIR" ]; then
+  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.0" 2>/dev/null)
+else
+  SKILL_VERSION="3.5.0"
+fi
+```
+
+Output the following guide (substitute `{SKILL_VERSION}`) directly to the user, then **STOP**:
 
 ```
-TEAMWORK v3.4.3 — AI-Native Team Coordination (Push Model)
-Author: liyasong + casey | Released: 2026-03-08
+TEAMWORK v{SKILL_VERSION} — AI-Native Team Coordination (Push Model)
 ═══════════════════════════════════════════
 
 SETUP (one time):
   /team                 Auto-detect project, create config + CI + labels
+  /team init            Force re-initialize (upgrade existing config)
 
 DAILY WORKFLOW:
   /team                 See role-based dashboard (leader=team view, member=my view)
   /team #42             View MC #42 details (branch, commits, PRs)
   /team doctor          Local git + issue health diagnostics
   /team doctor fix      Interactive fix — execute actions with confirmation
-  /team doctor help     Doctor usage guide
   /team-issue <desc>    Create MC (solo: self-assign; team: prompt for assignee)
   /team-issue <desc> @user  Create MC + assign to @user
   /team-issue fix #N    Fix untracked Issue (add teamwork labels)
@@ -87,23 +99,16 @@ RC LIFECYCLE:
   /team-rc              Prepare: cut rc branch from develop → staging
   /team-rc promote      Promote: squash merge rc → main, tag, GitHub Release
 
-LIFECYCLE (Push Model):
-  /team-issue → assigns @member → Issue + branch created
-  /team-claim #N → Contract → /team-drive → /team-ship → PR
-  /team auto #N  ← shortcut: claim+drive+ship in one command
-  /team-rc → staging → /team-rc promote → production
-
-  Any team member can create Issues and assign to anyone.
-  Solo projects (1 member) auto-assign to self.
-
-CONFIG:
-  .teamwork/config.yml  (or .teamspace/config.yml)
-  Edit roles, members, notifications, quality gates directly.
-
-INFO:
-  /team learn           Design philosophy + visual guide (10 sections)
+CONFIG & INFO:
+  /team config          View current config + edit instructions
+  /team learn           Design philosophy + visual guide (11 sections)
   /team queue           Browse all open missions sorted by priority
   /team help            This help screen
+
+WORKTREE (per-user, local):
+  git config --local teamwork.worktree true    Enable worktree isolation
+  git config --local teamwork.worktree false   Disable (branch-only mode)
+  Dashboard shows worktree map when enabled.
 
 REQUIREMENTS:
   gh (GitHub CLI)       gh auth login
@@ -122,10 +127,21 @@ DOCS (in erwin repo):
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-Output the following directly and **STOP** (no file reading needed — content is self-contained):
+Read `skill_version` from config for the header:
+
+```bash
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || TEAMWORK_DIR=""
+if [ -n "$TEAMWORK_DIR" ]; then
+  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.0" 2>/dev/null)
+else
+  SKILL_VERSION="3.5.0"
+fi
+```
+
+Output the following (substitute `{SKILL_VERSION}`) directly and **STOP** (no file reading needed — content is self-contained):
 
 ```
-TEAMWORK v3.4.3 — Design Philosophy & Complete Guide
+TEAMWORK v{SKILL_VERSION} — Design Philosophy & Complete Guide
 ═══════════════════════════════════════════════════════════════
 
 1. WHY THIS MODEL?
@@ -319,6 +335,41 @@ Sometimes you don't follow the standard flow:
   4. Scripts for deterministic ops, LLM for judgment calls
   5. 6 skill limit — new features = subcommands, not new skills
 
+
+11. CONFIG MANAGEMENT
+──────────────────────
+
+Two layers of config — shared team settings vs personal preferences.
+
+  SHARED (committed to git):
+  ┌──────────────────────────────────────────────────────┐
+  │ .teamwork/config.yml (or .teamspace/config.yml)      │
+  │                                                      │
+  │ schema_version, skill_version                        │
+  │ roles, members                                       │
+  │ project (language, test/lint/build commands)          │
+  │ conventions (branch pattern, base/production branch) │
+  │ label_prefix, quality gates                          │
+  │ notifications, versions                              │
+  └──────────────────────────────────────────────────────┘
+
+  LOCAL (per-user, not committed):
+  ┌──────────────────────────────────────────────────────┐
+  │ git config --local teamwork.worktree true/false      │
+  │                                                      │
+  │ Stored in .git/config (per-clone, per-user)          │
+  │ Each team member independently chooses worktree mode │
+  └──────────────────────────────────────────────────────┘
+
+  Commands:
+    /team config          View current config + how to edit
+    /team init            Re-run setup (merge mode: preserves existing,
+                          upgrades version, adds missing sections,
+                          asks worktree preference if not set)
+
+  Edit config.yml directly — changes take effect immediately.
+  No re-init needed for day-to-day config changes.
+
 ═══════════════════════════════════════════════════════════════
 DEEP DIVE (docs in erwin repo):
   docs/teamwork-ai-manual.md        ← Complete manual (15 chapters)
@@ -328,6 +379,52 @@ DEEP DIVE (docs in erwin repo):
   skills/teamwork/CHANGELOG.md      ← Version history
 ═══════════════════════════════════════════════════════════════
 ```
+
+---
+
+## Operation Config
+
+> Triggered by `/team config`. Shows current config with edit instructions.
+
+### Prerequisites
+
+```bash
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || {
+  echo "No teamwork config found. Run /team init first."
+  # STOP
+}
+```
+
+### Display config
+
+```bash
+SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "" 2>/dev/null)
+WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
+cat $TEAMWORK_DIR/config.yml
+```
+
+Output formatted display:
+
+```
+⚙️ TEAMWORK CONFIG ── v{SKILL_VERSION} ──────────────
+Config: {TEAMWORK_DIR}/config.yml
+Worktree mode: {WORKTREE_ENABLED} (local, per-user)
+
+────────── Shared Config (committed) ──────────
+{full config.yml content}
+────────── Local Settings (per-user) ──────────
+Worktree: {WORKTREE_ENABLED}
+
+────────────────────────────────────────────
+HOW TO EDIT:
+  Shared config: edit {TEAMWORK_DIR}/config.yml directly
+                 (changes take effect immediately, no re-init needed)
+  Worktree mode: git config --local teamwork.worktree true/false
+  Full re-init:  /team init (upgrades version, adds missing sections)
+────────────────────────────────────────────
+```
+
+Then **STOP**.
 
 ---
 
@@ -731,8 +828,8 @@ Preserve all existing content. Only update `skill_version` and append missing to
 
 ```bash
 # Update skill_version line without touching anything else
-sed -i '' "s/^skill_version:.*/skill_version: 3.4.3/" $TEAMWORK_DIR/config.yml
-# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.4.3/" $TEAMWORK_DIR/config.yml
+sed -i '' "s/^skill_version:.*/skill_version: 3.5.0/" $TEAMWORK_DIR/config.yml
+# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.5.0/" $TEAMWORK_DIR/config.yml
 
 # Update schema_version if present
 if grep -q "^schema_version:" $TEAMWORK_DIR/config.yml; then
@@ -902,14 +999,24 @@ fi
 
 **Step 7 — Show merge summary:**
 
+Read `SKILL_VERSION` from the config file AFTER the sed update in Step 1 (to get the updated value):
+
+```bash
+SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.0" 2>/dev/null)
+WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
+```
+
 ```
 ✅ Config updated (merge mode — existing config preserved)
-   schema_version → 3 | skill_version → 3.4.2
+   skill_version → {SKILL_VERSION}
    Preserved sections: {list of sections kept}
    Added sections: {list of sections appended, or "(none — already complete)"}
    {If worktree migrated:} Migrated: worktree → git config --local
-   Worktree mode: {enabled / disabled / already configured}
+   Worktree mode: {WORKTREE_STATUS}
+   Tip: /team config to view full config │ /team to see dashboard
 ```
+
+After showing the merge summary, proceed to **Step 6: Dashboard** (show the dashboard as confirmation that init succeeded). This gives the user immediate visual feedback.
 
 Do NOT overwrite `team`/`members`, `github`, `versions`, `roles`, `notifications`, or any unrecognized section.
 
@@ -921,7 +1028,7 @@ Write full config based on detected project info + user answers:
 
 ```yaml
 schema_version: 3
-skill_version: 3.4.3
+skill_version: 3.5.0
 
 roles:
   - id: leader
@@ -1613,6 +1720,7 @@ eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
+SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "?" 2>/dev/null)
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -1734,8 +1842,9 @@ TEAM DASHBOARD ── {repo name} ──────────────
 
 💡 Next: {one context-specific suggestion}
 ────────────────────────────────────────────
-/team help │ /team doctor │ /team #N
+/team help │ /team doctor │ /team #N │ /team config
 /team-issue │ /team-claim │ /team-drive │ /team-ship │ /team-rc
+Teamwork v{SKILL_VERSION}
 ```
 
 **Visual encoding rules** (apply to ALL teamwork output):
@@ -1800,8 +1909,9 @@ MY DASHBOARD ── {repo name} ────────────────
 
 💡 Next: {one context-specific suggestion}
 ────────────────────────────────────────────
-/team help │ /team doctor │ /team #N
+/team help │ /team doctor │ /team #N │ /team config
 /team-claim │ /team-drive │ /team-ship │ /team-rc
+Teamwork v{SKILL_VERSION}
 ```
 
 ---
