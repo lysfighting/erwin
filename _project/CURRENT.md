@@ -7,46 +7,41 @@
 ## Project Status
 
 - **Version**: 0.5.0 (in progress)
-- **Last Updated**: 2026-03-07
-- **Last Session**: [2026-03-07-AC](sessions/2026-03-07-AC.md) (Session AC — 视觉统一 + milestone 回流 + 闭环讨论)
+- **Last Updated**: 2026-03-09
+- **Last Session**: [2026-03-09-AD](sessions/2026-03-09-AD.md) (Session AD — Teamwork v3.4–3.5 + docs overhaul)
 
 ## Current Phase
 
-**Phase**: vi_agent 闭环完善 + Design Coding Skill 讨论并行
+**Phase**: Teamwork v3.x 完善 + docs 整理
 
 ## What Was Just Completed
 
-**Session AC** — Teamwork v3.2.0 视觉统一 + milestone 回流 + 闭环讨论:
+**Session AD** — Teamwork v3.4.1–v3.5.1 + docs 全面整理:
 
-- 6 个 skill 文件统一 emoji visual encoding（priority dots, section icons, CI icons, progress bar）
-- Dashboard 性能优化（7-8 串行 API → 4-5 并行）
-- vi_agent milestone 前缀匹配 hotfix 回流 erwin（4 处，含 1 处两边都漏的 batch gap）
-- 闭环讨论：`/team-wrap`（反向闭环）三条路径确定 + 正向闭环延后
-- Session log: `_project/sessions/2026-03-07-AC.md`
+- Teamwork v3.4.1: worktree 模式从共享 config 改为 per-user `git config --local`
+- Teamwork v3.4.2–3.4.3: worktree dashboard 渲染可靠性 + merge mode 逻辑修复
+- Teamwork v3.5.0: `/team config` 子命令 + dashboard 版本显示 + help/learn 完善
+- Teamwork v3.5.1: design review — ship base guard + CI failure 保留 Contract + drive fallback
+- docs/ 目录整理: README index, 3 研究文档移入 research/, 4 篇加 archived banner
+- CHANGELOG.md 补全: v3.1.0–v3.5.1 共 9 个版本记录回补
+- CLAUDE.md 结构同步: 补全 teamwork/ + session-record/, 移除过时 .claude/commands/
+- 版本一致性修复: manual + team.md 共 5 处版本号统一到 3.5.1
 
 ## Active Task / What's In Progress
 
-1. **vi_agent 分支问题**：工作目录在 `system_v5`，skill 更新在 `main`（已 push）
-2. Design Coding Skill — 讨论阶段（未进入实现）
+1. **Self-drive 审阅循环**: 审阅 teamwork 设计 + 完善内容（进行中）
+2. **待做**: teamwork-ai-manual.md 内容审计（是否覆盖 v3.x 所有新功能）
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **vi_agent 分支处理**：`system_v5` → merge main 或 checkout main
+2. **teamwork-ai-manual.md 审计**: 检查 15 章手册是否覆盖 /team config, doctor fix, wrap, auto
 3. **Teamwork 18 项需求实现**（按优先级）：
    - A. Release 分支完整生命周期（prep, hotfix routing, backport, cleanup）
    - B. Deploy workflow（deploy.yml, staging gate）
    - C. Issue 版本追踪（found-in labels, version labels）
-   - D. Skill 适配（team-ship/team-claim 感知 release 分支）
-   - E. Config schema（release_branch 从静态值改为模式）
    - 详见 `_project/sessions/2026-03-05-Z.md` 需求汇总
-4. **Teamwork 可视化增强**（Session AB 结论）：
-   - `/team init` 集成 GitHub Projects 看板（`gh project create`）
-   - `/team` board ASCII 汇总增强
-   - Review 路径加速（/team-ship 内嵌 diff feedback）
-   - 详见 `_project/sessions/2026-03-05-AB.md`
-5. **继续 Design Coding Skill 讨论**
-6. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
+4. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
 
@@ -64,26 +59,22 @@
 
 ### Skills Factory
 - [x] /session-record v1.0.0 — full verbatim session recording skill
-- [x] Teamwork v2.0 — 4 GitHub-first skills
-- [x] Teamwork v2.1 — 6 vi-agent features + 13 bug fixes
-- [x] Teamwork v2.3 — status fix + version management + format standardization + scripts
-- [x] Teamwork v2.4 — stability hardening + bidirectional sync + tw-config.sh
-- [x] Teamwork v2.4.1 — E2E validated on vi_agent + mc_label dual-schema + inline comment fix
-- [x] Teamwork v2.5.0 — team-release skill + init idempotency fix + doc sweep
-- [x] Teamwork v2.5.1 — team-issue duplicate check (gh search + LLM semantic match)
-- [x] Teamwork v2.6.0 — dual-branch model + release safety gates + post-merge Action + config-driven refs
-- [x] Teamwork v2.6.1 — falsification audit: 6 critical + 15 high bug fixes across all files
-- [x] Teamwork v2.7.0 — script extraction: 4 scripts (32 subcommands) + 6 skill files refactored
-- [x] Teamwork v2.7.1 — script testing audit: 21 bugs found, 14+4 fixed across 4 scripts
-- [x] Teamwork v2.7.2 — vi_agent E2E validation: 3 bugs found, 3 fixed
-- [x] Teamwork v2.7.3 — init audit: dynamic branch protection + post-merge workflow + vi_agent deploy
+- [x] Teamwork v2.0–v2.7.3 — GitHub-first skills, script extraction, E2E validation
+- [x] Teamwork v3.1.0 — untracked issue detection + UNTRACKED dashboard + learn audit
 - [x] Teamwork v3.2.0 — unified emoji visual encoding + milestone prefix matching backport
+- [x] Teamwork v3.2.1 — script extraction + deep bug fix + stale cleanup
+- [x] Teamwork v3.3.0 — /team wrap + /team auto + 16 bugs fixed (3 CRITICAL + 8 HIGH)
+- [x] Teamwork v3.4.0 — doctor actionability: fix mode, help, vs Remote column, Check 8
+- [x] Teamwork v3.4.1 — worktree local mode + dashboard map + doctor idle detection
+- [x] Teamwork v3.4.2 — worktree dashboard mandatory render
+- [x] Teamwork v3.4.3 — merge mode logic gaps + worktree audit
+- [x] Teamwork v3.5.0 — /team config + dashboard version + docs completeness
+- [x] Teamwork v3.5.1 — design review: logic gaps + docs alignment
 
 ## Known Issues / Blockers
 
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
-- Teamwork: version_file (package.json bump) not yet in team-release — deferred to future version
-- Teamwork: `/team wrap` + `/team auto` 已实现 v3.3.0，经 3-agent 并行审计修复 16 bugs（3 CRITICAL + 8 HIGH）
+- Teamwork: version_file (package.json bump) not yet in team-rc — deferred
 - vi_agent: working directory on `system_v5` branch, skill updates on `main`
 
 ## File Locations
@@ -94,7 +85,8 @@
 | Idea garden | `_project/ideas/` |
 | ADRs | `_project/decisions/` |
 | V2 architecture | `docs/drive-showcase-v2-architecture.md` |
-| Teamwork architecture | `docs/teamwork-ai-manual.md` |
+| Teamwork manual | `docs/teamwork-ai-manual.md` |
+| Docs index | `docs/README.md` |
 | Teamwork skills | `skills/teamwork/` |
 | Teamwork scripts | `skills/teamwork/scripts/` |
 | App root | `showcase/src/App.tsx` |
