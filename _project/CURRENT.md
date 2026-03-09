@@ -16,32 +16,28 @@
 
 ## What Was Just Completed
 
-**Session AD** — Teamwork v3.4.1–v3.5.1 + docs 全面整理:
+**Session AD** (3 conversation windows) — Teamwork v3.4–3.5 + docs 全面审阅:
 
-- Teamwork v3.4.1: worktree 模式从共享 config 改为 per-user `git config --local`
-- Teamwork v3.4.2–3.4.3: worktree dashboard 渲染可靠性 + merge mode 逻辑修复
-- Teamwork v3.5.0: `/team config` 子命令 + dashboard 版本显示 + help/learn 完善
-- Teamwork v3.5.1: design review — ship base guard + CI failure 保留 Contract + drive fallback
-- docs/ 目录整理: README index, 3 研究文档移入 research/, 4 篇加 archived banner
-- CHANGELOG.md 补全: v3.1.0–v3.5.1 共 9 个版本记录回补
-- CLAUDE.md 结构同步: 补全 teamwork/ + session-record/, 移除过时 .claude/commands/
-- 版本一致性修复: manual + team.md 共 5 处版本号统一到 3.5.1
+- Teamwork v3.4.1–v3.5.1: worktree per-user, dashboard 可靠性, merge mode, /team config, design review
+- docs/ 整理: README index, archived banners, research/ 子目录, 跨引用修复
+- CHANGELOG + CLAUDE.md + 版本一致性修复
+- manual 审计: doctor/operations/visual encoding/wrap/auto 新增 ~90 行
+- Dev utilities 文档化 (tw-bump-version.sh, tw-e2e-test.sh)
+- MEMORY.md 清理: 214→131 行, teamwork-lessons.md topic file
 
 ## Active Task / What's In Progress
 
-1. **Self-drive 审阅循环**: 审阅 teamwork 设计 + 完善内容（进行中）
-2. **待做**: teamwork-ai-manual.md 内容审计（是否覆盖 v3.x 所有新功能）
+无活跃任务。Self-drive 审阅循环已完成 11 轮任务。
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **teamwork-ai-manual.md 审计**: 检查 15 章手册是否覆盖 /team config, doctor fix, wrap, auto
-3. **Teamwork 18 项需求实现**（按优先级）：
+2. **Teamwork 18 项需求实现**（按优先级）：
    - A. Release 分支完整生命周期（prep, hotfix routing, backport, cleanup）
    - B. Deploy workflow（deploy.yml, staging gate）
    - C. Issue 版本追踪（found-in labels, version labels）
    - 详见 `_project/sessions/2026-03-05-Z.md` 需求汇总
-4. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
+3. **Showcase 任务仍待完成**：DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
 
