@@ -148,7 +148,7 @@ install_skill() {
   if [[ -d "$skill_dir/scripts" ]]; then
     local scripts_dst="$TARGET_DIR/scripts"
     mkdir -p "$scripts_dst"
-    for script in "$skill_dir/scripts/"*.sh; do
+    for script in "$skill_dir/scripts/"*.sh "$skill_dir/scripts/"*.txt; do
       [[ -f "$script" ]] || continue
       local script_name="$(basename "$script")"
       local script_dst="$scripts_dst/$script_name"
@@ -159,7 +159,7 @@ install_skill() {
       else
         ln -sf "$script" "$script_dst"
       fi
-      chmod +x "$script_dst"
+      [[ "$script_name" == *.sh ]] && chmod +x "$script_dst"
       echo -e "${GREEN}  📜 scripts/$script_name${NC}"
     done
   fi

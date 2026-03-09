@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.5.1"
+version: "3.7.0"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -53,9 +53,9 @@ Read `skill_version` from config for the header:
 ```bash
 TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || TEAMWORK_DIR=""
 if [ -n "$TEAMWORK_DIR" ]; then
-  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.1" 2>/dev/null)
+  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.7.0" 2>/dev/null)
 else
-  SKILL_VERSION="3.5.1"
+  SKILL_VERSION="3.7.0"
 fi
 ```
 
@@ -101,13 +101,14 @@ RC LIFECYCLE:
 
 CONFIG & INFO:
   /team config          View current config + edit instructions
-  /team learn           Design philosophy + visual guide (11 sections)
+  /team learn           Design philosophy + visual guide (13 sections)
   /team queue           Browse all open missions sorted by priority
   /team help            This help screen
 
-WORKTREE (per-user, local):
+LOCAL SETTINGS (per-user):
   git config --local teamwork.worktree true    Enable worktree isolation
   git config --local teamwork.worktree false   Disable (branch-only mode)
+  Tab title: /team init configures terminal tab to show branch name
   Dashboard shows worktree map when enabled.
 
 REQUIREMENTS:
@@ -132,9 +133,9 @@ Read `skill_version` from config for the header:
 ```bash
 TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || TEAMWORK_DIR=""
 if [ -n "$TEAMWORK_DIR" ]; then
-  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.1" 2>/dev/null)
+  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.7.0" 2>/dev/null)
 else
-  SKILL_VERSION="3.5.1"
+  SKILL_VERSION="3.7.0"
 fi
 ```
 
@@ -208,8 +209,12 @@ GitHub:  Issue OPEN ────────────────────
 
 AI generates dozens of commits per feature. These are machine noise:
 
-  Without squash:  fix typo → WIP → try approach → revert → fix → forgot save
-  With squash:     feat: user login system (#42)
+  mission/42-login ── 17 commits by AI ──────────────────►
+  │ fix typo │ WIP │ try approach │ revert │ fix │ forgot save │ ...
+  └───────────────────────────┬──────────────────────────────────┘
+                              │ squash merge
+                              ▼
+  develop ── feat: user login system (#42) ──►   ← 1 clean commit
 
 One Issue = one squash commit = one clean history entry.
 
@@ -292,21 +297,34 @@ Sometimes you don't follow the standard flow:
 8. DASHBOARD & DOCTOR
 ──────────────────────
 
-  /team             Dashboard — GitHub status overview
-                    Shows: missions, PRs, cleanup, team WIP
-                    Role-based: leader sees team, member sees self
+  /team — role-based GitHub status overview:
 
-  /team doctor      Local diagnostics — git health report
-                    8 checks: orphan branches, cross-contamination,
-                    branch staleness, stale stashes, worktree health,
-                    shippable PRs, issue health, remote sync
+  TEAM DASHBOARD ── org/repo ───────────────
+  V0.1  █████░░░░░  50%  5/10
 
-                    Output: 3-layer report
-                    ┌─────────────────────────────────────────┐
-                    │ Layer 1: Snapshot Tables (raw data)     │
-                    │ Layer 2: Diagnosis (cross-referencing)  │
-                    │ Layer 3: Action Plan (exact commands)   │
-                    └─────────────────────────────────────────┘
+  👥 TEAM (3 members)
+    alice (tech-lead)
+      🟢 #42 Add user auth [🟠]
+      🔀 #45 — ✅
+    bob (backend)
+      🟢 #50 API rate limiting [🟡]
+    charlie (frontend)
+      ⚪ (idle)
+
+  📋 UNASSIGNED (2)
+    🔴 #48  Fix payment crash
+  ──────────────────────────────────────────
+
+  /team doctor — local diagnostics (3-layer report):
+
+  ┌─────────────────────────────────────────┐
+  │ Layer 1: Snapshot Tables (raw data)     │
+  │ Layer 2: Diagnosis (cross-referencing)  │
+  │ Layer 3: Action Plan (exact commands)   │
+  └─────────────────────────────────────────┘
+  8 checks: orphan branches, cross-contamination,
+  branch staleness, stale stashes, worktree health,
+  shippable PRs, issue health, remote sync
 
 
 9. RC LIFECYCLE (the key innovation)
@@ -356,23 +374,74 @@ Two layers of config — shared team settings vs personal preferences.
   LOCAL (per-user, not committed):
   ┌──────────────────────────────────────────────────────┐
   │ git config --local teamwork.worktree true/false      │
+  │ Terminal tab title hook (~/.zshrc or equivalent)     │
   │                                                      │
-  │ Stored in .git/config (per-clone, per-user)          │
-  │ Each team member independently chooses worktree mode │
+  │ Stored locally — each member configures once         │
+  │ /team init asks worktree + tab title preferences     │
   └──────────────────────────────────────────────────────┘
+
+  Tab title: terminal tab auto-shows current branch name
+  (e.g. mission/42-add-auth). One-time shell hook setup.
 
   Commands:
     /team config          View current config + how to edit
     /team init            Re-run setup (merge mode: preserves existing,
                           upgrades version, adds missing sections,
-                          asks worktree preference if not set)
+                          asks worktree + tab title preferences)
 
   Edit config.yml directly — changes take effect immediately.
   No re-init needed for day-to-day config changes.
 
+12. MANUAL TASKS & HUMAN WORKFLOWS
+────────────────────────────────────
+
+Some missions include tasks that AI cannot automate:
+server access, third-party console config, deployment verification, etc.
+
+  CLASSIFICATION (during /team-drive plan validation):
+    ○  Code task — AI executes automatically
+    🔧 MANUAL task — requires human action (AI skips)
+
+  EXECUTION:
+    /team-drive executes code tasks only.
+    At completion, shows "YOUR TURN" handoff:
+
+    🔧 YOUR TURN — 2 manual steps remaining
+    ═══════════════════════════════════════
+      1. Configure API keys in production
+         → SSH to prod, update secrets manager
+      2. Verify webhook in Stripe dashboard
+         → dashboard.stripe.com → Webhooks
+    ═══════════════════════════════════════
+
+    Options: Done / Will do later / Need help / Skip
+
+  SHIPPING:
+    🔧 MANUAL tasks don't block /team-ship.
+    PR includes "Manual Steps (post-merge)" checklist.
+    User completes manual steps after merge.
+
+13. TIPS SYSTEM
+────────────────
+
+Every /team-* command shows a random tip after output:
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ 📦 SHIPPED ── #42 user login ─────────────              │
+  │ ...                                                     │
+  │ ────────────────────────────────────────────             │
+  │ /team-ship done (after merge) │ /team-ship review       │
+  │                                                         │
+  │ 💡 TIP: /team auto #N — 一键 claim→drive→ship          │
+  └─────────────────────────────────────────────────────────┘
+
+  Tips live in scripts/tw-tips.txt. Progressive feature discovery
+  through natural usage — no need to read the manual to learn tricks.
+
+
 ═══════════════════════════════════════════════════════════════
 DEEP DIVE (docs in erwin repo):
-  docs/teamwork-ai-manual.md        ← Complete manual (15 chapters)
+  docs/teamwork-ai-manual.md        ← Complete manual (17 chapters)
   docs/team-doctor-design.md        ← Doctor design spec + examples
   skills/teamwork/ONBOARDING.md     ← Team onboarding guide
   skills/teamwork/CHANGELOG.md      ← Version history
@@ -827,8 +896,8 @@ Preserve all existing content. Only update `skill_version` and append missing to
 
 ```bash
 # Update skill_version line without touching anything else
-sed -i '' "s/^skill_version:.*/skill_version: 3.5.1/" $TEAMWORK_DIR/config.yml
-# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.5.1/" $TEAMWORK_DIR/config.yml
+sed -i '' "s/^skill_version:.*/skill_version: 3.7.0/" $TEAMWORK_DIR/config.yml
+# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.7.0/" $TEAMWORK_DIR/config.yml
 
 # Update schema_version if present
 if grep -q "^schema_version:" $TEAMWORK_DIR/config.yml; then
@@ -978,6 +1047,66 @@ If "Branch only" selected:
 fi
 ```
 
+**Step 5b — Terminal tab title (one-time, per-user):**
+
+Check if the user's shell already has a teamwork tab-title hook configured:
+
+```bash
+SHELL_RC="$HOME/.$(basename "$SHELL")rc"  # ~/.zshrc, ~/.bashrc, etc.
+grep -q 'teamwork-tab-title' "$SHELL_RC" 2>/dev/null && echo "CONFIGURED" || echo "NOT_CONFIGURED"
+```
+
+If `NOT_CONFIGURED`, use `AskUserQuestion`:
+
+```
+question: "多窗口开发时，终端标签页可以自动显示当前 branch 名（如 mission/42-add-auth）。这样切换窗口时一眼就知道每个窗口在做什么任务，不需要切过去运行命令。是否配置？"
+options:
+  - label: "配置（推荐）"
+    description: "自动在 shell 配置中添加一行 hook，每次进入目录时更新标签页标题"
+  - label: "跳过"
+    description: "以后可以手动配置"
+```
+
+If user selects "配置":
+
+1. Detect `$SHELL` (zsh, bash, fish, etc.)
+2. Read the user's shell rc file (`$SHELL_RC`)
+3. Based on shell type, append the appropriate hook:
+
+**zsh** (`~/.zshrc`):
+```bash
+cat >> "$SHELL_RC" << 'HOOK'
+
+# teamwork-tab-title: show current git branch in terminal tab
+precmd() { local b=$(git branch --show-current 2>/dev/null); [[ -n "$b" ]] && printf '\e]1;%s\a' "$b"; }
+HOOK
+```
+
+**bash** (`~/.bashrc`):
+```bash
+cat >> "$SHELL_RC" << 'HOOK'
+
+# teamwork-tab-title: show current git branch in terminal tab
+PROMPT_COMMAND='b=$(git branch --show-current 2>/dev/null); [[ -n "$b" ]] && printf "\e]1;%s\a" "$b"'
+HOOK
+```
+
+**fish** (`~/.config/fish/config.fish`):
+```bash
+SHELL_RC="$HOME/.config/fish/config.fish"
+cat >> "$SHELL_RC" << 'HOOK'
+
+# teamwork-tab-title: show current git branch in terminal tab
+function fish_title; set -l b (git branch --show-current 2>/dev/null); and echo $b; or echo (prompt_pwd); end
+HOOK
+```
+
+4. Check for conflicts: if the rc file already defines `precmd` (zsh), `PROMPT_COMMAND` (bash), or `fish_title` (fish), warn the user and show the snippet for manual integration instead of auto-appending.
+
+5. Output: "Tab title 已配置。新开终端标签页即可看到 branch 名。"
+
+If `CONFIGURED` → skip silently.
+
 **Step 6 — Handle missing sections with safe defaults:**
 
 For `quality:` section, if missing, use safe defaults instead of referencing Step 3 variables (which are skipped in merge mode):
@@ -1001,7 +1130,7 @@ fi
 Read `SKILL_VERSION` from the config file AFTER the sed update in Step 1 (to get the updated value):
 
 ```bash
-SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.1" 2>/dev/null)
+SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.7.0" 2>/dev/null)
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
@@ -1027,7 +1156,7 @@ Write full config based on detected project info + user answers:
 
 ```yaml
 schema_version: 3
-skill_version: 3.5.1
+skill_version: 3.7.0
 
 roles:
   - id: leader
@@ -1731,6 +1860,15 @@ gh issue list --label "$MISSION_LABEL" --state open --json number,title,assignee
 # Call 2: Open PRs
 gh pr list --json number,title,author,headRefName,statusCheckRollup,reviewDecision --limit 20
 
+# Call 2b: Behind-base count for PR branches (lightweight — local git only, no API)
+git fetch origin "$BASE_BRANCH" --quiet 2>/dev/null
+for branch in $(gh pr list --json headRefName --jq '.[].headRefName' 2>/dev/null); do
+  if git rev-parse --verify "origin/$branch" >/dev/null 2>&1; then
+    behind=$(git rev-list --count "origin/$branch..origin/$BASE_BRANCH" 2>/dev/null || echo "0")
+    echo "$branch:$behind"
+  fi
+done
+
 # Call 3: All open issues (for untracked detection) — leader: all assigned; member: own only
 gh issue list --state open --json number,title,labels,assignees --limit 100
 # (member: add --assignee "$GH_USER" --limit 50)
@@ -1794,57 +1932,92 @@ pwd  # determine current location (★ marker)
 
 If worktree mode is enabled, render this section right after the milestone progress bar:
 
-```
 📂 WORKTREES (worktree mode)
-  ★ {current worktree or main path} ← {branch} {→ #{issue} title if Contract matches │ (no mission)}
-    {other worktree path} ← {branch} {→ #{issue} title if Contract matches │ (no mission)}
-  {If current branch ≠ any Contract branch: ⚠️ context mismatch — cd {correct path}}
-```
+      {short path}  ← {branch}  → #{issue} {title │ (no mission)}
+    ★ {short path}  ← {branch}  → #{issue} {title │ (no mission)}
+
+Use `~` to shorten home directory in paths. If current branch ≠ any Contract branch, add to alert block: ⚠️ **Context mismatch** — `cd {correct path}`
 
 Output a formatted dashboard based on user's role level.
 
 #### Solo / Leader Dashboard
 
-```
-TEAM DASHBOARD ── {repo name} ──────────────
-{If CURRENT_VERSION:} {VERSION}  {progress_bar}  {pct}%  {done}/{total}
-{WORKTREE SECTION HERE — see mandatory check above}
+**⚠️ FORMATTING — The dashboard MUST have colored text. Follow these rules EXACTLY:**
 
-👥 TEAM ({member_count} members)
-  {For each team member:}
+⛔ NEVER use code blocks (triple backticks) ANYWHERE — they kill ALL color.
+⛔ NEVER use `- ` list items or `### ` headers.
+
+**Color rules** — four markdown tools. Apply to EVERY line of output:
+1. `**bold**` → section headers become white bold
+2. `` `backticks` `` → commands and paths become purple-blue. EVERY `/slash-command`, `rm`, `cd`, `git checkout`, and EVERY file path like `~/...` or `.teamwork/...` MUST be wrapped in backticks.
+3. `*italic*` → branch names and secondary info become dim
+4. `` `#NNN` `` → wrap issue numbers in backticks for purple-blue color (same as commands)
+
+**⛔ BEFORE YOU OUTPUT: mentally check each line. If a line contains a command or path without backticks, FIX IT.**
+
+Output the ENTIRE dashboard as plain markdown text (no code blocks anywhere):
+
+⚠️ **ACTION NEEDED**
+  Orphan contract: issue is CLOSED. Run: `rm .teamwork/active/MISSION-NNN.md`
+  On base branch with worktree mode — switch to mission branch or disable worktree
+{^ alert commands MUST be in backticks for purple-blue color}
+
+**MY DASHBOARD** — {repo name} ──────────────────
+Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{total}
+
+{If WORKTREE_ENABLED — ALWAYS show, even if only main repo worktree exists:}
+📂 **Worktrees** *(worktree mode)*
+  ★ `~/Project/collov/{repo}` ← *{branch}* → `#{issue}` {title}
+  · `~/Project/collov/{repo}-wt-{slug}` ← *{branch}* → `#{issue}` {title}
+  {or: → *(no mission)* if on main repo. Show ALL from `git worktree list`}
+{^ paths in backticks = purple-blue. branches in italic = dim}
+
+👥 **TEAM** ({member_count} members)
   {username} ({role})
-    {If WIP:}  🟢 #{N} {title} [{priority_dot}] {If STALE: ⚡}
-    {If PR:}   🔀 #{pr} — {ci_icon}
-    {If idle:} ⚪ (idle)
+    🟢 `#{N}` {title} {priority_dot} {Pn} → *wip* {If STALE: ⚡}
+    *{branch}* → `/team-ship`
+    🔀 `#{pr}` — {ci_icon}
+  {username} ({role})
+    ⚪ *(idle)*
 
-🔀 UNDER REVIEW ({count})
-  🟡 #{N}  {title}  @{assignee}
+🔀 **Under Review** ({count})
+  🟡 `#{N}`  {title}  @{assignee}
   {If none:} (none)
 
-📋 UNASSIGNED ({count})
-  {priority_dot}  #{N}  {title}
-  {If count > 5:} ... +{remaining} more → /team queue
+📋 **Unassigned** ({count})
+  {priority_dot} {Pn} `#{N}`  {title}
+  {If count > 5:} ... +{remaining} more → `/team queue`
   {If none:} (none)
 
-⚠️ UNTRACKED ({count})
-  #{N}  {title}  @{assignee}
-  Fix: /team-issue fix #{N}
+⚠️ **Untracked** ({count})
+  Issues with teamwork labels but missing mission label
+  Includes: `#{N}`, `#{N}`, ...
+  Fix: `/team-issue fix` `#N` for each, or batch-add the mission label
   {Omit entire section if count == 0}
 
-🧹 NEEDS CLEANUP ({count})
-  {branch} — PR #{pr} merged
-  {If current branch == this branch AND dirty tree: ⚠️ uncommitted changes — will auto-stash on cleanup}
-  💡 Run: /team-ship done
+🧹 **Needs Cleanup** ({count})
+  *{branch}* — PR `#{pr}` merged
+  💡 Run: `/team-ship done`
   {Omit entire section if count == 0}
 
-📊 MERGES  {user}:{n}  {user}:{n}  ...
+📊 **Merges**  {user}:{n} · {user}:{n} · ...
 
-💡 Next: {one context-specific suggestion}
-────────────────────────────────────────────
-/team help │ /team doctor │ /team #N │ /team config
-/team-issue │ /team-claim │ /team-drive │ /team-ship │ /team-rc
-Teamwork v{SKILL_VERSION}
-```
+💡 **Next:** Clean up with `rm .teamwork/active/MISSION-NNN.md`, then `/team-claim` `#{N}` to start. `/team-drive`
+{^ EVERY command and path in Next MUST be in backticks}
+
+`/team help` · `/team doctor` · `/team #N` · `/team config`
+`/team-claim` · `/team-drive` · `/team-ship` · `/team-rc`
+
+💡 **TIP:** {random tip — commands in backticks, e.g.: `/team auto` `#N` — 一键 claim→drive→ship}
+
+**NEXT suggestion logic** — pick FIRST match (output commands in backticks):
+
+1. PR behind base → PR `#{N}` is {M} behind — `/team-ship sync`
+2. PR CI passed + approved → PR `#{N}` ready to merge. `/team-ship done`
+3. PR CI passed, no review → PR `#{N}` CI passed — awaiting review/merge
+4. PR CI failing → PR `#{N}` CI failing — fix before merge
+5. Active mission, no PR → `/team-drive` to continue or `/team-ship` to deliver
+6. No active mission → `/team-claim` `#{N}` to start
 
 **Visual encoding rules** (apply to ALL teamwork output):
 
@@ -1854,64 +2027,102 @@ Teamwork v{SKILL_VERSION}
 | 🟠 | P1 high | Priority dot |
 | 🟡 | P2 medium / under review | Priority dot / review status |
 | ⚪ | P3 low / idle | Priority dot / member idle |
-| 🟢 | Active / WIP | Member working status |
-| ✅ | Done / CI passing | Completed items, CI green |
-| ❌ | Failed / CI failing | CI red, errors |
-| ⚡ | Stale / updated | Issue changed since claim |
-| 🔀 | PR / merge | Pull request related |
-| ▸ | Section marker | Generic section headers |
-
-**Progress bar**: Map percentage to 10 chars: `█` for filled, `░` for empty. E.g., 14% → `█░░░░░░░░░`, 50% → `█████░░░░░`, 100% → `██████████`.
 
 **`{priority_dot}`** shorthand: replace `Pn` prefix with colored dot — `🔴` P0, `🟠` P1, `🟡` P2, `⚪` P3. E.g., `🟠 #134 Unified NanoClaw Architecture @initialneil`.
+
+**Other symbols:**
+
+| Symbol | Meaning | Used for |
+|--------|---------|----------|
+| 🟢 | Active / WIP | Member working status |
+| ⚪ | Idle | Member not working on anything |
+| ✅ | Done / CI passing | Completed items, CI green |
+| ❌ | Failed / CI failing | CI red, errors |
+| ⏳ | CI pending | CI in progress |
+| ⚡ | Stale / updated | Issue changed since claim |
+| 🔀 | PR / merge | Pull request related |
+| 🟡 | Under review | Review status (different context from P1) |
+| 🔧 | MANUAL / human action | Task requiring human action (AI skips) |
+
+**Progress bar**: Map percentage to 10 chars: `█` for filled, `░` for empty. Wrap the ENTIRE bar in backticks for color: `` `██░░░░░░░░` ``. E.g., 14% → `` `█░░░░░░░░░` ``, 50% → `` `█████░░░░░` ``.
+
+**Issue number formatting**: ALWAYS zero-pad to 3+ digits. `#99` → `#099`, `#7` → `#007`. Claude Code only auto-links `#NNN` (3+ digits) as GitHub issues — two-digit `#NN` is NOT linked.
 
 **`{ci_icon}`** shorthand: `✅` if all checks pass, `❌` if any fail, `⏳` if pending/running.
 
 #### Member Dashboard
 
-```
-MY DASHBOARD ── {repo name} ────────────────
-{If CURRENT_VERSION:} {VERSION}  {progress_bar}  {pct}%  {done}/{total}
-{WORKTREE SECTION HERE — see mandatory check above}
+**⚠️ FORMATTING — The dashboard MUST have colored text. Follow these rules EXACTLY:**
 
-🎯 MY MISSIONS
-  🟢 #{N} {title} [{priority_dot}] {If STALE: ⚡}
-    {branch}  {If Contract: → /team-drive │ Else: → /team-claim #{N}}
+⛔ NEVER use code blocks (triple backticks) ANYWHERE — they kill ALL color.
+⛔ NEVER use `- ` list items or `### ` headers.
+
+**Color rules** — four markdown tools. Apply to EVERY line of output:
+1. `**bold**` → section headers become white bold
+2. `` `backticks` `` → commands and paths become purple-blue. EVERY `/slash-command`, `rm`, `cd`, `git checkout`, and EVERY file path like `~/...` or `.teamwork/...` MUST be wrapped in backticks.
+3. `*italic*` → branch names and secondary info become dim
+4. `` `#NNN` `` → wrap issue numbers in backticks for purple-blue color (same as commands)
+
+**⛔ BEFORE YOU OUTPUT: mentally check each line. If a line contains a command or path without backticks, FIX IT.**
+
+Focus on user's own work, then team summary below `────`.
+
+Output the ENTIRE dashboard as plain markdown text (no code blocks anywhere):
+
+⚠️ **ACTION NEEDED**
+  Orphan contract: issue is CLOSED. Run: `rm .teamwork/active/MISSION-NNN.md`
+  On base branch — switch to mission branch or disable worktree
+{^ alert commands MUST be in backticks for purple-blue color}
+
+**MY DASHBOARD** — {repo name} ──────────────────
+Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{total}
+
+{If WORKTREE_ENABLED — ALWAYS show, even if only main repo worktree exists:}
+📂 **Worktrees** *(worktree mode)*
+  ★ `~/Project/collov/{repo}` ← *{branch}* → `#{issue}` {title}
+  · `~/Project/collov/{repo}-wt-{slug}` ← *{branch}* → `#{issue}` {title}
+  {or: → *(no mission)* if on main repo. Show ALL from `git worktree list`}
+{^ paths in backticks = purple-blue. branches in italic = dim}
+
+🎯 **My Missions**
+  🟢 `#{N}` {title} {priority_dot} {Pn} → *wip*
+    *{branch}* → `/team-drive`
+  🟢 `#{N}` {title} {priority_dot} {Pn} → *wip* (Contract active)
+    *{branch}* → `cd` to worktree, then `/team-drive`
+  {If none:} (none)
+{^ branch italic, commands in backticks}
+
+🔀 **My PRs**
+  `#{pr}` {title}  {ci_icon}  {review}
+  {If behind > 0: ⚠️ {N} behind {BASE_BRANCH} → `/team-ship sync`}
   {If none:} (none)
 
-🔀 MY PRs
-  #{pr} {title}  {ci_icon}  {review}
+────────────────────────────────────────
+
+👥 **Team WIP** ({count})
+  {priority_dot} {Pn} `#{N}`  {title}  @{assignee}
+  {Show up to 10 items sorted by priority}
+  {If count > 10:} ... +{remaining} more → `/team queue`
+
+🔀 **Under Review** ({count})
+  🟡 `#{N}`  {title}  @{assignee}  {ci_icon}
+  {If none shown}
+
+📋 **Unassigned** ({count})
+  {priority_dot} {Pn} `#{N}`  {title}
   {If none:} (none)
 
-⚠️ UNTRACKED ({count})
-  #{N}  {title}
-  Fix: /team-issue fix #{N}
-  {Omit entire section if count == 0}
+📊 **Merges**  {user}:{n} · {user}:{n} · ...
 
-🧹 NEEDS CLEANUP ({count})
-  {branch} — PR #{pr} merged
-  {If current branch == this branch AND dirty tree: ⚠️ uncommitted changes — will auto-stash on cleanup}
-  💡 Run: /team-ship done
-  {Omit entire section if count == 0}
+💡 **Next:** Clean up with `rm .teamwork/active/MISSION-NNN.md`, then `/team-claim` `#{N}`. `/team-drive`
+{^ EVERY command and path in Next MUST be in backticks}
 
-────────────────────────────────────────────
-👥 TEAM WIP ({count})
-  {priority_dot}  #{N}  {title}  @{assignee}
-  {List all WIP issues sorted by priority}
-  {Omit entire section if solo mode}
+`/team help` · `/team doctor` · `/team #N` · `/team config`
+`/team-claim` · `/team-drive` · `/team-ship` · `/team-rc`
 
-🔀 UNDER REVIEW ({count})
-  🟡 #{N}  {title}  @{assignee}
-  {If none:} (none)
+💡 **TIP:** {random tip — commands in backticks, e.g.: `/team auto` `#N` — 一键 claim→drive→ship}
 
-📊 MERGES  {user}:{n}  {user}:{n}  ...
-
-💡 Next: {one context-specific suggestion}
-────────────────────────────────────────────
-/team help │ /team doctor │ /team #N │ /team config
-/team-claim │ /team-drive │ /team-ship │ /team-rc
-Teamwork v{SKILL_VERSION}
-```
+{Use same NEXT suggestion logic as Leader Dashboard}
 
 ---
 
@@ -2104,6 +2315,15 @@ Parse git worktree list --porcelain output:
        Message: "You're in worktree {path} on {branch}, but active mission is on {contract.branch}.
        Commands like /team-drive will operate on wrong context.
        cd {path where Contract's branch lives}"
+    6. Main-repo mismatch: if worktree mode is enabled (git config --local teamwork.worktree = true)
+       AND current directory is the main repo (not a worktree — no .mission file)
+       AND active Contracts exist in $TEAMWORK_DIR/active/
+       → 🔴 main-repo mismatch
+       For each active Contract, find its worktree path from git worktree list.
+       Message: "Worktree mode enabled but you're in the main repo.
+       Running /team-drive or /team-ship here bypasses worktree isolation.
+       Switch to your mission worktree:
+         cd {worktree_path}  ← #{issue} {title}"
 ```
 
 #### Check 6: Shippable PRs
@@ -2446,6 +2666,18 @@ options:
     description: "Keep worktree"
 ```
 
+**Main-repo mismatch** — worktree mode enabled but user is in main repo:
+```
+question: "Action [N]: Worktree mode enabled but you're in the main repo. Mission #{issue} has a worktree at {path}."
+options:
+  - label: "Show worktree path"
+    description: "Print: cd {worktree_path}"
+  - label: "Disable worktree mode"
+    description: "git config --local teamwork.worktree false"
+  - label: "Skip"
+    description: "Leave as-is"
+```
+
 **Branch behind remote** — suggest the right teamwork command:
 ```
 question: "Action [N]: {branch} is {M} commits behind origin/{branch}"
@@ -2687,8 +2919,9 @@ Specifically:
 3. **Execute** Step 1 (Verify Branch) — confirm on correct branch
 4. **Execute** Step 2 (Display Mission Briefing)
 5. **Execute** Step 2b (Branch Safety Check) — confirm not on protected branch
-6. **Execute** the full drive execution loop — read code, validate sub-tasks, execute with team if needed, test, commit, update Contract checkboxes
-7. **Continue** until all sub-tasks are checked off
+6. **Execute** the full drive execution loop — read code, validate sub-tasks (tag `🔧 MANUAL` tasks), execute **code tasks** with team if needed, test, commit, update Contract checkboxes
+7. **Continue** until all **code** sub-tasks are checked off (skip `🔧 MANUAL` tasks)
+8. **Manual Ops Handoff** (if MANUAL tasks exist) — surface `🔧 YOUR TURN` block, `AskUserQuestion` for user to confirm/defer/skip
 
 The drive phase follows all `/team-drive` rules:
 - Sub-tasks are hypotheses — validate against actual code, rewrite if wrong
@@ -2708,7 +2941,8 @@ The drive phase follows all `/team-drive` rules:
 
 ```
 ✅ PHASE 2: DRIVEN
-   Sub-tasks: {done}/{total} complete
+   Code tasks: {code_done}/{code_total} complete
+   {If MANUAL tasks:} Manual: {manual_count} tasks (YOUR TURN — see handoff above)
    Commits:   {N} commits on {branch}
    {If blocked tasks:} Blocked: {list}
    Proceeding to ship...
@@ -2722,7 +2956,7 @@ Execute the ship flow without interactive confirmations.
 #### Pre-flight checks
 
 1. **Verify branch**: confirm on mission branch
-2. **Verify sub-tasks**: all checkboxes checked (or user approved partial ship in A4)
+2. **Verify sub-tasks**: all **code** checkboxes checked (`🔧 MANUAL` tasks allowed unchecked)
 3. **Clean working tree**: if uncommitted changes exist, commit them:
    ```bash
    bash ~/.claude/commands/scripts/tw-git.sh commit "chore: pre-ship cleanup | Mission: #${ISSUE_NUMBER}"
@@ -2837,7 +3071,8 @@ If review required → find tech-lead from config → `bash ~/.claude/commands/s
    Branch: {branch}
 
 ✅ PHASE 2: DRIVEN
-   Sub-tasks: {done}/{total}
+   Code tasks: {code_done}/{code_total}
+   {If MANUAL tasks:} Manual: {manual_count} pending (post-merge)
 
 ✅ PHASE 3: SHIPPED
    🔀 PR: {pr_url}
@@ -3257,3 +3492,19 @@ Then **STOP**.
 - On non-fatal errors (label creation fails, branch protection fails): warn and continue
 - On fatal errors (no gh, no remote, not authenticated): clear message and STOP
 - If config.yml exists but is malformed: warn and offer to regenerate
+
+---
+
+## Teamwork Tips Pool
+
+**All teamwork skills** (`/team`, `/team-issue`, `/team-claim`, `/team-drive`, `/team-ship`, `/team-rc`) MUST append one random tip at the end of their final output block, after the `────` separator line.
+
+**How**: Read `~/.claude/commands/scripts/tw-tips.txt`. Pick one line at random (skip `#` comments). Display as plain markdown text (⛔ NOT in a code block):
+
+💡 **TIP:** {selected tip text — wrap any commands in backticks for color, e.g. `/team-claim`, `cd`}
+
+**Rules:**
+- One tip per invocation, randomly selected
+- Skip comment lines (starting with `#`)
+- Display AFTER the skill's standard output footer
+- Do NOT repeat the same tip if the user runs multiple commands in the same session (best effort)

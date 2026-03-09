@@ -4,7 +4,7 @@
 
 | Document | Purpose |
 |----------|---------|
-| [teamwork-ai-manual.md](teamwork-ai-manual.md) | Teamwork v3 complete manual (15 chapters) |
+| [teamwork-ai-manual.md](teamwork-ai-manual.md) | Teamwork v3 complete manual (17 chapters) |
 | [team-doctor-design.md](team-doctor-design.md) | `/team doctor` design spec |
 | [drive-showcase-v2-architecture.md](drive-showcase-v2-architecture.md) | Showcase V2 architecture (4-Act structure) |
 | [erwin-skills-incubator-architecture.md](erwin-skills-incubator-architecture.md) | Skills factory architecture |

@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.5.1"
+version: "3.7.0"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -27,7 +27,7 @@ Parse `$ARGUMENTS`:
 - If `help` or `-h` → output the following and **STOP**:
 
 ```
-/team-rc — Release Candidate Lifecycle (Teamwork v3.5.1)
+/team-rc — Release Candidate Lifecycle (Teamwork v3.7.0)
 Author: liyasong + casey | 2026-03-05
 
 USAGE:
@@ -174,6 +174,8 @@ Staging:  {triggered / deploy manually}
   3. /team-rc promote
 
 ────────────────────────────────────────────
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 ---
@@ -420,6 +422,8 @@ Milestone:  {MILESTONE_FULL} — {status}
 
 ────────────────────────────────────────────
 /team-rc to prepare next RC
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 ---

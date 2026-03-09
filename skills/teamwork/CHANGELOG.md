@@ -2,6 +2,100 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.7.0] — 2026-03-09
+
+### Added — Smart sync: dashboard behind-detection + AI conflict resolution
+
+**Dashboard behind-base detection**:
+- PR lines now show `⚠️ N behind {base}` when branch is behind base branch
+- NEXT box prioritizes sync recommendation when PR is behind
+- No extra API calls — uses local git rev-list against already-fetched branches
+
+**AI conflict resolution** (`/team-ship sync`):
+- Sync no longer STOPs on conflict — AI reads both sides of conflict markers and resolves
+- For each conflicted file: read → understand intent → edit → git add → git rebase --continue
+- Ambiguous conflicts (semantic contradictions) are resolved with best judgment + flagged in summary
+- Auto force-push rebased branch after successful rebase
+- Summary output shows resolved files and any flagged ambiguities
+
+## [3.6.1] — 2026-03-09
+
+### Added — Terminal tab title + Tips system
+
+**Terminal tab title** (`/team init`):
+- New optional step after worktree preference: configure terminal tab to auto-display
+  current git branch name (e.g., `mission/42-add-auth`)
+- User sees clear description of the benefit before opting in
+- Auto-detects shell (zsh/bash/fish) and appends appropriate hook
+- Checks for existing precmd/PROMPT_COMMAND conflicts before appending
+- One-time, per-user, idempotent (marker-based detection)
+
+**Tips system** (all 6 skills):
+- Every `/team-*` command now displays a random tip after its output
+- Tips pool in `scripts/tw-tips.txt` — easy to add/remove tips
+- 15 tips covering lesser-known features: auto, wrap, doctor, batch, review, etc.
+- Best-effort no-repeat within a session
+
+## [3.6.0] — 2026-03-09
+
+### Added — Manual Ops Handoff: guided flow for human-action tasks
+
+When a mission contains tasks that require human action (console operations, server access,
+deployment verification), teamwork now classifies, skips, and hands off manual tasks across the full pipeline:
+
+**Full audit (5-domain parallel review) found and fixed 8 bugs in initial v3.6.0 implementation:**
+
+**team-drive:**
+- **Plan Assessment**: new `🔧 MANUAL` classification for sub-tasks requiring human action
+- **Checkbox Gate**: MANUAL tasks are expected-unchecked, not treated as missed toggles
+- **Execution Loop**: MANUAL tasks skipped during execution (not attempted by AI)
+- **Mode Selection**: only code tasks counted for sequential/parallel/team threshold
+- **Mission Briefing**: "all complete" check excludes MANUAL tasks (prevents re-drive loop)
+- **Completion Summary**: splits into "CODE COMPLETE" + "YOUR TURN" sections
+  - Code tasks shown as done
+  - Manual tasks surfaced in a prominent action block with concrete guidance
+  - AskUserQuestion gates the transition: user confirms manual ops done, defers to post-PR,
+    asks for help, or skips — THEN `/team-ship` is suggested
+
+**team-ship:**
+- **Sub-task gate (2b)**: only code tasks block shipping; MANUAL tasks pass through
+- **PR description**: adds "Manual Steps (post-merge)" checklist when manual tasks exist
+- **Help text**: updated SHIP FLOW to mention manual task pass-through
+
+**team-claim:**
+- **Contract generation**: pre-tags `🔧 MANUAL` tasks during sub-task extraction (human-action tasks identified at claim time, not just during drive validation)
+
+**team.md:**
+- **`/team auto`**: drive phase counts code tasks only, pre-flight allows unchecked MANUAL, output shows code/manual split
+- **`/team learn`**: new section 12 "MANUAL TASKS & HUMAN WORKFLOWS"
+- **Visual Encoding**: added `🔧` to symbol table
+
+**Bugs found and fixed by 5-domain audit:**
+1. CRITICAL: Mission Briefing STOP logic — all code done + MANUAL exists → now enters Manual Ops Handoff instead of bare STOP
+2. CRITICAL: Zero code tasks (all MANUAL) — now explicitly skips execution, goes to handoff
+3. HIGH: `/team auto` task counting included MANUAL tasks — now code-only
+4. HIGH: `/team learn` had no MANUAL task coverage — added section 12
+5. HIGH: `🔧` emoji used but not in Visual Encoding table — added
+6. HIGH: team-claim didn't tag MANUAL during Contract gen — added pre-tagging
+7. MEDIUM: team-drive help text didn't explain `🔧` symbol — added TASK SYMBOLS block
+8. MEDIUM: team-ship help text didn't mention manual pass-through — updated SHIP FLOW
+
+Previously: manual tasks were mixed into the same list as code tasks with only a `○` marker,
+`/team-ship` was suggested immediately with no guidance, and team-ship would STOP on unchecked manual tasks.
+
+## [3.5.2] — 2026-03-09
+
+### Fixed — Worktree guard: prevent drive/ship from wrong directory
+
+- **team-drive**: Step 0c worktree guard — if worktree mode is enabled but user is in the main repo
+  (no `.mission` file), STOP with clear message showing the correct worktree path.
+  Prevents silent branch switching that bypasses worktree isolation.
+- **team-ship**: Step 1b worktree guard — same check before shipping.
+  Prevents shipping wrong code when user forgot to cd to worktree.
+- **team doctor**: Check 5 item 6 — main-repo mismatch detection.
+  Flags when user is in main repo with worktree mode enabled and active Contracts exist.
+- **team doctor fix**: added main-repo mismatch action (show path / disable worktree mode / skip).
+
 ## [3.5.1] — 2026-03-09
 
 ### Fixed — Design review: logic gaps + docs alignment

@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.5.1"
+version: "3.7.0"
 ---
 
 # /team-drive — Execute Mission
@@ -21,12 +21,19 @@ WHAT HAPPENS:
   1. Reads your Mission Contract (.teamwork/active/MISSION-N.md)
   2. Reads actual code — validates sub-tasks against ground truth
      (sub-tasks are hypotheses, not orders — executor rewrites if wrong)
-  3. Selects execution mode:
+  3. Classifies tasks: code tasks (AI executes) vs 🔧 MANUAL (human action)
+  4. Selects execution mode (based on code task count):
      — Small (1-3 tasks): sequential loop
      — Medium (4-7 tasks): create 1-2 teammates, wave parallelism
      — Large (8+ tasks): full team + STL hierarchy + wave map
-  4. Executes with discipline: ripple check, self-adversarial review
-  5. Progress saved via checkboxes — can be interrupted and resumed
+  5. Executes code tasks with discipline: ripple check, self-adversarial review
+  6. Manual Ops Handoff: surfaces 🔧 MANUAL tasks for you to complete
+  7. Progress saved via checkboxes — can be interrupted and resumed
+
+TASK SYMBOLS:
+  ○  Pending code task — AI will execute
+  🔧 MANUAL task — requires your action (AI skips)
+  ✅ Completed task
 
 PREREQUISITES:
   Run /team-claim first to generate a Contract.
@@ -133,6 +140,49 @@ Use `AskUserQuestion`:
 
 ---
 
+## Step 0c: Worktree Guard
+
+If NOT already in worktree mode (`WORKTREE_MODE` is not true), check whether the user SHOULD be in a worktree:
+
+```bash
+WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "false")
+```
+
+If `WORKTREE_ENABLED` is `true` AND `WORKTREE_MODE` is not true (no `.mission` file):
+
+The user has worktree mode enabled but is running `/team-drive` from the main repo. This bypasses worktree isolation and can cause code from different missions to mix.
+
+Find the correct worktree path for this Contract's branch:
+
+```bash
+# Get the Contract's branch from frontmatter (already extracted in Step 0)
+# Search worktree list for a matching branch
+git worktree list --porcelain | grep -B2 "branch refs/heads/${CONTRACT_BRANCH}" | head -1 | sed 's/worktree //'
+```
+
+If a worktree path is found for this branch:
+```
+⚠️ WORKTREE MISMATCH
+═══════════════════════════════════════
+Worktree mode is enabled but you're in the main repo.
+Your mission worktree: {worktree_path}
+
+Switch to it:  cd {worktree_path}
+Then re-run:   /team-drive
+═══════════════════════════════════════
+```
+→ **STOP**
+
+If no worktree exists for this branch (e.g., worktree was deleted or claim was done before enabling worktree mode):
+```
+⚠️ Worktree mode is enabled but no worktree exists for branch {branch}.
+Run /team-claim #{issue} to recreate with worktree isolation.
+Or disable worktree mode: git config --local teamwork.worktree false
+```
+→ **STOP**
+
+---
+
 ## Step 1: Verify Branch
 
 **If worktree mode** (`WORKTREE_MODE=true`): skip branch check — worktree is already on the correct branch.
@@ -179,7 +229,15 @@ Progress:  {progress_bar}  {done}/{total}
 ────────────────────────────────────────────
 ```
 
-If all sub-tasks are already checked → "All sub-tasks complete. Run `/team-ship` to deliver." → **STOP**
+Check whether all **code** sub-tasks are already checked (ignore `🔧 MANUAL` tasks).
+
+- If all code tasks checked AND **no** MANUAL tasks exist:
+  → "All sub-tasks complete. Run `/team-ship` to deliver." → **STOP**
+
+- If all code tasks checked AND MANUAL tasks **do** exist:
+  → Skip directly to **Completion Summary + Debrief** (Manual Ops Handoff path). Show the `🔧 YOUR TURN` block, run `AskUserQuestion`, then suggest `/team-ship`. → **STOP** after handoff.
+
+- If unchecked code tasks remain → continue to Plan Validation and execution.
 
 ---
 
@@ -321,8 +379,11 @@ Sub-task review:
   ✏️ [2] {task} — REVISE: {what's wrong, what it should be}
   ➕ [3] (missing) — ADD: {what's needed that planner missed}
   ➖ [4] {task} — DROP: {why it's unnecessary}
+  🔧 [5] {task} — MANUAL: {requires human action — cannot be automated}
 ═══════════════════════════════════════
 ```
+
+**MANUAL classification**: Sub-tasks that require human action outside the codebase (e.g., console operations, server access, third-party configuration, deployment verification) should be tagged `🔧 MANUAL`. These tasks are NOT executed during the drive loop — they are surfaced to the user during the Manual Ops Handoff at completion.
 
 ### Apply revisions
 
@@ -330,6 +391,7 @@ Sub-task review:
 - **REVISE**: Update the sub-task text in the Contract file. Briefly note the rationale in **AI Notes**.
 - **ADD**: Insert new sub-tasks into the Contract. Sync new checkboxes to GitHub Issue body.
 - **DROP**: Remove the sub-task from Contract. Note in **AI Notes** why it was dropped.
+- **MANUAL**: Tag with `🔧 MANUAL` in the Contract. These are skipped during execution and surfaced to the user during Manual Ops Handoff at completion. Include a concrete action hint (where to go, what to click/run).
 - **ESCALATE**: If the Objective itself appears wrong or impossible given ground truth → Use `AskUserQuestion` to alert the user. Do NOT proceed with a doomed plan.
 
 After revisions, the Contract now reflects an **executor-validated plan** — grounded in actual code, not assumptions.
@@ -346,7 +408,11 @@ After validation, ensure the final task list follows these principles:
 
 ## Execution Mode + Team Assembly — "一个人走得快，一群人走得远"
 
-Count remaining unchecked sub-tasks after Plan Validation.
+Count remaining unchecked **code** sub-tasks after Plan Validation (exclude `🔧 MANUAL` tasks — those are not executed by AI).
+
+### Zero code tasks (all MANUAL): Skip Execution
+
+If remaining code sub-task count is 0 (all tasks are `🔧 MANUAL`), skip the Execution Loop entirely. Proceed directly to **Completion Summary + Debrief** (Manual Ops Handoff path).
 
 ### Small missions (1-3 sub-tasks): Sequential Mode
 
@@ -481,7 +547,7 @@ In ONE response: assign tasks → kick-off messages → broadcast launch → sta
 
 ## The Execution Loop
 
-Execute sub-tasks according to the selected mode. For **Sequential Mode**, iterate one by one. For **Parallel/Team Mode**, use the Swarm Orchestration Loop.
+Execute **code** sub-tasks according to the selected mode. **Skip `🔧 MANUAL` tasks** — they are not executable by AI and will be surfaced to the user during Manual Ops Handoff at completion. For **Sequential Mode**, iterate code tasks one by one. For **Parallel/Team Mode**, use the Swarm Orchestration Loop.
 
 ### The Loop — Swarm Orchestration (Parallel + Team modes)
 
@@ -653,7 +719,7 @@ Non-fatal: if sync fails, warn but continue.
 **Verify**: After toggling, visually confirm the checkbox is `[x]` in the Contract. If you completed multiple sub-tasks in one implementation, toggle ALL of them before moving on.
 
 ### Next task
-Move to the next unchecked sub-task (Sequential) or next wave task (Parallel/Team). In Team Mode, also check teammate status and unblock if needed.
+Move to the next unchecked **code** sub-task (Sequential) or next wave task (Parallel/Team). Skip `🔧 MANUAL` tasks. In Team Mode, also check teammate status and unblock if needed.
 
 ---
 
@@ -718,11 +784,17 @@ When blocked:
 
 **Re-read the Contract file from disk** (Read tool, not memory). Count unchecked sub-tasks (`- [ ]`).
 
-- If ANY `- [ ]` sub-tasks remain:
+Separate unchecked tasks into two categories:
+- **Code tasks** (`- [ ]` without `🔧 MANUAL` or `(MANUAL)` tag) — these should have been completed by AI
+- **Manual tasks** (`- [ ]` with `🔧 MANUAL` or `(MANUAL)` tag) — expected to be unchecked, handled in Manual Ops Handoff
+
+For unchecked **code tasks**:
   1. For each unchecked task, verify whether the work was actually done (check git log, grep code)
   2. If work is done → toggle the checkbox NOW (`tw-contract.sh toggle-task` + `sync-checkbox`)
   3. If work is NOT done → execute the sub-task before proceeding
-  4. **Do NOT proceed to acceptance criteria until all checkboxes are `[x]`**
+  4. **Do NOT proceed to acceptance criteria until all CODE task checkboxes are `[x]`**
+
+Unchecked **manual tasks** are expected — they pass through to the Manual Ops Handoff in the Completion Summary.
 
 This gate exists because LLMs sometimes complete code work but skip the checkbox toggle step. Re-reading the Contract from disk catches this.
 
@@ -774,7 +846,7 @@ Before declaring done, actively look for gaps:
 ### Post completion comment to Issue
 
 ```bash
-gh issue comment {issue} --body "All sub-tasks complete — ready for review. Branch: \`{branch}\`"
+gh issue comment {issue} --body "All code tasks complete — ready for review. Branch: \`{branch}\`{if manual tasks exist: \nManual steps remaining: {list}}"
 ```
 
 Non-fatal: if comment fails, warn but continue.
@@ -803,6 +875,10 @@ If teammates were spawned:
 
 ## Completion Summary + Debrief
 
+Scan the sub-task list for any tasks tagged `🔧 MANUAL` or containing "(MANUAL)" in the description. Split into two groups: **code tasks** (automated, done by AI) and **manual tasks** (require human action).
+
+### If NO manual tasks exist — standard completion:
+
 ```
 🏁 COMPLETE ── #{issue} {title} ────────────
 Mode:     {sequential/parallel/team}  {N} tasks  {M} waves
@@ -825,6 +901,57 @@ Tests:    ✅ passing
 
 ────────────────────────────────────────────
 /team-ship to create PR
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
+```
+
+### If manual tasks exist — Manual Ops Handoff:
+
+The completion report becomes a two-phase handoff: first show what AI completed, then guide the user through their manual tasks.
+
+```
+🏁 CODE COMPLETE ── #{issue} {title} ────────────
+Mode:     {sequential/parallel/team}  {N} code tasks  {M} commits
+Tests:    ✅ passing
+
+📊 PLAN VALIDATION
+  {CONFIRMED / REVISED: summary}
+
+✅ CODE TASKS ({done count}/{code task count})
+  ✅ {code task 1}
+  ✅ {code task 2}
+
+🔧 YOUR TURN — {manual_count} manual steps remaining
+═══════════════════════════════════════════════════
+These require your action — AI cannot perform them.
+
+  1. {manual task description}
+     → {concrete action: where to go, what to do}
+
+  2. {manual task description}
+     → {concrete action}
+
+  3. {manual task description}
+     → {concrete action}
+═══════════════════════════════════════════════════
+```
+
+Then use `AskUserQuestion` to ask:
+- **"Done — all manual steps complete"** → proceed to show acceptance criteria + suggest `/team-ship`
+- **"Will do later — ship PR first"** → proceed to suggest `/team-ship` (note manual steps in PR description)
+- **"Need help with a step"** → assist with the specific manual step
+- **"Skip — not needed"** → proceed, note in AI Notes
+
+After user responds, output the full acceptance criteria block and the `/team-ship` prompt:
+
+```
+✅ ACCEPTANCE CRITERIA
+  {criterion} — {evidence or "pending manual step"}
+
+────────────────────────────────────────────
+/team-ship to create PR
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 ### Post-Mission Ecosystem Scan (2-3 min)

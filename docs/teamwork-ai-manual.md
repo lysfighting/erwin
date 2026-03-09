@@ -1,6 +1,6 @@
 # Teamwork — The Complete Manual
 
-> **Version 3.5.1** | Author: liyasong + casey | 2026-03-09
+> **Version 3.7.0** | Author: liyasong + casey | 2026-03-09
 >
 > AI-Native Team Coordination for GitHub.
 > For humans and AI agents. Covers WHY, HOW, and the philosophy behind every decision.
@@ -24,6 +24,8 @@
 13. [Scripts Architecture](#scripts-architecture)
 14. [Config Reference](#config-reference)
 15. [End-to-End Example](#end-to-end-example)
+16. [Branch Protection](#branch-protection)
+17. [Closing Thoughts](#closing-thoughts)
 
 ---
 
@@ -327,12 +329,12 @@ feat/E:                          D ── (your work) ──
 │     /team              Hub — Dashboard + Init + Doctor + Help      │
 │       │                     + Learn + Queue + Wrap + Auto          │
 │       ▼                                                            │
-│     /team-issue ──► Create + assign + branch (Push)               │
+│     /team-issue ──► Create + assign (Push)                        │
 │       │              Smart routing: create / comment / update /    │
 │       │              fix / batch / detail / help                   │
 │       ▼                                                            │
-│     /team-claim ──► Generate Contract from assigned Issue         │
-│       │              (branch already exists from /team-issue)      │
+│     /team-claim ──► Generate Contract + branch from assigned Issue │
+│       │              (creates mission branch + AI execution plan)  │
 │       ▼                                                            │
 │     /team-drive ──► Execute mission from Contract                 │
 │       │              (sub-tasks → test → commit loop)              │
@@ -361,7 +363,7 @@ feat/E:                          D ── (your work) ──
 | `/team` | `/team` | Dashboard — who's working on what (role-based view) |
 | | `/team init` | Initialize teamwork in current repo |
 | | `/team help` | Quick start guide |
-| | `/team learn` | Design philosophy + diagrams (11 sections) |
+| | `/team learn` | Design philosophy + diagrams (13 sections) |
 | | `/team config` | View current config + edit instructions |
 | | `/team queue` | All open missions sorted by priority |
 | | `/team #42` | MC detail view (branch, commits, PRs, criteria) |
@@ -371,20 +373,20 @@ feat/E:                          D ── (your work) ──
 | | `/team wrap` | Retroactive closure: code-first → auto-create issue + PR |
 | | `/team auto #42` | One-shot: claim → drive → ship in one command |
 | | `/team auto` | Pick from assigned queue, then auto |
-| `/team-issue` | `/team-issue {desc}` | Create Issue + assign + branch (Push) |
+| `/team-issue` | `/team-issue {desc}` | Create Issue + assign (Push) |
 | | `/team-issue {desc} @user` | Create and assign to specific member |
 | | `/team-issue #42` | View Issue details |
 | | `/team-issue #42 {text}` | Add comment to Issue |
 | | `/team-issue update #42` | AI-assisted edit of Issue body |
 | | `/team-issue fix #42` | Fix untracked Issue (add teamwork labels) |
 | | `/team-issue batch V0.2 -- ...` | Batch create milestone + MCs |
-| `/team-claim` | `/team-claim #42` | Generate Contract for assigned Issue |
+| `/team-claim` | `/team-claim #42` | Generate Contract + branch for assigned Issue |
 | | `/team-claim` | List MY assigned Issues |
 | `/team-drive` | `/team-drive` | Execute mission (code → test → commit) |
 | `/team-ship` | `/team-ship` | Push + create PR + notify |
 | | `/team-ship done` | Post-merge cleanup |
 | | `/team-ship review` | AI code review on PR |
-| | `/team-ship sync` | Rebase on latest develop |
+| | `/team-ship sync` | Rebase on latest develop + auto-resolve conflicts |
 | `/team-rc` | `/team-rc` | Prepare: cut rc from develop |
 | | `/team-rc promote` | Promote: squash to main, tag, release, notify |
 | | `/team-rc help` | Full RC lifecycle guide |
@@ -1144,7 +1146,7 @@ Evidence from v2.6.1 falsification audit:
 # Schema version 3
 
 schema_version: 3
-skill_version: 3.5.1
+skill_version: 3.7.0
 
 # Team metadata
 team:
@@ -1246,9 +1248,37 @@ versions:
 # Worktree mode is LOCAL (per-user, not in config.yml):
 #   git config --local teamwork.worktree true
 
+# Terminal tab title is LOCAL (per-user, configured in ~/.zshrc or equivalent):
+#   /team init asks during setup — auto-detects shell (zsh/bash/fish)
+#   Shows current branch name in terminal tab for multi-window awareness
+
 # Mission label (legacy, prefer labels.mission)
 # mc_label: "mission"
 ```
+
+### Smart Sync (v3.7.0+)
+
+**Dashboard behind-detection**: When a PR's branch falls behind the base branch, the dashboard shows it inline:
+
+```
+🔀 My PRs
+  #162 feat(infra): deploy Firebase Auth  ✅ CI passing  ⚠️ 8 commits behind main
+```
+
+The NEXT box also prioritizes the sync recommendation:
+
+```
+┌─ 💡 NEXT ────────────────────────────────────┐
+│  PR #162 is 8 commits behind main             │
+│  — /team-ship sync to rebase                  │
+└───────────────────────────────────────────────┘
+```
+
+**AI conflict resolution**: `/team-ship sync` no longer stops when rebase hits conflicts. Instead, Claude reads both sides of each conflict, resolves them intelligently, and continues the rebase. Ambiguous conflicts (semantic contradictions where both sides changed the same logic differently) are resolved with best judgment and flagged in the summary for review. After rebase completes, the branch is force-pushed automatically.
+
+### Tips System (v3.6.1+)
+
+Every `/team-*` command displays a random tip after its output. Tips are sourced from `scripts/tw-tips.txt` (installed alongside the skills). This enables progressive feature discovery — users learn about lesser-known commands (`/team auto`, `/team wrap`, `/team doctor`, etc.) through natural usage.
 
 ### Config Schema Evolution
 

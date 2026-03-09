@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "3.5.1"
+version: "3.7.0"
 ---
 
 # /team-issue — Mission Contract Issue Manager
@@ -25,7 +25,7 @@ version: "3.5.1"
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
 ```
-/team-issue — Mission Contract Issue Manager (v3.5.1)
+/team-issue — Mission Contract Issue Manager (v3.7.0)
 
 USAGE:
   /team-issue <description>                    Create MC (solo: self-assign; team: prompt)
@@ -329,39 +329,29 @@ gh issue create \
 
 Extract Issue number from output URL.
 
-### Step 7: Create Branch
-
-```bash
-SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$TITLE")
-bash ~/.claude/commands/scripts/tw-git.sh ensure-base
-BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
-git push -u origin "$BRANCH" 2>/dev/null || true
-```
-
-If branch already exists → warn but continue (non-fatal).
-
-### Step 8: Notify
+### Step 7: Notify
 
 ```bash
 bash ~/.claude/commands/scripts/tw-notify.sh mc.created \
   --issue "$ISSUE_NUMBER" --title "$TITLE" \
-  --assignee "$ASSIGNEE" --branch "$BRANCH"
+  --assignee "$ASSIGNEE"
 ```
 
 Non-fatal: if notification fails, warn but continue.
 
-### Step 9: Output
+### Step 8: Output
 
 ```
 📦 CREATED ── #{issue} {title} ─────────────
 Assignee:  @{assignee}
-🔀 {branch}
 {priority_dot} {Pn}  Size: {size}  Milestone: {milestone or "—"}
 URL:       {issue URL}
 {If notifications sent:} Notified: {channels}
 
 ────────────────────────────────────────────
-/team-claim #{issue} to generate Contract
+/team-claim #{issue} to generate Contract + branch
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 ---
@@ -400,6 +390,8 @@ gh pr list --repo "$REPO" --search "Closes #$N" --state all --json number,url,st
 🔀 BRANCH  {branch or "(not created)"}
 🔀 RELATED PRs  {list or "(none)"}
 ────────────────────────────────────────────
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 ---
@@ -421,6 +413,8 @@ Output:
 {first 80 chars of text}...
 URL: {comment URL}
 ────────────────────────────────────────────
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 ---
@@ -507,6 +501,8 @@ URL:  {issue URL}
 Claimed assignees will see ⚡ on dashboard
 and a freshness prompt on /team-drive.
 ────────────────────────────────────────────
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 ---
@@ -606,32 +602,18 @@ If user chose "Fix + reformat body":
 gh issue edit {issue} --repo "$REPO" --body "{reformatted body}"
 ```
 
-### A7: Create branch (if not exists)
-
-```bash
-# Check if a mission branch already exists for this issue
-EXISTING_BRANCH=$(git ls-remote --heads origin "mission/${ISSUE_NUMBER}-*" 2>/dev/null | awk '{print $2}' | sed 's|refs/heads/||' | head -1)
-
-if [ -z "$EXISTING_BRANCH" ]; then
-  SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$TITLE")
-  bash ~/.claude/commands/scripts/tw-git.sh ensure-base
-  BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
-  git push -u origin "$BRANCH" 2>/dev/null || true
-else
-  BRANCH="$EXISTING_BRANCH"
-fi
-```
-
-### A8: Output
+### A7: Output
 
 ```
 ✅ ADOPTED ── #{issue} {title} ──────────────
 Assignee:   @{assignee or "unassigned"}
 Labels:     {all labels}
-🔀 {branch}  Milestone: {milestone or "—"}
+Milestone:  {milestone or "—"}
 
 ────────────────────────────────────────────
-/team-claim #{issue} to generate Contract
+/team-claim #{issue} to generate Contract + branch
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 ---
@@ -723,14 +705,7 @@ gh issue create \
   ${MILESTONE_TITLE:+--milestone "$MILESTONE_TITLE"}
 ```
 
-Extract Issue number, then create branch:
-
-```bash
-SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$TITLE")
-bash ~/.claude/commands/scripts/tw-git.sh ensure-base
-BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
-git push -u origin "$BRANCH" 2>/dev/null || true
-```
+Extract Issue number from output URL.
 
 If individual MC creation fails → warn, continue with remaining MCs.
 If assignee not found → skip that MC, warn which ones were skipped.
@@ -746,7 +721,7 @@ For each MC created:
 ```bash
 bash ~/.claude/commands/scripts/tw-notify.sh mc.created \
   --issue "$ISSUE_NUMBER" --title "$MC_TITLE" \
-  --assignee "$ASSIGNEE" --branch "$BRANCH"
+  --assignee "$ASSIGNEE"
 ```
 
 ### B7: Output
@@ -756,12 +731,14 @@ bash ~/.claude/commands/scripts/tw-notify.sh mc.created \
 URL:  {milestone_url}
 MCs:  {count} created
 
-  #{N1}  {title1}  @{assignee1}  🔀 mission/{N1}-{slug}
-  #{N2}  {title2}  @{assignee2}  🔀 mission/{N2}-{slug}
+  #{N1}  {title1}  @{assignee1}
+  #{N2}  {title2}  @{assignee2}
 {If notifications:} Notified: {channels}
 
 ────────────────────────────────────────────
-/team to see dashboard
+/team-claim #{N} to start working
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 If milestone-only (no MCs):
@@ -771,6 +748,8 @@ URL:  {milestone_url}
 
 ────────────────────────────────────────────
 /team-issue <desc> @user --milestone {title}
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 ---
@@ -782,5 +761,4 @@ URL:  {milestone_url}
 - Label not found → create Issue without that label, warn "Labels missing. Run `/team init` to set up project labels."
 - No assignee (team mode) → AskUserQuestion to select from members list
 - Assignee not in config → "Member '@{mention}' not found. Available: {list}" → **STOP**
-- Branch already exists → warn but continue (non-fatal)
 - Notification fails → warn but continue (non-fatal)

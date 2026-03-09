@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Skills Factory
+- **Teamwork v3.7.0 — Smart sync: dashboard behind-detection + AI conflict resolution**:
+  - Dashboard PR lines show `⚠️ N behind {base}` when branch is behind base branch
+  - NEXT box prioritizes sync recommendation when PR is behind
+  - `/team-ship sync` auto-resolves rebase conflicts via AI (no more manual STOP)
+  - Sync summary shows resolved files + flagged ambiguities
+  - Auto force-push after successful rebase
+- **Teamwork v3.6.1 — Terminal tab title + Tips system**:
+  - `/team init`: new Step 5b asks user to configure terminal tab title (auto-shows branch name)
+  - Auto-detects shell (zsh/bash/fish), appends appropriate hook, idempotent
+  - Tips system: every `/team-*` command shows random tip after output (progressive feature discovery)
+  - Tips pool in `scripts/tw-tips.txt` (15 tips)
+  - `install.sh`: now installs `*.txt` files from scripts/ directory
+- **Teamwork v3.6.0 — Manual Ops Handoff**:
+  - `/team-drive`: classifies sub-tasks as code (AI) vs `🔧 MANUAL` (human)
+  - Completion splits into "CODE COMPLETE" + "YOUR TURN" handoff
+  - `/team-ship`: MANUAL tasks don't block shipping, added to PR description
 - **Teamwork v3.5.0 — `/team config` + dashboard version + docs completeness**:
   - `/team config` subcommand: shows current config.yml content, worktree status, edit instructions
   - Dashboard footer shows `Teamwork v{version}` (read dynamically from config)

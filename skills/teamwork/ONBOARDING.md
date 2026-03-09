@@ -51,7 +51,7 @@ Then run:
 **What happens:**
 
 1. Claude detects your project language (Node, Python, Go, etc.)
-2. Asks you about team members and quality preferences
+2. Asks you about team members, quality preferences, worktree isolation, and terminal tab title
 3. Generates:
 
 | File | What it does |
@@ -348,7 +348,7 @@ After `/team` init, your `.teamwork/config.yml` looks like:
 
 ```yaml
 schema_version: 3
-skill_version: 3.5.1
+skill_version: 3.7.0
 
 team:
   - github: alice

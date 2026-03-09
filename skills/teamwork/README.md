@@ -111,5 +111,5 @@ Scripts in `scripts/` not called by skills directly — used for maintenance:
 
 ## Version
 
-- Skill version: 3.5.1
+- Skill version: 3.7.0
 - Config schema: 3

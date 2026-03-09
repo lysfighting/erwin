@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.5.1"
+version: "3.7.0"
 ---
 
 # /team-ship — Deliver Mission
@@ -39,9 +39,11 @@ USAGE:
   /team-ship sync       Rebase current branch on latest base branch
 
 SHIP FLOW:
-  1. Pre-flight: verify branch, sub-tasks done, tests pass
+  1. Pre-flight: verify branch, code sub-tasks done, tests pass
+     (🔧 MANUAL tasks don't block — they're listed in PR description)
   2. Push branch to GitHub
   3. Create PR with "Closes #N" (auto-closes Issue on merge)
+     If manual tasks exist: adds "Manual Steps (post-merge)" checklist
   4. Watch CI (if configured)
   5. Request review (if configured)
   6. Clean up local Contract, label Issue status:review
@@ -128,6 +130,47 @@ Extract from body:
 
 ---
 
+## Step 1b: Worktree Guard
+
+If NOT in worktree mode (`WORKTREE_MODE` is not true), check whether the user SHOULD be in a worktree:
+
+```bash
+WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "false")
+```
+
+If `WORKTREE_ENABLED` is `true` AND `WORKTREE_MODE` is not true (no `.mission` file):
+
+The user has worktree mode enabled but is running `/team-ship` from the main repo. This can ship the wrong code or mix changes from different missions.
+
+Find the correct worktree path for this Contract's branch:
+
+```bash
+git worktree list --porcelain | grep -B2 "branch refs/heads/${CONTRACT_BRANCH}" | head -1 | sed 's/worktree //'
+```
+
+If a worktree path is found:
+```
+⚠️ WORKTREE MISMATCH
+═══════════════════════════════════════
+Worktree mode is enabled but you're in the main repo.
+Your mission worktree: {worktree_path}
+
+Switch to it:  cd {worktree_path}
+Then re-run:   /team-ship
+═══════════════════════════════════════
+```
+→ **STOP**
+
+If no worktree exists for this branch:
+```
+⚠️ Worktree mode is enabled but no worktree exists for branch {branch}.
+Run /team-claim #{issue} to recreate with worktree isolation.
+Or disable worktree mode: git config --local teamwork.worktree false
+```
+→ **STOP**
+
+---
+
 ## Step 2: Pre-flight Checks
 
 ### 2a: Verify branch
@@ -170,16 +213,20 @@ else
 fi
 ```
 
-- If `BEHIND_BASE` > 30 → 🔴 "Branch is {N} commits behind base. Rebase before shipping to avoid painful merge conflicts. Run `/team-ship sync` first." → **STOP**
-- If `BEHIND_BASE` > 10 → 🟡 "Branch is {N} commits behind base. Consider running `/team-ship sync` before shipping."
+- If `BEHIND_BASE` > 30 → 🔴 "Branch is {N} commits behind base. Run `/team-ship sync` to rebase (conflicts will be auto-resolved)." → **STOP**
+- If `BEHIND_BASE` > 10 → 🟡 "Branch is {N} commits behind base. Consider `/team-ship sync` to rebase before shipping."
 - If `BEHIND_REMOTE` > 0 → 🟡 "Local branch is behind remote by {N} commits. Run `git pull --rebase` to sync before pushing."
 
 ### 2b: Verify all sub-tasks complete
 
 Check the Contract's sub-tasks section. Count `- [x]` vs `- [ ]`.
-- If any unchecked sub-tasks remain → display them and say:
-  "Not all sub-tasks are complete. Finish them with `/team-drive` first, or manually check them off in the Contract."
+
+Separate unchecked tasks into **code tasks** (no `🔧 MANUAL` or `(MANUAL)` tag) and **manual tasks** (tagged `🔧 MANUAL` or `(MANUAL)`).
+
+- If any unchecked **code** sub-tasks remain → display them and say:
+  "Not all code tasks are complete. Finish them with `/team-drive` first, or manually check them off in the Contract."
   → **STOP**
+- If only **manual** sub-tasks are unchecked → proceed (these are human-action tasks, not blockers for the PR). Note them for inclusion in PR description.
 
 ### 2c: Clean working tree
 
@@ -266,8 +313,13 @@ Closes #{issue}
 {objective from Contract}
 
 ## Changes
-{For each completed sub-task:}
+{For each completed code sub-task:}
 - {sub-task description}
+
+{If manual tasks exist, add:}
+## Manual Steps (post-merge)
+{For each manual sub-task:}
+- [ ] {manual task description}
 
 ## Acceptance Criteria
 {criteria from Contract}
@@ -410,6 +462,8 @@ Labels:    {actual current labels}
 
 ────────────────────────────────────────────
 /team-ship done (after merge) │ /team-ship review │ /team
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 ---
@@ -502,8 +556,20 @@ bash ~/.claude/commands/scripts/tw-git.sh ensure-base || {
 
 ### D7: Clean up Contract
 
+⚠️ Re-detect TEAMWORK_DIR here — the value from flow start may point to a removed worktree.
+
 ```bash
+# Re-detect after worktree removal + base branch switch
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null)
+TEAMWORK_DIR="${TEAMWORK_DIR:-.teamwork}"
+
 bash ~/.claude/commands/scripts/tw-contract.sh delete "$TEAMWORK_DIR/active/MISSION-{issue}.md"
+
+# Fallback: if file still exists (path mismatch), find and delete
+if ls .teamwork/active/MISSION-{issue}.md .teamspace/active/MISSION-{issue}.md 2>/dev/null; then
+  rm -f .teamwork/active/MISSION-{issue}.md .teamspace/active/MISSION-{issue}.md 2>/dev/null
+  echo "Contract cleaned up via fallback path"
+fi
 ```
 
 ### D8: Output summary
@@ -518,6 +584,8 @@ Branch:    {BASE_BRANCH}
 
 ────────────────────────────────────────────
 /team-claim (next mission) │ /team (dashboard)
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 ```
 
 ---
@@ -575,7 +643,13 @@ options:
 gh pr review {pr} --body "{review_body}" {--approve|--request-changes|--comment}
 ```
 
-Output: "Review published on PR #{pr}: {approve/request-changes/comment}"
+Output:
+
+```
+Review published on PR #{pr}: {approve/request-changes/comment}
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
+```
 
 ---
 
@@ -599,8 +673,56 @@ If on `$BASE_BRANCH` → "Already on $BASE_BRANCH. Nothing to sync." → **STOP*
 bash ~/.claude/commands/scripts/tw-git.sh rebase "$BASE_BRANCH"
 ```
 
-- If exit 0 → "Branch `{branch}` rebased on latest $BASE_BRANCH."
-- If exit 2 → "Rebase conflicts detected. Resolve them, then `git rebase --continue`." → **STOP** (do not abort automatically)
+- If exit 0 → jump to **S3: Summary**
+- If exit 2 → jump to **S2b: AI conflict resolution**
+
+### S2b: AI conflict resolution
+
+When rebase produces conflicts, resolve them automatically:
+
+1. **List conflicted files:**
+```bash
+git diff --name-only --diff-filter=U
+```
+
+2. **For each conflicted file:**
+   - Read the file (it contains `<<<<<<<`, `=======`, `>>>>>>>` markers)
+   - Understand both sides: "ours" (mission branch) = the work being rebased, "theirs" (base branch) = upstream changes
+   - Edit the file to resolve: merge both sides' intent, preserving mission changes where they don't contradict upstream
+   - `git add {file}`
+
+3. **Continue rebase:**
+```bash
+git rebase --continue
+```
+   - If more conflicts appear → repeat step 1-3
+   - If rebase completes → jump to **S3: Summary**
+
+4. **If a conflict is genuinely ambiguous** (both sides made semantic changes to the same logic that contradict each other), resolve with best judgment and flag it in the summary.
+
+### S3: Summary
+
+Output:
+
+```
+SYNC COMPLETE
+═══════════════════════════════════════════
+Branch:   {branch}
+Rebased:  on latest {BASE_BRANCH}
+{If conflicts resolved:}
+Resolved: {N} conflict(s) in {file list}
+{If any flagged:}
+⚠️ Review: {file} — both sides changed {description}, merged as {approach}
+═══════════════════════════════════════════
+```
+
+Push the rebased branch:
+```bash
+git push --force-with-lease origin {branch}
+```
+
+- If push succeeds → done
+- If push fails → "Push failed. Try: `git push --force-with-lease origin {branch}`" → **STOP**
 
 ---
 
@@ -682,14 +804,17 @@ WHAT IT DOES:
   1. Verify you're on a mission branch (not base)
   2. Fetch latest base branch from remote
   3. Rebase your branch on top of latest base
+  4. Auto-resolve conflicts (AI reads both sides and merges)
+  5. Force-push rebased branch to remote
 
 WHEN TO USE:
-  When /team doctor shows your branch is behind base or remote.
+  When dashboard shows "⚠️ N behind {base}" on your PR.
+  When /team doctor shows your branch is behind base.
   Before /team-ship if branch has drifted.
 
 TROUBLESHOOTING:
-  "Rebase conflicts" → Resolve conflicts, then: git rebase --continue
   Already on base branch → Nothing to sync.
+  Ambiguous conflict → AI resolves + flags for review in summary.
 ```
 
 ---
@@ -698,7 +823,7 @@ TROUBLESHOOTING:
 
 - Config missing → "Run `/team` first to initialize teamwork." → **STOP**
 - No active Contract → "No mission to ship. Run `/team-claim` first." → **STOP**
-- Incomplete sub-tasks → warn with list of remaining tasks → **STOP**
+- Incomplete code sub-tasks → warn with list of remaining tasks → **STOP** (MANUAL tasks don't block)
 - Tests fail → "Fix tests before shipping." → **STOP**
 - Push fails → suggest rebase (`/team-ship sync`), if still fails → **STOP**
 - PR creation fails → "Failed to create PR. Check `gh auth status` and try again." → **STOP**

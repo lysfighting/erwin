@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "3.5.1"
+version: "3.7.0"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -195,6 +195,13 @@ issue_content_hash: "$(bash ~/.claude/commands/scripts/tw-contract.sh hash "$TIT
 ## Sub-tasks
 {Extracted checkboxes from Issue body, or AI-generated breakdown}
 
+**MANUAL task pre-tagging:** While extracting sub-tasks, identify any that require human action outside the codebase (server access, console operations, third-party configuration, deployment verification). Prepend `🔧 MANUAL:` to these tasks. This enables `/team-drive` to skip them during execution and surface them in the Manual Ops Handoff.
+
+Example:
+- [ ] Implement API authentication
+- [ ] 🔧 MANUAL: Configure Firebase Console authorized domains
+- [ ] 🔧 MANUAL: Deploy SA JSON to production server
+
 ## Acceptance Criteria
 {Extracted from Issue body, or AI-inferred}
 
@@ -328,6 +335,8 @@ Contract:  $TEAMWORK_DIR/active/MISSION-{issue}.md
   Open a NEW terminal tab and run:
     cd {worktree_path} && claude
   Then: /team-drive to execute │ /team-ship when done
+
+💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 
   ⚠ Do NOT run /team-drive in this terminal — it will
   operate on the wrong working directory.
