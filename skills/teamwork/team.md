@@ -53,9 +53,9 @@ Read `skill_version` from config for the header:
 ```bash
 TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || TEAMWORK_DIR=""
 if [ -n "$TEAMWORK_DIR" ]; then
-  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.0" 2>/dev/null)
+  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.1" 2>/dev/null)
 else
-  SKILL_VERSION="3.5.0"
+  SKILL_VERSION="3.5.1"
 fi
 ```
 
@@ -132,9 +132,9 @@ Read `skill_version` from config for the header:
 ```bash
 TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || TEAMWORK_DIR=""
 if [ -n "$TEAMWORK_DIR" ]; then
-  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.0" 2>/dev/null)
+  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.1" 2>/dev/null)
 else
-  SKILL_VERSION="3.5.0"
+  SKILL_VERSION="3.5.1"
 fi
 ```
 
@@ -1001,7 +1001,7 @@ fi
 Read `SKILL_VERSION` from the config file AFTER the sed update in Step 1 (to get the updated value):
 
 ```bash
-SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.0" 2>/dev/null)
+SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.5.1" 2>/dev/null)
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
