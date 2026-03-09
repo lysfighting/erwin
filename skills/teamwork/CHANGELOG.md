@@ -2,6 +2,20 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.4.3] — 2026-03-09
+
+### Fixed — Merge mode logic gaps + stale references
+
+Full audit of worktree integration across all skill files.
+
+- **Init merge mode**: now asks worktree preference (Step 5) when user has never configured it.
+  Previously merge mode skipped ALL interactive questions, so worktree could never be enabled via re-init.
+- **Init merge mode**: fixed stale version "3.4.0" in summary template → now shows current version.
+- **Init merge mode**: quality section uses safe defaults (`true`) instead of referencing
+  undefined Step 3 variables (merge mode skips interactive Steps 2-3).
+- **Init merge mode**: Step 3 description clarified — uses existing config + safe defaults, not Step 3 answers.
+- **README.md**: updated worktree config reference from `worktree.enabled` to `git config --local`.
+
 ## [3.4.2] — 2026-03-09
 
 ### Fixed — Worktree section LLM execution reliability

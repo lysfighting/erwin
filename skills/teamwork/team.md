@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.4.2"
+version: "3.4.3"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -49,7 +49,7 @@ Parse `$ARGUMENTS`:
 Output the following guide directly to the user, then **STOP**:
 
 ```
-TEAMWORK v3.4.2 — AI-Native Team Coordination (Push Model)
+TEAMWORK v3.4.3 — AI-Native Team Coordination (Push Model)
 Author: liyasong + casey | Released: 2026-03-08
 ═══════════════════════════════════════════
 
@@ -125,7 +125,7 @@ Read and present the design philosophy behind this workflow. Output the content 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
 ```
-TEAMWORK v3.4.2 — Design Philosophy & Complete Guide
+TEAMWORK v3.4.3 — Design Philosophy & Complete Guide
 ═══════════════════════════════════════════════════════════════
 
 1. WHY THIS MODEL?
@@ -731,8 +731,8 @@ Preserve all existing content. Only update `skill_version` and append missing to
 
 ```bash
 # Update skill_version line without touching anything else
-sed -i '' "s/^skill_version:.*/skill_version: 3.4.2/" $TEAMWORK_DIR/config.yml
-# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.4.2/" $TEAMWORK_DIR/config.yml
+sed -i '' "s/^skill_version:.*/skill_version: 3.4.3/" $TEAMWORK_DIR/config.yml
+# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.4.3/" $TEAMWORK_DIR/config.yml
 
 # Update schema_version if present
 if grep -q "^schema_version:" $TEAMWORK_DIR/config.yml; then
@@ -760,7 +760,7 @@ done
 
 **Step 3 — Append only missing sections to the file:**
 
-For each missing section, append the appropriate YAML block. Use the project info detected in Step 2 and answers from Step 3.
+For each missing section, append the appropriate YAML block. Use the project info from the existing config where possible, or safe defaults (merge mode skips interactive Steps 2-3).
 
 Standard section templates to append as needed:
 
@@ -789,11 +789,12 @@ label_prefix:
 ```
 
 ```yaml
+# In merge mode: use safe defaults (true). In fresh install: use answers from Step 3.
 quality:
-  hooks: {true/false from Step 3}
-  ci: {true/false from Step 3}
-  review_required: {true/false from Step 3}
-  branch_protection: {true/false from Step 3}
+  hooks: true
+  ci: true
+  review_required: true
+  branch_protection: true
 ```
 
 ```yaml
@@ -847,14 +848,67 @@ if grep -q "^worktree:" $TEAMWORK_DIR/config.yml 2>/dev/null; then
 fi
 ```
 
-**Step 5 — Show merge summary:**
+**Step 5 — Ask worktree preference (if not yet configured):**
+
+Worktree is a per-user local setting. In merge mode, Steps 2-3 are skipped, so we must ask here.
+
+```bash
+WORKTREE_CONFIGURED=$(git config --local teamwork.worktree 2>/dev/null)
+if [ -z "$WORKTREE_CONFIGURED" ]; then
+  # User has never configured worktree preference — ask now
+```
+
+Use `AskUserQuestion`:
+```
+question: "Development isolation strategy? (stored locally, per-user)"
+options:
+  - label: "Branch only (Recommended)"
+    description: "Simple branching — one working copy, switch between branches"
+  - label: "Git worktree"
+    description: "Parallel development — each mission gets its own working directory"
+```
+
+If "Git worktree" selected:
+```bash
+  git config --local teamwork.worktree true
+  echo "Worktree mode enabled (git config --local)"
+fi
+```
+
+If "Branch only" selected:
+```bash
+  git config --local teamwork.worktree false
+  echo "Branch-only mode (default)"
+fi
+```
+
+**Step 6 — Handle missing sections with safe defaults:**
+
+For `quality:` section, if missing, use safe defaults instead of referencing Step 3 variables (which are skipped in merge mode):
+
+```bash
+# If quality section is missing, append with safe defaults
+if ! grep -q "^quality:" $TEAMWORK_DIR/config.yml; then
+  cat >> $TEAMWORK_DIR/config.yml <<'EOF'
+
+quality:
+  hooks: true
+  ci: true
+  review_required: true
+  branch_protection: true
+EOF
+fi
+```
+
+**Step 7 — Show merge summary:**
 
 ```
 ✅ Config updated (merge mode — existing config preserved)
-   schema_version → 3 | skill_version → 3.4.0
+   schema_version → 3 | skill_version → 3.4.2
    Preserved sections: {list of sections kept}
    Added sections: {list of sections appended, or "(none — already complete)"}
    {If worktree migrated:} Migrated: worktree → git config --local
+   Worktree mode: {enabled / disabled / already configured}
 ```
 
 Do NOT overwrite `team`/`members`, `github`, `versions`, `roles`, `notifications`, or any unrecognized section.
@@ -867,7 +921,7 @@ Write full config based on detected project info + user answers:
 
 ```yaml
 schema_version: 3
-skill_version: 3.4.2
+skill_version: 3.4.3
 
 roles:
   - id: leader

@@ -71,12 +71,12 @@ Key principles:
 
 ## Optional Features
 
-All opt-in via `config.yml`:
+All opt-in via `config.yml` (except worktree, which is per-user):
 
 | Feature | Config Key | Default |
 |---------|-----------|---------|
 | Prefixed labels | `label_prefix` | Enabled (new installs) |
-| Git worktree isolation | `worktree.enabled` | `false` |
+| Git worktree isolation | `git config --local teamwork.worktree` | `false` (per-user, not shared) |
 | Version tracking | `versions.current` | Not set |
 | Dual-branch mode | `conventions.production_branch` | Same as `base_branch` (single-branch) |
 
@@ -100,5 +100,5 @@ All opt-in via `config.yml`:
 
 ## Version
 
-- Skill version: 3.4.2
+- Skill version: 3.4.3
 - Config schema: 3
