@@ -365,7 +365,9 @@ feat/E:                          D ── (your work) ──
 | | `/team config` | View current config + edit instructions |
 | | `/team queue` | All open missions sorted by priority |
 | | `/team #42` | MC detail view (branch, commits, PRs, criteria) |
-| | `/team doctor` | Local git + issue health diagnostics (7 checks, 3-layer report) |
+| | `/team doctor` | Local git + issue health diagnostics (8 checks, 3-layer report) |
+| | `/team doctor fix` | Interactive fix mode — auto-execute cleanup, confirm warnings |
+| | `/team doctor help` | Self-contained doctor usage guide |
 | | `/team wrap` | Retroactive closure: code-first → auto-create issue + PR |
 | | `/team auto #42` | One-shot: claim → drive → ship in one command |
 | | `/team auto` | Pick from assigned queue, then auto |
@@ -386,6 +388,57 @@ feat/E:                          D ── (your work) ──
 | `/team-rc` | `/team-rc` | Prepare: cut rc from develop |
 | | `/team-rc promote` | Promote: squash to main, tag, release, notify |
 | | `/team-rc help` | Full RC lifecycle guide |
+
+### Doctor — Health Diagnostics (v3.4+)
+
+`/team doctor` runs 8 diagnostic checks and produces a 3-layer report:
+
+| Check | What it detects | Severity |
+|-------|----------------|----------|
+| 1. Orphan Branches | Local branches with closed Issues / merged PRs | 🟢 cleanup |
+| 2. Cross-Contamination | Uncommitted changes belonging to different MC | 🔴 critical |
+| 3. Branch Staleness | Mission branches >30 commits behind base | 🟡 warning |
+| 4. Stale Stashes | Stashes >7 days old or on deleted branches | 🟡 warning |
+| 5. Worktree Health | Prunable, orphan, or broken worktrees | 🟡 warning |
+| 6. Shippable PRs | PRs with CI passing + mergeable but idle | 🟡 warning |
+| 7. Issue Health | Duplicates, unassigned, stale WIP issues | 🟡 warning |
+| 8. Remote Sync | Local branch behind remote (needs pull/push) | 🟡 warning |
+
+**Output**: Layer 1 (snapshot tables) → Layer 2 (diagnosis narrative) → Layer 3 (action plan with exact commands).
+
+**`/team doctor fix`**: Interactive fix mode. Cleanup actions auto-execute; warnings confirm each via prompt; critical issues confirm with risk explanation.
+
+**`/team doctor help`**: Self-contained usage guide showing all checks and typical workflow.
+
+### Operational Details (v3.5+)
+
+**Base branch guard** (`/team-ship`): Before shipping, verifies you're NOT on a protected branch (main/develop). Prevents accidental ship from base branch.
+
+**CI-preserves-contract** (`/team-ship`): When CI fails after PR creation, the Mission Contract is preserved (not deleted). This allows iterating with `/team-drive` → `/team-ship` until CI passes.
+
+**Contract-missing fallback** (`/team-drive`): If Contract is missing but you're on a mission branch with an open Issue, suggests `/team-claim #N` to regenerate the Contract instead of a bare error.
+
+**NEEDS CLEANUP dashboard section**: Appears when local mission branches have merged PRs. Shows branch name + PR number. Fix: `/team-ship done`.
+
+### Visual Encoding
+
+All teamwork output uses consistent emoji conventions:
+
+| Symbol | Meaning | Context |
+|--------|---------|---------|
+| 🔴 | P0 critical / CI fail / critical diagnostic | Priority, CI, doctor |
+| 🟠 | P1 high | Priority |
+| 🟡 | P2 medium / under review / warning | Priority, status, doctor |
+| ⚪ | P3 low / idle | Priority, member status |
+| 🟢 | Active / WIP / passing / cleanup | Status, CI, doctor |
+| ✅ | Done / CI passing | Completion indicators |
+| ❌ | Failed / CI failing | Error indicators |
+| ⚡ | Issue updated since claim | Dashboard stale warning |
+| 🔀 | PR / merge related | Pull requests |
+| 💀 | Orphan branch | Doctor output |
+| ⏳ | CI pending | CI status |
+
+**Progress bar**: `█` filled, `░` empty (10 chars). E.g., 50% → `█████░░░░░`.
 
 ---
 
