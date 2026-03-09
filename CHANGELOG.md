@@ -7,7 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Skills Factory
+- **Teamwork v3.5.0 — `/team config` + dashboard version + docs completeness**:
+  - `/team config` subcommand: shows current config.yml content, worktree status, edit instructions
+  - Dashboard footer shows `Teamwork v{version}` (read dynamically from config)
+  - Help/Learn outputs updated with all subcommands and dynamic version
+  - Learn Section 11: Config Management (shared vs local config, edit workflow)
+- **Teamwork v3.4.0 — Doctor actionability upgrade**:
+  - `/team doctor fix`: interactive fix mode with severity-based confirmations
+  - `/team doctor help`: self-contained usage guide
+  - Branch table: new "vs Remote" column showing ahead/behind remote tracking
+  - Check 8: Remote Sync diagnostic
+  - Cross-skill UX audit: 5 new help routes, 2 branch readiness checks, ~12 error→guidance fixes
+
 ### Changed — Skills Factory
+- **Teamwork v3.4.1 — Worktree mode: shared → local**:
+  - Worktree mode moved from shared `config.yml` to per-user `git config --local teamwork.worktree true`
+  - Dashboard always shows worktree map when enabled (★ current, MC association, ⚠️ mismatch)
+  - Init merge mode: auto-migrates old `worktree:` section to `git config --local`
+  - Doctor Check 5: detects idle worktrees, context mismatch
+- **Teamwork v3.2.0 — Unified visual design language**:
+  - Standardized emoji encoding across all 6 skill files (priority dots, CI icons, progress bar)
+  - Dashboard performance: 7-8 serial API calls → 4-5 parallel
+- **Teamwork v3.1.0 — Untracked issue detection + learn audit**:
+  - Dashboard UNTRACKED section: detects GitHub Issues assigned but missing teamwork labels
+  - `/team-issue fix #N`: adds missing teamwork labels to untracked Issues
+  - `/team learn`: complete 10-section design philosophy + visual diagrams
+
+### Fixed — Skills Factory
+- **Teamwork v3.5.1 — Design review: logic gaps + docs alignment**:
+  - team-ship: base branch guard prevents accidental ship from main/develop
+  - team-ship: CI failure preserves Contract (enables drive→ship iteration)
+  - team-drive: Contract-missing fallback detects mission branch + open Issue, suggests recovery
+  - docs: teamwork-v2-architecture.md archived, team-doctor-design.md Check 8 added
+- **Teamwork v3.4.3 — Merge mode logic gaps**:
+  - Init merge mode asks worktree preference when never configured
+  - Quality section uses safe defaults instead of undefined Step 3 variables
+- **Teamwork v3.4.2 — Worktree dashboard render reliability**:
+  - Worktree section restructured as mandatory pre-render (was skipped by LLM in conditional template)
+- **Teamwork v3.2.1 — Script extraction + deep bug fix + stale cleanup**:
+  - Milestone prefix matching backport from vi_agent (4 locations + batch gap)
+  - Learn: direct embedded output, no file reading (fix exit code 1)
+
+### Changed — Skills Factory (v2.x)
 - **Teamwork v2.7.3 — Init audit + dynamic branch protection**:
   - team.md Step 5c: hardcoded branch protection → config-driven (`quality.ci` + `quality.review_required` → 4 combinations)
   - Added `allow_force_pushes: false` + `allow_deletions: false` to protection rules
@@ -72,6 +114,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 3 high: config format collision, missing config health check, branch name parsing
   - 5 medium: sed pattern consistency, git staging guidance, worktree detection logic
   - 2 flow bugs: Step 1b→1c routing, $BRANCH_PATTERN extraction
+
+### Changed — Documentation
+- **docs/ reorganization** — Created `docs/README.md` index (active/archived/research), moved 3 research docs to `docs/research/`, added archived status banners to 4 stale docs, fixed stale cross-references to teamwork-v2-architecture.md
 
 ### Removed — Skills Factory
 - **Teamwork v1 skills** — `/teamwork`, `/team-get-mission`, `/team-complete` removed (replaced by v2)
