@@ -61,12 +61,13 @@ fi
 TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || echo "NO_CONFIG"
 ```
 
-- If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
+- If no config → "**ERROR:** Teamwork not initialized. Run `/team` first." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - If in worktree mode (`WORKTREE_MODE=true`) → no branch switching needed in Step 1.
 - **Worktree note**: Contract should be in `$TEAMWORK_DIR/active/` within the worktree (copied during `/team-claim`). If not found but `.mission` exists, look for the Contract in the main repo parent directory as fallback:
 
 ```bash
-if [ "$WORKTREE_MODE" = true ] && ! ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null | head -1 >/dev/null; then
+if [ "$WORKTREE_MODE" = true ] && ! ls $TEAMWORK_DIR/active/MISSION-*.md >/dev/null 2>&1; then
   PARENT_REPO=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's|/\.git$||')
   if [ -n "$PARENT_REPO" ] && [ -d "$PARENT_REPO/.teamwork/active" ]; then
     PARENT_CONTRACT=$(ls "$PARENT_REPO/.teamwork/active/MISSION-${MISSION_ISSUE}.md" 2>/dev/null || true)
@@ -101,8 +102,10 @@ fi
 ```
 
 → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 - If multiple Contracts found → "Multiple active contracts found. This shouldn't happen. Keep one, remove the rest." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Read the Contract file fully. Extract from YAML frontmatter:
 - `issue` number
@@ -149,6 +152,7 @@ Use `AskUserQuestion`:
 - "Update Contract?" → Re-extract Objective, Sub-tasks, Acceptance Criteria from new body. Update `issue_content_hash`. Preserve Context Files and AI Notes (locally generated).
 - "Continue with current Contract" → proceed without changes
 - "Abort" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 
@@ -183,6 +187,7 @@ Switch to it:  `cd {worktree_path}`
 Then re-run:   `/team-drive`
 ────────────────────────────────────────────
 → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 If no worktree exists for this branch (e.g., worktree was deleted or claim was done before enabling worktree mode):
 
@@ -191,6 +196,7 @@ Worktree mode is enabled but no worktree exists for branch *{branch}*.
 Run `/team-claim` **#{issue}** to recreate with worktree isolation.
 Or disable worktree mode: `git config --local teamwork.worktree false`
 → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 
@@ -211,6 +217,7 @@ Compare with Contract's `branch` field.
     1. Restore from remote: `git checkout -b {branch} origin/{branch}`
     2. Re-claim the mission: `/team-claim` **#{issue}**
     Re-claiming will regenerate the Contract from the Issue. Committed changes are preserved on remote if pushed.
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 
@@ -241,9 +248,11 @@ Check whether all **code** sub-tasks are already checked (ignore `🔧 MANUAL` t
 
 - If all code tasks checked AND **no** MANUAL tasks exist:
   → "All sub-tasks complete. Run `/team-ship` to deliver." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 - If all code tasks checked AND MANUAL tasks **do** exist:
   → Skip directly to **Completion Summary + Debrief** (Manual Ops Handoff path). Show the `🔧 YOUR TURN` block, run `AskUserQuestion`, then suggest `/team-ship`. → **STOP** after handoff.
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 - If unchecked code tasks remain → continue to Plan Validation and execution.
 
@@ -276,7 +285,7 @@ Display branch readiness:
 
 - If `BEHIND_BASE` > 30 → 🔴 **Branch is `{N}` commits behind base.** Rebase strongly recommended before starting work. Run `/team-ship sync` to rebase.
 - If `BEHIND_BASE` > 10 and ≤ 30 → 🟡 **Branch is `{N}` commits behind base.** Consider running `/team-ship sync` before driving.
-- If `BEHIND_REMOTE` > 0 → 🟡 **Local branch is `{N}` commits behind remote.** Run `git pull --rebase` to sync.
+- If `BEHIND_REMOTE` > 0 → 🟡 **Local branch is `{N}` commits behind remote.** Run `/team-ship sync` to sync.
 - If all zero → no output needed (clean state)
 
 This is informational only — do NOT stop. Warn and continue. The user may choose to sync or not.
@@ -292,6 +301,7 @@ bash ~/.claude/commands/scripts/tw-git.sh protect-check
 ```
 
 - If exit code 3 → on protected branch, output **ERROR:** "Switch to a feature branch first: `/team-claim` **#{issue}**" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - If exit code 0 → on correct feature branch → continue
 
 ---
@@ -955,11 +965,13 @@ Did this mission reveal a gap in any skill? Tool limitation? Stale pattern?
 ## Error Handling
 
 - Config missing → **ERROR:** Run `/team` first to initialize teamwork. → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - Contract references files that don't exist → **WARNING:** skip those context files
 - Test command not defined → **WARNING:** No test command configured. Add `test_command` to `$TEAMWORK_DIR/config.yml`.
 - Git conflicts → resolve them, then continue
 - If execution is interrupted (user stops mid-task), the Contract preserves progress via checkboxes — next `/team-drive` run picks up where it left off
 - Plan Validation finds Objective impossible → **ERROR:** ESCALATE to user, do NOT proceed with doomed plan
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - Teammate fails or is blocked → unblock immediately (priority over your own task)
 
 **On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.

@@ -132,7 +132,7 @@ done
 gh issue list --label "$MISSION_LABEL" --state open --json number,title,body,assignees,labels --limit 50
 ```
 
-### Analysis Phase — 8 Diagnostic Checks
+### Analysis Phase — 12 Diagnostic Checks
 
 Each check produces findings with a severity level:
 
@@ -323,6 +323,61 @@ For each local mission/* branch that has a remote tracking branch:
 **Edge cases**:
 - No remote tracking branch → skip (branch hasn't been pushed yet, covered by Check 1/3)
 - Remote branch deleted but local exists → already caught by Check 1 (Orphan Branches)
+
+---
+
+#### Check 9: GitHub Auth
+
+**Logic**: Verify `gh` CLI is authenticated and token has required scopes (repo, read:org). Without valid auth, checks 6/7/12 that call GitHub API will fail silently.
+
+```
+1. Run `gh auth status` and parse output
+2. If not authenticated → 🔴 CRITICAL "GitHub CLI not authenticated. Run `gh auth login`."
+3. If authenticated, check token scopes:
+   - Missing `repo` scope → 🔴 CRITICAL "Token missing `repo` scope"
+   - Missing `read:org` scope → 🟡 WARNING "Token missing `read:org` scope — team features limited"
+```
+
+#### Check 10: Contract Freshness
+
+**Logic**: Compare active Contract's stored `issue_content_hash` against the current Issue content hash. Stale contracts mean the AI is working with outdated requirements.
+
+```
+For each active Contract (MISSION-*.md):
+  1. Read issue_content_hash from contract metadata
+  2. Fetch current issue body via gh api, compute hash
+  3. If hashes differ → 🟡 WARNING "Contract for #{issue} is stale — Issue was updated since claim"
+     Action: `/team-claim {issue}` to refresh
+  4. If hash matches → OK (contract is fresh)
+```
+
+#### Check 11: Test Suite
+
+**Logic**: Run the project's configured test command (`project.test_command` from teamwork config) and report failures. Only runs if working tree is clean.
+
+```
+1. Read test_command from config via tw-config.sh
+2. If no test command configured → 🟢 INFO "No test command configured"
+3. If working tree is dirty → skip (dirty tree causes false failures)
+4. Run test command, capture exit code and output
+   - Exit 0 → OK (tests pass)
+   - Exit non-zero → 🟡 WARNING "Test suite failing: {summary}"
+     Action: fix failing tests, then `/team-ship`
+   - Command not found/executable → 🟡 WARNING "Test command not runnable: {command}"
+```
+
+#### Check 12: PR CI Status
+
+**Logic**: Check CI status on all open PRs — extends Check 6 (Shippable PRs) with per-check failure details.
+
+```
+For each open PR from data collection:
+  1. Parse statusCheckRollup for individual check results
+  2. If any check FAILED → 🟡 WARNING "PR #{pr} CI failing: {check name}"
+     Action: push fixes to branch, or investigate failing check
+  3. If checks PENDING for >30 minutes → 🟢 INFO "PR #{pr} CI pending for extended time"
+  4. All checks passing → OK (already covered by Check 6)
+```
 
 ---
 
@@ -556,7 +611,7 @@ SUMMARY: 🔴 2 critical │ 🟡 6 warnings │ 🟢 1 cleanup
 4. Write `## Operation Doctor` section with:
    - Prerequisites (reuse existing config detection pattern)
    - Data collection commands (13 bash commands)
-   - 8 diagnostic checks with analysis logic
+   - 12 diagnostic checks with analysis logic
    - 3-layer output format spec (tables → diagnosis → action plan)
 5. Update CHANGELOG
 6. Bump version in team.md frontmatter (3.0.0 → 3.1.0, minor feature)
@@ -635,6 +690,10 @@ Claude Code terminals universally support emoji. Box-drawing + emoji is visually
 - New "vs Remote" column in branch table shows ahead/behind vs `origin/{branch}`
 - Highlights `⚠ behind` when local is behind remote (most actionable finding)
 - New Check 8: Remote Sync diagnostic with pull/sync recommendations
+- New Check 9: GitHub Auth — verify `gh` CLI auth and token scopes
+- New Check 10: Contract Freshness — detect stale contracts via hash comparison
+- New Check 11: Test Suite — run project test command, report failures
+- New Check 12: PR CI Status — per-check CI failure details on open PRs
 
 ### Action Plan — Teamwork Command References
 - Actions now suggest teamwork commands where applicable (e.g., `/team-ship sync` instead of raw `git rebase`)

@@ -72,7 +72,7 @@ with open(path) as f:
 
 cmd_hash() {
   local title="${1:-}" body="${2:-}"
-  echo "${title}${body}" | shasum -a 256 | cut -d' ' -f1
+  printf '%s' "${title}${body}" | shasum -a 256 | cut -d' ' -f1
 }
 
 cmd_check_freshness() {
@@ -108,7 +108,7 @@ cmd_check_freshness() {
   local title body current_hash
   title=$(echo "$issue_data" | jq -r '.title // ""')
   body=$(echo "$issue_data" | jq -r '.body // ""')
-  current_hash=$(echo "${title}${body}" | shasum -a 256 | cut -d' ' -f1)
+  current_hash=$(printf '%s' "${title}${body}" | shasum -a 256 | cut -d' ' -f1)
 
   if [ "$contract_hash" = "$current_hash" ]; then
     echo "FRESH"

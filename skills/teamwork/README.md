@@ -104,12 +104,19 @@ All opt-in via `config.yml` (except worktree, which is per-user):
 
 ## Development Utilities
 
-Scripts in `scripts/` not called by skills directly — used for maintenance:
+Scripts in `scripts/`:
 
-| Script | Purpose | Usage |
-|--------|---------|-------|
-| `tw-bump-version.sh` | Bump version across all skill files, README, ONBOARDING, manual | `bash scripts/tw-bump-version.sh 3.6.0` |
-| `tw-e2e-test.sh` | End-to-end validation harness (creates test Issue, claims, drives, ships, cleans up) | `bash scripts/tw-e2e-test.sh` |
+| Script | Purpose | Called by |
+|--------|---------|----------|
+| `tw-config.sh` | Read/write config values from `.teamwork/config.yml` | All skills |
+| `tw-git.sh` | Git operations (branch, milestone, worktree, stash) | team-claim, team-ship, team-rc |
+| `tw-pr.sh` | PR operations (create, exists, check CI) | team-ship, team-rc |
+| `tw-label.sh` | GitHub label operations (set, transition) | team-issue, team-claim, team-ship |
+| `tw-contract.sh` | Mission Contract CRUD (create, read, delete) | team-claim, team-drive, team-ship |
+| `tw-notify.sh` | Notification dispatch (Slack, Feishu, webhook) | team-issue, team-ship |
+| `setup-github-labels.sh` | Initialize GitHub labels on repo | team (init) |
+| `tw-bump-version.sh` | Bump version across all skill files + docs | Maintenance |
+| `tw-e2e-test.sh` | End-to-end validation harness | Maintenance |
 
 ## Version
 

@@ -51,7 +51,7 @@ Then run:
 **What happens:**
 
 1. Claude detects your project language (Node, Python, Go, etc.)
-2. Asks you about team members, quality preferences, worktree isolation, and terminal tab title
+2. Asks you about team members, quality preferences, worktree isolation, and terminal tab title + color
 3. Generates:
 
 | File | What it does |

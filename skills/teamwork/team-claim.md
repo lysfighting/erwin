@@ -63,6 +63,7 @@ TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/nu
 ```
 
 - If no config → "**ERROR:** Teamwork not initialized. Run `/team` first." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Read `$TEAMWORK_DIR/config.yml` → extract team roster, conventions, project settings.
 
@@ -73,6 +74,7 @@ eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)
 
 Verify `GH_USER` is in the team roster (check both `team:` and `members:` sections).
 If not → "**ERROR:** You (`{GH_USER}`) are not in the team roster. Run `/team init` to re-initialize and add yourself." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 
@@ -91,6 +93,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "fal
 **If worktree DISABLED (default):** If any Contract exists → read it, display the active mission info.
 - "You already have an active mission: **#{issue}** — {title}. Complete it with `/team-ship` first. To abandon: run `/team doctor fix` to clean up (you can re-claim the Issue later with `/team-claim`)."
 - **STOP** (enforce one-at-a-time rule)
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 **If worktree ENABLED:** Allow multiple active Contracts. Each mission gets its own worktree directory, so parallel work is safe.
 - If any Contract exists → display it as info: "Active mission(s): **#{issue}** — {title}. Worktree mode: parallel claiming allowed."
@@ -116,6 +119,7 @@ Format as numbered list:
   🟡 `3.` **#047** Write API docs
 
 If none → "No missions assigned to you. Ask your team lead to assign one via `/team-issue`." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Use `AskUserQuestion` to let user pick one, then proceed to Step 3 with the selected Issue number.
 
@@ -131,6 +135,7 @@ gh issue list --label "$MISSION_LABEL" --state open --assignee "$GH_USER" --json
 
 Show the user's assigned Issues sorted by priority (P0 first, then P1, P2, P3).
 If none → "No missions assigned to you. Ask your team lead to assign one via `/team-issue`." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Use `AskUserQuestion` to let user confirm or pick one (even if only one issue — always confirm before claiming). Then proceed to Step 3.
 
@@ -202,7 +207,7 @@ Example:
 - [ ] 🔧 MANUAL: Configure Firebase Console authorized domains
 - [ ] 🔧 MANUAL: Deploy SA JSON to production server
 
-## Acceptance Criteria
+## Success Criteria
 {Extracted from Issue body, or AI-inferred}
 
 ## Context Files
@@ -322,7 +327,7 @@ Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
   [ ] {task 2}
   [ ] ...
 
-**ACCEPTANCE CRITERIA**
+**SUCCESS CRITERIA**
   {criteria}
 
 **CONTEXT FILES**
@@ -349,12 +354,16 @@ Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
 ## Error Handling
 
 - Issue not found → "**ERROR:** Issue **#{issue}** not found. Check the number." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - Issue already assigned to someone else → warn but allow claiming (team member may be handing off)
 - Issue is closed → "**ERROR:** Issue **#{issue}** is already closed." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - Branch already exists:
   - Check if corresponding Issue is still OPEN (via `gh issue view {issue} --json state --jq '.state'`)
   - If Issue is CLOSED → warn: "⚠ Branch exists but Issue **#{issue}** is closed. This is an orphan branch. Run `/team doctor fix` to clean up, then `/team-claim` again." → **STOP**
+    💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
   - If Issue is OPEN → "Branch *{name}* already exists. Switching to it." → `git checkout {branch}`
 - Network errors → "**ERROR:** GitHub API error. Check your connection and `gh auth status`." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 **On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.

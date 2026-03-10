@@ -91,6 +91,7 @@ TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/nu
 ```
 
 - If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Read `$TEAMWORK_DIR/config.yml` → extract project settings, conventions, quality preferences.
 
@@ -113,9 +114,11 @@ ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 ```
 
 - If no Contract found AND no `.mission` file → "No active mission. Nothing to ship." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - If no Contract but `.mission` exists → use Issue number from `.mission` to locate Contract or fetch Issue directly.
 - **Worktree fallback**: If in worktree mode and Contract not found locally, check the main repo's `$TEAMWORK_DIR/active/` directory (parent of worktree path).
 - If multiple Contracts found → "Multiple active contracts found. Keep one, remove the rest." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Read the Contract file fully. Extract from YAML frontmatter:
 - `issue` number
@@ -157,12 +160,14 @@ Your mission worktree: `{worktree_path}`
 Switch to it:  `cd {worktree_path}`
 Then re-run:   `/team-ship`
 → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 If no worktree exists for this branch:
 ⚠️ Worktree mode is enabled but no worktree exists for branch *{branch}*.
 Run `/team-claim` **#{issue}** to recreate with worktree isolation.
 Or disable worktree mode: `git config --local teamwork.worktree false`
 → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 
@@ -208,9 +213,10 @@ else
 fi
 ```
 
-- If `BEHIND_BASE` > 30 → 🔴 "Branch is {N} commits behind base. Run `/team-ship sync` to rebase (conflicts will be auto-resolved)." → **STOP**
-- If `BEHIND_BASE` > 10 → 🟡 "Branch is {N} commits behind base. Consider `/team-ship sync` to rebase before shipping."
-- If `BEHIND_REMOTE` > 0 → 🟡 "Local branch is behind remote by {N} commits. Run `git pull --rebase` to sync before pushing."
+- If `BEHIND_BASE` > 30 → 🔴 "Branch is `{N}` commits behind base. Run `/team-ship sync` to rebase (conflicts will be auto-resolved)." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+- If `BEHIND_BASE` > 10 → 🟡 "Branch is `{N}` commits behind base. Consider `/team-ship sync` to rebase before shipping."
+- If `BEHIND_REMOTE` > 0 → 🟡 "Local branch is behind remote by `{N}` commits. Run `/team-ship sync` to sync before pushing."
 
 ### 2b: Verify all sub-tasks complete
 
@@ -221,6 +227,7 @@ Separate unchecked tasks into **code tasks** (no `🔧 MANUAL` or `(MANUAL)` tag
 - If any unchecked **code** sub-tasks remain → display them and say:
   "Not all code tasks are complete. Finish them with `/team-drive` first, or manually check them off in the Contract."
   → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - If only **manual** sub-tasks are unchecked → proceed (these are human-action tasks, not blockers for the PR). Note them for inclusion in PR description.
 
 ### 2c: Clean working tree
@@ -264,6 +271,7 @@ fi
 ```
 
 - If any test command exits non-zero → "Tests are failing. Fix them before shipping. Run /team-drive to fix, then retry /team-ship." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 
@@ -275,6 +283,7 @@ bash ~/.claude/commands/scripts/tw-git.sh push {branch}
 
 - If exit code 2 → push failed. Suggest `/team-ship sync` then retry push.
 - If push still fails → "Push failed. Run `/team doctor` to diagnose." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 
@@ -472,6 +481,7 @@ Locate the Issue number from (in priority order):
 4. `$ARGUMENTS` — if user passes `done #42` or `done 42`
 
 If no Issue found → "Cannot determine Issue. Provide Issue number: `/team-ship done #42`" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### D2: Verify PR is merged
 
@@ -481,6 +491,7 @@ bash ~/.claude/commands/scripts/tw-pr.sh verify-merged "$BRANCH"
 ```
 
 - If exit code 1 → "No merged PR found for branch `{branch}`. PR must be merged before running `done`." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### D3: Close Issue (fallback — usually handled by "Closes #N" in PR)
 
@@ -592,6 +603,7 @@ gh pr list --head "$BRANCH" --state open --json number,url --limit 1
 
 If `$ARGUMENTS` contains a PR number → use that instead.
 If no open PR found → "No open PR found for branch `{branch}`." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### R2: Get PR diff
 
@@ -654,6 +666,7 @@ BASE_BRANCH="${BASE_BRANCH:-main}"
 ```
 
 If on `$BASE_BRANCH` → "Already on $BASE_BRANCH. Nothing to sync." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### S2: Fetch and rebase
 
@@ -706,7 +719,8 @@ git push --force-with-lease origin {branch}
 ```
 
 - If push succeeds → done
-- If push fails → "Push failed. Try: `git push --force-with-lease origin {branch}`" → **STOP**
+- If push fails → "Push failed. Run `/team-ship sync` to rebase, then retry `/team-ship`." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 
@@ -800,11 +814,17 @@ Output the following and **STOP**:
 ## Error Handling
 
 - Config missing → "Run `/team` first to initialize teamwork." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - No active Contract → "No mission to ship. Run `/team-claim` first." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - Incomplete code sub-tasks → warn with list of remaining tasks → **STOP** (MANUAL tasks don't block)
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - Tests fail → "Fix tests before shipping." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - Push fails → suggest `/team-ship sync`, if still fails → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - PR creation fails → "Failed to create PR. Check `gh auth status` and try again." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - CI fails → warn but DO NOT stop (PR is already created, user can iterate)
 - Label/reviewer operations fail → warn but continue (non-fatal)
 - Contract removal fails → warn but continue (non-fatal)

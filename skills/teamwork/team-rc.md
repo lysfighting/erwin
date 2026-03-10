@@ -29,7 +29,7 @@ Parse `$ARGUMENTS`:
 
 - If `help` or `-h` → output the following and **STOP**:
 
-**`/team-rc` — Release Candidate Lifecycle** (Teamwork `v3.7.1`)
+**`/team-rc` — Release Candidate Lifecycle**
 *Author: liyasong + casey | 2026-03-05*
 
 **USAGE**
@@ -82,6 +82,9 @@ TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/nu
 }
 ```
 
+- If no config → "**ERROR:** Teamwork not initialized. Run `/team` first." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
 Read required values:
 
 ```bash
@@ -108,6 +111,11 @@ PROD_BRANCH="${PROD_BRANCH:-main}"
 STAGING_WORKFLOW=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.staging_workflow "" 2>/dev/null)
 ```
 
+- If no repo detected → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+- If `versions.current` not set → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
 ### Step 2: RC Uniqueness Check
 
 ```bash
@@ -120,7 +128,8 @@ RC_EXIT=$?
 
 **RC in progress:** *{RC_BRANCH}*
   `/team-rc promote` ── ship to production
-  `git push origin --delete {RC_BRANCH}` ── discard
+  `/team doctor fix` ── discard (cleans up orphan RC branch)
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### Step 3: Derive Next Version
 
@@ -138,6 +147,7 @@ LATEST_CI=$(gh run list --branch "$BASE_BRANCH" --limit 1 \
 - If `success` → `Develop CI: green`
 - If not `success` → warn: `Develop CI not green (${LATEST_CI}). Proceed with caution.`
 - Ask user: `Proceed? / Abort` — If abort → **STOP**. If you abort, fix CI failures on `$BASE_BRANCH` and re-run `/team-rc`.
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### Step 5: Cut RC Branch
 
@@ -194,11 +204,13 @@ RC_EXIT=$?
 **If `RC_EXIT` is 1 (none found)** → output and **STOP**:
 
 No active RC branch found. Run `/team-rc` to prepare one first.
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 **If `RC_EXIT` is 3 (multiple found)** → output and **STOP**:
 
 **ERROR:** Multiple RC branches found. Only one RC should exist at a time.
 Delete the stale one(s) and retry.
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Extract version from branch name:
 
@@ -234,6 +246,7 @@ LATEST_RUN=$(gh run list --workflow "$STAGING_WORKFLOW" --branch "$RC_BRANCH" --
 ────────────────────────────────────────────
 
 Ask user: `Proceed? / Abort` — If abort → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### Step P5: Generate Release Notes
 
@@ -286,12 +299,19 @@ gh pr merge "$PR_NUMBER" --squash --auto \
 If `--auto` succeeds, poll until merge completes:
 
 ```bash
+MAX_POLLS=60  # 10 minutes max (60 × 10s)
+POLL_COUNT=0
 while true; do
   STATE=$(gh pr view "$PR_NUMBER" --json state --jq '.state' --repo "$REPO")
   if [ "$STATE" = "MERGED" ]; then break; fi
   if [ "$STATE" = "CLOSED" ]; then
     echo "ERROR: PR #$PR_NUMBER was closed without merging" >&2
     # STOP
+  fi
+  POLL_COUNT=$((POLL_COUNT + 1))
+  if [ "$POLL_COUNT" -ge "$MAX_POLLS" ]; then
+    echo "ERROR: Timed out waiting for PR #$PR_NUMBER to merge (10 min)" >&2
+    # STOP — ask user to check CI status and branch protection
   fi
   sleep 10
 done
@@ -314,6 +334,7 @@ gh pr merge "$PR_NUMBER" --squash \
 Output: PR **#{PR_NUMBER}** squash merged to *{PROD_BRANCH}*
 
 If merge fails → output error details → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### Step P7: Tag on Main
 
@@ -442,7 +463,7 @@ Output the following and **STOP**:
 **PREREQUISITES**
   RC branch must exist (created by `/team-rc`)
   CI must be green on RC branch
-  Staging deploy must be successful (if `quality.staging_gate` configured)
+  Staging deploy must be successful (if `deploy.staging_workflow` configured)
 
 **TROUBLESHOOTING**
   "No RC branch found" → Run `/team-rc` first to cut an RC

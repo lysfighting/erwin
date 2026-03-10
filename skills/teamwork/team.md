@@ -110,7 +110,7 @@ Output the following guide (substitute `{SKILL_VERSION}`) directly to the user, 
 **LOCAL SETTINGS** (per-user)
   `git config --local teamwork.worktree true`    Enable worktree isolation
   `git config --local teamwork.worktree false`   Disable (branch-only mode)
-  Tab title: `/team init` configures terminal tab to show branch name
+  Tab title+color: `/team init` configures branch name display + type-based tab color
   Dashboard shows worktree map when enabled.
 
 **REQUIREMENTS**
@@ -317,23 +317,21 @@ Sometimes you don't follow the standard flow:
 
 `/team` — role-based GitHub status overview:
 
-```
-  TEAM DASHBOARD ── org/repo ───────────────
-  V0.1  █████░░░░░  50%  5/10
+  **TEAM DASHBOARD** ── org/repo ───────────────
+  **V0.1**  `█████░░░░░`  50%  `5/10`
 
-  👥 TEAM (3 members)
+  👥 **TEAM** (`3` members)
     alice (tech-lead)
-      🟢 #42 Add user auth [🟠]
-      🔀 #45 — ✅
+      🟢 **#042** Add user auth 🟠
+      🔀 **#045** — ✅
     bob (backend)
-      🟢 #50 API rate limiting [🟡]
+      🟢 **#050** API rate limiting 🟡
     charlie (frontend)
-      ⚪ (idle)
+      ⚪ *(idle)*
 
-  📋 UNASSIGNED (2)
-    🔴 #48  Fix payment crash
+  📋 **UNASSIGNED** (`2`)
+    🔴 **#048**  Fix payment crash
   ──────────────────────────────────────────
-```
 
 `/team doctor` — local diagnostics (3-layer report):
 
@@ -344,7 +342,7 @@ Sometimes you don't follow the standard flow:
   │ Layer 3: Action Plan (exact commands)   │
   └─────────────────────────────────────────┘
 ```
-  `11` checks: orphan branches, cross-contamination,
+  `12` checks: orphan branches, cross-contamination,
   branch staleness, stale stashes, worktree health,
   shippable PRs, issue health, remote sync,
   GitHub auth, contract freshness, test suite, PR CI
@@ -455,16 +453,12 @@ server access, third-party console config, deployment verification, etc.
 
 Every `/team-*` command shows a random tip after output:
 
-```
-  ┌─────────────────────────────────────────────────────────┐
-  │ 📦 SHIPPED ── #42 user login ─────────────              │
-  │ ...                                                     │
-  │ ────────────────────────────────────────────             │
-  │ /team-ship done (after merge) │ /team-ship review       │
-  │                                                         │
-  │ 💡 Tip: /team auto #N — 一键 claim→drive→ship          │
-  └─────────────────────────────────────────────────────────┘
-```
+  📦 **SHIPPED** ── **#042** user login ─────────────
+  ...
+  ────────────────────────────────────────────
+  `/team-ship done` (after merge) │ `/team-ship review`
+
+  💡 **Tip:** `/team auto` **#N** — 一键 claim→drive→ship
 
   Tips live in `scripts/tw-tips.txt`. Progressive feature discovery
   through natural usage — no need to read the manual to learn tricks.
@@ -591,7 +585,8 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
 ISSUE_DATA=$(gh issue view $ISSUE_NUMBER --json number,title,body,labels,milestone,assignees,state,url)
 ```
 
-If Issue not found → "Issue #$ISSUE_NUMBER not found." → **STOP**
+If Issue not found → "**ERROR:** Issue **#$ISSUE_NUMBER** not found." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### MD3: Compute branch and check remote
 
@@ -637,12 +632,11 @@ RELATED_PRS=$(gh pr list --search "Closes #$ISSUE_NUMBER" --state all --json num
   {If none:} (none)
 
 ────────────────────────────────────────────
-`/team-claim #{N}` · `git checkout {branch}`
+`/team-claim #{N}` to generate Contract + branch
 
 If branch exists and user is not currently on it, show:
 
-Hint: `git checkout {branch}`
-      or `/team-claim #{ISSUE_NUMBER}` to generate Contract
+Hint: `/team-claim` **#{ISSUE_NUMBER}** to generate Contract and switch to branch
 
 Then **STOP**.
 
@@ -658,15 +652,18 @@ gh --version 2>/dev/null || echo "GH_MISSING"
 git remote get-url origin 2>/dev/null || echo "NO_REMOTE"
 ```
 
-- If `gh` not installed → "GitHub CLI (`gh`) is required. Install: https://cli.github.com/" → **STOP**
-- If no git remote → "This is not a GitHub-linked repository. Run `git remote add origin <url>` first." → **STOP**
+- If `gh` not installed → "**ERROR:** GitHub CLI (`gh`) is required. Install: https://cli.github.com/" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+- If no git remote → "**ERROR:** No git remote configured. Run `git remote add origin <url>` first." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ```bash
 # Get identity
 GH_USER=$(gh api user --jq '.login' 2>/dev/null)
 ```
 
-- If `gh api user` fails → "Not authenticated. Run `gh auth login` first." → **STOP**
+- If `gh api user` fails → "**ERROR:** Not authenticated. Run `gh auth login` first." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ```bash
 # Get repo info
@@ -1070,22 +1067,59 @@ If "Branch only" selected:
 fi
 ```
 
-**Step 5b — Terminal tab title (one-time, per-user):**
+**Step 5b — Terminal tab title + color (one-time, per-user):**
+
+Two parts: (A) prevent Claude Code from overriding tab title, (B) install shell hook for branch name + tab color.
+
+**Part A — Claude Code title override:**
+
+```bash
+# Check if CLAUDE_CODE_DISABLE_TERMINAL_TITLE is already set
+grep -q 'CLAUDE_CODE_DISABLE_TERMINAL_TITLE' ~/.claude/settings.json 2>/dev/null && echo "CONFIGURED" || echo "NOT_CONFIGURED"
+```
+
+If `NOT_CONFIGURED`, add to `~/.claude/settings.json` → `env`:
+
+```bash
+# Read current settings, add env var
+python3 -c "
+import json, os
+p = os.path.expanduser('~/.claude/settings.json')
+os.makedirs(os.path.dirname(p), exist_ok=True)
+try:
+    d = json.load(open(p)) if os.path.exists(p) else {}
+except (json.JSONDecodeError, ValueError):
+    d = {}
+if not isinstance(d.get('env'), dict):
+    d['env'] = {}
+d['env']['CLAUDE_CODE_DISABLE_TERMINAL_TITLE'] = '1'
+json.dump(d, open(p, 'w'), indent=2)
+print('✅ Claude Code terminal title override disabled.')
+"
+```
+
+Without this, Claude Code continuously overwrites the tab title via OSC 0, making the shell hook ineffective.
+
+**Part B — Shell hook:**
 
 Check if the user's shell already has a teamwork tab-title hook configured:
 
 ```bash
-SHELL_RC="$HOME/.$(basename "$SHELL")rc"  # ~/.zshrc, ~/.bashrc, etc.
-grep -q 'teamwork-tab-title' "$SHELL_RC" 2>/dev/null && echo "CONFIGURED" || echo "NOT_CONFIGURED"
+if [ "$(basename "$SHELL")" = "fish" ]; then
+  SHELL_RC="$HOME/.config/fish/config.fish"
+else
+  SHELL_RC="$HOME/.$(basename "$SHELL")rc"  # ~/.zshrc, ~/.bashrc, etc.
+fi
+grep -q 'teamwork-tab' "$SHELL_RC" 2>/dev/null && echo "CONFIGURED" || echo "NOT_CONFIGURED"
 ```
 
 If `NOT_CONFIGURED`, use `AskUserQuestion`:
 
 ```
-question: "多窗口开发时，终端标签页可以自动显示当前 branch 名（如 mission/42-add-auth）。这样切换窗口时一眼就知道每个窗口在做什么任务，不需要切过去运行命令。是否配置？"
+question: "多窗口开发时，终端标签页可以自动显示当前 branch 名 + 按分支类型自动着色（如 main=红色, mission/*=绿色）。这样切换窗口时一眼就知道每个窗口在做什么任务。是否配置？"
 options:
   - label: "配置（推荐）"
-    description: "自动在 shell 配置中添加一行 hook，每次进入目录时更新标签页标题"
+    description: "自动在 shell 配置中添加 hook，每次进入目录时更新标签页标题和颜色"
   - label: "跳过"
     description: "以后可以手动配置"
 ```
@@ -1100,8 +1134,30 @@ If user selects "配置":
 ```bash
 cat >> "$SHELL_RC" << 'HOOK'
 
-# teamwork-tab-title: show current git branch in terminal tab
-precmd() { local b=$(git branch --show-current 2>/dev/null); [[ -n "$b" ]] && printf '\e]1;%s\a' "$b"; }
+# teamwork-tab: show branch name + auto-color iTerm2 tab
+_teamwork_tab() {
+  local b=$(git branch --show-current 2>/dev/null)
+  [[ -z "$b" ]] && return
+  printf '\e]1;%s\a' "$b"
+  local r=80 g=80 b_=80
+  case "$b" in
+    main|master)        r=180 g=60  b_=60  ;;
+    pre-launch|develop) r=60  g=100 b_=180 ;;
+    rc/*|release/*)     r=200 g=140 b_=30  ;;
+    mission/*)
+      local num=${b#mission/}; num=${num%%-*}
+      case $(( num % 8 )) in
+        0) r=46  g=160 b_=120 ;; 1) r=180 g=120 b_=46  ;;
+        2) r=140 g=70  b_=180 ;; 3) r=60  g=170 b_=70  ;;
+        4) r=180 g=80  b_=120 ;; 5) r=70  g=140 b_=180 ;;
+        6) r=180 g=140 b_=60  ;; 7) r=100 g=180 b_=160 ;;
+      esac ;;
+  esac
+  printf '\e]6;1;bg;red;brightness;%d\a' "$r"
+  printf '\e]6;1;bg;green;brightness;%d\a' "$g"
+  printf '\e]6;1;bg;blue;brightness;%d\a' "$b_"
+}
+precmd_functions+=(_teamwork_tab)
 HOOK
 ```
 
@@ -1109,8 +1165,30 @@ HOOK
 ```bash
 cat >> "$SHELL_RC" << 'HOOK'
 
-# teamwork-tab-title: show current git branch in terminal tab
-PROMPT_COMMAND='b=$(git branch --show-current 2>/dev/null); [[ -n "$b" ]] && printf "\e]1;%s\a" "$b"'
+# teamwork-tab: show branch name + auto-color iTerm2 tab
+_teamwork_tab() {
+  local b=$(git branch --show-current 2>/dev/null)
+  [[ -z "$b" ]] && return
+  printf '\e]1;%s\a' "$b"
+  local r=80 g=80 b_=80
+  case "$b" in
+    main|master)        r=180 g=60  b_=60  ;;
+    pre-launch|develop) r=60  g=100 b_=180 ;;
+    rc/*|release/*)     r=200 g=140 b_=30  ;;
+    mission/*)
+      local num=${b#mission/}; num=${num%%-*}
+      case $(( num % 8 )) in
+        0) r=46  g=160 b_=120 ;; 1) r=180 g=120 b_=46  ;;
+        2) r=140 g=70  b_=180 ;; 3) r=60  g=170 b_=70  ;;
+        4) r=180 g=80  b_=120 ;; 5) r=70  g=140 b_=180 ;;
+        6) r=180 g=140 b_=60  ;; 7) r=100 g=180 b_=160 ;;
+      esac ;;
+  esac
+  printf '\e]6;1;bg;red;brightness;%d\a' "$r"
+  printf '\e]6;1;bg;green;brightness;%d\a' "$g"
+  printf '\e]6;1;bg;blue;brightness;%d\a' "$b_"
+}
+PROMPT_COMMAND="_teamwork_tab; $PROMPT_COMMAND"
 HOOK
 ```
 
@@ -1119,16 +1197,23 @@ HOOK
 SHELL_RC="$HOME/.config/fish/config.fish"
 cat >> "$SHELL_RC" << 'HOOK'
 
-# teamwork-tab-title: show current git branch in terminal tab
+# teamwork-tab: show branch name in terminal tab
 function fish_title; set -l b (git branch --show-current 2>/dev/null); and echo $b; or echo (prompt_pwd); end
 HOOK
 ```
 
-4. Check for conflicts: if the rc file already defines `precmd` (zsh), `PROMPT_COMMAND` (bash), or `fish_title` (fish), warn the user and show the snippet for manual integration instead of auto-appending.
+4. Check for conflicts: if the rc file already defines `_teamwork_tab` (any shell), warn the user and show the snippet for manual integration instead of auto-appending.
 
-5. Output: "Tab title 已配置。新开终端标签页即可看到 branch 名。"
+5. Output:
+
+```
+Tab 标题+颜色已配置。新开终端标签页即可看到 branch 名和分支类型颜色。
+颜色映射：🟥 main · 🟦 pre-launch · 🟧 rc/* · 🟩 mission/* · ⬜ other
+```
 
 If `CONFIGURED` → skip silently.
+
+**Note:** Tab colors use iTerm2 proprietary escape sequences (`\e]6;1;bg;...`). On non-iTerm2 terminals, the color sequences are silently ignored — the tab title still works.
 
 **Step 6 — Handle missing sections with safe defaults:**
 
@@ -1981,9 +2066,11 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 {If WORKTREE_ENABLED — ALWAYS show, even if only main repo worktree exists:}
 📂 **Worktrees** *(worktree mode)*
-  ★ `~/Project/collov/{repo}` ← *{branch}* → **#{issue}** {title}
-  · `~/Project/collov/{repo}-wt-{slug}` ← *{branch}* → **#{issue}** {title}
+  ★ {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
+  · {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
   {or: → *(no mission)* if on main repo. Show ALL from `git worktree list`}
+{^ worktree_path = actual path from `git worktree list` output, e.g. ~/Project/myapp or ~/Project/myapp-wt-42-auth}
+{^ branch_color = 🟥 main/master · 🟦 pre-launch/develop · 🟧 rc/* · 🟩 mission/* · ⬜ other}
 {^ paths in backticks = purple-blue. branches in italic = dim}
 
 👥 **TEAM** ({member_count} members)
@@ -2100,9 +2187,11 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 {If WORKTREE_ENABLED — ALWAYS show, even if only main repo worktree exists:}
 📂 **Worktrees** *(worktree mode)*
-  ★ `~/Project/collov/{repo}` ← *{branch}* → **#{issue}** {title}
-  · `~/Project/collov/{repo}-wt-{slug}` ← *{branch}* → **#{issue}** {title}
+  ★ {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
+  · {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
   {or: → *(no mission)* if on main repo. Show ALL from `git worktree list`}
+{^ worktree_path = actual path from `git worktree list` output}
+{^ branch_color = 🟥 main/master · 🟦 pre-launch/develop · 🟧 rc/* · 🟩 mission/* · ⬜ other}
 {^ paths in backticks = purple-blue. branches in italic = dim}
 
 🎯 **My Missions**
@@ -2244,7 +2333,7 @@ done
 bash ~/.claude/commands/scripts/tw-config.sh project.test_command "" 2>/dev/null
 ```
 
-### Analysis Phase — 11 Diagnostic Checks
+### Analysis Phase — 12 Diagnostic Checks
 
 Each check produces findings with a severity level:
 
@@ -2676,6 +2765,7 @@ Output the following and **STOP**:
   9. GitHub auth          `gh` CLI authentication and token scopes
   10. Contract freshness  Active Contracts vs current Issue content
   11. Test suite          Run project test command, report failures
+  12. PR CI status        CI check details on open PRs (extends Check 6)
 
 **OUTPUT**
   Layer 1: Snapshot tables (branches, stashes, worktrees, PRs, issues)

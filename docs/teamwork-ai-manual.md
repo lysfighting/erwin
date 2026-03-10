@@ -393,7 +393,7 @@ feat/E:                          D ── (your work) ──
 
 ### Doctor — Health Diagnostics (v3.4+)
 
-`/team doctor` runs 11 diagnostic checks and produces a 3-layer report:
+`/team doctor` runs 12 diagnostic checks and produces a 3-layer report:
 
 | Check | What it detects | Severity |
 |-------|----------------|----------|
@@ -408,6 +408,7 @@ feat/E:                          D ── (your work) ──
 | 9. GitHub Auth | `gh` CLI auth status and token scopes | 🔴 critical |
 | 10. Contract Freshness | Active Contract hash vs current Issue content | 🟡 warning |
 | 11. Test Suite | Run project test command, report failures | 🟡 warning |
+| 12. PR CI Status | CI check details on open PRs (extends Check 6) | 🟡 warning |
 
 **Output**: Layer 1 (snapshot tables) → Layer 2 (diagnosis narrative) → Layer 3 (action plan with exact commands).
 

@@ -88,6 +88,22 @@ Claude Code's auto-linker (`sG7()`) converts `#NNN` (3+ digits) into OSC 8 click
 
 ---
 
+## Branch Color Squares
+
+Color-coded squares identify branch types in the Worktree section. Same mapping as iTerm2 tab colors.
+
+| Emoji | Branch Pattern | Meaning |
+|-------|---------------|---------|
+| 🟥 | `main`, `master` | Production |
+| 🟦 | `pre-launch`, `develop` | Development |
+| 🟧 | `rc/*`, `release/*` | Staging / RC |
+| 🟩 | `mission/*` | Active work |
+| ⬜ | other | Unclassified |
+
+**iTerm2 tab integration**: `/team init` installs a shell hook (`_teamwork_tab`) that sets tab title to branch name and tab color to branch type. Requires `CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1` in `~/.claude/settings.json` env to prevent Claude Code from overriding the tab title.
+
+---
+
 ## Error Message Format
 
 ```

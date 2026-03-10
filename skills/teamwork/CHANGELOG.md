@@ -2,6 +2,15 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.7.1] — 2026-03-10
+
+### Fixed — Audit: VE full coverage + script bugs + version sync
+
+- Fixed 4 script bugs found during full audit (tw-git, tw-pr, tw-config, tw-label)
+- Aligned all VE output templates with visual-encoding-standard.md
+- Synchronized version to 3.7.1 across all skill files, README, ONBOARDING, manual
+- Doctor expanded to 12 checks (+PR CI status)
+
 ## [3.7.0] — 2026-03-09
 
 ### Added — Smart sync: dashboard behind-detection + AI conflict resolution

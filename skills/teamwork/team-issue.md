@@ -68,8 +68,9 @@ If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
   4. Generates mission-contract Issue body
   5. Shows preview for confirmation
   6. Publishes to GitHub with labels + assignee
-  7. Creates branch: *mission/{issue}-{slug}-{user}*
-  8. Notifies assignee via configured channels
+  7. Notifies assignee via configured channels
+
+NEXT: Assignee runs `/team-claim` to create branch + Mission Contract
 
 **WHAT HAPPENS** (fix)
   1. Fetches existing Issue from GitHub
@@ -84,8 +85,6 @@ If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
   2. AI applies your described changes
   3. Shows before/after diff for confirmation
   4. Updates Issue on GitHub
-
-NEXT: Assignee runs `/team-claim` **#{issue}** to generate Contract
 
 ---
 
@@ -105,6 +104,9 @@ TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/nu
   # STOP
 }
 ```
+
+- If no config → "**ERROR:** Teamwork not initialized. Run `/team` first." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Read `$TEAMWORK_DIR/config.yml` → extract labels, members, roles.
 
@@ -177,6 +179,7 @@ fi
 - Match against config `members[].github` (exact) or `members[].name` (case-insensitive partial)
 - Remove `@mention` from description text
 - If `@mention` doesn't match any member → "**ERROR:** Member '@{mention}' not found. Available: {list}" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 
@@ -231,6 +234,7 @@ Use `AskUserQuestion`:
 - "None of these — create new Issue" → continue to Step 3
 - "Update #N instead" → redirect to **Operation Update** with user's original description as the change
 - "Cancel" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 **If no results or no semantic match** → continue to Step 3 silently.
 
@@ -305,6 +309,7 @@ Use `AskUserQuestion` to confirm:
 
 If user wants edits → apply and re-preview.
 If cancel → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### Step 6: Publish
 
@@ -360,6 +365,7 @@ gh issue view $N --repo "$REPO" --json number,title,body,labels,milestone,assign
 ```
 
 - If Issue not found → "**ERROR:** Issue **#N** not found." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Format output:
 
@@ -396,6 +402,7 @@ gh issue comment $N --repo "$REPO" --body "$TEXT"
 ```
 
 - If Issue not found → "**ERROR:** Issue **#N** not found." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Output:
 
@@ -419,7 +426,9 @@ gh issue view {issue} --repo "$REPO" --json number,title,body,labels,state
 ```
 
 - If Issue not found → "**ERROR:** Issue **#{issue}** not found." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - If Issue is closed → "**ERROR:** Issue **#{issue}** is closed. Reopen it first if you want to edit." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Display current Issue summary:
 
@@ -459,6 +468,7 @@ Use `AskUserQuestion` to confirm:
 - "Apply changes" → proceed to U4
 - "Edit more" → return to U2
 - "Cancel" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### U4: Apply update
 
@@ -503,7 +513,9 @@ gh issue view {issue} --repo "$REPO" --json number,title,body,labels,assignees,m
 ```
 
 - If Issue not found → "**ERROR:** Issue **#{issue}** not found." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - If Issue is closed → "**ERROR:** Issue **#{issue}** is closed. Reopen it first." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Display current Issue:
 
@@ -524,6 +536,7 @@ Check which teamwork labels are already present:
 - Has `size:*`?
 
 If ALL teamwork labels already present → "**ERROR:** Issue **#{issue}** is already in teamwork." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### A3: Determine missing metadata
 
@@ -553,6 +566,7 @@ Use `AskUserQuestion`:
 - "Fix + reformat body" → add labels AND restructure body into MC format (Objective, Success Criteria, Sub-tasks, etc.)
 - "Edit priority/size" → adjust and re-preview
 - "Cancel" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### A5: Apply labels
 
@@ -664,6 +678,7 @@ Use `AskUserQuestion`: "Publish all / Edit / Cancel"
 
 - If Edit → allow modifications and re-preview
 - If Cancel → **STOP** (milestone already created but no MCs)
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### B5: Publish Each MC
 
@@ -732,10 +747,13 @@ If milestone-only (no MCs):
 ## Error Handling
 
 - Empty description → "**ERROR:** Please provide a description. Example: `/team-issue camera not working on Safari`" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - GitHub API error → "**ERROR:** Failed to create Issue. Check `gh auth status`." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - Label not found → create Issue without that label, warn "⚠️ **WARNING:** Labels missing. Run `/team init` to set up project labels."
 - No assignee (team mode) → AskUserQuestion to select from members list
 - Assignee not in config → "**ERROR:** Member '@{mention}' not found. Available: {list}" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - Notification fails → warn but continue (non-fatal)
 
 **On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
