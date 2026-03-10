@@ -7,6 +7,9 @@ version: "3.7.0"
 
 > Push your branch, create a PR that auto-closes the Issue, optionally watch CI, and clean up the local Contract.
 
+**Visual Encoding** (apply to ALL output — see `docs/visual-encoding-standard.md`):
+`**bold**` → headers/labels (white) · `` `backtick` `` → commands/paths/counts (purple-blue) · `*italic*` → branches (dim) · `**#NNN**` → issues (light-blue clickable, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
+
 **User input**: $ARGUMENTS
 
 **Argument routing:**

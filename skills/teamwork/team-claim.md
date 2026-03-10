@@ -7,6 +7,9 @@ version: "3.7.0"
 
 > Claim a GitHub Issue, generate an AI-optimized Mission Contract, and create your working branch.
 
+**Visual Encoding** (apply to ALL output — see `docs/visual-encoding-standard.md`):
+`**bold**` → headers/labels (white) · `` `backtick` `` → commands/paths/counts (purple-blue) · `*italic*` → branches (dim) · `**#NNN**` → issues (light-blue clickable, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
+
 **User input**: $ARGUMENTS
 
 **Argument routing:**

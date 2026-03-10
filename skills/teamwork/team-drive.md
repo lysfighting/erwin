@@ -7,6 +7,9 @@ version: "3.7.0"
 
 > Read your Mission Contract, validate the plan against actual code, then execute — sequentially for small missions, with team + wave parallelism for large ones.
 
+**Visual Encoding** (apply to ALL output — see `docs/visual-encoding-standard.md`):
+`**bold**` → headers/labels (white) · `` `backtick` `` → commands/paths/counts (purple-blue) · `*italic*` → branches (dim) · `**#NNN**` → issues (light-blue clickable, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
+
 **User input**: $ARGUMENTS
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
