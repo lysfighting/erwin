@@ -8,7 +8,7 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-10
-- **Last Session**: [2026-03-10-AE](sessions/2026-03-10-AE.md) (Session AE — Visual Encoding Standard + Audit + Self-Drive)
+- **Last Session**: [2026-03-10-AF](sessions/2026-03-10-AF.md) (Session AF — VE 系统性治理 #001)
 
 ## Current Phase
 
@@ -16,19 +16,17 @@
 
 ## What Was Just Completed
 
-**Session AE** (2 conversation windows) — Visual Encoding Standard + comprehensive audit:
+**Session AF** — VE 系统性治理 (GitHub #1):
 
-- Visual unification mission: all 6 skill files → Visual Encoding Standard (Drive Swarm, 5 parallel agents)
-- Created `docs/visual-encoding-standard.md` — single source of truth for color design language
-- 5-scout audit: found 11 real issues (2 visual, 3 raw cmd, 2 tips, 3 next-step, 1 stale doc)
-- ONBOARDING.md modernized: code block examples → formatted markdown + Advanced Features section
-- Visual Encoding reference embedded in all 5 sub-skill file headers
-- Doctor expanded from 8 → 11 checks (+ auth, freshness, tests, CI)
-- Teamwork manual updated: doctor + visual encoding sections
+- Fixed ~15 remaining VE violations across 4 skill files (team.md, team-ship.md, team-rc.md, team-drive.md)
+- team-claim.md and team-issue.md verified clean (0 violations)
+- Key fixes: ERROR bold prefix, doctor hints on all STOPs, raw git→/team-* skills, Learn code blocks→VE markdown
+- 14 files changed, 344 insertions, 82 deletions (includes session AE uncommitted work)
+- GitHub issue #1 closed
 
 ## Active Task / What's In Progress
 
-无活跃任务。
+无活跃任务。VE 治理完成，全部 6 skill 文件 0 违规。
 
 ## Next Session Should Start With
 
@@ -68,6 +66,7 @@
 - [x] Teamwork v3.5.0 — /team config + dashboard version + docs completeness
 - [x] Teamwork v3.5.1 — design review: logic gaps + docs alignment
 - [x] Teamwork v3.7.1 — visual encoding standard + audit sweep + doctor 8→11 checks
+- [x] Teamwork v3.7.1 — VE 系统性治理: 全部 skill 输出 100% VE 合规 (#1)
 
 ## Known Issues / Blockers
 
