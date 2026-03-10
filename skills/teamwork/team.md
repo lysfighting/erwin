@@ -341,9 +341,10 @@ Sometimes you don't follow the standard flow:
   │ Layer 3: Action Plan (exact commands)   │
   └─────────────────────────────────────────┘
 ```
-  `8` checks: orphan branches, cross-contamination,
+  `11` checks: orphan branches, cross-contamination,
   branch staleness, stale stashes, worktree health,
-  shippable PRs, issue health, remote sync
+  shippable PRs, issue health, remote sync,
+  GitHub auth, contract freshness, test suite, PR CI
 
 
 **9. RC LIFECYCLE** (the key innovation)
@@ -2246,9 +2247,23 @@ for branch in $(git branch --format='%(refname:short)'); do
     echo "$branch: NO_REMOTE"
   fi
 done
+
+# 15. GitHub auth status (for Check 9)
+gh auth status 2>&1
+
+# 16. Contract freshness data (for Check 10)
+for contract in $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null; do
+  [ -f "$contract" ] || continue
+  issue_num=$(basename "$contract" | sed 's/MISSION-\(.*\)\.md/\1/')
+  contract_hash=$(bash ~/.claude/commands/scripts/tw-contract.sh read-field "$contract" "issue_content_hash" 2>/dev/null)
+  echo "CONTRACT:$issue_num:$contract_hash"
+done
+
+# 17. Test command from config (for Check 11)
+bash ~/.claude/commands/scripts/tw-config.sh project.test_command "" 2>/dev/null
 ```
 
-### Analysis Phase — 7 Diagnostic Checks
+### Analysis Phase — 11 Diagnostic Checks
 
 Each check produces findings with a severity level:
 
@@ -2435,6 +2450,76 @@ For each local branch that has a remote tracking branch (origin/{branch}):
   5. Action: git pull --rebase origin {branch}, or /team-ship sync if on a mission branch
 ```
 
+#### Check 9: GitHub Auth Health
+
+Verify the `gh` CLI is properly authenticated. Many teamwork operations fail silently or with confusing errors when auth is broken.
+
+```
+1. Parse `gh auth status` output
+2. Check for:
+   - "Logged in to github.com" → 🟢 OK
+   - "not logged in" or error → 🔴 CRITICAL
+     Action: `gh auth login`
+   - Token scopes missing (no repo, no read:org) → 🟡 WARNING
+     Action: `gh auth refresh -s repo,read:org`
+3. If auth fails entirely (gh not installed) → 🔴 CRITICAL
+   Action: install gh CLI
+```
+
+This check runs FIRST — if auth is broken, skip all GitHub API checks (they'll all fail).
+
+#### Check 10: Contract Freshness
+
+Active Contracts may be stale — the Issue was updated on GitHub but the Contract still has old content.
+
+```
+For each active Contract in $TEAMWORK_DIR/active/MISSION-*.md:
+  1. Read issue_content_hash from Contract frontmatter
+  2. If no hash → skip (pre-v2.3.0 Contract, can't compare)
+  3. Fetch current Issue: gh issue view {issue} --json title,body
+  4. Compute current hash: bash tw-contract.sh hash "$TITLE" "$BODY"
+  5. Compare:
+     - Hashes match → 🟢 OK (Contract is fresh)
+     - Hashes differ → 🟡 WARNING "Contract for #{issue} is stale — Issue was updated since claim"
+       Action: `/team-drive` will auto-detect this and offer refresh
+       Or re-claim: delete Contract, then `/team-claim #{issue}`
+```
+
+#### Check 11: Test Suite Health
+
+Run the project's test command to verify the codebase is in a working state.
+
+```
+1. Read test command from config: project.test_command
+2. If no test command configured → skip (no finding, just note "no test command configured")
+3. Run the test command
+4. Results:
+   - Tests pass → 🟢 OK "Tests passing"
+   - Tests fail → 🟡 WARNING "Tests failing — fix before shipping"
+     Action: fix failing tests, then `/team-ship`
+   - Test command not found/executable → 🟡 WARNING "Test command not runnable: {command}"
+     Action: update `project.test_command` in config via `/team config`
+```
+
+Note: only run tests if the working tree is clean (no uncommitted changes). Dirty tree may cause false failures.
+
+#### Check 12: PR CI Status
+
+Check CI status on all open PRs — extends Check 6 (Shippable PRs) with failure details.
+
+```
+For each open PR from data collection (Call 9):
+  1. Parse statusCheckRollup for individual check results
+  2. If any check FAILED:
+     - 🟡 WARNING "PR #{pr} CI failing: {check name}"
+     - Show which specific checks failed (not just "CI red")
+     - Action: push fixes to branch *{branch}*, or investigate failing check
+  3. If checks PENDING for >30 minutes:
+     - 🟢 INFO "PR #{pr} CI pending for extended time"
+  4. If no checks configured:
+     - 🟢 INFO (not a problem, just noting)
+```
+
 ### Output Format — 3-Layer Visual Report
 
 1. **Snapshot tables** — structured data, one table per dimension (branches, PRs, stashes, worktrees, issues)
@@ -2599,14 +2684,17 @@ Output the following and **STOP**:
   `/team doctor help`     This help screen
 
 **WHAT IT CHECKS**
-  1. Orphan branches     Local branches whose Issue is closed / PR merged
-  2. Cross-contamination Uncommitted changes that belong to a different Issue
-  3. Branch staleness    Branches falling behind base branch
-  4. Stale stashes       Old stashes or stashes on deleted branches
-  5. Worktree health     Prunable or broken worktrees
-  6. Shippable PRs       PRs ready to merge but sitting idle
-  7. Issue health        Duplicates, unassigned, stale issues
-  8. Remote sync         Local branches behind their remote tracking branch
+  1. Orphan branches      Local branches whose Issue is closed / PR merged
+  2. Cross-contamination  Uncommitted changes that belong to a different Issue
+  3. Branch staleness     Branches falling behind base branch
+  4. Stale stashes        Old stashes or stashes on deleted branches
+  5. Worktree health      Prunable or broken worktrees
+  6. Shippable PRs        PRs ready to merge but sitting idle
+  7. Issue health         Duplicates, unassigned, stale issues
+  8. Remote sync          Local branches behind their remote tracking branch
+  9. GitHub auth          `gh` CLI authentication and token scopes
+  10. Contract freshness  Active Contracts vs current Issue content
+  11. Test suite          Run project test command, report failures
 
 **OUTPUT**
   Layer 1: Snapshot tables (branches, stashes, worktrees, PRs, issues)

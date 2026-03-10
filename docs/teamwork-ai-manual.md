@@ -367,7 +367,7 @@ feat/E:                          D ── (your work) ──
 | | `/team config` | View current config + edit instructions |
 | | `/team queue` | All open missions sorted by priority |
 | | `/team #42` | MC detail view (branch, commits, PRs, criteria) |
-| | `/team doctor` | Local git + issue health diagnostics (8 checks, 3-layer report) |
+| | `/team doctor` | Local git + issue health diagnostics (11 checks, 3-layer report) |
 | | `/team doctor fix` | Interactive fix mode — auto-execute cleanup, confirm warnings |
 | | `/team doctor help` | Self-contained doctor usage guide |
 | | `/team wrap` | Retroactive closure: code-first → auto-create issue + PR |
