@@ -2000,7 +2000,8 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
   💡 Run: `/team-ship done`
   {Omit entire section if count == 0}
 
-📊 **Merges**  {user}:{n} · {user}:{n} · ...
+📊 **Merges**  {user}: `{n}` · {user}: `{n}` · ...
+{^ wrap merge COUNTS in backticks for purple-blue numbers — makes them pop against plain-text usernames}
 
 💡 **Next:** Clean up with `rm .teamwork/active/MISSION-NNN.md`, then `/team-claim` **#{N}** to start. `/team-drive`
 {^ EVERY command and path in Next MUST be in backticks}
@@ -2112,7 +2113,8 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
   {priority_dot} {Pn} **#{N}**  {title}
   {If none:} (none)
 
-📊 **Merges**  {user}:{n} · {user}:{n} · ...
+📊 **Merges**  {user}: `{n}` · {user}: `{n}` · ...
+{^ wrap merge COUNTS in backticks for purple-blue numbers — makes them pop against plain-text usernames}
 
 💡 **Next:** Clean up with `rm .teamwork/active/MISSION-NNN.md`, then `/team-claim` **#{N}**. `/team-drive`
 {^ EVERY command and path in Next MUST be in backticks}
