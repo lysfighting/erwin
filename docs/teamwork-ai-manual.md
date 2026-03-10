@@ -393,7 +393,7 @@ feat/E:                          D ── (your work) ──
 
 ### Doctor — Health Diagnostics (v3.4+)
 
-`/team doctor` runs 8 diagnostic checks and produces a 3-layer report:
+`/team doctor` runs 11 diagnostic checks and produces a 3-layer report:
 
 | Check | What it detects | Severity |
 |-------|----------------|----------|
@@ -405,6 +405,9 @@ feat/E:                          D ── (your work) ──
 | 6. Shippable PRs | PRs with CI passing + mergeable but idle | 🟡 warning |
 | 7. Issue Health | Duplicates, unassigned, stale WIP issues | 🟡 warning |
 | 8. Remote Sync | Local branch behind remote (needs pull/push) | 🟡 warning |
+| 9. GitHub Auth | `gh` CLI auth status and token scopes | 🔴 critical |
+| 10. Contract Freshness | Active Contract hash vs current Issue content | 🟡 warning |
+| 11. Test Suite | Run project test command, report failures | 🟡 warning |
 
 **Output**: Layer 1 (snapshot tables) → Layer 2 (diagnosis narrative) → Layer 3 (action plan with exact commands).
 
@@ -424,7 +427,22 @@ feat/E:                          D ── (your work) ──
 
 ### Visual Encoding
 
-All teamwork output uses consistent emoji conventions:
+> Full spec: `docs/visual-encoding-standard.md`
+
+All teamwork output follows a **color design language** built on Claude Code's markdown renderer constraints.
+
+**Markdown formatting** (4 semantic roles):
+
+| Syntax | Color Result | Used For |
+|--------|-------------|----------|
+| `**bold**` | White bold | Section headers, error prefixes, labels |
+| `` `backtick` `` | Purple-blue rgb(177,185,249) | Commands, paths, counts, config values |
+| `*italic*` | Dim italic | Branch names, secondary info, timestamps |
+| `**#NNN**` | Light-blue clickable (OSC 8) | Issue/PR numbers (bold wraps auto-linker) |
+
+**Rules**: `────` for dividers (not `═══` or `---`). No `###` headers (causes 2-line gap). No code blocks around output (kills all color). Issue numbers zero-padded to 3+ digits (`#042` not `#42`).
+
+**Emoji conventions**:
 
 | Symbol | Meaning | Context |
 |--------|---------|---------|
@@ -439,6 +457,7 @@ All teamwork output uses consistent emoji conventions:
 | 🔀 | PR / merge related | Pull requests |
 | 💀 | Orphan branch | Doctor output |
 | ⏳ | CI pending | CI status |
+| 🔧 | Manual / human action | Tasks AI skips |
 
 **Progress bar**: `█` filled, `░` empty (10 chars). E.g., 50% → `█████░░░░░`.
 
