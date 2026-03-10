@@ -1951,7 +1951,7 @@ Output a formatted dashboard based on user's role level.
 1. `**bold**` → section headers become white bold
 2. `` `backticks` `` → commands and paths become purple-blue. EVERY `/slash-command`, `rm`, `cd`, `git checkout`, and EVERY file path like `~/...` or `.teamwork/...` MUST be wrapped in backticks.
 3. `*italic*` → branch names and secondary info become dim
-4. `` `#NNN` `` → wrap issue numbers in backticks for purple-blue color (same as commands)
+4. `**#NNN**` → wrap issue numbers in bold for light-blue clickable links (bold + auto-link = bright blue in terminal)
 
 **⛔ BEFORE YOU OUTPUT: mentally check each line. If a line contains a command or path without backticks, FIX IT.**
 
@@ -1967,57 +1967,57 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 {If WORKTREE_ENABLED — ALWAYS show, even if only main repo worktree exists:}
 📂 **Worktrees** *(worktree mode)*
-  ★ `~/Project/collov/{repo}` ← *{branch}* → `#{issue}` {title}
-  · `~/Project/collov/{repo}-wt-{slug}` ← *{branch}* → `#{issue}` {title}
+  ★ `~/Project/collov/{repo}` ← *{branch}* → **#{issue}** {title}
+  · `~/Project/collov/{repo}-wt-{slug}` ← *{branch}* → **#{issue}** {title}
   {or: → *(no mission)* if on main repo. Show ALL from `git worktree list`}
 {^ paths in backticks = purple-blue. branches in italic = dim}
 
 👥 **TEAM** ({member_count} members)
   {username} ({role})
-    🟢 `#{N}` {title} {priority_dot} {Pn} → *wip* {If STALE: ⚡}
+    🟢 **#{N}** {title} {priority_dot} {Pn} → *wip* {If STALE: ⚡}
     *{branch}* → `/team-ship`
-    🔀 `#{pr}` — {ci_icon}
+    🔀 **#{pr}** — {ci_icon}
   {username} ({role})
     ⚪ *(idle)*
 
 🔀 **Under Review** ({count})
-  🟡 `#{N}`  {title}  @{assignee}
+  🟡 **#{N}**  {title}  @{assignee}
   {If none:} (none)
 
 📋 **Unassigned** ({count})
-  {priority_dot} {Pn} `#{N}`  {title}
+  {priority_dot} {Pn} **#{N}**  {title}
   {If count > 5:} ... +{remaining} more → `/team queue`
   {If none:} (none)
 
 ⚠️ **Untracked** ({count})
   Issues with teamwork labels but missing mission label
-  Includes: `#{N}`, `#{N}`, ...
-  Fix: `/team-issue fix` `#N` for each, or batch-add the mission label
+  Includes: **#{N}**, **#{N}**, ...
+  Fix: `/team-issue fix` **#N** for each, or batch-add the mission label
   {Omit entire section if count == 0}
 
 🧹 **Needs Cleanup** ({count})
-  *{branch}* — PR `#{pr}` merged
+  *{branch}* — PR **#{pr}** merged
   💡 Run: `/team-ship done`
   {Omit entire section if count == 0}
 
 📊 **Merges**  {user}:{n} · {user}:{n} · ...
 
-💡 **Next:** Clean up with `rm .teamwork/active/MISSION-NNN.md`, then `/team-claim` `#{N}` to start. `/team-drive`
+💡 **Next:** Clean up with `rm .teamwork/active/MISSION-NNN.md`, then `/team-claim` **#{N}** to start. `/team-drive`
 {^ EVERY command and path in Next MUST be in backticks}
 
 `/team help` · `/team doctor` · `/team #N` · `/team config`
 `/team-claim` · `/team-drive` · `/team-ship` · `/team-rc`
 
-💡 **TIP:** {random tip — commands in backticks, e.g.: `/team auto` `#N` — 一键 claim→drive→ship}
+💡 **TIP:** {random tip — commands in backticks, e.g.: `/team auto` **#N** — 一键 claim→drive→ship}
 
 **NEXT suggestion logic** — pick FIRST match (output commands in backticks):
 
-1. PR behind base → PR `#{N}` is {M} behind — `/team-ship sync`
-2. PR CI passed + approved → PR `#{N}` ready to merge. `/team-ship done`
-3. PR CI passed, no review → PR `#{N}` CI passed — awaiting review/merge
-4. PR CI failing → PR `#{N}` CI failing — fix before merge
+1. PR behind base → PR **#{N}** is {M} behind — `/team-ship sync`
+2. PR CI passed + approved → PR **#{N}** ready to merge. `/team-ship done`
+3. PR CI passed, no review → PR **#{N}** CI passed — awaiting review/merge
+4. PR CI failing → PR **#{N}** CI failing — fix before merge
 5. Active mission, no PR → `/team-drive` to continue or `/team-ship` to deliver
-6. No active mission → `/team-claim` `#{N}` to start
+6. No active mission → `/team-claim` **#{N}** to start
 
 **Visual encoding rules** (apply to ALL teamwork output):
 
@@ -2061,7 +2061,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 1. `**bold**` → section headers become white bold
 2. `` `backticks` `` → commands and paths become purple-blue. EVERY `/slash-command`, `rm`, `cd`, `git checkout`, and EVERY file path like `~/...` or `.teamwork/...` MUST be wrapped in backticks.
 3. `*italic*` → branch names and secondary info become dim
-4. `` `#NNN` `` → wrap issue numbers in backticks for purple-blue color (same as commands)
+4. `**#NNN**` → wrap issue numbers in bold for light-blue clickable links (bold + auto-link = bright blue in terminal)
 
 **⛔ BEFORE YOU OUTPUT: mentally check each line. If a line contains a command or path without backticks, FIX IT.**
 
@@ -2079,48 +2079,48 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 {If WORKTREE_ENABLED — ALWAYS show, even if only main repo worktree exists:}
 📂 **Worktrees** *(worktree mode)*
-  ★ `~/Project/collov/{repo}` ← *{branch}* → `#{issue}` {title}
-  · `~/Project/collov/{repo}-wt-{slug}` ← *{branch}* → `#{issue}` {title}
+  ★ `~/Project/collov/{repo}` ← *{branch}* → **#{issue}** {title}
+  · `~/Project/collov/{repo}-wt-{slug}` ← *{branch}* → **#{issue}** {title}
   {or: → *(no mission)* if on main repo. Show ALL from `git worktree list`}
 {^ paths in backticks = purple-blue. branches in italic = dim}
 
 🎯 **My Missions**
-  🟢 `#{N}` {title} {priority_dot} {Pn} → *wip*
+  🟢 **#{N}** {title} {priority_dot} {Pn} → *wip*
     *{branch}* → `/team-drive`
-  🟢 `#{N}` {title} {priority_dot} {Pn} → *wip* (Contract active)
+  🟢 **#{N}** {title} {priority_dot} {Pn} → *wip* (Contract active)
     *{branch}* → `cd` to worktree, then `/team-drive`
   {If none:} (none)
 {^ branch italic, commands in backticks}
 
 🔀 **My PRs**
-  `#{pr}` {title}  {ci_icon}  {review}
+  **#{pr}** {title}  {ci_icon}  {review}
   {If behind > 0: ⚠️ {N} behind {BASE_BRANCH} → `/team-ship sync`}
   {If none:} (none)
 
 ────────────────────────────────────────
 
 👥 **Team WIP** ({count})
-  {priority_dot} {Pn} `#{N}`  {title}  @{assignee}
+  {priority_dot} {Pn} **#{N}**  {title}  @{assignee}
   {Show up to 10 items sorted by priority}
   {If count > 10:} ... +{remaining} more → `/team queue`
 
 🔀 **Under Review** ({count})
-  🟡 `#{N}`  {title}  @{assignee}  {ci_icon}
+  🟡 **#{N}**  {title}  @{assignee}  {ci_icon}
   {If none shown}
 
 📋 **Unassigned** ({count})
-  {priority_dot} {Pn} `#{N}`  {title}
+  {priority_dot} {Pn} **#{N}**  {title}
   {If none:} (none)
 
 📊 **Merges**  {user}:{n} · {user}:{n} · ...
 
-💡 **Next:** Clean up with `rm .teamwork/active/MISSION-NNN.md`, then `/team-claim` `#{N}`. `/team-drive`
+💡 **Next:** Clean up with `rm .teamwork/active/MISSION-NNN.md`, then `/team-claim` **#{N}**. `/team-drive`
 {^ EVERY command and path in Next MUST be in backticks}
 
 `/team help` · `/team doctor` · `/team #N` · `/team config`
 `/team-claim` · `/team-drive` · `/team-ship` · `/team-rc`
 
-💡 **TIP:** {random tip — commands in backticks, e.g.: `/team auto` `#N` — 一键 claim→drive→ship}
+💡 **TIP:** {random tip — commands in backticks, e.g.: `/team auto` **#N** — 一键 claim→drive→ship}
 
 {Use same NEXT suggestion logic as Leader Dashboard}
 
