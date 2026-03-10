@@ -29,28 +29,26 @@ version: "3.7.0"
 Parse `$ARGUMENTS`:
 - If `help` or `-h` → output the following and **STOP**:
 
-```
-/team-ship — Deliver your mission
+**`/team-ship` — Deliver your mission**
 
-USAGE:
-  /team-ship            Push + create PR + CI check + cleanup
-  /team-ship done       After PR merge: close Issue, update labels, clean worktree
-  /team-ship review     AI review current PR (correctness/security/architecture/quality)
-  /team-ship sync       Rebase current branch on latest base branch
+**USAGE**
+  `/team-ship`            Push + create PR + CI check + cleanup
+  `/team-ship done`       After PR merge: close Issue, update labels, clean worktree
+  `/team-ship review`     AI review current PR (correctness/security/architecture/quality)
+  `/team-ship sync`       Rebase current branch on latest base branch
 
-SHIP FLOW:
+**SHIP FLOW**
   1. Pre-flight: verify branch, code sub-tasks done, tests pass
      (🔧 MANUAL tasks don't block — they're listed in PR description)
   2. Push branch to GitHub
-  3. Create PR with "Closes #N" (auto-closes Issue on merge)
+  3. Create PR with `Closes #N` (auto-closes Issue on merge)
      If manual tasks exist: adds "Manual Steps (post-merge)" checklist
   4. Watch CI (if configured)
   5. Request review (if configured)
-  6. Clean up local Contract, label Issue status:review
+  6. Clean up local Contract, label Issue `status:review`
 
-AFTER MERGE:
-  /team-ship done closes the Issue, labels status:done, returns to base branch.
-```
+**AFTER MERGE**
+  `/team-ship done` closes the Issue, labels `status:done`, returns to base branch.
 
 - If `done help` → jump to **Operation Done Help**
 - If `done` → jump to **Operation Done**
@@ -149,24 +147,18 @@ git worktree list --porcelain | grep -B2 "branch refs/heads/${CONTRACT_BRANCH}" 
 ```
 
 If a worktree path is found:
-```
-⚠️ WORKTREE MISMATCH
-═══════════════════════════════════════
+**⚠️ WORKTREE MISMATCH**
 Worktree mode is enabled but you're in the main repo.
-Your mission worktree: {worktree_path}
+Your mission worktree: `{worktree_path}`
 
-Switch to it:  cd {worktree_path}
-Then re-run:   /team-ship
-═══════════════════════════════════════
-```
+Switch to it:  `cd {worktree_path}`
+Then re-run:   `/team-ship`
 → **STOP**
 
 If no worktree exists for this branch:
-```
-⚠️ Worktree mode is enabled but no worktree exists for branch {branch}.
-Run /team-claim #{issue} to recreate with worktree isolation.
-Or disable worktree mode: git config --local teamwork.worktree false
-```
+⚠️ Worktree mode is enabled but no worktree exists for branch *{branch}*.
+Run `/team-claim` **#{issue}** to recreate with worktree isolation.
+Or disable worktree mode: `git config --local teamwork.worktree false`
 → **STOP**
 
 ---
@@ -279,7 +271,7 @@ bash ~/.claude/commands/scripts/tw-git.sh push {branch}
 ```
 
 - If exit code 2 → push failed. Suggest `/team-ship sync` then retry push.
-- If push still fails → "Push failed. Resolve the issue manually." → **STOP**
+- If push still fails → "Push failed. Run `/team doctor` to diagnose." → **STOP**
 
 ---
 
@@ -300,7 +292,7 @@ Display existing PR status:
 - CI status from PR statusCheckRollup
 - Review decision
 - Mergeable state
-Output: "PR #{number} already exists — CI: {status}, Review: {status}. Pushing will update it."
+Output: "PR **#{number}** already exists — CI: {status}, Review: {status}. Pushing will update it."
 
 ### 4b: Generate PR body
 
@@ -440,31 +432,27 @@ The Contract has served its purpose. The PR body now contains the essential info
 
 If CI failed → keep the Contract:
 
-```
-Contract preserved — run /team-drive to iterate on CI failures, then /team-ship again.
-```
+Contract preserved — run `/team-drive` to iterate on CI failures, then `/team-ship` again.
 
 ---
 
 ## Step 8: Output Delivery Summary
 
-```
-📦 SHIPPED ── #{issue} {title} ─────────────
-🔀 {branch}
+**📦 SHIPPED** ── **#{issue}** {title} ─────────────
+🔀 *{branch}*
 🔀 PR: {pr-url}
 {ci_icon} CI: {passing/failing/not configured}
 Review:    {requested from @{reviewer} / not required}
 Labels:    {actual current labels}
 
-📋 SUB-TASKS DELIVERED
+**📋 SUB-TASKS DELIVERED**
   ✅ {task 1}
   ✅ {task 2}
 
 ────────────────────────────────────────────
-/team-ship done (after merge) │ /team-ship review │ /team
+`/team-ship done` (after merge) │ `/team-ship review` │ `/team`
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -527,7 +515,7 @@ If `.mission` file exists (worktree mode):
   cd {original_repo_path}
   bash ~/.claude/commands/scripts/tw-git.sh worktree-remove "$WORKTREE_PATH"
   ```
-- If no: `cd {original_repo_path}` first (must leave worktree for D6), then warn "Worktree kept. Remove manually with `git worktree remove {path}`."
+- If no: `cd {original_repo_path}` first (must leave worktree for D6), then warn "Worktree kept. Run `/team doctor fix` later to clean up stale worktrees."
 
 ### D6: Return to base branch
 
@@ -574,19 +562,17 @@ fi
 
 ### D8: Output summary
 
-```
-🏁 DONE ── #{issue} {title} ────────────────
+**🏁 DONE** ── **#{issue}** {title} ────────────────
 Issue:     closed
 🔀 PR: {pr-url} (merged)
-Labels:    {STATUS_PREFIX}done
+Labels:    `{STATUS_PREFIX}done`
 Worktree:  {removed/kept/n/a}
-Branch:    {BASE_BRANCH}
+Branch:    *{BASE_BRANCH}*
 
 ────────────────────────────────────────────
-/team-claim (next mission) │ /team (dashboard)
+`/team-claim` (next mission) │ `/team` (dashboard)
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -645,11 +631,9 @@ gh pr review {pr} --body "{review_body}" {--approve|--request-changes|--comment}
 
 Output:
 
-```
-Review published on PR #{pr}: {approve/request-changes/comment}
+Review published on PR **#{pr}**: {approve/request-changes/comment}
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -704,17 +688,13 @@ git rebase --continue
 
 Output:
 
-```
-SYNC COMPLETE
-═══════════════════════════════════════════
-Branch:   {branch}
-Rebased:  on latest {BASE_BRANCH}
+**SYNC COMPLETE** ────────────────────────────
+Branch:   *{branch}*
+Rebased:  on latest *{BASE_BRANCH}*
 {If conflicts resolved:}
-Resolved: {N} conflict(s) in {file list}
+Resolved: `{N}` conflict(s) in {file list}
 {If any flagged:}
 ⚠️ Review: {file} — both sides changed {description}, merged as {approach}
-═══════════════════════════════════════════
-```
 
 Push the rebased branch:
 ```bash
@@ -732,30 +712,28 @@ git push --force-with-lease origin {branch}
 
 Output the following and **STOP**:
 
-```
-/team-ship done — Post-Merge Cleanup
-═══════════════════════════════════════════
+**`/team-ship done` — Post-Merge Cleanup**
+────────────────────────────────────────────
 
-USAGE:
-  /team-ship done           Auto-detect Issue from Contract/branch
-  /team-ship done #42       Specify Issue number explicitly
+**USAGE**
+  `/team-ship done`           Auto-detect Issue from Contract/branch
+  `/team-ship done #42`       Specify Issue number explicitly
 
-WHAT IT DOES:
+**WHAT IT DOES**
   1. Verify PR is merged (fails if PR still open)
-  2. Close Issue (if not auto-closed by "Closes #N")
-  3. Update labels: status:review → status:done
+  2. Close Issue (if not auto-closed by `Closes #N`)
+  3. Update labels: `status:review` → `status:done`
   4. Clean up worktree (if in worktree mode)
   5. Return to base branch
   6. Remove local Contract
 
-WHEN TO USE:
+**WHEN TO USE**
   After your PR has been merged on GitHub.
-  Usually the last step: /team-drive → /team-ship → (merge) → /team-ship done
+  Usually the last step: `/team-drive` → `/team-ship` → (merge) → `/team-ship done`
 
-TROUBLESHOOTING:
+**TROUBLESHOOTING**
   "No merged PR found" → PR must be merged first. Check GitHub.
-  "Cannot determine Issue" → Specify explicitly: /team-ship done #42
-```
+  "Cannot determine Issue" → Specify explicitly: `/team-ship done #42`
 
 ---
 
@@ -765,15 +743,14 @@ TROUBLESHOOTING:
 
 Output the following and **STOP**:
 
-```
-/team-ship review — AI Code Review
-═══════════════════════════════════════════
+**`/team-ship review` — AI Code Review**
+────────────────────────────────────────────
 
-USAGE:
-  /team-ship review         Review PR for current branch
-  /team-ship review #43     Review specific PR number
+**USAGE**
+  `/team-ship review`         Review PR for current branch
+  `/team-ship review #43`     Review specific PR number
 
-WHAT IT DOES:
+**WHAT IT DOES**
   1. Find open PR for current branch
   2. Fetch full diff
   3. Read all changed files for context
@@ -781,9 +758,8 @@ WHAT IT DOES:
   5. Choose action: approve / request changes / comment only
   6. Publish review to GitHub
 
-WHEN TO USE:
+**WHEN TO USE**
   Before merging a PR, or when a teammate asks for review.
-```
 
 ---
 
@@ -793,29 +769,27 @@ WHEN TO USE:
 
 Output the following and **STOP**:
 
-```
-/team-ship sync — Rebase on Base Branch
-═══════════════════════════════════════════
+**`/team-ship sync` — Rebase on Base Branch**
+────────────────────────────────────────────
 
-USAGE:
-  /team-ship sync           Rebase current branch on latest base
+**USAGE**
+  `/team-ship sync`           Rebase current branch on latest base
 
-WHAT IT DOES:
+**WHAT IT DOES**
   1. Verify you're on a mission branch (not base)
   2. Fetch latest base branch from remote
   3. Rebase your branch on top of latest base
   4. Auto-resolve conflicts (AI reads both sides and merges)
   5. Force-push rebased branch to remote
 
-WHEN TO USE:
-  When dashboard shows "⚠️ N behind {base}" on your PR.
-  When /team doctor shows your branch is behind base.
-  Before /team-ship if branch has drifted.
+**WHEN TO USE**
+  When dashboard shows "⚠️ `N` behind *{base}*" on your PR.
+  When `/team doctor` shows your branch is behind base.
+  Before `/team-ship` if branch has drifted.
 
-TROUBLESHOOTING:
+**TROUBLESHOOTING**
   Already on base branch → Nothing to sync.
   Ambiguous conflict → AI resolves + flags for review in summary.
-```
 
 ---
 
@@ -825,8 +799,10 @@ TROUBLESHOOTING:
 - No active Contract → "No mission to ship. Run `/team-claim` first." → **STOP**
 - Incomplete code sub-tasks → warn with list of remaining tasks → **STOP** (MANUAL tasks don't block)
 - Tests fail → "Fix tests before shipping." → **STOP**
-- Push fails → suggest rebase (`/team-ship sync`), if still fails → **STOP**
+- Push fails → suggest `/team-ship sync`, if still fails → **STOP**
 - PR creation fails → "Failed to create PR. Check `gh auth status` and try again." → **STOP**
 - CI fails → warn but DO NOT stop (PR is already created, user can iterate)
 - Label/reviewer operations fail → warn but continue (non-fatal)
 - Contract removal fails → warn but continue (non-fatal)
+
+**On any STOP:** Always append `💡 Something wrong? Run` `/team doctor` `to diagnose.`

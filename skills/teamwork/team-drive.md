@@ -11,35 +11,33 @@ version: "3.7.0"
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
-```
-/team-drive — Execute your claimed mission
+**`/team-drive`** — Execute your claimed mission
 
-USAGE:
-  /team-drive           Read Contract, validate plan, execute with verify loop
+**USAGE**
+  `/team-drive`           Read Contract, validate plan, execute with verify loop
 
-WHAT HAPPENS:
-  1. Reads your Mission Contract (.teamwork/active/MISSION-N.md)
+**WHAT HAPPENS**
+  1. Reads your Mission Contract (`.teamwork/active/MISSION-N.md`)
   2. Reads actual code — validates sub-tasks against ground truth
      (sub-tasks are hypotheses, not orders — executor rewrites if wrong)
   3. Classifies tasks: code tasks (AI executes) vs 🔧 MANUAL (human action)
   4. Selects execution mode (based on code task count):
-     — Small (1-3 tasks): sequential loop
-     — Medium (4-7 tasks): create 1-2 teammates, wave parallelism
-     — Large (8+ tasks): full team + STL hierarchy + wave map
+     — Small (`1-3` tasks): sequential loop
+     — Medium (`4-7` tasks): create 1-2 teammates, wave parallelism
+     — Large (`8+` tasks): full team + STL hierarchy + wave map
   5. Executes code tasks with discipline: ripple check, self-adversarial review
   6. Manual Ops Handoff: surfaces 🔧 MANUAL tasks for you to complete
   7. Progress saved via checkboxes — can be interrupted and resumed
 
-TASK SYMBOLS:
+**TASK SYMBOLS**
   ○  Pending code task — AI will execute
   🔧 MANUAL task — requires your action (AI skips)
   ✅ Completed task
 
-PREREQUISITES:
-  Run /team-claim first to generate a Contract.
+**PREREQUISITES**
+  Run `/team-claim` first to generate a Contract.
 
-NEXT: /team-ship to deliver via PR
-```
+**NEXT**: `/team-ship` to deliver via PR
 
 ---
 
@@ -122,16 +120,14 @@ FRESHNESS=$(bash ~/.claude/commands/scripts/tw-contract.sh check-freshness "$CON
 If `FRESHNESS` is `STALE`:
 
 Display the current Issue body to the user:
-```
-⚡ ISSUE UPDATED since claim
-═══════════════════════════════════════
+**⚡ ISSUE UPDATED** since claim
+────────────────────────────────────────────
 The Issue description has changed since you generated this Contract.
 
-Current Issue body:
-──────────────────────────────────────
+**Current Issue body**
+────────────────────────────────────────────
 {current Issue body}
-──────────────────────────────────────
-```
+────────────────────────────────────────────
 
 Use `AskUserQuestion`:
 - "Update Contract?" → Re-extract Objective, Sub-tasks, Acceptance Criteria from new body. Update `issue_content_hash`. Preserve Context Files and AI Notes (locally generated).
@@ -161,24 +157,23 @@ git worktree list --porcelain | grep -B2 "branch refs/heads/${CONTRACT_BRANCH}" 
 ```
 
 If a worktree path is found for this branch:
-```
-⚠️ WORKTREE MISMATCH
-═══════════════════════════════════════
-Worktree mode is enabled but you're in the main repo.
-Your mission worktree: {worktree_path}
 
-Switch to it:  cd {worktree_path}
-Then re-run:   /team-drive
-═══════════════════════════════════════
-```
+**⚠️ WORKTREE MISMATCH**
+────────────────────────────────────────────
+Worktree mode is enabled but you're in the main repo.
+Your mission worktree: `{worktree_path}`
+
+Switch to it:  `cd {worktree_path}`
+Then re-run:   `/team-drive`
+────────────────────────────────────────────
 → **STOP**
 
 If no worktree exists for this branch (e.g., worktree was deleted or claim was done before enabling worktree mode):
-```
-⚠️ Worktree mode is enabled but no worktree exists for branch {branch}.
-Run /team-claim #{issue} to recreate with worktree isolation.
-Or disable worktree mode: git config --local teamwork.worktree false
-```
+
+**⚠️ NO WORKTREE FOUND**
+Worktree mode is enabled but no worktree exists for branch *{branch}*.
+Run `/team-claim` **#{issue}** to recreate with worktree isolation.
+Or disable worktree mode: `git config --local teamwork.worktree false`
 → **STOP**
 
 ---
@@ -195,12 +190,11 @@ CURRENT_BRANCH=$(git branch --show-current)
 Compare with Contract's `branch` field.
 - If on wrong branch → `git checkout {contract.branch}`
 - If branch doesn't exist locally → display the following and **STOP**:
-  ```
-  Branch {branch} not found locally. Options:
-    1. Restore from remote: git checkout -b {branch} origin/{branch}
-    2. Re-claim the mission: /team-claim #{issue}
+
+  **ERROR:** Branch *{branch}* not found locally. Options:
+    1. Restore from remote: `git checkout -b {branch} origin/{branch}`
+    2. Re-claim the mission: `/team-claim` **#{issue}**
     Re-claiming will regenerate the Contract from the Issue. Committed changes are preserved on remote if pushed.
-  ```
 
 ---
 
@@ -208,26 +202,24 @@ Compare with Contract's `branch` field.
 
 Output a formatted briefing:
 
-```
-🎯 MISSION ── #{issue} {title} ─────────────
-{priority_dot} {priority}  🔀 {branch}
-Progress:  {progress_bar}  {done}/{total}
+**🎯 MISSION** ── **#{issue}** {title} ─────────────
+{priority_dot} {priority}  🔀 *{branch}*
+Progress:  {progress_bar}  `{done}/{total}`
 
-🎯 OBJECTIVE
+**🎯 OBJECTIVE**
   {objective}
 
-📋 SUB-TASKS
+**📋 SUB-TASKS**
   ✅ {completed task}
   ▸ {remaining task}  ← current
   ○ {remaining task}
 
-✅ ACCEPTANCE CRITERIA
+**✅ ACCEPTANCE CRITERIA**
   {criteria}
 
-📁 CONTEXT FILES
+**📁 CONTEXT FILES**
   {files list}
 ────────────────────────────────────────────
-```
 
 Check whether all **code** sub-tasks are already checked (ignore `🔧 MANUAL` tasks).
 
@@ -266,9 +258,9 @@ fi
 
 Display branch readiness:
 
-- If `BEHIND_BASE` > 30 → 🔴 "Branch is {N} commits behind base. Rebase strongly recommended before starting work. Run `/team-ship sync` to rebase."
-- If `BEHIND_BASE` > 10 and ≤ 30 → 🟡 "Branch is {N} commits behind base. Consider running `/team-ship sync` before driving."
-- If `BEHIND_REMOTE` > 0 → 🟡 "Local branch is {N} commits behind remote. Run `git pull --rebase` to sync."
+- If `BEHIND_BASE` > 30 → 🔴 **Branch is `{N}` commits behind base.** Rebase strongly recommended before starting work. Run `/team-ship sync` to rebase.
+- If `BEHIND_BASE` > 10 and ≤ 30 → 🟡 **Branch is `{N}` commits behind base.** Consider running `/team-ship sync` before driving.
+- If `BEHIND_REMOTE` > 0 → 🟡 **Local branch is `{N}` commits behind remote.** Run `git pull --rebase` to sync.
 - If all zero → no output needed (clean state)
 
 This is informational only — do NOT stop. Warn and continue. The user may choose to sync or not.
@@ -283,7 +275,7 @@ Before executing any code changes, verify you are NOT on a protected branch.
 bash ~/.claude/commands/scripts/tw-git.sh protect-check
 ```
 
-- If exit code 3 → on protected branch, output "Switch to a feature branch first: /team-claim #{issue}" → **STOP**
+- If exit code 3 → on protected branch, output **ERROR:** "Switch to a feature branch first: `/team-claim` **#{issue}**" → **STOP**
 - If exit code 0 → on correct feature branch → continue
 
 ---
@@ -368,20 +360,18 @@ For each unchecked sub-task, ask:
 
 ### Output Plan Assessment
 
-```
-📊 PLAN ASSESSMENT
-═══════════════════════════════════════
-🎯 Objective: {restate in own words — proves understanding}
-✅ Acceptance Criteria: {N} criteria — all achievable: {yes/no}
+**📊 PLAN ASSESSMENT**
+────────────────────────────────────────────
+**🎯 Objective:** {restate in own words — proves understanding}
+**✅ Acceptance Criteria:** `{N}` criteria — all achievable: {yes/no}
 
-Sub-task review:
-  ✅ [1] {task} — CONFIRM: {why it's correct}
-  ✏️ [2] {task} — REVISE: {what's wrong, what it should be}
-  ➕ [3] (missing) — ADD: {what's needed that planner missed}
-  ➖ [4] {task} — DROP: {why it's unnecessary}
-  🔧 [5] {task} — MANUAL: {requires human action — cannot be automated}
-═══════════════════════════════════════
-```
+**Sub-task review:**
+  ✅ [1] {task} — **CONFIRM:** {why it's correct}
+  ✏️ [2] {task} — **REVISE:** {what's wrong, what it should be}
+  ➕ [3] (missing) — **ADD:** {what's needed that planner missed}
+  ➖ [4] {task} — **DROP:** {why it's unnecessary}
+  🔧 [5] {task} — **MANUAL:** {requires human action — cannot be automated}
+────────────────────────────────────────────
 
 **MANUAL classification**: Sub-tasks that require human action outside the codebase (e.g., console operations, server access, third-party configuration, deployment verification) should be tagged `🔧 MANUAL`. These tasks are NOT executed during the drive loop — they are surfaced to the user during the Manual Ops Handoff at completion.
 
@@ -489,14 +479,12 @@ Brief teammates from the **Contract file ONLY**. Never from conversation history
 
 After team creation, output the team structure. Re-emit after any scaling change.
 
-```
-🗺️ TEAM TOPOLOGY: mission-{issue}
+**🗺️ TEAM TOPOLOGY:** mission-{issue}
 YOU (Team Lead) ─── orchestrating + critical path
-├── 🎖️ stl-{domain} ─── [{N} tasks, spawns {M} inner]
-├── 🔧 implementer-1 ─── [{N} tasks]
-└── 🔧 implementer-2 ─── [{N} tasks]
-Active: {N} teammates + ~{M} inner = {total} streams
-```
+├── 🎖️ stl-{domain} ─── [`{N}` tasks, spawns `{M}` inner]
+├── 🔧 implementer-1 ─── [`{N}` tasks]
+└── 🔧 implementer-2 ─── [`{N}` tasks]
+Active: `{N}` teammates + ~`{M}` inner = `{total}` streams
 
 ---
 
@@ -512,19 +500,17 @@ Continue until all assigned
 
 ### Wave Map (mandatory for Parallel + Team modes)
 
-```
-📊 WAVE MAP — Mission #{issue}
-═══════════════════════════════════════
-⚡ Wave 0 (Foundation) — Width: {N}
+**📊 WAVE MAP** — Mission **#{issue}**
+────────────────────────────────────────────
+⚡ Wave 0 (Foundation) — Width: `{N}`
 ├── [T1] {task} → {you/teammate}
 └── [T2] {task} → {you/teammate}
-⚡ Wave 1 (Core) — Width: {N}  ← PEAK
+⚡ Wave 1 (Core) — Width: `{N}`  ← PEAK
 ├── [T3] {task} → {you/teammate}
 └── [T4] {task} → {you/teammate}
 🔗 Critical Path: T1 → T3 → T5
-Speedup: {X}x via parallelism
-═══════════════════════════════════════
-```
+Speedup: `{X}x` via parallelism
+────────────────────────────────────────────
 
 ### Critical Path Optimization
 
@@ -537,11 +523,9 @@ Speedup: {X}x via parallelism
 
 In ONE response: assign tasks → kick-off messages → broadcast launch → start your task.
 
-```
-🚀 WAVE 0 LAUNCH — Width: {N}
-   [{agent}] → {task}
-   🔗 Critical path: {which}
-```
+**🚀 WAVE 0 LAUNCH** — Width: `{N}`
+  [{agent}] → {task}
+  🔗 Critical path: {which}
 
 ---
 
@@ -594,14 +578,12 @@ while (mission != COMPLETE) {
 
 Every dispatch and completion MUST be announced. No silent agents.
 
-```
-📡 DISPATCH: [{agent}] → {task} | Parallel with: [{others}]
-✅ RETURN:   [{agent}] ← {task} | Files: [{list}]
-🔄 RE-DISPATCH: [{agent}] → {next-task}
-🎖️ STL-INNER: [stl-{domain}] spawned {N} subagents | Progress: {done}/{total}
-🏁 DOMAIN COMPLETE: [stl-{domain}] ← delivered
-📊 WAVE STATUS (after each wave): Wave {N}/{total} | Tasks: {done}/{total} | Agents: {active}
-```
+**📡 DISPATCH:** [{agent}] → {task} | Parallel with: [{others}]
+**✅ RETURN:** [{agent}] ← {task} | Files: [{list}]
+**🔄 RE-DISPATCH:** [{agent}] → {next-task}
+**🎖️ STL-INNER:** [stl-{domain}] spawned `{N}` subagents | Progress: `{done}/{total}`
+**🏁 DOMAIN COMPLETE:** [stl-{domain}] ← delivered
+**📊 WAVE STATUS** (after each wave): Wave `{N}/{total}` | Tasks: `{done}/{total}` | Agents: `{active}`
 
 ### Checkpoint Ownership in Parallel/Team Mode
 
@@ -630,9 +612,8 @@ The Lead then:
 ## Per-Task Execution (applies to all modes)
 
 ### Announce current task
-```
-Working on: {sub-task description}
-```
+
+**Working on:** {sub-task description}
 
 ### Read context
 Read the files relevant to THIS specific sub-task. Use `Glob` and `Grep` to explore beyond Context Files if needed.
@@ -756,10 +737,8 @@ For non-trivial decisions during execution: read `.claude/pantheon/` for relevan
 **The Contract on disk always wins over context memory.**
 
 After compaction, at checkpoints, or when uncertain:
-```
-Re-Anchor: Read Contract FROM DISK → verify alignment
-RE-ANCHOR: Contract OK | Progress: {done}/{total} | Plan Assessment: aligned
-```
+**Re-Anchor:** Read Contract FROM DISK → verify alignment
+**RE-ANCHOR:** Contract OK | Progress: `{done}/{total}` | Plan Assessment: aligned
 
 If memory says X but Contract says Y → the file wins. Always.
 
@@ -879,50 +858,47 @@ Scan the sub-task list for any tasks tagged `🔧 MANUAL` or containing "(MANUAL
 
 ### If NO manual tasks exist — standard completion:
 
-```
-🏁 COMPLETE ── #{issue} {title} ────────────
-Mode:     {sequential/parallel/team}  {N} tasks  {M} waves
-Commits:  {count} on 🔀 {branch}
+**🏁 COMPLETE** ── **#{issue}** {title} ────────────
+Mode:     {sequential/parallel/team}  `{N}` tasks  `{M}` waves
+Commits:  `{count}` on 🔀 *{branch}*
 Tests:    ✅ passing
 
-📊 PLAN VALIDATION
+**📊 PLAN VALIDATION**
   {CONFIRMED / REVISED: summary}
 
-📋 SUB-TASKS
+**📋 SUB-TASKS**
   ✅ {task 1}
   ✅ {task 2}
 
-✅ ACCEPTANCE CRITERIA
+**✅ ACCEPTANCE CRITERIA**
   {criterion 1} — {evidence}
   {criterion 2} — {evidence}
 
-📊 SWARM STATS (if team mode)
-  Waves: {N}  Peak: {N}  Lead: {N}  STL: {N}  Leaf: {N}
+**📊 SWARM STATS** *(if team mode)*
+  Waves: `{N}`  Peak: `{N}`  Lead: `{N}`  STL: `{N}`  Leaf: `{N}`
 
 ────────────────────────────────────────────
-/team-ship to create PR
+`/team-ship` to create PR
 
 💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
 
 ### If manual tasks exist — Manual Ops Handoff:
 
 The completion report becomes a two-phase handoff: first show what AI completed, then guide the user through their manual tasks.
 
-```
-🏁 CODE COMPLETE ── #{issue} {title} ────────────
-Mode:     {sequential/parallel/team}  {N} code tasks  {M} commits
+**🏁 CODE COMPLETE** ── **#{issue}** {title} ────────────
+Mode:     {sequential/parallel/team}  `{N}` code tasks  `{M}` commits
 Tests:    ✅ passing
 
-📊 PLAN VALIDATION
+**📊 PLAN VALIDATION**
   {CONFIRMED / REVISED: summary}
 
-✅ CODE TASKS ({done count}/{code task count})
+**✅ CODE TASKS** (`{done count}/{code task count}`)
   ✅ {code task 1}
   ✅ {code task 2}
 
-🔧 YOUR TURN — {manual_count} manual steps remaining
-═══════════════════════════════════════════════════
+**🔧 YOUR TURN** — `{manual_count}` manual steps remaining
+────────────────────────────────────────────
 These require your action — AI cannot perform them.
 
   1. {manual task description}
@@ -933,8 +909,7 @@ These require your action — AI cannot perform them.
 
   3. {manual task description}
      → {concrete action}
-═══════════════════════════════════════════════════
-```
+────────────────────────────────────────────
 
 Then use `AskUserQuestion` to ask:
 - **"Done — all manual steps complete"** → proceed to show acceptance criteria + suggest `/team-ship`
@@ -944,15 +919,13 @@ Then use `AskUserQuestion` to ask:
 
 After user responds, output the full acceptance criteria block and the `/team-ship` prompt:
 
-```
-✅ ACCEPTANCE CRITERIA
-  {criterion} — {evidence or "pending manual step"}
+**✅ ACCEPTANCE CRITERIA**
+  {criterion} — {evidence or *"pending manual step"*}
 
 ────────────────────────────────────────────
-/team-ship to create PR
+`/team-ship` to create PR
 
 💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
 
 ### Post-Mission Ecosystem Scan (2-3 min)
 
@@ -965,10 +938,12 @@ Did this mission reveal a gap in any skill? Tool limitation? Stale pattern?
 
 ## Error Handling
 
-- Config missing → "Run `/team` first to initialize teamwork." → **STOP**
-- Contract references files that don't exist → warn, skip those context files
-- Test command not defined → warn "No test command configured. Add `test_command` to `$TEAMWORK_DIR/config.yml`."
+- Config missing → **ERROR:** Run `/team` first to initialize teamwork. → **STOP**
+- Contract references files that don't exist → **WARNING:** skip those context files
+- Test command not defined → **WARNING:** No test command configured. Add `test_command` to `$TEAMWORK_DIR/config.yml`.
 - Git conflicts → resolve them, then continue
 - If execution is interrupted (user stops mid-task), the Contract preserves progress via checkboxes — next `/team-drive` run picks up where it left off
-- Plan Validation finds Objective impossible → ESCALATE to user, do NOT proceed with doomed plan
+- Plan Validation finds Objective impossible → **ERROR:** ESCALATE to user, do NOT proceed with doomed plan
 - Teammate fails or is blocked → unblock immediately (priority over your own task)
+
+**On any STOP:** Always append `💡 Something wrong? Run /team doctor to diagnose.`

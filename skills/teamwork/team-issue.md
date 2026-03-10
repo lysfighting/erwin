@@ -24,52 +24,51 @@ version: "3.7.0"
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
-```
-/team-issue — Mission Contract Issue Manager (v3.7.0)
+**`/team-issue` — Mission Contract Issue Manager** (`v3.7.0`)
 
-USAGE:
-  /team-issue <description>                    Create MC (solo: self-assign; team: prompt)
-  /team-issue <description> @assignee          Create MC and assign to @assignee
-  /team-issue #42                              Show Issue #42 details
-  /team-issue #42 <comment text>               Add comment to Issue #42
-  /team-issue update #42 <changes>             AI-assisted update of Issue #42
-  /team-issue update #42                       Interactive edit of Issue #42
-  /team-issue fix #42                        Fix untracked Issue into teamwork
-  /team-issue batch V0.2 -- ...                Batch create milestone + MCs
-  /team-issue help                             Show this guide
+**USAGE**
+  `/team-issue <description>`                    Create MC (solo: self-assign; team: prompt)
+  `/team-issue <description> @assignee`          Create MC and assign to @assignee
+  `/team-issue #042`                             Show Issue **#042** details
+  `/team-issue #042 <comment text>`              Add comment to Issue **#042**
+  `/team-issue update #042 <changes>`            AI-assisted update of Issue **#042**
+  `/team-issue update #042`                      Interactive edit of Issue **#042**
+  `/team-issue fix #042`                         Fix untracked Issue into teamwork
+  `/team-issue batch V0.2 -- ...`                Batch create milestone + MCs
+  `/team-issue help`                             Show this guide
 
-MILESTONE (for create):
-  --milestone <name>   Override milestone (otherwise uses versions.current from config)
+**MILESTONE** (for create)
+  `--milestone <name>`   Override milestone (otherwise uses `versions.current` from config)
 
-EXAMPLES (fix):
-  /team-issue fix #94                        Add teamwork labels to Issue #94
+**EXAMPLES** (fix)
+  `/team-issue fix #094`                         Add teamwork labels to Issue **#094**
 
-EXAMPLES (create):
-  /team-issue resolve camera permission on iOS Safari
-  /team-issue add rate limiting to upload API @xxLe
-  /team-issue --milestone V0.2 user registration flow @yuang-yang
+**EXAMPLES** (create)
+  `/team-issue resolve camera permission on iOS Safari`
+  `/team-issue add rate limiting to upload API @xxLe`
+  `/team-issue --milestone V0.2 user registration flow @yuang-yang`
 
-EXAMPLES (comment):
-  /team-issue #42 looks good, but add error handling for timeout
+**EXAMPLES** (comment)
+  `/team-issue #042 looks good, but add error handling for timeout`
 
-EXAMPLES (batch):
-  /team-issue batch V0.2 -- User system and campaign basics
+**EXAMPLES** (batch)
+  `/team-issue batch V0.2 -- User system and campaign basics`
     MC1: user registration @yuang-yang
-      - [ ] Email/password signup works
+      Success criterion: Email/password signup works
     MC2: campaign UI @xxLe
-      - [ ] CRUD for campaign materials
+      Success criterion: CRUD for campaign materials
 
-WHAT HAPPENS (create):
+**WHAT HAPPENS** (create)
   1. AI analyzes your description
   2. Searches existing Issues for duplicates
   3. Scans codebase for relevant files
   4. Generates mission-contract Issue body
   5. Shows preview for confirmation
   6. Publishes to GitHub with labels + assignee
-  7. Creates branch: mission/{issue}-{slug}-{user}
+  7. Creates branch: *mission/{issue}-{slug}-{user}*
   8. Notifies assignee via configured channels
 
-WHAT HAPPENS (fix):
+**WHAT HAPPENS** (fix)
   1. Fetches existing Issue from GitHub
   2. AI analyzes to infer priority/size
   3. Shows label preview for confirmation
@@ -77,14 +76,13 @@ WHAT HAPPENS (fix):
   5. Optionally reformats body into MC structure
   6. Creates mission branch if none exists
 
-WHAT HAPPENS (update):
+**WHAT HAPPENS** (update)
   1. Fetches current Issue from GitHub
   2. AI applies your described changes
   3. Shows before/after diff for confirmation
   4. Updates Issue on GitHub
 
-NEXT: Assignee runs /team-claim #{issue} to generate Contract
-```
+NEXT: Assignee runs `/team-claim` **#{issue}** to generate Contract
 
 ---
 
@@ -175,7 +173,7 @@ fi
 - Find `@mention` at end of description
 - Match against config `members[].github` (exact) or `members[].name` (case-insensitive partial)
 - Remove `@mention` from description text
-- If `@mention` doesn't match any member → "Member '@{mention}' not found. Available: {list}" → **STOP**
+- If `@mention` doesn't match any member → "**ERROR:** Member '@{mention}' not found. Available: {list}" → **STOP**
 
 ---
 
@@ -220,13 +218,11 @@ gh issue list --search "{key terms}" --state open --json number,title,url --limi
 
 **If potential duplicates found** → display and ask:
 
-```
-POTENTIAL DUPLICATES FOUND
-──────────────────────────────────────
-#12  fix: camera permission not triggering on Safari
-#35  feat: add iOS Safari media support
-──────────────────────────────────────
-```
+**POTENTIAL DUPLICATES FOUND**
+────────────────────────────────────────────
+**#012**  fix: camera permission not triggering on Safari
+**#035**  feat: add iOS Safari media support
+────────────────────────────────────────────
 
 Use `AskUserQuestion`:
 - "None of these — create new Issue" → continue to Step 3
@@ -292,16 +288,14 @@ Format the Issue body using the canonical mission-contract structure:
 
 Display the full Issue preview to the user:
 
-```
-📋 PREVIEW ── {title} ──────────────────────
-Assignee:   @{assignee}
-{priority_dot} {Pn}  Size: {size}  Domain: {domain}
-Labels:     {MISSION_LABEL}, {STATUS_PREFIX}wip, {PRIORITY_PREFIX}{Pn}, domain:{domain}, size:{size}
-Milestone:  {MILESTONE or "—"}
+📋 **PREVIEW** ── {title} ──────────────────────
+  **Assignee**   @{assignee}
+  {priority_dot} `{Pn}`  **Size** `{size}`  **Domain** `{domain}`
+  **Labels**     `{MISSION_LABEL}`, `{STATUS_PREFIX}wip`, `{PRIORITY_PREFIX}{Pn}`, `domain:{domain}`, `size:{size}`
+  **Milestone**  `{MILESTONE}` or "—"
 ────────────────────────────────────────────
 {formatted Issue body}
 ────────────────────────────────────────────
-```
 
 Use `AskUserQuestion` to confirm:
 - "Publish this Issue?" → Publish / Edit title / Edit priority / Cancel
@@ -325,7 +319,7 @@ gh issue create \
   ${MILESTONE:+--milestone "$MILESTONE"}
 ```
 
-- If milestone assignment fails (milestone doesn't exist yet) → warn "Issue created without milestone. Create the milestone on GitHub first, then assign: `gh issue edit #{N} --milestone '{MILESTONE}'`. Or re-run `/team init` to set up milestones." Non-fatal: issue is still created without milestone.
+- If milestone assignment fails (milestone doesn't exist yet) → warn "⚠️ **WARNING:** Issue created without milestone. Create the milestone on GitHub first, then assign: `gh issue edit #{N} --milestone '{MILESTONE}'`. Or re-run `/team init` to set up milestones." Non-fatal: issue is still created without milestone.
 
 Extract Issue number from output URL.
 
@@ -341,18 +335,16 @@ Non-fatal: if notification fails, warn but continue.
 
 ### Step 8: Output
 
-```
-📦 CREATED ── #{issue} {title} ─────────────
-Assignee:  @{assignee}
-{priority_dot} {Pn}  Size: {size}  Milestone: {milestone or "—"}
-URL:       {issue URL}
-{If notifications sent:} Notified: {channels}
+📦 **CREATED** ── **#{issue}** {title} ─────────────
+  **Assignee**  @{assignee}
+  {priority_dot} `{Pn}`  **Size** `{size}`  **Milestone** `{milestone}` or "—"
+  **URL**       `{issue URL}`
+  {If notifications sent:} **Notified** {channels}
 
 ────────────────────────────────────────────
-/team-claim #{issue} to generate Contract + branch
+`/team-claim` **#{issue}** to generate Contract + branch
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -364,20 +356,18 @@ URL:       {issue URL}
 gh issue view $N --repo "$REPO" --json number,title,body,labels,milestone,assignees,state,url
 ```
 
-- If Issue not found → "Issue #N not found." → **STOP**
+- If Issue not found → "**ERROR:** Issue **#N** not found." → **STOP**
 
 Format output:
 
-```
-🎯 MC #{N} ── {title} ──────────────────────
-Assignee:   @{assignee or "unassigned"}
-{priority_dot} {Pn}  Size: {size}  Status: {status}
-Milestone:  {milestone or "—"}  State: {open/closed}
-URL:        {url}
+🎯 **MC** **#{N}** ── {title} ──────────────────────
+  **Assignee**   @{assignee or "unassigned"}
+  {priority_dot} `{Pn}`  **Size** `{size}`  **Status** *{status}*
+  **Milestone**  `{milestone}` or "—"  **State** `{open/closed}`
+  **URL**        `{url}`
 ────────────────────────────────────────────
 {Full Issue body}
 ────────────────────────────────────────────
-```
 
 Check for branch and PRs:
 
@@ -386,13 +376,11 @@ git ls-remote --heads origin "mission/${N}-*" 2>/dev/null
 gh pr list --repo "$REPO" --search "Closes #$N" --state all --json number,url,state --limit 5
 ```
 
-```
-🔀 BRANCH  {branch or "(not created)"}
-🔀 RELATED PRs  {list or "(none)"}
+🔀 **BRANCH**  *{branch}* or "(not created)"
+🔀 **RELATED PRs**  {list or "(none)"}
 ────────────────────────────────────────────
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -404,18 +392,16 @@ gh pr list --repo "$REPO" --search "Closes #$N" --state all --json number,url,st
 gh issue comment $N --repo "$REPO" --body "$TEXT"
 ```
 
-- If Issue not found → "Issue #N not found." → **STOP**
+- If Issue not found → "**ERROR:** Issue **#N** not found." → **STOP**
 
 Output:
 
-```
-💬 COMMENT ── #{N} {title} ─────────────────
-{first 80 chars of text}...
-URL: {comment URL}
+💬 **COMMENT** ── **#{N}** {title} ─────────────────
+  {first 80 chars of text}...
+  **URL** `{comment URL}`
 ────────────────────────────────────────────
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -429,17 +415,16 @@ URL: {comment URL}
 gh issue view {issue} --repo "$REPO" --json number,title,body,labels,state
 ```
 
-- If Issue not found → "Issue #{issue} not found." → **STOP**
-- If Issue is closed → "Issue #{issue} is closed. Reopen it first if you want to edit." → **STOP**
+- If Issue not found → "**ERROR:** Issue **#{issue}** not found." → **STOP**
+- If Issue is closed → "**ERROR:** Issue **#{issue}** is closed. Reopen it first if you want to edit." → **STOP**
 
 Display current Issue summary:
-```
-📋 CURRENT ── #{issue} {title} ─────────────
-Labels:  {labels}
+
+📋 **CURRENT** ── **#{issue}** {title} ─────────────
+  **Labels**  `{labels}`
 ────────────────────────────────────────────
 {current body}
 ────────────────────────────────────────────
-```
 
 ### U2: Determine changes
 
@@ -459,14 +444,13 @@ Labels:  {labels}
 ### U3: Preview changes
 
 Display the updated Issue:
-```
-✏️ UPDATE PREVIEW ── #{issue} ───────────────
-Title:  {new title, or unchanged}
 
-📝 CHANGES
+✏️ **UPDATE PREVIEW** ── **#{issue}** ───────────────
+  **Title**  {new title, or unchanged}
+
+  📝 **CHANGES**
   {Show what changed — highlight modified sections}
 ────────────────────────────────────────────
-```
 
 Use `AskUserQuestion` to confirm:
 - "Apply changes" → proceed to U4
@@ -491,19 +475,17 @@ gh issue edit {issue} --repo "$REPO" \
 
 ### U5: Output
 
-```
-✏️ UPDATED ── #{issue} {title} ──────────────
-URL:  {issue URL}
+✏️ **UPDATED** ── **#{issue}** {title} ──────────────
+  **URL**  `{issue URL}`
 
-📝 CHANGES
+  📝 **CHANGES**
   {summary of what changed}
 
-Claimed assignees will see ⚡ on dashboard
-and a freshness prompt on /team-drive.
+  Claimed assignees will see ⚡ on dashboard
+  and a freshness prompt on `/team-drive`.
 ────────────────────────────────────────────
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -517,19 +499,18 @@ and a freshness prompt on /team-drive.
 gh issue view {issue} --repo "$REPO" --json number,title,body,labels,assignees,milestone,state
 ```
 
-- If Issue not found → "Issue #{issue} not found." → **STOP**
-- If Issue is closed → "Issue #{issue} is closed. Reopen it first." → **STOP**
+- If Issue not found → "**ERROR:** Issue **#{issue}** not found." → **STOP**
+- If Issue is closed → "**ERROR:** Issue **#{issue}** is closed. Reopen it first." → **STOP**
 
 Display current Issue:
-```
-🔍 ADOPT CANDIDATE ── #{issue} {title} ─────
-Assignee:   @{assignee or "unassigned"}
-Labels:     {current labels or "none"}
-Milestone:  {milestone or "—"}
+
+🔍 **ADOPT CANDIDATE** ── **#{issue}** {title} ─────
+  **Assignee**   @{assignee or "unassigned"}
+  **Labels**     `{current labels}` or "none"
+  **Milestone**  `{milestone}` or "—"
 ────────────────────────────────────────────
 {current body (first 20 lines)}
 ────────────────────────────────────────────
-```
 
 ### A2: Check existing labels
 
@@ -539,7 +520,7 @@ Check which teamwork labels are already present:
 - Has `${PRIORITY_PREFIX}*`? (e.g., `priority:P2`)
 - Has `size:*`?
 
-If ALL teamwork labels already present → "Issue #{issue} is already in teamwork." → **STOP**
+If ALL teamwork labels already present → "**ERROR:** Issue **#{issue}** is already in teamwork." → **STOP**
 
 ### A3: Determine missing metadata
 
@@ -550,21 +531,19 @@ If ALL teamwork labels already present → "Issue #{issue} is already in teamwor
 
 ### A4: Preview
 
-```
-🔍 ADOPT PREVIEW ── #{issue} {title} ───────
-Assignee:  @{assignee or "unassigned"}
+🔍 **ADOPT PREVIEW** ── **#{issue}** {title} ───────
+  **Assignee**  @{assignee or "unassigned"}
 
-🏷️ LABELS TO ADD
-  + {MISSION_LABEL}
-  + {STATUS_PREFIX}{status}
-  + {PRIORITY_PREFIX}{priority}
-  + size:{size}
+  🏷️ **LABELS TO ADD**
+    + `{MISSION_LABEL}`
+    + `{STATUS_PREFIX}{status}`
+    + `{PRIORITY_PREFIX}{priority}`
+    + `size:{size}`
 
-{If milestone not set and CURRENT_VERSION exists:}
-Milestone: {CURRENT_VERSION} (from config)
-Reformat:  {yes — MC structure | no — as-is}
+  {If milestone not set and CURRENT_VERSION exists:}
+  **Milestone** `{CURRENT_VERSION}` (from config)
+  **Reformat**  {yes — MC structure | no — as-is}
 ────────────────────────────────────────────
-```
 
 Use `AskUserQuestion`:
 - "Fix as-is" → add labels only, keep body unchanged
@@ -604,17 +583,15 @@ gh issue edit {issue} --repo "$REPO" --body "{reformatted body}"
 
 ### A7: Output
 
-```
-✅ ADOPTED ── #{issue} {title} ──────────────
-Assignee:   @{assignee or "unassigned"}
-Labels:     {all labels}
-Milestone:  {milestone or "—"}
+✅ **ADOPTED** ── **#{issue}** {title} ──────────────
+  **Assignee**   @{assignee or "unassigned"}
+  **Labels**     `{all labels}`
+  **Milestone**  `{milestone}` or "—"
 
 ────────────────────────────────────────────
-/team-claim #{issue} to generate Contract + branch
+`/team-claim` **#{issue}** to generate Contract + branch
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -648,7 +625,7 @@ MILESTONE_URL=$(gh api "repos/$REPO/milestones" --method POST \
   --jq '.html_url' 2>/dev/null)
 ```
 
-If milestone already exists → warn "Milestone '$MILESTONE_TITLE' already exists" but continue (use existing).
+If milestone already exists → warn "⚠️ **WARNING:** Milestone `$MILESTONE_TITLE` already exists" but continue (use existing).
 
 ```bash
 # Resolve short name to full milestone title (prefix match)
@@ -669,18 +646,16 @@ For each MC entry:
 
 ### B4: Preview Before Publishing
 
-```
-🏁 MILESTONE + MC PREVIEW
-═══════════════════════════════════════
-Milestone: {title}
-Description: {desc}
-MCs to create: {count}
+🏁 **MILESTONE + MC PREVIEW**
+────────────────────────────────────────────
+  **Milestone**    `{title}`
+  **Description**  {desc}
+  **MCs to create** `{count}`
 
   {priority_dot} MC1: {title} → @{assignee}
   {priority_dot} MC2: {title} → @{assignee}
   {priority_dot} MC3: {title} → @{assignee}
-═══════════════════════════════════════
-```
+────────────────────────────────────────────
 
 Use `AskUserQuestion`: "Publish all / Edit / Cancel"
 
@@ -726,39 +701,38 @@ bash ~/.claude/commands/scripts/tw-notify.sh mc.created \
 
 ### B7: Output
 
-```
-🏁 MILESTONE ── {title} ────────────────────
-URL:  {milestone_url}
-MCs:  {count} created
+🏁 **MILESTONE** ── {title} ────────────────────
+  **URL**  `{milestone_url}`
+  **MCs**  `{count}` created
 
-  #{N1}  {title1}  @{assignee1}
-  #{N2}  {title2}  @{assignee2}
-{If notifications:} Notified: {channels}
+  **#{N1}**  {title1}  @{assignee1}
+  **#{N2}**  {title2}  @{assignee2}
+  {If notifications:} **Notified** {channels}
 
 ────────────────────────────────────────────
-/team-claim #{N} to start working
+`/team-claim` **#{N}** to start working
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 If milestone-only (no MCs):
-```
-🏁 MILESTONE ── {title} ────────────────────
-URL:  {milestone_url}
+
+🏁 **MILESTONE** ── {title} ────────────────────
+  **URL**  `{milestone_url}`
 
 ────────────────────────────────────────────
-/team-issue <desc> @user --milestone {title}
+`/team-issue <desc> @user --milestone {title}`
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
-```
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
 ## Error Handling
 
-- Empty description → "Please provide a description. Example: `/team-issue camera not working on Safari`" → **STOP**
-- GitHub API error → "Failed to create Issue. Check `gh auth status`." → **STOP**
-- Label not found → create Issue without that label, warn "Labels missing. Run `/team init` to set up project labels."
+- Empty description → "**ERROR:** Please provide a description. Example: `/team-issue camera not working on Safari`" → **STOP**
+- GitHub API error → "**ERROR:** Failed to create Issue. Check `gh auth status`." → **STOP**
+- Label not found → create Issue without that label, warn "⚠️ **WARNING:** Labels missing. Run `/team init` to set up project labels."
 - No assignee (team mode) → AskUserQuestion to select from members list
-- Assignee not in config → "Member '@{mention}' not found. Available: {list}" → **STOP**
+- Assignee not in config → "**ERROR:** Member '@{mention}' not found. Available: {list}" → **STOP**
 - Notification fails → warn but continue (non-fatal)
+
+**On any STOP:** Always append "💡 Something wrong? Run `/team doctor` to diagnose."

@@ -20,25 +20,23 @@ version: "3.7.0"
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
-```
-/team-claim — Claim an assigned GitHub Issue as your mission
+**`/team-claim`** — Claim an assigned GitHub Issue as your mission
 
-USAGE:
-  /team-claim           Show your assigned Issues and pick one
-  /team-claim #42       Claim specific assigned Issue
-  /team-claim list      Browse your assigned missions
+**USAGE**
+  `/team-claim`           Show your assigned Issues and pick one
+  `/team-claim #42`       Claim specific assigned Issue
+  `/team-claim list`      Browse your assigned missions
 
-WHAT HAPPENS:
-  1. Fetches Issue from GitHub
-  2. Generates AI-enriched Mission Contract (.teamwork/active/MISSION-N.md)
+**WHAT HAPPENS**
+  `1.` Fetches Issue from GitHub
+  `2.` Generates AI-enriched Mission Contract (`.teamwork/active/MISSION-N.md`)
      — scans project to discover relevant files (Context Files)
-  3. Creates branch: mission/{issue}-{slug}-{user}
-  4. Posts claim comment on GitHub
+  `3.` Creates branch: *mission/{issue}-{slug}-{user}*
+  `4.` Posts claim comment on GitHub
 
-NOTE: Issues are assigned via /team-issue (any team member can create and assign).
+NOTE: Issues are assigned via `/team-issue` (any team member can create and assign).
 
-NEXT: /team-drive to start executing
-```
+NEXT: `/team-drive` to start executing
 
 ---
 
@@ -61,7 +59,7 @@ TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/nu
 }
 ```
 
-- If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
+- If no config → "**ERROR:** Teamwork not initialized. Run `/team` first." → **STOP**
 
 Read `$TEAMWORK_DIR/config.yml` → extract team roster, conventions, project settings.
 
@@ -71,7 +69,7 @@ eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)
 ```
 
 Verify `GH_USER` is in the team roster (check both `team:` and `members:` sections).
-If not → "You ({GH_USER}) are not in the team roster. Run `/team init` to re-initialize and add yourself." → **STOP**
+If not → "**ERROR:** You (`{GH_USER}`) are not in the team roster. Run `/team init` to re-initialize and add yourself." → **STOP**
 
 ---
 
@@ -88,11 +86,11 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "fal
 ```
 
 **If worktree DISABLED (default):** If any Contract exists → read it, display the active mission info.
-- "You already have an active mission: #{issue} — {title}. Complete it with `/team-ship` first. To abandon: `rm $TEAMWORK_DIR/active/MISSION-{issue}.md` (you can re-claim the Issue later with `/team-claim`)."
+- "You already have an active mission: **#{issue}** — {title}. Complete it with `/team-ship` first. To abandon: `rm $TEAMWORK_DIR/active/MISSION-{issue}.md` (you can re-claim the Issue later with `/team-claim`)."
 - **STOP** (enforce one-at-a-time rule)
 
 **If worktree ENABLED:** Allow multiple active Contracts. Each mission gets its own worktree directory, so parallel work is safe.
-- If any Contract exists → display it as info: "Active mission(s): #{issue} — {title}. Worktree mode: parallel claiming allowed."
+- If any Contract exists → display it as info: "Active mission(s): **#{issue}** — {title}. Worktree mode: parallel claiming allowed."
 - Continue to Step 2 (do NOT stop).
 
 ---
@@ -108,12 +106,11 @@ gh issue list --label "$MISSION_LABEL" --state open --assignee "$GH_USER" --json
 Show Issues assigned to the current user.
 
 Format as numbered list:
-```
-Your assigned missions:
-  🟠 1. #42 Add user authentication
-  🟠 2. #45 Add rate limiting
-  🟡 3. #47 Write API docs
-```
+
+**Your assigned missions:**
+  🟠 `1.` **#042** Add user authentication
+  🟠 `2.` **#045** Add rate limiting
+  🟡 `3.` **#047** Write API docs
 
 If none → "No missions assigned to you. Ask your team lead to assign one via `/team-issue`." → **STOP**
 
@@ -309,50 +306,50 @@ Non-fatal: if comment fails, warn but continue.
 
 Display a formatted briefing:
 
-```
-📋 CLAIMED ── #{issue} {title} ─────────────
-{priority_dot}  {priority}  Branch: {branch}
-Contract:  $TEAMWORK_DIR/active/MISSION-{issue}.md
-{If worktree:} Worktree:  {path}
+**CLAIMED** ──── **#{issue}** {title} ────────────
+{priority_dot}  `{priority}`  Branch: *{branch}*
+Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
+{If worktree:} Worktree:  `{path}`
 
-🎯 OBJECTIVE
+**OBJECTIVE**
   {objective summary}
 
-📋 SUB-TASKS
+**SUB-TASKS**
   [ ] {task 1}
   [ ] {task 2}
   [ ] ...
 
-✅ ACCEPTANCE CRITERIA
+**ACCEPTANCE CRITERIA**
   {criteria}
 
-📁 CONTEXT FILES
+**CONTEXT FILES**
   {list of relevant files}
 
 ────────────────────────────────────────────
 {If worktree:}
-⚡ NEXT STEP (worktree mode):
+**NEXT STEP** (worktree mode):
   Open a NEW terminal tab and run:
-    cd {worktree_path} && claude
-  Then: /team-drive to execute │ /team-ship when done
+    `cd {worktree_path} && claude`
+  Then: `/team-drive` to execute │ `/team-ship` when done
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
+*TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}*
 
-  ⚠ Do NOT run /team-drive in this terminal — it will
+  ⚠ Do NOT run `/team-drive` in this terminal — it will
   operate on the wrong working directory.
 {If not worktree:}
-/team-drive to execute │ /team-ship when done
-```
+`/team-drive` to execute │ `/team-ship` when done
 
 ---
 
 ## Error Handling
 
-- Issue not found → "Issue #{issue} not found. Check the number." → **STOP**
+- Issue not found → "**ERROR:** Issue **#{issue}** not found. Check the number." → **STOP**
 - Issue already assigned to someone else → warn but allow claiming (team member may be handing off)
-- Issue is closed → "Issue #{issue} is already closed." → **STOP**
+- Issue is closed → "**ERROR:** Issue **#{issue}** is already closed." → **STOP**
 - Branch already exists:
   - Check if corresponding Issue is still OPEN (via `gh issue view {issue} --json state --jq '.state'`)
-  - If Issue is CLOSED → warn: "⚠ Branch exists but Issue #{issue} is closed. This is an orphan branch. Run `/team doctor fix` to clean up, then `/team-claim` again." → **STOP**
-  - If Issue is OPEN → "Branch {name} already exists. Switching to it." → `git checkout {branch}`
-- Network errors → "GitHub API error. Check your connection and `gh auth status`." → **STOP**
+  - If Issue is CLOSED → warn: "⚠ Branch exists but Issue **#{issue}** is closed. This is an orphan branch. Run `/team doctor fix` to clean up, then `/team-claim` again." → **STOP**
+  - If Issue is OPEN → "Branch *{name}* already exists. Switching to it." → `git checkout {branch}`
+- Network errors → "**ERROR:** GitHub API error. Check your connection and `gh auth status`." → **STOP**
+
+**On any STOP:** Always append "Something wrong? Run `/team doctor` to diagnose."
