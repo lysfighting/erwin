@@ -1,11 +1,14 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.7.0"
+version: "3.7.1"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
 
 > GitHub-first team coordination. Push-based task assignment with role-based permissions.
+
+**Visual Encoding** (apply to ALL output — see `docs/visual-encoding-standard.md`):
+`**bold**` → headers/labels (white) · `` `backtick` `` → commands/paths/counts (purple-blue) · `*italic*` → branches (dim) · `**#NNN**` → issues (light-blue clickable, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
 
 **User input**: $ARGUMENTS
 
@@ -53,9 +56,9 @@ Read `skill_version` from config for the header:
 ```bash
 TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || TEAMWORK_DIR=""
 if [ -n "$TEAMWORK_DIR" ]; then
-  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.7.0" 2>/dev/null)
+  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.7.1" 2>/dev/null)
 else
-  SKILL_VERSION="3.7.0"
+  SKILL_VERSION="3.7.1"
 fi
 ```
 
@@ -131,9 +134,9 @@ Read `skill_version` from config for the header:
 ```bash
 TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || TEAMWORK_DIR=""
 if [ -n "$TEAMWORK_DIR" ]; then
-  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.7.0" 2>/dev/null)
+  SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.7.1" 2>/dev/null)
 else
-  SKILL_VERSION="3.7.0"
+  SKILL_VERSION="3.7.1"
 fi
 ```
 
@@ -459,7 +462,7 @@ Every `/team-*` command shows a random tip after output:
   │ ────────────────────────────────────────────             │
   │ /team-ship done (after merge) │ /team-ship review       │
   │                                                         │
-  │ 💡 TIP: /team auto #N — 一键 claim→drive→ship          │
+  │ 💡 Tip: /team auto #N — 一键 claim→drive→ship          │
   └─────────────────────────────────────────────────────────┘
 ```
 
@@ -916,8 +919,8 @@ Preserve all existing content. Only update `skill_version` and append missing to
 
 ```bash
 # Update skill_version line without touching anything else
-sed -i '' "s/^skill_version:.*/skill_version: 3.7.0/" $TEAMWORK_DIR/config.yml
-# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.7.0/" $TEAMWORK_DIR/config.yml
+sed -i '' "s/^skill_version:.*/skill_version: 3.7.1/" $TEAMWORK_DIR/config.yml
+# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.7.1/" $TEAMWORK_DIR/config.yml
 
 # Update schema_version if present
 if grep -q "^schema_version:" $TEAMWORK_DIR/config.yml; then
@@ -1150,7 +1153,7 @@ fi
 Read `SKILL_VERSION` from the config file AFTER the sed update in Step 1 (to get the updated value):
 
 ```bash
-SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.7.0" 2>/dev/null)
+SKILL_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh skill_version "3.7.1" 2>/dev/null)
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
@@ -1176,7 +1179,7 @@ Write full config based on detected project info + user answers:
 
 ```yaml
 schema_version: 3
-skill_version: 3.7.0
+skill_version: 3.7.1
 
 roles:
   - id: leader
@@ -1818,7 +1821,7 @@ git push
 
 Output: "Teamwork initialized! Next: create Issues using the Mission template, then `/team-claim` to start working.
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}"
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}"
 
 ---
 
@@ -1964,20 +1967,9 @@ Output a formatted dashboard based on user's role level.
 
 #### Solo / Leader Dashboard
 
-**⚠️ FORMATTING — The dashboard MUST have colored text. Follow these rules EXACTLY:**
+**⚠️ FORMATTING** — Apply Visual Encoding Standard (see header). ⛔ NO code blocks, `- ` lists, or `### ` headers anywhere in output. **⛔ BEFORE YOU OUTPUT: mentally check each line — every command/path needs backticks, every issue number needs `**#NNN**` bold.**
 
-⛔ NEVER use code blocks (triple backticks) ANYWHERE — they kill ALL color.
-⛔ NEVER use `- ` list items or `### ` headers.
-
-**Color rules** — four markdown tools. Apply to EVERY line of output:
-1. `**bold**` → section headers become white bold
-2. `` `backticks` `` → commands and paths become purple-blue. EVERY `/slash-command`, `rm`, `cd`, `git checkout`, and EVERY file path like `~/...` or `.teamwork/...` MUST be wrapped in backticks.
-3. `*italic*` → branch names and secondary info become dim
-4. `**#NNN**` → wrap issue numbers in bold for light-blue clickable links (bold + auto-link = bright blue in terminal)
-
-**⛔ BEFORE YOU OUTPUT: mentally check each line. If a line contains a command or path without backticks, FIX IT.**
-
-Output the ENTIRE dashboard as plain markdown text (no code blocks anywhere):
+Output the ENTIRE dashboard as plain markdown text:
 
 ⚠️ **ACTION NEEDED**
   Orphan contract: issue **#{N}** is CLOSED. Run: `/team doctor fix`
@@ -2031,7 +2023,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 `/team help` · `/team doctor` · `/team #N` · `/team config`
 `/team-claim` · `/team-drive` · `/team-ship` · `/team-rc`
 
-💡 **TIP:** {random tip — commands in backticks, e.g.: `/team auto` **#N** — 一键 claim→drive→ship}
+💡 **Tip:** {random tip — commands in backticks, e.g.: `/team auto` **#N** — 一键 claim→drive→ship}
 
 **NEXT suggestion logic** — pick FIRST match (output commands in backticks):
 
@@ -2092,18 +2084,7 @@ Skills should NEVER suggest raw git/rm/shell commands as remediation. Instead, a
 
 #### Member Dashboard
 
-**⚠️ FORMATTING — The dashboard MUST have colored text. Follow these rules EXACTLY:**
-
-⛔ NEVER use code blocks (triple backticks) ANYWHERE — they kill ALL color.
-⛔ NEVER use `- ` list items or `### ` headers.
-
-**Color rules** — four markdown tools. Apply to EVERY line of output:
-1. `**bold**` → section headers become white bold
-2. `` `backticks` `` → commands and paths become purple-blue. EVERY `/slash-command`, `rm`, `cd`, `git checkout`, and EVERY file path like `~/...` or `.teamwork/...` MUST be wrapped in backticks.
-3. `*italic*` → branch names and secondary info become dim
-4. `**#NNN**` → wrap issue numbers in bold for light-blue clickable links (bold + auto-link = bright blue in terminal)
-
-**⛔ BEFORE YOU OUTPUT: mentally check each line. If a line contains a command or path without backticks, FIX IT.**
+**⚠️ FORMATTING** — Apply Visual Encoding Standard (see header). ⛔ NO code blocks, `- ` lists, or `### ` headers anywhere in output. **⛔ BEFORE YOU OUTPUT: mentally check each line — every command/path needs backticks, every issue number needs `**#NNN**` bold.**
 
 Focus on user's own work, then team summary below `────`.
 
@@ -2161,7 +2142,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 `/team help` · `/team doctor` · `/team #N` · `/team config`
 `/team-claim` · `/team-drive` · `/team-ship` · `/team-rc`
 
-💡 **TIP:** {random tip — commands in backticks, e.g.: `/team auto` **#N** — 一键 claim→drive→ship}
+💡 **Tip:** {random tip — commands in backticks, e.g.: `/team auto` **#N** — 一键 claim→drive→ship}
 
 {Use same NEXT suggestion logic as Leader Dashboard}
 
@@ -2425,7 +2406,7 @@ D. ORPHAN CONTRACTS
      1. Extract issue number from filename
      2. Check if corresponding GitHub issue is still open
      3. If issue closed but contract still exists → 🟡 WARNING
-     Action: `/team doctor fix` (or manually rm $TEAMWORK_DIR/active/MISSION-N.md)
+     Action: `/team doctor fix`
 ```
 
 Heuristics for duplicate detection (LLM judgment):
@@ -3606,7 +3587,7 @@ Then **STOP**.
 
 **How**: Read `~/.claude/commands/scripts/tw-tips.txt`. Pick one line at random (skip `#` comments). Display as plain markdown text (⛔ NOT in a code block):
 
-💡 **TIP:** {selected tip text — wrap any commands in backticks for color, e.g. `/team-claim`, `cd`}
+💡 **Tip:** {selected tip text — wrap any commands in backticks for color, e.g. `/team-claim`, `cd`}
 
 **Rules:**
 - One tip per invocation, randomly selected

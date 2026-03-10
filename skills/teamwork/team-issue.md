@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "3.7.0"
+version: "3.7.1"
 ---
 
 # /team-issue — Mission Contract Issue Manager
@@ -27,7 +27,7 @@ version: "3.7.0"
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
-**`/team-issue` — Mission Contract Issue Manager** (`v3.7.0`)
+**`/team-issue` — Mission Contract Issue Manager** (`v3.7.1`)
 
 **USAGE**
   `/team-issue <description>`                    Create MC (solo: self-assign; team: prompt)
@@ -347,7 +347,7 @@ Non-fatal: if notification fails, warn but continue.
 ────────────────────────────────────────────
 `/team-claim` **#{issue}** to generate Contract + branch
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -383,7 +383,7 @@ gh pr list --repo "$REPO" --search "Closes #$N" --state all --json number,url,st
 🔀 **RELATED PRs**  {list or "(none)"}
 ────────────────────────────────────────────
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -404,7 +404,7 @@ Output:
   **URL** `{comment URL}`
 ────────────────────────────────────────────
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -488,7 +488,7 @@ gh issue edit {issue} --repo "$REPO" \
   and a freshness prompt on `/team-drive`.
 ────────────────────────────────────────────
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -594,7 +594,7 @@ gh issue edit {issue} --repo "$REPO" --body "{reformatted body}"
 ────────────────────────────────────────────
 `/team-claim` **#{issue}** to generate Contract + branch
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -715,7 +715,7 @@ bash ~/.claude/commands/scripts/tw-notify.sh mc.created \
 ────────────────────────────────────────────
 `/team-claim` **#{N}** to start working
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 If milestone-only (no MCs):
 
@@ -725,7 +725,7 @@ If milestone-only (no MCs):
 ────────────────────────────────────────────
 `/team-issue <desc> @user --milestone {title}`
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 

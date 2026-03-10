@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.7.0"
+version: "3.7.1"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -29,7 +29,7 @@ Parse `$ARGUMENTS`:
 
 - If `help` or `-h` → output the following and **STOP**:
 
-**`/team-rc` — Release Candidate Lifecycle** (Teamwork `v3.7.0`)
+**`/team-rc` — Release Candidate Lifecycle** (Teamwork `v3.7.1`)
 *Author: liyasong + casey | 2026-03-05*
 
 **USAGE**
@@ -173,7 +173,7 @@ Staging:  {triggered / deploy manually}
 
 ────────────────────────────────────────────
 
-TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -411,7 +411,7 @@ Cherry-pick any rc hotfixes to *{BASE_BRANCH}* if not done.
 ────────────────────────────────────────────
 `/team-rc` to prepare next RC
 
-TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 

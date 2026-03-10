@@ -32,7 +32,7 @@ erwin/
 │   ├── erwin-init/         ← /erwin-init skill (v1.0.0)
 │   ├── visual-test/        ← /visual-test skill (v1.0.0)
 │   ├── session-record/     ← /session-record skill (v1.0.0)
-│   └── teamwork/           ← /team, /team-issue, /team-claim, /team-drive, /team-ship, /team-rc (v3.7.0)
+│   └── teamwork/           ← /team, /team-issue, /team-claim, /team-drive, /team-ship, /team-rc (v3.7.1)
 │
 ├── _project/               ← Project Intelligence Layer
 │   ├── GOALS.md            ← Vision + OKRs (read when you lose direction)

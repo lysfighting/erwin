@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "3.7.0"
+version: "3.7.1"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -335,14 +335,14 @@ Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
     `cd {worktree_path} && claude`
   Then: `/team-drive` to execute │ `/team-ship` when done
 
-*TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}*
+*💡 Tip: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}*
 
   ⚠ Do NOT run `/team-drive` in this terminal — it will
   operate on the wrong working directory.
 {If not worktree:}
 `/team-drive` to execute │ `/team-ship` when done
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 

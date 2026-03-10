@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.7.0"
+version: "3.7.1"
 ---
 
 # /team-drive — Execute Mission
@@ -63,7 +63,20 @@ TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/nu
 
 - If no config → "Teamwork not initialized. Run `/team` first." → **STOP**
 - If in worktree mode (`WORKTREE_MODE=true`) → no branch switching needed in Step 1.
-- **Worktree note**: Contract should be in `$TEAMWORK_DIR/active/` within the worktree (copied during `/team-claim`). If not found but `.mission` exists, look for the Contract in the main repo parent directory as fallback.
+- **Worktree note**: Contract should be in `$TEAMWORK_DIR/active/` within the worktree (copied during `/team-claim`). If not found but `.mission` exists, look for the Contract in the main repo parent directory as fallback:
+
+```bash
+if [ "$WORKTREE_MODE" = true ] && ! ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null | head -1 >/dev/null; then
+  PARENT_REPO=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's|/\.git$||')
+  if [ -n "$PARENT_REPO" ] && [ -d "$PARENT_REPO/.teamwork/active" ]; then
+    PARENT_CONTRACT=$(ls "$PARENT_REPO/.teamwork/active/MISSION-${MISSION_ISSUE}.md" 2>/dev/null || true)
+    if [ -n "$PARENT_CONTRACT" ]; then
+      cp "$PARENT_CONTRACT" "$TEAMWORK_DIR/active/"
+      echo "Recovered Contract from main repo: $PARENT_CONTRACT"
+    fi
+  fi
+fi
+```
 
 ```bash
 ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
@@ -75,8 +88,8 @@ ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 # Check if there's a mission branch with an open Issue (recoverable state)
 CURRENT_BRANCH=$(git branch --show-current)
 if [[ "$CURRENT_BRANCH" == mission/* ]]; then
-  # Extract issue number from branch name
-  ISSUE_NUM=$(echo "$CURRENT_BRANCH" | grep -oE '[0-9]+' | head -1)
+  # Extract issue number from branch name (strip "mission/" prefix, then take leading digits)
+  ISSUE_NUM=$(echo "${CURRENT_BRANCH#mission/}" | grep -oE '^[0-9]+')
   if [ -n "$ISSUE_NUM" ]; then
     ISSUE_STATE=$(gh issue view "$ISSUE_NUM" --json state --jq '.state' 2>/dev/null)
     if [ "$ISSUE_STATE" = "OPEN" ]; then
@@ -115,10 +128,10 @@ CONTRACT_PATH="$TEAMWORK_DIR/active/MISSION-{issue}.md"
 FRESHNESS=$(bash ~/.claude/commands/scripts/tw-contract.sh check-freshness "$CONTRACT_PATH" {issue} 2>/dev/null) || true
 ```
 
-- Exit 0 + "FRESH" → Issue unchanged, continue
-- Exit 0 + "NETWORK_ERROR" → warn "Could not check Issue freshness (network error). Continuing with existing Contract." → **continue** (non-fatal)
-- Exit 2 + "NO_HASH" → legacy Contract without hash, skip check, continue
-- Exit 1 + "STALE" → Issue modified since claim:
+- "FRESH" (exit 0) → Issue unchanged, continue
+- "NETWORK_ERROR" (exit 4) → warn "Could not check Issue freshness (network error). Continuing with existing Contract." → **continue** (non-fatal)
+- "NO_HASH" (exit 2) → legacy Contract without hash, skip check, continue
+- "STALE" (exit 1) → Issue modified since claim:
 
 If `FRESHNESS` is `STALE`:
 
@@ -883,7 +896,7 @@ Tests:    ✅ passing
 ────────────────────────────────────────────
 `/team-ship` to create PR
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
+💡 Tip: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 
 ### If manual tasks exist — Manual Ops Handoff:
 
@@ -928,7 +941,7 @@ After user responds, output the full acceptance criteria block and the `/team-sh
 ────────────────────────────────────────────
 `/team-ship` to create PR
 
-💡 TIP: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
+💡 Tip: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
 
 ### Post-Mission Ecosystem Scan (2-3 min)
 

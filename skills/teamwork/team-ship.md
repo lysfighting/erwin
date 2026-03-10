@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.7.0"
+version: "3.7.1"
 ---
 
 # /team-ship — Deliver Mission
@@ -455,7 +455,7 @@ Labels:    {actual current labels}
 ────────────────────────────────────────────
 `/team-ship done` (after merge) │ `/team-ship review` │ `/team`
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -575,7 +575,7 @@ Branch:    *{BASE_BRANCH}*
 ────────────────────────────────────────────
 `/team-claim` (next mission) │ `/team` (dashboard)
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
@@ -637,7 +637,7 @@ Output:
 Review published on PR **#{pr}**: {approve/request-changes/comment}
 After merge: `/team-ship done` │ Address comments: push more commits
 
-💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 

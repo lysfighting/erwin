@@ -2,6 +2,8 @@
 
 > From zero to first PR in 10 minutes.
 
+**Visual Encoding**: All example output in this guide follows `docs/visual-encoding-standard.md`.
+
 ---
 
 ## What You'll Learn
@@ -66,7 +68,7 @@ Then run:
 **After setup, running `/team` again shows the team dashboard:**
 
 **MY DASHBOARD** — your-org/your-project ──────────────────
-Teamwork v3.7.0 · **V1.0**  `████████░░`  30%  `3`/`10`
+Teamwork v3.7.1 · **V1.0**  `████████░░`  30%  `3`/`10`
 
 👥 **TEAM** (2 members)
   alice (tech-lead)
@@ -338,7 +340,7 @@ After `/team` init, your `.teamwork/config.yml` looks like:
 
 ```yaml
 schema_version: 3
-skill_version: 3.7.0
+skill_version: 3.7.1
 
 team:
   - github: alice

@@ -1,6 +1,6 @@
 # Teamwork — The Complete Manual
 
-> **Version 3.7.0** | Author: liyasong + casey | 2026-03-09
+> **Version 3.7.1** | Author: liyasong + casey | 2026-03-09
 >
 > AI-Native Team Coordination for GitHub.
 > For humans and AI agents. Covers WHY, HOW, and the philosophy behind every decision.
@@ -367,7 +367,7 @@ feat/E:                          D ── (your work) ──
 | | `/team config` | View current config + edit instructions |
 | | `/team queue` | All open missions sorted by priority |
 | | `/team #42` | MC detail view (branch, commits, PRs, criteria) |
-| | `/team doctor` | Local git + issue health diagnostics (11 checks, 3-layer report) |
+| | `/team doctor` | Local git + issue health diagnostics (12 checks, 3-layer report) |
 | | `/team doctor fix` | Interactive fix mode — auto-execute cleanup, confirm warnings |
 | | `/team doctor help` | Self-contained doctor usage guide |
 | | `/team wrap` | Retroactive closure: code-first → auto-create issue + PR |
@@ -1165,7 +1165,7 @@ Evidence from v2.6.1 falsification audit:
 # Schema version 3
 
 schema_version: 3
-skill_version: 3.7.0
+skill_version: 3.7.1
 
 # Team metadata
 team:

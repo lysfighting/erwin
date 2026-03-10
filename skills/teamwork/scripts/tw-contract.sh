@@ -14,6 +14,7 @@
 #   1 — stale (for check-freshness) or error
 #   2 — no hash in contract (for check-freshness)
 #   3 — not found
+#   4 — network error (for check-freshness, non-fatal)
 
 set -euo pipefail
 
@@ -101,7 +102,7 @@ cmd_check_freshness() {
   local issue_data
   issue_data=$(gh issue view "$issue" --json title,body 2>/dev/null) || {
     echo "NETWORK_ERROR"
-    exit 0  # Non-fatal
+    exit 4  # Non-fatal, distinct from FRESH (exit 0)
   }
 
   local title body current_hash
@@ -128,7 +129,7 @@ cmd_toggle_task() {
   local timestamp
   timestamp=$(date '+%H:%M')
 
-  python3 -c "
+  if ! python3 -c "
 import sys
 path, n, ts = sys.argv[1], int(sys.argv[2]), sys.argv[3]
 with open(path) as f:
@@ -148,7 +149,10 @@ if not found:
 with open(path, 'w') as f:
     f.writelines(lines)
 print(f'Task {n} checked off at {ts}')
-" "$path" "$n" "$timestamp"
+" "$path" "$n" "$timestamp"; then
+    echo "ERROR: Failed to update Contract at $path (task $n)" >&2
+    exit 1
+  fi
 }
 
 cmd_sync_checkbox() {

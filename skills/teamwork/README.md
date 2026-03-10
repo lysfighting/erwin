@@ -2,6 +2,8 @@
 
 GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are quality gates.
 
+**Visual Encoding**: All skill output follows `docs/visual-encoding-standard.md`.
+
 ## Skills
 
 | Skill | Purpose | When to Use |
@@ -111,5 +113,5 @@ Scripts in `scripts/` not called by skills directly — used for maintenance:
 
 ## Version
 
-- Skill version: 3.7.0
+- Skill version: 3.7.1
 - Config schema: 3
