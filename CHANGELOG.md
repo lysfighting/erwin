@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Skills Factory
+- **Teamwork v3.7.1 — Visual Encoding Standard + audit sweep + doctor expansion**:
+  - `docs/visual-encoding-standard.md`: single source of truth for color design language (6 semantic roles, 3 blue-family colors, DO/DON'T rules, rendering pipeline reference)
+  - 5-scout comprehensive audit: 11 issues found and fixed (visual encoding violations, raw `rm` suggestions, missing tips/next-step, stale docs)
+  - ONBOARDING.md modernized: all code-block examples → visual-encoding-compliant formatted markdown + Advanced Features section
+  - Visual Encoding reference embedded in all 5 sub-skill file headers (drift prevention)
+  - Doctor expanded from 8 → 11 checks: GitHub auth, Contract freshness (hash comparison), test suite health
+  - Teamwork manual: Visual Encoding section expanded with markdown formatting rules + link to spec doc
 - **Teamwork v3.7.0 — Smart sync: dashboard behind-detection + AI conflict resolution**:
   - Dashboard PR lines show `⚠️ N behind {base}` when branch is behind base branch
   - NEXT box prioritizes sync recommendation when PR is behind
