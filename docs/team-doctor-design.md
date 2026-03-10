@@ -17,7 +17,7 @@ When running multiple MCs in parallel, local git state accumulates entropy:
 
 The drive session on 2026-03-06 (vi_agent) demonstrated this exact scenario — took 15 minutes of manual detective work that could be systematized.
 
-**Design principle**: Report-first. Doctor outputs a visual health report (snapshot tables + cross-referencing diagnosis + prioritized action plan). User decides what to act on. Future extension: interactive fix mode (`/team doctor --fix`).
+**Design principle**: Report-first. Doctor outputs a visual health report (snapshot tables + cross-referencing diagnosis + prioritized action plan). User decides what to act on. Interactive fix mode shipped in v3.5.0 as `/team doctor fix`.
 
 ---
 

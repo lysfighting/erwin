@@ -735,4 +735,4 @@ If milestone-only (no MCs):
 - Assignee not in config → "**ERROR:** Member '@{mention}' not found. Available: {list}" → **STOP**
 - Notification fails → warn but continue (non-fatal)
 
-**On any STOP:** Always append "💡 Something wrong? Run `/team doctor` to diagnose."
+**On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.

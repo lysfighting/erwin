@@ -98,6 +98,7 @@ See `docs/drive-showcase-v2-architecture.md`. Four-Act structure:
 | Skill ideas pipeline | `_project/ideas/skills/` |
 | Released skills | `skills/` |
 | Teamwork manual | `docs/teamwork-ai-manual.md` |
+| Visual encoding standard | `docs/visual-encoding-standard.md` |
 | Docs index | `docs/README.md` |
 | drive-skill source | `reference/drive-skill/commands/drive.md` |
 | React app root | `showcase/src/App.tsx` |

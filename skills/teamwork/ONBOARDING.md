@@ -8,9 +8,7 @@
 
 This guide walks you through the full teamwork cycle:
 
-```
-/team (setup) → /team-claim (pick task) → /team-drive (execute) → /team-ship (deliver PR)
-```
+`/team` (setup) → `/team-claim` (pick task) → `/team-drive` (execute) → `/team-ship` (deliver PR)
 
 By the end, you'll have:
 - A configured teamwork system in your project
@@ -67,28 +65,26 @@ Then run:
 
 **After setup, running `/team` again shows the team dashboard:**
 
-```
-TEAM DASHBOARD — your-org/your-project
-Milestone: v1.0 (3/10 = 30%)
-════════════════════════════════════════════
+**MY DASHBOARD** — your-org/your-project ──────────────────
+Teamwork v3.7.0 · **V1.0**  `████████░░`  30%  `3`/`10`
 
+👥 **TEAM** (2 members)
   alice (tech-lead)
-     Working on: #42 Add user authentication [P1]
-     PR: #45 — CI passing ✅
-
+    🟢 **#042** Add user authentication 🟠 P1 → *wip*
+    *mission/042-add-user-auth-alice* → `/team-ship`
+    🔀 **#045** — ✅
   bob (backend)
-     Idle (last merged: #38)
+    ⚪ *(idle)*
 
-QUEUED:
-     #47 Add rate limiting [P1]
-     #49 Write API docs [P2]
+📋 **Unassigned** (2)
+  🟠 P1 **#047**  Add rate limiting
+  🟡 P2 **#049**  Write API docs
 
-MERGE COUNT:
-  alice: 12 | bob: 8
+📊 **Merges**  alice: `12` · bob: `8`
 
-════════════════════════════════════════════
-Commands: /team-claim #47 | /team-drive | /team-ship
-```
+💡 **Next:** `/team-claim` **#047** to start
+
+`/team help` · `/team doctor` · `/team #N` · `/team config`
 
 ---
 
@@ -139,34 +135,29 @@ Or browse available missions:
    - **Context Files**: scans your project to find files relevant to this mission
    - **Test Command**: from config or Issue body
    - **Structured sub-tasks**: broken down from the Issue body
-3. Creates branch: `mission/42-add-user-auth-alice`
+3. Creates branch: *mission/042-add-user-auth-alice*
 4. Posts claim comment on GitHub Issue
 
 **Output:**
 
-```
-MISSION CLAIMED
-═══════════════════════════════════════
-Issue:    #42 — Add user authentication
-Priority: P1
-Branch:   mission/42-add-user-auth-alice
-Contract: .teamwork/active/MISSION-42.md
+**CLAIMED** ──── **#042** Add user authentication ────────────
+🟠  `P1`  Branch: *mission/042-add-user-auth-alice*
+Contract:  `.teamwork/active/MISSION-42.md`
 
-Objective:
+**OBJECTIVE**
   Implement JWT-based authentication for the API
 
-Sub-tasks:
-  - [ ] Create auth middleware
-  - [ ] Add login/register endpoints
-  - [ ] Write tests for auth flow
+**SUB-TASKS**
+  [ ] Create auth middleware
+  [ ] Add login/register endpoints
+  [ ] Write tests for auth flow
 
-Context Files:
-  src/middleware/index.ts
-  src/routes/api.ts
-  tests/api.test.ts
-═══════════════════════════════════════
-Next: /team-drive to start execution
-```
+**CONTEXT FILES**
+  `src/middleware/index.ts`
+  `src/routes/api.ts`
+  `tests/api.test.ts`
+────────────────────────────────────────────
+`/team-drive` to execute │ `/team-ship` when done
 
 ---
 
@@ -198,26 +189,17 @@ Claude reads your Mission Contract and enters execution mode:
 
 **Output when done:**
 
-```
-MISSION EXECUTION COMPLETE
-═══════════════════════════════════════
-Issue:    #42 — Add user authentication
-Status:   All sub-tasks done
-Commits:  3 commits on branch mission/42-add-user-auth-alice
+✅ **COMPLETE** ── **#042** Add user authentication ────────────
+  Code tasks: `3`/`3` complete
+  Commits: `3` on *mission/042-add-user-auth-alice*
 
-Sub-tasks completed:
   [x] Create auth middleware — 14:23
   [x] Add login/register endpoints — 14:35
   [x] Write tests for auth flow — 14:42
 
-Acceptance Criteria:
-  JWT tokens work — verified by test suite
-  Passwords hashed — verified by bcrypt in code
-
-Tests: passing
-═══════════════════════════════════════
-Next: /team-ship to create PR and deliver
-```
+  Tests: passing ✅
+────────────────────────────────────────────
+`/team-ship` to create PR
 
 ---
 
@@ -244,24 +226,13 @@ Next: /team-ship to create PR and deliver
 
 **Output:**
 
-```
-MISSION SHIPPED
-═══════════════════════════════════════
-Issue:  #42 — Add user authentication
-Branch: mission/42-add-user-auth-alice
-PR:     https://github.com/your-org/your-project/pull/45
-CI:     passing ✅
-Review: requested from alice
-
-Contract: cleaned up ✅
-Issue:    labeled "status:review" ✅
-═══════════════════════════════════════
-Next steps:
-  - After merge: /team-ship done (close Issue, update labels)
-  - To AI-review PR: /team-ship review
-  - To claim next mission: /team-claim
-  - To see team status: /team
-```
+📦 **SHIPPED** ── **#042** Add user authentication ────────────
+  🔀 PR: https://github.com/your-org/your-project/pull/45
+  ✅ CI: passing
+  👤 Review: requested from alice
+  Labels: *review*
+────────────────────────────────────────────
+  `/team-ship done` (after merge) │ `/team-ship review` │ `/team`
 
 ---
 
@@ -269,14 +240,15 @@ Next steps:
 
 Once set up, the daily cycle is:
 
-```
-Morning:    git pull → claude → /team (see dashboard) → /team-claim (pick task)
-Working:    /team-drive (execute with AI assistance)
-Done:       /team-ship (deliver PR)
-After merge:/team-ship done (close Issue, clean up)
-Repeat:     /team-claim (next task)
-Release:    /team-rc (prepare RC → verify staging → promote to production)
-```
+| When | What | Command |
+|------|------|---------|
+| Morning | Pull + see dashboard | `git pull` → `/team` |
+| Start work | Pick a task | `/team-claim` |
+| Working | Execute with AI | `/team-drive` |
+| Done | Deliver PR | `/team-ship` |
+| After merge | Close Issue, clean up | `/team-ship done` |
+| Repeat | Next task | `/team-claim` |
+| Release | Prepare + promote | `/team-rc` |
 
 ---
 
@@ -306,6 +278,22 @@ GitHub Issue (#42)
 
 ---
 
+## Advanced Features
+
+Once you're comfortable with the basic cycle, explore these shortcuts:
+
+| Command | What it does |
+|---------|-------------|
+| `/team auto #42` | One-shot: claim → drive → ship in one command |
+| `/team auto` | Pick from your queue, then auto |
+| `/team wrap` | Retroactive: code-first → Issue + PR (for unplanned work) |
+| `/team doctor` | Diagnose local health: orphan branches, stale contracts, cross-contamination |
+| `/team doctor fix` | Interactive repair: execute doctor's action plan with confirmation |
+| `/team queue` | See all open mission Issues sorted by priority |
+| `/team learn` | Deep dive into design philosophy, visual diagrams, manual |
+
+---
+
 ## Team Setup (Multiple People)
 
 When running `/team` for the first time, select "2-3 people" (or more) and enter GitHub usernames.
@@ -331,12 +319,14 @@ Each team member then:
 | "Not authenticated" | Run `gh auth login` |
 | "No git remote" | `git remote add origin <github-url>` |
 | "Teamwork not initialized" | Run `/team` first |
-| "Already have an active mission" | Finish current: `/team-ship`, or abandon: `rm .teamwork/active/MISSION-*.md` |
+| "Already have an active mission" | Finish current: `/team-ship`, or abandon: `/team doctor fix` |
 | "Tests failing" | Fix tests before `/team-ship` — quality gate is intentional |
 | "Branch already exists" | Previous attempt — `/team-claim` will switch to it |
 | "CI failing after PR" | Push fixes to the same branch — PR updates automatically |
 | Label creation fails | You may not have admin rights — non-fatal, continue |
 | Branch protection fails | Free GitHub plans may not support this — non-fatal |
+
+💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 

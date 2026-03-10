@@ -1815,7 +1815,9 @@ Team: {member list}"
 git push
 ```
 
-Output: "Teamwork initialized! Next: create Issues using the Mission template, then `/team-claim` to start working."
+Output: "Teamwork initialized! Next: create Issues using the Mission template, then `/team-claim` to start working.
+
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}"
 
 ---
 
@@ -2076,9 +2078,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 When ANY teamwork skill encounters an error and STOPs, append this line after the error message:
 
-```
 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
-```
 
 Skills should NEVER suggest raw git/rm/shell commands as remediation. Instead, always guide to:
 - `/team doctor` — for diagnosis (what's wrong)
@@ -2410,7 +2410,7 @@ D. ORPHAN CONTRACTS
      1. Extract issue number from filename
      2. Check if corresponding GitHub issue is still open
      3. If issue closed but contract still exists → 🟡 WARNING
-     Action: rm $TEAMWORK_DIR/active/MISSION-N.md
+     Action: `/team doctor fix` (or manually rm $TEAMWORK_DIR/active/MISSION-N.md)
 ```
 
 Heuristics for duplicate detection (LLM judgment):
@@ -2577,6 +2577,7 @@ No tables, no diagnosis, no action plan. Just the summary.
 
 ────────────────────────────────────────────────────────────────────────────
 **SUMMARY:** 🔴 `{N}` critical · 🟡 `{N}` warnings · 🟢 `{N}` cleanup
+Run `/team doctor fix` to execute these actions interactively.
 ────────────────────────────────────────────────────────────────────────────
 
 Then **STOP**.
@@ -3120,7 +3121,7 @@ After merge: `/team-ship done #{issue}`
 - PR creation fails → **STOP** at A5 (branch is pushed, run `/team-ship` to create PR)
 - Label/comment/review operations fail → warn, continue (non-fatal)
 
-**On any STOP:** Always append `💡 Something wrong? Run /team doctor to diagnose.`
+**On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 
@@ -3507,7 +3508,7 @@ Then **STOP**.
 - On fatal errors (no gh, no remote, not authenticated): clear message and STOP
 - If config.yml exists but is malformed: warn and offer to regenerate
 
-**On any STOP:** Always append `💡 Something wrong? Run /team doctor to diagnose.`
+**On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
 

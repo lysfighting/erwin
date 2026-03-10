@@ -75,7 +75,7 @@ bash ~/.claude/commands/scripts/tw-git.sh protect-check 2>/dev/null || {
 # Identity
 GH_USER=$(gh api user --jq '.login' 2>/dev/null)
 if [ -z "$GH_USER" ]; then
-  echo "ERROR: Cannot get GitHub user identity. Run 'gh auth login' first."
+  echo "**ERROR:** Cannot get GitHub user identity. Run 'gh auth login' first."
   exit 1
 fi
 ```
@@ -632,6 +632,7 @@ gh pr review {pr} --body "{review_body}" {--approve|--request-changes|--comment}
 Output:
 
 Review published on PR **#{pr}**: {approve/request-changes/comment}
+After merge: `/team-ship done` │ Address comments: push more commits
 
 💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
@@ -805,4 +806,4 @@ Output the following and **STOP**:
 - Label/reviewer operations fail → warn but continue (non-fatal)
 - Contract removal fails → warn but continue (non-fatal)
 
-**On any STOP:** Always append `💡 Something wrong? Run` `/team doctor` `to diagnose.`
+**On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.

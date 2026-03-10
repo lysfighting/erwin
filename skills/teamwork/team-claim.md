@@ -86,7 +86,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "fal
 ```
 
 **If worktree DISABLED (default):** If any Contract exists → read it, display the active mission info.
-- "You already have an active mission: **#{issue}** — {title}. Complete it with `/team-ship` first. To abandon: `rm $TEAMWORK_DIR/active/MISSION-{issue}.md` (you can re-claim the Issue later with `/team-claim`)."
+- "You already have an active mission: **#{issue}** — {title}. Complete it with `/team-ship` first. To abandon: run `/team doctor fix` to clean up (you can re-claim the Issue later with `/team-claim`)."
 - **STOP** (enforce one-at-a-time rule)
 
 **If worktree ENABLED:** Allow multiple active Contracts. Each mission gets its own worktree directory, so parallel work is safe.
@@ -339,6 +339,8 @@ Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
 {If not worktree:}
 `/team-drive` to execute │ `/team-ship` when done
 
+💡 TIP: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+
 ---
 
 ## Error Handling
@@ -352,4 +354,4 @@ Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
   - If Issue is OPEN → "Branch *{name}* already exists. Switching to it." → `git checkout {branch}`
 - Network errors → "**ERROR:** GitHub API error. Check your connection and `gh auth status`." → **STOP**
 
-**On any STOP:** Always append "Something wrong? Run `/team doctor` to diagnose."
+**On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.

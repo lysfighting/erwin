@@ -41,9 +41,9 @@ If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
 ---
 
-# ═══════════════════════════════════════════
+# ────────────────────────────────────────────
 # PART I: MISSION LOADING (Teamwork Layer)
-# ═══════════════════════════════════════════
+# ────────────────────────────────────────────
 
 ## Step 0: Find Active Contract
 
@@ -280,9 +280,9 @@ bash ~/.claude/commands/scripts/tw-git.sh protect-check
 
 ---
 
-# ═══════════════════════════════════════════
+# ────────────────────────────────────────────
 # PART II: DRIVE EXECUTION ENGINE (Core)
-# ═══════════════════════════════════════════
+# ────────────────────────────────────────────
 
 > Everything below is the execution engine — independent of teamwork infrastructure. These are the principles, methods, and loops that turn a plan into shipped code.
 
@@ -753,9 +753,9 @@ When blocked:
 
 ---
 
-# ═══════════════════════════════════════════
+# ────────────────────────────────────────────
 # PART III: MISSION DELIVERY (Teamwork Layer)
-# ═══════════════════════════════════════════
+# ────────────────────────────────────────────
 
 ## Completion Check
 
@@ -946,4 +946,4 @@ Did this mission reveal a gap in any skill? Tool limitation? Stale pattern?
 - Plan Validation finds Objective impossible → **ERROR:** ESCALATE to user, do NOT proceed with doomed plan
 - Teammate fails or is blocked → unblock immediately (priority over your own task)
 
-**On any STOP:** Always append `💡 Something wrong? Run /team doctor to diagnose.`
+**On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
