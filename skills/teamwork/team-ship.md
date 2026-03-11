@@ -161,15 +161,15 @@ Output the mismatch warning, then use `AskUserQuestion` to let the user choose:
 ```
 question: "Worktree mode 已启用，但你在主仓库。Mission #{issue} 的 worktree 在 {worktree_path}。"
 options:
-  - label: "切换到 worktree"
-    description: "请手动 cd {worktree_path}，然后重新运行 /team-ship"
+  - label: "新开 tab 切到 worktree（推荐）"
+    description: "打开新终端 tab，cd {worktree_path} && claude，然后 /team-ship"
   - label: "在主仓库继续"
     description: "忽略 worktree，直接在当前目录 ship（本次）"
   - label: "关闭 worktree 模式"
     description: "git config --local teamwork.worktree false，然后继续"
 ```
 
-- If "切换到 worktree" → output `cd {worktree_path}` then → **STOP** (user must cd manually)
+- If "新开 tab 切到 worktree" → output: "**打开新终端 tab，执行：** `cd {worktree_path} && claude` → `/team-ship`" → **STOP**
 - If "在主仓库继续" → proceed to Step 1 (skip worktree check for this run)
 - If "关闭 worktree 模式" → `git config --local teamwork.worktree false` → proceed to Step 1
 
