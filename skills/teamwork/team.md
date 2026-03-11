@@ -3948,7 +3948,32 @@ options:
     description: "我手动运行 /team-drive"
 ```
 
-If "立即 drive" → invoke `/team-drive` automatically. **Important**: since this is a wrap (code already written), team-drive should focus on **verifying and committing** the existing changes, not re-implementing sub-tasks. The Contract's AI Notes section should contain: `"Wrap mode: code already applied. Verify correctness, run tests, commit. Do not re-implement."`
+If "立即 drive" → invoke `/team-drive` automatically. **Important**: since this is a wrap (code already written), team-drive should focus on **verifying and committing** the existing changes, not re-implementing sub-tasks. The Contract's AI Notes section should contain: `"Wrap mode: code already applied. Verify correctness, run tests, commit. Check off each sub-task after verifying it passes. Do not re-implement."`
+
+**⚠️ Wrap-mode checkbox rule**: After drive completes verification, ALL code sub-tasks in the Contract MUST be checked off (`- [x]`). In wrap mode the code is already written — verification = confirmation of completion. If drive didn't check them (common oversight), force-check before proceeding to ship:
+
+```bash
+# Force-check all unchecked code sub-tasks in Contract (wrap mode: code already complete)
+python3 -c "
+import re, sys
+path = sys.argv[1]
+with open(path) as f: content = f.read()
+# Check all unchecked items that are NOT manual tasks
+updated = re.sub(r'^(- )\[ \]( (?!🔧))', r'\1[x]\2', content, flags=re.MULTILINE)
+if updated != content:
+    with open(path, 'w') as f: f.write(updated)
+    count = content.count('- [ ] ') - updated.count('- [ ] ')
+    print(f'Wrap: force-checked {count} sub-task(s) in Contract')
+else:
+    print('All sub-tasks already checked')
+" "$CONTRACT_PATH"
+
+# Sync to GitHub Issue
+bash ~/.claude/commands/scripts/tw-contract.sh sync-all-checkboxes "$CONTRACT_PATH" "$ISSUE_NUMBER"
+```
+
+Then proceed to `/team-ship`.
+
 If "稍后再说" → **STOP**
 
 ### W5: Execute — Path B (COMMITTED_NOT_PUSHED)
@@ -4129,7 +4154,7 @@ options:
     description: "我手动运行 /team-drive"
 ```
 
-If "立即 drive" → invoke `/team-drive` automatically. Same wrap-mode note as Path A — team-drive verifies and commits, does not re-implement.
+If "立即 drive" → invoke `/team-drive` automatically. Same wrap-mode note as Path A — team-drive verifies and commits, does not re-implement. After drive completes, apply the same **wrap-mode checkbox rule** (force-check + sync) before proceeding to `/team-ship`.
 If "稍后再说" → **STOP**
 
 ### W6: Execute — Path C (COMMITTED_PUSHED)
