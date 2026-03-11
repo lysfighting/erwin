@@ -67,8 +67,12 @@ Output the following guide directly to the user, then **STOP**:
   `/team #42`             View MC **#042** details (branch, commits, PRs)
   `/team doctor`          Local git + issue health diagnostics
   `/team doctor fix`      Interactive fix — execute actions with confirmation
+  `/team doctor help`     Doctor usage guide (12 checks explained)
   `/team-issue <desc>`    Create MC (solo: self-assign; team: prompt for assignee)
   `/team-issue <desc> @user`  Create MC + assign to @user
+  `/team-issue #N`        View Issue details
+  `/team-issue #N <text>` Comment on Issue
+  `/team-issue update #N` Update Issue fields (title, priority, assignee)
   `/team-issue fix #N`    Fix untracked Issue (add teamwork labels)
   `/team-issue batch ...` Batch create milestone + multiple MCs
   `/team-claim #N`        Claim assigned Issue → generate Contract + branch
@@ -174,13 +178,20 @@ main ────────────── [V0.1.0] ──►          ← 
 **3. ISSUE LIFECYCLE — STATE MACHINE**
 ────────────────────────────────────
 
-Every Issue transitions through exactly these states:
+Every Issue transitions through these states:
 
 ```
-  ┌───────────┐     /team-issue     ┌───────────┐
-  │  created  │ ──────────────────► │    wip    │
-  └───────────┘                     └─────┬─────┘
-                                          │ /team-ship
+                                    ┌───────────┐
+                              ┌────►│  blocked  │ (any state can enter)
+                              │     └───────────┘
+  ┌───────────┐  /team-issue  │     ┌───────────┐
+  │  created  │ ──────────────┼────►│    wip    │ (assigned)
+  └───────────┘               │     └─────┬─────┘
+                              │           │ /team-ship
+                              │     ┌─────▼─────┐
+                              └────►│  queued   │ (unassigned — via /team-issue fix)
+                                    └─────┬─────┘
+                                          │ /team-claim
                                     ┌─────▼─────┐
                                     │  review   │
                                     └─────┬─────┘
@@ -190,7 +201,8 @@ Every Issue transitions through exactly these states:
                                     └───────────┘
 ```
 
-Labels:  `status:wip` → `status:review` → `status:done`
+Labels:  `status:queued` → `status:wip` → `status:review` → `status:done`
+         `status:blocked` (any state, temporary)
 GitHub:  Issue OPEN ─────────────────────────────► Issue CLOSED
 
 
