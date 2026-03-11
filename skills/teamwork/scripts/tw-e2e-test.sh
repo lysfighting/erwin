@@ -121,6 +121,84 @@ if [ -n "$VERSIONS_CURRENT" ]; then
   info "versions.current = $VERSIONS_CURRENT (will NOT be modified)"
 fi
 
+# ─── Phase 1b: Pure-function subcommands (no API) ───────
+section "PHASE 1b: PURE-FUNCTION SUBCOMMANDS"
+
+# build-branch-name
+BBN_OUT=$(run_script tw-git.sh build-branch-name 42 "fix-login" "alice" 2>/dev/null)
+if echo "$BBN_OUT" | grep -q "42" && echo "$BBN_OUT" | grep -q "fix-login"; then
+  pass "build-branch-name → $BBN_OUT"
+else
+  fail "build-branch-name: expected branch with 42 + fix-login, got '$BBN_OUT'"
+fi
+
+# build-branch-name — missing args
+BBN_ERR=$(run_script tw-git.sh build-branch-name 2>&1) || true
+BBN_ERR_EXIT=$?
+if [ $BBN_ERR_EXIT -ne 0 ]; then
+  pass "build-branch-name (no args) → correctly rejected (exit $BBN_ERR_EXIT)"
+else
+  fail "build-branch-name (no args) should have failed"
+fi
+
+# extract-issue-number — from branch name
+EIN_OUT=$(run_script tw-git.sh extract-issue-number "mission/42-fix-login-alice" 2>/dev/null)
+if [ "$EIN_OUT" = "42" ]; then
+  pass "extract-issue-number → 42"
+else
+  fail "extract-issue-number: expected 42, got '$EIN_OUT'"
+fi
+
+# extract-issue-number — multi-digit
+EIN2_OUT=$(run_script tw-git.sh extract-issue-number "mission/153-add-auth-bob" 2>/dev/null)
+if [ "$EIN2_OUT" = "153" ]; then
+  pass "extract-issue-number (3-digit) → 153"
+else
+  fail "extract-issue-number (3-digit): expected 153, got '$EIN2_OUT'"
+fi
+
+# extract-issue-number — no number → error
+EIN_ERR=$(run_script tw-git.sh extract-issue-number "main" 2>&1) || true
+EIN_ERR_EXIT=$?
+if [ $EIN_ERR_EXIT -ne 0 ]; then
+  pass "extract-issue-number (no number) → correctly rejected"
+else
+  fail "extract-issue-number 'main' should have failed"
+fi
+
+# worktree-main-repo
+WMR_OUT=$(run_script tw-git.sh worktree-main-repo 2>/dev/null)
+if [ -n "$WMR_OUT" ] && [ -d "$WMR_OUT" ]; then
+  pass "worktree-main-repo → $WMR_OUT"
+else
+  fail "worktree-main-repo: got '$WMR_OUT'"
+fi
+
+# worktree-find-by-branch — current branch (should find main repo)
+WFB_OUT=$(run_script tw-git.sh worktree-find-by-branch "$ORIGINAL_BRANCH" 2>/dev/null) || true
+if [ -n "$WFB_OUT" ]; then
+  pass "worktree-find-by-branch '$ORIGINAL_BRANCH' → $WFB_OUT"
+else
+  skip "worktree-find-by-branch '$ORIGINAL_BRANCH' → not found (may be detached HEAD)"
+fi
+
+# worktree-find-by-branch — nonexistent branch → exit 1
+run_script tw-git.sh worktree-find-by-branch "nonexistent-branch-xyz" >/dev/null 2>&1
+WFB_EXIT=$?
+if [ $WFB_EXIT -ne 0 ]; then
+  pass "worktree-find-by-branch (nonexistent) → correctly not found (exit $WFB_EXIT)"
+else
+  fail "worktree-find-by-branch should fail for nonexistent branch"
+fi
+
+# team-mode
+TM_OUT=$(run_script tw-config.sh team-mode 2>/dev/null)
+if [ "$TM_OUT" = "solo" ] || [ "$TM_OUT" = "team" ]; then
+  pass "team-mode → $TM_OUT"
+else
+  fail "team-mode: expected solo/team, got '$TM_OUT'"
+fi
+
 # ─── Phase 2: Create test issue ──────────────────────────
 section "PHASE 2: CREATE TEST ISSUE"
 
