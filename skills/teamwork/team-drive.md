@@ -178,25 +178,43 @@ bash ~/.claude/commands/scripts/tw-git.sh worktree-find-by-branch "$CONTRACT_BRA
 
 If a worktree path is found for this branch:
 
-**⚠️ WORKTREE MISMATCH**
-────────────────────────────────────────────
-Worktree mode is enabled but you're in the main repo.
-Your mission worktree: `{worktree_path}`
+Output the mismatch warning, then use `AskUserQuestion` to let the user choose:
 
-Switch to it:  `cd {worktree_path}`
-Then re-run:   `/team-drive`
-────────────────────────────────────────────
-→ **STOP**
-  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+**⚠️ WORKTREE MISMATCH** — mission worktree: `{worktree_path}`
+
+```
+question: "Worktree mode 已启用，但你在主仓库。Mission #{issue} 的 worktree 在 {worktree_path}。"
+options:
+  - label: "切换到 worktree"
+    description: "请手动 cd {worktree_path}，然后重新运行 /team-drive"
+  - label: "在主仓库继续"
+    description: "忽略 worktree，直接在当前目录执行（本次）"
+  - label: "关闭 worktree 模式"
+    description: "git config --local teamwork.worktree false，然后继续"
+```
+
+- If "切换到 worktree" → output `cd {worktree_path}` then → **STOP** (user must cd manually)
+- If "在主仓库继续" → proceed to Step 1 (skip worktree check for this run)
+- If "关闭 worktree 模式" → `git config --local teamwork.worktree false` → proceed to Step 1
 
 If no worktree exists for this branch (e.g., worktree was deleted or claim was done before enabling worktree mode):
 
-**⚠️ NO WORKTREE FOUND**
-Worktree mode is enabled but no worktree exists for branch *{branch}*.
-Run `/team-claim` **#{issue}** to recreate with worktree isolation.
-Or disable worktree mode: `git config --local teamwork.worktree false`
-→ **STOP**
-  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+**⚠️ NO WORKTREE** — branch *{branch}* has no worktree
+
+```
+question: "Worktree mode 已启用，但 branch {branch} 没有对应的 worktree。"
+options:
+  - label: "在主仓库继续"
+    description: "忽略 worktree，直接在当前目录执行（本次）"
+  - label: "重新 claim（创建 worktree）"
+    description: "删除 Contract，重新 /team-claim #{issue}"
+  - label: "关闭 worktree 模式"
+    description: "git config --local teamwork.worktree false，然后继续"
+```
+
+- If "在主仓库继续" → proceed to Step 1
+- If "重新 claim" → delete Contract, output `/team-claim #{issue}` → **STOP**
+- If "关闭 worktree 模式" → `git config --local teamwork.worktree false` → proceed to Step 1
 
 ---
 
