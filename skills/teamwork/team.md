@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.8.2"
+version: "3.8.3"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -51,7 +51,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.8.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -94,6 +94,7 @@ Output the following guide directly to the user, then **STOP**:
 
 **RC LIFECYCLE**
   `/team-rc`              Prepare: cut rc branch from *develop* → staging
+  `/team-rc cancel`       Cancel: delete RC, fix on base, re-cut
   `/team-rc promote`      Promote: squash merge rc → *main*, tag, GitHub Release
 
 **CONFIG & INFO**
@@ -124,7 +125,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.8.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -344,19 +345,23 @@ Sometimes you don't follow the standard flow:
 **9. RC LIFECYCLE** (the key innovation)
 ────────────────────────────────────
 
-  `/team-rc`           → cut *rc/V0.1.0* from *develop* (frozen)
-  verify on staging    → hotfix if needed (cherry-pick to *develop*)
+  `/team-rc`           → cut *rc/V0.1.0* from *develop* (frozen snapshot)
+  verify on staging    → found bug? fix on *develop* → `/team-rc cancel` → `/team-rc`
   `/team-rc promote`   → squash merge rc → *main*, tag `V0.1.0`, GitHub Release
+
+  **Upstream-first model**: RC is immutable. Never commit directly to RC.
+  All fixes go to *develop* first, then cancel + re-cut RC.
+  No merge-back needed — *develop* is always the superset.
 
   Think of RC as a bus: missed this one? Take the next one.
 
 ```
-  develop ── A ── B ── C ──────── D ── E ──►
+  develop ── A ── B ── C ── [fix D] ── E ──►
                         │                │
-                   rc/V0.1.0        rc/V0.2.0
-                     (bus 1)         (bus 2)
-                        │                │
-  main ─────────── [V0.1.0] ───── [V0.2.0] ──►
+                   rc/V0.1.0        rc/V0.1.0  (re-cut with fix D)
+                   (has bug)        (cancel ↗)
+                        ✗                │
+  main ──────────────────────── [V0.1.0] ──►
 ```
 
 
@@ -489,7 +494,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.8.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1051,7 +1056,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.8.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ```
 ✅ Config updated (merge mode — existing config preserved)
@@ -1472,6 +1477,18 @@ jobs:
 
             if (numbers.length === 0) {
               console.log('No closing keywords found in PR body — skipping cleanup');
+            }
+
+            // 4. Check all checkboxes in PR body itself
+            const prBody = context.payload.pull_request.body || '';
+            if (prBody.includes('- [ ]')) {
+              const updatedPr = prBody.replace(/- \[ \]/g, '- [x]');
+              await github.rest.pulls.update({
+                ...context.repo,
+                pull_number: context.payload.pull_request.number,
+                body: updatedPr
+              });
+              console.log(`Checked ${(prBody.match(/- \[ \]/g) || []).length} PR checkboxes`);
             }
 ```
 
@@ -2182,7 +2199,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.8.2"
+SKILL_VERSION="3.8.3"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):

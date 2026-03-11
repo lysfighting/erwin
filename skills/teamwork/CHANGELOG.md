@@ -2,6 +2,26 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.8.3] — 2026-03-12
+
+### Added — `/team-rc cancel` subcommand + upstream-first RC model
+
+- **`/team-rc cancel`**: New Cancel Flow (Steps C1-C5) — delete current RC branch (local + remote) with AskUserQuestion confirmation. Enables the upstream-first bugfix model.
+- **Upstream-first model**: RC is a frozen snapshot. Never commit directly to RC. Found a bug on staging? Fix on *develop* → `/team-rc cancel` → `/team-rc` (re-cut). No merge-back needed.
+- **Prepare Flow**: When RC already exists, offers AskUserQuestion (Promote / Cancel / Exit) instead of plain-text STOP.
+- **Promote Flow**: Explicit branch deletion (local + remote) replaces `--delete-branch` flag. Removed stale cherry-pick reminder.
+
+### Fixed — Post-merge workflow doesn't check PR checkboxes
+
+- **post-merge.yml**: Added Step 4 — check all `- [ ]` → `- [x]` in PR body after merge. Previously only checked Issue body checkboxes.
+- **Promote Help**: Updated troubleshooting to reference upstream-first model instead of "fix on RC branch".
+
+### Docs — RC lifecycle updated across all references
+
+- **team.md help**: Added `/team-rc cancel` line.
+- **team.md learn**: RC lifecycle section rewritten to upstream-first model with cancel flow.
+- **docs/teamwork-ai-manual.md**: Command table + Phase 2 verify + RC Freeze Rule + Only One RC section all updated.
+
 ## [3.8.2] — 2026-03-11
 
 ### Added — Script沉淀: 6 new subcommands replace 15 inline bash sites

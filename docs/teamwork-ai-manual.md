@@ -388,6 +388,7 @@ feat/E:                          D ── (your work) ──
 | | `/team-ship review` | AI code review on PR |
 | | `/team-ship sync` | Rebase on latest develop + auto-resolve conflicts |
 | `/team-rc` | `/team-rc` | Prepare: cut rc from develop |
+| | `/team-rc cancel` | Cancel: delete RC, fix on base, re-cut |
 | | `/team-rc promote` | Promote: squash to main, tag, release, notify |
 | | `/team-rc help` | Full RC lifecycle guide |
 
@@ -729,11 +730,12 @@ tag V0.1.0 on main     →  THIS is the release
 
   ⑥ Test on staging environment
 
-  ⑦ Bug found?
-     └── hotfix branch from rc/V0.1.1
-         └── fix → PR to rc/V0.1.1 (squash merge)
-         └── cherry-pick fix to develop (immediately!)
-         └── re-deploy staging, re-verify
+  ⑦ Bug found? → UPSTREAM-FIRST model:
+     └── fix on develop (normal mission flow)
+     └── /team-rc cancel (delete stale RC)
+     └── /team-rc (re-cut from latest develop)
+     └── re-deploy staging, re-verify
+     (Never commit directly to RC branch)
 
   ⑧ All good → proceed to promote
 
@@ -754,22 +756,30 @@ tag V0.1.0 on main     →  THIS is the release
       → yes: close milestone automatically
       → no:  report "X open, Y closed"
 
-  ⑭  Delete rc/V0.1.1 branch (via --delete-branch)
+  ⑭  Delete rc/V0.1.1 branch (local + remote)
 
   ⑮  Notify team: tw-notify.sh milestone.done
 
 ══════════════════════════════════════════════════════════════════════
 ```
 
-### RC Freeze Rule
+### RC Freeze Rule — Upstream-First Model
 
 ```
-  rc/V0.1.0 cut ──── FROZEN: only hotfixes ────► promote
-       │
-  develop ── feat/D ── feat/E ── feat/F ──        ← new features here
-       │                                   │
-       └── after promote ─────────── /team-rc → rc/V0.1.1
-           immediately                  (D, E, F get their turn)
+  RC is a FROZEN SNAPSHOT. Never commit directly to RC.
+  All fixes go to develop first (upstream-first).
+
+  develop ── A ── B ── C ── [fix D] ── E ──►
+                        │                │
+                   rc/V0.1.0        rc/V0.1.0  (re-cut with fix D)
+                   (has bug)        (/team-rc cancel ↗ /team-rc)
+                        ✗                │
+  main ──────────────────────── [V0.1.0] ──►
+
+  Why upstream-first?
+  1. No merge-back problem — develop always has all fixes
+  2. RC has no unique commits — squash merge to main is clean
+  3. Re-cut is cheap (one command) — cherry-pick is error-prone
 ```
 
 ### Only One RC At A Time
@@ -779,8 +789,7 @@ tag V0.1.0 on main     →  THIS is the release
   git ls-remote --heads origin 'rc/*'
 
   ├── Found rc/V0.1.0
-  │   → "RC already in progress. Promote it first."
-  │   → STOP
+  │   → AskUserQuestion: Promote / Cancel / Exit
   │
   └── None found
       → proceed to cut new rc
