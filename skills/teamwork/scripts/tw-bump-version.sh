@@ -63,6 +63,15 @@ for file in "${FILES[@]}"; do
   # "Skill version: 3.x.y" (README)
   sed -i '' "s/Skill version: [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/Skill version: $VERSION/g" "$file"
 
+  # "**Version**: `3.x.y`" (inline help docs — backtick-wrapped)
+  sed -i '' "s/\*\*Version\*\*: \`[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\`/**Version**: \`$VERSION\`/g" "$file"
+
+  # "(`v3.x.y`)" (inline backtick-parens in titles)
+  sed -i '' "s/(\`v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\`)/(\`v$VERSION\`)/g" "$file"
+
+  # 'SKILL_VERSION="3.x.y"' (bash variable in init templates)
+  sed -i '' "s/SKILL_VERSION=\"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\"/SKILL_VERSION=\"$VERSION\"/g" "$file"
+
   # skill_version removed from config — no longer needs bumping
 done
 
