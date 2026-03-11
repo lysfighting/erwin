@@ -1594,31 +1594,35 @@ All features configured. `/team config` to modify settings.
 
 → Proceed to next step (no AskUserQuestion needed).
 
-**If ANY are NOT configured** → use `AskUserQuestion` to offer setup:
+**If ANY are NOT configured** → use `AskUserQuestion` to offer setup.
 
-Build the options list dynamically from unconfigured items:
+⚠️ Claude Code AskUserQuestion has a **4-option limit**. Use a two-step flow:
+
+**Step 1 — Overview question** (always ≤ 4 options):
 
 ```
-question: "以下功能推荐开启，选择要配置的项目："
+question: "有 {N} 项本地功能未配置：{list unconfigured names, comma-separated}。如何处理？"
 options:
-  {Only include unconfigured items:}
   - label: "全部开启（推荐）"
-    description: "一键配置所有未开启的功能"
-  - label: "Worktree 隔离"    # only if WORKTREE_ENABLED is empty (never configured)
-    description: "每个 mission 独立目录，多任务不冲突"
-  - label: "Worktree 根目录"  # only if WORKTREE_ENABLED=true but WORKTREE_ROOT empty
-    description: "设置 worktree 创建位置（当前：默认同级目录）"
-  - label: "Tab 标题+颜色"    # only if tab not configured
-    description: "终端标签页自动显示 branch 名 + 类型着色"
-  - label: "桌面通知"          # only if notify not configured
-    description: "Claude 需要操作时弹出 macOS 通知"
+    description: "一键配置所有 {N} 项功能"
+  - label: "逐项选择"
+    description: "我来选要开启哪些"
   - label: "跳过"
-    description: "以后用 /team config 配置"
+    description: "以后用 /team init 配置"
 ```
 
-**If user selects "全部开启"** → execute ALL unconfigured items below in sequence.
-**If user selects a specific item** → execute only that item.
-**If user selects "跳过"** → proceed to next step.
+**If "全部开启"** → execute ALL unconfigured items below in sequence.
+**If "跳过"** → proceed to next step.
+**If "逐项选择"** → for each unconfigured item, ask a simple yes/no AskUserQuestion:
+
+```
+question: "{feature name} — {one-line description}。开启？"
+options:
+  - label: "开启"
+    description: "{what it does}"
+  - label: "跳过"
+    description: "保持未配置"
+```
 
 ---
 
