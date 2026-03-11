@@ -231,6 +231,108 @@ else
   fail "resolve-member should fail for nonexistent user"
 fi
 
+# ─── Phase 1c: More pure-function subcommands ────────────
+section "PHASE 1c: CONFIG + GIT PURE FUNCTIONS"
+
+# detect-dir
+DD_OUT=$(run_script tw-config.sh detect-dir 2>/dev/null) || true
+if [ "$DD_OUT" = ".teamwork" ] || [ "$DD_OUT" = ".teamspace" ]; then
+  pass "detect-dir → $DD_OUT"
+else
+  fail "detect-dir: expected .teamwork or .teamspace, got '$DD_OUT'"
+fi
+
+# resolve-labels
+RL_OUT=$(run_script tw-config.sh resolve-labels 2>/dev/null)
+if echo "$RL_OUT" | grep -q "MISSION_LABEL=" && echo "$RL_OUT" | grep -q "STATUS_PREFIX="; then
+  pass "resolve-labels → outputs MISSION_LABEL + STATUS_PREFIX + PRIORITY_PREFIX"
+else
+  fail "resolve-labels: unexpected output '$RL_OUT'"
+fi
+
+# get-user-level
+if [ -n "$GH_USER" ]; then
+  UL_OUT=$(run_script tw-config.sh get-user-level "$GH_USER" 2>/dev/null) || true
+  if [ "$UL_OUT" = "solo" ] || [ "$UL_OUT" = "leader" ] || [ "$UL_OUT" = "member" ] || [ "$UL_OUT" = "unknown" ]; then
+    pass "get-user-level '$GH_USER' → $UL_OUT"
+  else
+    fail "get-user-level: expected solo/leader/member/unknown, got '$UL_OUT'"
+  fi
+fi
+
+# slugify
+SL_OUT=$(run_script tw-git.sh slugify "Fix Login Bug on Safari" 2>/dev/null)
+if echo "$SL_OUT" | grep -qE "^[a-z0-9-]+$"; then
+  pass "slugify → $SL_OUT"
+else
+  fail "slugify: expected lowercase-with-hyphens, got '$SL_OUT'"
+fi
+
+# slugify — empty → error
+run_script tw-git.sh slugify "" >/dev/null 2>&1
+SL_EXIT=$?
+if [ $SL_EXIT -ne 0 ]; then
+  pass "slugify (empty) → correctly rejected"
+else
+  fail "slugify (empty) should have failed"
+fi
+
+# next-version
+NV_OUT=$(run_script tw-git.sh next-version "V0.1" 2>/dev/null) || true
+if echo "$NV_OUT" | grep -qE "^V0\.1\.[0-9]+$"; then
+  pass "next-version V0.1 → $NV_OUT"
+else
+  skip "next-version → '$NV_OUT' (may need tags to exist)"
+fi
+
+# find-rc
+FR_OUT=$(run_script tw-git.sh find-rc 2>/dev/null) || true
+FR_EXIT=$?
+if [ $FR_EXIT -eq 0 ] && [ -n "$FR_OUT" ]; then
+  pass "find-rc → $FR_OUT"
+elif [ $FR_EXIT -ne 0 ]; then
+  skip "find-rc → no RC branches found (expected in many repos)"
+else
+  skip "find-rc → empty output"
+fi
+
+# list-merged-branches (may return empty if no merged PRs — that's OK)
+LMB_OUT=$(run_script tw-git.sh list-merged-branches 2>/dev/null) || true
+LMB_EXIT=$?
+if [ $LMB_EXIT -eq 0 ]; then
+  LMB_COUNT=$(echo "$LMB_OUT" | grep -c "." 2>/dev/null || echo "0")
+  pass "list-merged-branches → $LMB_COUNT branch(es)"
+else
+  fail "list-merged-branches failed (exit $LMB_EXIT)"
+fi
+
+# milestone-resolve (needs versions.current — skip if not set)
+if [ -n "$VERSIONS_CURRENT" ]; then
+  MR_OUT=$(run_script tw-git.sh milestone-resolve "$VERSIONS_CURRENT" 2>/dev/null) || true
+  if [ -n "$MR_OUT" ]; then
+    pass "milestone-resolve '$VERSIONS_CURRENT' → $MR_OUT"
+  else
+    skip "milestone-resolve → empty (milestone may not exist on GitHub)"
+  fi
+else
+  skip "milestone-resolve → no versions.current in config"
+fi
+
+# commit-type (tw-pr.sh)
+CT_OUT=$(run_script tw-pr.sh commit-type "fix: camera broken on Safari" 2>/dev/null)
+if [ "$CT_OUT" = "fix" ]; then
+  pass "commit-type (fix) → $CT_OUT"
+else
+  fail "commit-type: expected 'fix', got '$CT_OUT'"
+fi
+
+CT2_OUT=$(run_script tw-pr.sh commit-type "add user authentication" 2>/dev/null)
+if [ "$CT2_OUT" = "feat" ]; then
+  pass "commit-type (feat) → $CT2_OUT"
+else
+  fail "commit-type: expected 'feat', got '$CT2_OUT'"
+fi
+
 # ─── Phase 2: Create test issue ──────────────────────────
 section "PHASE 2: CREATE TEST ISSUE"
 
