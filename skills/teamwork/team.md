@@ -2677,8 +2677,7 @@ Parse git worktree list --porcelain output:
        For each active Contract, find its worktree path from git worktree list.
        Message: "Worktree mode enabled but you're in the main repo.
        Running /team-drive or /team-ship here bypasses worktree isolation.
-       Switch to your mission worktree:
-         cd {worktree_path}  ← #{issue} {title}"
+       打开新终端 tab，执行：cd {worktree_path} && claude  ← #{issue} {title}"
 ```
 
 #### Check 6: Shippable PRs
@@ -3094,8 +3093,8 @@ options:
 ```
 question: "Action [N]: Worktree mode enabled but you're in the main repo. Mission #{issue} has a worktree at {path}."
 options:
-  - label: "Show worktree path"
-    description: "Print: cd {worktree_path}"
+  - label: "新开 tab 切到 worktree（推荐）"
+    description: "打开新终端 tab，cd {worktree_path} && claude"
   - label: "Disable worktree mode"
     description: "git config --local teamwork.worktree false"
   - label: "Skip"
