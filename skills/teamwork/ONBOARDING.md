@@ -340,7 +340,6 @@ After `/team` init, your `.teamwork/config.yml` looks like:
 
 ```yaml
 schema_version: 3
-skill_version: 3.8.1
 
 team:
   - github: alice

@@ -369,7 +369,7 @@ Two layers of config — shared team settings vs personal preferences.
   ┌──────────────────────────────────────────────────────┐
   │ .teamwork/config.yml (or .teamspace/config.yml)      │
   │                                                      │
-  │ schema_version, skill_version                        │
+  │ schema_version                                        │
   │ roles, members                                       │
   │ project (language, test/lint/build commands)          │
   │ conventions (branch pattern, base/production branch) │
@@ -896,23 +896,22 @@ ls $TEAMWORK_DIR/config.yml 2>/dev/null
 
 #### MERGE MODE (config exists)
 
-Preserve all existing content. Only update `skill_version` and append missing top-level sections.
+Preserve all existing content. Update `schema_version` and append missing top-level sections.
 
-**Step 1 — Update skill_version and schema_version in place:**
+**Step 1 — Update schema_version in place + remove stale skill_version:**
 
 ```bash
-# Update skill_version line without touching anything else
-sed -i '' "s/^skill_version:.*/skill_version: 3.8.1/" $TEAMWORK_DIR/config.yml
-# Linux fallback: sed -i "s/^skill_version:.*/skill_version: 3.8.1/" $TEAMWORK_DIR/config.yml
-
 # Update schema_version if present
 if grep -q "^schema_version:" $TEAMWORK_DIR/config.yml; then
   sed -i '' "s/^schema_version:.*/schema_version: 3/" $TEAMWORK_DIR/config.yml
 else
-  # Prepend schema_version before skill_version
-  sed -i '' "/^skill_version:/i\\
+  # Prepend schema_version at top of file
+  sed -i '' "1i\\
 schema_version: 3" $TEAMWORK_DIR/config.yml
 fi
+
+# Remove stale skill_version line (version now lives in skill frontmatter only)
+sed -i '' '/^skill_version:/d' $TEAMWORK_DIR/config.yml
 ```
 
 **Step 2 — Detect which top-level sections are missing:**
@@ -1051,7 +1050,7 @@ WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not 
 
 ```
 ✅ Config updated (merge mode — existing config preserved)
-   skill_version → {SKILL_VERSION}
+   schema_version → `3`
    Preserved sections: {list of sections kept}
    Added sections: {list of sections appended, or "(none — already complete)"}
    {If worktree migrated:} Migrated: worktree → git config --local
@@ -1071,7 +1070,6 @@ Write full config based on detected project info + user answers:
 
 ```yaml
 schema_version: 3
-skill_version: 3.8.1
 
 roles:
   - id: leader

@@ -63,10 +63,7 @@ for file in "${FILES[@]}"; do
   # "Skill version: 3.x.y" (README)
   sed -i '' "s/Skill version: [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/Skill version: $VERSION/g" "$file"
 
-  # skill_version in init template code (always 3-segment)
-  if grep -q 'skill_version:' "$file" 2>/dev/null; then
-    sed -i '' "s/skill_version: [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/skill_version: $VERSION/g" "$file"
-  fi
+  # skill_version removed from config — no longer needs bumping
 done
 
 echo ""
