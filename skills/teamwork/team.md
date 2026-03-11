@@ -923,35 +923,22 @@ ls $TEAMWORK_DIR/config.yml 2>/dev/null
 
 #### MERGE MODE (config exists)
 
-Preserve all existing content. Update `schema_version` and append missing top-level sections.
+Preserve all existing content. Run migration, then append missing top-level sections.
 
-**Step 1 — Update schema_version in place + remove stale skill_version:**
+**Step 1 — Migrate config to current schema:**
 
 ```bash
-# Update schema_version if present
-if grep -q "^schema_version:" $TEAMWORK_DIR/config.yml; then
-  sed -i '' "s/^schema_version:.*/schema_version: 3/" $TEAMWORK_DIR/config.yml
-else
-  # Prepend schema_version at top of file
-  sed -i '' "1i\\
-schema_version: 3" $TEAMWORK_DIR/config.yml
-fi
-
-# Remove stale skill_version line (version now lives in skill frontmatter only)
-sed -i '' '/^skill_version:/d' $TEAMWORK_DIR/config.yml
+bash ~/.claude/commands/scripts/tw-config.sh migrate
 ```
+
+This handles: schema_version → 3, removes stale skill_version, migrates worktree section to git config.
 
 **Step 2 — Detect which top-level sections are missing:**
 
 ```bash
-# Detect missing top-level sections (no PyYAML dependency — pure grep)
+# Check each required section
 for section in project conventions label_prefix quality roles members notifications; do
-  if [ "$section" = "label_prefix" ]; then
-    # Accept either label_prefix: or labels: (vi_agent schema compat)
-    grep -q "^label_prefix:\|^labels:" $TEAMWORK_DIR/config.yml || echo "$section"
-  else
-    grep -q "^${section}:" $TEAMWORK_DIR/config.yml || echo "$section"
-  fi
+  bash ~/.claude/commands/scripts/tw-config.sh has-section "$section" 2>/dev/null || echo "$section"
 done
 ```
 
@@ -1035,15 +1022,7 @@ notifications:
 
 Worktree mode moved from shared config to local git config in v3.4.0.
 
-```bash
-if grep -q "^worktree:" $TEAMWORK_DIR/config.yml 2>/dev/null; then
-  # Migrate: set local git config
-  git config --local teamwork.worktree true
-  # Remove worktree section from config.yml (no longer shared)
-  sed -i '' '/^worktree:/,/^[^ #]/{ /^worktree:/d; /^  /d; }' $TEAMWORK_DIR/config.yml
-  echo "Migrated: worktree mode → git config --local (per-user, no longer shared)"
-fi
-```
+Note: worktree migration is already handled by `tw-config.sh migrate` in Step 1.
 
 **Step 5 — Per-user local setup:**
 
@@ -1055,7 +1034,7 @@ For `quality:` section, if missing, use safe defaults instead of referencing Ste
 
 ```bash
 # If quality section is missing, append with safe defaults
-if ! grep -q "^quality:" $TEAMWORK_DIR/config.yml; then
+if ! bash ~/.claude/commands/scripts/tw-config.sh has-section quality 2>/dev/null; then
   cat >> $TEAMWORK_DIR/config.yml <<'EOF'
 
 quality:

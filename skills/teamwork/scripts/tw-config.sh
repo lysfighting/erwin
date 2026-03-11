@@ -443,9 +443,86 @@ for m in members:
 PYEOF
 }
 
+cmd_migrate() {
+  # Migrate config.yml to current schema (idempotent)
+  # 1. Ensure schema_version: 3
+  # 2. Remove stale skill_version line (now in skill frontmatter only)
+  # 3. Migrate worktree: section → git config --local
+
+  local config_file
+  config_file=$(_detect_config)
+  if [ -z "$config_file" ]; then
+    echo "ERROR: No teamwork config found" >&2
+    exit 3
+  fi
+
+  local changes=0
+
+  # 1. schema_version → 3
+  if grep -q "^schema_version:" "$config_file"; then
+    if ! grep -q "^schema_version: 3$" "$config_file"; then
+      sed -i '' "s/^schema_version:.*/schema_version: 3/" "$config_file"
+      echo "Updated schema_version → 3"
+      changes=$((changes + 1))
+    fi
+  else
+    sed -i '' "1i\\
+schema_version: 3" "$config_file"
+    echo "Added schema_version: 3"
+    changes=$((changes + 1))
+  fi
+
+  # 2. Remove skill_version (stale — version lives in skill frontmatter)
+  if grep -q "^skill_version:" "$config_file"; then
+    sed -i '' '/^skill_version:/d' "$config_file"
+    echo "Removed stale skill_version line"
+    changes=$((changes + 1))
+  fi
+
+  # 3. Migrate worktree: section → git config --local
+  if grep -q "^worktree:" "$config_file"; then
+    git config --local teamwork.worktree true 2>/dev/null || true
+    sed -i '' '/^worktree:/,/^[^ #]/{ /^worktree:/d; /^  /d; }' "$config_file"
+    echo "Migrated worktree → git config --local teamwork.worktree true"
+    changes=$((changes + 1))
+  fi
+
+  if [ "$changes" -eq 0 ]; then
+    echo "Config already up to date (schema v3, no stale fields)"
+  else
+    echo "Applied $changes migration(s)"
+  fi
+}
+
+cmd_has_section() {
+  # Check if a top-level section exists in config.yml
+  # Usage: tw-config.sh has-section <section_name>
+  # Handles label_prefix/labels dual-schema
+  # Exit 0 = exists, Exit 1 = missing
+
+  local section="${1:-}"
+  if [ -z "$section" ]; then
+    echo "ERROR: has-section requires SECTION name" >&2
+    exit 1
+  fi
+
+  local config_file
+  config_file=$(_detect_config)
+  if [ -z "$config_file" ]; then
+    exit 1
+  fi
+
+  if [ "$section" = "label_prefix" ]; then
+    grep -q "^label_prefix:\|^labels:" "$config_file" && exit 0 || exit 1
+  else
+    grep -q "^${section}:" "$config_file" && exit 0 || exit 1
+  fi
+}
+
 usage() {
   echo "Usage: tw-config.sh <subcommand|key> [args...]" >&2
-  echo "Subcommands: detect-dir, resolve-labels, get-user-level, team-mode, resolve-member, list-members" >&2
+  echo "Subcommands: detect-dir, resolve-labels, get-user-level, team-mode," >&2
+  echo "             resolve-member, list-members, migrate, has-section" >&2
   echo "Key lookup:  tw-config.sh <dotted.key> [default]" >&2
   exit 1
 }
@@ -458,6 +535,8 @@ case "${1:-}" in
   team-mode)        cmd_team_mode ;;
   resolve-member)   shift; cmd_resolve_member "$@" ;;
   list-members)     cmd_list_members ;;
+  migrate)          cmd_migrate ;;
+  has-section)      shift; cmd_has_section "$@" ;;
   -h|--help|help)   usage ;;
   "")               usage ;;
   *)                cmd_get "$@" ;;
