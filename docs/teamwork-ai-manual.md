@@ -1117,9 +1117,9 @@ The protection rules adapt to your team's maturity:
 │  ├── tw-label.sh ─── 4 subcommands ─── Label state machine       │
 │  │   transition (from → to), set (force), verify, pr-label       │
 │  │                                                                │
-│  ├── tw-contract.sh ─── 7 subcommands ─── Contract lifecycle     │
+│  ├── tw-contract.sh ─── 6 subcommands ─── Contract lifecycle     │
 │  │   read-field, hash, check-freshness, toggle-task,             │
-│  │   sync-checkbox (deprecated), sync-all-checkboxes, delete      │
+│  │   sync-all-checkboxes, delete                                  │
 │  │                                                                │
 │  ├── tw-pr.sh ─── 7 subcommands ─── PR lifecycle                 │
 │  │   exists, commit-type, create, comment,                        │
