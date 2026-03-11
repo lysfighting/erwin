@@ -317,7 +317,8 @@ else
       echo "Possible causes:"
       echo "  - Path already exists (another worktree or directory)"
       echo "  - Permission denied on parent directory"
-      echo "Check: git worktree list"
+      echo "  - Branch already checked out in another worktree"
+      # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
       exit 1
     }
   }
@@ -328,16 +329,19 @@ echo "$ISSUE_NUMBER" > "$WORKTREE_PATH/.mission"
 # Contract is gitignored (active/), so copy it into the worktree
 mkdir -p "$WORKTREE_PATH/$TEAMWORK_DIR/active" || {
   echo "ERROR: Cannot create config directory in worktree. Check permissions."
+  # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
   exit 1
 }
 cp "$TEAMWORK_DIR/active/MISSION-$ISSUE_NUMBER.md" "$WORKTREE_PATH/$TEAMWORK_DIR/active/" || {
   echo "ERROR: Failed to copy Contract to worktree. Source: $TEAMWORK_DIR/active/MISSION-$ISSUE_NUMBER.md"
+  # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
   exit 1
 }
 
 # Copy config into worktree (needed for /team-drive and /team-ship to find config)
 cp "$TEAMWORK_DIR/config.yml" "$WORKTREE_PATH/$TEAMWORK_DIR/" || {
   echo "ERROR: Failed to copy config.yml to worktree."
+  # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
   exit 1
 }
 ```

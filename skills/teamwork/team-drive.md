@@ -149,8 +149,8 @@ The Issue description has changed since you generated this Contract.
 ────────────────────────────────────────────
 
 Use `AskUserQuestion`:
-- "Update Contract?" → Re-extract Objective, Sub-tasks, Success Criteria from new body. Update `issue_content_hash`. Preserve Context Files and AI Notes (locally generated).
-- "Continue with current Contract" → proceed without changes
+- "Update Contract (recommended)" → Re-extract Objective, Sub-tasks, Success Criteria from new body. Update `issue_content_hash`. Preserve Context Files and AI Notes (locally generated).
+- "Continue with old Contract" → proceed without changes. ⚠️ Risk: sub-tasks may be outdated — could do redundant or wrong work.
 - "Abort" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 

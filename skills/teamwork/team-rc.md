@@ -371,20 +371,26 @@ If `--auto` succeeds, poll until merge completes:
 ```bash
 MAX_POLLS=60  # 10 minutes max (60 × 10s)
 POLL_COUNT=0
+echo "⏳ Waiting for PR #$PR_NUMBER to merge..."
 while true; do
   STATE=$(gh pr view "$PR_NUMBER" --json state --jq '.state' --repo "$REPO")
   if [ "$STATE" = "MERGED" ]; then break; fi
   if [ "$STATE" = "CLOSED" ]; then
     echo "ERROR: PR #$PR_NUMBER was closed without merging" >&2
+    echo "Check: gh pr view $PR_NUMBER --repo $REPO" >&2
     # STOP
     # 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
   fi
   POLL_COUNT=$((POLL_COUNT + 1))
   if [ "$POLL_COUNT" -ge "$MAX_POLLS" ]; then
     echo "ERROR: Timed out waiting for PR #$PR_NUMBER to merge (10 min)" >&2
-    # STOP — ask user to check CI status and branch protection
+    echo "Check CI: gh pr checks $PR_NUMBER --repo $REPO" >&2
+    echo "Check protection: gh api repos/$REPO/branches/$PROD_BRANCH/protection" >&2
+    # STOP
     # 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
   fi
+  ELAPSED=$((POLL_COUNT * 10))
+  echo "  ⏳ ${ELAPSED}s / 600s — state: $STATE"
   sleep 10
 done
 ```
@@ -395,6 +401,7 @@ done
 # Poll CI checks until all pass (gh pr checks --watch requires gh >= 2.40)
 MAX_CI_POLLS=60  # 10 minutes max
 CI_POLL=0
+echo "⏳ Waiting for CI checks on PR #$PR_NUMBER..."
 while true; do
   CI_STATUS=$(gh pr checks "$PR_NUMBER" --repo "$REPO" --json bucket --jq '[.[] | select(.bucket != "pass")] | length' 2>/dev/null)
   if [ "$CI_STATUS" = "0" ]; then break; fi
@@ -403,6 +410,8 @@ while true; do
     echo "WARNING: CI checks still pending after 10 min — attempting merge anyway"
     break
   fi
+  ELAPSED=$((CI_POLL * 10))
+  echo "  ⏳ CI: ${ELAPSED}s / 600s — $CI_STATUS check(s) remaining"
   sleep 10
 done
 
