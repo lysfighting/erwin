@@ -1121,9 +1121,10 @@ The protection rules adapt to your team's maturity:
 │  │   read-field, hash, check-freshness, toggle-task,             │
 │  │   sync-all-checkboxes, delete                                  │
 │  │                                                                │
-│  ├── tw-pr.sh ─── 7 subcommands ─── PR lifecycle                 │
-│  │   exists, commit-type, create, comment,                        │
-│  │   watch (CI polling), add-reviewer, verify-merged              │
+│  ├── tw-pr.sh ─── 8 subcommands ─── PR lifecycle                 │
+│  │   exists, commit-type, create, comment, watch (CI polling),   │
+│  │   wait-merged (merge state polling), add-reviewer,             │
+│  │   verify-merged                                                │
 │  │                                                                │
 │  ├── tw-notify.sh ─── Notification layer                         │
 │  │   Events: mc.created, mc.completed, milestone.created,         │
