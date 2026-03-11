@@ -116,7 +116,7 @@ Read the Contract file fully. Extract from YAML frontmatter:
 Extract from body:
 - **Objective**
 - **Sub-tasks** (with checkbox status)
-- **Acceptance Criteria**
+- **Success Criteria**
 - **Context Files**
 - **Test Command**
 
@@ -149,7 +149,7 @@ The Issue description has changed since you generated this Contract.
 ────────────────────────────────────────────
 
 Use `AskUserQuestion`:
-- "Update Contract?" → Re-extract Objective, Sub-tasks, Acceptance Criteria from new body. Update `issue_content_hash`. Preserve Context Files and AI Notes (locally generated).
+- "Update Contract?" → Re-extract Objective, Sub-tasks, Success Criteria from new body. Update `issue_content_hash`. Preserve Context Files and AI Notes (locally generated).
 - "Continue with current Contract" → proceed without changes
 - "Abort" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
@@ -373,7 +373,7 @@ You are a **super-sage** with independent judgment. NOT a compliant executor.
 
 ## Plan Validation — "未经审视的计划不值得执行"
 
-> The Contract's sub-tasks are the issue creator's HYPOTHESIS about how to achieve the Objective — written with limited codebase knowledge. You, the executor, now have ground truth. **Objective + Acceptance Criteria are immutable orders (WHAT). Sub-tasks are a suggested route (HOW) — challenge, revise, or confirm them.**
+> The Contract's sub-tasks are the issue creator's HYPOTHESIS about how to achieve the Objective — written with limited codebase knowledge. You, the executor, now have ground truth. **Objective + Success Criteria are immutable orders (WHAT). Sub-tasks are a suggested route (HOW) — challenge, revise, or confirm them.**
 
 ### Read the terrain
 
@@ -405,7 +405,7 @@ For each unchecked sub-task, ask:
 **📊 PLAN ASSESSMENT**
 ────────────────────────────────────────────
 **🎯 Objective:** {restate in own words — proves understanding}
-**✅ Acceptance Criteria:** `{N}` criteria — all achievable: {yes/no}
+**✅ Success Criteria:** `{N}` criteria — all achievable: {yes/no}
 
 **Sub-task review:**
   ✅ [1] {task} — **CONFIRM:** {why it's correct}
@@ -434,7 +434,7 @@ After validation, ensure the final task list follows these principles:
 - **Risky/uncertain tasks FIRST** — surface unknowns early, not late
 - **One substantive change per task** — atomic, reviewable, testable
 - **Scaffold + verify pipeline first** — first task should confirm the build/test toolchain works
-- **Final task = verification against Acceptance Criteria** — the last thing you do is prove you're done
+- **Final task = verification against Success Criteria** — the last thing you do is prove you're done
 
 ---
 
