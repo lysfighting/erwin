@@ -13,6 +13,6 @@
 /team queue — 按优先级查看所有待办 mission，找到下一个要做的事
 /team #42 — 快速查看任意 mission 的详情（branch、PR、进度）
 /team config — 查看和编辑 teamwork 配置（测试命令、通知、quality gates）
-/team learn — 11 节可视化指南，理解 teamwork 的设计哲学
+/team learn — 13 节可视化指南，理解 teamwork 的设计哲学
 worktree 模式：git config --local teamwork.worktree true — 每个 mission 独立目录，并行开发不冲突
 /team-rc promote — 将 staging 验证通过的 RC 发布到 production（squash merge + tag + Release）
