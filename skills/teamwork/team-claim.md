@@ -302,18 +302,30 @@ else
   WORKTREE_PATH="${MAIN_REPO}/../${REPO_NAME}-wt-${SLUG}"
 fi
 
-git worktree add -b "$BRANCH" "$WORKTREE_PATH" "origin/$BASE_BRANCH" 2>/dev/null || {
-  # Branch may already exist — try without -b
-  git worktree add "$WORKTREE_PATH" "$BRANCH" 2>/dev/null || {
-    echo "ERROR: Could not create worktree at $WORKTREE_PATH"
-    echo "Possible causes:"
-    echo "  - Path already exists (another worktree or directory)"
-    echo "  - Branch is checked out in another worktree"
-    echo "  - Permission denied on parent directory"
-    echo "Check: git worktree list"
-    exit 1
+# Check if branch is already checked out somewhere (main repo or another worktree)
+BRANCH_WORKTREE=$(git worktree list --porcelain | awk -v b="$BRANCH" '
+  /^worktree / { wt=$2 }
+  /^branch refs\/heads\// { sub("refs/heads/", ""); if ($0 == b) print wt }
+' 2>/dev/null)
+
+if [ -n "$BRANCH_WORKTREE" ]; then
+  # Branch already checked out — DON'T create new worktree, just point user there
+  echo "BRANCH_ALREADY_CHECKED_OUT:$BRANCH_WORKTREE"
+  # STOP — output will tell user to cd to existing worktree
+  # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
+else
+  git worktree add -b "$BRANCH" "$WORKTREE_PATH" "origin/$BASE_BRANCH" 2>/dev/null || {
+    # Branch may already exist but not checked out — try without -b
+    git worktree add "$WORKTREE_PATH" "$BRANCH" 2>/dev/null || {
+      echo "ERROR: Could not create worktree at $WORKTREE_PATH"
+      echo "Possible causes:"
+      echo "  - Path already exists (another worktree or directory)"
+      echo "  - Permission denied on parent directory"
+      echo "Check: git worktree list"
+      exit 1
+    }
   }
-}
+fi
 
 echo "$ISSUE_NUMBER" > "$WORKTREE_PATH/.mission"
 
@@ -377,7 +389,7 @@ Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
 **CONTEXT FILES**
   {list of relevant files}
 
-{If worktree:}
+{If worktree (newly created OR branch already had worktree):}
 ⚠️ **DO NOT run `/team-drive` in this terminal**
 ────────────────────────────────────────────
 当前终端在主仓库。Worktree 模式下，所有操作必须在 worktree 目录中执行。
@@ -386,6 +398,13 @@ Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
 **打开新终端 tab，执行：**
   `cd {worktree_path} && claude`
   Then: `/team-drive` to execute │ `/team-ship` when done
+────────────────────────────────────────────
+
+{If branch was already checked out in main repo (BRANCH_ALREADY_CHECKED_OUT):}
+⚠️ Branch *{branch}* 已在主仓库 checkout。Worktree 模式下不应在主仓库操作 mission 分支。
+建议：在主仓库切回 base branch，然后为此 mission 创建 worktree：
+  `git checkout {base_branch}`
+  `/team-claim #{issue}` (重新 claim，会自动创建 worktree)
 ────────────────────────────────────────────
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
@@ -409,7 +428,17 @@ Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
   - Check if corresponding Issue is still OPEN (via `gh issue view {issue} --json state --jq '.state'`)
   - If Issue is CLOSED → warn: "⚠ Branch exists but Issue **#{issue}** is closed. This is an orphan branch. Run `/team doctor fix` to clean up, then `/team-claim` again." → **STOP**
     💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
-  - If Issue is OPEN → "Branch *{name}* already exists. Switching to it." → `git checkout {branch}`
+  - If Issue is OPEN:
+    - **If worktree DISABLED** → "Branch *{name}* already exists. Switching to it." → `git checkout {branch}`
+    - **If worktree ENABLED** → Check if branch is already checked out in a worktree (`git worktree list`):
+      - If branch has a worktree → find the worktree path, output:
+        ⚠️ Branch *{name}* already has a worktree at `{worktree_path}`.
+        **打开新终端 tab，执行：** `cd {worktree_path} && claude`
+        Then: `/team-drive` to execute │ `/team-ship` when done
+        → **STOP** (do NOT checkout in main repo — it would conflict with the worktree)
+      - If branch exists but NO worktree → create worktree for it:
+        `git worktree add "$WORKTREE_PATH" "$BRANCH"` (without `-b`, branch already exists)
+        Then copy Contract + config into worktree (same as Step 5 worktree flow)
 - Network errors → "**ERROR:** GitHub API error. Check your connection and `gh auth status`." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
