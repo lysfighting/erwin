@@ -2353,7 +2353,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 1. Orphan contract (issue closed, contract exists) → `/team doctor fix` to clean up, then `/team-claim`
 2. Merged PR branch still exists locally → `/team-ship done` to clean up
 3. PR behind base → PR **#{N}** is {M} behind — `/team-ship sync`
-4. PR CI passed + approved → PR **#{N}** ready to merge. `/team-ship done`
+4. PR CI passed + approved → PR **#{N}** ready to merge — merge on GitHub, then `/team-ship done`
 5. PR CI passed, no review → PR **#{N}** CI passed — awaiting review/merge
 6. PR CI failing → PR **#{N}** CI failing — fix before merge
 7. Active mission, no PR → `/team-drive` to continue or `/team-ship` to deliver
@@ -3226,19 +3226,20 @@ gh issue list --label "$MISSION_LABEL" --state open --assignee "$GH_USER" --json
 - If none → "No missions assigned to you. Create one with `/team-issue` first." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - Sort by priority (P0 first)
-- Display summary then use `AskUserQuestion` with each Issue as an option:
+- Display summary then use `AskUserQuestion` with top 3 Issues (AskUserQuestion max = 4 options):
 
 Use `AskUserQuestion`:
 ```
 question: "哪个 Issue 要 auto？（按优先级排列）"
 options:
-  {For each assigned Issue, sorted by priority:}
+  {For TOP 3 assigned Issues, sorted by priority (skip rest — 4-option limit):}
   - label: "#{issue} {title}"
     description: "{priority_dot} {Pn} · {size} · {milestone or '—'}"
   - label: "取消"
     description: "返回"
 ```
 If "取消" → **STOP**
+If user has 4+ assigned Issues, show note before AskUserQuestion: "显示前 3 个（共 {N} 个）。指定 Issue: `/team auto #N`"
 
 ### A2: Validate Issue
 
