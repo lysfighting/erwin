@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.7.1"
+version: "3.8.1"
 ---
 
 # /team-drive — Execute Mission
@@ -211,12 +211,28 @@ CURRENT_BRANCH=$(git branch --show-current)
 
 Compare with Contract's `branch` field.
 - If on wrong branch → `git checkout {contract.branch}`
-- If branch doesn't exist locally → display the following and **STOP**:
+- If branch doesn't exist locally → check remote and offer interactive recovery:
 
-  **ERROR:** Branch *{branch}* not found locally. Options:
-    1. Restore from remote: `git checkout -b {branch} origin/{branch}`
-    2. Re-claim the mission: `/team-claim` **#{issue}**
-    Re-claiming will regenerate the Contract from the Issue. Committed changes are preserved on remote if pushed.
+  ```bash
+  REMOTE_EXISTS=$(git ls-remote --heads origin "{contract.branch}" 2>/dev/null | wc -l | tr -d ' ')
+  ```
+
+  Use `AskUserQuestion`:
+  ```
+  question: "Branch *{branch}* 不在本地。如何恢复？"
+  options:
+    {If REMOTE_EXISTS > 0:}
+    - label: "从 remote 恢复"
+      description: "git checkout -b {branch} origin/{branch}"
+    - label: "重新 claim"
+      description: "重新生成 Contract（remote 上已 push 的代码不受影响）"
+    - label: "取消"
+      description: "不操作"
+  ```
+
+  - If "从 remote 恢复" → `git checkout -b {branch} origin/{branch}` → continue
+  - If "重新 claim" → delete Contract → output "Run `/team-claim` **#{issue}** to re-claim." → **STOP**
+  - If "取消" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
@@ -622,15 +638,15 @@ Parallel:   teammate completes → reports to Lead (RETURN)
             → wave complete → Lead launches next wave
 ```
 
-Teammates NEVER directly modify the Contract file or call `sync-checkbox`. They report completion via `SendMessage` to "team-lead", including:
+Teammates NEVER directly modify the Contract file or call `sync-all-checkboxes`. They report completion via `SendMessage` to "team-lead", including:
 - Which sub-task they completed
 - Files modified
 - Verification result (tests pass/fail)
 
 The Lead then:
 1. Reviews the teammate's work (read modified files, verify quality)
-2. Toggles the sub-task checkbox in Contract
-3. Syncs to GitHub Issue
+2. Toggles the sub-task checkbox in Contract (`tw-contract.sh toggle-task`)
+3. After wave complete → batch-syncs to GitHub Issue (`tw-contract.sh sync-all-checkboxes`)
 4. Broadcasts wave progress
 
 ---
@@ -716,10 +732,12 @@ Use appropriate commit type: `feat`, `fix`, `refactor`, `test`, `docs`. **Do NOT
 bash ~/.claude/commands/scripts/tw-contract.sh toggle-task "$CONTRACT_PATH" {N}
 ```
 
-**Step 3: Sync checkbox to GitHub Issue**
+**Step 3: Sync all checkboxes to GitHub Issue**
 ```bash
-bash ~/.claude/commands/scripts/tw-contract.sh sync-checkbox $ISSUE_NUMBER "$SUBTASK_TEXT"
+bash ~/.claude/commands/scripts/tw-contract.sh sync-all-checkboxes "$CONTRACT_PATH" $ISSUE_NUMBER
 ```
+
+This batch-syncs ALL checked items (Sub-tasks + Success Criteria) from Contract to Issue in one API call. Uses fuzzy matching — tolerates timestamp suffixes, whitespace differences, and minor rewording. Reports unmatched items to stderr.
 
 Non-fatal: if sync fails, warn but continue.
 
@@ -795,11 +813,17 @@ Separate unchecked tasks into two categories:
 
 For unchecked **code tasks**:
   1. For each unchecked task, verify whether the work was actually done (check git log, grep code)
-  2. If work is done → toggle the checkbox NOW (`tw-contract.sh toggle-task` + `sync-checkbox`)
+  2. If work is done → toggle the checkbox NOW (`tw-contract.sh toggle-task`)
   3. If work is NOT done → execute the sub-task before proceeding
   4. **Do NOT proceed to acceptance criteria until all CODE task checkboxes are `[x]`**
 
 Unchecked **manual tasks** are expected — they pass through to the Manual Ops Handoff in the Completion Summary.
+
+After all Contract checkboxes are correct, batch-sync to GitHub Issue:
+```bash
+bash ~/.claude/commands/scripts/tw-contract.sh sync-all-checkboxes "$CONTRACT_PATH" $ISSUE_NUMBER
+```
+This catches any missed per-task syncs and also syncs Success Criteria checkboxes.
 
 This gate exists because LLMs sometimes complete code work but skip the checkbox toggle step. Re-reading the Contract from disk catches this.
 
@@ -855,6 +879,46 @@ gh issue comment {issue} --body "All code tasks complete — ready for review. B
 ```
 
 Non-fatal: if comment fails, warn but continue.
+
+### AI-Suggested Issue Comment (conditional)
+
+**Evaluate whether the execution produced insights worth sharing on the Issue.** Review the AI Notes (key decisions, issues encountered, plan deviations) and determine if any of these are true:
+
+| Signal | Why it's worth commenting |
+|--------|--------------------------|
+| Fixed a bug not described in the Issue | Reviewer needs to know about extra changes |
+| Implementation deviated from Issue description | Explain why a different approach was taken |
+| Hit a blocker and switched approach | Decision context is valuable for the team |
+| Discovered a related problem outside scope | Needs follow-up Issue |
+| Performance, security, or compatibility concern | Reviewer should pay attention |
+
+**If none of these signals are present** (pure execution, no surprises) → **skip silently**. No need to comment when everything went as planned.
+
+**If any signal is present** → generate a concise comment draft and present to the user:
+
+```
+💬 **建议追加 Issue 备注** — AI 执行过程中发现值得记录的信息：
+
+{draft comment — 2-5 sentences, focusing on what's NOT already in the Issue body or PR body}
+```
+
+Use `AskUserQuestion`:
+```
+question: "追加这条备注到 Issue？"
+options:
+  - label: "发送"
+    description: "直接发送上述备注"
+  - label: "编辑后发送"
+    description: "我修改一下内容"
+  - label: "跳过"
+    description: "不需要追加"
+```
+
+- "发送" → `gh issue comment {issue} --body "{draft}"` (non-fatal)
+- "编辑后发送" → use `AskUserQuestion` with `useTextArea: true` to collect edited text → post
+- "跳过" → continue
+
+**In `/team auto` mode:** skip this step entirely (auto = zero interaction).
 
 ### Update Contract AI Notes
 
@@ -938,10 +1002,34 @@ These require your action — AI cannot perform them.
 ────────────────────────────────────────────
 
 Then use `AskUserQuestion` to ask:
+- **"引导执行"** → AI walks user through each manual step interactively (see Guided Execution below)
 - **"Done — all manual steps complete"** → proceed to show acceptance criteria + suggest `/team-ship`
 - **"Will do later — ship PR first"** → proceed to suggest `/team-ship` (note manual steps in PR description)
-- **"Need help with a step"** → assist with the specific manual step
 - **"Skip — not needed"** → proceed, note in AI Notes
+
+#### Guided Execution (引导执行)
+
+When user selects "引导执行", AI assists with each manual step **one at a time**:
+
+For each manual task:
+1. **Assess executability** — can AI run this directly (e.g., SSH command, API call) or does it truly require human-only action (e.g., browser UI, physical access)?
+
+2. **If AI can execute** (SSH, CLI commands, API calls):
+   - Show the command(s) about to run
+   - Use `AskUserQuestion`: "执行这条命令？" → "执行" / "我自己来" / "跳过"
+   - If "执行" → run via Bash tool, show output, verify result
+   - If verification fails → diagnose, suggest fix, retry
+
+3. **If truly human-only** (browser console, physical hardware, third-party UI):
+   - Show step-by-step instructions with concrete actions
+   - Use `AskUserQuestion`: "完成了吗？" → "完成" / "遇到问题" / "跳过"
+   - If "遇到问题" → troubleshoot interactively
+
+4. **After each step** → check off the sub-task in Contract, move to next
+
+After all steps processed (done or skipped), continue to acceptance criteria block.
+
+**Key principle:** Many tasks labeled MANUAL are only "manual" because they require server/infra access — but if the user has SSH keys or CLI tools configured, AI can execute them directly. The label means "needs human judgment to initiate", not "AI must not touch".
 
 After user responds, output the full acceptance criteria block and the `/team-ship` prompt:
 

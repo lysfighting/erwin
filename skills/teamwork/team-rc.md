@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.7.1"
+version: "3.8.1"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -144,9 +144,41 @@ LATEST_CI=$(gh run list --branch "$BASE_BRANCH" --limit 1 \
   --json conclusion --jq '.[0].conclusion' 2>/dev/null)
 ```
 
-- If `success` → `Develop CI: green`
+- If `success` → `Develop CI: green` → continue to Step 5
 - If not `success` → warn: `Develop CI not green (${LATEST_CI}). Proceed with caution.`
-- Ask user: `Proceed? / Abort` — If abort → **STOP**. If you abort, fix CI failures on `$BASE_BRANCH` and re-run `/team-rc`.
+
+Use `AskUserQuestion`:
+```
+question: "Develop CI 未通过 ({LATEST_CI})。是否继续？"
+options:
+  - label: "继续"
+    description: "CI 问题不影响本次 RC，继续切分支"
+  - label: "中止"
+    description: "先修 CI，之后重新 /team-rc"
+```
+If "中止" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+### Step 4b: Confirm RC Preparation
+
+Display the RC summary and confirm before cutting:
+
+**PREPARE RC** ── **{NEXT_VERSION}** ────────────────────
+*rc/{NEXT_VERSION}* ← *{BASE_BRANCH}*
+Develop CI: {green / not green}
+Staging: {workflow name / "(No staging workflow configured — deploy manually)"}
+────────────────────────────────────────────
+
+Use `AskUserQuestion`:
+```
+question: "确认切 RC 分支？"
+options:
+  - label: "Proceed"
+    description: "从 {BASE_BRANCH} 切出 rc/{NEXT_VERSION}"
+  - label: "Abort"
+    description: "取消"
+```
+If "Abort" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### Step 5: Cut RC Branch
@@ -155,7 +187,7 @@ LATEST_CI=$(gh run list --branch "$BASE_BRANCH" --limit 1 \
 bash ~/.claude/commands/scripts/tw-git.sh cut-release "$NEXT_VERSION"
 ```
 
-This runs: checkout develop → pull → create `rc/$NEXT_VERSION` → push to origin.
+This runs: fetch origin/develop → create `rc/$NEXT_VERSION` from it → push to origin. **Does NOT checkout or modify the working tree.**
 
 ### Step 6: Trigger Staging Deploy (optional)
 
@@ -228,7 +260,19 @@ LATEST_RUN=$(gh run list --workflow "$STAGING_WORKFLOW" --branch "$RC_BRANCH" --
 ```
 
 - If conclusion is `success` → `Staging: passed`
-- If not → warn with details, ask user `Proceed anyway? / Abort`. Deploy to staging first. Check your CI/CD pipeline or manually trigger deployment.
+- If not → warn with details.
+
+Use `AskUserQuestion`:
+```
+question: "Staging 未通过。是否继续 promote？"
+options:
+  - label: "继续"
+    description: "Staging 问题已知，继续 promote"
+  - label: "中止"
+    description: "先修 staging，之后重新 /team-rc promote"
+```
+If "中止" → **STOP**. Deploy to staging first. Check your CI/CD pipeline or manually trigger deployment.
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 **If not set:** `(Staging check skipped — no workflow configured)`
 
@@ -245,7 +289,16 @@ LATEST_RUN=$(gh run list --workflow "$STAGING_WORKFLOW" --branch "$RC_BRANCH" --
   5. Delete *{RC_BRANCH}*
 ────────────────────────────────────────────
 
-Ask user: `Proceed? / Abort` — If abort → **STOP**
+Use `AskUserQuestion`:
+```
+question: "确认 promote？这会创建 PR、tag、GitHub Release。"
+options:
+  - label: "Promote"
+    description: "执行上述所有操作"
+  - label: "中止"
+    description: "取消 promote"
+```
+If "中止" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### Step P5: Generate Release Notes
@@ -307,11 +360,13 @@ while true; do
   if [ "$STATE" = "CLOSED" ]; then
     echo "ERROR: PR #$PR_NUMBER was closed without merging" >&2
     # STOP
+    # 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
   fi
   POLL_COUNT=$((POLL_COUNT + 1))
   if [ "$POLL_COUNT" -ge "$MAX_POLLS" ]; then
     echo "ERROR: Timed out waiting for PR #$PR_NUMBER to merge (10 min)" >&2
     # STOP — ask user to check CI status and branch protection
+    # 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
   fi
   sleep 10
 done
@@ -320,8 +375,19 @@ done
 **If `--auto` fails** (repo doesn't have auto-merge enabled) → fallback:
 
 ```bash
-# Wait for CI checks to pass
-gh pr checks "$PR_NUMBER" --watch --repo "$REPO" 2>/dev/null || true
+# Poll CI checks until all pass (gh pr checks --watch requires gh >= 2.40)
+MAX_CI_POLLS=60  # 10 minutes max
+CI_POLL=0
+while true; do
+  CI_STATUS=$(gh pr checks "$PR_NUMBER" --repo "$REPO" --json bucket --jq '[.[] | select(.bucket != "pass")] | length' 2>/dev/null)
+  if [ "$CI_STATUS" = "0" ]; then break; fi
+  CI_POLL=$((CI_POLL + 1))
+  if [ "$CI_POLL" -ge "$MAX_CI_POLLS" ]; then
+    echo "WARNING: CI checks still pending after 10 min — attempting merge anyway"
+    break
+  fi
+  sleep 10
+done
 
 # Merge directly
 gh pr merge "$PR_NUMBER" --squash \
@@ -339,11 +405,11 @@ If merge fails → output error details → **STOP**
 ### Step P7: Tag on Main
 
 ```bash
-git checkout "$PROD_BRANCH"
-git pull origin "$PROD_BRANCH"
-
-bash ~/.claude/commands/scripts/tw-git.sh tag "$VERSION"
+git fetch origin "$PROD_BRANCH"
+bash ~/.claude/commands/scripts/tw-git.sh tag "$VERSION" "origin/$PROD_BRANCH"
 ```
+
+**Does NOT checkout or modify the working tree.** Tags the remote production branch ref directly.
 
 Output: Tag **{VERSION}** pushed
 

@@ -8,12 +8,12 @@
 #   bash tw-git.sh protect-check                       # Exit 3 if on protected branch
 #   bash tw-git.sh push [BRANCH]                       # Push with -u (default: current branch)
 #   bash tw-git.sh rebase TARGET                        # Fetch + rebase on target
-#   bash tw-git.sh tag VERSION                          # Check exists, create, push, verify
+#   bash tw-git.sh tag VERSION [TARGET_REF]              # Check exists, create, push, verify
 #   bash tw-git.sh commit MSG [FILES...]               # Stage files + commit (-A if no files)
 #   bash tw-git.sh worktree-add BRANCH PATH            # Create worktree
 #   bash tw-git.sh worktree-remove PATH                # Remove worktree safely
 #   bash tw-git.sh log-since [BASE]                     # Show commits + diff stat since base
-#   bash tw-git.sh cut-release VERSION                  # Cut rc/VERSION from base branch
+#   bash tw-git.sh cut-release VERSION                  # Cut rc/VERSION from base (remote-only, no checkout)
 #   bash tw-git.sh slugify TITLE                         # Slugify title for branch names
 #   bash tw-git.sh find-rc                               # Find active RC branch (exit 1=none, 3=multiple)
 #   bash tw-git.sh next-version PREFIX                   # Derive next patch version from tags
@@ -163,9 +163,9 @@ cmd_rebase() {
 }
 
 cmd_tag() {
-  local version="${1:-}"
+  local version="${1:-}" target="${2:-}"
   if [ -z "$version" ]; then
-    echo "ERROR: tag requires VERSION" >&2
+    echo "ERROR: tag requires VERSION [TARGET_REF]" >&2
     exit 1
   fi
 
@@ -179,7 +179,20 @@ cmd_tag() {
     return 0
   fi
 
-  git tag "$version"
+  # Remote-only: tag a specific ref without checkout.
+  # If TARGET_REF provided (e.g. "origin/main"), tag that ref.
+  # If omitted, tags HEAD (backward compat).
+  if [ -n "$target" ]; then
+    git tag "$version" "$target" || {
+      echo "ERROR: Could not create tag '$version' at ref '$target'" >&2
+      exit 2
+    }
+  else
+    git tag "$version" || {
+      echo "ERROR: Could not create tag '$version'" >&2
+      exit 2
+    }
+  fi
   git push origin "$version"
 
   # Verify (use -F for fixed string match to avoid regex metachar issues with dots)
@@ -270,19 +283,21 @@ cmd_cut_release() {
   base=$(_base_branch)
   rc_branch="rc/$version"
 
-  git checkout "$base" 2>/dev/null || {
-    echo "ERROR: Could not checkout $base" >&2
+  # Remote-only: fetch latest base, create rc branch from it, push.
+  # Does NOT checkout or modify the user's working tree.
+  git fetch origin "$base" 2>/dev/null || {
+    echo "ERROR: Could not fetch origin/$base" >&2
     exit 2
   }
-  git pull origin "$base" 2>/dev/null || {
-    echo "WARNING: Could not pull $base, working with local copy" >&2
-  }
-  git checkout -b "$rc_branch" || {
-    echo "ERROR: Could not create branch $rc_branch" >&2
+  # Create branch pointing at origin/base without checking it out
+  git branch "$rc_branch" "origin/$base" || {
+    echo "ERROR: Could not create branch $rc_branch (already exists?)" >&2
     exit 2
   }
   git push -u origin "$rc_branch" || {
     echo "ERROR: Could not push $rc_branch" >&2
+    # Clean up local branch on push failure
+    git branch -d "$rc_branch" 2>/dev/null || true
     exit 2
   }
   echo "$rc_branch"

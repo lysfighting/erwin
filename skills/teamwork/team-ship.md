@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.7.1"
+version: "3.8.1"
 ---
 
 # /team-ship — Deliver Mission
@@ -70,7 +70,7 @@ Parse `$ARGUMENTS`:
 CURRENT=$(git branch --show-current)
 bash ~/.claude/commands/scripts/tw-git.sh protect-check 2>/dev/null || {
   echo "ERROR: You're on a protected branch ($CURRENT). Switch to a mission branch first."
-  # STOP
+  # STOP — 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 }
 ```
 
@@ -86,7 +86,7 @@ fi
 ```bash
 TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || {
   echo "No teamwork config found. Run /team init first."
-  # STOP
+  # STOP — 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 }
 ```
 
@@ -153,19 +153,26 @@ git worktree list --porcelain | grep -B2 "branch refs/heads/${CONTRACT_BRANCH}" 
 ```
 
 If a worktree path is found:
+
 **⚠️ WORKTREE MISMATCH**
+────────────────────────────────────────────
 Worktree mode is enabled but you're in the main repo.
 Your mission worktree: `{worktree_path}`
 
 Switch to it:  `cd {worktree_path}`
 Then re-run:   `/team-ship`
+────────────────────────────────────────────
 → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 If no worktree exists for this branch:
-⚠️ Worktree mode is enabled but no worktree exists for branch *{branch}*.
+
+**⚠️ NO WORKTREE FOUND**
+────────────────────────────────────────────
+Worktree mode is enabled but no worktree exists for branch *{branch}*.
 Run `/team-claim` **#{issue}** to recreate with worktree isolation.
 Or disable worktree mode: `git config --local teamwork.worktree false`
+────────────────────────────────────────────
 → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
@@ -229,6 +236,12 @@ Separate unchecked tasks into **code tasks** (no `🔧 MANUAL` or `(MANUAL)` tag
   → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - If only **manual** sub-tasks are unchecked → proceed (these are human-action tasks, not blockers for the PR). Note them for inclusion in PR description.
+
+**Sync checkboxes to GitHub Issue** (defense-in-depth — catches missed syncs from team-drive):
+```bash
+bash ~/.claude/commands/scripts/tw-contract.sh sync-all-checkboxes "$CONTRACT_PATH" $ISSUE_NUMBER
+```
+Non-fatal: if sync fails, warn but continue with shipping.
 
 ### 2c: Clean working tree
 
@@ -326,7 +339,13 @@ Closes #{issue}
 - [ ] {manual task description}
 
 ## Acceptance Criteria
-{criteria from Contract}
+{criteria from Contract — see FILTER RULE below}
+
+**FILTER RULE**: When copying criteria from Contract to PR body, **drop any criterion
+whose completion requires the PR itself to be merged or CI to pass on the PR**.
+These are delivery-mechanism criteria (e.g. "PR 合入 xxx", "CI 通过", "PR merged"),
+valid in the Issue but self-referential in a PR. Only include criteria about the
+actual work product (code changes, behavior, test results).
 
 ## Test
 {test command} — passing ✅
@@ -396,6 +415,48 @@ bash ~/.claude/commands/scripts/tw-pr.sh watch {pr}
   "Fix the failures, commit, and push to {branch} — the PR will update automatically. Or run /team-drive to fix in mission mode."
 
 If CI is not enabled → skip this step.
+
+---
+
+## Step 5b: AI-Suggested PR Comment (conditional)
+
+**Evaluate whether the PR would benefit from an additional comment** beyond the PR body. Review the execution context and determine if any of these are true:
+
+| Signal | Why it's worth commenting |
+|--------|--------------------------|
+| Deployment needs special steps (env vars, migrations, config) | Merger needs to know before/after merge actions |
+| Specific files/areas need careful review | Focus reviewer attention |
+| Known limitation or tech debt introduced | Transparency for the team |
+| CI failed on a flaky test (not a real issue) | Prevent reviewer confusion |
+| Breaking change or API change | Downstream consumers need to know |
+
+**If none of these signals are present** → **skip silently**.
+
+**If any signal is present** → generate a concise comment draft:
+
+```
+💬 **建议追加 PR 备注** — 有信息值得提醒 reviewer/merger：
+
+{draft comment — 2-5 sentences, actionable}
+```
+
+Use `AskUserQuestion`:
+```
+question: "追加这条备注到 PR？"
+options:
+  - label: "发送"
+    description: "直接发送上述备注"
+  - label: "编辑后发送"
+    description: "我修改一下内容"
+  - label: "跳过"
+    description: "不需要追加"
+```
+
+- "发送" → `gh pr comment {pr} --body "{draft}"` (non-fatal)
+- "编辑后发送" → use `AskUserQuestion` with `useTextArea: true` to collect edited text → post
+- "跳过" → continue
+
+**In `/team auto` mode:** skip this step entirely.
 
 ---
 
@@ -541,6 +602,7 @@ if [ -n "$DIRTY" ]; then
   git stash push -u -m "$STASH_MSG" || {
     echo "ERROR: git stash failed. Commit or discard changes manually before cleanup."
     # STOP — do not proceed to checkout, risk losing changes
+    # 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
   }
   echo "⚠️ Stashed uncommitted changes. Recover with: git stash pop"
 fi
@@ -550,7 +612,7 @@ bash ~/.claude/commands/scripts/tw-git.sh ensure-base || {
   if [ -n "$DIRTY" ]; then
     echo "Your changes are saved in stash. Recover with: git stash pop"
   fi
-  # STOP
+  # STOP — 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 }
 # Note: ensure-base already does checkout + pull, so base branch is up-to-date
 # (includes the just-merged PR squash commit)
