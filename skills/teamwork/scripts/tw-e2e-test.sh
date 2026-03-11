@@ -135,8 +135,8 @@ else
 fi
 
 # build-branch-name — missing args
-BBN_ERR=$(run_script tw-git.sh build-branch-name 2>&1) || true
-BBN_ERR_EXIT=$?
+BBN_ERR_EXIT=0
+BBN_ERR=$(run_script tw-git.sh build-branch-name 2>&1) || BBN_ERR_EXIT=$?
 if [ $BBN_ERR_EXIT -ne 0 ]; then
   pass "build-branch-name (no args) → correctly rejected (exit $BBN_ERR_EXIT)"
 else
@@ -160,8 +160,8 @@ else
 fi
 
 # extract-issue-number — no number → error
-EIN_ERR=$(run_script tw-git.sh extract-issue-number "main" 2>&1) || true
-EIN_ERR_EXIT=$?
+EIN_ERR_EXIT=0
+EIN_ERR=$(run_script tw-git.sh extract-issue-number "main" 2>&1) || EIN_ERR_EXIT=$?
 if [ $EIN_ERR_EXIT -ne 0 ]; then
   pass "extract-issue-number (no number) → correctly rejected"
 else
