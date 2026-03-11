@@ -970,7 +970,7 @@ Tests:    ✅ passing
 ────────────────────────────────────────────
 `/team-ship` to create PR
 
-💡 Tip: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ### If manual tasks exist — Manual Ops Handoff:
 
@@ -1039,7 +1039,7 @@ After user responds, output the full acceptance criteria block and the `/team-sh
 ────────────────────────────────────────────
 `/team-ship` to create PR
 
-💡 Tip: {random tip — read ~/.claude/commands/scripts/tw-tips.txt, pick one non-comment line at random}
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ### Post-Mission Ecosystem Scan (2-3 min)
 

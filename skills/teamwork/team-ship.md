@@ -129,7 +129,7 @@ Read the Contract file fully. Extract from YAML frontmatter:
 
 Extract from body:
 - **Sub-tasks** (with checkbox status)
-- **Acceptance Criteria**
+- **Success Criteria**
 - **AI Notes**
 
 ---
@@ -338,7 +338,7 @@ Closes #{issue}
 {For each manual sub-task:}
 - [ ] {manual task description}
 
-## Acceptance Criteria
+## Success Criteria
 {criteria from Contract — see FILTER RULE below}
 
 **FILTER RULE**: When copying criteria from Contract to PR body, **drop any criterion

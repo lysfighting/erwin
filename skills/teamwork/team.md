@@ -3298,7 +3298,7 @@ issue_content_hash: "$(bash ~/.claude/commands/scripts/tw-contract.sh hash "$TIT
 ## Sub-tasks
 {from Issue body}
 
-## Acceptance Criteria
+## Success Criteria
 {from Issue body}
 
 ## Context Files
@@ -3520,7 +3520,7 @@ Closes #{issue}
 ## Changes
 {completed sub-tasks as bullet list}
 
-## Acceptance Criteria
+## Success Criteria
 {from Contract}
 
 ## Test

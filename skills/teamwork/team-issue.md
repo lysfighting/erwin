@@ -434,6 +434,7 @@ Output:
   {first 80 chars of text}...
   **URL** `{comment URL}`
 ────────────────────────────────────────────
+`/team-issue #N` view · `/team-claim #N` claim · `/team` dashboard
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
