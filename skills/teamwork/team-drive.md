@@ -176,16 +176,18 @@ Find the correct worktree path for this Contract's branch:
 bash ~/.claude/commands/scripts/tw-git.sh worktree-find-by-branch "$CONTRACT_BRANCH" 2>/dev/null || true
 ```
 
-If a worktree path is found for this branch → **auto-switch** (don't STOP):
+If a worktree path is found for this branch:
 
-```bash
-cd {worktree_path}
-```
+**⚠️ WORKTREE MISMATCH**
+────────────────────────────────────────────
+Worktree mode is enabled but you're in the main repo.
+Your mission worktree: `{worktree_path}`
 
-Output:
-📂 Auto-switched to worktree: `{worktree_path}` ← *{branch}*
-
-Then **continue** with Step 1 (Verify Branch) — do NOT stop. The whole point of worktree mode is seamless isolation; requiring manual `cd` defeats the purpose.
+Switch to it:  `cd {worktree_path}`
+Then re-run:   `/team-drive`
+────────────────────────────────────────────
+→ **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 If no worktree exists for this branch (e.g., worktree was deleted or claim was done before enabling worktree mode):
 
