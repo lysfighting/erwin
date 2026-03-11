@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.8.1"
+version: "3.8.2"
 ---
 
 # /team-rc — Release Candidate Lifecycle

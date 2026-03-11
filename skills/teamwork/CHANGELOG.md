@@ -2,6 +2,37 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.8.2] — 2026-03-11
+
+### Added — Script沉淀: 6 new subcommands replace 15 inline bash sites
+
+- **`tw-git.sh build-branch-name`**: Pattern-based branch name generation (replaces 3x inline sed in team.md, team-claim.md)
+- **`tw-git.sh extract-issue-number`**: Extract issue number from branch name (replaces 3+ inline `grep -oE` in team-drive.md, team.md)
+- **`tw-git.sh worktree-main-repo`**: Return main worktree path (replaces 3x inline `git worktree list | head -1 | sed` in team.md, team-claim.md, team-rc.md)
+- **`tw-git.sh worktree-find-by-branch`**: Locate worktree by branch name (replaces 3x inline `grep -B2` + awk in team-claim.md, team-drive.md, team-ship.md)
+- **`tw-config.sh team-mode`**: Returns "solo"/"team" based on member count (replaces LLM counting in team-issue.md)
+- **Von Neumann principle**: deterministic ops → scripts, judgment → LLM. 15 inline bash sites migrated.
+
+### Fixed — AskUserQuestion constraints + dashboard NEXT guidance
+
+- **`/team auto` Issue selection**: Capped at 3 Issues + Cancel (4-option AskUserQuestion limit). Shows hint for 4+ Issues: use `/team auto #N` directly.
+- **Dashboard NEXT item 4**: Changed "ready to merge → `/team-ship done`" to "merge on GitHub, then `/team-ship done`" (done is POST-merge cleanup, not the merge itself).
+- **`multiSelect: true` validated**: Confirmed Claude Code CLI supports multiSelect — previous assumption was wrong. MEMORY.md corrected.
+
+### Fixed — 3 UX dead-end flows
+
+- **`/team-ship done`**: "No merged PR" error now shows 3-step actionable guide (check PR status → wait and retry → merge first). Was: one-liner with no next steps.
+- **`/team-rc promote`**: Staging未配置 now shows explicit ⚠️ warning + manual verify hint. Was: silent skip that misleads user into thinking staging is OK.
+- **`/team-ship` worktree mismatch**: Now recommends disabling worktree temporarily (primary) vs re-claiming (alternative). Was: two equal options with no recommendation.
+
+### Fixed — tw-tips.txt stale reference
+
+- `/team learn` tip: "11 节" → "13 节" (learn operation has 13 sections since v3.6.0)
+
+### Fixed — Wrap mode checkbox gate
+
+- `/team wrap`: After drive verification, force-checks all non-MANUAL sub-tasks in Contract before `sync-all-checkboxes`. Root cause: verify-only drive skips checking boxes → sync propagates unchecked state to Issue.
+
 ## [3.8.1] — 2026-03-11
 
 ### Fixed — Comprehensive audit: worktree chain + recovery hints + version source + naming

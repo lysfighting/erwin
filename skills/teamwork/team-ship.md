@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.8.1"
+version: "3.8.2"
 ---
 
 # /team-ship — Deliver Mission
