@@ -1100,7 +1100,8 @@ The protection rules adapt to your team's maturity:
 │  tw-config.sh ─── Foundation ─── Config reader + team queries     │
 │  │  Key lookup:   tw-config.sh <dotted.key> [default]            │
 │  │  Subcommands:  detect-dir, resolve-labels, get-user-level,    │
-│  │                team-mode, resolve-member, list-members         │
+│  │                team-mode, resolve-member, list-members,        │
+│  │                migrate, has-section                             │
 │  │  Python3 YAML parser (handles nested keys, quotes, comments)  │
 │  │  Shared _PYTHON_MEMBER_PARSER for member/role queries         │
 │  │                                                                │
