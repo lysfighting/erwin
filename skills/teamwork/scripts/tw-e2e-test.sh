@@ -80,7 +80,9 @@ else
 fi
 
 ORIGINAL_BRANCH=$(git branch --show-current)
+GH_USER=$(gh api user --jq '.login' 2>/dev/null || echo "test")
 info "Current branch: $ORIGINAL_BRANCH"
+info "GitHub user: $GH_USER"
 
 # ─── Phase 1: Config reads ───────────────────────────────
 section "PHASE 1: CONFIG READS (tw-config.sh)"
@@ -199,6 +201,36 @@ else
   fail "team-mode: expected solo/team, got '$TM_OUT'"
 fi
 
+# list-members
+LM_OUT=$(run_script tw-config.sh list-members 2>/dev/null)
+if [ -n "$LM_OUT" ]; then
+  LM_COUNT=$(echo "$LM_OUT" | wc -l | tr -d ' ')
+  pass "list-members → $LM_COUNT member(s)"
+else
+  skip "list-members → empty (no members in config)"
+fi
+
+# resolve-member — resolve current user (should succeed if in config)
+if [ -n "$GH_USER" ]; then
+  RM_OUT=$(run_script tw-config.sh resolve-member "$GH_USER" 2>/dev/null) || true
+  if [ "$RM_OUT" = "$GH_USER" ]; then
+    pass "resolve-member '$GH_USER' → $RM_OUT"
+  elif [ -n "$RM_OUT" ]; then
+    pass "resolve-member '$GH_USER' → $RM_OUT (name match)"
+  else
+    skip "resolve-member '$GH_USER' → not in config (expected in some setups)"
+  fi
+fi
+
+# resolve-member — nonexistent user → error
+run_script tw-config.sh resolve-member "nonexistent-user-xyz-99" >/dev/null 2>&1
+RM_EXIT=$?
+if [ $RM_EXIT -ne 0 ]; then
+  pass "resolve-member (nonexistent) → correctly rejected (exit $RM_EXIT)"
+else
+  fail "resolve-member should fail for nonexistent user"
+fi
+
 # ─── Phase 2: Create test issue ──────────────────────────
 section "PHASE 2: CREATE TEST ISSUE"
 
@@ -240,7 +272,6 @@ else
 fi
 
 # create-branch
-GH_USER=$(gh api user --jq '.login' 2>/dev/null || echo "test")
 TEST_BRANCH=$(run_script tw-git.sh create-branch "$TEST_ISSUE" "e2e-auto-test" "$GH_USER" 2>/dev/null) || {
   fail "create-branch failed"
 }

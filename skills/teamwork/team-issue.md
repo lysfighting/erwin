@@ -178,9 +178,13 @@ fi
 
 **Extract @assignee** (if present in remaining args):
 - Find `@mention` at end of description
-- Match against config `members[].github` (exact) or `members[].name` (case-insensitive partial)
+- Resolve via script:
+  ```bash
+  ASSIGNEE_GH=$(bash ~/.claude/commands/scripts/tw-config.sh resolve-member "{mention}" 2>/dev/null)
+  ```
+  Match priority: github exact → name exact → partial (case-insensitive).
 - Remove `@mention` from description text
-- If `@mention` doesn't match any member → "**ERROR:** Member '@{mention}' not found. Available: {list}" → **STOP**
+- If resolve-member fails (exit 1) → output its stderr message (lists available members) → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
@@ -193,7 +197,11 @@ fi
 
 **Solo mode** (members==1, no `@assignee`): Auto-assign to self (`$GH_USER`). No prompt needed.
 
-**Team mode** (members > 1, no `@assignee`): Use `AskUserQuestion` to select assignee from config members list.
+**Team mode** (members > 1, no `@assignee`): List members via script, then AskUserQuestion:
+```bash
+bash ~/.claude/commands/scripts/tw-config.sh list-members
+# Output: github:name:role per line. Use to build AskUserQuestion options (max 3 members + "自己").
+```
 
 Any team member can create Issues and assign to anyone — no role restriction.
 

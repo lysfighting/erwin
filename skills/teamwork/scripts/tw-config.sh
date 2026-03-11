@@ -9,6 +9,8 @@
 #   bash tw-config.sh resolve-labels            # Print MISSION_LABEL, STATUS_PREFIX, PRIORITY_PREFIX
 #   bash tw-config.sh get-user-level USER       # Print solo/leader/member
 #   bash tw-config.sh team-mode                 # Print "solo" or "team" (based on member count)
+#   bash tw-config.sh resolve-member MENTION    # Resolve @mention to GitHub username
+#   bash tw-config.sh list-members              # List all members as github:name:role lines
 #
 # KEY FORMAT: dot-notation for nested keys (up to 2 levels)
 #   "project.test_command"  → yaml: project:\n  test_command: "..."
@@ -404,9 +406,194 @@ print("solo" if len(real_members) <= 1 else "team")
 PYEOF
 }
 
+cmd_resolve_member() {
+  # Resolve @mention to GitHub username.
+  # Match against members[].github (exact, case-insensitive) or members[].name (partial, case-insensitive).
+  # Returns: github username on stdout, exit 0.
+  # On no match: prints available members to stderr, exit 1.
+  local mention="${1:-}"
+  if [ -z "$mention" ]; then
+    echo "ERROR: resolve-member requires MENTION" >&2
+    exit 1
+  fi
+  # Strip leading @ if present
+  mention="${mention#@}"
+
+  local config_file
+  config_file=$(_detect_config)
+  if [ -z "$config_file" ]; then
+    echo "ERROR: No teamwork config found" >&2
+    exit 1
+  fi
+
+  python3 - "$config_file" "$mention" << 'PYEOF'
+import sys
+
+config_file = sys.argv[1]
+mention = sys.argv[2].lower()
+
+members = []
+current_section = None
+current_item = {}
+
+with open(config_file) as f:
+    for line in f:
+        line = line.rstrip('\n')
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#'):
+            continue
+        if not line.startswith(' ') and not line.startswith('\t') and ':' in line:
+            key = line.split(':', 1)[0].strip()
+            val = line.split(':', 1)[1].strip()
+            if key in ('members', 'team') and (val == '' or val.startswith('#')):
+                if current_item and current_section in ('members', 'team'):
+                    members.append(current_item)
+                    current_item = {}
+                current_section = key
+                continue
+            else:
+                if current_item and current_section in ('members', 'team'):
+                    members.append(current_item)
+                    current_item = {}
+                current_section = key
+                continue
+        if current_section in ('members', 'team') and stripped.startswith('-'):
+            if current_item:
+                members.append(current_item)
+            current_item = {}
+            rest = stripped[1:].strip()
+            if ':' in rest:
+                k = rest.split(':', 1)[0].strip()
+                v = rest.split(':', 1)[1].strip().strip('"').strip("'")
+                current_item[k] = v
+            continue
+        if current_section in ('members', 'team') and ':' in stripped and not stripped.startswith('-'):
+            indent = len(line) - len(line.lstrip())
+            if indent >= 2:
+                k = stripped.split(':', 1)[0].strip()
+                v = stripped.split(':', 1)[1].strip().strip('"').strip("'")
+                current_item[k] = v
+            continue
+
+if current_item and current_section in ('members', 'team'):
+    members.append(current_item)
+
+real = [m for m in members if 'github' in m or 'id' in m]
+if not real:
+    print("ERROR: No members in config", file=sys.stderr)
+    sys.exit(1)
+
+# Priority 1: exact match on github/id (case-insensitive)
+for m in real:
+    gh = m.get('github', m.get('id', ''))
+    if gh.lower() == mention:
+        print(gh)
+        sys.exit(0)
+
+# Priority 2: exact match on name (case-insensitive)
+for m in real:
+    name = m.get('name', '')
+    if name.lower() == mention:
+        print(m.get('github', m.get('id', '')))
+        sys.exit(0)
+
+# Priority 3: partial match on name (case-insensitive, prefix or contains)
+matches = []
+for m in real:
+    name = m.get('name', '').lower()
+    gh = m.get('github', m.get('id', '')).lower()
+    if mention in name or mention in gh:
+        matches.append(m)
+
+if len(matches) == 1:
+    print(matches[0].get('github', matches[0].get('id', '')))
+    sys.exit(0)
+elif len(matches) > 1:
+    print(f"ERROR: Ambiguous — '{mention}' matches multiple members:", file=sys.stderr)
+    for m in matches:
+        gh = m.get('github', m.get('id', ''))
+        name = m.get('name', '')
+        print(f"  @{gh} ({name})", file=sys.stderr)
+    sys.exit(1)
+
+# No match
+available = [m.get('github', m.get('id', '')) for m in real]
+print(f"ERROR: Member '@{mention}' not found. Available: {', '.join('@' + a for a in available)}", file=sys.stderr)
+sys.exit(1)
+PYEOF
+}
+
+cmd_list_members() {
+  # List all members as "github:name:role" lines. For use in AskUserQuestion option building.
+  local config_file
+  config_file=$(_detect_config)
+  if [ -z "$config_file" ]; then
+    exit 0
+  fi
+
+  python3 - "$config_file" << 'PYEOF'
+import sys
+
+config_file = sys.argv[1]
+members = []
+current_section = None
+current_item = {}
+
+with open(config_file) as f:
+    for line in f:
+        line = line.rstrip('\n')
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#'):
+            continue
+        if not line.startswith(' ') and not line.startswith('\t') and ':' in line:
+            key = line.split(':', 1)[0].strip()
+            val = line.split(':', 1)[1].strip()
+            if key in ('members', 'team') and (val == '' or val.startswith('#')):
+                if current_item and current_section in ('members', 'team'):
+                    members.append(current_item)
+                    current_item = {}
+                current_section = key
+                continue
+            else:
+                if current_item and current_section in ('members', 'team'):
+                    members.append(current_item)
+                    current_item = {}
+                current_section = key
+                continue
+        if current_section in ('members', 'team') and stripped.startswith('-'):
+            if current_item:
+                members.append(current_item)
+            current_item = {}
+            rest = stripped[1:].strip()
+            if ':' in rest:
+                k = rest.split(':', 1)[0].strip()
+                v = rest.split(':', 1)[1].strip().strip('"').strip("'")
+                current_item[k] = v
+            continue
+        if current_section in ('members', 'team') and ':' in stripped and not stripped.startswith('-'):
+            indent = len(line) - len(line.lstrip())
+            if indent >= 2:
+                k = stripped.split(':', 1)[0].strip()
+                v = stripped.split(':', 1)[1].strip().strip('"').strip("'")
+                current_item[k] = v
+            continue
+
+if current_item and current_section in ('members', 'team'):
+    members.append(current_item)
+
+for m in members:
+    gh = m.get('github', m.get('id', ''))
+    if not gh:
+        continue
+    name = m.get('name', gh)
+    role = m.get('role', '')
+    print(f"{gh}:{name}:{role}")
+PYEOF
+}
+
 usage() {
   echo "Usage: tw-config.sh <subcommand|key> [args...]" >&2
-  echo "Subcommands: detect-dir, resolve-labels, get-user-level, team-mode" >&2
+  echo "Subcommands: detect-dir, resolve-labels, get-user-level, team-mode, resolve-member, list-members" >&2
   echo "Key lookup:  tw-config.sh <dotted.key> [default]" >&2
   exit 1
 }
@@ -417,6 +604,8 @@ case "${1:-}" in
   resolve-labels)   cmd_resolve_labels ;;
   get-user-level)   shift; cmd_get_user_level "$@" ;;
   team-mode)        cmd_team_mode ;;
+  resolve-member)   shift; cmd_resolve_member "$@" ;;
+  list-members)     cmd_list_members ;;
   -h|--help|help)   usage ;;
   "")               usage ;;
   *)                cmd_get "$@" ;;
