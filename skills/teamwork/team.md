@@ -178,7 +178,7 @@ Every Issue transitions through exactly these states:
 
 ```
   ┌───────────┐     /team-issue     ┌───────────┐
-  │  backlog  │ ──────────────────► │    wip    │
+  │  created  │ ──────────────────► │    wip    │
   └───────────┘                     └─────┬─────┘
                                           │ /team-ship
                                     ┌─────▼─────┐
@@ -190,7 +190,7 @@ Every Issue transitions through exactly these states:
                                     └───────────┘
 ```
 
-Labels:  `status:backlog` → `status:wip` → `status:review` → `status:done`
+Labels:  `status:wip` → `status:review` → `status:done`
 GitHub:  Issue OPEN ─────────────────────────────► Issue CLOSED
 
 

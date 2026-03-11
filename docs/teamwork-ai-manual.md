@@ -1166,7 +1166,6 @@ Evidence from v2.6.1 falsification audit:
 # Schema version 3
 
 schema_version: 3
-skill_version: 3.7.1
 
 # Team metadata
 team:
@@ -1308,7 +1307,7 @@ Every `/team-*` command displays a random tip after its output. Tips are sourced
 | v2 | Added `deploy:`, `versions:`, `worktree:` |
 | v3 | Added `roles:`, `members:` (separate from `team:`), `notifications:`, `project.services[]`. `team:` = metadata. Push model default. Worktree moved to `git config --local` (per-user). |
 
-MERGE MODE (`/team init` on existing config): preserves all existing content, updates `skill_version` + `schema_version`, appends only missing sections. Safe to run on any existing config.
+MERGE MODE (`/team init` on existing config): preserves all existing content, updates `schema_version`, removes `skill_version` from config if present, appends only missing sections. Safe to run on any existing config.
 
 ---
 

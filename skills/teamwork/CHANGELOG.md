@@ -4,6 +4,20 @@ All notable changes to the Teamwork skill set.
 
 ## [3.8.1] — 2026-03-11
 
+### Fixed — Comprehensive audit: worktree chain + recovery hints + version source + naming
+
+- **SKILL_VERSION source**: 5 dashboard/help/config locations changed from `tw-config.sh skill_version` read to hardcoded constant. Version now lives exclusively in skill frontmatter; `tw-bump-version.sh` keeps in sync.
+- **`skill_version` removed from config**: Fresh install no longer writes it; merge mode actively deletes stale `skill_version` line; bump script no longer updates it.
+- **Init worktree-root mapping**: Replaced ambiguous `{chosen_path}` placeholder with explicit table + per-option bash code blocks. Three options: `.claude/worktrees/` (in-repo), sibling (unset root), custom absolute path.
+- **Auto/wrap worktree safety**: Both `/team auto` and `/team wrap` now detect worktree mode → create worktree during claim → STOP with explicit `cd` instructions instead of continuing drive/ship in main repo.
+- **Recovery hints**: Added 13 missing `💡 /team doctor` hints across team.md (8), team-ship.md (4), team-claim.md (1). All error STOPs now have doctor guidance.
+- **tw-git.sh tag**: Added error traps on `git tag` creation (was silent failure).
+- **team-rc.md**: Added 3 missing recovery hints for abort/error STOPs.
+- **Field naming**: Renamed "Acceptance Criteria" → "Success Criteria" in team.md auto contract template and team-ship.md extraction (canonical name per team-claim.md).
+- **Manual version**: Updated `docs/teamwork-ai-manual.md` from 3.7.1 → 3.8.1, removed stale `skill_version` from config examples.
+- **Learn lifecycle diagram**: Fixed to show v3 push model (no `backlog` state; Issue created directly as `wip`).
+- **UX**: Added NEXT guidance to team-issue comment operation; fixed backtick formatting in team-drive tips.
+
 ### Fixed — Batch checkbox sync replaces fragile per-item sync
 
 - **`sync-all-checkboxes`**: new `tw-contract.sh` subcommand — reads Contract, extracts ALL checked items (Sub-tasks + Success Criteria), fuzzy-matches against Issue body, updates in ONE API call
