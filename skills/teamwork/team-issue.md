@@ -130,10 +130,12 @@ CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current 
 
 ### Team Mode Detection
 
-Read the full config file. Count entries in `members:` (or `team:` array for schema v1).
+```bash
+TEAM_MODE=$(bash ~/.claude/commands/scripts/tw-config.sh team-mode 2>/dev/null)
+```
 
-- If members count == 1 → **SOLO_MODE=true** (auto-assign to self, no assignee prompt)
-- If members count > 1 → **SOLO_MODE=false** (team mode — prompt for assignee if not specified)
+- If `TEAM_MODE == "solo"` → **SOLO_MODE=true** (auto-assign to self, no assignee prompt)
+- If `TEAM_MODE == "team"` → **SOLO_MODE=false** (team mode — prompt for assignee if not specified)
 
 ---
 

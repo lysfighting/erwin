@@ -89,8 +89,8 @@ ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 # Check if there's a mission branch with an open Issue (recoverable state)
 CURRENT_BRANCH=$(git branch --show-current)
 if [[ "$CURRENT_BRANCH" == mission/* ]]; then
-  # Extract issue number from branch name (strip "mission/" prefix, then take leading digits)
-  ISSUE_NUM=$(echo "${CURRENT_BRANCH#mission/}" | grep -oE '^[0-9]+')
+  # Extract issue number from branch name (handles mission/42-*, bugfix/T-044-*, etc.)
+  ISSUE_NUM=$(bash ~/.claude/commands/scripts/tw-git.sh extract-issue-number "$CURRENT_BRANCH" 2>/dev/null) || true
   if [ -n "$ISSUE_NUM" ]; then
     ISSUE_STATE=$(gh issue view "$ISSUE_NUM" --json state --jq '.state' 2>/dev/null)
     if [ "$ISSUE_STATE" = "OPEN" ]; then
@@ -173,7 +173,7 @@ Find the correct worktree path for this Contract's branch:
 ```bash
 # Get the Contract's branch from frontmatter (already extracted in Step 0)
 # Search worktree list for a matching branch
-git worktree list --porcelain | grep -B2 "branch refs/heads/${CONTRACT_BRANCH}" | head -1 | sed 's/worktree //'
+bash ~/.claude/commands/scripts/tw-git.sh worktree-find-by-branch "$CONTRACT_BRANCH" 2>/dev/null || true
 ```
 
 If a worktree path is found for this branch:

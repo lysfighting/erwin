@@ -149,7 +149,7 @@ The user has worktree mode enabled but is running `/team-ship` from the main rep
 Find the correct worktree path for this Contract's branch:
 
 ```bash
-git worktree list --porcelain | grep -B2 "branch refs/heads/${CONTRACT_BRANCH}" | head -1 | sed 's/worktree //'
+bash ~/.claude/commands/scripts/tw-git.sh worktree-find-by-branch "$CONTRACT_BRANCH" 2>/dev/null || true
 ```
 
 If a worktree path is found:

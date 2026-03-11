@@ -275,7 +275,7 @@ BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER"
 
 ```bash
 # Derive main repo path (works from any worktree or the main repo)
-MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+MAIN_REPO=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-main-repo)
 REPO_NAME=$(basename "$MAIN_REPO")
 
 # Fetch latest base to ensure worktree starts from up-to-date base
@@ -283,9 +283,8 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 git fetch origin "$BASE_BRANCH" --quiet 2>/dev/null || true
 
-# Build branch name from config pattern
-BRANCH_PATTERN=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.branch_pattern "mission/{issue}-{slug}-{user}" 2>/dev/null)
-BRANCH=$(echo "$BRANCH_PATTERN" | sed "s/{issue}/$ISSUE_NUMBER/g; s/{slug}/$SLUG/g; s/{user}/$GH_USER/g")
+# Build branch name from config pattern (script handles pattern substitution safely)
+BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh build-branch-name "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
 
 # Determine worktree root path from per-user config
 WORKTREE_ROOT=$(git config --local teamwork.worktree-root 2>/dev/null || echo "")
@@ -303,10 +302,7 @@ else
 fi
 
 # Check if branch is already checked out somewhere (main repo or another worktree)
-BRANCH_WORKTREE=$(git worktree list --porcelain | awk -v b="$BRANCH" '
-  /^worktree / { wt=$2 }
-  /^branch refs\/heads\// { sub("refs/heads/", ""); if ($0 == b) print wt }
-' 2>/dev/null)
+BRANCH_WORKTREE=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-find-by-branch "$BRANCH" 2>/dev/null) || true
 
 if [ -n "$BRANCH_WORKTREE" ]; then
   # Branch already checked out — DON'T create new worktree, just point user there

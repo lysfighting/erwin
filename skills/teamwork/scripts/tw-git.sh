@@ -4,6 +4,8 @@
 # USAGE:
 #   bash tw-git.sh ensure-base                        # Checkout base_branch, pull latest
 #   bash tw-git.sh create-branch ISSUE SLUG USER      # Create branch from pattern
+#   bash tw-git.sh build-branch-name ISSUE SLUG USER  # Build branch name (no checkout)
+#   bash tw-git.sh extract-issue-number [BRANCH]      # Extract issue number from branch name
 #   bash tw-git.sh current                             # Print current branch name
 #   bash tw-git.sh protect-check                       # Exit 3 if on protected branch
 #   bash tw-git.sh push [BRANCH]                       # Push with -u (default: current branch)
@@ -12,6 +14,8 @@
 #   bash tw-git.sh commit MSG [FILES...]               # Stage files + commit (-A if no files)
 #   bash tw-git.sh worktree-add BRANCH PATH            # Create worktree
 #   bash tw-git.sh worktree-remove PATH                # Remove worktree safely
+#   bash tw-git.sh worktree-main-repo                   # Print main worktree path
+#   bash tw-git.sh worktree-find-by-branch BRANCH       # Find worktree path for a branch
 #   bash tw-git.sh log-since [BASE]                     # Show commits + diff stat since base
 #   bash tw-git.sh cut-release VERSION                  # Cut rc/VERSION from base (remote-only, no checkout)
 #   bash tw-git.sh slugify TITLE                         # Slugify title for branch names
@@ -63,8 +67,10 @@ _branch_pattern() {
 
 usage() {
   echo "Usage: tw-git.sh <subcommand> [args...]" >&2
-  echo "Subcommands: ensure-base, create-branch, current, protect-check, push," >&2
-  echo "             rebase, tag, commit, worktree-add, worktree-remove, log-since," >&2
+  echo "Subcommands: ensure-base, create-branch, build-branch-name," >&2
+  echo "             extract-issue-number, current, protect-check, push," >&2
+  echo "             rebase, tag, commit, worktree-add, worktree-remove," >&2
+  echo "             worktree-main-repo, worktree-find-by-branch, log-since," >&2
   echo "             cut-release, slugify, find-rc, next-version," >&2
   echo "             list-merged-branches, milestone-resolve" >&2
   exit 1
@@ -406,27 +412,109 @@ cmd_milestone_resolve() {
   fi
 }
 
+cmd_build_branch_name() {
+  # Like create-branch but ONLY returns the name — no git operations.
+  # Use this when you need the branch name before deciding whether to create/checkout.
+  local issue="${1:-}" slug="${2:-}" user="${3:-}"
+  if [ -z "$issue" ] || [ -z "$slug" ] || [ -z "$user" ]; then
+    echo "ERROR: build-branch-name requires ISSUE, SLUG, USER" >&2
+    exit 1
+  fi
+
+  local pattern branch
+  pattern=$(_branch_pattern)
+  branch="${pattern//\{issue\}/$issue}"
+  branch="${branch//\{slug\}/$slug}"
+  branch="${branch//\{user\}/$user}"
+  branch="${branch//\{type\}/mission}"
+  branch="${branch//\{task-id\}/$issue}"
+  echo "$branch"
+}
+
+cmd_extract_issue_number() {
+  # Extract the first numeric segment after the first '/' in a branch name.
+  # Works for: mission/42-slug, bugfix/T-044-slug, feature/123-name-user
+  # If no branch given, uses current branch.
+  local branch="${1:-}"
+  if [ -z "$branch" ]; then
+    branch=$(git branch --show-current 2>/dev/null) || true
+  fi
+  if [ -z "$branch" ]; then
+    echo "ERROR: No branch provided and not on any branch" >&2
+    exit 1
+  fi
+
+  local after_slash num
+  after_slash="${branch#*/}"
+  # Extract first contiguous digit sequence
+  num=$(echo "$after_slash" | grep -oE '[0-9]+' | head -1) || true
+  if [ -z "$num" ]; then
+    echo "ERROR: No issue number found in branch '$branch'" >&2
+    exit 1
+  fi
+  echo "$num"
+}
+
+cmd_worktree_main_repo() {
+  # Print the path of the main worktree (the original clone, not any linked worktree).
+  local main_path
+  main_path=$(git worktree list --porcelain 2>/dev/null | head -1 | sed 's/^worktree //') || true
+  if [ -z "$main_path" ]; then
+    echo "ERROR: Could not determine main worktree" >&2
+    exit 2
+  fi
+  echo "$main_path"
+}
+
+cmd_worktree_find_by_branch() {
+  # Find the worktree path that has a specific branch checked out.
+  # Prints the path if found, exits 1 if no worktree has that branch.
+  local target_branch="${1:-}"
+  if [ -z "$target_branch" ]; then
+    echo "ERROR: worktree-find-by-branch requires BRANCH" >&2
+    exit 1
+  fi
+
+  local result
+  result=$(git worktree list --porcelain 2>/dev/null | awk -v b="$target_branch" '
+    /^worktree / { wt = substr($0, 10) }
+    /^branch refs\/heads\// {
+      br = substr($0, 19)
+      if (br == b) print wt
+    }
+  ') || true
+
+  if [ -z "$result" ]; then
+    exit 1
+  fi
+  echo "$result"
+}
+
 # --- Main ---
 SUBCOMMAND="${1:-}"
 shift || true
 
 case "$SUBCOMMAND" in
-  ensure-base)      cmd_ensure_base ;;
-  create-branch)    cmd_create_branch "$@" ;;
-  current)          cmd_current ;;
-  protect-check)    cmd_protect_check ;;
-  push)                 cmd_push "$@" ;;
-  rebase)               cmd_rebase "$@" ;;
-  tag)                  cmd_tag "$@" ;;
-  commit)               cmd_commit "$@" ;;
-  worktree-add)         cmd_worktree_add "$@" ;;
-  worktree-remove)      cmd_worktree_remove "$@" ;;
-  log-since)            cmd_log_since "$@" ;;
-  cut-release)          cmd_cut_release "$@" ;;
-  slugify)              cmd_slugify "$@" ;;
-  find-rc)              cmd_find_rc ;;
-  next-version)         cmd_next_version "$@" ;;
-  list-merged-branches) cmd_list_merged_branches ;;
-  milestone-resolve)    cmd_milestone_resolve "$@" ;;
-  *)                    usage ;;
+  ensure-base)            cmd_ensure_base ;;
+  create-branch)          cmd_create_branch "$@" ;;
+  build-branch-name)      cmd_build_branch_name "$@" ;;
+  extract-issue-number)   cmd_extract_issue_number "$@" ;;
+  current)                cmd_current ;;
+  protect-check)          cmd_protect_check ;;
+  push)                   cmd_push "$@" ;;
+  rebase)                 cmd_rebase "$@" ;;
+  tag)                    cmd_tag "$@" ;;
+  commit)                 cmd_commit "$@" ;;
+  worktree-add)           cmd_worktree_add "$@" ;;
+  worktree-remove)        cmd_worktree_remove "$@" ;;
+  worktree-main-repo)     cmd_worktree_main_repo ;;
+  worktree-find-by-branch) cmd_worktree_find_by_branch "$@" ;;
+  log-since)              cmd_log_since "$@" ;;
+  cut-release)            cmd_cut_release "$@" ;;
+  slugify)                cmd_slugify "$@" ;;
+  find-rc)                cmd_find_rc ;;
+  next-version)           cmd_next_version "$@" ;;
+  list-merged-branches)   cmd_list_merged_branches ;;
+  milestone-resolve)      cmd_milestone_resolve "$@" ;;
+  *)                      usage ;;
 esac

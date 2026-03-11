@@ -665,7 +665,7 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
 ```bash
 # Init modifies config + commits to base branch — MUST run from main repo
 if [ -f .mission ]; then
-  MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+  MAIN_REPO=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-main-repo)
   echo "⚠️ /team init must run from the main repo, not a mission worktree."
   echo "Switch to main repo: cd $MAIN_REPO"
   echo "Then retry: /team init"
@@ -3348,14 +3348,13 @@ BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER"
 SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$ISSUE_TITLE")
 
 # Derive main repo path (works from any worktree or the main repo)
-MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+MAIN_REPO=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-main-repo)
 
 # Fetch latest base
 git fetch origin "$BASE_BRANCH" --quiet 2>/dev/null || true
 
 # Build branch name from config pattern
-BRANCH_PATTERN=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.branch_pattern "mission/{issue}-{slug}-{user}" 2>/dev/null)
-BRANCH=$(echo "$BRANCH_PATTERN" | sed "s/{issue}/$ISSUE_NUMBER/g; s/{slug}/$SLUG/g; s/{user}/$GH_USER/g")
+BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh build-branch-name "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
 
 # Determine worktree path from per-user config
 WORKTREE_ROOT=$(git config --local teamwork.worktree-root 2>/dev/null || echo "")
@@ -3851,11 +3850,10 @@ BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER"
 
 ```bash
 SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$TITLE")
-MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+MAIN_REPO=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-main-repo)
 git fetch origin "$BASE_BRANCH" --quiet 2>/dev/null || true
 
-BRANCH_PATTERN=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.branch_pattern "mission/{issue}-{slug}-{user}" 2>/dev/null)
-BRANCH=$(echo "$BRANCH_PATTERN" | sed "s/{issue}/$ISSUE_NUMBER/g; s/{slug}/$SLUG/g; s/{user}/$GH_USER/g")
+BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh build-branch-name "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
 
 WORKTREE_ROOT=$(git config --local teamwork.worktree-root 2>/dev/null || echo "")
 if [ -n "$WORKTREE_ROOT" ]; then
@@ -4021,11 +4019,10 @@ BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER"
 
 ```bash
 SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$TITLE")
-MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+MAIN_REPO=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-main-repo)
 git fetch origin "$BASE_BRANCH" --quiet 2>/dev/null || true
 
-BRANCH_PATTERN=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.branch_pattern "mission/{issue}-{slug}-{user}" 2>/dev/null)
-BRANCH=$(echo "$BRANCH_PATTERN" | sed "s/{issue}/$ISSUE_NUMBER/g; s/{slug}/$SLUG/g; s/{user}/$GH_USER/g")
+BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh build-branch-name "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
 
 WORKTREE_ROOT=$(git config --local teamwork.worktree-root 2>/dev/null || echo "")
 if [ -n "$WORKTREE_ROOT" ]; then

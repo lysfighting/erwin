@@ -8,6 +8,7 @@
 #   bash tw-config.sh detect-dir                # Print config directory (.teamwork or .teamspace)
 #   bash tw-config.sh resolve-labels            # Print MISSION_LABEL, STATUS_PREFIX, PRIORITY_PREFIX
 #   bash tw-config.sh get-user-level USER       # Print solo/leader/member
+#   bash tw-config.sh team-mode                 # Print "solo" or "team" (based on member count)
 #
 # KEY FORMAT: dot-notation for nested keys (up to 2 levels)
 #   "project.test_command"  → yaml: project:\n  test_command: "..."
@@ -338,9 +339,74 @@ print(level)
 PYEOF
 }
 
+cmd_team_mode() {
+  # Returns "solo" (0-1 members) or "team" (2+ members).
+  # Reuses get-user-level's member parsing — just needs the count, not a specific user.
+  local config_file
+  config_file=$(_detect_config)
+  if [ -z "$config_file" ]; then
+    echo "solo"
+    exit 0
+  fi
+
+  python3 - "$config_file" << 'PYEOF'
+import sys
+
+config_file = sys.argv[1]
+members = []
+current_section = None
+current_item = {}
+
+with open(config_file) as f:
+    for line in f:
+        line = line.rstrip('\n')
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#'):
+            continue
+        if not line.startswith(' ') and not line.startswith('\t') and ':' in line:
+            key = line.split(':', 1)[0].strip()
+            val = line.split(':', 1)[1].strip()
+            if key in ('members', 'team') and (val == '' or val.startswith('#')):
+                if current_item and current_section in ('members', 'team'):
+                    members.append(current_item)
+                    current_item = {}
+                current_section = key
+                continue
+            else:
+                if current_item and current_section in ('members', 'team'):
+                    members.append(current_item)
+                    current_item = {}
+                current_section = key
+                continue
+        if current_section in ('members', 'team') and stripped.startswith('-'):
+            if current_item:
+                members.append(current_item)
+            current_item = {}
+            rest = stripped[1:].strip()
+            if ':' in rest:
+                k = rest.split(':', 1)[0].strip()
+                v = rest.split(':', 1)[1].strip().strip('"').strip("'")
+                current_item[k] = v
+            continue
+        if current_section in ('members', 'team') and ':' in stripped and not stripped.startswith('-'):
+            indent = len(line) - len(line.lstrip())
+            if indent >= 2:
+                k = stripped.split(':', 1)[0].strip()
+                v = stripped.split(':', 1)[1].strip().strip('"').strip("'")
+                current_item[k] = v
+            continue
+
+if current_item and current_section in ('members', 'team'):
+    members.append(current_item)
+
+real_members = [m for m in members if 'github' in m or 'id' in m]
+print("solo" if len(real_members) <= 1 else "team")
+PYEOF
+}
+
 usage() {
   echo "Usage: tw-config.sh <subcommand|key> [args...]" >&2
-  echo "Subcommands: detect-dir, resolve-labels, get-user-level" >&2
+  echo "Subcommands: detect-dir, resolve-labels, get-user-level, team-mode" >&2
   echo "Key lookup:  tw-config.sh <dotted.key> [default]" >&2
   exit 1
 }
@@ -350,6 +416,7 @@ case "${1:-}" in
   detect-dir)       cmd_detect_dir ;;
   resolve-labels)   cmd_resolve_labels ;;
   get-user-level)   shift; cmd_get_user_level "$@" ;;
+  team-mode)        cmd_team_mode ;;
   -h|--help|help)   usage ;;
   "")               usage ;;
   *)                cmd_get "$@" ;;

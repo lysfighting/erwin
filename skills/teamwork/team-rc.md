@@ -77,7 +77,7 @@ Parse `$ARGUMENTS`:
 
 ```bash
 if [ -f .mission ]; then
-  MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+  MAIN_REPO=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-main-repo)
   echo "⚠️ /team-rc must run from the main repo, not a mission worktree."
   echo "Switch to main repo: cd $MAIN_REPO"
   echo "Then retry: /team-rc"
