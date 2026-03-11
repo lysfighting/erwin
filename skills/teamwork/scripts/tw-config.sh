@@ -104,6 +104,115 @@ def parse_simple_yaml(filepath):
     return result
 '
 
+# Shared member+roles parser — reused by get-user-level, team-mode, resolve-member, list-members
+_PYTHON_MEMBER_PARSER='
+def parse_members_and_roles(config_file):
+    """Parse members/team array and roles array from YAML config.
+    Returns (members: list[dict], roles: dict[id->level]).
+    """
+    members = []
+    roles = {}
+    current_section = None
+    current_item = {}
+
+    with open(config_file) as f:
+        for line in f:
+            line = line.rstrip("\n")
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+
+            # Top-level section detection
+            if not line.startswith(" ") and not line.startswith("\t") and ":" in line:
+                key = line.split(":", 1)[0].strip()
+                val = line.split(":", 1)[1].strip()
+                if key in ("members", "team") and (val == "" or val.startswith("#")):
+                    if current_item and current_section in ("members", "team"):
+                        members.append(current_item)
+                        current_item = {}
+                    current_section = key
+                    continue
+                elif key == "roles" and (val == "" or val.startswith("#")):
+                    if current_item and current_section in ("members", "team"):
+                        members.append(current_item)
+                        current_item = {}
+                    current_section = "roles"
+                    continue
+                else:
+                    if current_item and current_section in ("members", "team"):
+                        members.append(current_item)
+                        current_item = {}
+                    current_section = key
+                    continue
+
+            # Under members/team section — parse array items
+            if current_section in ("members", "team") and stripped.startswith("-"):
+                if current_item:
+                    members.append(current_item)
+                current_item = {}
+                rest = stripped[1:].strip()
+                if ":" in rest:
+                    k = rest.split(":", 1)[0].strip()
+                    v = rest.split(":", 1)[1].strip().strip("\"").strip("'"'"'")
+                    current_item[k] = v
+                continue
+
+            if current_section in ("members", "team") and ":" in stripped and not stripped.startswith("-"):
+                indent = len(line) - len(line.lstrip())
+                if indent >= 2:
+                    k = stripped.split(":", 1)[0].strip()
+                    v = stripped.split(":", 1)[1].strip().strip("\"").strip("'"'"'")
+                    current_item[k] = v
+                continue
+
+            # Under roles section — parse array items
+            if current_section == "roles" and stripped.startswith("-"):
+                if "_pending" in roles:
+                    pending = roles.pop("_pending")
+                    if "id" in pending:
+                        roles[pending["id"]] = pending.get("level", "member")
+                rest = stripped[1:].strip()
+                role_item = {}
+                if ":" in rest:
+                    k = rest.split(":", 1)[0].strip()
+                    v = rest.split(":", 1)[1].strip().strip("\"").strip("'"'"'")
+                    role_item[k] = v
+                roles["_pending"] = role_item
+                continue
+
+            if current_section == "roles" and "_pending" in roles and ":" in stripped:
+                indent = len(line) - len(line.lstrip())
+                if indent >= 4:
+                    k = stripped.split(":", 1)[0].strip()
+                    v = stripped.split(":", 1)[1].strip().strip("\"").strip("'"'"'")
+                    roles["_pending"][k] = v
+                else:
+                    pending = roles.pop("_pending")
+                    if "id" in pending:
+                        roles[pending["id"]] = pending.get("level", "member")
+                    if stripped.startswith("-"):
+                        rest = stripped[1:].strip()
+                        role_item = {}
+                        if ":" in rest:
+                            k = rest.split(":", 1)[0].strip()
+                            v = rest.split(":", 1)[1].strip().strip("\"").strip("'"'"'")
+                            role_item[k] = v
+                        roles["_pending"] = role_item
+                continue
+
+    # Flush final items
+    if current_item and current_section in ("members", "team"):
+        members.append(current_item)
+    if "_pending" in roles:
+        pending = roles.pop("_pending")
+        if "id" in pending:
+            roles[pending["id"]] = pending.get("level", "member")
+
+    # Filter: only entries with github/id field (skip metadata like {name, repo})
+    real_members = [m for m in members if "github" in m or "id" in m]
+    return real_members, roles
+'
+
 # --- Subcommands ---
 
 cmd_get() {
@@ -199,128 +308,19 @@ cmd_get_user_level() {
     exit 0
   fi
 
-  python3 - "$config_file" "$user" << 'PYEOF'
+  python3 - "$config_file" "$user" << PYEOF
 import sys
+${_PYTHON_MEMBER_PARSER}
 
-config_file = sys.argv[1]
+members, roles = parse_members_and_roles(sys.argv[1])
 target_user = sys.argv[2]
 
-members = []
-roles = {}
-current_section = None
-current_item = {}
-
-with open(config_file) as f:
-    for line in f:
-        line = line.rstrip('\n')
-        stripped = line.strip()
-        if not stripped or stripped.startswith('#'):
-            continue
-
-        # Top-level section detection
-        if not line.startswith(' ') and not line.startswith('\t') and ':' in line:
-            key = line.split(':', 1)[0].strip()
-            val = line.split(':', 1)[1].strip()
-            if key in ('members', 'team') and (val == '' or val.startswith('#')):
-                # Flush previous item
-                if current_item and current_section in ('members', 'team'):
-                    members.append(current_item)
-                    current_item = {}
-                current_section = key
-                continue
-            elif key == 'roles' and (val == '' or val.startswith('#')):
-                if current_item and current_section in ('members', 'team'):
-                    members.append(current_item)
-                    current_item = {}
-                current_section = 'roles'
-                continue
-            else:
-                if current_item and current_section in ('members', 'team'):
-                    members.append(current_item)
-                    current_item = {}
-                current_section = key
-                continue
-
-        # Under members/team section — parse array items
-        if current_section in ('members', 'team') and stripped.startswith('-'):
-            if current_item:
-                members.append(current_item)
-            current_item = {}
-            # Parse "- key: val" on same line
-            rest = stripped[1:].strip()
-            if ':' in rest:
-                k = rest.split(':', 1)[0].strip()
-                v = rest.split(':', 1)[1].strip().strip('"').strip("'")
-                current_item[k] = v
-            continue
-
-        # Under members/team, continuation of array item
-        if current_section in ('members', 'team') and ':' in stripped and not stripped.startswith('-'):
-            indent = len(line) - len(line.lstrip())
-            if indent >= 2:
-                k = stripped.split(':', 1)[0].strip()
-                v = stripped.split(':', 1)[1].strip().strip('"').strip("'")
-                current_item[k] = v
-            continue
-
-        # Under roles section — parse array items
-        if current_section == 'roles' and stripped.startswith('-'):
-            # Flush previous pending role before starting new one
-            if '_pending' in roles:
-                pending = roles.pop('_pending')
-                if 'id' in pending:
-                    roles[pending['id']] = pending.get('level', 'member')
-            rest = stripped[1:].strip()
-            role_item = {}
-            if ':' in rest:
-                k = rest.split(':', 1)[0].strip()
-                v = rest.split(':', 1)[1].strip().strip('"').strip("'")
-                role_item[k] = v
-            # Read subsequent indented lines
-            roles['_pending'] = role_item
-            continue
-
-        if current_section == 'roles' and '_pending' in roles and ':' in stripped:
-            indent = len(line) - len(line.lstrip())
-            if indent >= 4:
-                k = stripped.split(':', 1)[0].strip()
-                v = stripped.split(':', 1)[1].strip().strip('"').strip("'")
-                roles['_pending'][k] = v
-            else:
-                # Flush pending role
-                pending = roles.pop('_pending')
-                if 'id' in pending:
-                    roles[pending['id']] = pending.get('level', 'member')
-                # Check if this is a new role item
-                if stripped.startswith('-'):
-                    rest = stripped[1:].strip()
-                    role_item = {}
-                    if ':' in rest:
-                        k = rest.split(':', 1)[0].strip()
-                        v = rest.split(':', 1)[1].strip().strip('"').strip("'")
-                        role_item[k] = v
-                    roles['_pending'] = role_item
-            continue
-
-# Flush final item
-if current_item and current_section in ('members', 'team'):
-    members.append(current_item)
-if '_pending' in roles:
-    pending = roles.pop('_pending')
-    if 'id' in pending:
-        roles[pending['id']] = pending.get('level', 'member')
-
-# Filter: only count entries that have a github/id field (skip metadata entries like {name, repo})
-real_members = [m for m in members if 'github' in m or 'id' in m]
-
-# Solo mode
-if len(real_members) <= 1:
+if len(members) <= 1:
     print("solo")
     sys.exit(0)
 
-# Find user
 user_role = None
-for m in real_members:
+for m in members:
     gh = m.get('github', m.get('id', ''))
     if gh == target_user:
         user_role = m.get('role', '')
@@ -330,11 +330,9 @@ if user_role is None:
     print("unknown")
     sys.exit(0)
 
-# Look up role level
 if roles:
     level = roles.get(user_role, 'member')
 else:
-    # No roles section — backward compat: treat everyone as leader
     level = 'leader'
 
 print(level)
@@ -342,8 +340,6 @@ PYEOF
 }
 
 cmd_team_mode() {
-  # Returns "solo" (0-1 members) or "team" (2+ members).
-  # Reuses get-user-level's member parsing — just needs the count, not a specific user.
   local config_file
   config_file=$(_detect_config)
   if [ -z "$config_file" ]; then
@@ -351,72 +347,21 @@ cmd_team_mode() {
     exit 0
   fi
 
-  python3 - "$config_file" << 'PYEOF'
+  python3 - "$config_file" << PYEOF
 import sys
+${_PYTHON_MEMBER_PARSER}
 
-config_file = sys.argv[1]
-members = []
-current_section = None
-current_item = {}
-
-with open(config_file) as f:
-    for line in f:
-        line = line.rstrip('\n')
-        stripped = line.strip()
-        if not stripped or stripped.startswith('#'):
-            continue
-        if not line.startswith(' ') and not line.startswith('\t') and ':' in line:
-            key = line.split(':', 1)[0].strip()
-            val = line.split(':', 1)[1].strip()
-            if key in ('members', 'team') and (val == '' or val.startswith('#')):
-                if current_item and current_section in ('members', 'team'):
-                    members.append(current_item)
-                    current_item = {}
-                current_section = key
-                continue
-            else:
-                if current_item and current_section in ('members', 'team'):
-                    members.append(current_item)
-                    current_item = {}
-                current_section = key
-                continue
-        if current_section in ('members', 'team') and stripped.startswith('-'):
-            if current_item:
-                members.append(current_item)
-            current_item = {}
-            rest = stripped[1:].strip()
-            if ':' in rest:
-                k = rest.split(':', 1)[0].strip()
-                v = rest.split(':', 1)[1].strip().strip('"').strip("'")
-                current_item[k] = v
-            continue
-        if current_section in ('members', 'team') and ':' in stripped and not stripped.startswith('-'):
-            indent = len(line) - len(line.lstrip())
-            if indent >= 2:
-                k = stripped.split(':', 1)[0].strip()
-                v = stripped.split(':', 1)[1].strip().strip('"').strip("'")
-                current_item[k] = v
-            continue
-
-if current_item and current_section in ('members', 'team'):
-    members.append(current_item)
-
-real_members = [m for m in members if 'github' in m or 'id' in m]
-print("solo" if len(real_members) <= 1 else "team")
+members, _ = parse_members_and_roles(sys.argv[1])
+print("solo" if len(members) <= 1 else "team")
 PYEOF
 }
 
 cmd_resolve_member() {
-  # Resolve @mention to GitHub username.
-  # Match against members[].github (exact, case-insensitive) or members[].name (partial, case-insensitive).
-  # Returns: github username on stdout, exit 0.
-  # On no match: prints available members to stderr, exit 1.
   local mention="${1:-}"
   if [ -z "$mention" ]; then
     echo "ERROR: resolve-member requires MENTION" >&2
     exit 1
   fi
-  # Strip leading @ if present
   mention="${mention#@}"
 
   local config_file
@@ -426,80 +371,34 @@ cmd_resolve_member() {
     exit 1
   fi
 
-  python3 - "$config_file" "$mention" << 'PYEOF'
+  python3 - "$config_file" "$mention" << PYEOF
 import sys
+${_PYTHON_MEMBER_PARSER}
 
-config_file = sys.argv[1]
+members, _ = parse_members_and_roles(sys.argv[1])
 mention = sys.argv[2].lower()
 
-members = []
-current_section = None
-current_item = {}
-
-with open(config_file) as f:
-    for line in f:
-        line = line.rstrip('\n')
-        stripped = line.strip()
-        if not stripped or stripped.startswith('#'):
-            continue
-        if not line.startswith(' ') and not line.startswith('\t') and ':' in line:
-            key = line.split(':', 1)[0].strip()
-            val = line.split(':', 1)[1].strip()
-            if key in ('members', 'team') and (val == '' or val.startswith('#')):
-                if current_item and current_section in ('members', 'team'):
-                    members.append(current_item)
-                    current_item = {}
-                current_section = key
-                continue
-            else:
-                if current_item and current_section in ('members', 'team'):
-                    members.append(current_item)
-                    current_item = {}
-                current_section = key
-                continue
-        if current_section in ('members', 'team') and stripped.startswith('-'):
-            if current_item:
-                members.append(current_item)
-            current_item = {}
-            rest = stripped[1:].strip()
-            if ':' in rest:
-                k = rest.split(':', 1)[0].strip()
-                v = rest.split(':', 1)[1].strip().strip('"').strip("'")
-                current_item[k] = v
-            continue
-        if current_section in ('members', 'team') and ':' in stripped and not stripped.startswith('-'):
-            indent = len(line) - len(line.lstrip())
-            if indent >= 2:
-                k = stripped.split(':', 1)[0].strip()
-                v = stripped.split(':', 1)[1].strip().strip('"').strip("'")
-                current_item[k] = v
-            continue
-
-if current_item and current_section in ('members', 'team'):
-    members.append(current_item)
-
-real = [m for m in members if 'github' in m or 'id' in m]
-if not real:
+if not members:
     print("ERROR: No members in config", file=sys.stderr)
     sys.exit(1)
 
 # Priority 1: exact match on github/id (case-insensitive)
-for m in real:
+for m in members:
     gh = m.get('github', m.get('id', ''))
     if gh.lower() == mention:
         print(gh)
         sys.exit(0)
 
 # Priority 2: exact match on name (case-insensitive)
-for m in real:
+for m in members:
     name = m.get('name', '')
     if name.lower() == mention:
         print(m.get('github', m.get('id', '')))
         sys.exit(0)
 
-# Priority 3: partial match on name (case-insensitive, prefix or contains)
+# Priority 3: partial match (case-insensitive, contains)
 matches = []
-for m in real:
+for m in members:
     name = m.get('name', '').lower()
     gh = m.get('github', m.get('id', '')).lower()
     if mention in name or mention in gh:
@@ -516,71 +415,24 @@ elif len(matches) > 1:
         print(f"  @{gh} ({name})", file=sys.stderr)
     sys.exit(1)
 
-# No match
-available = [m.get('github', m.get('id', '')) for m in real]
+available = [m.get('github', m.get('id', '')) for m in members]
 print(f"ERROR: Member '@{mention}' not found. Available: {', '.join('@' + a for a in available)}", file=sys.stderr)
 sys.exit(1)
 PYEOF
 }
 
 cmd_list_members() {
-  # List all members as "github:name:role" lines. For use in AskUserQuestion option building.
   local config_file
   config_file=$(_detect_config)
   if [ -z "$config_file" ]; then
     exit 0
   fi
 
-  python3 - "$config_file" << 'PYEOF'
+  python3 - "$config_file" << PYEOF
 import sys
+${_PYTHON_MEMBER_PARSER}
 
-config_file = sys.argv[1]
-members = []
-current_section = None
-current_item = {}
-
-with open(config_file) as f:
-    for line in f:
-        line = line.rstrip('\n')
-        stripped = line.strip()
-        if not stripped or stripped.startswith('#'):
-            continue
-        if not line.startswith(' ') and not line.startswith('\t') and ':' in line:
-            key = line.split(':', 1)[0].strip()
-            val = line.split(':', 1)[1].strip()
-            if key in ('members', 'team') and (val == '' or val.startswith('#')):
-                if current_item and current_section in ('members', 'team'):
-                    members.append(current_item)
-                    current_item = {}
-                current_section = key
-                continue
-            else:
-                if current_item and current_section in ('members', 'team'):
-                    members.append(current_item)
-                    current_item = {}
-                current_section = key
-                continue
-        if current_section in ('members', 'team') and stripped.startswith('-'):
-            if current_item:
-                members.append(current_item)
-            current_item = {}
-            rest = stripped[1:].strip()
-            if ':' in rest:
-                k = rest.split(':', 1)[0].strip()
-                v = rest.split(':', 1)[1].strip().strip('"').strip("'")
-                current_item[k] = v
-            continue
-        if current_section in ('members', 'team') and ':' in stripped and not stripped.startswith('-'):
-            indent = len(line) - len(line.lstrip())
-            if indent >= 2:
-                k = stripped.split(':', 1)[0].strip()
-                v = stripped.split(':', 1)[1].strip().strip('"').strip("'")
-                current_item[k] = v
-            continue
-
-if current_item and current_section in ('members', 'team'):
-    members.append(current_item)
-
+members, _ = parse_members_and_roles(sys.argv[1])
 for m in members:
     gh = m.get('github', m.get('id', ''))
     if not gh:
