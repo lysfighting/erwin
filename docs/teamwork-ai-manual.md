@@ -543,7 +543,7 @@ Auto-detects your code state and picks the right strategy:
     └──────────────────────┘
 ```
 
-> **v3 change**: No `status:queued` state. Push model assigns immediately → `status:wip` from creation.
+> **v3 change**: `status:queued` is used for unassigned Issues (via `/team-issue fix` or unassigned creation). Assigned Issues start as `status:wip` directly.
 
 ### Untracked Issues
 

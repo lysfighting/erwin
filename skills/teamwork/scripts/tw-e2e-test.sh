@@ -137,7 +137,7 @@ fi
 # build-branch-name — missing args
 BBN_ERR_EXIT=0
 BBN_ERR=$(run_script tw-git.sh build-branch-name 2>&1) || BBN_ERR_EXIT=$?
-if [ $BBN_ERR_EXIT -ne 0 ]; then
+if [ "$BBN_ERR_EXIT" -ne 0 ]; then
   pass "build-branch-name (no args) → correctly rejected (exit $BBN_ERR_EXIT)"
 else
   fail "build-branch-name (no args) should have failed"
@@ -162,7 +162,7 @@ fi
 # extract-issue-number — no number → error
 EIN_ERR_EXIT=0
 EIN_ERR=$(run_script tw-git.sh extract-issue-number "main" 2>&1) || EIN_ERR_EXIT=$?
-if [ $EIN_ERR_EXIT -ne 0 ]; then
+if [ "$EIN_ERR_EXIT" -ne 0 ]; then
   pass "extract-issue-number (no number) → correctly rejected"
 else
   fail "extract-issue-number 'main' should have failed"
@@ -187,7 +187,7 @@ fi
 # worktree-find-by-branch — nonexistent branch → exit 1
 run_script tw-git.sh worktree-find-by-branch "nonexistent-branch-xyz" >/dev/null 2>&1
 WFB_EXIT=$?
-if [ $WFB_EXIT -ne 0 ]; then
+if [ "$WFB_EXIT" -ne 0 ]; then
   pass "worktree-find-by-branch (nonexistent) → correctly not found (exit $WFB_EXIT)"
 else
   fail "worktree-find-by-branch should fail for nonexistent branch"
@@ -225,7 +225,7 @@ fi
 # resolve-member — nonexistent user → error
 run_script tw-config.sh resolve-member "nonexistent-user-xyz-99" >/dev/null 2>&1
 RM_EXIT=$?
-if [ $RM_EXIT -ne 0 ]; then
+if [ "$RM_EXIT" -ne 0 ]; then
   pass "resolve-member (nonexistent) → correctly rejected (exit $RM_EXIT)"
 else
   fail "resolve-member should fail for nonexistent user"
@@ -271,7 +271,7 @@ fi
 # slugify — empty → error
 run_script tw-git.sh slugify "" >/dev/null 2>&1
 SL_EXIT=$?
-if [ $SL_EXIT -ne 0 ]; then
+if [ "$SL_EXIT" -ne 0 ]; then
   pass "slugify (empty) → correctly rejected"
 else
   fail "slugify (empty) should have failed"
@@ -290,7 +290,7 @@ FR_OUT=$(run_script tw-git.sh find-rc 2>/dev/null) || true
 FR_EXIT=$?
 if [ $FR_EXIT -eq 0 ] && [ -n "$FR_OUT" ]; then
   pass "find-rc → $FR_OUT"
-elif [ $FR_EXIT -ne 0 ]; then
+elif [ "$FR_EXIT" -ne 0 ]; then
   skip "find-rc → no RC branches found (expected in many repos)"
 else
   skip "find-rc → empty output"
@@ -494,7 +494,7 @@ fi
 # toggle-task out of range
 TOGGLE_OOR=$(run_script tw-contract.sh toggle-task "$TW_DIR/active/MISSION-${TEST_ISSUE}.md" 99 2>&1)
 TOGGLE_OOR_EXIT=$?
-if [ $TOGGLE_OOR_EXIT -ne 0 ]; then
+if [ "$TOGGLE_OOR_EXIT" -ne 0 ]; then
   pass "toggle-task 99 → correctly rejected (exit $TOGGLE_OOR_EXIT)"
 else
   fail "toggle-task 99 should have failed"

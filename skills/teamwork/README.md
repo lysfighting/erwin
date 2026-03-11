@@ -110,7 +110,7 @@ Scripts in `scripts/` (Von Neumann separation: deterministic ops in scripts, LLM
 |--------|-------------|---------|
 | `tw-config.sh` | 8 | Config reader + team queries (key lookup, detect-dir, resolve-labels, get-user-level, team-mode, resolve-member, list-members, migrate, has-section) |
 | `tw-git.sh` | 21 | All git operations (branch, worktree, release, slug, milestone) |
-| `tw-pr.sh` | 8 | PR lifecycle (create, exists, watch CI, wait-merged, add-reviewer, verify-merged) |
+| `tw-pr.sh` | 8 | PR lifecycle (exists, commit-type, create, comment, watch, wait-merged, add-reviewer, verify-merged) |
 | `tw-label.sh` | 4 | Label state machine (transition, set, verify, pr-label) |
 | `tw-contract.sh` | 6 | Contract lifecycle (read-field, hash, check-freshness, toggle-task, sync-all-checkboxes, delete) |
 | `tw-notify.sh` | — | Notification dispatch (Slack, Feishu, webhook) |

@@ -186,12 +186,12 @@ Use `AskUserQuestion`:
 ```
 question: "确认切 RC 分支？"
 options:
-  - label: "Proceed"
+  - label: "确认"
     description: "从 {BASE_BRANCH} 切出 rc/{NEXT_VERSION}"
-  - label: "Abort"
-    description: "取消"
+  - label: "取消"
+    description: "放弃本次 RC"
 ```
-If "Abort" → **STOP**
+If "取消" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### Step 5: Cut RC Branch

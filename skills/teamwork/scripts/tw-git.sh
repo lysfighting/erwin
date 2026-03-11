@@ -199,7 +199,10 @@ cmd_tag() {
       exit 2
     }
   fi
-  git push origin "$version"
+  git push origin "$version" || {
+    echo "ERROR: Could not push tag '$version' to origin" >&2
+    exit 2
+  }
 
   # Verify (use -F for fixed string match to avoid regex metachar issues with dots)
   if git ls-remote --tags origin | grep -qF "refs/tags/${version}"; then

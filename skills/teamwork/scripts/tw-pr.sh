@@ -20,7 +20,7 @@ set -euo pipefail
 
 usage() {
   echo "Usage: tw-pr.sh <subcommand> [args...]" >&2
-  echo "Subcommands: exists, commit-type, create, comment, watch, add-reviewer, verify-merged" >&2
+  echo "Subcommands: exists, commit-type, create, comment, watch, wait-merged, add-reviewer, verify-merged" >&2
   exit 1
 }
 

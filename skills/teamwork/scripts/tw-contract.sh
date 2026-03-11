@@ -285,12 +285,13 @@ else:
     for item in unmatched:
         print(f'UNMATCHED:{item}', file=sys.stderr)
     sys.exit(1)
-" "$contract_path" 3>/tmp/tw-sync-body.$$ <<< "$issue_body" 2>&1) || {
-    local exit_code=$?
+" "$contract_path" 3>/tmp/tw-sync-body.$$ <<< "$issue_body" 2>&1)
+  local exit_code=$?
+  if [ "$exit_code" -ne 0 ]; then
     echo "WARNING: Sync matching failed (exit $exit_code): $result" >&2
     rm -f /tmp/tw-sync-body.$$
     exit "$exit_code"
-  }
+  fi
 
   if [ -f /tmp/tw-sync-body.$$ ] && [ -s /tmp/tw-sync-body.$$ ]; then
     # Write updated body back to GitHub (one write)

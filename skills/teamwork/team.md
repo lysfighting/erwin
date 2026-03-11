@@ -181,24 +181,23 @@ main ────────────── [V0.1.0] ──►          ← 
 Every Issue transitions through these states:
 
 ```
-                                    ┌───────────┐
-                              ┌────►│  blocked  │ (any state can enter)
-                              │     └───────────┘
-  ┌───────────┐  /team-issue  │     ┌───────────┐
-  │  created  │ ──────────────┼────►│    wip    │ (assigned)
-  └───────────┘               │     └─────┬─────┘
-                              │           │ /team-ship
-                              │     ┌─────▼─────┐
-                              └────►│  queued   │ (unassigned — via /team-issue fix)
-                                    └─────┬─────┘
-                                          │ /team-claim
-                                    ┌─────▼─────┐
-                                    │  review   │
-                                    └─────┬─────┘
-                                          │ PR merged
-                                    ┌─────▼─────┐
-                                    │   done    │
-                                    └───────────┘
+  ┌───────────┐    (assigned)     ┌───────────┐
+  │  created  │──────────────────►│    wip    │
+  └─────┬─────┘                   └─────┬─────┘
+        │                               ▲ │
+        │(unassigned)      /team-claim  │ │ /team-ship
+        │               ┌──────────────┘ │
+  ┌─────▼─────┐         │         ┌─────▼─────┐
+  │  queued   │─────────┘         │  review   │
+  └───────────┘                   └─────┬─────┘
+                                        │ PR merged
+                                  ┌─────▼─────┐
+                                  │   done    │
+                                  └───────────┘
+
+  ┌───────────┐
+  │  blocked  │  (any state can enter/exit, temporary)
+  └───────────┘
 ```
 
 Labels:  `status:queued` → `status:wip` → `status:review` → `status:done`
