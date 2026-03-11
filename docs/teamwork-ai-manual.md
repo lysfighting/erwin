@@ -1,6 +1,6 @@
 # Teamwork — The Complete Manual
 
-> **Version 3.8.1** | Author: liyasong + casey | 2026-03-11
+> **Version 3.8.2** | Author: liyasong + casey | 2026-03-11
 >
 > AI-Native Team Coordination for GitHub.
 > For humans and AI agents. Covers WHY, HOW, and the philosophy behind every decision.
@@ -1091,36 +1091,41 @@ The protection rules adapt to your team's maturity:
 
 ## Scripts Architecture
 
-### The Eight Scripts
+### The Nine Scripts
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                      SCRIPTS LAYER (v3)                           │
+│                      SCRIPTS LAYER (v3.8)                         │
 │                                                                    │
-│  tw-config.sh ─── Foundation ─── Python3 YAML parser              │
-│  │                 Reads any key from config.yml                  │
-│  │                 Handles colons, nested values, quoted strings  │
-│  │                 Tri-schema: label_prefix.* / labels.* / default│
-│  │                 Interface: tw-config.sh key.subkey default     │
+│  tw-config.sh ─── Foundation ─── Config reader + team queries     │
+│  │  Key lookup:   tw-config.sh <dotted.key> [default]            │
+│  │  Subcommands:  detect-dir, resolve-labels, get-user-level,    │
+│  │                team-mode, resolve-member, list-members         │
+│  │  Python3 YAML parser (handles nested keys, quotes, comments)  │
+│  │  Shared _PYTHON_MEMBER_PARSER for member/role queries         │
 │  │                                                                │
-│  ├── tw-git.sh ─── 15 subcommands ─── All git operations         │
-│  │   ensure-base, create-branch, current, protect-check,         │
-│  │   push, fetch, rebase, merge-to, tag, commit,                 │
-│  │   worktree-add, worktree-remove, log-since,                   │
-│  │   cut-release, cherry-pick                                     │
+│  ├── tw-git.sh ─── 21 subcommands ─── All git operations         │
+│  │   Branch:    ensure-base, create-branch, build-branch-name,   │
+│  │              extract-issue-number, current, protect-check      │
+│  │   Core:      push, rebase, tag, commit, slugify               │
+│  │   Worktree:  worktree-add, worktree-remove,                   │
+│  │              worktree-main-repo, worktree-find-by-branch      │
+│  │   Query:     log-since, list-merged-branches                  │
+│  │   Release:   cut-release, find-rc, next-version,              │
+│  │              milestone-resolve                                 │
 │  │                                                                │
 │  ├── tw-label.sh ─── 4 subcommands ─── Label state machine       │
 │  │   transition (from → to), set (force), verify, pr-label       │
 │  │                                                                │
-│  ├── tw-contract.sh ─── 8 subcommands ─── Contract lifecycle     │
-│  │   teamwork-dir, find, read-field, hash, check-freshness,      │
-│  │   toggle-task, sync-checkbox, delete                           │
+│  ├── tw-contract.sh ─── 7 subcommands ─── Contract lifecycle     │
+│  │   read-field, hash, check-freshness, toggle-task,             │
+│  │   sync-checkbox (deprecated), sync-all-checkboxes, delete      │
 │  │                                                                │
 │  ├── tw-pr.sh ─── 7 subcommands ─── PR lifecycle                 │
 │  │   exists, commit-type, create, comment,                        │
-│  │   watch (CI), add-reviewer, verify-merged                      │
+│  │   watch (CI polling), add-reviewer, verify-merged              │
 │  │                                                                │
-│  ├── tw-notify.sh ─── Notification layer (v3 NEW)                │
+│  ├── tw-notify.sh ─── Notification layer                         │
 │  │   Events: mc.created, mc.completed, milestone.created,         │
 │  │           milestone.done, review.requested,                     │
 │  │           review.changes_requested, review.approved             │
@@ -1129,10 +1134,13 @@ The protection rules adapt to your team's maturity:
 │  │                                                                │
 │  ├── setup-github-labels.sh ─── Create all labels on repo        │
 │  │                                                                │
-│  └── tw-e2e-test.sh ─── Full end-to-end validation               │
-│      7 phases: pre-check → config → create → claim → drive →     │
-│      ship → cleanup. Creates temp issue, validates all scripts,   │
-│      cleans up artifacts. Safe to run on any repo.                │
+│  ├── tw-e2e-test.sh ─── Full end-to-end validation               │
+│  │   8 phases: pre-check → config → script-unit → create →       │
+│  │   claim → drive → ship → cleanup. Safe to run on any repo.    │
+│  │                                                                │
+│  └── tw-bump-version.sh ─── Version management                   │
+│      Updates version strings across all skill files.              │
+│      Handles frontmatter, inline, bash variable patterns.         │
 │                                                                    │
 └──────────────────────────────────────────────────────────────────┘
 ```

@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Skills Factory
+- **Teamwork v3.8.2 — Script沉淀 + DRY + UX dead-end fixes**:
+  - 6 new script subcommands: `build-branch-name`, `extract-issue-number`, `worktree-main-repo`, `worktree-find-by-branch` (tw-git.sh) + `resolve-member`, `list-members` (tw-config.sh)
+  - Shared `_PYTHON_MEMBER_PARSER` in tw-config.sh — 4 functions DRY-ed (net -148 lines)
+  - `tw-bump-version.sh` handles 3 more version string patterns (inline backtick, parens, bash var)
+  - AskUserQuestion 4-option cap enforced across all skills (was exceeding limit)
+  - 3 UX dead-end fixes: team-ship done error guide, team-rc polling progress, team-claim worktree recovery
+  - Wrap mode checkbox gate: team-drive skips already-checked tasks
+  - E2E test Phase 1b: 13 tests for new script subcommands
+  - Manual scripts architecture section updated (15→21 tw-git, +6 tw-config subcommands)
+- **Teamwork v3.8.1 — Per-user setup + sync-all-checkboxes + 13 recovery hints**:
+  - `sync-all-checkboxes` in tw-contract.sh (fuzzy-match Contract↔Issue checkboxes)
+  - Per-user setup extracted to `/team init` Step 5 (worktree, tab title, notifications)
+  - 13 `/team doctor` recovery hints added across all skills (was: raw shell commands)
+  - `team-mode` subcommand in tw-config.sh (solo/team detection)
+- **Teamwork v3.8.0 — Desktop notifications in `/team init`**:
+  - macOS notification hook (`~/.claude/notify.sh`) with iTerm2 bell + fallback chain
+  - Registered on Notification, Stop, TeammateIdle events
+  - Subagent filtering (skip noise from inner agents)
 - **Teamwork v3.7.1 — Visual Encoding Standard + audit sweep + doctor expansion**:
   - `docs/visual-encoding-standard.md`: single source of truth for color design language (6 semantic roles, 3 blue-family colors, DO/DON'T rules, rendering pipeline reference)
   - 5-scout comprehensive audit: 11 issues found and fixed (visual encoding violations, raw `rm` suggestions, missing tips/next-step, stale docs)
