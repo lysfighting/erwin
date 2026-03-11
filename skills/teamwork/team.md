@@ -660,6 +660,21 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
 
 ## Step 1: Route — Init or Dashboard?
 
+**Worktree guard (init only):**
+
+```bash
+# Init modifies config + commits to base branch — MUST run from main repo
+if [ -f .mission ]; then
+  MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+  echo "⚠️ /team init must run from the main repo, not a mission worktree."
+  echo "Switch to main repo: cd $MAIN_REPO"
+  echo "Then retry: /team init"
+  # STOP
+fi
+```
+
+This guard only applies to `init` (and first-run auto-init). Dashboard, help, learn, config, queue, doctor, `#N` detail are all read-only and safe from worktrees.
+
 ```bash
 # Force init if $ARGUMENTS == "init"
 if [ "$ARGUMENTS" = "init" ]; then

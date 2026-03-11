@@ -73,6 +73,19 @@ Parse `$ARGUMENTS`:
 
 ### Step 1: Pre-flight
 
+**Worktree guard** — `/team-rc` manages releases from the main repo, not mission worktrees:
+
+```bash
+if [ -f .mission ]; then
+  MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+  echo "⚠️ /team-rc must run from the main repo, not a mission worktree."
+  echo "Switch to main repo: cd $MAIN_REPO"
+  echo "Then retry: /team-rc"
+  # STOP
+  # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
+fi
+```
+
 Detect config directory:
 
 ```bash
@@ -223,7 +236,7 @@ Staging:  {triggered / deploy manually}
 
 ### Step P1: Pre-flight
 
-Same config reads as Prepare Step 1 (REPO, VERSION_PREFIX, BASE_BRANCH, PROD_BRANCH, STAGING_WORKFLOW).
+Same worktree guard + config reads as Prepare Step 1 (worktree check, REPO, VERSION_PREFIX, BASE_BRANCH, PROD_BRANCH, STAGING_WORKFLOW).
 
 ### Step P2: Find Active RC Branch
 
