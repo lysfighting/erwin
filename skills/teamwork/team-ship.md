@@ -170,8 +170,14 @@ If no worktree exists for this branch:
 **⚠️ NO WORKTREE FOUND**
 ────────────────────────────────────────────
 Worktree mode is enabled but no worktree exists for branch *{branch}*.
-Run `/team-claim` **#{issue}** to recreate with worktree isolation.
-Or disable worktree mode: `git config --local teamwork.worktree false`
+
+**Recommended:** Ship from main repo this once — disable worktree temporarily:
+  `git config --local teamwork.worktree false`
+  Then re-run: `/team-ship`
+  (Re-enable later: `git config --local teamwork.worktree true`)
+
+**Alternative:** Re-claim to create a worktree:
+  `/team-claim` **#{issue}** (will recreate branch + worktree)
 ────────────────────────────────────────────
 → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
@@ -551,7 +557,14 @@ BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh current)
 bash ~/.claude/commands/scripts/tw-pr.sh verify-merged "$BRANCH"
 ```
 
-- If exit code 1 → "No merged PR found for branch `{branch}`. PR must be merged before running `done`." → **STOP**
+- If exit code 1 → display and **STOP**:
+
+**No merged PR found** for branch *{branch}*.
+────────────────────────────────────────────
+PR must be merged on GitHub before running `done`.
+  1. Check PR status: `gh pr view {branch}`
+  2. If just merged, GitHub may need a few seconds — wait and retry: `/team-ship done`
+  3. If PR is still open, merge it on GitHub first
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### D3: Close Issue (fallback — usually handled by "Closes #N" in PR)
@@ -812,7 +825,7 @@ Output the following and **STOP**:
   Usually the last step: `/team-drive` → `/team-ship` → (merge) → `/team-ship done`
 
 **TROUBLESHOOTING**
-  "No merged PR found" → PR must be merged first. Check GitHub.
+  "No merged PR found" → Check `gh pr view {branch}`. If just merged, wait a few seconds and retry.
   "Cannot determine Issue" → Specify explicitly: `/team-ship done #42`
 
 ---

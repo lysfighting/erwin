@@ -287,7 +287,11 @@ options:
 If "中止" → **STOP**. Deploy to staging first. Check your CI/CD pipeline or manually trigger deployment.
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
-**If not set:** `(Staging check skipped — no workflow configured)`
+**If not set:**
+
+⚠️ **Staging 未配置** — `deploy.staging_workflow` 为空。
+跳过自动 staging 检查。**请手动验证 RC 分支可正常运行后再 promote。**
+配置方法：在 `config.yml` 添加 `deploy.staging_workflow: "deploy-staging.yml"`
 
 ### Step P4: Confirmation
 
