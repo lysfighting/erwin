@@ -57,7 +57,7 @@ Self-drive audit complete. All known bugs fixed through v3.9.6.
 - [ ] CaseStudies (2-3 skill variant examples)
 
 ### Skills Factory
-- [x] Teamwork v2.0–v3.9.6 — 40+ versions, 6 skills, 9 scripts, 48 unit tests
+- [x] Teamwork v2.0–v3.9.7 — 40+ versions, 6 skills, 10 scripts, 48 unit tests
 - [ ] Deploy workflow (deploy.yml, staging gate)
 - [ ] Issue version tracking (found-in labels, version labels)
 

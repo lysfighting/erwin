@@ -29,7 +29,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TW_CONFIG="$SCRIPT_DIR/tw-config.sh"
 
 # Read label prefixes from config (unified fallback chain)
-eval "$(bash "$TW_CONFIG" resolve-labels 2>/dev/null)"
+_labels_output=$(bash "$TW_CONFIG" resolve-labels 2>/dev/null) || true
+STATUS_PREFIX=$(echo "$_labels_output" | grep '^STATUS_PREFIX=' | head -1 | sed 's/^[^"]*"//; s/"$//')
 [ -z "$STATUS_PREFIX" ] && STATUS_PREFIX="status:"
 
 # All known status values

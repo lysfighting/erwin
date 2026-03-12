@@ -31,8 +31,10 @@ PRIORITY_PREFIX="priority:"
 MC_LABEL="mission"
 
 if [[ -x "$TW_CONFIG" ]] || [[ -f "$TW_CONFIG" ]]; then
-  eval "$(bash "$TW_CONFIG" resolve-labels 2>/dev/null)"
-  # MISSION_LABEL, STATUS_PREFIX, PRIORITY_PREFIX now set
+  _labels_output=$(bash "$TW_CONFIG" resolve-labels 2>/dev/null) || true
+  MISSION_LABEL=$(echo "$_labels_output" | grep '^MISSION_LABEL=' | head -1 | sed 's/^[^"]*"//; s/"$//')
+  STATUS_PREFIX=$(echo "$_labels_output" | grep '^STATUS_PREFIX=' | head -1 | sed 's/^[^"]*"//; s/"$//')
+  PRIORITY_PREFIX=$(echo "$_labels_output" | grep '^PRIORITY_PREFIX=' | head -1 | sed 's/^[^"]*"//; s/"$//')
   [[ -n "$MISSION_LABEL" ]] && MC_LABEL="$MISSION_LABEL"
 else
   MISSION_LABEL=""

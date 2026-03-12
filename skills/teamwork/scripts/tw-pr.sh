@@ -112,7 +112,7 @@ cmd_comment() {
 
   gh issue comment "$issue" --body "$text" 2>/dev/null || {
     echo "WARNING: Could not post comment to Issue #$issue" >&2
-    exit 0  # Non-fatal
+    return 0  # Non-fatal
   }
   echo "Comment posted to Issue #$issue"
 }
@@ -143,7 +143,7 @@ cmd_add_reviewer() {
 
   gh pr edit "$pr" --add-reviewer "$reviewer" 2>/dev/null || {
     echo "WARNING: Could not add reviewer $reviewer to PR #$pr" >&2
-    exit 0
+    return 0
   }
   echo "Review requested from $reviewer on PR #$pr"
 }

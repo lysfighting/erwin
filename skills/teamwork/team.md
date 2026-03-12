@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.9.6"
+version: "3.9.7"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -27,6 +27,8 @@ version: "3.9.6"
 | `doctor fix` | Interactive fix — execute doctor actions with confirmation |
 | `doctor help` | Show doctor usage guide |
 | `wrap` | Retroactive closure: code-first → issue + PR + labels |
+| `sync` | Rebase branch on latest base branch |
+| starts with `share` | Share knowledge to sibling MC |
 | `auto [#N]` | One-shot: claim → drive → ship (pick from queue or specify #N) |
 
 ---
@@ -53,7 +55,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.9.6` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -77,6 +79,7 @@ Output the following guide directly to the user, then **STOP**:
   `/team-issue update #N` Update Issue fields (title, priority, assignee)
   `/team-issue fix #N`    Fix untracked Issue (add teamwork labels)
   `/team-issue batch ...` Batch create milestone + multiple MCs
+  `/team-claim`            Show assigned missions and pick one
   `/team-claim #N`        Claim assigned Issue → generate Contract + branch
   `/team-claim list`      Browse my assigned missions
   `/team-drive`           Execute mission (sub-tasks → test → commit loop)
@@ -132,7 +135,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.9.6` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -527,7 +530,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.9.6` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -821,12 +824,10 @@ After confirming membership, verify that the config has the fields needed by oth
 
 If critical fields are missing (no `project:` section at all, no `conventions.branch_pattern`), output a warning:
 
-```
 ⚠ Config is missing some fields used by teamwork skills:
   - project.test_command: tests won't run during /team-drive and /team-ship
   - conventions.branch_pattern: will use default "mission/{issue}-{slug}-{user}"
-  Tip: run /team init to regenerate a complete config.
-```
+  Tip: run `/team init` to regenerate a complete config.
 
 This is a **non-blocking warning** — continue to **Step 6: Dashboard**.
 
@@ -1089,17 +1090,15 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.9.6` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
-```
 ✅ Config updated (merge mode — existing config preserved)
    schema_version → `3`
    Preserved sections: {list of sections kept}
    Added sections: {list of sections appended, or "(none — already complete)"}
    {If worktree migrated:} Migrated: worktree → git config --local
    Worktree mode: {WORKTREE_STATUS}
-   Tip: /team config to view full config │ /team to see dashboard
-```
+   Tip: `/team config` to view full config │ `/team` to see dashboard
 
 After showing the merge summary, proceed to **Step 4h: Per-user local setup** (worktree, tab title, notifications), then **Step 6: Dashboard**.
 
@@ -1822,10 +1821,9 @@ HOOK
 Check for conflicts first: if `_teamwork_tab` already exists in the rc file, warn and show the snippet for manual integration.
 
 Output:
-```
+
 Tab 标题+颜色已配置。新开终端标签页即可看到 branch 名和分支类型颜色。
 颜色映射：🟥 main · 🟦 pre-launch · 🟧 rc/* · 🟩 mission/* · ⬜ other
-```
 
 **Note:** Tab colors use iTerm2 proprietary escape sequences (`\e]6;1;bg;...`). On non-iTerm2 terminals, the color sequences are silently ignored — the tab title still works.
 
@@ -1979,13 +1977,12 @@ else:
 ```
 
 Output:
-```
+
 ✅ 桌面通知已配置
    Hook: `~/.claude/notify.sh`
    Events: Notification, Stop, TeammateIdle
    iTerm2: bell → 原生通知，点击跳到对应 tab（零依赖）
    其他终端: 自动降级 terminal-notifier / osascript
-```
 
 ---
 
@@ -2232,7 +2229,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.9.6"
+SKILL_VERSION="3.9.7"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -2874,11 +2871,11 @@ Check CI status on all open PRs — extends Check 6 (Shippable PRs) with failure
 For each open PR from data collection (Call 9):
   1. Parse statusCheckRollup for individual check results
   2. If any check FAILED:
-     - 🟡 WARNING "PR #{pr} CI failing: {check name}"
+     - 🟡 WARNING "PR **#{pr}** CI failing: {check name}"
      - Show which specific checks failed (not just "CI red")
      - Action: push fixes to branch *{branch}*, or investigate failing check
   3. If checks PENDING for >30 minutes:
-     - 🟢 INFO "PR #{pr} CI pending for extended time"
+     - 🟢 INFO "PR **#{pr}** CI pending for extended time"
   4. If no checks configured:
      - 🟢 INFO (not a problem, just noting)
 ```
@@ -2958,21 +2955,20 @@ No tables, no diagnosis, no action plan. Just the summary.
    Current: *{current branch}* · Base: *{base branch}*
 ────────────────────────────────────────────────────────────────────────────
 
-```
 📋 BRANCHES ({N} local)
 ┌──────────────────────────────┬────────────┬──────────┬────────────┬──────────────────────────────────────┐
 │ Branch                       │ Status     │ vs Base  │ vs Remote  │ Issue / PR                           │
 ├──────────────────────────────┼────────────┼──────────┼────────────┼──────────────────────────────────────┤
 │ main [cur]                   │ 🟢 clean   │ —        │ ⚠ -3       │ base branch                          │
-│ mission/42-feat-*            │ 🔴 dirty   │ +6, -1   │ +2, 0      │ #42 OPEN  │ PR #43 ✅ pass          │
-│ mission/29-fix-*             │ 💀 orph    │ +0, -38  │ —          │ #29 CLOSED│ PR #30 merged            │
+│ mission/42-feat-*            │ 🔴 dirty   │ +6, -1   │ +2, 0      │ **#042** OPEN  │ PR **#043** ✅ pass │
+│ mission/29-fix-*             │ 💀 orph    │ +0, -38  │ —          │ **#029** CLOSED│ PR **#030** merged   │
 └──────────────────────────────┴────────────┴──────────┴────────────┴──────────────────────────────────────┘
 
 📋 OPEN PRS ({N})
 ┌──────┬───────────────────────────────┬──────┬───────────┬────────┬──────────┐
 │  PR  │ Title                         │ CI   │ Mergeable │ Review │ Ready?   │
 ├──────┼───────────────────────────────┼──────┼───────────┼────────┼──────────┤
-│ #43  │ feat: user login              │ ✅   │ ✅        │ —      │ 🟢 SHIP │
+│ **#043** │ feat: user login          │ ✅   │ ✅        │ —      │ 🟢 SHIP │
 └──────┴───────────────────────────────┴──────┴───────────┴────────┴──────────┘
 
 📋 STASHES ({N})
@@ -2995,11 +2991,10 @@ No tables, no diagnosis, no action plan. Just the summary.
 ┌───────┬──────────────────────────────────┬──────────────┬─────────────┬───────────┐
 │ Issue │ Title                            │ Assignee     │ Status      │ Health    │
 ├───────┼──────────────────────────────────┼──────────────┼─────────────┼───────────┤
-│ #50   │ fix: Safari camera permission    │ user1        │ status:wip  │ 🟡 DUP?  │
-│ #52   │ fix: iOS media access broken     │ user1        │ status:wip  │ 🟡 DUP?  │
-│ #48   │ feat: add usage analytics        │ (none)       │ status:wip  │ 🟡 NOBODY│
+│ **#050** │ fix: Safari camera permission │ user1        │ `status:wip`│ 🟡 DUP?  │
+│ **#052** │ fix: iOS media access broken  │ user1        │ `status:wip`│ 🟡 DUP?  │
+│ **#048** │ feat: add usage analytics     │ (none)       │ `status:wip`│ 🟡 NOBODY│
 └───────┴──────────────────────────────────┴──────────────┴─────────────┴───────────┘
-```
 
 🔍 **DIAGNOSIS**
 ────────────────────────────────────────────────────────────────────────────
@@ -3236,33 +3231,37 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
 Check worktree mode:
 ```bash
 WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "false")
-
-# If running FROM INSIDE a worktree (not the main repo), reject — auto must run from main repo
+IN_WORKTREE=false
 if [ -f .mission ]; then
-  echo "ERROR: You're inside a worktree. Run /team auto from the main repo."
-  # STOP
+  IN_WORKTREE=true
 fi
 ```
 
-- If inside a worktree → **STOP**
+**If inside a worktree AND worktree mode disabled** → "ERROR: You're inside a worktree. Run /team auto from the main repo." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
-Check for clean working tree — auto switches branches, so uncommitted changes would be lost:
+**If inside a worktree AND worktree mode enabled** → allowed. Auto will only run the **claim phase** (A1–A3), then stop and tell the user to open a new terminal in the new worktree. Set `$AUTO_CLAIM_ONLY=true`. Skip the clean-tree and active-contract checks below (they don't apply — claim creates a new worktree).
+
+Check for clean working tree — auto switches branches, so uncommitted changes would be lost.
+**Skip this check if `$AUTO_CLAIM_ONLY=true`** (claim creates a new worktree, doesn't touch current tree):
 ```bash
-if [ -n "$(git status --porcelain)" ]; then
+if [ "$AUTO_CLAIM_ONLY" != "true" ] && [ -n "$(git status --porcelain)" ]; then
   echo "ERROR: Working tree has uncommitted changes. Commit or stash them first, or use /team wrap instead."
   # STOP
 fi
 ```
 
-- If dirty tree → **STOP**
+- If dirty tree (and not claim-only) → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
-Check for active Contract — if one exists, user should finish or abandon it first:
+Check for active Contract — if one exists, user should finish or abandon it first.
+**Skip this check if worktree mode is enabled** (multiple active contracts are normal — one per worktree):
 ```bash
-ls "$TEAMWORK_DIR"/active/MISSION-*.md 2>/dev/null
+if [ "$WORKTREE_ENABLED" != "true" ]; then
+  ls "$TEAMWORK_DIR"/active/MISSION-*.md 2>/dev/null
+fi
 ```
-If active Contract exists → "You have an active mission. Finish it with `/team-drive` + `/team-ship`, or run `/team doctor fix` to clean up." → **STOP**
+If active Contract exists (non-worktree mode only) → "You have an active mission. Finish it with `/team-drive` + `/team-ship`, or run `/team doctor fix` to clean up." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### A1: Select Issue
@@ -3301,13 +3300,13 @@ If user has 4+ assigned Issues, show note before AskUserQuestion: "显示前 3 �
 ISSUE_DATA=$(gh issue view {issue} --json number,title,body,labels,milestone,assignees,state,url)
 ```
 
-- If Issue not found → "Issue #{issue} not found." → **STOP**
+- If Issue not found → "Issue **#{issue}** not found." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
-- If Issue is closed → "Issue #{issue} is already closed." → **STOP**
+- If Issue is closed → "Issue **#{issue}** is already closed." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - If Issue has no assignee → auto-assign to `$GH_USER`: `gh issue edit {issue} --repo "$REPO" --add-assignee "$GH_USER"`
-- If Issue is assigned to someone else → warn "Issue #{issue} is assigned to someone else." Use `AskUserQuestion`: "Claim anyway?" / "Cancel". If cancel → **STOP**. If claim → also add `$GH_USER` as assignee.
-- If Issue is missing `$MISSION_LABEL` → warn "Issue #{issue} is not a mission Issue (missing `$MISSION_LABEL` label). Use `/team-issue fix #{issue}` first." → **STOP**
+- If Issue is assigned to someone else → warn "Issue **#{issue}** is assigned to someone else." Use `AskUserQuestion`: "Claim anyway?" / "Cancel". If cancel → **STOP**. If claim → also add `$GH_USER` as assignee.
+- If Issue is missing `$MISSION_LABEL` → warn "Issue **#{issue}** is not a mission Issue (missing `$MISSION_LABEL` label). Use `/team-issue fix #{issue}` first." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Display the issue summary and announce auto mode:
@@ -3483,12 +3482,14 @@ Then **STOP**. Do NOT proceed to A4.
 
 **This is the core execution phase.** Follow the complete `/team-drive` protocol.
 
-Read `~/.claude/commands/team-drive.md` and execute its full procedure, **starting from Step 1** (Verify Branch). Skip Step 0 and Step 0b — Contract already exists and is fresh.
+Read `~/.claude/commands/team-drive.md` and execute its full procedure, **starting from Step 1** (Verify Branch). Skip Steps 0, 0b, 0b2, 0c — Contract just created, branch just checked out, no cross-MC context yet.
 
 Specifically:
 1. **Skip** Step 0 (Find Active Contract) — Contract already created in A3
 2. **Skip** Step 0b (Freshness Check) — Contract was just generated from latest Issue
-3. **Execute** Step 1 (Verify Branch) — confirm on correct branch
+3. **Skip** Step 0b2 (Cross-MC Context) — no sibling MCs to learn from yet
+4. **Skip** Step 0c (Contract Integrity) — Contract was just created, known good
+5. **Execute** Step 1 (Verify Branch) — confirm on correct branch
 4. **Execute** Step 2 (Display Mission Briefing)
 5. **Execute** Step 2b (Branch Safety Check) — confirm not on protected branch
 6. **Execute** the full drive execution loop — read code, validate sub-tasks (tag `🔧 MANUAL` tasks), execute **code tasks** with team if needed, test, commit, update Contract checkboxes

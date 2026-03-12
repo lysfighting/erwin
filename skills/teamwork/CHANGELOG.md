@@ -2,6 +2,38 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.9.7] — 2026-03-13
+
+### Fixed — Audit sweep (security, VE, logic, docs)
+
+**Security (2 critical):**
+- **eval injection**: `setup-github-labels.sh` and `tw-label.sh` — replaced `eval "$(resolve-labels)"` with safe line-by-line parsing
+- **temp file race**: `tw-contract.sh` — replaced predictable `/tmp/tw-sync-body.$$` with `mktemp`
+
+**Visual Encoding (14 fixes):**
+- Removed 5 code block fences wrapping LLM output (config warning, merge summary, tab title, desktop notification, doctor example)
+- Added `**bold**` to 7 `#{issue}`/`#{pr}` template references in output sections
+- Wrapped `status:*` label values in backticks in Operation Learn state machine
+- Zero-padded issue numbers in doctor example (`#42` → `**#042**`)
+
+**Skill logic (5 fixes):**
+- Routing table: added missing `sync` and `share` entries
+- `/team help`: added `/team-claim` (empty argument form)
+- `/team-ship done`: derive main repo path before worktree removal
+- `/team auto`: explicit Step 0/0b/0b2/0c skip instruction
+- `/team-drive`: "ACCEPTANCE CRITERIA" → "SUCCESS CRITERIA" (canonical name)
+
+**Script fixes (4):**
+- `tw-bump-version.sh`: CHANGED counter now includes inline updates; shebang consistency
+- `tw-pr.sh`: `exit 0` → `return 0` in function error handlers
+- `tw-git.sh`: `+` prefix from worktree branches now stripped in `list-merged-branches`
+
+**Docs staleness (5):**
+- `skills/README.md`: version table 3.9.4 → 3.9.7
+- `docs/teamwork-ai-manual.md`: "Nine Scripts" → "Ten Scripts", added tw-unit-test.sh to diagram
+- `CLAUDE.md`: version 3.9.6 → 3.9.7
+- `_project/CURRENT.md`: "9 scripts" → "10 scripts"
+
 ## [3.9.6] — 2026-03-13
 
 ### Fixed — Cross-platform + remaining script fixes

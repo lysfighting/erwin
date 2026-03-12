@@ -161,7 +161,8 @@ print(f'Task {n} checked off at {ts}')
 
 cmd_sync_all_checkboxes() {
   local contract_path="${1:-}" issue="${2:-}"
-  local _tmpfile="/tmp/tw-sync-body.$$"
+  local _tmpfile
+  _tmpfile=$(mktemp /tmp/tw-sync-body.XXXXXX) || { echo "ERROR: mktemp failed" >&2; return 1; }
   trap 'rm -f "$_tmpfile"' EXIT INT TERM
   if [ -z "$contract_path" ] || [ -z "$issue" ]; then
     echo "ERROR: sync-all-checkboxes requires CONTRACT_PATH and ISSUE" >&2
@@ -291,22 +292,22 @@ else:
     for item in unmatched:
         print(f'UNMATCHED:{item}', file=sys.stderr)
     sys.exit(1)
-" "$contract_path" 3>/tmp/tw-sync-body.$$ <<< "$issue_body" 2>&1)
+" "$contract_path" 3>"$_tmpfile" <<< "$issue_body" 2>&1)
   local exit_code=$?
   if [ "$exit_code" -ne 0 ]; then
     echo "WARNING: Sync matching failed (exit $exit_code): $result" >&2
-    rm -f /tmp/tw-sync-body.$$
+    rm -f "$_tmpfile"
     exit "$exit_code"
   fi
 
-  if [ -f /tmp/tw-sync-body.$$ ] && [ -s /tmp/tw-sync-body.$$ ]; then
+  if [ -f "$_tmpfile" ] && [ -s "$_tmpfile" ]; then
     # Write updated body back to GitHub (one write)
-    gh issue edit "$issue" --body "$(cat /tmp/tw-sync-body.$$)" 2>&1 || {
+    gh issue edit "$issue" --body "$(cat "$_tmpfile")" 2>&1 || {
       echo "ERROR: Could not update Issue #$issue body (gh issue edit failed)" >&2
-      rm -f /tmp/tw-sync-body.$$
+      rm -f "$_tmpfile"
       exit 3
     }
-    rm -f /tmp/tw-sync-body.$$
+    rm -f "$_tmpfile"
 
     # Extract count from SYNC:N line
     local count
@@ -321,7 +322,7 @@ else:
       echo "$unmatched" >&2
     fi
   else
-    rm -f /tmp/tw-sync-body.$$
+    rm -f "$_tmpfile"
     echo "WARNING: No checkboxes matched between Contract and Issue" >&2
     echo "$result" >&2
     exit 1

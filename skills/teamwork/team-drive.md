@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.9.6"
+version: "3.9.7"
 ---
 
 # /team-drive — Execute Mission
@@ -303,7 +303,7 @@ Progress:  {progress_bar}  `{done}/{total}`
   ▸ {remaining task}  ← current
   ○ {remaining task}
 
-**✅ ACCEPTANCE CRITERIA**
+**✅ SUCCESS CRITERIA**
   {criteria}
 
 **📁 CONTEXT FILES**
@@ -1010,7 +1010,7 @@ Tests:    ✅ passing
   ✅ {task 1}
   ✅ {task 2}
 
-**✅ ACCEPTANCE CRITERIA**
+**✅ SUCCESS CRITERIA**
   {criterion 1} — {evidence}
   {criterion 2} — {evidence}
 
@@ -1083,7 +1083,7 @@ After all steps processed (done or skipped), continue to acceptance criteria blo
 
 After user responds, output the full acceptance criteria block and the `/team-ship` prompt:
 
-**✅ ACCEPTANCE CRITERIA**
+**✅ SUCCESS CRITERIA**
   {criterion} — {evidence or *"pending manual step"*}
 
 ────────────────────────────────────────────

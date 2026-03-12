@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.9.6"
+version: "3.9.7"
 ---
 
 # /team-ship — Deliver Mission
@@ -607,14 +607,18 @@ If `${STATUS_PREFIX}done` already present → skip, output: `(Labels already upd
 ### D5: Clean up worktree (if applicable)
 
 If `.mission` file exists (worktree mode):
+- Derive the main repo path first:
+  ```bash
+  MAIN_REPO=$(git -C "$(pwd)" rev-parse --git-common-dir | sed 's|/.git$||')
+  ```
 - Ask user: "Remove worktree at `{worktree_path}`?" via `AskUserQuestion`
 - If yes:
   ```bash
   WORKTREE_PATH=$(pwd)
-  cd {original_repo_path}
+  cd "$MAIN_REPO"
   bash ~/.claude/commands/scripts/tw-git.sh worktree-remove "$WORKTREE_PATH"
   ```
-- If no: `cd {original_repo_path}` first (must leave worktree for D6), then warn "Worktree kept. Run `/team doctor fix` later to clean up stale worktrees."
+- If no: `cd "$MAIN_REPO"` first (must leave worktree for D6), then warn "Worktree kept. Run `/team doctor fix` later to clean up stale worktrees."
 
 ### D6: Return to base branch
 

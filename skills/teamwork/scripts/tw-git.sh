@@ -377,7 +377,7 @@ cmd_next_version() {
 
 cmd_list_merged_branches() {
   local branches
-  branches=$(git branch --list 'mission/*' | sed 's/^[* ]*//' | tr -d ' ') || true
+  branches=$(git branch --list 'mission/*' | sed 's/^[*+ ]*//' | tr -d ' ') || true
 
   if [ -z "$branches" ]; then
     exit 0

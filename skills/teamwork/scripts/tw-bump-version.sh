@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # tw-bump-version.sh — Bump version across all teamwork skill files
 # Usage: tw-bump-version.sh <version>
 # Example: tw-bump-version.sh 3.4.0
@@ -59,6 +59,9 @@ done
 # 2. Update hardcoded version in help text and init templates
 # Matches both 3-segment (v3.4.0) and 2-segment (v3.4) version strings
 for file in "${FILES[@]}"; do
+  # Snapshot file before sed passes to detect if anything changed
+  _before=$(shasum -a 256 "$file" | cut -d' ' -f1)
+
   # "TEAMWORK v3.x.y" or "TEAMWORK v3.x" (2 or 3 segments)
   _sed_i "s/TEAMWORK v[0-9][0-9]*\.[0-9][0-9]*\(\.[0-9][0-9]*\)*/TEAMWORK v$VERSION/g" "$file"
 
@@ -84,6 +87,12 @@ for file in "${FILES[@]}"; do
   _sed_i "s/SKILL_VERSION=\"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\"/SKILL_VERSION=\"$VERSION\"/g" "$file"
 
   # skill_version removed from config — no longer needs bumping
+
+  # Count file as changed if any inline pattern matched (avoid double-counting with frontmatter loop)
+  _after=$(shasum -a 256 "$file" | cut -d' ' -f1)
+  if [ "$_before" != "$_after" ]; then
+    CHANGED=$((CHANGED + 1))
+  fi
 done
 
 echo ""

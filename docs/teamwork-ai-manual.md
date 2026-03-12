@@ -1,6 +1,6 @@
 # Teamwork — The Complete Manual
 
-> **Version 3.9.6** | Author: liyasong + casey | 2026-03-12
+> **Version 3.9.7** | Author: liyasong + casey | 2026-03-12
 >
 > AI-Native Team Coordination for GitHub.
 > For humans and AI agents. Covers WHY, HOW, and the philosophy behind every decision.
@@ -1122,11 +1122,11 @@ The protection rules adapt to your team's maturity:
 
 ## Scripts Architecture
 
-### The Nine Scripts
+### The Ten Scripts
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                      SCRIPTS LAYER (v3.9.6)                         │
+│                      SCRIPTS LAYER (v3.9.7)                         │
 │                                                                    │
 │  tw-config.sh ─── Foundation ─── Config reader + team queries     │
 │  │  Key lookup:   tw-config.sh <dotted.key> [default]            │
@@ -1171,9 +1171,13 @@ The protection rules adapt to your team's maturity:
 │  │   8 phases: pre-check → config → script-unit → create →       │
 │  │   claim → drive → ship → cleanup. Safe to run on any repo.    │
 │  │                                                                │
-│  └── tw-bump-version.sh ─── Version management                   │
-│      Updates version strings across all skill files.              │
-│      Handles frontmatter, inline, bash variable patterns.         │
+│  ├── tw-bump-version.sh ─── Version management                   │
+│  │   Updates version strings across all skill files.              │
+│  │   Handles frontmatter, inline, bash variable patterns.         │
+│  │                                                                │
+│  └── tw-unit-test.sh ─── Unit test suite (48 tests)              │
+│      Validates tw-bump-version, tw-config, tw-git functions.      │
+│      Pure bash, no external deps. Run: bash tw-unit-test.sh       │
 │                                                                    │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -1554,4 +1558,4 @@ The loop never breaks. The system remembers what you forget.
 
 ---
 
-*Teamwork v3.9.6 — Built for teams where humans and AI write code together.*
+*Teamwork v3.9.7 — Built for teams where humans and AI write code together.*
