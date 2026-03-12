@@ -2318,7 +2318,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 👥 **TEAM** ({member_count} members)
   {username} ({role})
-    🟢 **#{N}** {title} {priority_dot} {Pn} → *wip* {If STALE: ⚡}
+    🟢 **#{N}** {title} {priority_dot} → *wip* {If STALE: ⚡}
     *{branch}* → `/team-ship`
     🔀 **#{pr}** — {ci_icon}
   {username} ({role})
@@ -2329,7 +2329,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
   {If none:} (none)
 
 📋 **Unassigned** ({count})
-  {priority_dot} {Pn} **#{N}**  {title}
+  {priority_dot} **#{N}**  {title}
   {If count > 5:} ... +{remaining} more → `/team queue`
   {If none:} (none)
 
@@ -2375,7 +2375,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 | 🟡 | P2 medium / under review | Priority dot / review status |
 | ⚪ | P3 low / idle | Priority dot / member idle |
 
-**`{priority_dot}`** shorthand: replace `Pn` prefix with colored dot — `🔴` P0, `🟠` P1, `🟡` P2, `⚪` P3. E.g., `🟠 #134 Unified NanoClaw Architecture @initialneil`.
+**`{priority_dot}`** shorthand: replace `Pn` prefix with colored dot — `🔴` P0, `🟠` P1, `🟡` P2, `⚪` P3. E.g., `🟠 **#134** Unified NanoClaw Architecture @initialneil`.
 
 **Other symbols:**
 
@@ -2393,7 +2393,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 **Progress bar**: Map percentage to 10 chars: `█` for filled, `░` for empty. Wrap the ENTIRE bar in backticks for color: `` `██░░░░░░░░` ``. E.g., 14% → `` `█░░░░░░░░░` ``, 50% → `` `█████░░░░░` ``.
 
-**Issue number formatting**: ALWAYS zero-pad to 3+ digits. `#99` → `#099`, `#7` → `#007`. Claude Code only auto-links `#NNN` (3+ digits) as GitHub issues — two-digit `#NN` is NOT linked.
+**Issue number formatting**: ALWAYS `**#NNN**` (bold + zero-pad to 3+ digits). `#99` → `**#099**`, `#7` → `**#007**`. Bold wrapping is MANDATORY — without it Claude Code renders plain text with no clickable hyperlink. Claude Code only auto-links `#NNN` (3+ digits) as GitHub issues — two-digit `#NN` is NOT linked.
 
 **`{ci_icon}`** shorthand: `✅` if all checks pass, `❌` if any fail, `⏳` if pending/running.
 
@@ -2440,9 +2440,9 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 {^ current worktree = ⭐ (yellow star, high visibility). other worktrees = · (dim dot)}
 
 🎯 **My Missions**
-  🟢 **#{N}** {title} {priority_dot} {Pn} → *wip*
+  🟢 **#{N}** {title} {priority_dot} → *wip*
     *{branch}* → `/team-drive`
-  🟢 **#{N}** {title} {priority_dot} {Pn} → *wip* (Contract active)
+  🟢 **#{N}** {title} {priority_dot} → *wip* (Contract active)
     *{branch}* → `cd` to worktree, then `/team-drive`
   {If none:} (none)
 {^ branch italic, commands in backticks}
@@ -2455,7 +2455,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 ────────────────────────────────────────
 
 👥 **Team WIP** ({count})
-  {priority_dot} {Pn} **#{N}**  {title}  @{assignee}
+  {priority_dot} **#{N}**  {title}  @{assignee}
   {Show up to 10 items sorted by priority}
   {If count > 10:} ... +{remaining} more → `/team queue`
 
@@ -2464,7 +2464,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
   {If none shown}
 
 📋 **Unassigned** ({count})
-  {priority_dot} {Pn} **#{N}**  {title}
+  {priority_dot} **#{N}**  {title}
   {If none:} (none)
 
 📊 **Merges**  {user}: `{n}` · {user}: `{n}` · ...
@@ -3240,7 +3240,7 @@ question: "哪个 Issue 要 auto？（按优先级排列）"
 options:
   {For TOP 3 assigned Issues, sorted by priority (skip rest — 4-option limit):}
   - label: "#{issue} {title}"
-    description: "{priority_dot} {Pn} · {size} · {milestone or '—'}"
+    description: "{priority_dot} · {size} · {milestone or '—'}"
   - label: "取消"
     description: "返回"
 ```
