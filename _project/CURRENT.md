@@ -7,8 +7,8 @@
 ## Project Status
 
 - **Version**: 0.5.0 (in progress)
-- **Last Updated**: 2026-03-10
-- **Last Session**: [2026-03-10-AF](sessions/2026-03-10-AF.md) (Session AF — VE 系统性治理 #001)
+- **Last Updated**: 2026-03-12
+- **Last Session**: [2026-03-12-AI](sessions/2026-03-12-AI.md) (Session AI — v3.8.3 /team-rc cancel)
 
 ## Current Phase
 
@@ -16,17 +16,17 @@
 
 ## What Was Just Completed
 
-**Session AF** — VE 系统性治理 (GitHub #1):
+**Session AG–AI** (2026-03-11~12) — Teamwork v3.8.1 → v3.8.3:
 
-- Fixed ~15 remaining VE violations across 4 skill files (team.md, team-ship.md, team-rc.md, team-drive.md)
-- team-claim.md and team-issue.md verified clean (0 violations)
-- Key fixes: ERROR bold prefix, doctor hints on all STOPs, raw git→/team-* skills, Learn code blocks→VE markdown
-- 14 files changed, 344 insertions, 82 deletions (includes session AE uncommitted work)
-- GitHub issue #1 closed
+- **v3.8.1**: Comprehensive audit — worktree chain safety, 13 recovery hints, sync-all-checkboxes, SKILL_VERSION source fix
+- **v3.8.2**: Script沉淀（5 new subcommands, 15 inline bash sites migrated）, 3 UX dead-end fixes, AskUserQuestion 4-option cap
+- **v3.8.2 续**: 21 tests (Phase 1b+1c), DRY refactor (-148 lines), worktree mismatch 4 轮迭代→new-tab 方案
+- **v3.8.3**: `/team-rc cancel` + upstream-first RC model + post-merge PR checkbox
+- Total: 32 commits, 10+ files per version
 
 ## Active Task / What's In Progress
 
-无活跃任务。VE 治理完成，全部 6 skill 文件 0 违规。
+无活跃任务。Teamwork v3.8.3 released.
 
 ## Next Session Should Start With
 
@@ -67,6 +67,9 @@
 - [x] Teamwork v3.5.1 — design review: logic gaps + docs alignment
 - [x] Teamwork v3.7.1 — visual encoding standard + audit sweep + doctor 8→11 checks
 - [x] Teamwork v3.7.1 — VE 系统性治理: 全部 skill 输出 100% VE 合规 (#1)
+- [x] Teamwork v3.8.1 — comprehensive audit: worktree chain + sync-all-checkboxes + 13 hints
+- [x] Teamwork v3.8.2 — script沉淀 + DRY + UX dead-ends + 21 tests
+- [x] Teamwork v3.8.3 — /team-rc cancel + upstream-first RC + post-merge PR checkbox
 
 ## Known Issues / Blockers
 
