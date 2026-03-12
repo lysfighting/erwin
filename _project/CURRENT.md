@@ -8,7 +8,7 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-12
-- **Last Session**: [2026-03-12-AI](sessions/2026-03-12-AI.md) (Session AI — v3.8.3 /team-rc cancel)
+- **Last Session**: [2026-03-12-AJ](sessions/2026-03-12-AJ.md) (Session AJ — v3.8.4 bugfixes + cross-MC design)
 
 ## Current Phase
 
@@ -26,7 +26,8 @@
 
 ## Active Task / What's In Progress
 
-无活跃任务。Teamwork v3.8.3 released.
+**Teamwork v3.8.5**: Implementing cross-MC knowledge sharing (L1 + L2) + `/team sync` + `/team share`
+- Design spec: `_project/ideas/skills/cross-mc-knowledge-sharing.md`
 
 ## Next Session Should Start With
 
@@ -70,6 +71,7 @@
 - [x] Teamwork v3.8.1 — comprehensive audit: worktree chain + sync-all-checkboxes + 13 hints
 - [x] Teamwork v3.8.2 — script沉淀 + DRY + UX dead-ends + 21 tests
 - [x] Teamwork v3.8.3 — /team-rc cancel + upstream-first RC + post-merge PR checkbox
+- [x] Teamwork v3.8.4 — dashboard formatting + worktree init fix + tab colors + bump validation
 
 ## Known Issues / Blockers
 
