@@ -2,6 +2,15 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.9.6] — 2026-03-13
+
+### Fixed — Cross-platform + remaining script fixes
+
+- **sed portability**: All `sed -i ''` (macOS-only) replaced with `_sed_i` helper that detects GNU/BSD sed. Affects tw-bump-version.sh and tw-config.sh migrate. Linux users can now run these scripts.
+- **tw-pr.sh**: Undefined `$repo_flag` in error messages replaced with `${repo_args[*]}`.
+- **team-rc.md cancel**: "cancel each with `/team-rc cancel`" (infinite loop) replaced with manual delete guidance.
+- **team-ship.md done**: Stash `push -u` (stashes untracked) changed to `push` (tracked only) — consistent with dirty check that excludes untracked files.
+
 ## [3.9.5] — 2026-03-12
 
 ### Fixed — Script hardening + docs staleness + ecosystem robustness

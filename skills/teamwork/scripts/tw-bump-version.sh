@@ -10,6 +10,13 @@
 
 set -euo pipefail
 
+# Portable in-place sed (macOS uses -i '', GNU/Linux uses -i)
+if sed --version 2>/dev/null | grep -q GNU 2>/dev/null; then
+  _sed_i() { sed -i "$@"; }
+else
+  _sed_i() { sed -i '' "$@"; }
+fi
+
 VERSION="${1:-}"
 if [ -z "$VERSION" ] || [[ "$VERSION" == -* ]]; then
   echo "Usage: tw-bump-version.sh <version>"
@@ -43,7 +50,7 @@ MANUAL="$(dirname "$SKILL_DIR")/../docs/teamwork-ai-manual.md"
 for file in "${FILES[@]}"; do
   OLD=$(grep -m1 '^version:' "$file" 2>/dev/null | sed 's/version: *"//' | sed 's/"//') || true
   if [ -n "$OLD" ] && [ "$OLD" != "$VERSION" ]; then
-    sed -i '' "s/^version: \".*\"/version: \"$VERSION\"/" "$file"
+    _sed_i "s/^version: \".*\"/version: \"$VERSION\"/" "$file"
     echo "  $(basename "$file"): $OLD → $VERSION"
     CHANGED=$((CHANGED + 1))
   fi
@@ -53,28 +60,28 @@ done
 # Matches both 3-segment (v3.4.0) and 2-segment (v3.4) version strings
 for file in "${FILES[@]}"; do
   # "TEAMWORK v3.x.y" or "TEAMWORK v3.x" (2 or 3 segments)
-  sed -i '' "s/TEAMWORK v[0-9][0-9]*\.[0-9][0-9]*\(\.[0-9][0-9]*\)*/TEAMWORK v$VERSION/g" "$file"
+  _sed_i "s/TEAMWORK v[0-9][0-9]*\.[0-9][0-9]*\(\.[0-9][0-9]*\)*/TEAMWORK v$VERSION/g" "$file"
 
   # "Teamwork v3.x.y" or "Teamwork v3.x"
-  sed -i '' "s/Teamwork v[0-9][0-9]*\.[0-9][0-9]*\(\.[0-9][0-9]*\)*/Teamwork v$VERSION/g" "$file"
+  _sed_i "s/Teamwork v[0-9][0-9]*\.[0-9][0-9]*\(\.[0-9][0-9]*\)*/Teamwork v$VERSION/g" "$file"
 
   # "(v3.x.y)" or "(v3.x)"
-  sed -i '' "s/(v[0-9][0-9]*\.[0-9][0-9]*\(\.[0-9][0-9]*\)*)/(v$VERSION)/g" "$file"
+  _sed_i "s/(v[0-9][0-9]*\.[0-9][0-9]*\(\.[0-9][0-9]*\)*)/(v$VERSION)/g" "$file"
 
   # "Version 3.x.y" (manual header)
-  sed -i '' "s/Version [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/Version $VERSION/g" "$file"
+  _sed_i "s/Version [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/Version $VERSION/g" "$file"
 
   # "Skill version: 3.x.y" (README)
-  sed -i '' "s/Skill version: [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/Skill version: $VERSION/g" "$file"
+  _sed_i "s/Skill version: [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/Skill version: $VERSION/g" "$file"
 
   # "**Version**: `3.x.y`" (inline help docs — backtick-wrapped)
-  sed -i '' "s/\*\*Version\*\*: \`[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\`/**Version**: \`$VERSION\`/g" "$file"
+  _sed_i "s/\*\*Version\*\*: \`[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\`/**Version**: \`$VERSION\`/g" "$file"
 
   # "(`v3.x.y`)" (inline backtick-parens in titles)
-  sed -i '' "s/(\`v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\`)/(\`v$VERSION\`)/g" "$file"
+  _sed_i "s/(\`v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\`)/(\`v$VERSION\`)/g" "$file"
 
   # 'SKILL_VERSION="3.x.y"' (bash variable in init templates)
-  sed -i '' "s/SKILL_VERSION=\"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\"/SKILL_VERSION=\"$VERSION\"/g" "$file"
+  _sed_i "s/SKILL_VERSION=\"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\"/SKILL_VERSION=\"$VERSION\"/g" "$file"
 
   # skill_version removed from config — no longer needs bumping
 done

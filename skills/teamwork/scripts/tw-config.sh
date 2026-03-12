@@ -23,6 +23,13 @@
 
 set -euo pipefail
 
+# Portable in-place sed (macOS uses -i '', GNU/Linux uses -i)
+if sed --version 2>/dev/null | grep -q GNU 2>/dev/null; then
+  _sed_i() { sed -i "$@"; }
+else
+  _sed_i() { sed -i '' "$@"; }
+fi
+
 # --- Internal helpers ---
 
 _detect_config() {
@@ -466,12 +473,12 @@ cmd_migrate() {
   # 1. schema_version → 3
   if grep -q "^schema_version:" "$config_file"; then
     if ! grep -q "^schema_version: 3$" "$config_file"; then
-      sed -i '' "s/^schema_version:.*/schema_version: 3/" "$config_file"
+      _sed_i "s/^schema_version:.*/schema_version: 3/" "$config_file"
       echo "Updated schema_version → 3"
       changes=$((changes + 1))
     fi
   else
-    sed -i '' "1i\\
+    _sed_i "1i\\
 schema_version: 3" "$config_file"
     echo "Added schema_version: 3"
     changes=$((changes + 1))
@@ -479,7 +486,7 @@ schema_version: 3" "$config_file"
 
   # 2. Remove skill_version (stale — version lives in skill frontmatter)
   if grep -q "^skill_version:" "$config_file"; then
-    sed -i '' '/^skill_version:/d' "$config_file"
+    _sed_i '/^skill_version:/d' "$config_file"
     echo "Removed stale skill_version line"
     changes=$((changes + 1))
   fi
@@ -487,7 +494,7 @@ schema_version: 3" "$config_file"
   # 3. Migrate worktree: section → git config --local
   if grep -q "^worktree:" "$config_file"; then
     git config --local teamwork.worktree true 2>/dev/null || true
-    sed -i '' '/^worktree:/,/^[^ #]/{ /^worktree:/d; /^  /d; }' "$config_file"
+    _sed_i '/^worktree:/,/^[^ #]/{ /^worktree:/d; /^  /d; }' "$config_file"
     echo "Migrated worktree → git config --local teamwork.worktree true"
     changes=$((changes + 1))
   fi

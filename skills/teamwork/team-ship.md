@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.9.5"
+version: "3.9.6"
 ---
 
 # /team-ship — Deliver Mission
@@ -623,7 +623,7 @@ If `.mission` file exists (worktree mode):
 DIRTY=$(git status --porcelain 2>/dev/null | grep -v '^??')
 if [ -n "$DIRTY" ]; then
   STASH_MSG="team-ship-done: stashed from $(git branch --show-current) before cleanup"
-  git stash push -u -m "$STASH_MSG" || {
+  git stash push -m "$STASH_MSG" || {
     echo "ERROR: git stash failed. Commit or discard changes manually before cleanup."
     # STOP — do not proceed to checkout, risk losing changes
     # 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.

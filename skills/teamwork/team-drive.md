@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.9.5"
+version: "3.9.6"
 ---
 
 # /team-drive — Execute Mission

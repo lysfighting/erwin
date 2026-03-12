@@ -176,14 +176,14 @@ cmd_wait_merged() {
 
     if [ "$state" = "CLOSED" ]; then
       echo "ERROR: PR #$pr was closed without merging" >&2
-      echo "Check: gh pr view $pr $repo_flag" >&2
+      echo "Check: gh pr view $pr ${repo_args[*]}" >&2
       return 1
     fi
 
     poll_count=$((poll_count + 1))
     if [ "$poll_count" -ge "$max_polls" ]; then
       echo "ERROR: Timed out waiting for PR #$pr to merge (10 min)" >&2
-      echo "Check CI: gh pr checks $pr $repo_flag" >&2
+      echo "Check CI: gh pr checks $pr ${repo_args[*]}" >&2
       return 3
     fi
 

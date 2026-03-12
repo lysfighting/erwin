@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.9.5"
+version: "3.9.6"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -305,7 +305,7 @@ RC_BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh find-rc 2>/dev/null)
 If no RC branch found → "No active RC branch to cancel." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
-If multiple found → "Multiple RC branches found. Run `/team doctor fix` to clean up, or cancel each with `/team-rc cancel`." → **STOP**
+If multiple found → "Multiple RC branches found. Run `/team doctor fix` to clean up, or delete manually: `git push origin --delete rc/BRANCH` for each extra." → **STOP**
 
 ### Step C3: Show RC info + confirm
 
