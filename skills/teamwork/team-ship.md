@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.8.7"
+version: "3.9.2"
 ---
 
 # /team-ship — Deliver Mission
@@ -669,7 +669,7 @@ Worktree:  {removed/kept/n/a}
 Branch:    *{BASE_BRANCH}*
 
 ────────────────────────────────────────────
-`/team-claim` (next mission) │ `/team` (dashboard)
+`/team-claim` (next mission) │ `/team-rc` (release) │ `/team` (dashboard)
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 

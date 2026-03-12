@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shiki VE Color Lab — Claude Code Syntax Highlighting Research</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Code', monospace;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  h1 { color: #fff; font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 13px; margin-bottom: 24px; }
+
+  /* Theme selector */
+  .controls {
+    display: flex; gap: 12px; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .controls label { color: #aaa; font-size: 13px; }
+  .controls select, .controls button {
+    background: #2a2a3e; color: #e0e0e0; border: 1px solid #444;
+    padding: 6px 12px; border-radius: 4px; font-family: inherit; font-size: 13px;
+    cursor: pointer;
+  }
+  .controls select:hover, .controls button:hover { border-color: #888; }
+  .controls button.active { background: #4a4a6e; border-color: #8888ff; }
+
+  /* Layout */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: #16213e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px;
+    background: #1a1a2e;
+    border-bottom: 1px solid #333;
+  }
+  .card-header .lang {
+    font-size: 14px; font-weight: bold; color: #fff;
+  }
+  .card-header .ve-use {
+    font-size: 11px; color: #8888ff; background: #2a2a4e;
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .card-body { padding: 0; }
+  .card-body pre {
+    margin: 0 !important;
+    padding: 14px !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    overflow-x: auto;
+    background: transparent !important;
+  }
+  .card-body code { font-family: inherit !important; }
+  .card-note {
+    padding: 8px 14px;
+    background: #1a1a2e;
+    border-top: 1px solid #333;
+    font-size: 11px;
+    color: #888;
+  }
+  .card-note .color-swatch {
+    display: inline-block; width: 10px; height: 10px;
+    border-radius: 2px; vertical-align: middle; margin-right: 4px;
+  }
+
+  /* VE current palette comparison */
+  .ve-palette {
+    display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .ve-item {
+    display: flex; align-items: center; gap: 8px;
+    background: #16213e; border: 1px solid #333;
+    padding: 8px 14px; border-radius: 6px; font-size: 13px;
+  }
+  .ve-swatch {
+    width: 14px; height: 14px; border-radius: 3px;
+  }
+
+  /* Section headers */
+  h2 {
+    color: #fff; font-size: 16px; margin: 32px 0 12px;
+    padding-bottom: 8px; border-bottom: 1px solid #333;
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  .loading { text-align: center; padding: 60px; color: #888; font-size: 16px; }
+
+  /* Summary table */
+  .summary-table {
+    width: 100%; border-collapse: collapse; margin: 16px 0;
+    font-size: 13px;
+  }
+  .summary-table th, .summary-table td {
+    padding: 8px 12px; text-align: left;
+    border-bottom: 1px solid #333;
+  }
+  .summary-table th { color: #aaa; font-weight: normal; font-size: 11px; text-transform: uppercase; }
+  .summary-table td:first-child { font-weight: bold; color: #fff; }
+  .summary-table .verdict { font-weight: bold; }
+  .verdict-yes { color: #4ec9b0; }
+  .verdict-maybe { color: #dcdcaa; }
+  .verdict-no { color: #f44747; }
+</style>
+</head>
+<body>
+
+<h1>Shiki VE Color Lab</h1>
+<p class="subtitle">
+  Research: which fenced code block languages produce colors useful for Teamwork VE semantic encoding?<br>
+  Claude Code uses <strong>Shiki</strong> (TextMate grammars, same as VS Code) for syntax highlighting.
+</p>
+
+<h2>Current VE Palette (3 effective colors)</h2>
+<div class="ve-palette">
+  <div class="ve-item"><div class="ve-swatch" style="background:#fff"></div> <strong>**bold**</strong> — headers/labels</div>
+  <div class="ve-item"><div class="ve-swatch" style="background:rgb(177,185,249)"></div> <code>`backtick`</code> — commands/values</div>
+  <div class="ve-item"><div class="ve-swatch" style="background:#888"></div> <em>*italic*</em> — secondary/branches</div>
+  <div class="ve-item"><div class="ve-swatch" style="background:#569cd6"></div> <strong style="color:#569cd6">#NNN</strong> — issue links</div>
+</div>
+
+<h2>Theme</h2>
+<div class="controls">
+  <label>Shiki Theme:</label>
+  <select id="theme-select">
+    <option value="github-dark" selected>github-dark (closest to Claude Code)</option>
+    <option value="github-dark-dimmed">github-dark-dimmed</option>
+    <option value="one-dark-pro">one-dark-pro</option>
+    <option value="dracula">dracula</option>
+    <option value="nord">nord</option>
+    <option value="vitesse-dark">vitesse-dark</option>
+    <option value="monokai">monokai</option>
+  </select>
+  <button id="render-btn">Render All</button>
+</div>
+
+<h2>High-Potential Languages for VE Color Hacking</h2>
+<div id="high-potential" class="grid"><div class="loading">Loading Shiki...</div></div>
+
+<h2>Medium-Potential Languages</h2>
+<div id="medium-potential" class="grid"></div>
+
+<h2>Reference: Standard Code Languages</h2>
+<div id="reference" class="grid"></div>
+
+<h2>VE Color Hacking Verdict</h2>
+<table class="summary-table" id="verdict-table">
+  <thead>
+    <tr><th>Language</th><th>Useful Colors</th><th>VE Semantic Mapping</th><th>Tradeoff</th><th>Verdict</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script type="module">
+import { codeToHtml, bundledLanguages } from 'https://esm.sh/shiki@3.2.1';
+
+// ═══════════════════════════════════════════════════════════
+// SAMPLE DEFINITIONS — crafted to show VE-relevant colors
+// ═══════════════════════════════════════════════════════════
+
+const HIGH_POTENTIAL = [
+  {
+    lang: 'diff',
+    veUse: 'pass/fail · added/removed',
+    note: 'GREEN for + lines, RED for - lines. Perfect for status lists.',
+    colors: ['#4ec9b0:+ lines (green)', '#f44747:- lines (red)', '#569cd6:@@ headers (blue)'],
+    code: `+ ✅ Check 1: Orphan branches — clean
++ ✅ Check 2: Cross-contamination — clean
++ ✅ Check 9: GitHub auth — valid
+- ❌ Check 3: Branch staleness — 45 commits behind develop
+- ⚠️ Check 4: Stale stashes — 3 stashes older than 7 days
+@@ Doctor Summary: 9/11 passed, 2 warnings @@`
+  },
+  {
+    lang: 'bash',
+    veUse: 'success annotations · commands',
+    note: '# comments = GREEN. Variables $VAR = CYAN. Strings = colored.',
+    colors: ['#6a9955:# comments (green)', '#9cdcfe:$variables (cyan)', '#ce9178:strings (orange)'],
+    code: `# ✅ All 3 code tasks complete
+# ✅ CI green on main
+# ⚠️ Milestone V0.1: 4/6 issues closed
+
+echo "Cherry-picked $COMMIT_SHA to $RC_BRANCH"
+git push origin "$RC_BRANCH"
+
+# Next: /team-rc promote`
+  },
+  {
+    lang: 'yaml',
+    veUse: 'key/value display · config',
+    note: 'Keys = one color, string values = another. Natural for structured data.',
+    colors: ['#9cdcfe:keys (cyan/blue)', '#ce9178:string values (orange)', '#6a9955:# comments (green)'],
+    code: `# RC Status
+Tag: V0.1.0-hotfix.1
+PR: "#247 (squash merged)"
+Backport: cherry-picked to develop
+Milestone: "V0.1 — 4/6 closed"
+Branch: rc/V0.1.0
+Status: promoted
+# Next: /team-rc to prepare next RC`
+  },
+  {
+    lang: 'ini',
+    veUse: 'section headers · key=value',
+    note: '[Sections] get distinct color. Keys and values separate colors.',
+    colors: ['#569cd6:[sections] (blue)', '#9cdcfe:keys (cyan)', '#ce9178:values (orange)'],
+    code: `[MISSION #042]
+title = Add user authentication
+status = wip
+branch = mission/042-add-user-auth
+commits = 3
+priority = P1
+
+[MISSION #045]
+title = Fix API timeout
+status = review
+branch = mission/045-fix-timeout
+commits = 1
+priority = P0`
+  },
+  {
+    lang: 'log',
+    veUse: 'severity-colored log lines',
+    note: 'Some themes color ERROR/WARN/INFO differently. Theme-dependent.',
+    colors: ['#f44747:ERROR (red)', '#dcdcaa:WARN (yellow)', '#569cd6:INFO (blue)'],
+    code: `2026-03-12 INFO  RC prepared: rc/V0.1.0 from develop
+2026-03-12 INFO  Staging deploy triggered
+2026-03-12 WARN  CI not green on develop (conclusion: failure)
+2026-03-12 ERROR Merge conflict in src/auth.ts
+2026-03-12 INFO  Conflict resolved, push successful
+2026-03-12 INFO  RC promoted: V0.1.0 tagged on main`
+  },
+  {
+    lang: 'markdown',
+    veUse: 'nested markdown rendering',
+    note: 'Headers, bold, lists get distinct colors. Meta-recursive!',
+    colors: ['#569cd6:# headers (blue)', '#fff:bold (white)', '#6a9955:links (green)'],
+    code: `# PROMOTED — V0.1.0
+**Tag:** V0.1.0 (on main)
+**PR:** #247 (squash merged)
+
+## Next Steps
+1. Deploy to production
+2. Monitor error rates
+3. Close milestone if complete
+
+> RC branch deleted. All fixes live in develop.`
+  }
+];
+
+const MEDIUM_POTENTIAL = [
+  {
+    lang: 'toml',
+    veUse: 'config display',
+    note: 'Similar to ini. [tables] and key = "value" get colors.',
+    colors: ['#569cd6:[tables]', '#9cdcfe:keys', '#ce9178:"string values"'],
+    code: `[versions]
+current = "V0.1"
+
+[conventions]
+base_branch = "develop"
+production_branch = "main"
+
+[deploy]
+staging_workflow = "deploy-staging.yml"`
+  },
+  {
+    lang: 'properties',
+    veUse: 'simple key=value',
+    note: 'Minimal syntax: keys and values get different colors.',
+    colors: ['#9cdcfe:keys', '#ce9178:values'],
+    code: `Tag=V0.1.0-hotfix.1
+PR=#247
+Backport=cherry-picked
+Milestone=V0.1
+Status=promoted
+Branch=rc/V0.1.0`
+  },
+  {
+    lang: 'css',
+    veUse: 'selector/property/value triplet',
+    note: 'Selectors = one color, properties = another, values = third.',
+    colors: ['#d7ba7d:selectors', '#9cdcfe:properties', '#ce9178:values'],
+    code: `.mission-042 {
+  status: wip;
+  priority: P1;
+  branch: mission/042-add-user-auth;
+  commits: 3;
+  assignee: alice;
+}`
+  },
+  {
+    lang: 'sql',
+    veUse: 'user-copyable queries',
+    note: 'Keywords = BLUE, strings = colored. Good for actual SQL output.',
+    colors: ['#569cd6:keywords (blue)', '#ce9178:strings', '#b5cea8:numbers (green)'],
+    code: `-- Check current migration state
+SELECT * FROM alembic_version;
+
+-- Fix: reset to before v8_llm_gateway
+UPDATE alembic_version
+SET version_num = 'v7_settings';
+
+-- Verify column exists
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'users' AND column_name = 'tier';`
+  },
+  {
+    lang: 'graphql',
+    veUse: 'structured query display',
+    note: 'Type names, fields, arguments get distinct colors.',
+    colors: ['#4ec9b0:types (teal)', '#9cdcfe:fields (cyan)', '#ce9178:strings'],
+    code: `type Mission {
+  id: Int!
+  title: String!
+  status: Status!
+  branch: String
+  assignee: Member
+  priority: Priority!
+}
+
+enum Status {
+  QUEUED
+  WIP
+  REVIEW
+  DONE
+}`
+  }
+];
+
+const REFERENCE = [
+  {
+    lang: 'python',
+    veUse: 'reference: typical code colors',
+    note: 'Keywords blue, strings green/orange, functions yellow, decorators.',
+    colors: [],
+    code: `def promote_rc(version: str, prod_branch: str = "main"):
+    """Squash merge RC to production, tag, release."""
+    rc_branch = f"rc/{version}"
+    pr = gh.create_pr(base=prod_branch, head=rc_branch)
+    pr.merge(method="squash")
+    tag = gh.create_tag(version, ref=prod_branch)
+    return {"pr": pr.number, "tag": tag.name}`
+  },
+  {
+    lang: 'json',
+    veUse: 'reference: structured data',
+    note: 'Keys blue, strings orange, numbers green, booleans blue.',
+    colors: [],
+    code: `{
+  "version": "3.9.2",
+  "team_size": 3,
+  "missions": {
+    "active": 2,
+    "completed": 15,
+    "blocked": 0
+  },
+  "rc_active": true,
+  "rc_branch": "rc/V0.1.1"
+}`
+  },
+  {
+    lang: 'typescript',
+    veUse: 'reference: typed code',
+    note: 'Types teal, keywords blue, strings orange.',
+    colors: [],
+    code: `interface Mission {
+  id: number;
+  title: string;
+  status: 'queued' | 'wip' | 'review' | 'done';
+  branch: string;
+  assignee?: string;
+  priority: 'P0' | 'P1' | 'P2' | 'P3';
+}`
+  }
+];
+
+// ═══════════════════════════════════════════════════════════
+// VERDICT DATA
+// ═══════════════════════════════════════════════════════════
+
+const VERDICTS = [
+  { lang: 'diff', colors: 'Green (+), Red (-), Blue (@@)', mapping: 'pass/fail lists, added/removed items', tradeoff: 'Requires +/- prefix on every line', verdict: 'yes', text: 'HIGH VALUE' },
+  { lang: 'bash', colors: 'Green (#), Cyan ($var), Orange ("str")', mapping: 'Success annotations via # comments', tradeoff: 'Only # lines get green; rest is noisy', verdict: 'yes', text: 'USEFUL' },
+  { lang: 'yaml', colors: 'Cyan (keys), Orange (values), Green (#)', mapping: 'Key-value status display', tradeoff: 'Values must be quoted for color; rigid format', verdict: 'yes', text: 'USEFUL' },
+  { lang: 'ini', colors: 'Blue ([section]), Cyan (keys), Orange (values)', mapping: 'Grouped status with section headers', tradeoff: '[section] syntax is unusual for status output', verdict: 'maybe', text: 'SITUATIONAL' },
+  { lang: 'log', colors: 'Theme-dependent ERROR/WARN/INFO', mapping: 'Severity-colored diagnostics', tradeoff: 'Not all themes support log level colors', verdict: 'maybe', text: 'FRAGILE' },
+  { lang: 'markdown', colors: 'Blue (#), White (**bold**), Green (links)', mapping: 'Meta-recursive VE inside code block', tradeoff: 'Defeats purpose — use real markdown instead', verdict: 'no', text: 'POINTLESS' },
+  { lang: 'toml', colors: 'Similar to ini/yaml', mapping: 'Config display', tradeoff: 'Redundant with yaml', verdict: 'maybe', text: 'REDUNDANT' },
+  { lang: 'sql', colors: 'Blue (keywords), Orange (strings), Green (numbers)', mapping: 'User-copyable SQL queries', tradeoff: 'Only useful when actually showing SQL', verdict: 'yes', text: 'NATURAL FIT' },
+  { lang: 'json', colors: 'Blue (keys), Orange (strings), Green (numbers)', mapping: 'Structured data display', tradeoff: 'Requires valid JSON syntax', verdict: 'maybe', text: 'RIGID' },
+];
+
+// ═══════════════════════════════════════════════════════════
+// RENDERER
+// ═══════════════════════════════════════════════════════════
+
+async function renderAll(theme) {
+  const containers = {
+    'high-potential': HIGH_POTENTIAL,
+    'medium-potential': MEDIUM_POTENTIAL,
+    'reference': REFERENCE
+  };
+
+  for (const [containerId, samples] of Object.entries(containers)) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+
+    for (const sample of samples) {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      // Check if language is available
+      const langAvailable = sample.lang in bundledLanguages;
+      const effectiveLang = langAvailable ? sample.lang : 'text';
+
+      let html;
+      try {
+        html = await codeToHtml(sample.code, {
+          lang: effectiveLang,
+          theme: theme
+        });
+      } catch (e) {
+        html = `<pre><code>${sample.code.replace(/</g, '&lt;')}</code></pre>`;
+      }
+
+      const colorsHtml = sample.colors.length > 0
+        ? sample.colors.map(c => {
+            const [color, label] = c.split(':');
+            return `<span class="color-swatch" style="background:${color}"></span>${label}`;
+          }).join(' &nbsp;·&nbsp; ')
+        : '';
+
+      card.innerHTML = `
+        <div class="card-header">
+          <span class="lang">\`\`\`${sample.lang}${!langAvailable ? ' (not bundled — showing as text)' : ''}</span>
+          <span class="ve-use">${sample.veUse}</span>
+        </div>
+        <div class="card-body">${html}</div>
+        ${sample.note || colorsHtml ? `<div class="card-note">
+          ${sample.note ? `<div>${sample.note}</div>` : ''}
+          ${colorsHtml ? `<div style="margin-top:4px">${colorsHtml}</div>` : ''}
+        </div>` : ''}
+      `;
+      container.appendChild(card);
+    }
+  }
+
+  // Verdict table
+  const tbody = document.querySelector('#verdict-table tbody');
+  tbody.innerHTML = '';
+  for (const v of VERDICTS) {
+    const cls = v.verdict === 'yes' ? 'verdict-yes' : v.verdict === 'maybe' ? 'verdict-maybe' : 'verdict-no';
+    tbody.innerHTML += `<tr>
+      <td>\`\`\`${v.lang}</td>
+      <td>${v.colors}</td>
+      <td>${v.mapping}</td>
+      <td>${v.tradeoff}</td>
+      <td class="verdict ${cls}">${v.text}</td>
+    </tr>`;
+  }
+}
+
+// Initial render
+const themeSelect = document.getElementById('theme-select');
+const renderBtn = document.getElementById('render-btn');
+
+renderAll(themeSelect.value);
+
+renderBtn.addEventListener('click', () => renderAll(themeSelect.value));
+themeSelect.addEventListener('change', () => renderAll(themeSelect.value));
+</script>
+
+</body>
+</html>

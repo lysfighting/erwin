@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.8.7"
+version: "3.9.2"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -19,6 +19,10 @@ version: "3.8.7"
 | (empty) | Prepare: cut rc branch from develop → staging |
 | `cancel` | Cancel: delete current RC branch (fix on base, then re-cut) |
 | `promote` | Promote: squash merge rc → main → tag → GitHub Release |
+| `fix` | Fix: cherry-pick a specific commit onto active RC |
+| `fix help` | Show fix operation usage |
+| `hotfix` | Hotfix: fix production on main + backport to develop |
+| `hotfix help` | Show hotfix operation usage |
 | `promote help` | Show promote operation usage |
 | `help` or `-h` | Show usage guide |
 
@@ -59,13 +63,26 @@ Parse `$ARGUMENTS`:
   6. Close milestone if complete
   7. Delete rc branch
 
+**FIX** (`/team-rc fix`)
+  Cherry-pick a specific commit from *develop* to active RC.
+  Preserves test progress (unlike cancel + re-cut).
+  `/team-rc fix`              Select from recent commits
+  `/team-rc fix <commit>`     Cherry-pick specific commit hash
+  `/team-rc fix <branch>`     Cherry-pick HEAD of branch
+
+**HOTFIX** (`/team-rc hotfix`)
+  Post-release production fix. Requires dual-branch mode.
+  1. Create *hotfix/{version}* from *main*
+  2. Make fix (interactive)
+  3. PR to *main* (squash merge)
+  4. Tag + GitHub Release
+  5. Backport (cherry-pick) to *develop*
+
 **BUGFIX DURING RC** (upstream-first model)
-  RC is a frozen snapshot. Never commit directly to RC.
+  RC is a frozen snapshot. Default: fix on *develop*, cancel + re-cut.
   Found a bug on staging? →
-  1. Fix on *develop* (normal mission flow)
-  2. `/team-rc cancel` — delete stale RC
-  3. `/team-rc` — re-cut from latest *develop*
-  4. Re-deploy staging
+  Option A (default): Fix on *develop* → `/team-rc cancel` → `/team-rc` (re-cut)
+  Option B (surgical): Fix on *develop* → `/team-rc fix` (cherry-pick to RC)
 
 **CONFIG**
   `versions.current`: `"V0.1"`              Milestone prefix (patch auto-derived from tags)
@@ -73,6 +90,10 @@ Parse `$ARGUMENTS`:
   `conventions.production_branch`: `"main"`  Production branch
   `deploy.staging_workflow`: `"deploy.yml"`  *(optional)* Staging deploy workflow name
 
+- If `fix help` → jump to **Operation Fix Help**
+- If `fix` → jump to **Fix Flow**
+- If `hotfix help` → jump to **Operation Hotfix Help**
+- If `hotfix` → jump to **Hotfix Flow**
 - If `promote help` → jump to **Operation Promote Help**
 - If `promote` → jump to **Promote Flow**
 - If `cancel` → jump to **Cancel Flow**
@@ -333,6 +354,395 @@ Branch deleted (local + remote).
   1. Fix the issue on *{BASE_BRANCH}* (normal mission flow)
   2. `/team-rc` to re-cut RC from latest *{BASE_BRANCH}*
   3. Re-deploy staging
+────────────────────────────────────────────
+
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+
+---
+
+## Fix Flow
+
+> Triggered by `/team-rc fix`. Cherry-pick a specific commit from the base branch onto the active RC branch.
+> Use when: a bug was fixed on develop and you need it on RC without re-cutting (preserves existing RC test progress).
+
+### Step F1: Pre-flight
+
+Same worktree guard + config reads as Prepare Step 1 (worktree check, REPO, BASE_BRANCH, PROD_BRANCH).
+
+```bash
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || {
+  echo "No teamwork config found. Run /team init first."
+  # STOP
+}
+
+REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
+if [ -z "$REPO" ]; then
+  echo "ERROR: Cannot detect repo. Run: gh auth login"
+  # STOP
+fi
+
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "develop" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-develop}"
+```
+
+### Step F2: Find Active RC Branch
+
+```bash
+RC_BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh find-rc 2>/dev/null)
+RC_EXIT=$?
+```
+
+- If `RC_EXIT` is 1 (none found) → "No active RC branch. Cut one first with `/team-rc`." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+- If `RC_EXIT` is 3 (multiple found) → "Multiple RC branches found. Delete stale ones first." → **STOP**
+
+### Step F3: Identify the Fix Commit
+
+Parse `$ARGUMENTS` after `fix`:
+- If a commit hash or branch name is provided → validate it exists
+- If no argument → show recent commits on BASE_BRANCH and let user select
+
+**If no argument provided:**
+
+```bash
+git fetch origin "$BASE_BRANCH" 2>/dev/null
+RECENT_COMMITS=$(git log "origin/$BASE_BRANCH" --oneline -10 2>/dev/null)
+```
+
+Display recent commits and use `AskUserQuestion`:
+```
+question: "选择要 cherry-pick 到 RC 的 commit："
+options:
+  - (show up to 4 recent commits as options, each with hash + message)
+```
+
+**Validate commit:**
+
+```bash
+# Check commit exists
+git cat-file -t "$COMMIT_SHA" 2>/dev/null || {
+  echo "ERROR: Commit $COMMIT_SHA not found."
+  # STOP
+}
+
+# Check commit is not already on RC
+git fetch origin "$RC_BRANCH" 2>/dev/null
+if git merge-base --is-ancestor "$COMMIT_SHA" "origin/$RC_BRANCH" 2>/dev/null; then
+  echo "Commit $COMMIT_SHA is already on $RC_BRANCH."
+  # STOP
+fi
+```
+
+### Step F4: Confirm Cherry-pick
+
+```bash
+COMMIT_MSG=$(git log --format='%h %s' -1 "$COMMIT_SHA" 2>/dev/null)
+```
+
+**CHERRY-PICK TO RC** ────────────────────
+Commit: `{COMMIT_MSG}`
+Target: *{RC_BRANCH}*
+⚠️ This modifies the RC branch directly. Staging re-deploy needed after.
+────────────────────────────────────────────
+
+Use `AskUserQuestion`:
+```
+question: "确认 cherry-pick 到 RC？"
+options:
+  - label: "确认"
+    description: "Cherry-pick {COMMIT_SHA} 到 {RC_BRANCH}"
+  - label: "取消"
+    description: "放弃操作"
+```
+
+If "取消" → **STOP**
+
+### Step F5: Execute Cherry-pick
+
+```bash
+git fetch origin "$RC_BRANCH" 2>/dev/null
+git checkout "$RC_BRANCH"
+git pull origin "$RC_BRANCH"
+git cherry-pick "$COMMIT_SHA" --no-edit
+```
+
+**If cherry-pick conflicts:**
+
+Do NOT stop. Guide the user through resolution:
+
+**CHERRY-PICK CONFLICT** ────────────────────
+Conflicted files:
+```bash
+git diff --name-only --diff-filter=U
+```
+
+**To resolve:**
+  1. Edit the conflicted files (conflict markers: `<<<<<<<`, `=======`, `>>>>>>>`)
+  2. Stage resolved files: `git add <file>`
+  3. Continue: `git cherry-pick --continue`
+  4. Or abort: `git cherry-pick --abort`
+────────────────────────────────────────────
+
+Help the user resolve conflicts interactively. After resolution, continue to Step F6.
+
+**If cherry-pick succeeds:**
+
+```bash
+git push origin "$RC_BRANCH"
+```
+
+### Step F6: Summary
+
+```bash
+# Switch back to previous branch
+git checkout -
+```
+
+**FIX APPLIED** ── *{RC_BRANCH}* ────────────────────
+Commit: `{COMMIT_MSG}`
+Cherry-picked to: *{RC_BRANCH}*
+
+**Next:**
+  1. Re-deploy staging to verify
+  2. Continue RC validation
+  3. When ready → `/team-rc promote`
+────────────────────────────────────────────
+
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+
+---
+
+## Hotfix Flow
+
+> Triggered by `/team-rc hotfix`. Fix a production bug directly on main, then backport to develop.
+> Use when: production has a critical bug that needs immediate fixing, independent of any RC in progress.
+> Requires dual-branch mode (base_branch != production_branch).
+
+### Step H1: Pre-flight
+
+Same worktree guard + config reads as Prepare Step 1 (worktree check, REPO, BASE_BRANCH, PROD_BRANCH, VERSION_PREFIX).
+
+```bash
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || {
+  echo "No teamwork config found. Run /team init first."
+  # STOP
+}
+
+REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
+if [ -z "$REPO" ]; then
+  echo "ERROR: Cannot detect repo. Run: gh auth login"
+  # STOP
+fi
+
+VERSION_PREFIX=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
+if [ -z "$VERSION_PREFIX" ]; then
+  echo "ERROR: versions.current not set. Add to $TEAMWORK_DIR/config.yml:"
+  echo "  versions:"
+  echo "    current: \"V0.1\""
+  # STOP
+fi
+
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "develop" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-develop}"
+
+PROD_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.production_branch "main" 2>/dev/null)
+PROD_BRANCH="${PROD_BRANCH:-main}"
+```
+
+**Single-branch guard:**
+
+```bash
+if [ "$BASE_BRANCH" = "$PROD_BRANCH" ]; then
+  echo "ERROR: Hotfix requires dual-branch mode (base_branch ≠ production_branch)."
+  echo "Your config has both set to '$BASE_BRANCH'."
+  echo "Hotfix creates a branch from production and backports to develop — not applicable for single-branch projects."
+  # STOP
+fi
+```
+
+### Step H2: Derive Hotfix Version
+
+```bash
+git fetch origin "$PROD_BRANCH" 2>/dev/null
+LATEST_TAG=$(git tag --sort=-v:refname --list "${VERSION_PREFIX}*" 2>/dev/null | head -1)
+```
+
+- If no tags exist → "No release tags found. Run `/team-rc` + `/team-rc promote` first." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+Derive patch version: if `LATEST_TAG` is `V0.1.0` → `HOTFIX_VERSION` is `V0.1.0-hotfix.1`. If `V0.1.0-hotfix.1` already exists → `V0.1.0-hotfix.2`, etc.
+
+```bash
+HOTFIX_NUM=1
+while git tag --list "${LATEST_TAG}-hotfix.${HOTFIX_NUM}" 2>/dev/null | grep -q .; do
+  HOTFIX_NUM=$((HOTFIX_NUM + 1))
+done
+HOTFIX_VERSION="${LATEST_TAG}-hotfix.${HOTFIX_NUM}"
+HOTFIX_BRANCH="hotfix/${HOTFIX_VERSION}"
+```
+
+### Step H3: Create Hotfix Branch
+
+```bash
+git checkout -b "$HOTFIX_BRANCH" "origin/$PROD_BRANCH"
+```
+
+**HOTFIX** ── **{HOTFIX_VERSION}** ────────────────────
+Branch: *{HOTFIX_BRANCH}* (from *{PROD_BRANCH}*)
+Base tag: **{LATEST_TAG}**
+
+You are now on the hotfix branch. Make your fix, then continue.
+────────────────────────────────────────────
+
+### Step H4: Fix Phase (interactive)
+
+Guide the user to make their fix. This is interactive — the skill does not auto-fix.
+
+After the user makes changes, detect uncommitted work:
+
+```bash
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Uncommitted changes detected."
+fi
+```
+
+Use `AskUserQuestion`:
+```
+question: "Hotfix changes ready to commit?"
+options:
+  - label: "Commit and continue"
+    description: "Stage all changes and commit with hotfix message"
+  - label: "Not yet"
+    description: "I need more time — come back with /team-rc hotfix"
+```
+
+If "Not yet" → output: "Make your fix, then run `/team-rc hotfix` again from this branch (it will detect the existing hotfix branch and resume)." → **STOP**
+
+If "Commit and continue":
+
+```bash
+git add -A
+git commit -m "hotfix(${HOTFIX_VERSION}): fix description"
+```
+
+(Use the user's description if available, or ask for a one-line summary.)
+
+### Step H5: PR to Main
+
+```bash
+git push origin "$HOTFIX_BRANCH"
+```
+
+Create PR:
+
+```bash
+gh pr create \
+  --base "$PROD_BRANCH" \
+  --head "$HOTFIX_BRANCH" \
+  --title "hotfix: ${HOTFIX_VERSION}" \
+  --body "## Hotfix\n\nFix for production issue.\n\nBranch: \`${HOTFIX_BRANCH}\`\nBase tag: \`${LATEST_TAG}\`" \
+  --repo "$REPO"
+
+PR_NUMBER=$(gh pr view "$HOTFIX_BRANCH" --json number --jq '.number' --repo "$REPO")
+```
+
+Wait for CI + merge (same pattern as Promote):
+
+**Try auto-merge first:**
+
+```bash
+gh pr merge "$PR_NUMBER" --squash --auto \
+  --subject "hotfix: ${HOTFIX_VERSION}" \
+  --repo "$REPO"
+```
+
+If `--auto` succeeds, poll:
+
+```bash
+bash ~/.claude/commands/scripts/tw-pr.sh wait-merged "$PR_NUMBER" "$REPO"
+```
+
+**If `--auto` fails** → fallback:
+
+```bash
+bash ~/.claude/commands/scripts/tw-pr.sh watch "$PR_NUMBER" || {
+  echo "WARNING: CI checks failed or timed out — attempting merge anyway"
+}
+
+gh pr merge "$PR_NUMBER" --squash \
+  --subject "hotfix: ${HOTFIX_VERSION}" \
+  --repo "$REPO"
+```
+
+If merge fails → output error details → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+### Step H6: Tag on Main
+
+```bash
+git fetch origin "$PROD_BRANCH"
+bash ~/.claude/commands/scripts/tw-git.sh tag "$HOTFIX_VERSION" "origin/$PROD_BRANCH"
+```
+
+```bash
+gh release create "$HOTFIX_VERSION" \
+  --generate-notes \
+  --title "$HOTFIX_VERSION" \
+  --repo "$REPO"
+```
+
+Capture and output the release URL. If fails → warn but continue.
+
+### Step H7: Backport to Develop
+
+After PR merged to main, cherry-pick to develop:
+
+```bash
+MERGE_SHA=$(gh pr view "$PR_NUMBER" --json mergeCommit --jq '.mergeCommit.oid' --repo "$REPO")
+git checkout "$BASE_BRANCH"
+git pull origin "$BASE_BRANCH"
+git cherry-pick "$MERGE_SHA" --no-edit
+```
+
+**If cherry-pick conflicts:**
+
+Do NOT stop. Guide the user:
+
+**BACKPORT CONFLICT** ────────────────────
+Conflicted files:
+```bash
+git diff --name-only --diff-filter=U
+```
+
+**To resolve:**
+  1. Edit the conflicted files (resolve markers: `<<<<<<<`, `=======`, `>>>>>>>`)
+  2. Stage resolved files: `git add <file>`
+  3. Continue: `git cherry-pick --continue`
+  4. Or abort: `git cherry-pick --abort` (hotfix is already on *main* — backport can be done later)
+────────────────────────────────────────────
+
+After resolution (or if no conflict):
+
+```bash
+git push origin "$BASE_BRANCH"
+```
+
+### Step H8: Cleanup + Summary
+
+```bash
+# Delete remote hotfix branch
+git push origin --delete "$HOTFIX_BRANCH" 2>/dev/null || true
+
+# Delete local hotfix branch
+git branch -d "$HOTFIX_BRANCH" 2>/dev/null || git branch -D "$HOTFIX_BRANCH" 2>/dev/null || true
+```
+
+**HOTFIX COMPLETE ── {HOTFIX_VERSION}** ────────────────────
+Tag: **{HOTFIX_VERSION}** (on *{PROD_BRANCH}*)
+PR:  **#{PR_NUMBER}** (squash merged to *{PROD_BRANCH}*)
+Release: {release_url}
+Backport: cherry-picked to *{BASE_BRANCH}*
+
 ────────────────────────────────────────────
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
@@ -629,10 +1039,91 @@ Output the following and **STOP**:
 
 **TROUBLESHOOTING**
   "No RC branch found" → Run `/team-rc` first to cut an RC
-  "CI not green" → Fix on *{base_branch}*, then `/team-rc cancel` + `/team-rc` to re-cut
+  "CI not green" → Fix on *{BASE_BRANCH}*, then `/team-rc cancel` + `/team-rc` to re-cut
   "Staging not verified" → Deploy to staging first, verify manually
 
 **BUGFIX DURING RC**
   RC is a frozen snapshot — never commit directly to RC.
-  Found a bug? Fix on *{base_branch}* → `/team-rc cancel` → `/team-rc` (re-cut).
-  See also: `/team-rc cancel`
+  Found a bug? Fix on *{BASE_BRANCH}* → `/team-rc cancel` → `/team-rc` (re-cut).
+  Or cherry-pick a specific fix: `/team-rc fix`
+  See also: `/team-rc cancel`, `/team-rc fix`
+
+---
+
+## Operation Fix Help
+
+> Triggered by `/team-rc fix help`.
+
+Output the following and **STOP**:
+
+**`/team-rc fix` — Cherry-pick Fix to RC**
+────────────────────────────────────────────
+
+**USAGE**
+  `/team-rc fix`                Show recent commits on *{BASE_BRANCH}*, select one to cherry-pick
+  `/team-rc fix <commit>`       Cherry-pick specific commit hash to active RC
+  `/team-rc fix <branch>`       Cherry-pick HEAD of branch to active RC
+
+**WHAT IT DOES**
+  1. Find active RC branch
+  2. Validate the commit exists and is not already on RC
+  3. Cherry-pick the commit onto RC branch
+  4. Push updated RC
+
+**WHEN TO USE**
+  A bug was fixed on *{BASE_BRANCH}* and you need it on the RC without re-cutting.
+  This preserves existing RC test progress (unlike cancel + re-cut).
+
+  `/team-rc cancel` + `/team-rc` = **re-cut** (clean slate, lose test progress)
+  `/team-rc fix` = **cherry-pick** (surgical, keep test progress)
+
+**PREREQUISITES**
+  RC branch must exist (created by `/team-rc`)
+  Fix commit must exist on *{BASE_BRANCH}*
+
+**CONFLICT RESOLUTION**
+  If the cherry-pick has conflicts, you'll be guided through resolution:
+  1. Edit conflicted files (resolve markers)
+  2. `git add <file>`
+  3. `git cherry-pick --continue`
+
+**AFTER FIX**
+  Re-deploy staging to verify the fix on RC.
+
+---
+
+## Operation Hotfix Help
+
+> Triggered by `/team-rc hotfix help`.
+
+Output the following and **STOP**:
+
+**`/team-rc hotfix` — Post-Release Production Fix**
+────────────────────────────────────────────
+
+**USAGE**
+  `/team-rc hotfix`             Start hotfix from *{PROD_BRANCH}*
+
+**WHAT IT DOES**
+  1. Create *hotfix/{version}* branch from *{PROD_BRANCH}*
+  2. Guide you through making the fix (interactive)
+  3. PR to *{PROD_BRANCH}* (squash merge)
+  4. Tag hotfix version on *{PROD_BRANCH}*
+  5. Create GitHub Release
+  6. Backport (cherry-pick) to *{BASE_BRANCH}*
+  7. Clean up hotfix branch
+
+**WHEN TO USE**
+  Production has a critical bug that needs immediate fixing.
+  The fix goes to *{PROD_BRANCH}* first, then backports to *{BASE_BRANCH}*.
+
+  `/team-rc fix` = cherry-pick **to RC** (during staging verification)
+  `/team-rc hotfix` = fix **production** (after release, backport to develop)
+
+**PREREQUISITES**
+  Dual-branch mode required (`base_branch` != `production_branch`)
+  At least one release tag must exist (from a prior `/team-rc promote`)
+
+**BACKPORT CONFLICTS**
+  If the cherry-pick to *{BASE_BRANCH}* has conflicts, you'll be guided through resolution.
+  The hotfix is already on *{PROD_BRANCH}* — backport can be retried manually if needed.

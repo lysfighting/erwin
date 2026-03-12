@@ -68,7 +68,7 @@ Then run:
 **After setup, running `/team` again shows the team dashboard:**
 
 **MY DASHBOARD** — your-org/your-project ──────────────────
-Teamwork v3.8.7 · **V1.0**  `████████░░`  30%  `3`/`10`
+Teamwork v3.9.1 · **V1.0**  `████████░░`  30%  `3`/`10`
 
 👥 **TEAM** (2 members)
   alice (tech-lead)
@@ -390,13 +390,19 @@ When all missions in the current milestone are done:
 
 ```
 /team-rc              # Prepare: cut rc branch, deploy staging
+/team-rc cancel       # Cancel: delete RC, fix on base, re-cut
+/team-rc fix          # Cherry-pick fix to active RC (keep test progress)
+/team-rc hotfix       # Post-release: fix on main + backport to develop
 /team-rc promote      # Promote: squash merge rc → main, tag, release
 ```
 
 Flow:
 1. `/team-rc` — cuts `rc/V1.0.x` branch from develop, triggers staging deploy
-2. Verify on staging, apply hotfixes if needed
+2. Verify on staging — found bug?
+   - Default (upstream-first): fix on develop → `/team-rc cancel` → `/team-rc` (re-cut)
+   - Surgical: `/team-rc fix` to cherry-pick a specific commit to RC
 3. `/team-rc promote` — squash merges rc → main, tags, creates GitHub Release, closes milestone
+4. Production bug after release? `/team-rc hotfix` — fix on main, backport to develop
 
 **Prerequisites:**
 - `versions.current: "V1.0"` in config.yml

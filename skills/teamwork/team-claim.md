@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "3.8.7"
+version: "3.9.2"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch

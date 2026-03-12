@@ -2,6 +2,34 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.9.2] — 2026-03-12
+
+### Fixed — Tips system: `shuf` crash on macOS
+
+- **Root cause**: Tips instruction said "pick one line at random" without specifying method. Claude chose `shuf` (GNU coreutils) which doesn't exist on macOS (Darwin).
+- **Fix**: Tips master instruction (team.md) now explicitly requires Read tool for file access and prohibits `shuf`, `sort -R`, or any Bash-based randomization. All 20+ tip placeholders across 6 skill files inherit this instruction.
+
+## [3.9.1] — 2026-03-12
+
+### Fixed — Self-drive audit: bugs + VE + docs staleness
+
+- **Hotfix continue routing bug**: Removed reference to non-existent `/team-rc hotfix continue` subcommand. Now says "run `/team-rc hotfix` again" (detects existing branch).
+- **VE compliance**: Fixed help template variable case (`{base_branch}` → `{BASE_BRANCH}`, `{production_branch}` → `{PROD_BRANCH}`). Fixed `FIX APPLIED` line bold/italic nesting.
+- **Manual footer version**: Updated from stale v3.1.0 → v3.9.1.
+- **RC Freeze text**: Clarified "never commit directly" to mention `/team-rc fix` as surgical alternative.
+- **team.md learn section count**: Fixed "13 sections" → "14 sections".
+- **team-ship done footer**: Added `/team-rc` (release) to next-step suggestions.
+
+## [3.9.0] — 2026-03-12
+
+### Added — RC complete lifecycle (`/team-rc fix` + `/team-rc hotfix`)
+
+- **`/team-rc fix`**: Cherry-pick a specific commit from develop to active RC branch. Preserves existing RC test progress (unlike cancel + re-cut). Supports commit hash, branch name, or interactive selection from recent commits. Guides through conflict resolution if needed.
+- **`/team-rc hotfix`**: Post-release production fix workflow. Creates hotfix branch from main, guides interactive fix, PRs to main (squash), tags hotfix version, creates GitHub Release, backports (cherry-pick) to develop. Requires dual-branch mode (base != production). Single-branch projects get a clear error.
+- **Help text updates**: `/team-rc help` now documents fix, hotfix, and the two bugfix strategies (upstream-first vs cherry-pick).
+- **team.md**: RC LIFECYCLE section in help and learn updated with fix/hotfix entries.
+- **Docs sync**: ONBOARDING.md, README.md, teamwork-ai-manual.md all updated with fix/hotfix commands and RC lifecycle Phase 4 (Hotfix).
+
 ## [3.8.7] — 2026-03-12
 
 ### Fixed — Docs completeness audit

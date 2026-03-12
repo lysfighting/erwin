@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.8.7"
+version: "3.9.2"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -53,7 +53,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.8.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -100,11 +100,13 @@ Output the following guide directly to the user, then **STOP**:
 **RC LIFECYCLE**
   `/team-rc`              Prepare: cut rc branch from *develop* → staging
   `/team-rc cancel`       Cancel: delete RC, fix on base, re-cut
+  `/team-rc fix`          Cherry-pick fix to active RC (keep test progress)
+  `/team-rc hotfix`       Post-release: fix on *main* + backport to *develop*
   `/team-rc promote`      Promote: squash merge rc → *main*, tag, GitHub Release
 
 **CONFIG & INFO**
   `/team config`          View current config + edit instructions
-  `/team learn`           Design philosophy + visual guide (13 sections)
+  `/team learn`           Design philosophy + visual guide (14 sections)
   `/team queue`           Browse all open missions sorted by priority
   `/team help`            This help screen
 
@@ -130,7 +132,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.8.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -352,11 +354,15 @@ Sometimes you don't follow the standard flow:
 
   `/team-rc`           → cut *rc/V0.1.0* from *develop* (frozen snapshot)
   verify on staging    → found bug? fix on *develop* → `/team-rc cancel` → `/team-rc`
+  `/team-rc fix`       → cherry-pick a specific commit to RC (preserves test progress)
+  `/team-rc hotfix`    → fix production on *main*, backport to *develop*
   `/team-rc promote`   → squash merge rc → *main*, tag `V0.1.0`, GitHub Release
 
-  **Upstream-first model**: RC is immutable. Never commit directly to RC.
-  All fixes go to *develop* first, then cancel + re-cut RC.
-  No merge-back needed — *develop* is always the superset.
+  **Upstream-first model**: RC is immutable. Default: fix on *develop*, cancel + re-cut.
+  Exception: `/team-rc fix` cherry-picks when re-cutting is too costly.
+
+  **Post-release**: `/team-rc hotfix` branches from *main*, PRs to *main*, then
+  cherry-picks to *develop*. Requires dual-branch mode.
 
   Think of RC as a bus: missed this one? Take the next one.
 
@@ -521,7 +527,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.8.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1083,7 +1089,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.8.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ```
 ✅ Config updated (merge mode — existing config preserved)
@@ -2226,7 +2232,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.8.7"
+SKILL_VERSION="3.9.1"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -4438,7 +4444,7 @@ Type:     advisory (read-only reference for target MC)
 
 **All teamwork skills** (`/team`, `/team-issue`, `/team-claim`, `/team-drive`, `/team-ship`, `/team-rc`) MUST append one random tip at the end of their final output block, after the `────` separator line.
 
-**How**: Read `~/.claude/commands/scripts/tw-tips.txt`. Pick one line at random (skip `#` comments). Display as plain markdown text (⛔ NOT in a code block):
+**How**: Use the **Read tool** (NOT Bash) to read `~/.claude/commands/scripts/tw-tips.txt`. From the non-comment, non-empty lines, pick one at random in your head. ⛔ Do NOT use `shuf`, `sort -R`, or any Bash command — `shuf` doesn't exist on macOS. Display as plain markdown text (⛔ NOT in a code block):
 
 💡 **Tip:** {selected tip text — wrap any commands in backticks for color, e.g. `/team-claim`, `cd`}
 

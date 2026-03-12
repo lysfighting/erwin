@@ -1,6 +1,6 @@
 # Teamwork — The Complete Manual
 
-> **Version 3.8.7** | Author: liyasong + casey | 2026-03-12
+> **Version 3.9.1** | Author: liyasong + casey | 2026-03-12
 >
 > AI-Native Team Coordination for GitHub.
 > For humans and AI agents. Covers WHY, HOW, and the philosophy behind every decision.
@@ -391,6 +391,8 @@ feat/E:                          D ── (your work) ──
 | | `/team share [#N]` | Cross-MC knowledge sharing via issue comment |
 | `/team-rc` | `/team-rc` | Prepare: cut rc from develop |
 | | `/team-rc cancel` | Cancel: delete RC, fix on base, re-cut |
+| | `/team-rc fix` | Cherry-pick fix to active RC (keep test progress) |
+| | `/team-rc hotfix` | Post-release: fix on main + backport to develop |
 | | `/team-rc promote` | Promote: squash to main, tag, release, notify |
 | | `/team-rc help` | Full RC lifecycle guide |
 
@@ -732,12 +734,17 @@ tag V0.1.0 on main     →  THIS is the release
 
   ⑥ Test on staging environment
 
-  ⑦ Bug found? → UPSTREAM-FIRST model:
+  ⑦ Bug found? Two options:
+     OPTION A — UPSTREAM-FIRST (default, clean slate):
      └── fix on develop (normal mission flow)
      └── /team-rc cancel (delete stale RC)
      └── /team-rc (re-cut from latest develop)
      └── re-deploy staging, re-verify
-     (Never commit directly to RC branch)
+
+     OPTION B — CHERRY-PICK (surgical, keep test progress):
+     └── fix on develop first
+     └── /team-rc fix <commit> (cherry-pick to RC)
+     └── re-deploy staging, re-verify
 
   ⑧ All good → proceed to promote
 
@@ -762,14 +769,27 @@ tag V0.1.0 on main     →  THIS is the release
 
   ⑮  Notify team: tw-notify.sh milestone.done
 
+  PHASE 4: HOTFIX (/team-rc hotfix) — post-release
+  ─────────────────────────────────────────────
+
+  ⑯  Create hotfix/{version} from main
+  ⑰  Make fix (interactive)
+  ⑱  PR to main (squash merge)
+  ⑲  Tag hotfix version on main
+  ⑳  Cherry-pick to develop (backport)
+  ㉑  Delete hotfix branch
+
+  (Requires dual-branch mode: base ≠ production)
+
 ══════════════════════════════════════════════════════════════════════
 ```
 
 ### RC Freeze Rule — Upstream-First Model
 
 ```
-  RC is a FROZEN SNAPSHOT. Never commit directly to RC.
-  All fixes go to develop first (upstream-first).
+  RC is a FROZEN SNAPSHOT. No direct git push to RC.
+  Default: fix on develop first, cancel + re-cut (upstream-first).
+  Surgical: /team-rc fix cherry-picks a specific commit to RC.
 
   develop ── A ── B ── C ── [fix D] ── E ──►
                         │                │
@@ -1534,4 +1554,4 @@ The loop never breaks. The system remembers what you forget.
 
 ---
 
-*Teamwork v3.1.0 — Built for teams where humans and AI write code together.*
+*Teamwork v3.9.1 — Built for teams where humans and AI write code together.*
