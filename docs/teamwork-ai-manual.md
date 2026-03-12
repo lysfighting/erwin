@@ -1,6 +1,6 @@
 # Teamwork — The Complete Manual
 
-> **Version 3.8.2** | Author: liyasong + casey | 2026-03-11
+> **Version 3.8.6** | Author: liyasong + casey | 2026-03-12
 >
 > AI-Native Team Coordination for GitHub.
 > For humans and AI agents. Covers WHY, HOW, and the philosophy behind every decision.
@@ -387,6 +387,8 @@ feat/E:                          D ── (your work) ──
 | | `/team-ship done` | Post-merge cleanup |
 | | `/team-ship review` | AI code review on PR |
 | | `/team-ship sync` | Rebase on latest develop + auto-resolve conflicts |
+| `/team` | `/team sync` | Rebase on base branch (standalone, anytime) |
+| | `/team share [#N]` | Cross-MC knowledge sharing via issue comment |
 | `/team-rc` | `/team-rc` | Prepare: cut rc from develop |
 | | `/team-rc cancel` | Cancel: delete RC, fix on base, re-cut |
 | | `/team-rc promote` | Promote: squash to main, tag, release, notify |

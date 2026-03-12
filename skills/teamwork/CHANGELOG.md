@@ -2,6 +2,15 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.8.6] — 2026-03-12
+
+### Fixed — Documentation audit + version sync
+
+- **Version pollution cleanup**: Fixed 3 files where `--help` was written as version string (ONBOARDING.md, README.md, team-issue.md) — caused by `tw-bump-version.sh` accepting non-semver input in v3.8.3.
+- **Manual version sync**: Updated `docs/teamwork-ai-manual.md` from stale 3.8.2 → 3.8.6. Added `/team sync` and `/team share` to command table.
+- **Dashboard footer**: Added `/team sync` · `/team share` to both Leader and Member dashboard footers.
+- **Learn section 14**: Added "CROSS-MC KNOWLEDGE SHARING" to `/team learn` covering L1 intake, L2 push, anti-plague rules.
+
 ## [3.8.5] — 2026-03-12
 
 ### Added — Cross-MC knowledge sharing + `/team sync` + `/team share`

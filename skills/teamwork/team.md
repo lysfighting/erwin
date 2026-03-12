@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.8.5"
+version: "3.8.6"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -53,7 +53,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.8.5` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.6` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -130,7 +130,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.8.5` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.6` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -468,6 +468,28 @@ Every `/team-*` command shows a random tip after output:
   through natural usage — no need to read the manual to learn tricks.
 
 
+**14. CROSS-MC KNOWLEDGE SHARING**
+────────────────────
+
+  Missions running in parallel worktrees are isolated by design.
+  But related issues often overlap — same files, related logic.
+
+  **Read** (automatic): `/team-drive` reads `🔗 Cross-MC` comments on startup.
+  Knowledge from sibling MCs appears as advisory context — informs but
+  does not override your Contract objectives.
+
+  **Write** (user-triggered): `/team share #241` posts a structured comment
+  to a sibling issue. Requires your confirmation before posting.
+
+  **Anti-plague rules** (prevent cascading errors):
+  ① Human gateway — every share requires AskUserQuestion confirmation
+  ② No transitive propagation — never re-share what you received
+  ③ Source attribution — structured format with confidence level
+
+  **Standalone sync**: `/team sync` rebases your branch on base anytime,
+  not just during `/team-ship`. Same logic, independent entry point.
+
+
 ────────────────────────────────────────────────────────────────
 **DEEP DIVE** (docs in erwin repo)
   `docs/teamwork-ai-manual.md`        ← Complete manual (17 chapters)
@@ -499,7 +521,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.8.5` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.6` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1061,7 +1083,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.8.5` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.6` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ```
 ✅ Config updated (merge mode — existing config preserved)
@@ -2204,7 +2226,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.8.5"
+SKILL_VERSION="3.8.6"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -2359,7 +2381,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 {^ EVERY command and path in Next MUST be in backticks}
 
 `/team help` · `/team doctor` · `/team #N` · `/team config`
-`/team-claim` · `/team-drive` · `/team-ship` · `/team-rc`
+`/team-claim` · `/team-drive` · `/team-ship` · `/team-rc` · `/team sync` · `/team share`
 
 💡 **Tip:** {random tip — commands in backticks, e.g.: `/team auto` **#N** — 一键 claim→drive→ship}
 
@@ -2484,7 +2506,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 {^ EVERY command and path in Next MUST be in backticks}
 
 `/team help` · `/team doctor` · `/team #N` · `/team config`
-`/team-claim` · `/team-drive` · `/team-ship` · `/team-rc`
+`/team-claim` · `/team-drive` · `/team-ship` · `/team-rc` · `/team sync` · `/team share`
 
 💡 **Tip:** {random tip — commands in backticks, e.g.: `/team auto` **#N** — 一键 claim→drive→ship}
 
