@@ -8,7 +8,7 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-12
-- **Last Session**: [2026-03-12-AJ](sessions/2026-03-12-AJ.md) (Session AJ — v3.8.4–v3.8.6)
+- **Last Session**: 2026-03-12 (Session AK — v3.8.7–v3.9.2 + VE color research)
 
 ## Current Phase
 
@@ -16,23 +16,24 @@
 
 ## What Was Just Completed
 
-**Session AG–AI** (2026-03-11~12) — Teamwork v3.8.1 → v3.8.3:
+**Session AK** (2026-03-12) — Teamwork v3.8.7 → v3.9.2:
 
-- **v3.8.1**: Comprehensive audit — worktree chain safety, 13 recovery hints, sync-all-checkboxes, SKILL_VERSION source fix
-- **v3.8.2**: Script沉淀（5 new subcommands, 15 inline bash sites migrated）, 3 UX dead-end fixes, AskUserQuestion 4-option cap
-- **v3.8.2 续**: 21 tests (Phase 1b+1c), DRY refactor (-148 lines), worktree mismatch 4 轮迭代→new-tab 方案
-- **v3.8.3**: `/team-rc cancel` + upstream-first RC model + post-merge PR checkbox
-- Total: 32 commits, 10+ files per version
+- **v3.8.7**: docs completeness audit
+- **v3.9.0**: `/team-rc fix` (cherry-pick to RC) + `/team-rc hotfix` (post-release production fix + backport to develop). Full docs/help/learn/onboarding sync.
+- **v3.9.1**: Self-drive audit fixes — VE variable case, FIX APPLIED formatting, help section count, team-ship RC hint, manual version headers
+- **v3.9.2**: Tips `shuf` crash on macOS — Read tool instead of Bash for tips
+- **VE color research**: Investigated Shiki syntax highlighting as VE enhancement. Concluded: dead end — code block colors cannot mix with inline VE formatting. Research artifact: `docs/research/shiki-ve-color-lab.html`
+- **v3.9.3 (in progress)**: tw-bump-version.sh path bug fix, version desync cleanup, VE accuracy fixes, _project/ docs update
 
 ## Active Task / What's In Progress
 
-Teamwork v3.8.6 released: documentation audit + version sync (completes v3.8.4–v3.8.6 cycle)
+Self-drive audit: bug/VE/docs staleness sweep → v3.9.3
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **Teamwork 18 项需求实现**（按优先级）：
-   - A. Release 分支完整生命周期（prep, hotfix routing, backport, cleanup）
+2. **Teamwork remaining needs**（按优先级）：
+   - A. ~~Release 分支完整生命周期~~ ✅ Done in v3.9.0
    - B. Deploy workflow（deploy.yml, staging gate）
    - C. Issue 版本追踪（found-in labels, version labels）
    - 详见 `_project/sessions/2026-03-05-Z.md` 需求汇总
@@ -65,14 +66,18 @@ Teamwork v3.8.6 released: documentation audit + version sync (completes v3.8.4�
 - [x] Teamwork v3.4.3 — merge mode logic gaps + worktree audit
 - [x] Teamwork v3.5.0 — /team config + dashboard version + docs completeness
 - [x] Teamwork v3.5.1 — design review: logic gaps + docs alignment
-- [x] Teamwork v3.7.1 — visual encoding standard + audit sweep + doctor 8→11 checks
-- [x] Teamwork v3.7.1 — VE 系统性治理: 全部 skill 输出 100% VE 合规 (#1)
+- [x] Teamwork v3.7.1 — visual encoding standard + audit sweep + doctor 8→12 checks
 - [x] Teamwork v3.8.1 — comprehensive audit: worktree chain + sync-all-checkboxes + 13 hints
 - [x] Teamwork v3.8.2 — script沉淀 + DRY + UX dead-ends + 21 tests
 - [x] Teamwork v3.8.3 — /team-rc cancel + upstream-first RC + post-merge PR checkbox
 - [x] Teamwork v3.8.4 — dashboard formatting + worktree init fix + tab colors + bump validation
 - [x] Teamwork v3.8.5 — /team sync + /team share + cross-MC knowledge intake
 - [x] Teamwork v3.8.6 — documentation audit + version sync
+- [x] Teamwork v3.8.7 — docs completeness audit
+- [x] Teamwork v3.9.0 — /team-rc fix + /team-rc hotfix + full docs sync
+- [x] Teamwork v3.9.1 — self-drive audit fixes (VE, formatting, counts)
+- [x] Teamwork v3.9.2 — tips shuf crash on macOS
+- [ ] Teamwork v3.9.3 — tw-bump-version.sh bug fix + VE accuracy + docs staleness
 
 ## Known Issues / Blockers
 

@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.9.2"
+version: "3.9.3"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -113,10 +113,11 @@ if [ -f .mission ]; then
   echo "⚠️ /team-rc must run from the main repo, not a mission worktree."
   echo "Switch to main repo: cd $MAIN_REPO"
   echo "Then retry: /team-rc"
-  # STOP
-  # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
 fi
 ```
+
+If worktree detected → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Detect config directory:
 
@@ -304,7 +305,7 @@ RC_BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh find-rc 2>/dev/null)
 If no RC branch found → "No active RC branch to cancel." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
-If multiple found → "Multiple RC branches found. Delete manually: `git push origin --delete {branch}`" → **STOP**
+If multiple found → "Multiple RC branches found. Run `/team doctor fix` to clean up, or cancel each with `/team-rc cancel`." → **STOP**
 
 ### Step C3: Show RC info + confirm
 
@@ -1043,9 +1044,9 @@ Output the following and **STOP**:
   "Staging not verified" → Deploy to staging first, verify manually
 
 **BUGFIX DURING RC**
-  RC is a frozen snapshot — never commit directly to RC.
-  Found a bug? Fix on *{BASE_BRANCH}* → `/team-rc cancel` → `/team-rc` (re-cut).
-  Or cherry-pick a specific fix: `/team-rc fix`
+  RC is a frozen snapshot — don't push to it directly.
+  Small fix? Cherry-pick via `/team-rc fix` (keeps test progress).
+  Big fix? Fix on *$BASE_BRANCH* → `/team-rc cancel` → `/team-rc` (re-cut).
   See also: `/team-rc cancel`, `/team-rc fix`
 
 ---

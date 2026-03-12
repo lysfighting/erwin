@@ -1,6 +1,6 @@
 # Teamwork — The Complete Manual
 
-> **Version 3.9.1** | Author: liyasong + casey | 2026-03-12
+> **Version 3.9.3** | Author: liyasong + casey | 2026-03-12
 >
 > AI-Native Team Coordination for GitHub.
 > For humans and AI agents. Covers WHY, HOW, and the philosophy behind every decision.
@@ -363,7 +363,7 @@ feat/E:                          D ── (your work) ──
 | `/team` | `/team` | Dashboard — who's working on what (role-based view) |
 | | `/team init` | Initialize teamwork in current repo |
 | | `/team help` | Quick start guide |
-| | `/team learn` | Design philosophy + diagrams (13 sections) |
+| | `/team learn` | Design philosophy + diagrams (14 sections) |
 | | `/team config` | View current config + edit instructions |
 | | `/team queue` | All open missions sorted by priority |
 | | `/team #42` | MC detail view (branch, commits, PRs, criteria) |
@@ -1126,7 +1126,7 @@ The protection rules adapt to your team's maturity:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                      SCRIPTS LAYER (v3.8)                         │
+│                      SCRIPTS LAYER (v3.9.3)                         │
 │                                                                    │
 │  tw-config.sh ─── Foundation ─── Config reader + team queries     │
 │  │  Key lookup:   tw-config.sh <dotted.key> [default]            │
@@ -1554,4 +1554,4 @@ The loop never breaks. The system remembers what you forget.
 
 ---
 
-*Teamwork v3.9.1 — Built for teams where humans and AI write code together.*
+*Teamwork v3.9.3 — Built for teams where humans and AI write code together.*

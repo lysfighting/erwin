@@ -36,7 +36,7 @@ for file in "$SKILL_DIR"/team*.md "$SKILL_DIR"/ONBOARDING.md "$SKILL_DIR"/README
   [ -f "$file" ] && FILES+=("$file")
 done
 # Also update the manual (lives outside skill dir)
-MANUAL="$(dirname "$SKILL_DIR")/../../docs/teamwork-ai-manual.md"
+MANUAL="$(dirname "$SKILL_DIR")/../docs/teamwork-ai-manual.md"
 [ -f "$MANUAL" ] && FILES+=("$MANUAL")
 
 # 1. Update frontmatter version: in all skill .md files

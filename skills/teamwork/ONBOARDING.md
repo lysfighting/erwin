@@ -68,7 +68,7 @@ Then run:
 **After setup, running `/team` again shows the team dashboard:**
 
 **MY DASHBOARD** — your-org/your-project ──────────────────
-Teamwork v3.9.1 · **V1.0**  `████████░░`  30%  `3`/`10`
+Teamwork v3.9.3 · **V1.0**  `████████░░`  30%  `3`/`10`
 
 👥 **TEAM** (2 members)
   alice (tech-lead)

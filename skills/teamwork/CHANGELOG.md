@@ -2,6 +2,19 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.9.3] — 2026-03-12
+
+### Fixed — Tooling + VE accuracy + docs staleness
+
+- **tw-bump-version.sh path bug**: Manual path was `../../docs/` (2 levels up from skills/) instead of `../docs/` — manual was NEVER updated by the bump script. Fixed.
+- **Version desync cleanup**: All inline `3.9.1` references updated to `3.9.2` via fixed bump script (team.md x5, team-issue.md x1, README.md x1, ONBOARDING.md x1, manual x2).
+- **VE: Promote Help contradiction**: "never commit directly to RC" conflicted with `/team-rc fix`. Reworded to recommend fix for small issues, cancel+re-cut for big ones.
+- **VE: Cancel Flow raw git**: Replaced `git push origin --delete` suggestion with `/team doctor fix` and `/team-rc cancel`.
+- **VE: Worktree guard doctor hint**: Moved hint from inside code block (invisible) to outside.
+- **_project/CURRENT.md**: Updated from v3.8.6 to v3.9.3 (was 4 versions behind).
+- **_project/ROADMAP.md**: Complete rewrite — was severely stale (completed items unchecked, Teamwork absent).
+- **Root CHANGELOG.md**: Added missing v3.8.7 entry.
+
 ## [3.9.2] — 2026-03-12
 
 ### Fixed — Tips system: `shuf` crash on macOS
