@@ -2,6 +2,21 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.8.5] — 2026-03-12
+
+### Added — Cross-MC knowledge sharing + `/team sync` + `/team share`
+
+- **`/team sync`**: Standalone rebase on base branch, available anytime (not just during ship). Same logic as `/team-ship sync`, but accessible as `/team sync` for ad-hoc use.
+- **`/team share [#N]`**: Cross-MC knowledge sharing via GitHub issue comments. Posts structured `🔗 Cross-MC from #N` comments with context, finding, files, and confidence level. Anti-plague safeguards: human gateway (AskUserQuestion confirmation), no transitive propagation, source attribution.
+- **L1: Cross-MC knowledge intake** (team-drive.md Step 0b2): `/team-drive` now reads issue comments on startup, filters for `🔗 Cross-MC` prefixed comments, and injects them as advisory context into the Contract. Advisory only — does not override MC objectives.
+
+### Anti-plague rules (enforced across all skills)
+
+1. Human gateway: `/team share` requires user confirmation before posting
+2. No transitive propagation: received knowledge must NOT be re-shared
+3. Source attribution: structured format with confidence level
+4. Advisory by default: informs but does not override Contract
+
 ## [3.8.4] — 2026-03-12
 
 ### Fixed — Dashboard formatting + worktree init bug

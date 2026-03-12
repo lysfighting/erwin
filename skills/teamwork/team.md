@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.8.4"
+version: "3.8.5"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -43,6 +43,8 @@ Parse `$ARGUMENTS`:
 - If `doctor help` → jump to **Operation Doctor Help**
 - If `doctor fix` → jump to **Operation Doctor Fix**
 - If `doctor` → jump to **Operation Doctor**
+- If `sync` → jump to **Operation Sync**
+- If starts with `share` → jump to **Operation Share**
 - If `wrap` → jump to **Operation Wrap**
 - If starts with `auto` → jump to **Operation Auto**
 - If empty → continue to **Step 0** (auto-detect init vs dashboard)
@@ -51,7 +53,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `--help` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.5` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -88,9 +90,12 @@ Output the following guide directly to the user, then **STOP**:
 **RETROACTIVE**
   `/team wrap`            Code-first closure (auto-detects state, creates issue+PR)
 
+**SYNC & SHARE**
+  `/team sync`            Rebase branch on latest base branch
+  `/team share [#N]`      Share knowledge to sibling MC (cross-MC comment)
+
 **AFTER MERGE**
   `/team-ship done`       Close Issue, update labels, clean up
-  `/team-ship sync`       Rebase branch on latest base branch
 
 **RC LIFECYCLE**
   `/team-rc`              Prepare: cut rc branch from *develop* → staging
@@ -125,7 +130,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `--help` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.5` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -494,7 +499,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `--help` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.5` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1056,7 +1061,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `--help` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.8.5` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ```
 ✅ Config updated (merge mode — existing config preserved)
@@ -2199,7 +2204,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.8.4"
+SKILL_VERSION="3.8.5"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -4217,6 +4222,193 @@ Then **STOP**.
 - If config.yml exists but is malformed: warn and offer to regenerate
 
 **On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+---
+
+## Operation Sync
+
+> Triggered by `/team sync`. Rebases current mission branch on latest base branch.
+> This is the same operation as `/team-ship sync`, available as a standalone command for use anytime during development.
+
+### SY1: Prerequisites
+
+```bash
+BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh current)
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-main}"
+```
+
+If on `$BASE_BRANCH` → "Already on `$BASE_BRANCH`. Nothing to sync." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+### SY2: Fetch and rebase
+
+```bash
+bash ~/.claude/commands/scripts/tw-git.sh rebase "$BASE_BRANCH"
+```
+
+- If exit 0 → jump to **SY3: Summary**
+- If exit 2 → jump to **SY2b: AI conflict resolution**
+
+### SY2b: AI conflict resolution
+
+When rebase produces conflicts, resolve them automatically:
+
+1. **List conflicted files:**
+```bash
+git diff --name-only --diff-filter=U
+```
+
+2. **For each conflicted file:**
+   - Read the file (contains `<<<<<<<`, `=======`, `>>>>>>>` markers)
+   - Understand both sides: "ours" (mission branch) = the work being rebased, "theirs" (base branch) = upstream changes
+   - Edit the file to resolve: merge both sides' intent, preserving mission changes where they don't contradict upstream
+   - `git add {file}`
+
+3. **Continue rebase:**
+```bash
+git rebase --continue
+```
+   - If more conflicts → repeat steps 1-3
+   - If rebase completes → jump to **SY3: Summary**
+
+4. **If a conflict is genuinely ambiguous** (both sides made semantic changes to the same logic), resolve with best judgment and flag in summary.
+
+### SY3: Summary
+
+Output:
+
+**SYNC COMPLETE** ────────────────────────────
+Branch:   *{branch}*
+Rebased:  on latest *{BASE_BRANCH}*
+{If conflicts resolved:}
+Resolved: `{N}` conflict(s) in {file list}
+{If any flagged:}
+⚠️ Review: {file} — both sides changed {description}, merged as {approach}
+
+Push the rebased branch:
+```bash
+git push --force-with-lease origin {branch}
+```
+
+- If push succeeds → done
+- If push fails → "Push failed. Try again or check with `/team doctor`." → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+---
+
+## Operation Share
+
+> Triggered by `/team share [#N]`. Posts structured knowledge from current MC to a sibling MC's issue as a comment.
+> Cross-MC knowledge sharing with anti-plague safeguards.
+
+### SH0: Visual Encoding
+
+> Apply `docs/visual-encoding-standard.md`. Bold for issue numbers, backticks for commands/paths, italic for secondary info.
+
+### SH1: Prerequisites
+
+```bash
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || {
+  echo "No teamwork config found. Run /team init first."
+  # STOP
+}
+eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)"
+GH_USER=$(gh api user --jq '.login' 2>/dev/null)
+REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
+```
+
+Determine current MC:
+```bash
+BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh current)
+ISSUE_NUMBER=$(bash ~/.claude/commands/scripts/tw-git.sh extract-issue-number "$BRANCH")
+```
+
+If no active mission branch → "Not on a mission branch. Switch to a mission worktree first." → **STOP**
+
+### SH2: Determine target
+
+**If `$ARGUMENTS` contains `#N`** (e.g., `/team share #241`):
+- TARGET_ISSUE = extracted number
+- Verify target exists: `gh issue view $TARGET_ISSUE --json number,title,state`
+- If closed or not found → "Issue **#{N}** not found or closed." → **STOP**
+
+**If no target specified** (just `/team share`):
+- Scan sibling MCs for overlap:
+
+```bash
+# Get all active mission issues
+gh issue list --label "$MISSION_LABEL" --label "${STATUS_PREFIX}wip" --state open --json number,title,assignees --limit 50
+```
+
+- Exclude current issue
+- Read current MC's Contract to identify files being modified
+- For each sibling MC, check if their Contract touches overlapping files
+- Present candidates:
+
+```
+📡 **Sibling MCs** — potential share targets:
+
+  **#241** refactor(deploy): deploy 模块瘦身
+    Overlap: `deploy/config.py`, `deploy/Dockerfile`
+  **#238** fix: nanoclaw packages 丢失
+    Overlap: `deploy/config.py`
+  **#206** feat: observability infrastructure
+    No file overlap detected
+```
+
+Use AskUserQuestion to let user pick target: options = top 3-4 candidates + "Cancel"
+
+### SH3: Compose knowledge
+
+Read current MC's context:
+- Contract (issue body + AI notes)
+- Recent git log on current branch
+- Files modified (`git diff --name-only $BASE_BRANCH...HEAD`)
+
+Compose a structured knowledge comment. The agent drafts it, then presents to user:
+
+```markdown
+🔗 **Cross-MC** from **#{ISSUE_NUMBER}** (advisory)
+
+**Context**: {1-2 sentences: what this MC was doing when the finding emerged}
+
+**Finding**: {the actual knowledge — specific, actionable, verifiable}
+
+**Files touched**: {list of relevant files with line ranges if applicable}
+
+**Confidence**: {high/medium/low} — {basis: "verified in staging" / "code review only" / "hypothesis"}
+```
+
+### SH4: Human gateway (mandatory)
+
+**⛔ NEVER post without user confirmation.** Display the draft comment and ask:
+
+Present the full comment text, then use AskUserQuestion:
+- "Post to **#{TARGET}**" — send as-is
+- "Edit first" — user modifies, then re-confirm
+- "Cancel" — abort
+
+### SH5: Post and confirm
+
+```bash
+gh issue comment $TARGET_ISSUE --body "$COMMENT_BODY"
+```
+
+Output:
+
+**SHARED** ────────────────────────────
+From:     **#{ISSUE_NUMBER}** → **#{TARGET_ISSUE}**
+Type:     advisory (read-only reference for target MC)
+
+⚠️ **Anti-plague rule**: This knowledge is first-hand only. Target MC must NOT re-share it to other issues.
+
+### Anti-Plague Rules (enforced by all teamwork skills)
+
+1. **Human gateway**: `/team share` ALWAYS requires AskUserQuestion confirmation before posting
+2. **No transitive propagation**: When `/team-drive` reads a `🔗 Cross-MC` comment, it MUST NOT re-share that knowledge to yet another issue. Only first-hand discoveries from the current MC may be shared.
+3. **Source attribution**: Every cross-MC comment uses the structured `🔗 Cross-MC from #N` format with confidence level
+4. **Advisory by default**: Receiving MC treats cross-MC knowledge as context, not directive. It informs but does not override the MC's own Contract.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.8.4"
+version: "3.8.5"
 ---
 
 # /team-drive — Execute Mission
@@ -153,6 +153,38 @@ Use `AskUserQuestion`:
 - "Continue with old Contract" → proceed without changes. ⚠️ Risk: sub-tasks may be outdated — could do redundant or wrong work.
 - "Abort" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+---
+
+## Step 0b2: Cross-MC Knowledge Intake
+
+Check if sibling MCs have shared knowledge to this issue via comments.
+
+```bash
+# Fetch issue comments (lightweight — only metadata + body)
+COMMENTS_JSON=$(gh issue view {issue} --json comments --jq '.comments[] | select(.body | startswith("🔗 **Cross-MC**")) | {author: .author.login, body: .body, createdAt: .createdAt}' 2>/dev/null) || true
+```
+
+- If no `🔗 Cross-MC` comments found → skip, continue to Step 0c
+- If found → display them as advisory context:
+
+**📡 Cross-MC Knowledge** ({count} from sibling MCs)
+────────────────────────────────────────────
+{For each cross-MC comment:}
+{comment body — already structured with From/Context/Finding/Confidence}
+────────────────────────────────────────────
+
+Inject into Contract context as advisory (append to AI Notes section if updating Contract):
+
+```
+## Cross-MC Advisory (read-only)
+{comment bodies, prefixed with source issue number}
+```
+
+**Rules:**
+- Cross-MC knowledge is **advisory only** — it informs but does NOT override this MC's own Contract objectives or sub-tasks
+- **⛔ No transitive propagation**: Do NOT re-share knowledge received from other MCs via `/team share`. Only share first-hand discoveries from THIS mission.
+- If cross-MC knowledge contradicts this MC's approach, flag it for the user but do not auto-resolve
 
 ---
 
