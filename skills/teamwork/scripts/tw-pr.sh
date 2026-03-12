@@ -31,11 +31,11 @@ cmd_exists() {
     exit 1
   fi
 
-  local base_flag=""
-  [ -n "$base" ] && base_flag="--base $base"
+  local -a base_args=()
+  [ -n "$base" ] && base_args=(--base "$base")
 
   local result
-  result=$(gh pr list --head "$branch" $base_flag --state open --json number,url --limit 1 2>/dev/null) || {
+  result=$(gh pr list --head "$branch" "${base_args[@]}" --state open --json number,url --limit 1 2>/dev/null) || {
     echo "ERROR: Could not query PRs" >&2
     exit 2
   }
@@ -155,8 +155,8 @@ cmd_wait_merged() {
     exit 1
   fi
 
-  local repo_flag=""
-  [ -n "$repo" ] && repo_flag="--repo $repo"
+  local -a repo_args=()
+  [ -n "$repo" ] && repo_args=(--repo "$repo")
 
   local max_polls=60  # 10 minutes max (60 × 10s)
   local poll_count=0
@@ -164,7 +164,7 @@ cmd_wait_merged() {
 
   while true; do
     local state
-    state=$(gh pr view "$pr" --json state --jq '.state' $repo_flag 2>/dev/null) || {
+    state=$(gh pr view "$pr" --json state --jq '.state' "${repo_args[@]}" 2>/dev/null) || {
       echo "WARNING: Could not query PR state" >&2
       state="UNKNOWN"
     }

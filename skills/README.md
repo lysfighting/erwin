@@ -8,15 +8,18 @@ Claude Code skills created and maintained by the erwin project.
 |-------|-------------|---------|
 | [/erwin-init](erwin-init/) | Bootstrap any project with full AI intelligence layer | 1.0.0 |
 | [/visual-test](visual-test/) | Screenshot-driven visual bug detection and fixing | 1.0.0 |
-| [/team](teamwork/) | Init GitHub-first teamwork system + dashboard | 2.0.0 |
-| [/team-claim](teamwork/) | Claim GitHub Issue → generate Contract → create branch | 2.0.0 |
-| [/team-drive](teamwork/) | Execute mission from Contract with drive methodology | 2.0.0 |
-| [/team-ship](teamwork/) | Push, create PR, check CI, cleanup Contract | 2.0.0 |
+| [/session-record](session-record/) | Record AI session logs with structured format | 1.0.0 |
+| [/team](teamwork/) | Init GitHub-first teamwork system + dashboard | 3.9.4 |
+| [/team-issue](teamwork/) | Create GitHub Issues with AI-enriched context | 3.9.4 |
+| [/team-claim](teamwork/) | Claim GitHub Issue → generate Contract → create branch | 3.9.4 |
+| [/team-drive](teamwork/) | Execute mission from Contract with drive methodology | 3.9.4 |
+| [/team-ship](teamwork/) | Push, create PR, check CI, cleanup Contract | 3.9.4 |
+| [/team-rc](teamwork/) | Release candidate validation + version management | 3.9.4 |
 
 ## Install All Skills
 
 ```bash
-git clone https://github.com/your-org/erwin
+# Clone this repository
 cd erwin
 ./install.sh
 ```
@@ -28,7 +31,7 @@ Installs all skills globally via symlinks to `~/.claude/commands/`. Updates auto
 ```bash
 ./install.sh erwin-init     # install only /erwin-init
 ./install.sh visual-test    # install only /visual-test
-./install.sh teamwork       # install /team + /team-claim + /team-drive + /team-ship
+./install.sh teamwork       # install /team + /team-issue + /team-claim + /team-drive + /team-ship + /team-rc
 ```
 
 ## Uninstall
@@ -37,8 +40,9 @@ Remove symlinks from `~/.claude/commands/`:
 ```bash
 rm ~/.claude/commands/erwin-init.md
 rm ~/.claude/commands/visual-test.md
-rm ~/.claude/commands/team.md ~/.claude/commands/team-claim.md
-rm ~/.claude/commands/team-drive.md ~/.claude/commands/team-ship.md
+rm ~/.claude/commands/session-record.md
+rm ~/.claude/commands/team.md ~/.claude/commands/team-issue.md ~/.claude/commands/team-claim.md
+rm ~/.claude/commands/team-drive.md ~/.claude/commands/team-ship.md ~/.claude/commands/team-rc.md
 ```
 
 ## Skill Pipeline (from idea to release)

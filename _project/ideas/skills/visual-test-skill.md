@@ -2,8 +2,8 @@
 
 - **Stage**: Fruit 🍎
 - **Created**: 2026-03-02
-- **Implemented**: `~/.claude/commands/visual-test.md`
-- **Dependency**: `@playwright/test` in `drive-showcase/devDependencies`, Chromium installed
+- **Implemented**: `skills/visual-test/visual-test.md`
+- **Dependency**: `@playwright/test` in `showcase/devDependencies`, Chromium installed
 
 > Origin: OriginTrace layout bug was invisible to Claude until user shared a screenshot. A visual-test skill would have caught it automatically.
 
@@ -85,7 +85,7 @@ Read tool: /tmp/vt.png  ← Claude reads PNG as image, sees the page
 
 Claude Code's `Read` tool supports images (PNG, JPG). This is the key enabler — no special MCP needed.
 
-**Setup for erwin**: `cd drive-showcase && npm install --save-dev @playwright/test && npx playwright install chromium`
+**Setup for erwin**: `cd showcase && npm install --save-dev @playwright/test && npx playwright install chromium`
 
 ---
 
@@ -206,9 +206,9 @@ Yes. After writing and building OriginTrace.tsx, the skill would have:
 
 ## Next Steps to Implement
 
-1. Add `@playwright/test` to `drive-showcase/devDependencies`
+1. Add `@playwright/test` to `showcase/devDependencies`
 2. Run `npx playwright install chromium`
-3. Create skill file: `~/.claude/commands/visual-test.md`
+3. Create skill file: `skills/visual-test/visual-test.md`
 4. Test the see-fix-verify loop on a real component
 5. Optionally: add PostToolUse hook for ambient screenshots
 

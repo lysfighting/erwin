@@ -1,6 +1,6 @@
 # Idea: Universal Project Management Template (Meta-Skill)
 
-- **Stage**: Plant 🌱
+- **Stage**: Fruit 🍎 — erwin-init v2.0.0 fully implemented
 - **Created**: 2026-03-02
 - **ADR**: ADR-0006 (`_project/decisions/0006-new-project-skill.md`)
 - **Implemented**: `~/.claude/commands/erwin-init.md`

@@ -32,6 +32,10 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --target|-t)
+      if [ -z "${2:-}" ]; then
+        echo "ERROR: --target requires a directory path"
+        exit 1
+      fi
       TARGET_DIR="$2"
       shift 2
       ;;
@@ -79,7 +83,7 @@ mkdir -p "$TARGET_DIR"
 DEPRECATED_SKILLS=(teamwork team-get-mission team-complete team-release)
 for old_skill in "${DEPRECATED_SKILLS[@]}"; do
   old_dst="$TARGET_DIR/$old_skill.md"
-  if [[ -L "$old_dst" ]]; then
+  if [[ -L "$old_dst" ]] || [[ -f "$old_dst" ]]; then
     rm "$old_dst"
     echo -e "${YELLOW}  Removed deprecated: /$old_skill${NC}"
   fi

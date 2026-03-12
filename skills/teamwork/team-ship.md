@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.9.4"
+version: "3.9.5"
 ---
 
 # /team-ship — Deliver Mission
@@ -59,7 +59,8 @@ Parse `$ARGUMENTS`:
 - If `review` → jump to **Operation Review**
 - If `sync help` → jump to **Operation Sync Help**
 - If `sync` → jump to **Operation Sync**
-- If empty or anything else → continue to **Step 0: Full Ship Flow**
+- If empty → continue to **Step 0: Full Ship Flow**
+- If anything else → "Unknown subcommand: `{input}`. Run `/team-ship help` for usage." → **STOP**
 
 ---
 

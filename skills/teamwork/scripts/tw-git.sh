@@ -157,11 +157,13 @@ cmd_rebase() {
   local target="${1:-}"
   [ -z "$target" ] && target=$(_base_branch)
 
-  git fetch origin "$target" 2>/dev/null || {
+  local rebase_ref="origin/$target"
+  if ! git fetch origin "$target" 2>/dev/null; then
     echo "WARNING: Could not fetch $target, rebasing on local ref" >&2
-  }
-  if git rebase "origin/$target"; then
-    echo "Rebased on origin/$target"
+    rebase_ref="$target"
+  fi
+  if git rebase "$rebase_ref"; then
+    echo "Rebased on $rebase_ref"
   else
     echo "Rebase failed. Resolve conflicts, then: git rebase --continue" >&2
     exit 2
@@ -222,7 +224,7 @@ cmd_commit() {
   shift
 
   if [ $# -eq 0 ]; then
-    git add -A
+    git add -u  # Only tracked files — never stage untracked files by default
   else
     git add "$@"
   fi
@@ -405,8 +407,8 @@ cmd_milestone_resolve() {
   }
 
   local full
-  full=$(gh api "repos/$repo/milestones" \
-    --jq ".[] | select(.title | startswith(\"$name\")) | .title" 2>/dev/null | head -1) || true
+  full=$(gh api "repos/$repo/milestones" 2>/dev/null \
+    | jq -r --arg name "$name" '.[] | select(.title | startswith($name)) | .title' 2>/dev/null | head -1) || true
 
   if [ -n "$full" ]; then
     echo "$full"

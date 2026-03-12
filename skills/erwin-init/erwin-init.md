@@ -1,5 +1,6 @@
 ---
-description: Initialize the erwin cognitive framework — version management, session protocols, ADR system, idea garden, and Claude auto-memory. Zero questions, instant setup. Run from the project root directory.
+description: "Initialize the erwin cognitive framework for any project"
+version: "2.0.0"
 ---
 
 # /erwin-init

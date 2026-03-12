@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.9.4"
+version: "3.9.5"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -505,8 +505,9 @@ git push origin "$RC_BRANCH"
 ```bash
 # Switch back to previous branch and restore stash if needed
 git checkout -
-if git stash list 2>/dev/null | grep -q "team-rc-fix: auto-stash"; then
-  git stash pop
+STASH_INDEX=$(git stash list 2>/dev/null | grep "team-rc-fix: auto-stash" | head -1 | grep -oE 'stash@\{[0-9]+\}')
+if [ -n "$STASH_INDEX" ]; then
+  git stash pop "$STASH_INDEX"
   echo "✅ Restored stashed changes."
 fi
 ```
@@ -597,8 +598,16 @@ HOTFIX_BRANCH="hotfix/${HOTFIX_VERSION}"
 ### Step H3: Create Hotfix Branch
 
 ```bash
-git checkout -b "$HOTFIX_BRANCH" "origin/$PROD_BRANCH"
+CURRENT=$(git branch --show-current)
+if [[ "$CURRENT" == hotfix/* ]]; then
+  HOTFIX_BRANCH="$CURRENT"
+  echo "Already on hotfix branch: $HOTFIX_BRANCH. Resuming..."
+else
+  git checkout -b "$HOTFIX_BRANCH" "origin/$PROD_BRANCH"
+fi
 ```
+
+If already on hotfix branch → skip branch creation, go directly to Step H4.
 
 **HOTFIX** ── **{HOTFIX_VERSION}** ────────────────────
 Branch: *{HOTFIX_BRANCH}* (from *{PROD_BRANCH}*)
@@ -634,11 +643,14 @@ If "Not yet" → output: "Make your fix, then run `/team-rc hotfix` again from t
 If "Commit and continue":
 
 ```bash
-git add -A
+# Show what will be committed — verify no unrelated files
+git status --short
+# Stage only tracked modified files (not untracked)
+git add -u
 git commit -m "hotfix(${HOTFIX_VERSION}): fix description"
 ```
 
-(Use the user's description if available, or ask for a one-line summary.)
+(Use the user's description if available, or ask for a one-line summary. If untracked files need to be included, add them explicitly by name.)
 
 ### Step H5: PR to Main
 
@@ -966,8 +978,8 @@ MILESTONE_FULL=$(bash ~/.claude/commands/scripts/tw-git.sh milestone-resolve "$V
 Then query the resolved milestone by exact title:
 
 ```bash
-MILESTONE_DATA=$(gh api "repos/$REPO/milestones" \
-  --jq ".[] | select(.title == \"$MILESTONE_FULL\")" 2>/dev/null)
+MILESTONE_DATA=$(gh api "repos/$REPO/milestones" 2>/dev/null \
+  | jq -r --arg title "$MILESTONE_FULL" '.[] | select(.title == $title)')
 ```
 
 **If milestone found:**

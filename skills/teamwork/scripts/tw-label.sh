@@ -55,14 +55,14 @@ cmd_transition() {
   fi
 
   # Build remove list: always remove FROM label
-  local remove_labels="--remove-label ${STATUS_PREFIX}${from}"
+  local -a remove_args=(--remove-label "${STATUS_PREFIX}${from}")
 
   # Special case: done transition also removes wip and review
   if [ "$to" = "done" ]; then
-    remove_labels="--remove-label ${STATUS_PREFIX}${from} --remove-label ${STATUS_PREFIX}wip --remove-label ${STATUS_PREFIX}review"
+    remove_args=(--remove-label "${STATUS_PREFIX}${from}" --remove-label "${STATUS_PREFIX}wip" --remove-label "${STATUS_PREFIX}review")
   fi
 
-  if gh issue edit "$issue" $remove_labels --add-label "${STATUS_PREFIX}${to}" 2>/dev/null; then
+  if gh issue edit "$issue" "${remove_args[@]}" --add-label "${STATUS_PREFIX}${to}" 2>/dev/null; then
     echo "${STATUS_PREFIX}${from} → ${STATUS_PREFIX}${to}"
   else
     echo "WARNING: Label transition failed for Issue #${issue}" >&2
@@ -80,12 +80,12 @@ cmd_set() {
   fi
 
   # Remove all status labels first, then add the desired one
-  local remove_args=""
+  local -a remove_label_args=()
   for s in $ALL_STATUSES; do
-    remove_args="$remove_args --remove-label ${STATUS_PREFIX}${s}"
+    remove_label_args+=(--remove-label "${STATUS_PREFIX}${s}")
   done
 
-  if gh issue edit "$issue" $remove_args --add-label "${STATUS_PREFIX}${status}" 2>/dev/null; then
+  if gh issue edit "$issue" "${remove_label_args[@]}" --add-label "${STATUS_PREFIX}${status}" 2>/dev/null; then
     echo "${STATUS_PREFIX}${status}"
   else
     echo "WARNING: Label set failed for Issue #${issue}" >&2

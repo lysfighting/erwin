@@ -1,6 +1,6 @@
 # Cross-MC Knowledge Sharing
 
-> Stage: Sprout → ready for implementation
+> Stage: Fruit — implemented in v3.8.5 as `/team sync` + `/team share`
 > Session: 2026-03-12-AJ
 
 ## Problem

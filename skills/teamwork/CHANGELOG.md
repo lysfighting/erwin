@@ -2,6 +2,35 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.9.5] — 2026-03-12
+
+### Fixed — Script hardening + docs staleness + ecosystem robustness
+
+**Script hardening (12 fixes):**
+- **tw-git.sh rebase**: Uses local ref when fetch fails (was using stale `origin/` ref)
+- **tw-git.sh milestone-resolve**: jq injection fixed — `$name` passed via `--arg` instead of string interpolation
+- **tw-git.sh commit**: Default changed from `git add -A` (dangerous, stages untracked) to `git add -u` (tracked only)
+- **tw-pr.sh**: `$base_flag` and `$repo_flag` word-splitting replaced with proper bash arrays
+- **tw-label.sh**: `$remove_labels` and `$remove_args` word-splitting replaced with bash arrays
+- **tw-contract.sh**: Signal trap added for temp file cleanup (`/tmp/tw-sync-body.$$`)
+- **tw-notify.sh**: `detect_config()` now worktree-aware via `tw-config.sh detect-dir`
+- **team-rc.md promote**: `$MILESTONE_FULL` jq injection fixed with `--arg`
+- **team-rc.md hotfix**: `git add -A` → `git add -u` + `git status` preview before commit
+- **team-rc.md hotfix**: Re-entry detection — detects existing `hotfix/*` branch, skips creation
+- **team-rc.md fix**: Stash pop uses exact stash index (was popping `stash@{0}` regardless)
+- **team-ship.md**: Unknown subcommands now show error instead of falling through to full ship
+
+**Docs staleness:**
+- **skills/README.md**: Updated from v2.0.0 to v3.9.x, added 3 missing skills
+- **CLAUDE.md**: Teamwork version v3.7.1 → v3.9.5
+- **Idea pipeline**: cross-mc-knowledge-sharing → Fruit, project-management-template → Fruit
+- **visual-test-skill.md**: drive-showcase → showcase references
+
+**Ecosystem:**
+- **install.sh**: Deprecated skill cleanup handles both symlinks and copy-mode files
+- **install.sh**: `--target` with no value shows user-friendly error
+- **erwin-init**: Added version frontmatter (v2.0.0)
+
 ## [3.9.4] — 2026-03-12
 
 ### Fixed — Worktree config bug + dashboard RC + unit tests

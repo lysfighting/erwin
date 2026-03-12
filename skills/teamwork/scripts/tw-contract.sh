@@ -161,6 +161,8 @@ print(f'Task {n} checked off at {ts}')
 
 cmd_sync_all_checkboxes() {
   local contract_path="${1:-}" issue="${2:-}"
+  local _tmpfile="/tmp/tw-sync-body.$$"
+  trap 'rm -f "$_tmpfile"' EXIT INT TERM
   if [ -z "$contract_path" ] || [ -z "$issue" ]; then
     echo "ERROR: sync-all-checkboxes requires CONTRACT_PATH and ISSUE" >&2
     exit 1
