@@ -4,6 +4,7 @@
 /team auto #N — 一键完成 claim→drive→ship，适合小任务快速交付
 /team wrap — 已经写完代码了？用 wrap 反向补齐 issue + PR 流程
 /team doctor — 检查本地 branch 健康状态，发现孤儿分支、过期 stash 等问题
+/team doctor fix — 自动修复 doctor 发现的问题（清理孤儿分支、修复标签等）
 /team-issue fix #N — 把已有的 GitHub Issue 纳入 teamwork 管理
 /team-issue batch V0.2 -- ... — 批量创建 milestone + 多个 Issue
 /team-ship review — 让 AI 对当前 PR 做代码审查（安全/架构/质量）
@@ -13,6 +14,18 @@
 /team queue — 按优先级查看所有待办 mission，找到下一个要做的事
 /team #42 — 快速查看任意 mission 的详情（branch、PR、进度）
 /team config — 查看和编辑 teamwork 配置（测试命令、通知、quality gates）
-/team learn — 13 节可视化指南，理解 teamwork 的设计哲学
+/team learn — 14 节可视化指南，理解 teamwork 的设计哲学
 worktree 模式：git config --local teamwork.worktree true — 每个 mission 独立目录，并行开发不冲突
 /team-rc promote — 将 staging 验证通过的 RC 发布到 production（squash merge + tag + Release）
+/team-rc fix — 在 RC 上 cherry-pick 修复，不用重新切 RC 分支
+/team-rc hotfix — 线上紧急修复：在 main 上修 → tag → 自动回溯到 develop
+/team-rc cancel — 取消当前 RC，清理远程分支，回到开发状态
+/team sync — 独立 rebase 当前分支到 base branch 最新，不走 ship 流程
+/team share #N — 把 mission 上下文分享给其他 MC，跨 MC 协作不丢信息
+/team-claim list — 查看你被 assign 的所有 mission，选一个开始
+/team-ship done — mission 结束后一键清理：删分支、关 worktree、更新标签
+配置 quality gates：在 config.yml 的 conventions.required_checks 里加 CI job 名称
+/team-issue #N — 不带文字 = 查看详情，带文字 = 添加评论，两种用法
+配置通知：config.yml 的 notifications 区域支持 Slack、飞书、webhook
+monorepo 项目可以在 config.yml 配置 project.services — 每个 service 独立测试
+/team help — 所有命令速查表，10 秒内找到你要的功能

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added — Skills Factory
 - **Teamwork v3.9.2 — Tips `shuf` crash on macOS**: Tips instruction now requires Read tool instead of Bash. Prohibits `shuf`/`sort -R` (GNU-only, absent on Darwin).
 - **Teamwork v3.9.1 — Self-drive audit fixes**: hotfix continue routing bug, VE compliance, manual footer v3.1.0→v3.9.1, RC Freeze clarification, team-ship RC hint
+- **Teamwork v3.9.4 — Worktree config bug + dashboard RC + 48 unit tests**: Fix `_detect_config()` worktree logic, add RC section to dashboard, expand tips 15→29, add unit test suite
 - **Teamwork v3.9.3 — Tooling + VE accuracy + docs staleness**: Fix `tw-bump-version.sh` path bug (manual never updated), VE accuracy (Promote Help contradiction, Cancel Flow raw git), CURRENT.md + ROADMAP.md brought current
 - **Teamwork v3.9.0 — RC complete lifecycle**: `/team-rc fix` (cherry-pick to RC) + `/team-rc hotfix` (post-release production fix + backport). Full docs sync.
 - **Teamwork v3.8.7 — Docs completeness audit**: Documentation completeness fixes

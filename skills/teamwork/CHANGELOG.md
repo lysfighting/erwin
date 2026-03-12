@@ -2,6 +2,16 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.9.4] — 2026-03-12
+
+### Fixed — Worktree config bug + dashboard RC + unit tests
+
+- **Worktree config fix**: `_detect_config()` in tw-config.sh now uses worktree-aware `_detect_dir()` logic — all subcommands (resolve-labels, resolve-member, list-members, etc.) now work correctly from worktrees. Same fix applied to `_teamwork_dir()` in tw-contract.sh.
+- **team-rc fix stash guard**: Fix flow now stashes uncommitted changes before `git checkout` to RC branch, restores after cherry-pick.
+- **Dashboard RC section**: New 🚀 RC section shows active RC branch, commit count, and action shortcuts. RC-aware NEXT suggestion logic.
+- **Tips expansion**: 15 → 29 tips covering doctor fix, sync, share, wrap, fix, hotfix, cancel, quality gates, notifications, monorepo.
+- **Unit tests**: New `tw-unit-test.sh` with 48 tests for tw-bump-version.sh (23), tw-config.sh migrate/has-section (9), tw-git.sh slugify/next-version (16). Zero external dependencies.
+
 ## [3.9.3] — 2026-03-12
 
 ### Fixed — Tooling + VE accuracy + docs staleness

@@ -26,10 +26,11 @@ set -euo pipefail
 # --- Internal helpers ---
 
 _detect_config() {
-  if [ -f ".teamwork/config.yml" ]; then
-    echo ".teamwork/config.yml"
-  elif [ -f ".teamspace/config.yml" ]; then
-    echo ".teamspace/config.yml"
+  # Worktree-aware: follows git-common-dir to find config in main repo
+  local dir
+  dir=$(_detect_dir)
+  if [ -n "$dir" ]; then
+    echo "$dir/config.yml"
   else
     echo ""
   fi

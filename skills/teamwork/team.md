@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.9.3"
+version: "3.9.4"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -53,7 +53,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.9.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -132,7 +132,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.9.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -527,7 +527,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.9.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1089,7 +1089,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.9.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.9.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ```
 ✅ Config updated (merge mode — existing config preserved)
@@ -2232,7 +2232,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.9.3"
+SKILL_VERSION="3.9.4"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -2268,14 +2268,17 @@ fi
 ```
 
 ```bash
-# Call 6: Local mission branches with merged PRs (cleanup detection)
+# Call 6: Active RC branch detection
+RC_BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh find-rc 2>/dev/null)
+
+# Call 7: Local mission branches with merged PRs (cleanup detection)
 bash ~/.claude/commands/scripts/tw-git.sh list-merged-branches 2>/dev/null
 
-# Call 7: Local git state (for NEEDS CLEANUP dirty tree hint)
+# Call 8: Local git state (for NEEDS CLEANUP dirty tree hint)
 git branch --show-current
 git status --porcelain 2>/dev/null
 
-# Call 8: Worktree context (local per-user setting, not shared config)
+# Call 9: Worktree context (local per-user setting, not shared config)
 WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "false")
 if [ "$WORKTREE_ENABLED" = "true" ]; then
   # Worktree list (main + extras)
@@ -2349,6 +2352,12 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 {^ color legend is on the header line — compact, not a separate footer line}
 {^ current worktree = ⭐ (yellow star, high visibility). other worktrees = · (dim dot)}
 
+{If RC_BRANCH is not empty — show RC section:}
+🚀 **RC** *{RC_BRANCH}*
+  Cut from *{BASE_BRANCH}* · `{commit_count}` commits
+  `/team-rc promote` · `/team-rc fix` · `/team-rc cancel`
+{^ Omit entire section if no active RC branch}
+
 👥 **TEAM** ({member_count} members)
   {username} ({role})
     {If Contract + branch/worktree exist:}
@@ -2393,7 +2402,8 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 **NEXT suggestion logic** — pick FIRST match (output commands in backticks):
 
-1. Orphan contract (issue closed, contract exists) → `/team doctor fix` to clean up, then `/team-claim`
+1. Active RC branch exists, all missions complete → `/team-rc promote` to ship the release
+1b. Orphan contract (issue closed, contract exists) → `/team doctor fix` to clean up, then `/team-claim`
 2. Merged PR branch still exists locally → `/team-ship done` to clean up
 3. PR behind base → PR **#{N}** is {M} behind — `/team-ship sync`
 4. PR CI passed + approved → PR **#{N}** ready to merge — merge on GitHub, then `/team-ship done`

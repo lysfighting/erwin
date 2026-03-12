@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.9.3"
+version: "3.9.4"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -461,6 +461,14 @@ If "取消" → **STOP**
 ### Step F5: Execute Cherry-pick
 
 ```bash
+# Guard: stash uncommitted changes before switching branches
+DIRTY=$(git status --porcelain 2>/dev/null | head -1)
+if [ -n "$DIRTY" ]; then
+  CURRENT=$(git branch --show-current)
+  git stash push -m "team-rc-fix: auto-stash from $CURRENT"
+  echo "⚠️ Stashed uncommitted changes. Will restore after cherry-pick."
+fi
+
 git fetch origin "$RC_BRANCH" 2>/dev/null
 git checkout "$RC_BRANCH"
 git pull origin "$RC_BRANCH"
@@ -495,8 +503,12 @@ git push origin "$RC_BRANCH"
 ### Step F6: Summary
 
 ```bash
-# Switch back to previous branch
+# Switch back to previous branch and restore stash if needed
 git checkout -
+if git stash list 2>/dev/null | grep -q "team-rc-fix: auto-stash"; then
+  git stash pop
+  echo "✅ Restored stashed changes."
+fi
 ```
 
 **FIX APPLIED** ── *{RC_BRANCH}* ────────────────────

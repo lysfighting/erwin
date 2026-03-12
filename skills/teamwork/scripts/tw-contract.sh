@@ -20,10 +20,14 @@ set -euo pipefail
 
 # Detect teamwork directory
 _teamwork_dir() {
-  if [ -f .teamwork/config.yml ]; then
-    echo ".teamwork"
-  elif [ -f .teamspace/config.yml ]; then
-    echo ".teamspace"
+  # Worktree-aware: follows git-common-dir to find config in main repo
+  local common_git main_root
+  common_git=$(git rev-parse --git-common-dir 2>/dev/null) || common_git=".git"
+  main_root=$(cd "$common_git/.." 2>/dev/null && pwd) || main_root="."
+  if [ -f "$main_root/.teamwork/config.yml" ]; then
+    echo "$main_root/.teamwork"
+  elif [ -f "$main_root/.teamspace/config.yml" ]; then
+    echo "$main_root/.teamspace"
   else
     echo ""
   fi
