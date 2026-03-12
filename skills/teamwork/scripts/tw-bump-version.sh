@@ -11,9 +11,13 @@
 set -euo pipefail
 
 VERSION="${1:-}"
-if [ -z "$VERSION" ]; then
+if [ -z "$VERSION" ] || [[ "$VERSION" == -* ]]; then
   echo "Usage: tw-bump-version.sh <version>"
   echo "Example: tw-bump-version.sh 3.4.0"
+  exit 1
+fi
+if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+  echo "ERROR: Version must be semver (e.g., 3.8.4), got '$VERSION'"
   exit 1
 fi
 

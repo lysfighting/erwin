@@ -236,10 +236,10 @@ section "PHASE 1c: CONFIG + GIT PURE FUNCTIONS"
 
 # detect-dir
 DD_OUT=$(run_script tw-config.sh detect-dir 2>/dev/null) || true
-if [ "$DD_OUT" = ".teamwork" ] || [ "$DD_OUT" = ".teamspace" ]; then
+if echo "$DD_OUT" | grep -qE '(\.teamwork|\.teamspace)$'; then
   pass "detect-dir → $DD_OUT"
 else
-  fail "detect-dir: expected .teamwork or .teamspace, got '$DD_OUT'"
+  fail "detect-dir: expected path ending in .teamwork or .teamspace, got '$DD_OUT'"
 fi
 
 # resolve-labels

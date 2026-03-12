@@ -2,6 +2,21 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.8.4] — 2026-03-12
+
+### Fixed — Dashboard formatting + worktree init bug
+
+- **Dashboard bold issue numbers**: Strengthened constraint — all issue numbers MUST be `**#NNN**` (bold-wrapped). Fixed contradictory example at priority_dot shorthand. Without bold, Claude Code renders plain text with no clickable hyperlink.
+- **Dashboard `{Pn}` duplication**: Removed redundant `{Pn}` text from 6 template sites where `{priority_dot}` already replaces it. Prevents output like `🟠 P1 #222` (dot + text label).
+- **Dashboard assigned vs claimed**: New ⚪ *assigned* state for issues assigned but not yet claimed (no Contract/branch). Previously all showed as 🟢 *wip*.
+- **Worktree init bug**: `_detect_dir()` used relative path — fails when cwd is a worktree (`.teamwork/config.yml` lives in main repo). Now uses `git rev-parse --git-common-dir` to locate main repo. This was the root cause of intermittent `/team` triggering init flow.
+- **Tab colors**: Replaced %1 土橙 `rgb(180,120,46)` → 珊瑚红 `rgb(200,90,90)` and %6 金黄 `rgb(180,140,60)` → 黄绿 `rgb(160,180,60)`. Old colors too similar to rc 橙.
+- **Bump script validation**: `tw-bump-version.sh` now rejects non-semver input (e.g., `--help` was previously accepted as version string).
+
+### Removed — Polluted global commands
+
+- Deleted residual `CHANGELOG.md`, `ONBOARDING.md`, `README.md` from `~/.claude/commands/` and `vi_agent/.claude/commands/` (leftover from pre-filter install.sh).
+
 ## [3.8.3] — 2026-03-12
 
 ### Added — `/team-rc cancel` subcommand + upstream-first RC model

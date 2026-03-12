@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.8.3"
+version: "3.8.4"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -51,7 +51,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.8.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `--help` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -125,7 +125,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.8.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `--help` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -494,7 +494,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.8.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `--help` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1056,7 +1056,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.8.3` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `--help` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ```
 ✅ Config updated (merge mode — existing config preserved)
@@ -1731,10 +1731,10 @@ _teamwork_tab() {
     mission/*)
       local num=${b#mission/}; num=${num%%-*}
       case $(( num % 8 )) in
-        0) r=46  g=160 b_=120 ;; 1) r=180 g=120 b_=46  ;;
+        0) r=46  g=160 b_=120 ;; 1) r=200 g=90  b_=90  ;;
         2) r=140 g=70  b_=180 ;; 3) r=60  g=170 b_=70  ;;
         4) r=180 g=80  b_=120 ;; 5) r=70  g=140 b_=180 ;;
-        6) r=180 g=140 b_=60  ;; 7) r=100 g=180 b_=160 ;;
+        6) r=160 g=180 b_=60  ;; 7) r=100 g=180 b_=160 ;;
       esac ;;
   esac
   printf '\e]6;1;bg;red;brightness;%d\a' "$r"
@@ -1762,10 +1762,10 @@ _teamwork_tab() {
     mission/*)
       local num=${b#mission/}; num=${num%%-*}
       case $(( num % 8 )) in
-        0) r=46  g=160 b_=120 ;; 1) r=180 g=120 b_=46  ;;
+        0) r=46  g=160 b_=120 ;; 1) r=200 g=90  b_=90  ;;
         2) r=140 g=70  b_=180 ;; 3) r=60  g=170 b_=70  ;;
         4) r=180 g=80  b_=120 ;; 5) r=70  g=140 b_=180 ;;
-        6) r=180 g=140 b_=60  ;; 7) r=100 g=180 b_=160 ;;
+        6) r=160 g=180 b_=60  ;; 7) r=100 g=180 b_=160 ;;
       esac ;;
   esac
   printf '\e]6;1;bg;red;brightness;%d\a' "$r"
@@ -2199,7 +2199,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.8.3"
+SKILL_VERSION="3.8.4"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -2318,9 +2318,12 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 👥 **TEAM** ({member_count} members)
   {username} ({role})
+    {If Contract + branch/worktree exist:}
     🟢 **#{N}** {title} {priority_dot} → *wip* {If STALE: ⚡}
     *{branch}* → `/team-ship`
     🔀 **#{pr}** — {ci_icon}
+    {If assigned but no Contract/branch:}
+    ⚪ **#{N}** {title} {priority_dot} → *assigned*
   {username} ({role})
     ⚪ *(idle)*
 
@@ -2440,12 +2443,14 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 {^ current worktree = ⭐ (yellow star, high visibility). other worktrees = · (dim dot)}
 
 🎯 **My Missions**
+  {For each issue assigned to me with $MISSION_LABEL, check: does a Contract exist AND a local branch/worktree exist?}
+  {YES — claimed, actively working:}
   🟢 **#{N}** {title} {priority_dot} → *wip*
     *{branch}* → `/team-drive`
-  🟢 **#{N}** {title} {priority_dot} → *wip* (Contract active)
-    *{branch}* → `cd` to worktree, then `/team-drive`
+  {NO — assigned but not yet claimed (no Contract or no branch/worktree):}
+  ⚪ **#{N}** {title} {priority_dot} → *assigned* · `/team-claim` **#{N}**
   {If none:} (none)
-{^ branch italic, commands in backticks}
+{^ 🟢 = claimed+branch exists. ⚪ = assigned only, needs `/team-claim`. Branch italic, commands in backticks.}
 
 🔀 **My PRs**
   **#{pr}** {title}  {ci_icon}  {review}
