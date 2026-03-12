@@ -18,6 +18,8 @@ GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are 
 | `/team-ship done` | Post-merge cleanup | After PR merged: close Issue, clean worktree |
 | `/team-ship review` | AI code review on PR | Review PR for correctness, security, quality |
 | `/team-ship sync` | Rebase on base branch | Keep branch up to date |
+| `/team sync` | Standalone rebase on base branch | Anytime branch sync (not just during ship) |
+| `/team share [#N]` | Cross-MC knowledge sharing | Share findings to sibling issue via comment |
 | `/team-rc` | Release candidate lifecycle | Prepare staging, promote to production |
 
 ## Onboarding
@@ -120,5 +122,5 @@ Scripts in `scripts/` (Von Neumann separation: deterministic ops in scripts, LLM
 
 ## Version
 
-- Skill version: 3.8.6
+- Skill version: 3.8.7
 - Config schema: 3

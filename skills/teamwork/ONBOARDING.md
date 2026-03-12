@@ -68,7 +68,7 @@ Then run:
 **After setup, running `/team` again shows the team dashboard:**
 
 **MY DASHBOARD** — your-org/your-project ──────────────────
-Teamwork v3.8.6 · **V1.0**  `████████░░`  30%  `3`/`10`
+Teamwork v3.8.7 · **V1.0**  `████████░░`  30%  `3`/`10`
 
 👥 **TEAM** (2 members)
   alice (tech-lead)
@@ -292,6 +292,8 @@ Once you're comfortable with the basic cycle, explore these shortcuts:
 | `/team doctor` | Diagnose local health: orphan branches, stale contracts, cross-contamination |
 | `/team doctor fix` | Interactive repair: execute doctor's action plan with confirmation |
 | `/team queue` | See all open mission Issues sorted by priority |
+| `/team sync` | Rebase branch on latest base branch (standalone, anytime) |
+| `/team share [#N]` | Share knowledge to sibling MC via issue comment |
 | `/team learn` | Deep dive into design philosophy, visual diagrams, manual |
 
 ---

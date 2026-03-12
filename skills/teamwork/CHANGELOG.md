@@ -2,6 +2,14 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.8.7] — 2026-03-12
+
+### Fixed — Docs completeness audit
+
+- **ONBOARDING.md Advanced Features**: Added `/team sync` and `/team share [#N]` to the table (were missing since v3.8.5).
+- **README.md skill table**: Added `/team sync` and `/team share [#N]` rows.
+- **Root CHANGELOG.md**: Added v3.8.3–v3.8.6 summary entries (were only in teamwork CHANGELOG).
+
 ## [3.8.6] — 2026-03-12
 
 ### Fixed — Documentation audit + version sync

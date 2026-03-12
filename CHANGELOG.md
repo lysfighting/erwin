@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Skills Factory
+- **Teamwork v3.8.6 — Documentation audit + version sync**: Fix 3 version pollution files, sync manual to 3.8.6, add sync/share to all docs
+- **Teamwork v3.8.5 — Cross-MC knowledge sharing**: `/team sync` (standalone rebase), `/team share` (cross-MC comments), L1 intake in team-drive
+- **Teamwork v3.8.4 — Dashboard formatting + worktree init fix + tab colors**: Bold issue numbers, worktree _detect_dir fix, tab color refresh, bump-version semver validation
+- **Teamwork v3.8.3 — /team-rc cancel + upstream-first RC**: RC cancel command, upstream-first merge model, post-merge PR checkbox
 - **Teamwork v3.8.2 — Script沉淀 + DRY + UX dead-end fixes**:
   - 6 new script subcommands: `build-branch-name`, `extract-issue-number`, `worktree-main-repo`, `worktree-find-by-branch` (tw-git.sh) + `resolve-member`, `list-members` (tw-config.sh)
   - Shared `_PYTHON_MEMBER_PARSER` in tw-config.sh — 4 functions DRY-ed (net -148 lines)
