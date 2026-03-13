@@ -1,11 +1,11 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.9.7"
+version: "3.10.1"
 ---
 
 # /team-ship — Deliver Mission
 
-> Push your branch, create a PR that auto-closes the Issue, optionally watch CI, and clean up the local Contract.
+> You own the delivery. Guard the quality boundary between code and production. Every detail you catch here saves a revert later.
 
 **Visual Encoding** (apply to ALL output — see `docs/visual-encoding-standard.md`):
 `**bold**` → headers/labels (white) · `` `backtick` `` → commands/paths/counts (purple-blue) · `*italic*` → branches (dim) · `**#NNN**` → issues (light-blue clickable, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
@@ -44,7 +44,7 @@ Parse `$ARGUMENTS`:
   1. Pre-flight: verify branch, code sub-tasks done, tests pass
      (🔧 MANUAL tasks don't block — they're listed in PR description)
   2. Push branch to GitHub
-  3. Create PR with `Closes #N` (auto-closes Issue on merge)
+  3. Create PR with `Closes #N` (if all tasks done) or `Refs #N` (if unchecked tasks remain)
      If manual tasks exist: adds "Manual Steps (post-merge)" checklist
   4. Watch CI (if configured)
   5. Request review (if configured)
@@ -114,7 +114,24 @@ fi
 ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 ```
 
-- If no Contract found AND no `.mission` file → "No active mission. Nothing to ship." → **STOP**
+- If no Contract found AND no `.mission` file → check for recoverable state before stopping:
+
+```bash
+# Check if current branch is a mission branch (recoverable state)
+CURRENT_BRANCH=$(git branch --show-current)
+if [[ "$CURRENT_BRANCH" == mission/* ]]; then
+  ISSUE_NUM=$(bash ~/.claude/commands/scripts/tw-git.sh extract-issue-number "$CURRENT_BRANCH" 2>/dev/null) || true
+  if [ -n "$ISSUE_NUM" ]; then
+    echo "You're on branch *${CURRENT_BRANCH}* but no Contract exists. Run /team-claim #${ISSUE_NUM} to regenerate, then /team-ship again."
+  else
+    echo "No active mission. Nothing to ship."
+  fi
+else
+  echo "No active mission. Nothing to ship."
+fi
+```
+
+→ **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - If no Contract but `.mission` exists → use Issue number from `.mission` to locate Contract or fetch Issue directly.
 - **Worktree fallback**: If in worktree mode and Contract not found locally, check the main repo's `$TEAMWORK_DIR/active/` directory (parent of worktree path).
@@ -137,23 +154,17 @@ Extract from body:
 
 ## Step 1b: Worktree Guard
 
-If NOT in worktree mode (`WORKTREE_MODE` is not true), check whether the user SHOULD be in a worktree:
+**Use `worktree-guard` script** — it detects mismatch atomically (no manual config check needed):
 
 ```bash
-WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "false")
+GUARD_RESULT=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-guard "$CONTRACT_BRANCH" 2>&1) || GUARD_EXIT=$?
+eval "$GUARD_RESULT"
+# Now available: $WORKTREE_ENABLED, $IN_WORKTREE, $MISMATCH, $BRANCH, $WORKTREE_PATH
 ```
 
-If `WORKTREE_ENABLED` is `true` AND `WORKTREE_MODE` is not true (no `.mission` file):
+If `MISMATCH=true` (exit 3): worktree enabled but running from main repo.
 
-The user has worktree mode enabled but is running `/team-ship` from the main repo. This can ship the wrong code or mix changes from different missions.
-
-Find the correct worktree path for this Contract's branch:
-
-```bash
-bash ~/.claude/commands/scripts/tw-git.sh worktree-find-by-branch "$CONTRACT_BRANCH" 2>/dev/null || true
-```
-
-If a worktree path is found:
+If `$WORKTREE_PATH` is non-empty (worktree exists for this branch):
 
 Output the mismatch warning, then use `AskUserQuestion` to let the user choose:
 
@@ -190,7 +201,7 @@ options:
 ```
 
 - If "在主仓库 ship" → proceed to Step 1
-- If "重新 claim" → delete Contract, output `/team-claim #{issue}` → **STOP**
+- If "重新 claim" → delete Contract, output `/team-claim` **#{issue}** → **STOP**
 - If "关闭 worktree 模式" → `git config --local teamwork.worktree false` → proceed to Step 1
 
 ---
@@ -237,8 +248,17 @@ else
 fi
 ```
 
-- If `BEHIND_BASE` > 30 → 🔴 "Branch is `{N}` commits behind base. Run `/team-ship sync` to rebase (conflicts will be auto-resolved)." → **STOP**
-  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+- If `BEHIND_BASE` > 30 → 🔴 "Branch is `{N}` commits behind base." Use `AskUserQuestion`:
+  ```
+  question: "Branch is {N} commits behind base. Strongly recommended to rebase before shipping."
+  options:
+    - label: "Rebase now"
+      description: "Run /team-ship sync to rebase (conflicts will be auto-resolved)"
+    - label: "Ship anyway"
+      description: "Continue shipping without rebasing (may cause merge conflicts on PR)"
+  ```
+  - If "Rebase now" → run the sync flow from **Operation Sync**, then return to Step 2a-bis to re-check
+  - If "Ship anyway" → continue to Step 2b
 - If `BEHIND_BASE` > 10 → 🟡 "Branch is `{N}` commits behind base. Consider `/team-ship sync` to rebase before shipping."
 - If `BEHIND_REMOTE` > 0 → 🟡 "Local branch is behind remote by `{N}` commits. Run `/team-ship sync` to sync before pushing."
 
@@ -260,16 +280,99 @@ bash ~/.claude/commands/scripts/tw-contract.sh sync-all-checkboxes "$CONTRACT_PA
 ```
 Non-fatal: if sync fails, warn but continue with shipping.
 
+### 2b-bis: Comment + Review Check
+
+**Issue Comment Check** (same logic as team-drive Step 0b1.5):
+
+```bash
+LAST_COMMENT_CHECK=$(bash ~/.claude/commands/scripts/tw-contract.sh read-field "$CONTRACT_PATH" last_comment_check 2>/dev/null) || true
+COMMENT_STATUS=$(bash ~/.claude/commands/scripts/tw-contract.sh check-comments $ISSUE_NUMBER "$LAST_COMMENT_CHECK" 2>/dev/null) || true
+```
+
+- If "NETWORK_ERROR" → skip silently, continue
+- If "UNCHANGED" → continue (no display)
+- If "NEW":
+
+Fetch full comments:
+```bash
+COMMENTS=$(bash ~/.claude/commands/scripts/tw-contract.sh read-comments $ISSUE_NUMBER --exclude-bot --exclude-lifecycle --since "$LAST_COMMENT_CHECK" 2>/dev/null)
+```
+
+Display:
+
+⚡ **NEW COMMENTS** on **#{ISSUE_NUMBER}** since last check
+────────────────────────────────────────────
+  *@{author}* — *{relative_time}*
+  {full body}
+────────────────────────────────────────────
+
+Judgment call:
+- If any comment suggests direction change (contains: "change", "actually", "instead", "don't", "cancel", "blocker", "wait", "hold") OR is from repo MEMBER/OWNER:
+  → AskUserQuestion: "Issue has new comments that may affect mission direction."
+    Options: "Update Contract" / "Acknowledged, continue" / "Abort ship"
+- Otherwise: display and continue (advisory)
+
+Update timestamp:
+```bash
+bash ~/.claude/commands/scripts/tw-contract.sh store-comment-timestamp "$CONTRACT_PATH" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+```
+
+**PR Review Check** (only if PR already exists for this branch):
+
+```bash
+EXISTING_PR=$(bash ~/.claude/commands/scripts/tw-pr.sh exists "$CONTRACT_BRANCH" 2>/dev/null) || true
+```
+
+If PR exists:
+
+```bash
+gh pr view "$EXISTING_PR" --json reviewDecision,reviews
+```
+
+- If `reviewDecision` == "CHANGES_REQUESTED":
+
+🔴 **PR REVIEW: CHANGES REQUESTED**
+────────────────────────────────────────────
+  *@{reviewer}*: {review body first line}
+────────────────────────────────────────────
+Address review feedback before shipping. Run `/team-drive` to iterate.
+→ **STOP** (hard block — don't ship with unresolved change requests)
+
+- If `reviewDecision` == "APPROVED":
+  Display: ✅ PR review: `approved` by *@{reviewer}*
+  → Continue
+
+- Otherwise (pending/null): continue silently
+
 ### 2c: Clean working tree
 
 ```bash
 git status --porcelain
 ```
 
-- If there are uncommitted changes → warn: "You have uncommitted changes. Committing them now."
-  ```bash
-  bash ~/.claude/commands/scripts/tw-git.sh commit "chore: pre-ship cleanup | Mission: #${ISSUE_NUMBER}"
+- If there are uncommitted changes → show file list and confirm:
+
+  Display the `git status --porcelain` output, then use `AskUserQuestion`:
   ```
+  question: "You have uncommitted changes. How to proceed?"
+  options:
+    - label: "Commit all"
+      description: "Commit all changes with message: chore: pre-ship cleanup"
+    - label: "Review changes first"
+      description: "Show git diff for review before committing"
+    - label: "Stash and continue without committing"
+      description: "Stash changes — recover later with git stash pop"
+  ```
+  - If "Commit all":
+    ```bash
+    bash ~/.claude/commands/scripts/tw-git.sh commit "chore: pre-ship cleanup | Mission: #${ISSUE_NUMBER}"
+    ```
+  - If "Review changes first" → run `git diff`, display output, then re-ask with "Commit all" / "Stash and continue without committing" / "Abort ship"
+  - If "Stash and continue without committing":
+    ```bash
+    git stash push -m "team-ship: stashed before shipping Mission #${ISSUE_NUMBER}"
+    ```
+    Warn: "Changes stashed. Recover with: `git stash pop`"
 
 ### 2d: Run tests
 
@@ -302,6 +405,152 @@ fi
 
 - If any test command exits non-zero → "Tests are failing. Fix them before shipping. Run /team-drive to fix, then retry /team-ship." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+---
+
+## Step 2e: Side Effect Triage
+
+> Detect non-code changes that could break other environments. Gate P0 issues, surface P1 for user action, log P2 in PR body. This is the Environment Envelope — mechanism captures, LLM annotates.
+
+### Scan Phase (automated — no LLM judgment needed)
+
+**1. Non-code file diff:**
+
+```bash
+# Get all changed files vs base branch
+BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH="${BASE_BRANCH:-main}"
+ALL_CHANGED=$(git diff --name-only "origin/$BASE_BRANCH...HEAD" 2>/dev/null)
+
+# Filter for side-effect-relevant file patterns
+SIDE_EFFECT_FILES=$(echo "$ALL_CHANGED" | grep -iE '\.(env|env\.example|env\.local|env\.production)$|docker-compose|Dockerfile|Makefile$|\.ya?ml$|\.toml$|\.conf$|nginx|\.ini$' || true)
+
+# Dependency file changes (separate category)
+DEP_FILES=$(echo "$ALL_CHANGED" | grep -iE 'package\.json$|package-lock\.json$|yarn\.lock$|pnpm-lock\.yaml$|requirements.*\.txt$|Pipfile\.lock$|go\.sum$|Cargo\.lock$|Gemfile\.lock$' || true)
+```
+
+**2. New env var reference scan (JS/TS + Python):**
+
+```bash
+# Find all env var references in changed source files
+CHANGED_SRC=$(echo "$ALL_CHANGED" | grep -iE '\.(ts|tsx|js|jsx|py)$' || true)
+
+# Extract env var names from changed files
+if [ -n "$CHANGED_SRC" ]; then
+  # JS/TS: process.env.VAR_NAME or process.env['VAR_NAME'] or process.env["VAR_NAME"]
+  JS_VARS=$(git diff "origin/$BASE_BRANCH...HEAD" -- $(echo "$CHANGED_SRC" | grep -iE '\.(ts|tsx|js|jsx)$' | tr '\n' ' ') 2>/dev/null | grep '^+' | grep -oE 'process\.env\.([\w]+)|process\.env\[.([A-Z_]+).\]' | sed "s/process\.env\.//;s/process\.env\[['\"]\(.*\)['\"].*/\1/" | sort -u || true)
+
+  # Python: os.environ["VAR"], os.environ.get("VAR"), os.getenv("VAR")
+  PY_VARS=$(git diff "origin/$BASE_BRANCH...HEAD" -- $(echo "$CHANGED_SRC" | grep -iE '\.py$' | tr '\n' ' ') 2>/dev/null | grep '^+' | grep -oE 'os\.(environ\[|environ\.get\(|getenv\().["'"'"']([A-Z_]+)' | grep -oE '[A-Z_]{2,}' | sort -u || true)
+
+  NEW_VARS=$(echo "$JS_VARS $PY_VARS" | tr ' ' '\n' | sort -u | grep -v '^$' || true)
+fi
+
+# Check against .env.example (if it exists)
+if [ -n "$NEW_VARS" ] && [ -f .env.example ]; then
+  MISSING_VARS=""
+  for VAR in $NEW_VARS; do
+    if ! grep -q "^${VAR}=" .env.example 2>/dev/null; then
+      MISSING_VARS="$MISSING_VARS $VAR"
+    fi
+  done
+  MISSING_VARS=$(echo "$MISSING_VARS" | xargs)  # trim
+fi
+```
+
+**3. Manual entries from AI Notes:**
+
+Read the Contract's AI Notes section. Extract lines starting with `[side-effect]`.
+
+```bash
+MANUAL_EFFECTS=$(grep '\[side-effect\]' "$CONTRACT_PATH" 2>/dev/null || true)
+```
+
+### Classify & Display
+
+Combine all findings into three severity levels:
+
+**P0 — Blocks Ship** (must resolve before continuing):
+- New env var references (`$MISSING_VARS`) not in `.env.example`
+
+**P1 — Needs Action** (others may need to do something):
+- `[side-effect]` entries tagged `remote:`, `credential:`, `dependency:` (native/system-level)
+- Dockerfile/docker-compose changes that add new services or system deps
+- Config file changes that affect deployment (new required keys, format changes)
+
+**P2 — Info Only** (mention in PR for awareness):
+- Lockfile changes (dependency additions/updates)
+- Minor config adjustments
+- `[side-effect]` entries tagged `env-var:` that ARE in `.env.example` (already handled)
+
+### If zero side effects detected → skip silently, continue to Step 3.
+
+### If side effects found → display:
+
+**⚠️ SIDE EFFECT TRIAGE** ────────────────────────────
+{If P0 items:}
+🔴 **P0 — Must Resolve:**
+  `{VAR_NAME}` referenced in code but missing from `.env.example`
+  {for each missing var}
+
+{If P1 items:}
+🟡 **P1 — Needs Action:**
+  {description of each P1 item}
+
+{If P2 items:}
+🟢 **P2 — Logged in PR:**
+  {description of each P2 item}
+────────────────────────────────────────────
+
+### P0 Resolution (mandatory gate)
+
+If `$MISSING_VARS` is non-empty:
+
+Use `AskUserQuestion`:
+```
+question: "发现 {count} 个 env var 在代码中被引用但不在 .env.example 中。必须处理才能继续 ship。"
+options:
+  - label: "添加到 .env.example"
+    description: "自动把缺失的变量追加到 .env.example（带空值和注释）"
+  - label: "不需要 .env.example（有其他管理方式）"
+    description: "跳过检查，在 PR 中说明原因"
+  - label: "返回修复"
+    description: "停止 ship，回去调整代码"
+```
+
+- "添加到 .env.example" → for each `$MISSING_VARS`, append `{VAR}=  # TODO: set value` to `.env.example`, commit
+- "不需要 .env.example" → note in PR body, continue
+- "返回修复" → **STOP**
+
+### P1 Triage (interactive)
+
+For each P1 item, use `AskUserQuestion`:
+```
+question: "{P1 item description} — 如何处理？"
+options:
+  - label: "创建 Issue"
+    description: "创建一个新 Issue 并 assign（推荐用于需要 infra/ops 操作的项目）"
+  - label: "PR 备注"
+    description: "在 PR body 中提醒 reviewer"
+  - label: "跳过"
+    description: "已知晓，不需要额外操作"
+```
+
+- "创建 Issue":
+  ```bash
+  gh issue create --title "{type}: {brief description}" --body "{details from side-effect entry}" --assignee ""
+  ```
+  Then use `AskUserQuestion` to ask for assignee (or leave unassigned). Add the issue link to PR body.
+- "PR 备注" → add to Infra Impact section in PR body
+- "跳过" → continue
+
+**In `/team auto` mode:** skip P1 interactive triage — auto-add all P1 items to PR body as `## Infra Impact`.
+
+### Store results for PR body injection
+
+After triage, store the side effect summary for use in Step 4b (PR body generation):
+- `$INFRA_IMPACT_ITEMS` — list of items to include in `## Infra Impact` section
+- `$SIDE_EFFECT_ISSUES` — list of created issue numbers to reference
 
 ---
 
@@ -338,10 +587,23 @@ Output: "PR **#{number}** already exists — CI: {status}, Review: {status}. Pus
 
 ### 4b: Generate PR body
 
+**Determine Issue close keyword:**
+
+Check the Issue's checkbox state to decide whether merging this PR should auto-close the Issue:
+
+```bash
+UNCHECKED=$(gh issue view $ISSUE_NUMBER --json body --jq '.body' | grep -c '^\- \[ \]' || echo "0")
+```
+
+| Issue checkbox state | PR body keyword |
+|---------------------|-----------------|
+| All `[x]` (UNCHECKED == 0) | `Closes #{issue}` — merge auto-closes Issue |
+| Has `[ ]` remaining (UNCHECKED > 0) | `Refs #{issue}` — merge does NOT close Issue |
+
 Build the PR body from the Contract:
 
 ```markdown
-Closes #{issue}
+{Closes or Refs} #{issue}
 
 ## Objective
 {objective from Contract}
@@ -369,7 +631,38 @@ actual work product (code changes, behavior, test results).
 
 ## AI Notes
 {notes from Contract's AI Notes section, if present}
+
+{If $INFRA_IMPACT_ITEMS is non-empty (from Step 2e Side Effect Triage):}
+## Infra Impact
+{For each item in $INFRA_IMPACT_ITEMS:}
+- ⚠️ {item description}
+{If $SIDE_EFFECT_ISSUES is non-empty:}
+Related Issues: {list of #NNN references}
 ```
+
+**Infra Impact rules:**
+- Only include this section if Step 2e produced non-empty results
+- P0 items resolved during ship (e.g., vars added to .env.example) → mention as "Resolved: {description}"
+- P1 items the user chose "PR 备注" for → include with action needed
+- P1 items that became Issues → reference the Issue number
+- P2 items → include for awareness (no action marker)
+- If zero side effects → omit this section entirely (no empty `## Infra Impact`)
+
+**When using `Refs` (unchecked tasks remain):**
+
+After the PR body, append a warning block:
+
+```markdown
+> ⚠️ **Issue not auto-closed** — {UNCHECKED} unchecked task(s) remain:
+> {For each unchecked checkbox in the Issue body:}
+> - [ ] {task text}
+>
+> Close manually after completing: `gh issue close {issue}`
+```
+
+Also display a local warning to the AI operator:
+
+⚠️ Using `Refs` instead of `Closes` — **#{ISSUE_NUMBER}** has `{UNCHECKED}` unchecked task(s). Issue will NOT be auto-closed on merge.
 
 ### 4c: Create the PR
 
@@ -441,7 +734,7 @@ If CI is not enabled → skip this step.
 
 | Signal | Why it's worth commenting |
 |--------|--------------------------|
-| Deployment needs special steps (env vars, migrations, config) | Merger needs to know before/after merge actions |
+| Deployment needs special steps NOT already in `## Infra Impact` | Merger needs to know before/after merge actions (skip if Step 2e already covered) |
 | Specific files/areas need careful review | Focus reviewer attention |
 | Known limitation or tech debt introduced | Transparency for the team |
 | CI failed on a flaky test (not a real issue) | Prevent reviewer confusion |
@@ -518,7 +811,7 @@ If CI passed OR CI was not configured → delete the Contract:
 bash ~/.claude/commands/scripts/tw-contract.sh delete "$TEAMWORK_DIR/active/MISSION-{issue}.md"
 ```
 
-The Contract has served its purpose. The PR body now contains the essential information. If the PR is rejected and the mission needs to be reworked, re-run `/team-claim #{issue}` to regenerate a fresh Contract.
+The Contract has served its purpose. The PR body now contains the essential information. If the PR is rejected and the mission needs to be reworked, re-run `/team-claim` **#{issue}** to regenerate a fresh Contract.
 
 If CI failed → keep the Contract:
 
@@ -531,9 +824,9 @@ Contract preserved — run `/team-drive` to iterate on CI failures, then `/team-
 **📦 SHIPPED** ── **#{issue}** {title} ─────────────
 🔀 *{branch}*
 🔀 PR: {pr-url}
-{ci_icon} CI: {passing/failing/not configured}
-Review:    {requested from @{reviewer} / not required}
-Labels:    {actual current labels}
+{ci_icon} CI: `{passing/failing/not configured}`
+Review:    `{requested from @{reviewer} / not required}`
+Labels:    `{actual current labels}`
 
 **📋 SUB-TASKS DELIVERED**
   ✅ {task 1}
@@ -558,7 +851,9 @@ Locate the Issue number from (in priority order):
 3. Current branch name — extract first numeric segment after `/` (works for both `mission/42-slug` and `bugfix/T-044-slug` patterns)
 4. `$ARGUMENTS` — if user passes `done #42` or `done 42`
 
-If no Issue found → "Cannot determine Issue. Provide Issue number: `/team-ship done #42`" → **STOP**
+If no Issue found:
+  - If current branch matches `mission/*` pattern → extract the numeric segment, then: "Issue **#{N}** (from branch name) not found. It may have been deleted. Provide the correct Issue number: `/team-ship done #NNN`" → **STOP**
+  - Otherwise → "Cannot determine Issue. Provide Issue number: `/team-ship done #042`" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### D2: Verify PR is merged
@@ -578,13 +873,13 @@ PR must be merged on GitHub before running `done`.
   3. If PR is still open, merge it on GitHub first
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
-### D3: Close Issue (fallback — usually handled by "Closes #N" in PR)
+### D3: Close Issue (fallback — may be needed if PR used "Refs #N")
 
 ```bash
 ISSUE_STATE=$(gh issue view {issue} --json state --jq '.state' 2>/dev/null)
 ```
 
-If Issue is still open (GitHub "Closes #N" didn't fire, or PR body didn't include it):
+If Issue is still open (PR used `Refs #N` due to unchecked tasks, or `Closes #N` didn't fire):
 ```bash
 gh issue close {issue} --reason completed
 ```
@@ -667,10 +962,10 @@ fi
 ### D8: Output summary
 
 **🏁 DONE** ── **#{issue}** {title} ────────────────
-Issue:     closed
-🔀 PR: {pr-url} (merged)
+Issue:     `closed`
+🔀 PR: `{pr-url}` (merged)
 Labels:    `{STATUS_PREFIX}done`
-Worktree:  {removed/kept/n/a}
+Worktree:  `{removed/kept/n/a}`
 Branch:    *{BASE_BRANCH}*
 
 ────────────────────────────────────────────
@@ -808,9 +1103,50 @@ Push the rebased branch:
 git push --force-with-lease origin {branch}
 ```
 
-- If push succeeds → done
+- If push succeeds → continue to **S4: Info Sync**
 - If push fails → "Push failed. Run `/team-ship sync` to rebase, then retry `/team-ship`." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+### S4: Info Sync
+
+After rebase completes, check for new information from GitHub.
+
+**Prerequisites**: Active Contract exists (need `claimed` timestamp and issue number).
+If no active Contract → skip Info Sync entirely (graceful degradation).
+
+```bash
+bash ~/.claude/commands/scripts/tw-contract.sh info-sync {ISSUE_NUMBER} "{CONTRACT_PATH}"
+```
+
+Parse the output (3 lines):
+- Line 1: `COMMENTS:NEW` or `COMMENTS:UNCHANGED` or `COMMENTS:NETWORK_ERROR`
+- Line 2: `PR:{status}:{count}` or `PR:none` or `PR:NETWORK_ERROR`
+- Line 3: `CONTRACT:fresh` or `CONTRACT:stale` or `CONTRACT:NETWORK_ERROR`
+
+**Display rules**:
+- If ALL three are unchanged/fresh/none/NETWORK_ERROR → skip INFO SYNC block entirely
+- Otherwise display:
+
+**INFO SYNC** ────────────────────────────────
+{If COMMENTS:NEW:}
+  Issue:    **#{ISSUE}** — new comments since claim
+{If PR exists and has review status:}
+  PR:       `{reviewDecision}` {If changes_requested: — `{count}` unresolved thread(s)}
+{If CONTRACT:stale:}
+  Contract: `stale` — Issue body modified since Contract was generated
+{If CONTRACT:fresh:}
+  Contract: `fresh`
+────────────────────────────────────────────
+
+{If CONTRACT:stale:}
+  ⚠️ Run `/team-drive` to review Issue changes and update Contract.
+
+**All items are advisory** — sync never stops or prompts. The developer reads and decides.
+
+Update comment timestamp after sync:
+```bash
+bash ~/.claude/commands/scripts/tw-contract.sh store-comment-timestamp "{CONTRACT_PATH}" "{CURRENT_ISO_TIMESTAMP}"
+```
 
 ---
 
@@ -825,7 +1161,7 @@ Output the following and **STOP**:
 
 **USAGE**
   `/team-ship done`           Auto-detect Issue from Contract/branch
-  `/team-ship done #42`       Specify Issue number explicitly
+  `/team-ship done #042`      Specify Issue number explicitly
 
 **WHAT IT DOES**
   1. Verify PR is merged (fails if PR still open)
@@ -841,7 +1177,7 @@ Output the following and **STOP**:
 
 **TROUBLESHOOTING**
   "No merged PR found" → Check `gh pr view {branch}`. If just merged, wait a few seconds and retry.
-  "Cannot determine Issue" → Specify explicitly: `/team-ship done #42`
+  "Cannot determine Issue" → Specify explicitly: `/team-ship done #042`
 
 ---
 
@@ -856,7 +1192,7 @@ Output the following and **STOP**:
 
 **USAGE**
   `/team-ship review`         Review PR for current branch
-  `/team-ship review #43`     Review specific PR number
+  `/team-ship review #043`    Review specific PR number
 
 **WHAT IT DOES**
   1. Find open PR for current branch

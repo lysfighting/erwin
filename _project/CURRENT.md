@@ -8,7 +8,7 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-13
-- **Last Session**: 2026-03-13 (Session AK — self-drive v3.9.3–v3.9.6)
+- **Last Session**: 2026-03-13 (Session AL — teamwork 认知升级 v3.9.10 + Design Constitution)
 
 ## Current Phase
 
@@ -30,7 +30,10 @@
 
 ## Active Task / What's In Progress
 
-Self-drive audit complete. All known bugs fixed through v3.9.6.
+**v3.9.10 cognitive upgrade + Design Constitution shipped.**
+- Drive essence injected into team-issue (+4), team-claim (+3), team-drive (+3). Design: +sentences not +templates.
+- `docs/teamwork-design-constitution.md`: 14 principles + 6 non-adopted decisions. Protects core design.
+- `.claude/rules/teamwork-guard.md`: Auto-loaded guard — forces reading constitution + VE standard before editing skills.
 
 ## Next Session Should Start With
 
@@ -57,7 +60,7 @@ Self-drive audit complete. All known bugs fixed through v3.9.6.
 - [ ] CaseStudies (2-3 skill variant examples)
 
 ### Skills Factory
-- [x] Teamwork v2.0–v3.9.7 — 40+ versions, 6 skills, 10 scripts, 48 unit tests
+- [x] Teamwork v2.0–v3.9.10 — 40+ versions, 6 skills, 10 scripts, 48 unit tests, Design Constitution
 - [ ] Deploy workflow (deploy.yml, staging gate)
 - [ ] Issue version tracking (found-in labels, version labels)
 

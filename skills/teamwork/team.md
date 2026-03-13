@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.9.7"
+version: "3.10.1"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -10,6 +10,8 @@ version: "3.9.7"
 **Visual Encoding** (apply to ALL output — see `docs/visual-encoding-standard.md`):
 `**bold**` → headers/labels (white) · `` `backtick` `` → commands/paths/counts (purple-blue) · `*italic*` → branches (dim) · `**#NNN**` → issues (light-blue clickable, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
 
+**Design Constitution** (read before modifying this skill — see `docs/teamwork-design-constitution.md`)
+
 **User input**: $ARGUMENTS
 
 **Argument routing:**
@@ -17,7 +19,7 @@ version: "3.9.7"
 | Input | Action |
 |-------|--------|
 | (empty) | Auto: first run → Init, subsequent → Dashboard |
-| `#N` or number | Show MC #N details (branch, commits, PRs, criteria) |
+| `#N` or number | Show MC **#N** details (branch, commits, PRs, criteria) |
 | `help` or `-h` | Show quick-start guide for new users |
 | `learn` | Show design philosophy, visual diagrams, and manual |
 | `config` | View current config + edit instructions |
@@ -29,7 +31,7 @@ version: "3.9.7"
 | `wrap` | Retroactive closure: code-first → issue + PR + labels |
 | `sync` | Rebase branch on latest base branch |
 | starts with `share` | Share knowledge to sibling MC |
-| `auto [#N]` | One-shot: claim → drive → ship (pick from queue or specify #N) |
+| `auto [#N]` | One-shot: claim → drive → ship (pick from queue or specify **#N**) |
 
 ---
 
@@ -55,7 +57,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.9.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.10.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -68,26 +70,26 @@ Output the following guide directly to the user, then **STOP**:
 
 **DAILY WORKFLOW**
   `/team`                 See role-based dashboard (leader=team view, member=my view)
-  `/team #42`             View MC **#042** details (branch, commits, PRs)
+  `/team` **#042**        View MC **#042** details (branch, commits, PRs)
   `/team doctor`          Local git + issue health diagnostics
   `/team doctor fix`      Interactive fix — execute actions with confirmation
   `/team doctor help`     Doctor usage guide (12 checks explained)
   `/team-issue <desc>`    Create MC (solo: self-assign; team: prompt for assignee)
   `/team-issue <desc> @user`  Create MC + assign to @user
-  `/team-issue #N`        View Issue details
-  `/team-issue #N <text>` Comment on Issue
-  `/team-issue update #N` Update Issue fields (title, priority, assignee)
-  `/team-issue fix #N`    Fix untracked Issue (add teamwork labels)
+  `/team-issue` **#N**    View Issue details
+  `/team-issue` **#N** `<text>` Comment on Issue
+  `/team-issue update` **#N** Update Issue fields (title, priority, assignee)
+  `/team-issue fix` **#N** Fix untracked Issue (add teamwork labels)
   `/team-issue batch ...` Batch create milestone + multiple MCs
   `/team-claim`            Show assigned missions and pick one
-  `/team-claim #N`        Claim assigned Issue → generate Contract + branch
+  `/team-claim` **#N**    Claim assigned Issue → generate Contract + branch
   `/team-claim list`      Browse my assigned missions
   `/team-drive`           Execute mission (sub-tasks → test → commit loop)
   `/team-ship`            Push + create PR (auto-closes Issue on merge)
   `/team-ship review`     AI code review on PR
 
 **ONE-SHOT**
-  `/team auto #42`        Claim → Drive → Ship in one command
+  `/team auto` **#042**   Claim → Drive → Ship in one command
   `/team auto`            Pick from your assigned queue, then auto
 
 **RETROACTIVE**
@@ -95,7 +97,7 @@ Output the following guide directly to the user, then **STOP**:
 
 **SYNC & SHARE**
   `/team sync`            Rebase branch on latest base branch
-  `/team share [#N]`      Share knowledge to sibling MC (cross-MC comment)
+  `/team share` **#N**    Share knowledge to sibling MC (cross-MC comment)
 
 **AFTER MERGE**
   `/team-ship done`       Close Issue, update labels, clean up
@@ -135,7 +137,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.9.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.10.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -239,7 +241,7 @@ One Issue = one squash commit = one clean history entry.
 Skills are grouped by lifecycle stage:
 
   CREATE    `/team-issue "desc"`        Create Issue + assign
-  CLAIM     `/team-claim #42`           Generate Contract + mission branch
+  CLAIM     `/team-claim` **#042**       Generate Contract + mission branch
   EXECUTE   `/team-drive`               Code → test → commit loop
   DELIVER   `/team-ship`                Push + PR (auto-closes Issue on merge)
   RELEASE   `/team-rc`                  Cut RC → staging → production
@@ -530,7 +532,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.9.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.10.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -602,7 +604,7 @@ Output formatted list:
   **#{N}**  {title}  @{assignee}
 
 ────────────────────────────────────────────
-`/team #{N}` details · `/team-claim #{N}` claim
+`/team` **#{N}** details · `/team-claim` **#{N}** claim
 
 Omit priority groups that have zero issues. Then **STOP**.
 
@@ -610,7 +612,7 @@ Omit priority groups that have zero issues. Then **STOP**.
 
 ## Operation MC Detail
 
-> Triggered by `/team #42` or `/team 42`. Shows full details of a Mission Contract.
+> Triggered by `/team` **#042** or `/team 42`. Shows full details of a Mission Contract.
 
 ### MD1: Parse Issue number
 
@@ -652,25 +654,25 @@ RELATED_PRS=$(gh pr list --search "Closes #$ISSUE_NUMBER" --state all --json num
 
 ### MD4: Format and display
 
-**MC #{ISSUE_NUMBER}** ── {title} ────────────────
+**MC** **#{ISSUE_NUMBER}** ── {title} ────────────────
 **Assignee:**   @{assignee}
 **Status:**     *{wip/review/done}*
-**Priority:**   {Pn}
-**Milestone:**  {milestone or "—"}
-**URL:**        {issue url}
+**Priority:**   `{Pn}`
+**Milestone:**  `{milestone or "—"}`
+**URL:**        `{issue url}`
 ────────────────────────────────────────────
 {Full Issue body}
 ────────────────────────────────────────────
 
 ▸ **BRANCH**  *{branch or "(not created)"}*
-  Commits: {commit log or "(none)"}
+  Commits: `{commit log or "(none)"}`
 
 ▸ **RELATED PRs**
   **#{pr}**  {state}  {CI status}
   {If none:} (none)
 
 ────────────────────────────────────────────
-`/team-claim #{N}` to generate Contract + branch
+`/team-claim` **#{N}** to generate Contract + branch
 
 If branch exists and user is not currently on it, show:
 
@@ -1090,7 +1092,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.9.7` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.10.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ✅ Config updated (merge mode — existing config preserved)
    schema_version → `3`
@@ -1593,6 +1595,7 @@ else
   SHELL_RC="$HOME/.$(basename "$SHELL")rc"
 fi
 TAB_CONFIGURED=$(grep -q 'teamwork-tab' "$SHELL_RC" 2>/dev/null && echo "true" || echo "false")
+TAB_VERSION=$(grep '>>> teamwork-tab' "$SHELL_RC" 2>/dev/null | sed 's/.*teamwork-tab v\([^ ]*\).*/\1/' || echo "")
 TITLE_DISABLED=$(grep -q 'CLAUDE_CODE_DISABLE_TERMINAL_TITLE' ~/.claude/settings.json 2>/dev/null && echo "true" || echo "false")
 
 # 3. Desktop notifications
@@ -1610,7 +1613,8 @@ NOTIFY_CONFIGURED=$([ -f ~/.claude/notify.sh ] && echo "true" || echo "false")
   多任务并行开发，每个 mission 独立工作目录
 
 **Tab title + branch color**
-  Tab hook: {✅ installed / ❌ not installed}
+  Tab hook: {✅ installed (v{TAB_VERSION}) / ✅ installed (legacy, no version) / ❌ not installed}
+  Hook update: {🔄 update available (v{TAB_VERSION} → v{SKILL_VERSION}) / ✅ up to date / — if not installed}
   Claude title override: {✅ disabled / ⚠️ active (will override tab title)}
   终端标签页显示 branch 名 + 按类型着色 🟥🟦🟧🟩
 
@@ -1624,7 +1628,7 @@ NOTIFY_CONFIGURED=$([ -f ~/.claude/notify.sh ] && echo "true" || echo "false")
 **"Configured" definition for each feature:**
 - Worktree: `WORKTREE_ENABLED` is `true` or `false` (explicit choice made)
 - Worktree root: `WORKTREE_ROOT` is set (only relevant when `WORKTREE_ENABLED=true`)
-- Tab title: `TAB_CONFIGURED=true` AND `TITLE_DISABLED=true`
+- Tab title: `TAB_CONFIGURED=true` AND `TITLE_DISABLED=true` AND `TAB_VERSION == SKILL_VERSION`
 - Notifications: `NOTIFY_CONFIGURED=true`
 
 **If ALL are configured** → show:
@@ -1742,15 +1746,50 @@ print('✅ Claude Code terminal title override disabled.')
 "
 ```
 
-**Part B — Shell hook** (if `TAB_CONFIGURED` is false):
+**Part B — Shell hook** (install, upgrade, or skip):
 
-Detect `$SHELL` and append the appropriate hook to the shell rc file:
+Three paths based on detected state:
+
+| State | Action |
+|---|---|
+| `TAB_CONFIGURED=false` | Fresh install — append marker block to rc file |
+| `TAB_CONFIGURED=true` AND `TAB_VERSION != SKILL_VERSION` | Upgrade — replace marker block in-place (or append if legacy without markers) |
+| `TAB_CONFIGURED=true` AND `TAB_VERSION == SKILL_VERSION` | Skip — already up to date |
+
+**Upgrade logic** (when `TAB_VERSION != SKILL_VERSION`):
+
+If the rc file contains `>>> teamwork-tab` markers → replace the entire block between `>>> teamwork-tab` and `<<< teamwork-tab` (inclusive) with the new version.
+
+If the rc file contains `_teamwork_tab` but NO markers (legacy install) → the old hook has no delimiters. **Do NOT auto-modify** the old code (sed range without reliable end marker risks corrupting the rc file). Instead:
+1. Append the new marker block at the end (shell redefinition: later `_teamwork_tab()` overwrites the earlier one)
+2. Warn user to manually remove the old block
+
+**Note:** zsh `precmd_functions+=()` will register the function twice (old + new append), but since the function is redefined, both calls execute the new code. Running the same escape sequences twice has zero visual effect — harmless.
+
+Then append the new marker block (same as fresh install), and show extra output:
+
+⚠️ 检测到旧版 tab hook（无版本标记）。新版已追加，旧版函数已被覆盖。
+建议手动清理：编辑 `{SHELL_RC}`，删除旧的 `_teamwork_tab` 块（新块以 `# >>> teamwork-tab` 开头）。
+
+If `>>> teamwork-tab` markers exist → in-place replacement:
+
+```bash
+# Replace existing marker block with new version
+if sed --version 2>/dev/null | grep -q GNU 2>/dev/null; then
+  sed -i '/^# >>> teamwork-tab/,/^# <<< teamwork-tab/d' "$SHELL_RC"
+else
+  sed -i '' '/^# >>> teamwork-tab/,/^# <<< teamwork-tab/d' "$SHELL_RC"
+fi
+# Then append new block (below)
+```
+
+**Hook templates** — Detect `$SHELL` and write the appropriate marker block:
 
 **zsh** (`~/.zshrc`):
 ```bash
 cat >> "$SHELL_RC" << 'HOOK'
 
-# teamwork-tab: show branch name + auto-color iTerm2 tab
+# >>> teamwork-tab v{SKILL_VERSION} >>>
 _teamwork_tab() {
   local b=$(git branch --show-current 2>/dev/null)
   [[ -z "$b" ]] && return
@@ -1774,6 +1813,7 @@ _teamwork_tab() {
   printf '\e]6;1;bg;blue;brightness;%d\a' "$b_"
 }
 precmd_functions+=(_teamwork_tab)
+# <<< teamwork-tab <<<
 HOOK
 ```
 
@@ -1781,7 +1821,7 @@ HOOK
 ```bash
 cat >> "$SHELL_RC" << 'HOOK'
 
-# teamwork-tab: show branch name + auto-color iTerm2 tab
+# >>> teamwork-tab v{SKILL_VERSION} >>>
 _teamwork_tab() {
   local b=$(git branch --show-current 2>/dev/null)
   [[ -z "$b" ]] && return
@@ -1805,6 +1845,7 @@ _teamwork_tab() {
   printf '\e]6;1;bg;blue;brightness;%d\a' "$b_"
 }
 PROMPT_COMMAND="_teamwork_tab; $PROMPT_COMMAND"
+# <<< teamwork-tab <<<
 HOOK
 ```
 
@@ -1813,17 +1854,24 @@ HOOK
 SHELL_RC="$HOME/.config/fish/config.fish"
 cat >> "$SHELL_RC" << 'HOOK'
 
-# teamwork-tab: show branch name in terminal tab
+# >>> teamwork-tab v{SKILL_VERSION} >>>
 function fish_title; set -l b (git branch --show-current 2>/dev/null); and echo $b; or echo (prompt_pwd); end
+# <<< teamwork-tab <<<
 HOOK
 ```
 
-Check for conflicts first: if `_teamwork_tab` already exists in the rc file, warn and show the snippet for manual integration.
+**Output (fresh install):**
 
-Output:
-
-Tab 标题+颜色已配置。新开终端标签页即可看到 branch 名和分支类型颜色。
+Tab 标题+颜色已配置 (v{SKILL_VERSION})。新开终端标签页即可看到 branch 名和分支类型颜色。
 颜色映射：🟥 main · 🟦 pre-launch · 🟧 rc/* · 🟩 mission/* · ⬜ other
+
+**Output (upgrade):**
+
+Tab hook 已升级 (v{TAB_VERSION} → v{SKILL_VERSION})。新开终端标签页即生效。
+
+**Output (already up to date):**
+
+Tab hook 已是最新 (v{SKILL_VERSION})。
 
 **Note:** Tab colors use iTerm2 proprietary escape sequences (`\e]6;1;bg;...`). On non-iTerm2 terminals, the color sequences are silently ignored — the tab title still works.
 
@@ -2044,6 +2092,7 @@ If `base_branch` is not the current default branch (i.e., config says `develop` 
 ```bash
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "develop" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-develop}"
+# Note: default "develop" is for RC/release-flow projects — must match project config
 
 # Check if base branch exists on remote
 if ! git ls-remote --heads origin "$BASE_BRANCH" | grep -q "$BASE_BRANCH"; then
@@ -2089,6 +2138,7 @@ Read config flags to build the protection rule dynamically:
 ```bash
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "develop" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-develop}"
+# Note: default "develop" is for RC/release-flow projects — must match project config
 PROD_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.production_branch "main" 2>/dev/null)
 PROD_BRANCH="${PROD_BRANCH:-main}"
 
@@ -2229,7 +2279,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.9.7"
+SKILL_VERSION="3.10.1"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -2405,9 +2455,12 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 3. PR behind base → PR **#{N}** is {M} behind — `/team-ship sync`
 4. PR CI passed + approved → PR **#{N}** ready to merge — merge on GitHub, then `/team-ship done`
 5. PR CI passed, no review → PR **#{N}** CI passed — awaiting review/merge
+5b. PR open, CI still running → PR **#{N}** CI running — waiting for checks to complete
 6. PR CI failing → PR **#{N}** CI failing — fix before merge
-7. Active mission, no PR → `/team-drive` to continue or `/team-ship` to deliver
-8. No active mission → `/team-claim` **#{N}** to start
+7a. Active mission with unchecked code tasks → `/team-drive` to continue
+7b. Active mission, all code tasks done, no PR → `/team-ship` to deliver
+8a. No active mission, unassigned issues exist → `/team-claim` **#{N}** to start (pick highest-priority unassigned issue)
+8b. No active mission, no unassigned issues → `/team-issue` to create a new mission
 
 **Visual encoding rules** (apply to ALL teamwork output):
 
@@ -2738,7 +2791,7 @@ Parse git worktree list --porcelain output:
        For each active Contract, find its worktree path from git worktree list.
        Message: "Worktree mode enabled but you're in the main repo.
        Running /team-drive or /team-ship here bypasses worktree isolation.
-       打开新终端 tab，执行：cd {worktree_path} && claude  ← #{issue} {title}"
+       打开新终端 tab，执行：cd {worktree_path} && claude  ← **#{issue}** {title}"
 ```
 
 #### Check 6: Shippable PRs
@@ -2840,9 +2893,9 @@ For each active Contract in $TEAMWORK_DIR/active/MISSION-*.md:
   4. Compute current hash: bash tw-contract.sh hash "$TITLE" "$BODY"
   5. Compare:
      - Hashes match → 🟢 OK (Contract is fresh)
-     - Hashes differ → 🟡 WARNING "Contract for #{issue} is stale — Issue was updated since claim"
+     - Hashes differ → 🟡 WARNING "Contract for **#{issue}** is stale — Issue was updated since claim"
        Action: `/team-drive` will auto-detect this and offer refresh
-       Or re-claim: delete Contract, then `/team-claim #{issue}`
+       Or re-claim: delete Contract, then `/team-claim **#{issue}**`
 ```
 
 #### Check 11: Test Suite Health
@@ -3237,7 +3290,7 @@ if [ -f .mission ]; then
 fi
 ```
 
-**If inside a worktree AND worktree mode disabled** → "ERROR: You're inside a worktree. Run /team auto from the main repo." → **STOP**
+**If inside a worktree AND worktree mode disabled** → "ERROR: You're inside a worktree but worktree mode is disabled. Run `/team auto` from the main repo, or enable worktree mode: `git config --local teamwork.worktree true`" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 **If inside a worktree AND worktree mode enabled** → allowed. Auto will only run the **claim phase** (A1–A3), then stop and tell the user to open a new terminal in the new worktree. Set `$AUTO_CLAIM_ONLY=true`. Skip the clean-tree and active-contract checks below (they don't apply — claim creates a new worktree).
@@ -3266,7 +3319,7 @@ If active Contract exists (non-worktree mode only) → "You have an active missi
 
 ### A1: Select Issue
 
-**If `$ARGUMENTS` contains `#N` or a number** (e.g., `/team auto #42`, `/team auto 42`):
+**If `$ARGUMENTS` contains `#N` or a number** (e.g., `/team auto` **#042**, `/team auto 42`):
 - Extract Issue number → proceed to A2
 
 **If `$ARGUMENTS` is just `auto`** (no number):
@@ -3306,14 +3359,14 @@ ISSUE_DATA=$(gh issue view {issue} --json number,title,body,labels,milestone,ass
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - If Issue has no assignee → auto-assign to `$GH_USER`: `gh issue edit {issue} --repo "$REPO" --add-assignee "$GH_USER"`
 - If Issue is assigned to someone else → warn "Issue **#{issue}** is assigned to someone else." Use `AskUserQuestion`: "Claim anyway?" / "Cancel". If cancel → **STOP**. If claim → also add `$GH_USER` as assignee.
-- If Issue is missing `$MISSION_LABEL` → warn "Issue **#{issue}** is not a mission Issue (missing `$MISSION_LABEL` label). Use `/team-issue fix #{issue}` first." → **STOP**
+- If Issue is missing `$MISSION_LABEL` → warn "Issue **#{issue}** is not a mission Issue (missing `$MISSION_LABEL` label). Use `/team-issue fix` **#{issue}** first." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Display the issue summary and announce auto mode:
 
 🤖 **AUTO** ── **#{issue}** {title} ────────────────
 {priority_dot} {priority}   Size: `{size}`
-Milestone: {milestone or "—"}
+Milestone: `{milestone or "—"}`
 
 🎯 **OBJECTIVE**
   {objective from Issue body}
@@ -3652,14 +3705,14 @@ If review required → find tech-lead from config → `bash ~/.claude/commands/s
    {If MANUAL tasks:} Manual: `{manual_count}` pending (post-merge)
 
 ✅ **PHASE 3: SHIPPED**
-   🔀 PR: {pr_url}
-   {ci_icon} CI: {status}
-   Review: {requested / not required}
-   Labels: {current labels}
+   🔀 PR: `{pr_url}`
+   {ci_icon} CI: `{status}`
+   Review: `{requested / not required}`
+   Labels: `{current labels}`
 
 ────────────────────────────────────────────
 ⏳ Waiting for human merge.
-After merge: `/team-ship done #{issue}`
+After merge: `/team-ship done` **#{issue}**
 ────────────────────────────────────────────
 
 ### Error Handling
@@ -3950,7 +4003,7 @@ The stash is still in the main repo. User must apply it in the worktree. Output:
 **Branch:**    *{BRANCH}*
 **Worktree:**  `{worktree_path}`
 **Contract:**  `$TEAMWORK_DIR/active/MISSION-{ISSUE_NUMBER}.md`
-**Stash:**     still in main repo (apply in worktree)
+**Stash:**     `still in main repo` (apply in worktree)
 
 ⚠️ **Worktree 模式下 wrap 在 claim 后停止**
 ────────────────────────────────────────────
@@ -3985,7 +4038,7 @@ Output:
 **Issue:**     **#{ISSUE_NUMBER}**
 **Branch:**    *{BRANCH}*
 **Contract:**  `$TEAMWORK_DIR/active/MISSION-{ISSUE_NUMBER}.md`
-**Changes:**   applied from stash
+**Changes:**   `applied from stash`
 
 **Next steps:**
   `/team-drive`    Verify + commit changes
@@ -4039,7 +4092,11 @@ If "稍后再说" → **STOP**
 # Use origin/BASE_BRANCH as reference (consistent with W2 analysis diff)
 # This works for both tracked branches and untracked local branches
 COMMIT_SHAS=$(git log --reverse --format='%H' "origin/${BASE_BRANCH}..HEAD" 2>/dev/null)
-COMMIT_COUNT=$(echo "$COMMIT_SHAS" | wc -l | tr -d ' ')
+if [ -z "$COMMIT_SHAS" ]; then
+  COMMIT_COUNT=0
+else
+  COMMIT_COUNT=$(echo "$COMMIT_SHAS" | wc -l | tr -d ' ')
+fi
 ORIGINAL_BRANCH="$CURRENT_BRANCH"
 ```
 
@@ -4051,7 +4108,11 @@ if [ -n "$(git status --porcelain)" ]; then
   git commit -m "wip: uncommitted changes (pre-wrap)"
   # Re-capture SHAs including new commit
   COMMIT_SHAS=$(git log --reverse --format='%H' "origin/${BASE_BRANCH}..HEAD" 2>/dev/null)
-  COMMIT_COUNT=$(echo "$COMMIT_SHAS" | wc -l | tr -d ' ')
+  if [ -z "$COMMIT_SHAS" ]; then
+    COMMIT_COUNT=0
+  else
+    COMMIT_COUNT=$(echo "$COMMIT_SHAS" | wc -l | tr -d ' ')
+  fi
 fi
 ```
 
@@ -4246,7 +4307,7 @@ gh issue close "$ISSUE_NUMBER" --reason completed
 **Issue:**     **#{ISSUE_NUMBER}** (closed)
 **Branch:**    *{CURRENT_BRANCH}* (already pushed)
 **Labels:**    `{MISSION_LABEL}`, `{STATUS_PREFIX}done`, `{PRIORITY_PREFIX}{Pn}`
-**Note:**      Tracked for history only — no PR created.
+**Note:**      `Tracked for history only — no PR created.`
 ────────────────────────────────────────────
 
 Then **STOP**.
@@ -4330,9 +4391,50 @@ Push the rebased branch:
 git push --force-with-lease origin {branch}
 ```
 
-- If push succeeds → done
+- If push succeeds → continue to **SY4: Info Sync**
 - If push fails → "Push failed. Try again or check with `/team doctor`." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+### SY4: Info Sync
+
+After rebase completes, check for new information from GitHub.
+
+**Prerequisites**: Active Contract exists (need `claimed` timestamp and issue number).
+If no active Contract → skip Info Sync entirely (graceful degradation).
+
+```bash
+bash ~/.claude/commands/scripts/tw-contract.sh info-sync {ISSUE_NUMBER} "{CONTRACT_PATH}"
+```
+
+Parse the output (3 lines):
+- Line 1: `COMMENTS:NEW` or `COMMENTS:UNCHANGED` or `COMMENTS:NETWORK_ERROR`
+- Line 2: `PR:{status}:{count}` or `PR:none` or `PR:NETWORK_ERROR`
+- Line 3: `CONTRACT:fresh` or `CONTRACT:stale` or `CONTRACT:NETWORK_ERROR`
+
+**Display rules**:
+- If ALL three are unchanged/fresh/none/NETWORK_ERROR → skip INFO SYNC block entirely
+- Otherwise display:
+
+**INFO SYNC** ────────────────────────────────
+{If COMMENTS:NEW:}
+  Issue:    **#{ISSUE}** — new comments since claim
+{If PR exists and has review status:}
+  PR:       `{reviewDecision}` {If changes_requested: — `{count}` unresolved thread(s)}
+{If CONTRACT:stale:}
+  Contract: `stale` — Issue body modified since Contract was generated
+{If CONTRACT:fresh:}
+  Contract: `fresh`
+────────────────────────────────────────────
+
+{If CONTRACT:stale:}
+  ⚠️ Run `/team-drive` to review Issue changes and update Contract.
+
+**All items are advisory** — sync never stops or prompts. The developer reads and decides.
+
+Update comment timestamp after sync:
+```bash
+bash ~/.claude/commands/scripts/tw-contract.sh store-comment-timestamp "{CONTRACT_PATH}" "{CURRENT_ISO_TIMESTAMP}"
+```
 
 ---
 
@@ -4367,7 +4469,7 @@ If no active mission branch → "Not on a mission branch. Switch to a mission wo
 
 ### SH2: Determine target
 
-**If `$ARGUMENTS` contains `#N`** (e.g., `/team share #241`):
+**If `$ARGUMENTS` contains `#N`** (e.g., `/team share` **#241**):
 - TARGET_ISSUE = extracted number
 - Verify target exists: `gh issue view $TARGET_ISSUE --json number,title,state`
 - If closed or not found → "Issue **#{N}** not found or closed." → **STOP**
@@ -4438,7 +4540,7 @@ Output:
 
 **SHARED** ────────────────────────────
 From:     **#{ISSUE_NUMBER}** → **#{TARGET_ISSUE}**
-Type:     advisory (read-only reference for target MC)
+Type:     `advisory` (read-only reference for target MC)
 
 ⚠️ **Anti-plague rule**: This knowledge is first-hand only. Target MC must NOT re-share it to other issues.
 

@@ -1,11 +1,11 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.9.7"
+version: "3.10.1"
 ---
 
 # /team-rc — Release Candidate Lifecycle
 
-> Prepare an RC for staging verification, or promote a verified RC to production.
+> You own the release cadence. Every RC is a contract with users — what you ship defines trust. Verify before promoting, and never rush a release you wouldn't bet your reputation on.
 
 **Visual Encoding** (apply to ALL output — see `docs/visual-encoding-standard.md`):
 `**bold**` → headers/labels (white) · `` `backtick` `` → commands/paths/counts (purple-blue) · `*italic*` → branches (dim) · `**#NNN**` → issues (light-blue clickable, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
@@ -151,6 +151,17 @@ fi
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "develop" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-develop}"
 
+# Warn if base_branch is not explicitly configured — default "develop" may conflict
+# with other skills that default to "main". Require explicit config for RC flow.
+BASE_BRANCH_RAW=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "" 2>/dev/null)
+if [ -z "$BASE_BRANCH_RAW" ]; then
+  echo "⚠️ WARNING: conventions.base_branch not set in config.yml (defaulting to 'develop')."
+  echo "  /team-rc assumes dual-branch (develop→main). Other skills default to 'main'."
+  echo "  Set explicitly in $TEAMWORK_DIR/config.yml:"
+  echo "    conventions:"
+  echo "      base_branch: \"develop\""
+fi
+
 PROD_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.production_branch "main" 2>/dev/null)
 PROD_BRANCH="${PROD_BRANCH:-main}"
 
@@ -268,7 +279,9 @@ Staging:  {triggered / deploy manually}
 
 **NEXT STEPS**
   1. 部署 staging，验证
-  2. 发现 bug? → 在 *{BASE_BRANCH}* 修复 → `/team-rc cancel` → `/team-rc` 重新切
+  2. 发现 bug? → 在 *{BASE_BRANCH}* 修复，然后:
+     Option A (clean slate): `/team-rc cancel` → `/team-rc` 重新切
+     Option B (surgical): `/team-rc fix` cherry-pick 到 RC（保留测试进度）
   3. 验证通过 → `/team-rc promote`
 
 ────────────────────────────────────────────
@@ -503,8 +516,9 @@ git push origin "$RC_BRANCH"
 ### Step F6: Summary
 
 ```bash
-# Switch back to previous branch and restore stash if needed
-git checkout -
+# Switch back to base branch (not `git checkout -` which may return to the wrong branch
+# if any intermediate checkout happened during conflict resolution)
+git checkout "$BASE_BRANCH"
 STASH_INDEX=$(git stash list 2>/dev/null | grep "team-rc-fix: auto-stash" | head -1 | grep -oE 'stash@\{[0-9]+\}')
 if [ -n "$STASH_INDEX" ]; then
   git stash pop "$STASH_INDEX"
@@ -578,6 +592,9 @@ fi
 
 ```bash
 git fetch origin "$PROD_BRANCH" 2>/dev/null
+# Ensure local tags are up-to-date before deriving hotfix version — stale local tags
+# may cause version collisions if another hotfix was tagged from a different machine.
+git fetch --tags origin 2>/dev/null || true
 LATEST_TAG=$(git tag --sort=-v:refname --list "${VERSION_PREFIX}*" 2>/dev/null | head -1)
 ```
 
@@ -709,9 +726,31 @@ git fetch origin "$PROD_BRANCH"
 bash ~/.claude/commands/scripts/tw-git.sh tag "$HOTFIX_VERSION" "origin/$PROD_BRANCH"
 ```
 
+Generate hotfix release notes from the merged PR:
+
+```bash
+# Extract PR details for release notes
+PR_DETAILS=$(gh pr view "$PR_NUMBER" --json title,author,url --repo "$REPO")
+PR_TITLE=$(echo "$PR_DETAILS" | jq -r '.title')
+PR_AUTHOR=$(echo "$PR_DETAILS" | jq -r '.author.login')
+PR_URL=$(echo "$PR_DETAILS" | jq -r '.url')
+```
+
+Format the release body:
+
+```
+## Hotfix
+
+* {PR_TITLE} by @{PR_AUTHOR} in {PR_URL}
+
+**Full Changelog**: {LATEST_TAG}...{HOTFIX_VERSION}
+```
+
+{^ Use LATEST_TAG (from H2), not PREV_TAG. LATEST_TAG is the release being hotfixed.}
+
 ```bash
 gh release create "$HOTFIX_VERSION" \
-  --generate-notes \
+  --notes-file <(echo "$HOTFIX_BODY") \
   --title "$HOTFIX_VERSION" \
   --repo "$REPO"
 ```
@@ -724,6 +763,15 @@ After PR merged to main, cherry-pick to develop:
 
 ```bash
 MERGE_SHA=$(gh pr view "$PR_NUMBER" --json mergeCommit --jq '.mergeCommit.oid' --repo "$REPO")
+
+# Guard: mergeCommit can be null if PR was closed without merging or API delay
+if [ -z "$MERGE_SHA" ] || [ "$MERGE_SHA" = "null" ]; then
+  echo "ERROR: Could not retrieve merge commit SHA for PR #$PR_NUMBER."
+  echo "The PR may not have been merged yet, or GitHub API returned stale data."
+  echo "Retry in a few seconds, or check: gh pr view $PR_NUMBER --repo $REPO"
+  # STOP
+fi
+
 git checkout "$BASE_BRANCH"
 git pull origin "$BASE_BRANCH"
 git cherry-pick "$MERGE_SHA" --no-edit
@@ -765,8 +813,11 @@ git branch -d "$HOTFIX_BRANCH" 2>/dev/null || git branch -D "$HOTFIX_BRANCH" 2>/
 **HOTFIX COMPLETE ── {HOTFIX_VERSION}** ────────────────────
 Tag: **{HOTFIX_VERSION}** (on *{PROD_BRANCH}*)
 PR:  **#{PR_NUMBER}** (squash merged to *{PROD_BRANCH}*)
-Release: {release_url}
+Release: `{release_url}`
 Backport: cherry-picked to *{BASE_BRANCH}*
+
+{Check if an active RC branch exists (rc/* on remote). If so, add this warning:}
+⚠️ Active RC detected: *{RC_BRANCH}*. The RC is now behind *{BASE_BRANCH}*. Consider `/team-rc fix` to include the hotfix, or `/team-rc cancel` + `/team-rc` to re-cut.
 
 ────────────────────────────────────────────
 
@@ -862,24 +913,59 @@ If "中止" → **STOP**
 
 ### Step P5: Generate Release Notes
 
-Collect changes in rc relative to production:
+**Why not `--generate-notes`**: GitHub's auto-generate relies on PRs visible from `main`. After squash merge, `main` sees only the release PR itself — all original PR authors and links are lost. We reconstruct from the base branch's merged PR history instead.
 
 ```bash
-git fetch origin "$PROD_BRANCH" "$RC_BRANCH" 2>/dev/null
-CHANGES=$(git log "origin/$PROD_BRANCH..origin/$RC_BRANCH" --oneline --no-merges)
+# Find previous tag as time boundary (current version is NOT yet tagged — that happens at P7)
+# IMPORTANT: Filter to only clean version tags (PREFIX.N) — exclude hotfix tags (PREFIX.N-hotfix.M)
+# which are more recent but represent patches, not full releases. Including them would
+# narrow the date window and miss changes between the last RC release and the hotfix.
+PREV_TAG=$(git tag --sort=-v:refname --list "${VERSION_PREFIX}*" \
+  | grep -E "^$(echo "$VERSION_PREFIX" | sed 's/[.[\*^$()+?{|\\]/\\&/g')\.[0-9]+$" \
+  | head -1)
+if [ -n "$PREV_TAG" ]; then
+  PREV_DATE=$(git log -1 --format='%aI' "$PREV_TAG" 2>/dev/null)
+else
+  PREV_DATE="2000-01-01T00:00:00Z"
+fi
+
+# Fetch merged PRs from base branch since last tag
+PR_JSON=$(gh pr list --base "$BASE_BRANCH" --state merged \
+  --json number,title,author,mergedAt,url --limit 300 --repo "$REPO")
 ```
 
-Format release body:
+**Filter + categorize** (AI step — deterministic filtering, judgment-based categorization):
+
+1. **Filter by date**: From `PR_JSON`, include ONLY PRs where `mergedAt > PREV_DATE`. This is critical — without filtering, release notes would include all historical PRs, not just this release's.
+2. **Categorize by commit type prefix** in PR title: `feat:` → Features, `fix:` → Bug Fixes, everything else → Other Changes. PRs without a type prefix go to Other Changes.
+3. **Collect contributors**: unique authors with PR count.
+
+Format as `$RELEASE_BODY`:
 
 ```
 ## What's in this release
 
-{CHANGES formatted as bullet list, e.g.:
-- feat: user login system (#42)
-- feat: permission management (#45)
-- fix: API timeout (#48)
-}
+### Features
+* feat: user login system by @alice in {url} (#042)
+* feat: permission management by @bob in {url} (#045)
+
+### Bug Fixes
+* fix: API timeout by @alice in {url} (#048)
+
+### Other Changes
+* refactor: clean up auth module by @carol in {url} (#051)
+
+### Contributors
+@alice (3) · @bob (1) · @carol (1)
+
+**Full Changelog**: {PREV_TAG}...{VERSION}
 ```
+
+{^ Issue numbers use plain #NNN (no bold) — these render on GitHub where #NNN auto-links natively}
+{^ If PREV_TAG is empty (first release), omit the Full Changelog line and add "Initial release" instead}
+{^ Omit empty sections (e.g., no Features? skip that header)}
+
+Store the formatted body in `$RELEASE_BODY` for use in P6 and P8.
 
 ### Step P6: Create PR and Squash Merge
 
@@ -940,25 +1026,38 @@ If merge fails → output error details → **STOP**
 
 ```bash
 git fetch origin "$PROD_BRANCH"
-bash ~/.claude/commands/scripts/tw-git.sh tag "$VERSION" "origin/$PROD_BRANCH"
+
+# Idempotency: skip if tag already exists (re-entry after partial failure)
+if git rev-parse "$VERSION" >/dev/null 2>&1; then
+  echo "Tag $VERSION already exists — skipping"
+else
+  bash ~/.claude/commands/scripts/tw-git.sh tag "$VERSION" "origin/$PROD_BRANCH"
+fi
 ```
 
 **Does NOT checkout or modify the working tree.** Tags the remote production branch ref directly.
 
-Output: Tag **{VERSION}** pushed
+Output: Tag **{VERSION}** pushed (or "already exists" on re-entry)
 
 ### Step P8: GitHub Release
 
 ```bash
-gh release create "$VERSION" \
-  --generate-notes \
-  --title "$VERSION" \
-  --repo "$REPO"
+# Idempotency: skip if release already exists (re-entry after partial failure)
+if gh release view "$VERSION" --repo "$REPO" >/dev/null 2>&1; then
+  echo "Release $VERSION already exists — skipping"
+  RELEASE_URL=$(gh release view "$VERSION" --repo "$REPO" --json url --jq '.url')
+else
+  gh release create "$VERSION" \
+    --notes-file <(echo "$RELEASE_BODY") \
+    --title "$VERSION" \
+    --repo "$REPO"
+fi
 ```
+{^ --notes-file avoids shell escaping issues when PR titles contain quotes or special characters}
 
 Capture and output the release URL.
 
-If fails → warn but continue (tag exists, release can be created via `gh release create`).
+If fails → warn but continue (tag exists, release can be created manually via `gh release create`).
 
 ### Step P8b: Notification
 

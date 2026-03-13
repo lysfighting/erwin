@@ -1,14 +1,18 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.9.7"
+version: "3.10.1"
 ---
 
 # /team-drive — Execute Mission
+
+> You own this mission. Every error narrows the problem space. The loop does not break. When you see a better approach than the Contract suggests, implement it — silence is complicity.
 
 > Read your Mission Contract, validate the plan against actual code, then execute — sequentially for small missions, with team + wave parallelism for large ones.
 
 **Visual Encoding** (apply to ALL output — see `docs/visual-encoding-standard.md`):
 `**bold**` → headers/labels (white) · `` `backtick` `` → commands/paths/counts (purple-blue) · `*italic*` → branches (dim) · `**#NNN**` → issues (light-blue clickable, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
+
+**Design Constitution** (read before modifying this skill — see `docs/teamwork-design-constitution.md`)
 
 **User input**: $ARGUMENTS
 
@@ -58,7 +62,7 @@ if [ -f .mission ]; then
 fi
 
 # Detect config directory (in worktree, may need to check parent repo)
-TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || echo "NO_CONFIG"
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || TEAMWORK_DIR="NO_CONFIG"
 ```
 
 - If no config → "**ERROR:** Teamwork not initialized. Run `/team` first." → **STOP**
@@ -156,6 +160,43 @@ Use `AskUserQuestion`:
 
 ---
 
+## Step 0b1.5: Comment Check
+
+```bash
+LAST_COMMENT_CHECK=$(bash ~/.claude/commands/scripts/tw-contract.sh read-field "$CONTRACT_PATH" last_comment_check 2>/dev/null) || true
+COMMENT_STATUS=$(bash ~/.claude/commands/scripts/tw-contract.sh check-comments {ISSUE_NUMBER} "$LAST_COMMENT_CHECK" 2>/dev/null) || true
+```
+
+- If result is "NETWORK_ERROR" → skip silently, continue
+- If result is "UNCHANGED" → continue (no display)
+- If result is "NEW":
+
+Fetch full comments:
+```bash
+COMMENTS=$(bash ~/.claude/commands/scripts/tw-contract.sh read-comments {ISSUE_NUMBER} --exclude-bot --exclude-lifecycle --since "$LAST_COMMENT_CHECK" 2>/dev/null)
+```
+
+Display:
+
+⚡ **NEW COMMENTS** on **#{ISSUE_NUMBER}** since last check
+────────────────────────────────────────────
+  *@{author}* — *{relative_time}*
+  {full body}
+────────────────────────────────────────────
+
+Then AI makes judgment call:
+- If any comment suggests direction change (contains: "change", "actually", "instead", "don't", "cancel", "blocker", "wait", "hold") OR is from repo MEMBER/OWNER:
+  → AskUserQuestion: "Issue has new comments that may affect mission direction."
+    Options: "Update Contract" / "Acknowledged, continue" / "Abort mission"
+- Otherwise: display and continue (advisory)
+
+Update timestamp:
+```bash
+bash ~/.claude/commands/scripts/tw-contract.sh store-comment-timestamp "$CONTRACT_PATH" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+```
+
+---
+
 ## Step 0b2: Cross-MC Knowledge Intake
 
 Check if sibling MCs have shared knowledge to this issue via comments.
@@ -190,25 +231,17 @@ Inject into Contract context as advisory (append to AI Notes section if updating
 
 ## Step 0c: Worktree Guard
 
-If NOT already in worktree mode (`WORKTREE_MODE` is not true), check whether the user SHOULD be in a worktree:
+**Use `worktree-guard` script** — it detects mismatch atomically (no manual config check needed):
 
 ```bash
-WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "false")
+GUARD_RESULT=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-guard "$CONTRACT_BRANCH" 2>&1) || GUARD_EXIT=$?
+eval "$GUARD_RESULT"
+# Now available: $WORKTREE_ENABLED, $IN_WORKTREE, $MISMATCH, $BRANCH, $WORKTREE_PATH
 ```
 
-If `WORKTREE_ENABLED` is `true` AND `WORKTREE_MODE` is not true (no `.mission` file):
+If `MISMATCH=true` (exit 3): worktree enabled but running from main repo.
 
-The user has worktree mode enabled but is running `/team-drive` from the main repo. This bypasses worktree isolation and can cause code from different missions to mix.
-
-Find the correct worktree path for this Contract's branch:
-
-```bash
-# Get the Contract's branch from frontmatter (already extracted in Step 0)
-# Search worktree list for a matching branch
-bash ~/.claude/commands/scripts/tw-git.sh worktree-find-by-branch "$CONTRACT_BRANCH" 2>/dev/null || true
-```
-
-If a worktree path is found for this branch:
+If `$WORKTREE_PATH` is non-empty (worktree exists for this branch):
 
 Output the mismatch warning, then use `AskUserQuestion` to let the user choose:
 
@@ -245,7 +278,7 @@ options:
 ```
 
 - If "在主仓库继续" → proceed to Step 1
-- If "重新 claim" → delete Contract, output `/team-claim #{issue}` → **STOP**
+- If "重新 claim" → delete Contract, output `/team-claim` **#{issue}** → **STOP**
 - If "关闭 worktree 模式" → `git config --local teamwork.worktree false` → proceed to Step 1
 
 ---
@@ -313,7 +346,13 @@ Progress:  {progress_bar}  `{done}/{total}`
 Check whether all **code** sub-tasks are already checked (ignore `🔧 MANUAL` tasks).
 
 - If all code tasks checked AND **no** MANUAL tasks exist:
-  → "All sub-tasks complete. Run `/team-ship` to deliver." → **STOP**
+  ```bash
+  # Check if a PR already exists for this branch
+  CURRENT_BRANCH=$(git branch --show-current)
+  EXISTING_PR=$(bash ~/.claude/commands/scripts/tw-pr.sh exists "$CURRENT_BRANCH" 2>/dev/null) || true
+  ```
+  - If `$EXISTING_PR` is non-empty → "All sub-tasks complete. PR **#{pr}** already exists — push to update it." → **STOP**
+  - Otherwise → "All sub-tasks complete. Run `/team-ship` to deliver." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 - If all code tasks checked AND MANUAL tasks **do** exist:
@@ -349,12 +388,32 @@ fi
 
 Display branch readiness:
 
-- If `BEHIND_BASE` > 30 → 🔴 **Branch is `{N}` commits behind base.** Rebase strongly recommended before starting work. Run `/team-ship sync` to rebase.
-- If `BEHIND_BASE` > 10 and ≤ 30 → 🟡 **Branch is `{N}` commits behind base.** Consider running `/team-ship sync` before driving.
-- If `BEHIND_REMOTE` > 0 → 🟡 **Local branch is `{N}` commits behind remote.** Run `/team-ship sync` to sync.
-- If all zero → no output needed (clean state)
+- If `BEHIND_BASE` > 30 → 🔴 **Branch is `{N}` commits behind base.** Use `AskUserQuestion`:
+  ```
+  question: "Branch is {N} commits behind base. Syncing is strongly recommended before starting work."
+  options:
+    - label: "Sync now"
+      description: "Rebase on latest base branch (conflicts will be auto-resolved)"
+    - label: "Continue without syncing"
+      description: "Start driving without rebasing (may cause conflicts later)"
+  ```
+  - If "Sync now" → run `/team-ship sync` inline (fetch + rebase + force-push), then continue
+  - If "Continue without syncing" → continue to Step 2b
 
-This is informational only — do NOT stop. Warn and continue. The user may choose to sync or not.
+- If `BEHIND_BASE` > 10 and ≤ 30 → 🟡 **Branch is `{N}` commits behind base.** Use `AskUserQuestion`:
+  ```
+  question: "Branch is {N} commits behind base. Consider syncing before driving."
+  options:
+    - label: "Sync now"
+      description: "Rebase on latest base branch"
+    - label: "Continue without syncing"
+      description: "Proceed with current state"
+  ```
+  - If "Sync now" → run `/team-ship sync` inline, then continue
+  - If "Continue without syncing" → continue
+
+- If `BEHIND_REMOTE` > 0 → 🟡 **Local branch is `{N}` commits behind remote.** Run `/team-ship sync` to sync. (informational — do not stop)
+- If all zero → no output needed (clean state)
 
 ---
 
@@ -393,7 +452,7 @@ You are a **super-sage** with independent judgment. NOT a compliant executor.
 5. **Simplicity** — Best solution = simplest. Complexity = unfinished thinking. Prefer deletion over addition. One general mechanism over ten special cases.
 6. **知行合一** — When you change A, trace EVERY ripple to B, C, D. Tests, docs, imports, types. Half-applied insight = inconsistency.
 
-**Anti-Compliance Core Rule:** At every decision point, independently assess the direction. Silence = complicity. Agreement without reasoning = compliance. Even when you agree with the Contract, articulate WHY.
+**Anti-Compliance Core Rule:** At every decision point, independently assess the direction. Respond as AGREE+EXTEND, CHALLENGE+PROPOSE, or REDIRECT — never silent compliance. When proposing an alternative, state what it costs (trade-off honesty). Even when you agree with the Contract, articulate WHY.
 
 **Scaling Principle:** Before any design, ask: "How does this scale?" If "add more rules" → RED FLAG (O(2^C)). Prefer one general mechanism over enumerated cases. For deep reasoning on non-trivial decisions, `Read commands/reasoning-toolkit.md`.
 
@@ -423,7 +482,7 @@ You are a **super-sage** with independent judgment. NOT a compliant executor.
 
 ## Plan Validation — "未经审视的计划不值得执行"
 
-> The Contract's sub-tasks are the issue creator's HYPOTHESIS about how to achieve the Objective — written with limited codebase knowledge. You, the executor, now have ground truth. **Objective + Success Criteria are immutable orders (WHAT). Sub-tasks are a suggested route (HOW) — challenge, revise, or confirm them.**
+> The Contract's sub-tasks are the issue creator's HYPOTHESIS about how to achieve the Objective — written with limited codebase knowledge. You, the executor, now have ground truth. **Objective + Success Criteria are immutable orders (WHAT). Sub-tasks are a suggested route (HOW) — challenge, revise, or confirm them.** If you discover the Objective itself needs changing, stop and AskUserQuestion — never silently amend the WHAT. Append the amendment to AI Notes with rationale.
 
 ### Read the terrain
 
@@ -449,6 +508,7 @@ For each unchecked sub-task, ask:
 2. **Is it correct?** Given what the code actually looks like, is this the right approach? Or did the planner assume a structure that doesn't exist?
 3. **Is it sufficient?** Are there missing steps that the planner couldn't have known about? (e.g., a migration is needed, a shared interface must be updated, a config change is required)
 4. **Is the order right?** Are there dependency constraints the planner missed?
+5. **Opposite test:** What happens if we skip this entirely? If nothing breaks, it's probably unnecessary.
 
 ### Output Plan Assessment
 
@@ -470,9 +530,9 @@ For each unchecked sub-task, ask:
 ### Apply revisions
 
 - **CONFIRM**: No changes needed. Proceed.
-- **REVISE**: Update the sub-task text in the Contract file. Briefly note the rationale in **AI Notes**.
-- **ADD**: Insert new sub-tasks into the Contract. Sync new checkboxes to GitHub Issue body.
-- **DROP**: Remove the sub-task from Contract. Note in **AI Notes** why it was dropped.
+- **REVISE**: Update the sub-task text in the Contract file. Note the rationale with evidence (file path, code pattern, or test result) in **AI Notes**.
+- **ADD**: Insert new sub-tasks into the Contract. Sync new checkboxes to GitHub Issue body. Cite the discovery that revealed the gap.
+- **DROP**: Remove the sub-task from Contract. Note in **AI Notes** why it was dropped, with evidence from the codebase.
 - **MANUAL**: Tag with `🔧 MANUAL` in the Contract. These are skipped during execution and surfaced to the user during Manual Ops Handoff at completion. Include a concrete action hint (where to go, what to click/run).
 - **ESCALATE**: If the Objective itself appears wrong or impossible given ground truth → Use `AskUserQuestion` to alert the user. Do NOT proceed with a doomed plan.
 
@@ -653,7 +713,9 @@ while (mission != COMPLETE) {
     // CHECKPOINT (every 3 tasks / every wave)
     → RE-READ Contract FROM DISK (Read tool, not memory)
     → Aligned with Objective? Building what Plan Assessment said?
+    → Am I solving the root cause or patching a symptom? Is there a simpler approach I missed?
     → If drifted → correct course immediately
+    → Append key decisions/discoveries to AI Notes incrementally (don't wait until completion)
 }
 ```
 
@@ -752,6 +814,33 @@ After implementing, trace the ripple effects of your change:
 - Deleted code → verify nothing still references it
 
 **Incomplete ripple = bug factory.** Don't mark a task done until ripples are traced.
+
+### Side Effect Check — 环境副作用记录
+
+After ripple check, scan for **non-code changes** made during this task. If any of the following occurred, append a `[side-effect]` entry to the Contract's **AI Notes** section:
+
+- **Config files modified**: `.env*`, `docker-compose*`, `Dockerfile*`, `Makefile`, `*.yaml`/`*.toml` config files
+- **New dependencies added**: `npm install` / `pip install` / `brew install` / `apt-get install` of non-devDependencies
+- **New env vars introduced**: code references `process.env.X`, `os.environ["X"]`, `os.Getenv("X")` that didn't exist before
+- **Remote operations performed**: SSH to servers, API calls to external services, database DDL, cloud resource changes
+- **Personal credentials used**: personal API keys, tokens, or accounts used for testing
+
+**Format** (append to AI Notes):
+```
+[side-effect] {type}: {description} — {why it was needed}
+```
+
+**Examples:**
+```
+[side-effect] env-var: Added REDIS_CACHE_URL to .env.local — caching feature needs Redis connection
+[side-effect] remote: Ran ALTER TABLE on dev DB, added column cache_ttl — new caching schema
+[side-effect] credential: Used personal OpenRouter key for API testing — company needs corp account
+[side-effect] dependency: Added sharp@0.34 (native binary) — image processing requires libvips
+```
+
+**Why:** These entries feed the Side Effect Triage gate in `/team-ship`. Auto-scan catches file-level changes; manual entries here catch remote operations and implicit assumptions that no diff can detect.
+
+If no side effects occurred for this task → skip silently.
 
 ### Self-Adversarial Review (mandatory per task)
 
@@ -941,6 +1030,7 @@ Non-fatal: if comment fails, warn but continue.
 | Hit a blocker and switched approach | Decision context is valuable for the team |
 | Discovered a related problem outside scope | Needs follow-up Issue |
 | Performance, security, or compatibility concern | Reviewer should pay attention |
+| Side effects recorded (`[side-effect]` in AI Notes) | Infra/ops team needs visibility on env changes |
 
 **If none of these signals are present** (pure execution, no surprises) → **skip silently**. No need to comment when everything went as planned.
 
@@ -1090,6 +1180,9 @@ After user responds, output the full acceptance criteria block and the `/team-sh
 `/team-ship` to create PR
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+
+{If the codebase has other active Contracts in .teamwork/active/ besides the current one:}
+📡 Findings may be relevant to sibling MCs. Run `/team share` **#{sibling}** to share.
 
 ### Post-Mission Ecosystem Scan (2-3 min)
 

@@ -694,6 +694,112 @@ test_slugify_empty_rejects
 test_slugify_all_special_rejects
 test_slugify_numbers
 
+section "GIT — WORKTREE-GUARD"
+
+test_worktree_guard_no_mismatch_when_disabled() {
+  local repo="$TMPDIR_ROOT/wt-guard-disabled"
+  mkdir -p "$repo" && cd "$repo"
+  git init -q && git commit --allow-empty -m "init" -q
+  # worktree disabled (default) — should succeed
+  local out exit_code=0
+  out=$(run_script tw-git.sh worktree-guard 2>&1) || exit_code=$?
+  if [ "$exit_code" -eq 0 ] && echo "$out" | grep -q "MISMATCH=false"; then
+    pass "worktree-guard: no mismatch when disabled"
+  else
+    fail "worktree-guard: expected MISMATCH=false, got exit=$exit_code out=$out"
+  fi
+  cd "$TMPDIR_ROOT"
+}
+
+test_worktree_guard_mismatch_when_enabled_no_worktree() {
+  local repo="$TMPDIR_ROOT/wt-guard-enabled"
+  mkdir -p "$repo" && cd "$repo"
+  git init -q && git commit --allow-empty -m "init" -q
+  git config --local teamwork.worktree true
+  # No .mission file → should be mismatch (exit 3)
+  local out exit_code=0
+  out=$(run_script tw-git.sh worktree-guard "some-branch" 2>&1) || exit_code=$?
+  if [ "$exit_code" -eq 3 ] && echo "$out" | grep -q "MISMATCH=true"; then
+    pass "worktree-guard: mismatch when enabled but no .mission"
+  else
+    fail "worktree-guard: expected exit=3 MISMATCH=true, got exit=$exit_code out=$out"
+  fi
+  cd "$TMPDIR_ROOT"
+}
+
+test_worktree_guard_ok_when_in_worktree() {
+  local repo="$TMPDIR_ROOT/wt-guard-in-wt"
+  mkdir -p "$repo" && cd "$repo"
+  git init -q && git commit --allow-empty -m "init" -q
+  git config --local teamwork.worktree true
+  echo "42" > .mission
+  # .mission exists → IN_WORKTREE=true → no mismatch
+  local out exit_code=0
+  out=$(run_script tw-git.sh worktree-guard 2>&1) || exit_code=$?
+  if [ "$exit_code" -eq 0 ] && echo "$out" | grep -q "MISMATCH=false" && echo "$out" | grep -q "IN_WORKTREE=true"; then
+    pass "worktree-guard: ok when .mission exists"
+  else
+    fail "worktree-guard: expected ok with IN_WORKTREE=true, got exit=$exit_code out=$out"
+  fi
+  rm -f .mission
+  cd "$TMPDIR_ROOT"
+}
+
+test_worktree_guard_no_mismatch_when_disabled
+test_worktree_guard_mismatch_when_enabled_no_worktree
+test_worktree_guard_ok_when_in_worktree
+
+section "GIT — CLAIM-SETUP"
+
+test_claim_setup_rejects_missing_args() {
+  local repo="$TMPDIR_ROOT/claim-setup-args"
+  mkdir -p "$repo" && cd "$repo"
+  git init -q && git commit --allow-empty -m "init" -q
+  local out exit_code=0
+  out=$(run_script tw-git.sh claim-setup 2>&1) || exit_code=$?
+  if [ "$exit_code" -ne 0 ]; then
+    pass "claim-setup: rejects missing args (exit $exit_code)"
+  else
+    fail "claim-setup: should reject missing args"
+  fi
+  cd "$TMPDIR_ROOT"
+}
+
+test_claim_setup_branch_mode() {
+  local repo="$TMPDIR_ROOT/claim-setup-branch"
+  mkdir -p "$repo" && cd "$repo"
+  git init -q && git commit --allow-empty -m "init" -q
+  # Need a "main" branch for ensure-base
+  git branch -M main
+  # No worktree config → should create branch
+  # Create config for branch pattern
+  mkdir -p .teamwork
+  cat > .teamwork/config.yml <<'YAML'
+conventions:
+  base_branch: main
+  branch_pattern: "mission/{issue}-{slug}"
+YAML
+  local out exit_code=0
+  out=$(run_script tw-git.sh claim-setup "42" "test-slug" "user1" 2>&1) || exit_code=$?
+  if [ "$exit_code" -eq 0 ] && echo "$out" | grep -q "MODE=branch" && echo "$out" | grep -q "STATUS=created"; then
+    pass "claim-setup: branch mode creates branch"
+  else
+    fail "claim-setup: branch mode failed, exit=$exit_code out=$out"
+  fi
+  # Verify branch was created
+  local current
+  current=$(git branch --show-current 2>/dev/null)
+  if echo "$current" | grep -q "mission/42-test-slug"; then
+    pass "claim-setup: branch name correct ($current)"
+  else
+    fail "claim-setup: wrong branch ($current)"
+  fi
+  cd "$TMPDIR_ROOT"
+}
+
+test_claim_setup_rejects_missing_args
+test_claim_setup_branch_mode
+
 section "GIT — NEXT-VERSION"
 test_next_version_no_tags
 test_next_version_with_tags

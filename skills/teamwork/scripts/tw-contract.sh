@@ -8,6 +8,10 @@
 #   bash tw-contract.sh toggle-task PATH N                  # Check off Nth subtask
 #   bash tw-contract.sh sync-all-checkboxes PATH ISSUE     # Batch-sync all checked items to Issue
 #   bash tw-contract.sh delete PATH                         # Remove contract file
+#   bash tw-contract.sh check-comments ISSUE STORED_TS     # Check if new comments since timestamp
+#   bash tw-contract.sh read-comments ISSUE [FLAGS]        # Read comments with filtering (JSON)
+#   bash tw-contract.sh store-comment-timestamp PATH TS    # Store last_comment_check in frontmatter
+#   bash tw-contract.sh info-sync ISSUE CONTRACT_PATH      # Bundle: comments + PR + freshness check
 #
 # EXIT CODES:
 #   0 — success (or fresh for check-freshness)
@@ -36,7 +40,9 @@ _teamwork_dir() {
 usage() {
   echo "Usage: tw-contract.sh <subcommand> [args...]" >&2
   echo "Subcommands: read-field, hash, check-freshness," >&2
-  echo "             toggle-task, sync-all-checkboxes, delete" >&2
+  echo "             toggle-task, sync-all-checkboxes, delete," >&2
+  echo "             check-comments, read-comments," >&2
+  echo "             store-comment-timestamp, info-sync" >&2
   exit 1
 }
 
@@ -162,7 +168,7 @@ print(f'Task {n} checked off at {ts}')
 cmd_sync_all_checkboxes() {
   local contract_path="${1:-}" issue="${2:-}"
   local _tmpfile
-  _tmpfile=$(mktemp /tmp/tw-sync-body.XXXXXX) || { echo "ERROR: mktemp failed" >&2; return 1; }
+  _tmpfile=$(mktemp "${TMPDIR:-/tmp}/tw-sync-body.XXXXXX") || { echo "ERROR: mktemp failed" >&2; return 1; }
   trap 'rm -f "$_tmpfile"' EXIT INT TERM
   if [ -z "$contract_path" ] || [ -z "$issue" ]; then
     echo "ERROR: sync-all-checkboxes requires CONTRACT_PATH and ISSUE" >&2
@@ -343,16 +349,267 @@ cmd_delete() {
   fi
 }
 
+cmd_check_comments() {
+  local issue="${1:-}" stored_ts="${2:-}"
+  if [ -z "$issue" ]; then
+    echo "ERROR: check-comments requires ISSUE" >&2
+    exit 1
+  fi
+
+  # Get repo name for REST API
+  local repo
+  repo=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null) || {
+    echo "NETWORK_ERROR"
+    exit 4
+  }
+
+  # First check: does the issue even have comments? (REST, fast ~300ms)
+  local comment_count
+  comment_count=$(gh api "repos/${repo}/issues/${issue}" --jq '.comments' 2>/dev/null) || {
+    echo "NETWORK_ERROR"
+    exit 4
+  }
+
+  if [ "$comment_count" = "0" ]; then
+    echo "UNCHANGED"
+    exit 0
+  fi
+
+  # No stored timestamp — first check
+  if [ -z "$stored_ts" ]; then
+    echo "NEW:unknown"
+    exit 0
+  fi
+
+  # Get latest comment timestamp (GraphQL via gh issue view)
+  local latest_ts
+  latest_ts=$(gh issue view "$issue" --json comments --jq '[.comments[-1].createdAt // ""] | .[0]' 2>/dev/null) || {
+    echo "NETWORK_ERROR"
+    exit 4
+  }
+
+  if [ -z "$latest_ts" ]; then
+    echo "UNCHANGED"
+    exit 0
+  fi
+
+  # Compare timestamps (lexicographic works for ISO 8601)
+  if [[ "$latest_ts" > "$stored_ts" ]]; then
+    echo "NEW"
+  else
+    echo "UNCHANGED"
+  fi
+}
+
+cmd_read_comments() {
+  local issue="" exclude_bot=false exclude_lifecycle=false since=""
+
+  # Parse args
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --exclude-bot)       exclude_bot=true; shift ;;
+      --exclude-lifecycle) exclude_lifecycle=true; shift ;;
+      --since)             since="${2:-}"; shift 2 ;;
+      *)
+        if [ -z "$issue" ]; then
+          issue="$1"; shift
+        else
+          echo "ERROR: unexpected argument: $1" >&2; exit 1
+        fi
+        ;;
+    esac
+  done
+
+  if [ -z "$issue" ]; then
+    echo "ERROR: read-comments requires ISSUE" >&2
+    exit 1
+  fi
+
+  # Fetch all comments
+  local raw_json
+  raw_json=$(gh issue view "$issue" --json comments 2>/dev/null) || {
+    echo "[]"
+    exit 4
+  }
+
+  # Filter with Python3
+  python3 -c "
+import sys, json
+
+data = json.loads(sys.stdin.read())
+comments = data.get('comments', [])
+
+exclude_bot = sys.argv[1] == 'true'
+exclude_lifecycle = sys.argv[2] == 'true'
+since = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else None
+
+LIFECYCLE_PREFIXES = ['Claimed by', 'PR #', 'All code tasks', 'Cross-MC']
+
+results = []
+for c in comments:
+    # --exclude-bot
+    if exclude_bot and c.get('authorAssociation', '') == 'BOT':
+        continue
+
+    # --since
+    if since and c.get('createdAt', '') <= since:
+        continue
+
+    # --exclude-lifecycle
+    if exclude_lifecycle:
+        body = c.get('body', '').lstrip()
+        # Strip leading emoji (Unicode general category So/Sk)
+        import re
+        stripped = re.sub(r'^[\U0001F300-\U0001FAFF\U00002702-\U000027B0\U0000FE00-\U0000FE0F\U0000200D]+\s*', '', body)
+        skip = False
+        for prefix in LIFECYCLE_PREFIXES:
+            if stripped.startswith(prefix):
+                skip = True
+                break
+        if skip:
+            continue
+
+    results.append({
+        'author': c.get('author', {}).get('login', ''),
+        'authorAssociation': c.get('authorAssociation', ''),
+        'body': c.get('body', ''),
+        'createdAt': c.get('createdAt', '')
+    })
+
+print(json.dumps(results, indent=2))
+" "$exclude_bot" "$exclude_lifecycle" "$since" <<< "$raw_json"
+}
+
+cmd_store_comment_timestamp() {
+  local contract_path="${1:-}" timestamp="${2:-}"
+  if [ -z "$contract_path" ] || [ -z "$timestamp" ]; then
+    echo "ERROR: store-comment-timestamp requires CONTRACT_PATH and TIMESTAMP" >&2
+    exit 1
+  fi
+  if [ ! -f "$contract_path" ]; then
+    echo "ERROR: Contract not found: $contract_path" >&2
+    exit 3
+  fi
+
+  python3 -c "
+import sys
+
+path = sys.argv[1]
+timestamp = sys.argv[2]
+
+with open(path) as f:
+    lines = f.readlines()
+
+in_frontmatter = False
+found = False
+insert_idx = None
+
+for i, line in enumerate(lines):
+    stripped = line.rstrip()
+    if stripped == '---':
+        if in_frontmatter:
+            # End of frontmatter — insert here if not found
+            insert_idx = i
+            break
+        in_frontmatter = True
+        continue
+    if in_frontmatter and line.startswith('last_comment_check:'):
+        lines[i] = f'last_comment_check: \"{timestamp}\"\n'
+        found = True
+        break
+
+if not found and insert_idx is not None:
+    lines.insert(insert_idx, f'last_comment_check: \"{timestamp}\"\n')
+
+with open(path, 'w') as f:
+    f.writelines(lines)
+
+print(f'Stored last_comment_check: {timestamp}')
+" "$contract_path" "$timestamp"
+}
+
+cmd_info_sync() {
+  local issue="${1:-}" contract_path="${2:-}"
+  if [ -z "$issue" ] || [ -z "$contract_path" ]; then
+    echo "ERROR: info-sync requires ISSUE and CONTRACT_PATH" >&2
+    exit 1
+  fi
+
+  # 1. Comments check
+  local stored_ts=""
+  if [ -f "$contract_path" ]; then
+    stored_ts=$(cmd_read_field "$contract_path" "last_comment_check" 2>/dev/null) || true
+  fi
+  local comment_result
+  comment_result=$(cmd_check_comments "$issue" "$stored_ts" 2>/dev/null) || true
+  echo "COMMENTS:${comment_result:-NETWORK_ERROR}"
+
+  # 2. PR check
+  local pr_status
+  pr_status=$(python3 -c "
+import subprocess, json, sys
+
+issue = sys.argv[1]
+try:
+    result = subprocess.run(
+        ['gh', 'pr', 'list', '--search', f'#{issue}', '--json', 'number,reviewDecision,state'],
+        capture_output=True, text=True, timeout=15
+    )
+    if result.returncode != 0:
+        print('NETWORK_ERROR')
+        sys.exit(0)
+
+    prs = json.loads(result.stdout or '[]')
+    # Filter to open PRs that reference this issue
+    open_prs = [p for p in prs if p.get('state') == 'OPEN']
+
+    if not open_prs:
+        print('none')
+    else:
+        # Check review status of most recent PR
+        pr = open_prs[0]
+        decision = pr.get('reviewDecision', '')
+        if decision == 'CHANGES_REQUESTED':
+            print(f'changes_requested:{pr[\"number\"]}')
+        elif decision == 'APPROVED':
+            print('approved')
+        else:
+            print(f'open:{pr[\"number\"]}')
+except Exception:
+    print('NETWORK_ERROR')
+" "$issue" 2>/dev/null) || pr_status="NETWORK_ERROR"
+  echo "PR:${pr_status:-NETWORK_ERROR}"
+
+  # 3. Contract freshness check
+  if [ ! -f "$contract_path" ]; then
+    echo "CONTRACT:NETWORK_ERROR"
+  else
+    local freshness
+    freshness=$(cmd_check_freshness "$contract_path" "$issue" 2>/dev/null) || true
+    case "$freshness" in
+      FRESH)         echo "CONTRACT:fresh" ;;
+      STALE)         echo "CONTRACT:stale" ;;
+      NO_HASH)       echo "CONTRACT:fresh" ;;  # No hash = can't check, assume fresh
+      NETWORK_ERROR) echo "CONTRACT:NETWORK_ERROR" ;;
+      *)             echo "CONTRACT:NETWORK_ERROR" ;;
+    esac
+  fi
+}
+
 # --- Main ---
 SUBCOMMAND="${1:-}"
 shift || true
 
 case "$SUBCOMMAND" in
-  read-field)       cmd_read_field "$@" ;;
-  hash)             cmd_hash "$@" ;;
-  check-freshness)  cmd_check_freshness "$@" ;;
-  toggle-task)      cmd_toggle_task "$@" ;;
-  sync-all-checkboxes)   cmd_sync_all_checkboxes "$@" ;;
-  delete)                cmd_delete "$@" ;;
-  *)                     usage ;;
+  read-field)              cmd_read_field "$@" ;;
+  hash)                    cmd_hash "$@" ;;
+  check-freshness)         cmd_check_freshness "$@" ;;
+  toggle-task)             cmd_toggle_task "$@" ;;
+  sync-all-checkboxes)     cmd_sync_all_checkboxes "$@" ;;
+  delete)                  cmd_delete "$@" ;;
+  check-comments)          cmd_check_comments "$@" ;;
+  read-comments)           cmd_read_comments "$@" ;;
+  store-comment-timestamp) cmd_store_comment_timestamp "$@" ;;
+  info-sync)               cmd_info_sync "$@" ;;
+  *)                       usage ;;
 esac

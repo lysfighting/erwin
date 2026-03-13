@@ -98,11 +98,8 @@ install_single_file() {
   local version=""
   version=$(grep '^version:' "$src" 2>/dev/null | head -1 | sed 's/^[^:]*://' | sed 's/^ *//' | tr -d '"' || true)
 
-  # Backup if exists and is a regular file (not symlink)
-  if [[ -f "$dst" && ! -L "$dst" ]]; then
-    mv "$dst" "$dst.bak"
-    echo -e "${YELLOW}  Backed up: $dst → $dst.bak${NC}"
-  elif [[ -L "$dst" ]]; then
+  # Remove existing file (version history lives in erwin repo — no backup needed)
+  if [[ -f "$dst" || -L "$dst" ]]; then
     rm "$dst"
   fi
 

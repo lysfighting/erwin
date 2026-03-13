@@ -2,6 +2,141 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.10.1] — 2026-03-13
+
+### Fixed — PR Closes #N 导致 Issue 被提前关闭
+
+- **team-ship.md Step 4b**: PR body 无条件使用 `Closes #N`，即使 Issue 有未完成的 checkbox。合并后 GitHub 自动关闭 Issue，但任务未完成。
+- **Root cause**: Ship 只检查 Contract 的 code tasks，manual tasks 不阻塞。但 `Closes` 关键字让 GitHub 在 merge 时无条件关闭 Issue。
+- **Fix**: Step 4b 生成 PR body 前检查 Issue checkbox 状态。全部 `[x]` → `Closes #N`；有 `[ ]` 未完成 → `Refs #N` + PR body 附未完成 tasks 列表 + 本地警告。
+- **Actual case**: vi_agent Issue #286 + PR #291
+
+## [3.10.0] — 2026-03-13
+
+### Added — Information Sync Layer (信息同步层)
+
+**Core: Comment reading throughout lifecycle**
+- `/team-issue #N`: displays human comments after Issue body (filtered: no bot, no lifecycle)
+- `/team-claim`: incorporates Issue comments into Contract as `## Pre-Claim Discussion` section; stores `last_comment_check` timestamp in frontmatter
+- `/team-drive` Step 0b1.5: checks for new comments since last check; direction-change heuristic triggers AskUserQuestion (keywords + MEMBER/OWNER)
+- `/team-ship` Step 2b-bis: comment check + PR review check (`CHANGES_REQUESTED` → hard stop)
+- `/team-drive` completion: Cross-MC nudge when sibling active Contracts exist
+
+**Core: Sync semantic extension**
+- `/team sync` SY4: after rebase, displays INFO SYNC block (new comments, PR review status, Contract freshness)
+- `/team-ship sync` S4: identical Info Sync step
+- Advisory only — sync never stops or prompts
+- Hidden when no new information (zero noise)
+
+**Script: tw-contract.sh — 4 new subcommands**
+- `check-comments {issue} {stored_timestamp}`: lightweight REST API check, returns UNCHANGED/NEW/NETWORK_ERROR
+- `read-comments {issue} [--exclude-bot] [--exclude-lifecycle] [--since TS]`: Python3-filtered full read, returns JSON
+- `store-comment-timestamp {contract} {timestamp}`: updates Contract frontmatter
+- `info-sync {issue} {contract}`: bundled 3-check (comments + PR + freshness), outputs structured 3-line result
+
+**Design: Performance characteristics**
+- `/team-issue` and `/team-claim`: +0 API calls (merged into existing `gh issue view`)
+- `/team-drive` and `/team-ship`: +1-2 API calls (~1.3-2.5s typical)
+- All new calls use `|| true` non-fatal pattern — network errors skip info sync, never block workflow
+- Python3 filtering handles emoji-prefixed lifecycle comments cross-platform
+
+## [3.9.15] — 2026-03-13
+
+### Fixed — 35 findings from 3-agent parallel audit (VE 7, UX 18, Logic 10)
+
+**HIGH (6)**
+- **team-rc.md P5**: PREV_TAG included hotfix tags, corrupting release notes date range — added grep filter for clean version tags only
+- **team-rc.md H2**: Hotfix version derivation used stale local tags — added `git fetch --tags` before tag listing
+- **Multiple files**: Inconsistent `base_branch` default ("main" vs "develop") — added explicit warning when not configured in config.yml
+- **team-ship.md**: No Contract recovery when on mission branch — added branch detection + `/team-claim` suggestion (matching team-drive)
+- **team-ship.md Step 2c**: Auto-committed uncommitted changes without confirmation — added AskUserQuestion with Commit/Review/Stash options
+- **ONBOARDING.md**: Documented `/team-claim` as auto-selecting unassigned issues; actual behavior lists assigned issues — fixed docs
+
+**MEDIUM (14)**
+- **team.md Doctor Check 5/10**: Bare `#{issue}` in diagnostic output — added bold wrapping for VE compliance
+- **team.md Wrap B**: `COMMIT_COUNT` was 1 when `COMMIT_SHAS` empty (`echo "" | wc -l` = 1) — added empty guard
+- **tw-git.sh find-rc**: No `git fetch` before listing remote RC branches — added `git fetch --prune`
+- **tw-git.sh list-merged-branches**: Hardcoded `mission/*` prefix — now reads branch pattern from config
+- **team.md Next hint**: Missing "PR open, CI pending" state — added rule 5b
+- **team.md Next hint**: Didn't distinguish tasks-remaining vs all-done-not-shipped — split into rules 7a/7b
+- **team.md Next hint**: `#{N}` unspecified + empty queue case — split into rules 8a (suggest highest-priority)/8b (suggest `/team-issue`)
+- **team-claim.md**: No-missions message says "ask team lead" in solo mode — now context-aware
+- **team-ship.md**: BEHIND_BASE > 30 hard stop — changed to AskUserQuestion with Rebase/Ship options
+- **team-drive.md**: Branch-behind-base warning only — changed to AskUserQuestion with Sync/Continue options
+- **team-drive.md**: Completion always suggests `/team-ship` — now checks if PR already exists
+- **team-claim.md**: Not-in-roster suggests `/team init` — changed to `/team` (automatic onboarding)
+
+**LOW (15)**
+- **team-ship.md**: Help output `#42`/`#43` → `#042`/`#043` for OSC 8 auto-linking
+- **team-drive.md**: `TEAMWORK_DIR` fallback echo outside `$()` — fixed assignment syntax
+- **tw-notify.sh**: `team.repo` fails on erwin-style config — added `git remote` fallback
+- **team-rc.md F6**: `git checkout -` → explicit `git checkout "$BASE_BRANCH"`
+- **team-rc.md H7**: MERGE_SHA null guard added
+- **team-rc.md Prepare**: NEXT STEPS now mentions `/team-rc fix` as surgical alternative
+- **team-claim.md**: "Continue mission" outputs text only — added AskUserQuestion to invoke `/team-drive`
+- **team-claim.md**: Closed-issue error now suggests `gh issue reopen` + `/team queue`
+- **team-issue.md**: Empty description hard stop — changed to AskUserQuestion with `useTextArea: true`
+- **team.md U12**: Alert block already covers orphan contracts — no change needed (verified)
+- **team.md U16**: Worktree-mode-disabled-but-in-worktree — added re-enable option
+- **team-ship.md Done**: Branch-aware error message when issue not found
+- Other: 4 minor VE consistency fixes in help templates
+
+## [3.9.14] — 2026-03-13
+
+### Fixed — Release notes robustness (3-teammate peer review)
+
+**H6 hotfix variables (Critical — was broken):**
+- Replaced undefined `${COMMIT_TITLE}`, `${GH_USER}`, `${PR_URL}`, `${ISSUE_NUMBER}` with `gh pr view` data extraction
+- Fixed `${PREV_TAG}` → `${LATEST_TAG}` (correct variable from H2 scope)
+
+**P5 explicit date filtering:**
+- Added explicit instruction for AI to filter PRs by `mergedAt > PREV_DATE` (was implicit, risked including all historical PRs)
+- Added first-release guard: omit Full Changelog line if no previous tag
+- Removed `**bold**` from issue numbers in release notes template (GitHub auto-links `#NNN` natively; bold was VE for CLI, not GitHub)
+
+**Promote idempotency (P7 + P8):**
+- P7: Skip tagging if tag already exists (re-entry after partial failure)
+- P8: Skip release creation if release already exists
+
+**Shell escaping:**
+- P8 + H6: `--notes "$BODY"` → `--notes-file <(echo "$BODY")` to avoid shell escaping issues with PR titles containing quotes
+
+**Hotfix active RC warning:**
+- H8 summary: detect active RC branch and warn user to `/team-rc fix` or re-cut
+
+**Docs staleness:**
+- `skills/README.md`: 3.9.10 → 3.9.14 (version table)
+- `CLAUDE.md`: v3.9.10 → v3.9.14 (teamwork line)
+
+## [3.9.13] — 2026-03-13
+
+### Fixed — RC release notes generation for squash merge
+
+- **`/team-rc promote` Step P5**: Replaced `git log` with `gh pr list --base` to reconstruct release notes from merged PR history. Categorizes by commit type (feat/fix/refactor/other), includes author attribution (`by @author`) and PR links. Solves: squash merge to main loses all original PR metadata — GitHub's `--generate-notes` only sees the release PR itself.
+- **`/team-rc promote` Step P8**: Replaced `--generate-notes` with `--notes "$RELEASE_BODY"` to use P5's output.
+- **`/team-rc hotfix` Step H6**: Same fix — generates hotfix-specific release body instead of relying on `--generate-notes`.
+
+## [3.9.12] — 2026-03-13
+
+### Fixed — VE consistency sweep + identity language + script hardening
+
+**Visual Encoding — hyperlink preservation (20+ fixes across 6 skills):**
+- Split command backticks from issue numbers to preserve OSC 8 auto-linking: `` `/team-claim #042` `` → `` `/team-claim` **#042** `` (team.md, team-issue.md, team-claim.md, team-ship.md, team-drive.md)
+- Added `**bold**` to issue number references in routing tables, help text, trigger descriptions, and footer lines across all 6 skill files
+- Zero-padded issue numbers in non-code-block examples (ONBOARDING.md, team-rc.md release notes)
+- Wrapped status values in backticks in output templates: CI status, review status, labels, milestone, URL, worktree status (team-ship.md, team.md Auto section, MC Detail)
+
+**Identity language (Constitution P3):**
+- Strengthened team-ship.md: process description → ownership framing ("You own the delivery. Guard the quality boundary...")
+- Strengthened team-rc.md: process description → ownership framing ("You own the release cadence. Every RC is a contract with users...")
+
+**Script hardening:**
+- `tw-contract.sh`: mktemp uses `${TMPDIR:-/tmp}` instead of hardcoded `/tmp`
+
+### Root cause analysis
+
+Dashboard hyperlinks were lost because non-output areas (routing tables, help text, trigger descriptions) used plain `#N`/`#42` ~40 times, diluting the correct `**#NNN**` pattern in output templates (~50 times). The LLM averaged across all examples, producing unformatted issue numbers. Fix: made non-output areas consistent with VE standard.
+
 ## [3.9.7] — 2026-03-13
 
 ### Fixed — Audit sweep (security, VE, logic, docs)

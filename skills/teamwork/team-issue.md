@@ -1,14 +1,18 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "3.9.7"
+version: "3.10.1"
 ---
 
 # /team-issue — Mission Contract Issue Manager
+
+> You own this analysis. Before generating, think: what is the REAL problem? Is the user's framing the bone (irreducible need) or flesh (one possible approach)? Consider at least one competing hypothesis. Assess blast radius: if this Issue is framed wrong, how much rework results? High blast radius → say so explicitly in the preview. Watch for mediocre consensus and implicit decisions nobody explicitly chose.
 
 > Create, view, comment, update, or batch-create GitHub Issues in mission-contract format.
 
 **Visual Encoding** (apply to ALL output — see `docs/visual-encoding-standard.md`):
 `**bold**` → headers/labels (white) · `` `backtick` `` → commands/paths/counts (purple-blue) · `*italic*` → branches (dim) · `**#NNN**` → issues (light-blue clickable, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
+
+**Design Constitution** (read before modifying this skill — see `docs/teamwork-design-constitution.md`)
 
 **User input**: $ARGUMENTS
 
@@ -18,8 +22,8 @@ version: "3.9.7"
 |-------|--------|
 | `<description>` | Create MC (solo: self-assign; team: prompt for assignee) |
 | `<description> @assignee` | Create MC and assign to @assignee |
-| `#N` (no text) | Show Issue #N details |
-| `#N <text>` | Add comment to Issue #N |
+| `#N` (no text) | Show Issue **#N** details |
+| `#N <text>` | Add comment to Issue **#N** |
 | `update #N` or `update #N <changes>` | AI-assisted update of Issue body |
 | `fix #N` | Fix untracked Issue — add teamwork labels, optionally reformat |
 | `batch <milestone> -- ...` | Batch create milestone + MCs |
@@ -27,7 +31,7 @@ version: "3.9.7"
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
-**`/team-issue` — Mission Contract Issue Manager** (`v3.9.7`)
+**`/team-issue` — Mission Contract Issue Manager** (`v3.10.1`)
 
 **USAGE**
   `/team-issue <description>`                    Create MC (solo: self-assign; team: prompt)
@@ -62,11 +66,11 @@ If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
       Success criterion: CRUD for campaign materials
 
 **WHAT HAPPENS** (create)
-  1. AI analyzes your description
+  1. AI analyzes your description (bone vs. flesh, blast radius, competing hypotheses)
   2. Searches existing Issues for duplicates
   3. Scans codebase for relevant files
-  4. Generates mission-contract Issue body
-  5. Shows preview for confirmation
+  4. Generates mission-contract Issue body (standalone test)
+  5. AI states position (agree/challenge/redirect) + shows preview for confirmation
   6. Publishes to GitHub with labels + assignee
   7. Notifies assignee via configured channels
 
@@ -207,6 +211,8 @@ Any team member can create Issues and assign to anyone — no role restriction.
 
 ### Step 2: Analyze User Description
 
+Before generating fields, separate bone from flesh: what is the irreducible need vs. the user's suggested approach? Test the opposite: what happens if we don't do this at all? If you see a better framing, say so before proceeding.
+
 From the user's natural language input, use AI reasoning to determine:
 
 1. **Title** — concise, prefixed with type (`fix:`, `feat:`, `refactor:`, etc.)
@@ -296,6 +302,8 @@ Format the Issue body using the canonical mission-contract structure:
 ```
 ```
 
+**Standalone Test**: Before previewing, re-read the generated body as if you never saw the user's original description. Can someone execute from this Issue alone? If any detail is "in your head" but not in the body, add it.
+
 **Canonical field names** (always use these exactly — `team-claim` parses them by name):
 - `Success Criteria` (NOT "Acceptance Criteria")
 - `Context & References` (NOT "Context")
@@ -313,6 +321,8 @@ Display the full Issue preview to the user:
 ────────────────────────────────────────────
 {formatted Issue body}
 ────────────────────────────────────────────
+
+Before asking, state your position: what you believe about this Issue's framing, and why. Respond as AGREE+EXTEND, CHALLENGE+PROPOSE, or REDIRECT — never silent compliance. When proposing an alternative, state what it costs (trade-off honesty).
 
 Use `AskUserQuestion`:
 ```
@@ -392,10 +402,10 @@ Non-fatal: if notification fails, warn but continue.
 
 ## Operation Detail — View Issue
 
-> Triggered by `/team-issue #42` (number only, no text after).
+> Triggered by `/team-issue` **#042** (number only, no text after).
 
 ```bash
-gh issue view $N --repo "$REPO" --json number,title,body,labels,milestone,assignees,state,url
+gh issue view $N --repo "$REPO" --json number,title,body,labels,milestone,assignees,state,url,comments
 ```
 
 - If Issue not found → "**ERROR:** Issue **#N** not found." → **STOP**
@@ -423,13 +433,32 @@ gh pr list --repo "$REPO" --search "Closes #$N" --state all --json number,url,st
 🔀 **RELATED PRs**  {list or "(none)"}
 ────────────────────────────────────────────
 
+### Step D4: Display Comments
+
+After the Issue detail display, if the Issue has human comments (non-bot, non-lifecycle):
+
+- Filter comments: exclude `authorAssociation == "BOT"`, exclude comments whose body (after stripping leading emoji) starts with: "Claimed by", "PR #", "All code tasks", "Cross-MC"
+- If 0 human comments → skip this section entirely
+- If 1+ human comments → display:
+
+💬 **COMMENTS** (`{count}`)
+────────────────────────────────────────────
+  *@{author}* — *{relative_time}*
+  {first 3 lines, max 200 chars}
+
+  *@{author2}* — *{relative_time}*
+  {first 3 lines, max 200 chars}
+────────────────────────────────────────────
+
+If >5 comments, show latest 5 with note: *(showing latest 5 of {total})*
+
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 ---
 
 ## Operation Comment — Add Comment to Issue
 
-> Triggered by `/team-issue #42 some text here`.
+> Triggered by `/team-issue` **#042** `some text here`.
 
 ```bash
 gh issue comment $N --repo "$REPO" --body "$TEXT"
@@ -444,7 +473,7 @@ Output:
   {first 80 chars of text}...
   **URL** `{comment URL}`
 ────────────────────────────────────────────
-`/team-issue #N` view · `/team-claim #N` claim · `/team` dashboard
+`/team-issue` **#N** view · `/team-claim` **#N** claim · `/team` dashboard
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
@@ -452,7 +481,7 @@ Output:
 
 ## Operation Update — Edit Existing Issue
 
-> Triggered by `/team-issue update #42 <changes>` or `/team-issue update #42` (interactive).
+> Triggered by `/team-issue update` **#042** or `/team-issue update` **#042** `<changes>`.
 
 ### U1: Fetch current Issue
 
@@ -475,12 +504,12 @@ Display current Issue summary:
 
 ### U2: Determine changes
 
-**If user provided change description** (e.g., `/team-issue update #42 add constraint`):
+**If user provided change description** (e.g., `/team-issue update` **#042** `add constraint`):
 - AI applies the described changes to the existing body
 - Preserve the mission-contract structure (Priority, Size, Sub-tasks, etc.)
 - Only modify sections affected by the change description
 
-**If no change description** (e.g., `/team-issue update #42`):
+**If no change description** (e.g., `/team-issue update` **#042**):
 - Use `AskUserQuestion` to ask what to change:
   - "Edit title"
   - "Edit priority/size"
@@ -704,9 +733,9 @@ For each MC entry:
   **Description**  {desc}
   **MCs to create** `{count}`
 
-  {priority_dot} MC1: {title} → @{assignee}
-  {priority_dot} MC2: {title} → @{assignee}
-  {priority_dot} MC3: {title} → @{assignee}
+  {priority_dot} **MC1:** {title} → @{assignee}
+  {priority_dot} **MC2:** {title} → @{assignee}
+  {priority_dot} **MC3:** {title} → @{assignee}
 ────────────────────────────────────────────
 
 Use `AskUserQuestion`:
@@ -791,7 +820,13 @@ If milestone-only (no MCs):
 
 ## Error Handling
 
-- Empty description → "**ERROR:** Please provide a description. Example: `/team-issue camera not working on Safari`" → **STOP**
+- Empty description → Use `AskUserQuestion` with `useTextArea: true`:
+  ```
+  question: "Describe the issue you'd like to create:"
+  useTextArea: true
+  ```
+  If user provides a description → use it as `$ARGUMENTS` and continue to **Create Flow**.
+  If user cancels → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - GitHub API error → "**ERROR:** Failed to create Issue. Check `gh auth status`." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.

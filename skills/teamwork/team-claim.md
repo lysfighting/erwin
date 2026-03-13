@@ -1,14 +1,18 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "3.9.7"
+version: "3.10.1"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
+
+> You own this Contract. Challenge the Issue before locking it into a Contract — if the objective is vague, the criteria unverifiable, or a constraint is missing, surface it now. Assess blast radius: if this Contract is wrong, how much rework? High blast radius → flag it in the confirmation step. Watch for implicit decisions nobody explicitly chose. A bad Contract executed flawlessly is still a bad outcome.
 
 > Claim a GitHub Issue, generate an AI-optimized Mission Contract, and create your working branch.
 
 **Visual Encoding** (apply to ALL output — see `docs/visual-encoding-standard.md`):
 `**bold**` → headers/labels (white) · `` `backtick` `` → commands/paths/counts (purple-blue) · `*italic*` → branches (dim) · `**#NNN**` → issues (light-blue clickable, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
+
+**Design Constitution** (read before modifying this skill — see `docs/teamwork-design-constitution.md`)
 
 **User input**: $ARGUMENTS
 
@@ -16,7 +20,7 @@ version: "3.9.7"
 
 | Input | Action |
 |-------|--------|
-| `#42` or `42` | Claim specific assigned Issue |
+| `#N` or `N` | Claim specific assigned Issue |
 | `list` | Browse MY assigned mission Issues |
 | `help` or `-h` | Show usage guide |
 | (empty) | Show my assigned Issues and pick one |
@@ -27,15 +31,16 @@ If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
 **USAGE**
   `/team-claim`           Show your assigned Issues and pick one
-  `/team-claim #42`       Claim specific assigned Issue
+  `/team-claim` **#042**       Claim specific assigned Issue
   `/team-claim list`      Browse your assigned missions
 
 **WHAT HAPPENS**
   `1.` Fetches Issue from GitHub
   `2.` Generates AI-enriched Mission Contract (`.teamwork/active/MISSION-N.md`)
-     — scans project to discover relevant files (Context Files)
-  `3.` Creates branch: *mission/{issue}-{slug}-{user}*
-  `4.` Posts claim comment on GitHub
+     — scans project to discover relevant files (Context Files, standalone test)
+  `3.` Confirms Contract (AI states position: agree/challenge/redirect)
+  `4.` Creates branch: *mission/{issue}-{slug}-{user}*
+  `5.` Posts claim comment on GitHub
 
 NOTE: Issues are assigned via `/team-issue` (any team member can create and assign).
 
@@ -74,7 +79,7 @@ eval "$(bash ~/.claude/commands/scripts/tw-config.sh resolve-labels 2>/dev/null)
 ```
 
 Verify `GH_USER` is in the team roster (check both `team:` and `members:` sections).
-If not → "**ERROR:** You (`{GH_USER}`) are not in the team roster. Run `/team init` to re-initialize and add yourself." → **STOP**
+If not → "**ERROR:** You (`{GH_USER}`) are not in the team roster. Run `/team` to add yourself (automatic onboarding)." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ---
@@ -85,9 +90,10 @@ If not → "**ERROR:** You (`{GH_USER}`) are not in the team roster. Run `/team 
 ls $TEAMWORK_DIR/active/MISSION-*.md 2>/dev/null
 ```
 
-**Check worktree config (local per-user setting):**
+**Worktree routing is handled automatically by `tw-git.sh claim-setup` in Step 5.** Here we only check for existing Contracts:
+
 ```bash
-# Worktree mode is stored in local git config, not shared config.yml
+# Detect worktree mode (script handles all routing)
 WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "false")
 ```
 
@@ -107,7 +113,17 @@ options:
     description: "不操作"
 ```
 
-- If "继续当前 mission" → output "Run `/team-drive`" → **STOP**
+- If "继续当前 mission" → Use `AskUserQuestion`:
+  ```
+  question: "Continue with `/team-drive` now?"
+  options:
+    - label: "Yes, start driving"
+      description: "Invoke /team-drive immediately"
+    - label: "No, I'll do it manually"
+      description: "Exit — run /team-drive when ready"
+  ```
+  - If "Yes, start driving" → invoke `/team-drive` → **STOP**
+  - If "No, I'll do it manually" → **STOP**
 - If "交付当前 mission" → output "Run `/team-ship`" → **STOP**
 - If "放弃当前 mission" → delete Contract file → output "Contract cleared. You can now `/team-claim` a new Issue." → **STOP**
 - If "取消" → **STOP**
@@ -136,7 +152,9 @@ Format as numbered list:
   🟠 `2.` **#045** Add rate limiting
   🟡 `3.` **#047** Write API docs
 
-If none → "No missions assigned to you. Ask your team lead to assign one via `/team-issue`." → **STOP**
+If none:
+  - If team roster has only 1 member (solo mode) → "No missions assigned. Create one with `/team-issue` or check `/team queue`." → **STOP**
+  - If team roster has multiple members → "No missions assigned to you. Ask your team lead to assign one via `/team-issue`, or check `/team queue`." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Use `AskUserQuestion` to let user pick one, then proceed to Step 3 with the selected Issue number.
@@ -152,7 +170,9 @@ gh issue list --label "$MISSION_LABEL" --state open --assignee "$GH_USER" --json
 ```
 
 Show the user's assigned Issues sorted by priority (P0 first, then P1, P2, P3).
-If none → "No missions assigned to you. Ask your team lead to assign one via `/team-issue`." → **STOP**
+If none:
+  - If team roster has only 1 member (solo mode) → "No missions assigned. Create one with `/team-issue` or check `/team queue`." → **STOP**
+  - If team roster has multiple members → "No missions assigned to you. Ask your team lead to assign one via `/team-issue`, or check `/team queue`." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 Use `AskUserQuestion` to let user confirm or pick one (even if only one issue — always confirm before claiming). Then proceed to Step 3.
@@ -162,7 +182,7 @@ Use `AskUserQuestion` to let user confirm or pick one (even if only one issue �
 ## Step 3: Fetch Issue Details
 
 ```bash
-gh issue view {issue} --json number,title,body,labels,milestone,assignees,url
+gh issue view {issue} --json number,title,body,labels,milestone,assignees,url,comments
 ```
 
 Parse the Issue body. If the Issue was created with the mission template, extract structured fields:
@@ -208,6 +228,7 @@ branch: mission/{issue}-{slug}-{user}
 milestone: "{milestone — from Issue JSON, falls back to config versions.current, or 'none'}"
 claimed: {ISO_TIMESTAMP}
 issue_content_hash: "$(bash ~/.claude/commands/scripts/tw-contract.sh hash "$TITLE" "$BODY")"
+last_comment_check: "{ISO_TIMESTAMP}"
 ---
 
 # MISSION-{issue}: {title}
@@ -239,6 +260,8 @@ Example:
 (populated during /team-drive execution)
 ```
 
+**Standalone Test**: Re-read the generated Contract as if you never saw the Issue. Can someone who has never seen the Issue execute from this Contract alone? If not, add what's missing.
+
 **The Context Files section is the key AI enhancement.** This is what makes the Contract more valuable than the raw Issue body. Scan the project to identify:
 - Files that will likely need modification
 - Related test files
@@ -249,108 +272,80 @@ Use `Glob` and `Grep` with keywords from the Issue title and objective to discov
 
 ---
 
+## Step 4b: Incorporate Issue Comments
+
+From the `comments` field fetched in Step 3, filter out non-human comments:
+- Exclude `authorAssociation == "BOT"`
+- Exclude comments whose body (after stripping leading emoji) starts with: "Claimed by", "PR #", "All code tasks", "Cross-MC"
+
+If comments exist after filtering:
+- Add to Contract after the AI Notes section:
+
+```markdown
+## Pre-Claim Discussion ({count} comments)
+- @{author} ({date}): {body}
+- @{author2} ({date}): {body}
+```
+
+- The AI MUST check if any comment contradicts or extends the Issue body's requirements
+- If contradiction found → adjust Objective/Sub-tasks/Criteria accordingly
+- Note the adjustment in AI Notes: "Adjusted per @{author}'s comment on {date}"
+
+After Contract creation, store the comment timestamp:
+
+```bash
+bash ~/.claude/commands/scripts/tw-contract.sh store-comment-timestamp "$TEAMWORK_DIR/active/MISSION-{issue}.md" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+```
+
+---
+
+## Step 4c: Confirm Contract
+
+Display the generated Contract summary (Objective, Sub-tasks, Success Criteria) and confirm before creating branch. State your position as AGREE+EXTEND, CHALLENGE+PROPOSE, or REDIRECT. If proposing an alternative, state what it costs. Never silent compliance.
+
+Use `AskUserQuestion`:
+```
+question: "Contract ready. Confirm to create branch?"
+options:
+  - label: "Confirm"
+    description: "Create branch and start mission"
+  - label: "Edit"
+    description: "Modify Contract before proceeding"
+  - label: "Cancel"
+    description: "Don't claim"
+```
+
+- If "Edit" → apply changes, re-preview (loop)
+- If "Cancel" → delete Contract file → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+---
+
 ## Step 5: Create Branch (+ optional worktree)
 
-Read branch pattern from config: `conventions.branch_pattern` (or `worktree.branch_pattern` for `.teamspace` configs).
-Default: `"mission/{issue}-{slug}-{user}"`.
-
-Read worktree config from local git config: `git config --local teamwork.worktree` (per-user, not shared).
+**⚠️ IMPORTANT: Use `claim-setup` — it handles worktree routing internally.**
+The script reads `git config --local teamwork.worktree` and automatically chooses the correct path (branch-only vs worktree). You do NOT need to check worktree mode yourself.
 
 ```bash
-# Slugify the title: lowercase, replace spaces with hyphens, remove special chars, truncate
+# Slugify the title
 SLUG=$(bash ~/.claude/commands/scripts/tw-git.sh slugify "$ISSUE_TITLE")
+
+# Atomic branch+worktree setup (worktree routing is INSIDE the script)
+SETUP_RESULT=$(bash ~/.claude/commands/scripts/tw-git.sh claim-setup \
+  "$ISSUE_NUMBER" "$SLUG" "$GH_USER" \
+  "$TEAMWORK_DIR" "$TEAMWORK_DIR/active/MISSION-$ISSUE_NUMBER.md" 2>/dev/null)
+
+# Parse structured output (KEY=VALUE lines)
+eval "$SETUP_RESULT"
+# Now available: $MODE (branch|worktree), $BRANCH, $STATUS (created|exists), $WORKTREE_PATH (if worktree)
 ```
 
-**If worktree DISABLED (default):**
+If `claim-setup` fails (exit ≠ 0) → "**ERROR:** Branch setup failed. Run `/team doctor` to diagnose." → **STOP**
 
-Ensure you're on `base_branch` and up to date, then create branch:
-```bash
-bash ~/.claude/commands/scripts/tw-git.sh ensure-base
-BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh create-branch "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
-```
-
-**If worktree ENABLED:**
-
-⚠ Do NOT run `ensure-base` — it would `git checkout` the base branch, disrupting the current worktree's working state. Instead, create the worktree directly from the base branch ref:
-
-```bash
-# Derive main repo path (works from any worktree or the main repo)
-MAIN_REPO=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-main-repo)
-REPO_NAME=$(basename "$MAIN_REPO")
-
-# Fetch latest base to ensure worktree starts from up-to-date base
-BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
-BASE_BRANCH="${BASE_BRANCH:-main}"
-git fetch origin "$BASE_BRANCH" --quiet 2>/dev/null || true
-
-# Build branch name from config pattern (script handles pattern substitution safely)
-BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh build-branch-name "$ISSUE_NUMBER" "$SLUG" "$GH_USER")
-
-# Determine worktree root path from per-user config
-WORKTREE_ROOT=$(git config --local teamwork.worktree-root 2>/dev/null || echo "")
-
-if [ -n "$WORKTREE_ROOT" ]; then
-  # Resolve relative paths (e.g. ".claude/worktrees/") against main repo root
-  if [[ "$WORKTREE_ROOT" != /* ]]; then
-    WORKTREE_ROOT="${MAIN_REPO}/${WORKTREE_ROOT}"
-  fi
-  mkdir -p "$WORKTREE_ROOT"
-  WORKTREE_PATH="${WORKTREE_ROOT}/${SLUG}"
-else
-  # Default: sibling of main repo (backward compat)
-  WORKTREE_PATH="${MAIN_REPO}/../${REPO_NAME}-wt-${SLUG}"
-fi
-
-# Check if branch is already checked out somewhere (main repo or another worktree)
-BRANCH_WORKTREE=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-find-by-branch "$BRANCH" 2>/dev/null) || true
-
-if [ -n "$BRANCH_WORKTREE" ]; then
-  # Branch already checked out — DON'T create new worktree, just point user there
-  echo "BRANCH_ALREADY_CHECKED_OUT:$BRANCH_WORKTREE"
-  # STOP — output will tell user to cd to existing worktree
-  # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
-else
-  git worktree add -b "$BRANCH" "$WORKTREE_PATH" "origin/$BASE_BRANCH" 2>/dev/null || {
-    # Branch may already exist but not checked out — try without -b
-    git worktree add "$WORKTREE_PATH" "$BRANCH" 2>/dev/null || {
-      echo "ERROR: Could not create worktree at $WORKTREE_PATH"
-      echo "Possible causes:"
-      echo "  - Path already exists (another worktree or directory)"
-      echo "  - Permission denied on parent directory"
-      echo "  - Branch already checked out in another worktree"
-      # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
-      exit 1
-    }
-  }
-fi
-
-echo "$ISSUE_NUMBER" > "$WORKTREE_PATH/.mission"
-
-# Contract is gitignored (active/), so copy it into the worktree
-mkdir -p "$WORKTREE_PATH/$TEAMWORK_DIR/active" || {
-  echo "ERROR: Cannot create config directory in worktree. Check permissions."
-  # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
-  exit 1
-}
-cp "$TEAMWORK_DIR/active/MISSION-$ISSUE_NUMBER.md" "$WORKTREE_PATH/$TEAMWORK_DIR/active/" || {
-  echo "ERROR: Failed to copy Contract to worktree. Source: $TEAMWORK_DIR/active/MISSION-$ISSUE_NUMBER.md"
-  # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
-  exit 1
-}
-
-# Copy config into worktree (needed for /team-drive and /team-ship to find config)
-cp "$TEAMWORK_DIR/config.yml" "$WORKTREE_PATH/$TEAMWORK_DIR/" || {
-  echo "ERROR: Failed to copy config.yml to worktree."
-  # 💡 Something wrong? Run /team doctor to diagnose, or /team doctor fix to auto-repair.
-  exit 1
-}
-```
-
-Key differences from non-worktree flow:
-1. **No `ensure-base`** — avoids disrupting current worktree
-2. **`git fetch` instead of `git pull`** — updates remote ref without touching working tree
-3. **`git worktree add -b BRANCH PATH origin/BASE`** — creates branch from latest remote base directly
-4. **Path from `teamwork.worktree-root`** — user configures root via `/team init`. If set, worktrees go under `{root}/{slug}`. If unset, falls back to sibling: `../{repo}-wt-{slug}`
+The script handles ALL of this internally:
+- **Non-worktree**: `ensure-base` + `create-branch` (or checkout if exists)
+- **Worktree**: fetch base, resolve worktree path from `teamwork.worktree-root`, create worktree, copy Contract + config, write `.mission` marker
+- **Branch already has worktree**: returns `STATUS=exists` + `WORKTREE_PATH` (no new worktree created)
 
 ---
 
@@ -389,27 +384,22 @@ Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
 **CONTEXT FILES**
   {list of relevant files}
 
-{If worktree (newly created OR branch already had worktree):}
+{Use $MODE from claim-setup result to determine output:}
+
+{If $MODE = "worktree":}
 ⚠️ **DO NOT run `/team-drive` in this terminal**
 ────────────────────────────────────────────
 当前终端在主仓库。Worktree 模式下，所有操作必须在 worktree 目录中执行。
 在这里运行 `/team-drive` 会操作错误的代码。
 
 **打开新终端 tab，执行：**
-  `cd {worktree_path} && claude`
+  `cd {$WORKTREE_PATH} && claude`
   Then: `/team-drive` to execute │ `/team-ship` when done
-────────────────────────────────────────────
-
-{If branch was already checked out in main repo (BRANCH_ALREADY_CHECKED_OUT):}
-⚠️ Branch *{branch}* 已在主仓库 checkout。Worktree 模式下不应在主仓库操作 mission 分支。
-建议：在主仓库切回 base branch，然后为此 mission 创建 worktree：
-  `git checkout {base_branch}`
-  `/team-claim #{issue}` (重新 claim，会自动创建 worktree)
 ────────────────────────────────────────────
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
-{If not worktree:}
+{If $MODE = "branch":}
 ────────────────────────────────────────────
 `/team-drive` to execute │ `/team-ship` when done
 
@@ -422,23 +412,13 @@ Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
 - Issue not found → "**ERROR:** Issue **#{issue}** not found. Check the number." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 - Issue already assigned to someone else → warn but allow claiming (team member may be handing off)
-- Issue is closed → "**ERROR:** Issue **#{issue}** is already closed." → **STOP**
+- Issue is closed → "**ERROR:** Issue **#{issue}** is already closed. Reopen it: `gh issue reopen {issue}`, or check `/team queue` for open issues." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
-- Branch already exists:
+- Branch already exists (claim-setup returns `STATUS=exists`):
   - Check if corresponding Issue is still OPEN (via `gh issue view {issue} --json state --jq '.state'`)
   - If Issue is CLOSED → warn: "⚠ Branch exists but Issue **#{issue}** is closed. This is an orphan branch. Run `/team doctor fix` to clean up, then `/team-claim` again." → **STOP**
     💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
-  - If Issue is OPEN:
-    - **If worktree DISABLED** → "Branch *{name}* already exists. Switching to it." → `git checkout {branch}`
-    - **If worktree ENABLED** → Check if branch is already checked out in a worktree (`git worktree list`):
-      - If branch has a worktree → find the worktree path, output:
-        ⚠️ Branch *{name}* already has a worktree at `{worktree_path}`.
-        **打开新终端 tab，执行：** `cd {worktree_path} && claude`
-        Then: `/team-drive` to execute │ `/team-ship` when done
-        → **STOP** (do NOT checkout in main repo — it would conflict with the worktree)
-      - If branch exists but NO worktree → create worktree for it:
-        `git worktree add "$WORKTREE_PATH" "$BRANCH"` (without `-b`, branch already exists)
-        Then copy Contract + config into worktree (same as Step 5 worktree flow)
+  - If Issue is OPEN → `claim-setup` already handled correctly (checkout or worktree reuse). Proceed to Step 6.
 - Network errors → "**ERROR:** GitHub API error. Check your connection and `gh auth status`." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 

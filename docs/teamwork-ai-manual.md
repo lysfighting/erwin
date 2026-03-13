@@ -1,6 +1,6 @@
 # Teamwork — The Complete Manual
 
-> **Version 3.9.7** | Author: liyasong + casey | 2026-03-12
+> **Version 3.10.1** | Author: liyasong + casey | 2026-03-12
 >
 > AI-Native Team Coordination for GitHub.
 > For humans and AI agents. Covers WHY, HOW, and the philosophy behind every decision.
@@ -426,6 +426,8 @@ feat/E:                          D ── (your work) ──
 **Base branch guard** (`/team-ship`): Before shipping, verifies you're NOT on a protected branch (main/develop). Prevents accidental ship from base branch.
 
 **CI-preserves-contract** (`/team-ship`): When CI fails after PR creation, the Mission Contract is preserved (not deleted). This allows iterating with `/team-drive` → `/team-ship` until CI passes.
+
+**Side Effect Triage** (`/team-ship` Step 2e, v3.9.11): Before pushing, auto-scans the diff for non-code file changes (config, Dockerfile, docker-compose, .env) and greps for new env var references not in `.env.example`. P0 items (missing env vars) block ship until resolved. P1 items (infra/ops needs) prompt user to create Issue or add PR comment. All findings are injected into `## Infra Impact` section of PR body. During `/team-drive`, AI records `[side-effect]` entries in AI Notes for remote operations and implicit assumptions that diffs can't capture.
 
 **Contract-missing fallback** (`/team-drive`): If Contract is missing but you're on a mission branch with an open Issue, suggests `/team-claim #N` to regenerate the Contract instead of a bare error.
 
@@ -1126,7 +1128,7 @@ The protection rules adapt to your team's maturity:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                      SCRIPTS LAYER (v3.9.7)                         │
+│                      SCRIPTS LAYER (v3.10.1)                         │
 │                                                                    │
 │  tw-config.sh ─── Foundation ─── Config reader + team queries     │
 │  │  Key lookup:   tw-config.sh <dotted.key> [default]            │
@@ -1558,4 +1560,4 @@ The loop never breaks. The system remembers what you forget.
 
 ---
 
-*Teamwork v3.9.7 — Built for teams where humans and AI write code together.*
+*Teamwork v3.10.1 — Built for teams where humans and AI write code together.*

@@ -94,6 +94,11 @@ CONFIG_FILE=$(detect_config)
 
 # --- Read config ---
 REPO=$(bash "$TW_CONFIG" team.repo "" 2>/dev/null)
+# Fallback: in erwin-style configs, team: is a list (members), not an object with repo key.
+# Derive repo from git remote instead.
+if [ -z "$REPO" ]; then
+  REPO=$(git remote get-url origin 2>/dev/null | sed -E 's|^https://github.com/||;s|^git@github.com:||;s|\.git$||')
+fi
 
 # Parse notifications section directly (tw-config.sh can't handle nested lists).
 # Returns: "enabled|channel1,channel2" or "disabled|" or "no_event|"

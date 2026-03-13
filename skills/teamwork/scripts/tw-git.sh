@@ -12,6 +12,8 @@
 #   bash tw-git.sh rebase TARGET                        # Fetch + rebase on target
 #   bash tw-git.sh tag VERSION [TARGET_REF]              # Check exists, create, push, verify
 #   bash tw-git.sh commit MSG [FILES...]               # Stage files + commit (-A if no files)
+#   bash tw-git.sh worktree-guard [BRANCH]              # Check worktree boundary (exit 3=mismatch)
+#   bash tw-git.sh claim-setup ISSUE SLUG USER [TW_DIR [CONTRACT]]  # Atomic branch+worktree setup
 #   bash tw-git.sh worktree-add BRANCH PATH            # Create worktree
 #   bash tw-git.sh worktree-remove PATH                # Remove worktree safely
 #   bash tw-git.sh worktree-main-repo                   # Print main worktree path
@@ -69,7 +71,8 @@ usage() {
   echo "Usage: tw-git.sh <subcommand> [args...]" >&2
   echo "Subcommands: ensure-base, create-branch, build-branch-name," >&2
   echo "             extract-issue-number, current, protect-check, push," >&2
-  echo "             rebase, tag, commit, worktree-add, worktree-remove," >&2
+  echo "             rebase, tag, commit, worktree-guard, claim-setup," >&2
+  echo "             worktree-add, worktree-remove," >&2
   echo "             worktree-main-repo, worktree-find-by-branch, log-since," >&2
   echo "             cut-release, slugify, find-rc, next-version," >&2
   echo "             list-merged-branches, milestone-resolve" >&2
@@ -331,6 +334,9 @@ cmd_slugify() {
 }
 
 cmd_find_rc() {
+  # Fetch + prune to ensure remote tracking refs are current before listing RC branches
+  git fetch --prune origin 2>/dev/null || true
+
   local branches
   branches=$(git ls-remote --heads origin 'rc/*' 2>/dev/null | awk '{print $2}' | sed 's|refs/heads/||') || true
 
@@ -376,8 +382,19 @@ cmd_next_version() {
 }
 
 cmd_list_merged_branches() {
+  # Read branch prefix from config pattern (e.g., "mission/{issue}-{slug}-{user}" → "mission/*")
+  # Falls back to "mission/*" if not configured.
+  local pattern prefix branch_glob
+  pattern=$(_branch_pattern)
+  prefix="${pattern%%/\{*}"          # Extract prefix before first /{placeholder}
+  prefix="${prefix%%\{*}"            # Handle patterns without / before placeholder
+  if [ -z "$prefix" ] || [ "$prefix" = "$pattern" ]; then
+    prefix="mission"
+  fi
+  branch_glob="${prefix}/*"
+
   local branches
-  branches=$(git branch --list 'mission/*' | sed 's/^[*+ ]*//' | tr -d ' ') || true
+  branches=$(git branch --list "$branch_glob" | sed 's/^[*+ ]*//' | tr -d ' ') || true
 
   if [ -z "$branches" ]; then
     exit 0
@@ -495,6 +512,180 @@ cmd_worktree_find_by_branch() {
   echo "$result"
 }
 
+cmd_worktree_guard() {
+  # Check if the current environment matches the worktree configuration.
+  # Outputs KEY=VALUE pairs. Exits 3 on mismatch (worktree enabled but not in worktree).
+  #
+  # Usage: tw-git.sh worktree-guard [BRANCH]
+  #   BRANCH — optional, defaults to current branch. Used to find existing worktree path.
+  #
+  # Output (always):
+  #   WORKTREE_ENABLED=true|false
+  #   IN_WORKTREE=true|false
+  #   MISMATCH=true|false
+  #   BRANCH=<branch-name>
+  #   WORKTREE_PATH=<path>       (only if mismatch AND worktree exists for branch)
+  #
+  # Exit codes:
+  #   0 — OK (no mismatch)
+  #   3 — mismatch: worktree enabled but running from main repo
+
+  local branch="${1:-}"
+  if [ -z "$branch" ]; then
+    branch=$(git branch --show-current 2>/dev/null) || true
+  fi
+
+  local worktree_enabled in_worktree
+  worktree_enabled=$(git config --local teamwork.worktree 2>/dev/null || echo "false")
+  in_worktree="false"
+  [ -f ".mission" ] && in_worktree="true"
+
+  if [ "$worktree_enabled" = "true" ] && [ "$in_worktree" = "false" ]; then
+    # Mismatch: worktree enabled but running from main repo
+    local wt_path=""
+    if [ -n "$branch" ]; then
+      wt_path=$(cmd_worktree_find_by_branch "$branch" 2>/dev/null) || true
+    fi
+    echo "WORKTREE_ENABLED=true"
+    echo "IN_WORKTREE=false"
+    echo "MISMATCH=true"
+    echo "BRANCH=$branch"
+    echo "WORKTREE_PATH=$wt_path"
+    exit 3
+  fi
+
+  echo "WORKTREE_ENABLED=$worktree_enabled"
+  echo "IN_WORKTREE=$in_worktree"
+  echo "MISMATCH=false"
+  echo "BRANCH=$branch"
+}
+
+cmd_claim_setup() {
+  # Atomic branch+worktree setup for /team-claim.
+  # Reads worktree config internally — the caller does NOT need to check worktree mode.
+  #
+  # Usage: tw-git.sh claim-setup ISSUE SLUG USER [TEAMWORK_DIR [CONTRACT_PATH]]
+  #
+  # Output (KEY=VALUE):
+  #   MODE=branch|worktree
+  #   BRANCH=<branch-name>
+  #   STATUS=created|exists
+  #   WORKTREE_PATH=<path>    (only when MODE=worktree)
+  #
+  # Exit codes:
+  #   0 — success
+  #   1 — usage error
+  #   2 — git operation failed
+
+  local issue="${1:-}" slug="${2:-}" user="${3:-}" teamwork_dir="${4:-}" contract_path="${5:-}"
+  if [ -z "$issue" ] || [ -z "$slug" ] || [ -z "$user" ]; then
+    echo "ERROR: claim-setup requires ISSUE SLUG USER [TEAMWORK_DIR [CONTRACT_PATH]]" >&2
+    exit 1
+  fi
+
+  # Build branch name
+  local branch
+  branch=$(cmd_build_branch_name "$issue" "$slug" "$user")
+
+  # Check worktree config
+  local worktree_enabled
+  worktree_enabled=$(git config --local teamwork.worktree 2>/dev/null || echo "false")
+
+  if [ "$worktree_enabled" != "true" ]; then
+    # ── NON-WORKTREE PATH ──
+    cmd_ensure_base >/dev/null 2>&1 || {
+      echo "ERROR: Could not switch to base branch" >&2
+      exit 2
+    }
+
+    if git show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
+      git checkout "$branch" 2>/dev/null || {
+        echo "ERROR: Could not checkout existing branch '$branch'" >&2
+        exit 2
+      }
+      echo "MODE=branch"
+      echo "BRANCH=$branch"
+      echo "STATUS=exists"
+    else
+      git checkout -b "$branch" 2>/dev/null || {
+        echo "ERROR: Could not create branch '$branch'" >&2
+        exit 2
+      }
+      echo "MODE=branch"
+      echo "BRANCH=$branch"
+      echo "STATUS=created"
+    fi
+  else
+    # ── WORKTREE PATH ──
+    local main_repo base worktree_root worktree_path repo_name
+
+    main_repo=$(cmd_worktree_main_repo)
+    repo_name=$(basename "$main_repo")
+    base=$(_base_branch)
+
+    # Fetch latest base (no checkout — do NOT disrupt working tree)
+    git fetch origin "$base" --quiet 2>/dev/null || true
+
+    # Resolve worktree path from per-user config
+    worktree_root=$(git config --local teamwork.worktree-root 2>/dev/null || echo "")
+    if [ -n "$worktree_root" ]; then
+      # Resolve relative paths against main repo root
+      if [[ "$worktree_root" != /* ]]; then
+        worktree_root="${main_repo}/${worktree_root}"
+      fi
+      mkdir -p "$worktree_root"
+      worktree_path="${worktree_root}/${slug}"
+    else
+      worktree_path="${main_repo}/../${repo_name}-wt-${slug}"
+    fi
+
+    # Check if branch is already checked out in a worktree
+    local existing_wt
+    existing_wt=$(cmd_worktree_find_by_branch "$branch" 2>/dev/null) || true
+
+    if [ -n "$existing_wt" ]; then
+      echo "MODE=worktree"
+      echo "BRANCH=$branch"
+      echo "WORKTREE_PATH=$existing_wt"
+      echo "STATUS=exists"
+      return 0
+    fi
+
+    # Create worktree
+    if ! git worktree add -b "$branch" "$worktree_path" "origin/$base" 2>/dev/null; then
+      # Branch may already exist but not checked out — try without -b
+      if ! git worktree add "$worktree_path" "$branch" 2>/dev/null; then
+        echo "ERROR: Could not create worktree at $worktree_path" >&2
+        echo "Possible causes: path exists, permission denied, or branch checked out elsewhere" >&2
+        exit 2
+      fi
+    fi
+
+    # Write mission marker
+    echo "$issue" > "$worktree_path/.mission"
+
+    # Copy contract and config into worktree (they're in .gitignore active/)
+    if [ -n "$teamwork_dir" ]; then
+      mkdir -p "$worktree_path/$teamwork_dir/active" 2>/dev/null || true
+      if [ -n "$contract_path" ] && [ -f "$contract_path" ]; then
+        cp "$contract_path" "$worktree_path/$teamwork_dir/active/" 2>/dev/null || {
+          echo "WARNING: Could not copy contract to worktree" >&2
+        }
+      fi
+      if [ -f "$teamwork_dir/config.yml" ]; then
+        cp "$teamwork_dir/config.yml" "$worktree_path/$teamwork_dir/" 2>/dev/null || {
+          echo "WARNING: Could not copy config.yml to worktree" >&2
+        }
+      fi
+    fi
+
+    echo "MODE=worktree"
+    echo "BRANCH=$branch"
+    echo "WORKTREE_PATH=$worktree_path"
+    echo "STATUS=created"
+  fi
+}
+
 # --- Main ---
 SUBCOMMAND="${1:-}"
 shift || true
@@ -510,6 +701,8 @@ case "$SUBCOMMAND" in
   rebase)                 cmd_rebase "$@" ;;
   tag)                    cmd_tag "$@" ;;
   commit)                 cmd_commit "$@" ;;
+  worktree-guard)         cmd_worktree_guard "$@" ;;
+  claim-setup)            cmd_claim_setup "$@" ;;
   worktree-add)           cmd_worktree_add "$@" ;;
   worktree-remove)        cmd_worktree_remove "$@" ;;
   worktree-main-repo)     cmd_worktree_main_repo ;;

@@ -68,7 +68,7 @@ Then run:
 **After setup, running `/team` again shows the team dashboard:**
 
 **MY DASHBOARD** — your-org/your-project ──────────────────
-Teamwork v3.9.7 · **V1.0**  `████████░░`  30%  `3`/`10`
+Teamwork v3.10.1 · **V1.0**  `████████░░`  30%  `3`/`10`
 
 👥 **TEAM** (2 members)
   alice (tech-lead)
@@ -117,13 +117,13 @@ Or create Issues manually via the GitHub "Mission Contract" template that `/team
 /team-claim #42
 ```
 
-Or let Claude auto-select the highest priority unassigned Issue:
+Or show your assigned Issues and pick one to claim:
 
 ```
 /team-claim
 ```
 
-Or browse available missions:
+Or browse your assigned missions:
 
 ```
 /team-claim list
@@ -131,7 +131,7 @@ Or browse available missions:
 
 **What happens:**
 
-1. Fetches Issue #42 from GitHub
+1. Fetches Issue **#042** from GitHub
 2. Generates a **Mission Contract** at `.teamwork/active/MISSION-42.md`
    - This is NOT just a copy of the Issue — Claude enriches it with:
    - **Context Files**: scans your project to find files relevant to this mission
