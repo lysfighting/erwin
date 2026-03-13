@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.10.1"
+version: "3.10.4"
 ---
 
 # /team-drive — Execute Mission
@@ -164,33 +164,37 @@ Use `AskUserQuestion`:
 
 ```bash
 LAST_COMMENT_CHECK=$(bash ~/.claude/commands/scripts/tw-contract.sh read-field "$CONTRACT_PATH" last_comment_check 2>/dev/null) || true
-COMMENT_STATUS=$(bash ~/.claude/commands/scripts/tw-contract.sh check-comments {ISSUE_NUMBER} "$LAST_COMMENT_CHECK" 2>/dev/null) || true
+COMMENT_STATUS=$(bash ~/.claude/commands/scripts/tw-contract.sh check-comments {issue} "$LAST_COMMENT_CHECK" 2>/dev/null) || true
 ```
 
 - If result is "NETWORK_ERROR" → skip silently, continue
 - If result is "UNCHANGED" → continue (no display)
-- If result is "NEW":
+- If result starts with "NEW" (includes "NEW" and "NEW:unknown"):
 
 Fetch full comments:
 ```bash
-COMMENTS=$(bash ~/.claude/commands/scripts/tw-contract.sh read-comments {ISSUE_NUMBER} --exclude-bot --exclude-lifecycle --since "$LAST_COMMENT_CHECK" 2>/dev/null)
+COMMENTS=$(bash ~/.claude/commands/scripts/tw-contract.sh read-comments {issue} --exclude-bot --exclude-lifecycle --since "$LAST_COMMENT_CHECK" 2>/dev/null)
 ```
+
+Parse `$COMMENTS` as a JSON array. For each entry, extract `author` (string), `createdAt` (ISO timestamp → convert to relative time), and `body` (full text).
 
 Display:
 
-⚡ **NEW COMMENTS** on **#{ISSUE_NUMBER}** since last check
+⚡ **NEW COMMENTS** on **#{issue}** since last check
 ────────────────────────────────────────────
-  *@{author}* — *{relative_time}*
+  `@{author}` — *{relative_time}*
   {full body}
 ────────────────────────────────────────────
 
 Then AI makes judgment call:
-- If any comment suggests direction change (contains: "change", "actually", "instead", "don't", "cancel", "blocker", "wait", "hold") OR is from repo MEMBER/OWNER:
+- If any comment suggests direction change (contains: "change", "actually", "instead", "don't", "cancel", "blocker", "wait", "hold") OR has `authorAssociation` of `MEMBER`, `OWNER`, or `COLLABORATOR`:
   → AskUserQuestion: "Issue has new comments that may affect mission direction."
     Options: "Update Contract" / "Acknowledged, continue" / "Abort mission"
 - Otherwise: display and continue (advisory)
 
-Update timestamp:
+Update timestamp (only if comments were successfully checked):
+- If `COMMENT_STATUS` started with "NEW" or was "UNCHANGED" → update timestamp
+- If `COMMENT_STATUS` was "NETWORK_ERROR" → do NOT update (preserves last known good timestamp)
 ```bash
 bash ~/.claude/commands/scripts/tw-contract.sh store-comment-timestamp "$CONTRACT_PATH" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ```

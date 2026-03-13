@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.10.1"
+version: "3.10.4"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -57,7 +57,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.10.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.10.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -137,7 +137,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.10.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.10.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -532,7 +532,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.10.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.10.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1092,7 +1092,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.10.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.10.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ✅ Config updated (merge mode — existing config preserved)
    schema_version → `3`
@@ -2279,7 +2279,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.10.1"
+SKILL_VERSION="3.10.4"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -4336,6 +4336,14 @@ Then **STOP**.
 BRANCH=$(bash ~/.claude/commands/scripts/tw-git.sh current)
 BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_branch "main" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-main}"
+
+# Extract issue number and locate Contract
+ISSUE_NUMBER=$(bash ~/.claude/commands/scripts/tw-git.sh extract-issue-number "$BRANCH" 2>/dev/null) || true
+TEAMWORK_DIR=$(bash ~/.claude/commands/scripts/tw-config.sh detect-dir 2>/dev/null) || TEAMWORK_DIR=""
+CONTRACT_PATH=""
+if [ -n "$TEAMWORK_DIR" ] && [ -n "$ISSUE_NUMBER" ]; then
+  CONTRACT_PATH="$TEAMWORK_DIR/active/MISSION-${ISSUE_NUMBER}.md"
+fi
 ```
 
 If on `$BASE_BRANCH` → "Already on `$BASE_BRANCH`. Nothing to sync." → **STOP**
@@ -4392,7 +4400,7 @@ git push --force-with-lease origin {branch}
 ```
 
 - If push succeeds → continue to **SY4: Info Sync**
-- If push fails → "Push failed. Try again or check with `/team doctor`." → **STOP**
+- If push fails → "**ERROR:** Push failed. Try `git push --force-with-lease` manually or run `/team doctor`." → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### SY4: Info Sync
@@ -4407,19 +4415,20 @@ bash ~/.claude/commands/scripts/tw-contract.sh info-sync {ISSUE_NUMBER} "{CONTRA
 ```
 
 Parse the output (3 lines):
-- Line 1: `COMMENTS:NEW` or `COMMENTS:UNCHANGED` or `COMMENTS:NETWORK_ERROR`
-- Line 2: `PR:{status}:{count}` or `PR:none` or `PR:NETWORK_ERROR`
+- Line 1: `COMMENTS:NEW` or `COMMENTS:NEW:unknown` or `COMMENTS:UNCHANGED` or `COMMENTS:NETWORK_ERROR`
+- Line 2: `PR:{status}:{pr_number}` or `PR:none` or `PR:NETWORK_ERROR`
 - Line 3: `CONTRACT:fresh` or `CONTRACT:stale` or `CONTRACT:NETWORK_ERROR`
 
 **Display rules**:
-- If ALL three are unchanged/fresh/none/NETWORK_ERROR → skip INFO SYNC block entirely
+- If ALL three are unchanged/fresh/none → skip INFO SYNC block entirely
+- If ALL three are NETWORK_ERROR → display: `**INFO SYNC** — skipped (network unavailable)` and skip
 - Otherwise display:
 
 **INFO SYNC** ────────────────────────────────
 {If COMMENTS:NEW:}
-  Issue:    **#{ISSUE}** — new comments since claim
+  Issue:    **#{ISSUE_NUMBER}** — new comments since claim
 {If PR exists and has review status:}
-  PR:       `{reviewDecision}` {If changes_requested: — `{count}` unresolved thread(s)}
+  PR:       **#{pr_number}** `{reviewDecision}`
 {If CONTRACT:stale:}
   Contract: `stale` — Issue body modified since Contract was generated
 {If CONTRACT:fresh:}
@@ -4431,7 +4440,9 @@ Parse the output (3 lines):
 
 **All items are advisory** — sync never stops or prompts. The developer reads and decides.
 
-Update comment timestamp after sync:
+Update comment timestamp after sync (only if comment check succeeded):
+- If COMMENTS was `NEW`, `NEW:unknown`, or `UNCHANGED` → update timestamp
+- If COMMENTS was `NETWORK_ERROR` → do NOT update (preserves last known good timestamp)
 ```bash
 bash ~/.claude/commands/scripts/tw-contract.sh store-comment-timestamp "{CONTRACT_PATH}" "{CURRENT_ISO_TIMESTAMP}"
 ```

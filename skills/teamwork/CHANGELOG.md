@@ -2,6 +2,60 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.10.4] — 2026-03-13
+
+### Fixed — v3.10.0-v3.10.3 audit (8 HIGH, 14 MEDIUM, 18 LOW)
+
+**HIGH (8 — functional failures)**
+- **tw-contract.sh**: `authorAssociation == 'BOT'` filter was no-op (GitHub doesn't have BOT enum value) — now checks `author.login.endswith('[bot]')`
+- **tw-contract.sh**: `--since` without argument crashed on `shift 2` — added `$#` validation
+- **tw-contract.sh**: Missing contract file output `CONTRACT:NETWORK_ERROR` → now `CONTRACT:NO_FILE`
+- **team-drive.md**: `check-comments` returns `NEW:unknown` on first run but skill only matched `"NEW"` — now matches prefix
+- **team-drive.md**: Timestamp stored after `NETWORK_ERROR` → permanent comment loss — now conditional
+- **team-issue.md**: `authorAssociation == "BOT"` referenced non-existent `gh issue view` field — now uses `login.endswith('[bot]')`
+- **team-ship.md**: `grep -oE '[\w]'` non-portable on macOS BSD grep — replaced with `[A-Za-z0-9_]`
+- **team.md SY4**: `ISSUE_NUMBER` and `CONTRACT_PATH` never defined in Operation Sync — added extraction in SY1
+
+**MEDIUM (14 — logic/VE/UX)**
+- **team-ship.md**: 2 STOPs missing doctor hint (CHANGES_REQUESTED, P0 返回修复) — added
+- **team-ship.md**: Checkbox grep `^` anchor missed indented `- [ ]` → false "all done" — removed anchor
+- **team-ship.md**: Unquoted `$ISSUE_NUMBER` in 2 bash calls — quoted
+- **team-drive.md**: `{ISSUE_NUMBER}` vs `{issue}` variable inconsistency — unified to `{issue}`
+- **team-drive.md**: `read-comments` JSON output not documented for LLM parsing — added note
+- **team-drive.md**: MEMBER/OWNER role check lacked mechanism — specified `authorAssociation` field
+- **team-claim.md**: P11 violation — inline comment filtering duplicated script logic — now delegates to `tw-contract.sh read-comments`
+- **team-claim.md**: `last_comment_check` double-write (template + script) — removed from template
+- **team.md SY4**: `PR:{status}:{count}` doc wrong (script outputs `:{pr_number}`) — fixed
+- **team.md SY4**: `COMMENTS:NEW:unknown` undocumented — added
+- **team.md SY4**: All NETWORK_ERROR → silent skip — now shows warning
+- **team.md SY4**: Timestamp updated after NETWORK_ERROR — now conditional
+- **team-issue.md/team-ship.md/team-drive.md**: `*@{author}*` italic → `` `@{author}` `` backtick (VE: author is a value)
+- **team-rc.md**: `--ref $PROD_BRANCH` → `--ref "$VERSION"` for deterministic deploy from tag
+
+**LOW (6 selected fixes)**
+- **tw-contract.sh**: `import re` inside for-loop → moved to top
+- **tw-contract.sh**: Added issue number validation (`^[0-9]+$`) in check-comments and read-comments
+- **team-issue.md**: Clarified truncation rule and ">5 human comments after filtering"
+- **team-claim.md**: Added explicit zero-comments handling
+- **team-rc.md**: Added `$TEAMWORK_DIR/config.yml` path in deploy guidance
+- **team-rc.md**: VE — backtick-wrapped `{PROD_WORKFLOW}` in summary line
+
+## [3.10.3] — 2026-03-13
+
+### Added — Production deploy guidance after promote
+
+- **team-rc.md Step P10b**: After promote (tag + release), trigger production deploy if `deploy.production_workflow` is configured. If not configured, guide user to deploy manually with actionable next step.
+- **Config**: New optional `deploy.production_workflow` field (parallel to existing `deploy.staging_workflow`).
+- **Why**: Promote closes the release cycle but previously didn't close the deployment cycle. Users were left wondering "how do I deploy?" after a successful promote.
+
+## [3.10.2] — 2026-03-13
+
+### Changed — Pre-flight tests skip when CI is configured
+
+- **team-ship.md Step 2d**: When `quality.ci: true`, skip local pre-flight tests entirely. Push immediately for remote persistence; CI guards merge.
+- **Why**: Pre-flight blocks push, but push's first job is remote persistence. When CI already guards merge, blocking push for a redundant local check delays persistence for no safety gain.
+- **`ci: false` unchanged**: Local tests remain the only quality gate when CI is not configured.
+
 ## [3.10.1] — 2026-03-13
 
 ### Fixed — PR Closes #N 导致 Issue 被提前关闭

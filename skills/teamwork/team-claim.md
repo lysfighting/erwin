@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "3.10.1"
+version: "3.10.4"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -228,7 +228,6 @@ branch: mission/{issue}-{slug}-{user}
 milestone: "{milestone — from Issue JSON, falls back to config versions.current, or 'none'}"
 claimed: {ISO_TIMESTAMP}
 issue_content_hash: "$(bash ~/.claude/commands/scripts/tw-contract.sh hash "$TITLE" "$BODY")"
-last_comment_check: "{ISO_TIMESTAMP}"
 ---
 
 # MISSION-{issue}: {title}
@@ -274,9 +273,13 @@ Use `Glob` and `Grep` with keywords from the Issue title and objective to discov
 
 ## Step 4b: Incorporate Issue Comments
 
-From the `comments` field fetched in Step 3, filter out non-human comments:
-- Exclude `authorAssociation == "BOT"`
-- Exclude comments whose body (after stripping leading emoji) starts with: "Claimed by", "PR #", "All code tasks", "Cross-MC"
+From the `comments` field fetched in Step 3, filter using the script:
+
+```bash
+FILTERED_COMMENTS=$(bash ~/.claude/commands/scripts/tw-contract.sh read-comments {issue} --exclude-bot --exclude-lifecycle 2>/dev/null) || true
+```
+
+If `$FILTERED_COMMENTS` is empty or `[]` → skip Pre-Claim Discussion section entirely, but still store timestamp (Fix 4 below).
 
 If comments exist after filtering:
 - Add to Contract after the AI Notes section:

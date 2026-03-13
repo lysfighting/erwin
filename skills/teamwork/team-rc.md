@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.10.1"
+version: "3.10.4"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -89,6 +89,7 @@ Parse `$ARGUMENTS`:
   `conventions.base_branch`: `"develop"`     Development trunk
   `conventions.production_branch`: `"main"`  Production branch
   `deploy.staging_workflow`: `"deploy.yml"`  *(optional)* Staging deploy workflow name
+  `deploy.production_workflow`: `"deploy.yml"` *(optional)* Production deploy workflow name
 
 - If `fix help` → jump to **Operation Fix Help**
 - If `fix` → jump to **Fix Flow**
@@ -166,6 +167,7 @@ PROD_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.productio
 PROD_BRANCH="${PROD_BRANCH:-main}"
 
 STAGING_WORKFLOW=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.staging_workflow "" 2>/dev/null)
+PROD_WORKFLOW=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.production_workflow "" 2>/dev/null)
 ```
 
 - If no repo detected → **STOP**
@@ -1116,6 +1118,23 @@ git push origin --delete "$RC_BRANCH" 2>/dev/null || {
 git branch -d "$RC_BRANCH" 2>/dev/null || git branch -D "$RC_BRANCH" 2>/dev/null || true
 ```
 
+### Step P10b: Production Deploy
+
+**If `$PROD_WORKFLOW` is set:**
+
+```bash
+gh workflow run "$PROD_WORKFLOW" --ref "$VERSION" -f environment=production -f version="$VERSION"
+```
+
+- If workflow triggers → 🚀 Production deploy triggered for **{VERSION}**
+- If workflow fails to trigger → ⚠️ Could not trigger `{PROD_WORKFLOW}`. Deploy manually: `gh workflow run {PROD_WORKFLOW} --ref {PROD_BRANCH}`
+
+**If `$PROD_WORKFLOW` is not set:**
+
+🚀 **Deploy to production** — code is on *{PROD_BRANCH}*, tagged **{VERSION}**.
+  Trigger your deploy pipeline for **{VERSION}**, or configure auto-deploy:
+  `deploy.production_workflow: "deploy.yml"` in `$TEAMWORK_DIR/config.yml`
+
 ### Step P11: Summary
 
 **PROMOTED ── {VERSION}** ────────────────────
@@ -1124,6 +1143,7 @@ PR:  **#{PR_NUMBER}** (squash merged)
 Release: {release_url}
 RC Branch:  *{RC_BRANCH}* (deleted)
 Milestone:  **{MILESTONE_FULL}** — {status}
+Deploy:  {🚀 triggered `{PROD_WORKFLOW}` / 🚀 deploy manually}
 
 ────────────────────────────────────────────
 `/team-rc` to prepare next RC
@@ -1151,6 +1171,7 @@ Output the following and **STOP**:
   4. Create git tag with version
   5. Create GitHub Release with auto-generated notes
   6. Clean up RC branch
+  7. Trigger production deploy (if `deploy.production_workflow` configured), or guide manual deploy
 
 **WHEN TO USE**
   After RC has been tested on staging and approved.

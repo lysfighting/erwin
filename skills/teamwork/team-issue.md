@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "3.10.1"
+version: "3.10.4"
 ---
 
 # /team-issue — Mission Contract Issue Manager
@@ -31,7 +31,7 @@ version: "3.10.1"
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
-**`/team-issue` — Mission Contract Issue Manager** (`v3.10.1`)
+**`/team-issue` — Mission Contract Issue Manager** (`v3.10.4`)
 
 **USAGE**
   `/team-issue <description>`                    Create MC (solo: self-assign; team: prompt)
@@ -437,20 +437,20 @@ gh pr list --repo "$REPO" --search "Closes #$N" --state all --json number,url,st
 
 After the Issue detail display, if the Issue has human comments (non-bot, non-lifecycle):
 
-- Filter comments: exclude `authorAssociation == "BOT"`, exclude comments whose body (after stripping leading emoji) starts with: "Claimed by", "PR #", "All code tasks", "Cross-MC"
+- Filter comments: exclude authors whose login ends with `[bot]` (e.g., `github-actions[bot]`, `dependabot[bot]`), exclude comments whose body (after stripping leading emoji) starts with: "Claimed by", "PR #", "All code tasks", "Cross-MC"
 - If 0 human comments → skip this section entirely
 - If 1+ human comments → display:
 
 💬 **COMMENTS** (`{count}`)
 ────────────────────────────────────────────
-  *@{author}* — *{relative_time}*
-  {first 3 lines, max 200 chars}
+  `@{author}` — *{relative_time}*
+  {first 3 lines of body, truncated to 200 chars total; append `…` if truncated}
 
-  *@{author2}* — *{relative_time}*
-  {first 3 lines, max 200 chars}
+  `@{author2}` — *{relative_time}*
+  {first 3 lines of body, truncated to 200 chars total; append `…` if truncated}
 ────────────────────────────────────────────
 
-If >5 comments, show latest 5 with note: *(showing latest 5 of {total})*
+If >5 human comments after filtering, show latest 5 with note: *(showing latest `5` of `{total}` human comments)*
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 

@@ -356,6 +356,12 @@ cmd_check_comments() {
     exit 1
   fi
 
+  # Validate issue is a number
+  if ! [[ "$issue" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: ISSUE must be a number, got: $issue" >&2
+    exit 1
+  fi
+
   # Get repo name for REST API
   local repo
   repo=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null) || {
@@ -409,7 +415,11 @@ cmd_read_comments() {
     case "$1" in
       --exclude-bot)       exclude_bot=true; shift ;;
       --exclude-lifecycle) exclude_lifecycle=true; shift ;;
-      --since)             since="${2:-}"; shift 2 ;;
+      --since)
+        if [ $# -lt 2 ]; then
+          echo "ERROR: --since requires a value" >&2; exit 1
+        fi
+        since="$2"; shift 2 ;;
       *)
         if [ -z "$issue" ]; then
           issue="$1"; shift
@@ -425,6 +435,11 @@ cmd_read_comments() {
     exit 1
   fi
 
+  if ! [[ "$issue" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: ISSUE must be a number, got: $issue" >&2
+    exit 1
+  fi
+
   # Fetch all comments
   local raw_json
   raw_json=$(gh issue view "$issue" --json comments 2>/dev/null) || {
@@ -434,7 +449,7 @@ cmd_read_comments() {
 
   # Filter with Python3
   python3 -c "
-import sys, json
+import sys, json, re
 
 data = json.loads(sys.stdin.read())
 comments = data.get('comments', [])
@@ -448,8 +463,10 @@ LIFECYCLE_PREFIXES = ['Claimed by', 'PR #', 'All code tasks', 'Cross-MC']
 results = []
 for c in comments:
     # --exclude-bot
-    if exclude_bot and c.get('authorAssociation', '') == 'BOT':
-        continue
+    if exclude_bot:
+        login = c.get('author', {}).get('login', '')
+        if login.endswith('[bot]'):
+            continue
 
     # --since
     if since and c.get('createdAt', '') <= since:
@@ -459,7 +476,6 @@ for c in comments:
     if exclude_lifecycle:
         body = c.get('body', '').lstrip()
         # Strip leading emoji (Unicode general category So/Sk)
-        import re
         stripped = re.sub(r'^[\U0001F300-\U0001FAFF\U00002702-\U000027B0\U0000FE00-\U0000FE0F\U0000200D]+\s*', '', body)
         skip = False
         for prefix in LIFECYCLE_PREFIXES:
@@ -582,7 +598,7 @@ except Exception:
 
   # 3. Contract freshness check
   if [ ! -f "$contract_path" ]; then
-    echo "CONTRACT:NETWORK_ERROR"
+    echo "CONTRACT:NO_FILE"
   else
     local freshness
     freshness=$(cmd_check_freshness "$contract_path" "$issue" 2>/dev/null) || true

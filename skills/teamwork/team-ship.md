@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.10.1"
+version: "3.10.4"
 ---
 
 # /team-ship — Deliver Mission
@@ -286,7 +286,7 @@ Non-fatal: if sync fails, warn but continue with shipping.
 
 ```bash
 LAST_COMMENT_CHECK=$(bash ~/.claude/commands/scripts/tw-contract.sh read-field "$CONTRACT_PATH" last_comment_check 2>/dev/null) || true
-COMMENT_STATUS=$(bash ~/.claude/commands/scripts/tw-contract.sh check-comments $ISSUE_NUMBER "$LAST_COMMENT_CHECK" 2>/dev/null) || true
+COMMENT_STATUS=$(bash ~/.claude/commands/scripts/tw-contract.sh check-comments "$ISSUE_NUMBER" "$LAST_COMMENT_CHECK" 2>/dev/null) || true
 ```
 
 - If "NETWORK_ERROR" → skip silently, continue
@@ -295,14 +295,14 @@ COMMENT_STATUS=$(bash ~/.claude/commands/scripts/tw-contract.sh check-comments $
 
 Fetch full comments:
 ```bash
-COMMENTS=$(bash ~/.claude/commands/scripts/tw-contract.sh read-comments $ISSUE_NUMBER --exclude-bot --exclude-lifecycle --since "$LAST_COMMENT_CHECK" 2>/dev/null)
+COMMENTS=$(bash ~/.claude/commands/scripts/tw-contract.sh read-comments "$ISSUE_NUMBER" --exclude-bot --exclude-lifecycle --since "$LAST_COMMENT_CHECK" 2>/dev/null)
 ```
 
 Display:
 
 ⚡ **NEW COMMENTS** on **#{ISSUE_NUMBER}** since last check
 ────────────────────────────────────────────
-  *@{author}* — *{relative_time}*
+  `@{author}` — *{relative_time}*
   {full body}
 ────────────────────────────────────────────
 
@@ -333,10 +333,11 @@ gh pr view "$EXISTING_PR" --json reviewDecision,reviews
 
 🔴 **PR REVIEW: CHANGES REQUESTED**
 ────────────────────────────────────────────
-  *@{reviewer}*: {review body first line}
+  `@{reviewer}`: {review body first line}
 ────────────────────────────────────────────
 Address review feedback before shipping. Run `/team-drive` to iterate.
 → **STOP** (hard block — don't ship with unresolved change requests)
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 - If `reviewDecision` == "APPROVED":
   Display: ✅ PR review: `approved` by *@{reviewer}*
@@ -376,6 +377,20 @@ git status --porcelain
 
 ### 2d: Run tests
 
+> Pre-flight tests guard push — but push's first job is remote persistence. When CI guards merge, blocking push for a redundant local check delays persistence for no safety gain.
+
+```bash
+CI_ENABLED=$(bash ~/.claude/commands/scripts/tw-config.sh quality.ci "false" 2>/dev/null)
+```
+
+**If `CI_ENABLED` == "true"** → skip local pre-flight:
+
+⏭ Pre-flight skipped — CI guards merge, pushing immediately for remote persistence.
+
+→ Continue to Step 2e.
+
+**If `CI_ENABLED` != "true"** → local tests are the only quality gate. Run them:
+
 Read config for service-aware testing:
 
 ```bash
@@ -395,8 +410,8 @@ Read `project.services` from config. For each service, check if any changed file
 ```bash
 TEST_CMD=$(bash ~/.claude/commands/scripts/tw-config.sh project.test_command "" 2>/dev/null)
 if [ -z "$TEST_CMD" ]; then
-  echo "⚠ No test_command configured in $TEAMWORK_DIR/config.yml — skipping pre-flight tests"
-  echo "  Add 'test_command: \"npm test\"' to $TEAMWORK_DIR/config.yml to enable this check"
+  echo "⚠ No test_command configured and CI not enabled — no test gate at all"
+  echo "  Add 'test_command: \"npm test\"' or set 'quality.ci: true' in $TEAMWORK_DIR/config.yml"
 else
   echo "Running tests: $TEST_CMD"
   eval "$TEST_CMD"
@@ -438,7 +453,7 @@ CHANGED_SRC=$(echo "$ALL_CHANGED" | grep -iE '\.(ts|tsx|js|jsx|py)$' || true)
 # Extract env var names from changed files
 if [ -n "$CHANGED_SRC" ]; then
   # JS/TS: process.env.VAR_NAME or process.env['VAR_NAME'] or process.env["VAR_NAME"]
-  JS_VARS=$(git diff "origin/$BASE_BRANCH...HEAD" -- $(echo "$CHANGED_SRC" | grep -iE '\.(ts|tsx|js|jsx)$' | tr '\n' ' ') 2>/dev/null | grep '^+' | grep -oE 'process\.env\.([\w]+)|process\.env\[.([A-Z_]+).\]' | sed "s/process\.env\.//;s/process\.env\[['\"]\(.*\)['\"].*/\1/" | sort -u || true)
+  JS_VARS=$(git diff "origin/$BASE_BRANCH...HEAD" -- $(echo "$CHANGED_SRC" | grep -iE '\.(ts|tsx|js|jsx)$' | tr '\n' ' ') 2>/dev/null | grep '^+' | grep -oE 'process\.env\.([A-Za-z0-9_]+)|process\.env\[.([A-Z_]+).\]' | sed "s/process\.env\.//;s/process\.env\[['\"]\(.*\)['\"].*/\1/" | sort -u || true)
 
   # Python: os.environ["VAR"], os.environ.get("VAR"), os.getenv("VAR")
   PY_VARS=$(git diff "origin/$BASE_BRANCH...HEAD" -- $(echo "$CHANGED_SRC" | grep -iE '\.py$' | tr '\n' ' ') 2>/dev/null | grep '^+' | grep -oE 'os\.(environ\[|environ\.get\(|getenv\().["'"'"']([A-Z_]+)' | grep -oE '[A-Z_]{2,}' | sort -u || true)
@@ -521,6 +536,7 @@ options:
 - "添加到 .env.example" → for each `$MISSING_VARS`, append `{VAR}=  # TODO: set value` to `.env.example`, commit
 - "不需要 .env.example" → note in PR body, continue
 - "返回修复" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### P1 Triage (interactive)
 
@@ -592,7 +608,7 @@ Output: "PR **#{number}** already exists — CI: {status}, Review: {status}. Pus
 Check the Issue's checkbox state to decide whether merging this PR should auto-close the Issue:
 
 ```bash
-UNCHECKED=$(gh issue view $ISSUE_NUMBER --json body --jq '.body' | grep -c '^\- \[ \]' || echo "0")
+UNCHECKED=$(gh issue view "$ISSUE_NUMBER" --json body --jq '.body' | grep -c '\- \[ \]' || echo "0")
 ```
 
 | Issue checkbox state | PR body keyword |
