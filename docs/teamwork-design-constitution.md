@@ -222,6 +222,26 @@
 
 ---
 
+## Principle 15: Never End on a Period — Always End on a Question
+
+**Rule**: Every skill output's final step must offer the user actionable next steps. Never output a summary and stop. Even error STOPs must present recovery choices.
+
+**Why**: Today's UX failures (ship pre-flight blocking without options, promote ending without deploy guidance, drive completion dumping text without AskUserQuestion) all share one root cause: the skill ended on a period instead of a question. The user was left wondering "what do I type next?" Every transition between skills (issue→claim→drive→ship→done) is a moment of momentum — if the skill doesn't carry it forward, the user loses flow. (Session AN, multiple user-reported UX dead-ends)
+
+**Three ending patterns**:
+1. **Success transition** → AskUserQuestion with next-step options (e.g., "Ship now?" / "Review first?")
+2. **Error recovery** → AskUserQuestion with fix options (e.g., "Run doctor?" / "Retry?" / "Skip?")
+3. **Terminal state** (help output, user-initiated cancel, waiting for external event like PR merge) → plain text OK, no AskUserQuestion needed
+
+**Violation signals**:
+- A completion summary that ends with a plain-text command hint (e.g., `/team-ship to create PR`) instead of AskUserQuestion
+- A STOP that describes the problem but offers no recovery choices
+- Any output where the user must independently figure out what command to run next
+
+**Source**: Session AN; UX audit (47 dead-ends found, 17 requiring AskUserQuestion)
+
+---
+
 ## Architectural Decisions NOT Adopted (and Why)
 
 These drive.md features were explicitly evaluated and intentionally not adopted. They are NOT bugs or gaps.
@@ -240,3 +260,4 @@ These drive.md features were explicitly evaluated and intentionally not adopted.
 ## Version History
 
 - **v1.0** (2026-03-13, Session AL): Initial constitution. 14 principles + 6 non-adopted decisions. Derived from 12 rounds of design discussion, 2 rounds of independent brainstorming (6 thinkers total, 56 findings).
+- **v1.1** (2026-03-13, Session AN): Added Principle 15 (Never End on a Period). Derived from UX dead-end audit across all 6 skills.

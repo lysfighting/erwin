@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.10.4"
+version: "3.11.2"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -948,14 +948,14 @@ Format as `$RELEASE_BODY`:
 ## What's in this release
 
 ### Features
-* feat: user login system by @alice in {url} (#042)
-* feat: permission management by @bob in {url} (#045)
+* feat: user login system by @alice in {url} (**#042**)
+* feat: permission management by @bob in {url} (**#045**)
 
 ### Bug Fixes
-* fix: API timeout by @alice in {url} (#048)
+* fix: API timeout by @alice in {url} (**#048**)
 
 ### Other Changes
-* refactor: clean up auth module by @carol in {url} (#051)
+* refactor: clean up auth module by @carol in {url} (**#051**)
 
 ### Contributors
 @alice (3) · @bob (1) · @carol (1)

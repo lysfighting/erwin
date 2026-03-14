@@ -32,3 +32,6 @@ lint-output.txt
 
 # Drive Mode working directories
 .claude/drive/
+
+# Teamwork worktree marker (ephemeral, should only exist in worktrees)
+.mission

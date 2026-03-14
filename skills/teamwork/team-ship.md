@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.10.4"
+version: "3.11.2"
 ---
 
 # /team-ship — Deliver Mission
@@ -268,10 +268,18 @@ Check the Contract's sub-tasks section. Count `- [x]` vs `- [ ]`.
 
 Separate unchecked tasks into **code tasks** (no `🔧 MANUAL` or `(MANUAL)` tag) and **manual tasks** (tagged `🔧 MANUAL` or `(MANUAL)`).
 
-- If any unchecked **code** sub-tasks remain → display them and say:
-  "Not all code tasks are complete. Finish them with `/team-drive` first, or manually check them off in the Contract."
-  → **STOP**
-  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+- If any unchecked **code** sub-tasks remain → display them, then AskUserQuestion:
+  question: "有未完成的代码任务，如何处理？"
+  options:
+    - label: "去完成"
+      description: "/team-drive — 继续执行"
+    - label: "手动标记完成"
+      description: "这些任务已完成但未勾选，标记后继续 ship"
+    - label: "取消 ship"
+      description: "返回，稍后再 ship"
+  → If "去完成": say "Run `/team-drive` to continue" → **STOP**
+  → If "手动标记完成": check off the listed code tasks in Contract, then continue ship flow
+  → If "取消 ship": **STOP**
 - If only **manual** sub-tasks are unchecked → proceed (these are human-action tasks, not blockers for the PR). Note them for inclusion in PR description.
 
 **Sync checkboxes to GitHub Issue** (defense-in-depth — catches missed syncs from team-drive):
@@ -335,9 +343,18 @@ gh pr view "$EXISTING_PR" --json reviewDecision,reviews
 ────────────────────────────────────────────
   `@{reviewer}`: {review body first line}
 ────────────────────────────────────────────
-Address review feedback before shipping. Run `/team-drive` to iterate.
-→ **STOP** (hard block — don't ship with unresolved change requests)
-  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+AskUserQuestion:
+  question: "PR 有 review 变更请求，如何处理？"
+  options:
+    - label: "查看 review"
+      description: "打开 PR 查看具体 feedback"
+    - label: "修复后继续"
+      description: "/team-drive — 修复 review 提出的问题"
+    - label: "取消 ship"
+      description: "返回，稍后处理"
+→ If "查看 review": run `gh pr view "$EXISTING_PR" --web` → **STOP**
+→ If "修复后继续": say "Run `/team-drive` to address review feedback" → **STOP**
+→ If "取消 ship": **STOP**
 
 - If `reviewDecision` == "APPROVED":
   Display: ✅ PR review: `approved` by *@{reviewer}*
@@ -865,11 +882,11 @@ Locate the Issue number from (in priority order):
 1. Active Contract (`$TEAMWORK_DIR/active/MISSION-*.md` frontmatter)
 2. `.mission` file (worktree mode)
 3. Current branch name — extract first numeric segment after `/` (works for both `mission/42-slug` and `bugfix/T-044-slug` patterns)
-4. `$ARGUMENTS` — if user passes `done #42` or `done 42`
+4. `$ARGUMENTS` — if user passes `done {issue}` (e.g., `done 42`)
 
 If no Issue found:
   - If current branch matches `mission/*` pattern → extract the numeric segment, then: "Issue **#{N}** (from branch name) not found. It may have been deleted. Provide the correct Issue number: `/team-ship done #NNN`" → **STOP**
-  - Otherwise → "Cannot determine Issue. Provide Issue number: `/team-ship done #042`" → **STOP**
+  - Otherwise → "Cannot determine Issue. Provide Issue number: `/team-ship done {issue}`" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 ### D2: Verify PR is merged
@@ -1177,7 +1194,7 @@ Output the following and **STOP**:
 
 **USAGE**
   `/team-ship done`           Auto-detect Issue from Contract/branch
-  `/team-ship done #042`      Specify Issue number explicitly
+  `/team-ship done {issue}`   Specify Issue number explicitly
 
 **WHAT IT DOES**
   1. Verify PR is merged (fails if PR still open)
@@ -1193,7 +1210,7 @@ Output the following and **STOP**:
 
 **TROUBLESHOOTING**
   "No merged PR found" → Check `gh pr view {branch}`. If just merged, wait a few seconds and retry.
-  "Cannot determine Issue" → Specify explicitly: `/team-ship done #042`
+  "Cannot determine Issue" → Specify explicitly: `/team-ship done {issue}`
 
 ---
 
@@ -1208,7 +1225,7 @@ Output the following and **STOP**:
 
 **USAGE**
   `/team-ship review`         Review PR for current branch
-  `/team-ship review #043`    Review specific PR number
+  `/team-ship review {pr}`    Review specific PR number
 
 **WHAT IT DOES**
   1. Find open PR for current branch

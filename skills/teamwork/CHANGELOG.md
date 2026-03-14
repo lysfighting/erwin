@@ -2,6 +2,71 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.11.2] — 2026-03-14
+
+### Fixed — VE signal dilution (final hotfix before freeze)
+
+Root cause: output templates were already VE-compliant, but **non-output text** contained 22 bare `#N`/`#NN`/`#NNN` patterns competing with 42 correct `**#NNN**` patterns (dilution ratio 0.52). LLM averages across all patterns in the prompt, producing mixed output.
+
+**Fixes by category:**
+- **team.md**: ASCII diagrams `#42` → `#042` (3 lines), usage example `#42` → `{issue}`, code comment `#42` → `#NNN`, removed ❌ WRONG example lines (2x) that showed bare issue numbers — kept only ✅ CORRECT examples, rewrote VE rule text to avoid bare number references
+- **team-issue.md**: trigger description `#42` → `{issue}`
+- **team-ship.md**: argument description `#42` → `{issue}`, error messages `#042` → `{issue}`, help text `#042`/`#043` → `{issue}`/`{pr}`
+- **team-rc.md**: GitHub release notes template `(#042)` → `(**#042**)` (4 lines)
+
+**Result**: Dilution ratio reduced from 0.52 → ~0.07 (3 remaining bare patterns are in code blocks where markdown doesn't render).
+
+**Note**: This is the final maintenance release. Teamwork v1 is now frozen. Future development moves to tw2 architecture.
+
+## [3.11.1] — 2026-03-13
+
+### Fixed — VE hyperlink enforcement (issue number bold compliance)
+
+- **team.md dashboard templates**: Replaced abstract "mentally check each line" instruction with concrete ✅/❌ examples showing correct `**#306**` vs wrong `#306` formatting. LLMs mimic examples far more reliably than they follow meta-instructions. Applied to both Solo/Leader and Member dashboard templates.
+- **Root cause**: Pre-instructions ("before you output, check...") don't work for streaming LLM generation — the model can't retroactively fix tokens. Concrete correct/wrong examples adjacent to output templates drive pattern-matching compliance.
+
+## [3.11.0] — 2026-03-13
+
+### Added — Constitution Principle 15: Never End on a Period + 10 UX dead-end fixes
+
+**New design principle**: Every skill output must end on a question (AskUserQuestion), not a period. Three patterns: success transition → choice, error recovery → fix options, terminal state → text OK.
+
+**10 lifecycle transition dead-ends fixed** (AskUserQuestion added):
+- **team-issue**: Issue created → "Claim? / Create another? / Dashboard?" (Step 8, Fix/Adopt, Batch)
+- **team-claim**: Claim completed → "Start drive? / Review Contract? / Dashboard?" (branch mode + "放弃" path)
+- **team-drive**: All tasks done → "Ship? / Self-review? / Dashboard?" (early exit, standard completion, post-manual)
+- **team-ship**: Incomplete tasks → "Drive? / Mark done? / Cancel?" + CHANGES_REQUESTED → "View? / Fix? / Cancel?"
+
+**Constitution**: Added Principle 15 to `docs/teamwork-design-constitution.md` (v1.1)
+
+## [3.10.9] — 2026-03-13
+
+### Fixed — Challenge mechanism + dashboard audit (4 fixes)
+
+- **team-issue.md Step 2**: "Factual claims are hypotheses, not axioms" — verify system state before locking claims into sub-tasks.
+- **team-claim.md Step 4c**: "Detail ≠ accuracy" — falsify concrete claims before AGREE.
+- **team-drive.md Step 1**: MANUAL tasks now go through Plan Validation (not skipped). Resume scenario correctly skips re-assessment.
+- **team-drive.md Plan Assessment scope**: "ALL types (code + MANUAL)" — MANUAL is classification, not exemption.
+- **team-drive.md Manual Ops Handoff**: AskUserQuestion upgraded to ⛔ HARD STOP with explicit options. "不需要" option now has clear destination.
+- **team.md Worktree paths**: Use absolute paths from `git worktree list`, no abbreviation (prevents LLM mis-shortening).
+- **team.md My Missions**: Explicit worktree enabled/disabled conditional. Shows `cd {path} && claude` only when worktree mode active.
+
+## [3.10.8] — 2026-03-13
+
+### Fixed — MANUAL classification: process step instead of tool list
+
+- **team-drive.md Plan Validation**: Replaced tool-enumeration approach (listing `gh`, `docker`, `curl`...) with a 3-step executability check: (1) can I do it? → code task. (2) not sure? → ask user what access is available. (3) user confirms no → MANUAL. One mechanism, not a growing list.
+- **team-drive.md Verify Acceptance Criteria**: "Attempt verification before punting" — try first, ask if uncertain.
+- **Why**: Previous v3.10.7 fix listed specific CLI tools — same O(2^C) scaling problem it tried to solve. The right fix is a decision process, not an enumeration.
+
+## [3.10.6] — 2026-03-13
+
+### Fixed — team-drive Manual Ops Handoff AskUserQuestion not firing
+
+- **Root cause**: AskUserQuestion instruction was placed AFTER the output template as a separate block. The AI treated the template (CODE COMPLETE + YOUR TURN + `/team-ship`) as a complete output and never reached the question.
+- **Fix**: Embedded AskUserQuestion directly inside the YOUR TURN output block. Removed premature `/team-ship` closing line. Added explicit "DO NOT output closing line before AskUserQuestion" instruction.
+- **UX impact**: After code tasks complete with manual tasks remaining, the user now gets an interactive choice (guide me / done / ship first / skip) instead of a passive text dump.
+
 ## [3.10.4] — 2026-03-13
 
 ### Fixed — v3.10.0-v3.10.3 audit (8 HIGH, 14 MEDIUM, 18 LOW)

@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.10.4"
+version: "3.11.2"
 ---
 
 # /team-drive — Execute Mission
@@ -356,11 +356,28 @@ Check whether all **code** sub-tasks are already checked (ignore `🔧 MANUAL` t
   EXISTING_PR=$(bash ~/.claude/commands/scripts/tw-pr.sh exists "$CURRENT_BRANCH" 2>/dev/null) || true
   ```
   - If `$EXISTING_PR` is non-empty → "All sub-tasks complete. PR **#{pr}** already exists — push to update it." → **STOP**
-  - Otherwise → "All sub-tasks complete. Run `/team-ship` to deliver." → **STOP**
+  - Otherwise → "All sub-tasks complete." then **AskUserQuestion**:
+    ```
+    question: "所有代码任务已完成，下一步？"
+    options:
+      - label: "Ship"
+        description: "/team-ship — 创建 PR"
+      - label: "自查一遍"
+        description: "Review 代码变更再 ship"
+      - label: "回 dashboard"
+        description: "/team — 总览"
+    ```
+    Route: "Ship" → `/team-ship` | "自查一遍" → show `git diff` summary, then re-ask | "回 dashboard" → `/team`
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 - If all code tasks checked AND MANUAL tasks **do** exist:
-  → Skip directly to **Completion Summary + Debrief** (Manual Ops Handoff path). Show the `🔧 YOUR TURN` block, run `AskUserQuestion`, then suggest `/team-ship`. → **STOP** after handoff.
+  → If Plan Assessment was already recorded in AI Notes (resume): skip to **Manual Ops Handoff** directly.
+  → If first execution (no Plan Assessment in AI Notes): continue to **Plan Validation** first (MANUAL tasks still require challenge — "Is it necessary?" applies to all task types).
+  → Then proceed to **Manual Ops Handoff** (Hard Stop for User Choice):
+    1. Output **🏁 CODE COMPLETE** summary
+    2. Output **🔧 YOUR TURN** block (manual task list)
+    3. **AskUserQuestion** — user must choose: 引导执行 / Done / Ship first / Skip
+    → **STOP** (requires user response before proceeding)
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
 - If unchecked code tasks remain → continue to Plan Validation and execution.
@@ -504,9 +521,9 @@ Read ALL files listed in **Context Files**. Use `Glob` and `Grep` to explore bey
 
 This is not decoration — it prevents defaulting to the first approach that "seems reasonable."
 
-### Challenge each sub-task
+### Challenge each sub-task — ALL types (code + MANUAL)
 
-For each unchecked sub-task, ask:
+MANUAL is a classification for execution, not an exemption from challenge. For each unchecked sub-task (code AND manual), ask:
 
 1. **Is it necessary?** Does this sub-task actually advance the Objective, or is it busywork / a wrong assumption about the codebase?
 2. **Is it correct?** Given what the code actually looks like, is this the right approach? Or did the planner assume a structure that doesn't exist?
@@ -529,7 +546,10 @@ For each unchecked sub-task, ask:
   🔧 [5] {task} — **MANUAL:** {requires human action — cannot be automated}
 ────────────────────────────────────────────
 
-**MANUAL classification**: Sub-tasks that require human action outside the codebase (e.g., console operations, server access, third-party configuration, deployment verification) should be tagged `🔧 MANUAL`. These tasks are NOT executed during the drive loop — they are surfaced to the user during the Manual Ops Handoff at completion.
+**MANUAL classification — executability check**: Before tagging any task MANUAL, run this step:
+1. "Can I execute this from this terminal?" → If yes → **code task**, not MANUAL.
+2. "I'm not sure — the user might have access/credentials I don't know about" → **Ask the user** via AskUserQuestion: "这个任务我可能可以帮你执行，需要什么信息/权限？" Let the user decide.
+3. Only tag MANUAL when the user confirms AI cannot perform it, or the action requires physical/GUI-only interaction with no programmatic path.
 
 ### Apply revisions
 
@@ -537,7 +557,7 @@ For each unchecked sub-task, ask:
 - **REVISE**: Update the sub-task text in the Contract file. Note the rationale with evidence (file path, code pattern, or test result) in **AI Notes**.
 - **ADD**: Insert new sub-tasks into the Contract. Sync new checkboxes to GitHub Issue body. Cite the discovery that revealed the gap.
 - **DROP**: Remove the sub-task from Contract. Note in **AI Notes** why it was dropped, with evidence from the codebase.
-- **MANUAL**: Tag with `🔧 MANUAL` in the Contract. These are skipped during execution and surfaced to the user during Manual Ops Handoff at completion. Include a concrete action hint (where to go, what to click/run).
+- **MANUAL**: Tag ONLY after the executability check above confirms AI cannot perform it. Include why.
 - **ESCALATE**: If the Objective itself appears wrong or impossible given ground truth → Use `AskUserQuestion` to alert the user. Do NOT proceed with a doomed plan.
 
 After revisions, the Contract now reflects an **executor-validated plan** — grounded in actual code, not assumptions.
@@ -556,9 +576,9 @@ After validation, ensure the final task list follows these principles:
 
 Count remaining unchecked **code** sub-tasks after Plan Validation (exclude `🔧 MANUAL` tasks — those are not executed by AI).
 
-### Zero code tasks (all MANUAL): Skip Execution
+### Zero code tasks (all MANUAL): Manual-Only Path
 
-If remaining code sub-task count is 0 (all tasks are `🔧 MANUAL`), skip the Execution Loop entirely. Proceed directly to **Completion Summary + Debrief** (Manual Ops Handoff path).
+If remaining code sub-task count is 0 (all tasks are `🔧 MANUAL`), skip the Execution Loop (no code to execute). Plan Assessment has already been completed above — proceed to **Completion Summary + Debrief** (Manual Ops Handoff path).
 
 ### Small missions (1-3 sub-tasks): Sequential Mode
 
@@ -973,6 +993,7 @@ This gate exists because LLMs sometimes complete code work but skip the checkbox
 ### Verify acceptance criteria
 Go through each acceptance criterion from the Contract. For each one:
 - Can you demonstrate it's met? (run a test, show output, etc.)
+- **Attempt verification before punting**: If you think "this needs manual verification," first try to verify it from the terminal. If uncertain, ask the user what access is available.
 - If not met → identify what's missing, implement it, commit
 
 ### Run full test suite
@@ -1112,7 +1133,19 @@ Tests:    ✅ passing
   Waves: `{N}`  Peak: `{N}`  Lead: `{N}`  STL: `{N}`  Leaf: `{N}`
 
 ────────────────────────────────────────────
-`/team-ship` to create PR
+
+**AskUserQuestion**:
+```
+question: "所有代码任务已完成，下一步？"
+options:
+  - label: "Ship"
+    description: "/team-ship — 创建 PR"
+  - label: "自查一遍"
+    description: "Review 代码变更再 ship"
+  - label: "回 dashboard"
+    description: "/team — 总览"
+```
+Route: "Ship" → `/team-ship` | "自查一遍" → show `git diff` summary, then re-ask | "回 dashboard" → `/team`
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
@@ -1133,7 +1166,6 @@ Tests:    ✅ passing
 
 **🔧 YOUR TURN** — `{manual_count}` manual steps remaining
 ────────────────────────────────────────────
-These require your action — AI cannot perform them.
 
   1. {manual task description}
      → {concrete action: where to go, what to do}
@@ -1141,15 +1173,27 @@ These require your action — AI cannot perform them.
   2. {manual task description}
      → {concrete action}
 
-  3. {manual task description}
-     → {concrete action}
-────────────────────────────────────────────
+**⛔ DO NOT output `/team-ship` or any closing line here. You MUST invoke AskUserQuestion IMMEDIATELY as part of this output. The completion summary is NOT complete until the user responds.**
 
-Then use `AskUserQuestion` to ask:
+```
+question: "Manual 步骤怎么处理？"
+options:
+  - label: "引导执行"
+    description: "AI 逐步引导，每步前确认"
+  - label: "Done — 我已完成"
+    description: "Manual 步骤已手工完成，进入验收"
+  - label: "先 ship 代码"
+    description: "先创建 PR，manual 步骤写进 PR 描述"
+  - label: "不需要"
+    description: "跳过并记录"
+```
+
+Route responses:
+
 - **"引导执行"** → AI walks user through each manual step interactively (see Guided Execution below)
-- **"Done — all manual steps complete"** → proceed to show acceptance criteria + suggest `/team-ship`
-- **"Will do later — ship PR first"** → proceed to suggest `/team-ship` (note manual steps in PR description)
-- **"Skip — not needed"** → proceed, note in AI Notes
+- **"Done — 我已完成"** → proceed to show acceptance criteria + suggest `/team-ship`
+- **"先 ship 代码"** → proceed to suggest `/team-ship` (note manual steps in PR description)
+- **"不需要"** → note "MANUAL tasks skipped — user confirmed not applicable" in AI Notes, proceed to show acceptance criteria + suggest `/team-ship`
 
 #### Guided Execution (引导执行)
 
@@ -1181,7 +1225,19 @@ After user responds, output the full acceptance criteria block and the `/team-sh
   {criterion} — {evidence or *"pending manual step"*}
 
 ────────────────────────────────────────────
-`/team-ship` to create PR
+
+**AskUserQuestion**:
+```
+question: "所有代码任务已完成，下一步？"
+options:
+  - label: "Ship"
+    description: "/team-ship — 创建 PR"
+  - label: "自查一遍"
+    description: "Review 代码变更再 ship"
+  - label: "回 dashboard"
+    description: "/team — 总览"
+```
+Route: "Ship" → `/team-ship` | "自查一遍" → show `git diff` summary, then re-ask | "回 dashboard" → `/team`
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 

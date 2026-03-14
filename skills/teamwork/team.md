@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.10.4"
+version: "3.11.2"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -57,7 +57,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.10.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.11.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -137,7 +137,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.10.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.11.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -229,7 +229,7 @@ AI generates dozens of commits per feature. These are machine noise:
   └───────────────────────────┬──────────────────────────────────┘
                               │ squash merge
                               ▼
-  develop ── feat: user login system (#42) ──►   ← 1 clean commit
+  develop ── feat: user login system (#042) ──►   ← 1 clean commit
 ```
 
 One Issue = one squash commit = one clean history entry.
@@ -254,7 +254,7 @@ Lifecycle flow:
 ```
   /team-issue → /team-claim → /team-drive → /team-ship → /team-ship done
        │              │              │              │              │
-    Issue #42    Contract +     Code + test    PR created     Cleanup
+    Issue #042   Contract +     Code + test    PR created     Cleanup
     created      branch          loop         (squash)     branch deleted
 ```
 
@@ -267,7 +267,7 @@ Lives at: `.teamwork/active/MISSION-42.md`
 
 ```
   ┌─────────────────────────────────────────────┐
-  │ GitHub Issue #42           ← source of truth│
+  │ GitHub Issue #042          ← source of truth│
   │ ─────────────────                           │
   │ Title, Objective, Sub-tasks                 │
   └──────────────┬──────────────────────────────┘
@@ -291,7 +291,7 @@ Lives at: `.teamwork/active/MISSION-42.md`
 
 Sometimes you don't follow the standard flow:
 
-  `/team auto #42`    One-shot: claim → drive → ship in one command.
+  `/team auto {issue}`    One-shot: claim → drive → ship in one command.
                       Stops at PR creation. Human merges.
 
 ```
@@ -532,7 +532,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.10.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.11.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1092,7 +1092,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.10.4` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.11.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ✅ Config updated (merge mode — existing config preserved)
    schema_version → `3`
@@ -2279,7 +2279,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.10.4"
+SKILL_VERSION="3.11.1"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -2336,7 +2336,7 @@ if [ "$WORKTREE_ENABLED" = "true" ]; then
 
   # Cross-reference: for each worktree branch, check if it matches
   # any active Contract's branch field in $TEAMWORK_DIR/active/MISSION-*.md
-  # This enables the "→ #42 title" association in the display
+  # This enables the "→ #NNN title" association in the display
   for contract in $TEAMWORK_DIR/active/MISSION-*.md; do
     [ -f "$contract" ] || continue
     grep -E '^(issue|branch|title):' "$contract" 2>/dev/null
@@ -2376,7 +2376,11 @@ Output a formatted dashboard based on user's role level.
 
 #### Solo / Leader Dashboard
 
-**⚠️ FORMATTING** — Apply Visual Encoding Standard (see header). ⛔ NO code blocks, `- ` lists, or `### ` headers anywhere in output. **⛔ BEFORE YOU OUTPUT: mentally check each line — every command/path needs backticks, every issue number needs `**#NNN**` bold.**
+**⛔ VE FORMATTING — ISSUE NUMBERS MUST BE BOLD.** Every `#` followed by digits MUST be wrapped in `**...**`. This is the #1 VE violation — if you output bare issue numbers instead of `**#NNN**`, the hyperlink coloring is lost.
+
+✅ CORRECT: `🟢 **#306** Fix auth flow` · `⚪ **#099** Add tests` · `**#153** merged`
+
+Also: commands/paths in backticks, NO code blocks, NO `- ` lists, NO `### ` headers.
 
 Output the ENTIRE dashboard as plain markdown text:
 
@@ -2393,7 +2397,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
   ⭐ {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
   · {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
   {or: → *(no mission)* if on main repo. Show ALL from `git worktree list`}
-{^ worktree_path = actual path from `git worktree list` output, e.g. ~/Project/myapp or ~/Project/myapp-wt-42-auth}
+{^ worktree_path: output the EXACT absolute path from `git worktree list`. Do NOT shorten, abbreviate, or replace any part (no `~`, no `...`, no truncation). Example: `/Users/liya/Project/collov/vi_agent/.claude/worktrees/foo` — output this full string.}
 {^ branch_color = 🟥 main/master · 🟦 pre-launch/develop · 🟧 rc/* · 🟩 mission/* · ⬜ other}
 {^ paths in backticks = purple-blue. branches in italic = dim}
 {^ color legend is on the header line — compact, not a separate footer line}
@@ -2489,7 +2493,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 **Progress bar**: Map percentage to 10 chars: `█` for filled, `░` for empty. Wrap the ENTIRE bar in backticks for color: `` `██░░░░░░░░` ``. E.g., 14% → `` `█░░░░░░░░░` ``, 50% → `` `█████░░░░░` ``.
 
-**Issue number formatting**: ALWAYS `**#NNN**` (bold + zero-pad to 3+ digits). `#99` → `**#099**`, `#7` → `**#007**`. Bold wrapping is MANDATORY — without it Claude Code renders plain text with no clickable hyperlink. Claude Code only auto-links `#NNN` (3+ digits) as GitHub issues — two-digit `#NN` is NOT linked.
+**Issue number formatting**: ALWAYS `**#NNN**` (bold + zero-pad to 3+ digits). Two-digit → three-digit: `**#099**`, `**#007**`. Bold wrapping is MANDATORY — without it Claude Code renders plain text with no clickable hyperlink. Claude Code only auto-links 3+ digit patterns as GitHub issues.
 
 **`{ci_icon}`** shorthand: `✅` if all checks pass, `❌` if any fail, `⏳` if pending/running.
 
@@ -2510,7 +2514,11 @@ Skills should NEVER suggest raw git/rm/shell commands as remediation. Instead, a
 
 #### Member Dashboard
 
-**⚠️ FORMATTING** — Apply Visual Encoding Standard (see header). ⛔ NO code blocks, `- ` lists, or `### ` headers anywhere in output. **⛔ BEFORE YOU OUTPUT: mentally check each line — every command/path needs backticks, every issue number needs `**#NNN**` bold.**
+**⛔ VE FORMATTING — ISSUE NUMBERS MUST BE BOLD.** Every `#` followed by digits MUST be wrapped in `**...**`. This is the #1 VE violation — if you output bare issue numbers instead of `**#NNN**`, the hyperlink coloring is lost.
+
+✅ CORRECT: `🟢 **#306** Fix auth flow` · `⚪ **#099** Add tests` · `**#153** merged`
+
+Also: commands/paths in backticks, NO code blocks, NO `- ` lists, NO `### ` headers.
 
 Focus on user's own work, then team summary below `────`.
 
@@ -2529,7 +2537,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
   ⭐ {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
   · {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
   {or: → *(no mission)* if on main repo. Show ALL from `git worktree list`}
-{^ worktree_path = actual path from `git worktree list` output}
+{^ worktree_path: output the EXACT absolute path from `git worktree list`. Do NOT shorten, abbreviate, or replace any part (no `~`, no `...`, no truncation). Example: `/Users/liya/Project/collov/vi_agent/.claude/worktrees/foo` — output this full string.}
 {^ branch_color = 🟥 main/master · 🟦 pre-launch/develop · 🟧 rc/* · 🟩 mission/* · ⬜ other}
 {^ paths in backticks = purple-blue. branches in italic = dim}
 {^ color legend is on the header line — compact, not a separate footer line}
@@ -2538,12 +2546,17 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 🎯 **My Missions**
   {For each issue assigned to me with $MISSION_LABEL, check: does a Contract exist AND a local branch/worktree exist?}
   {YES — claimed, actively working:}
-  🟢 **#{N}** {title} {priority_dot} → *wip*
+  🟢 **#{N}** {title} {priority_dot} → *{status}*
+    {If WORKTREE_ENABLED:}
+    *{branch}* → `cd {worktree_path} && claude`
+    {If worktree DISABLED:}
     *{branch}* → `/team-drive`
   {NO — assigned but not yet claimed (no Contract or no branch/worktree):}
   ⚪ **#{N}** {title} {priority_dot} → *assigned* · `/team-claim` **#{N}**
   {If none:} (none)
 {^ 🟢 = claimed+branch exists. ⚪ = assigned only, needs `/team-claim`. Branch italic, commands in backticks.}
+{^ worktree_path = same rule as Worktrees section (absolute path, no abbreviation).}
+{^ status = from GitHub Issue labels: wip/done/review. If Issue has done label show ⚠️ done.}
 
 🔀 **My PRs**
   **#{pr}** {title}  {ci_icon}  {review}

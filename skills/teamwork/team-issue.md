@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "3.10.4"
+version: "3.11.2"
 ---
 
 # /team-issue — Mission Contract Issue Manager
@@ -31,7 +31,7 @@ version: "3.10.4"
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
-**`/team-issue` — Mission Contract Issue Manager** (`v3.10.4`)
+**`/team-issue` — Mission Contract Issue Manager** (`v3.11.1`)
 
 **USAGE**
   `/team-issue <description>`                    Create MC (solo: self-assign; team: prompt)
@@ -212,6 +212,8 @@ Any team member can create Issues and assign to anyone — no role restriction.
 ### Step 2: Analyze User Description
 
 Before generating fields, separate bone from flesh: what is the irreducible need vs. the user's suggested approach? Test the opposite: what happens if we don't do this at all? If you see a better framing, say so before proceeding.
+
+**Factual claims are hypotheses, not axioms.** When the user states something is broken, missing, or misconfigured — verify before accepting. Detail and specificity do not equal correctness. Check actual system state (run history, config values, test results) before locking claims into sub-tasks.
 
 From the user's natural language input, use AI reasoning to determine:
 
@@ -394,7 +396,22 @@ Non-fatal: if notification fails, warn but continue.
   {If notifications sent:} **Notified** {channels}
 
 ────────────────────────────────────────────
-`/team-claim` **#{issue}** to generate Contract + branch
+
+Use `AskUserQuestion`:
+```
+question: "Issue 已创建，下一步？"
+options:
+  - label: "Claim 这个 Issue"
+    description: "/team-claim #{issue} — 生成 Contract + 分支"
+  - label: "继续创建"
+    description: "再创建一个 Issue"
+  - label: "看 dashboard"
+    description: "/team — 回到总览"
+```
+
+If "Claim 这个 Issue" → output `/team-claim` **#{issue}** and **STOP**
+If "继续创建" → output "描述下一个 Issue" and **STOP**
+If "看 dashboard" → output `/team` and **STOP**
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
@@ -568,7 +585,7 @@ gh issue edit {issue} --repo "$REPO" \
 
 ## Operation Fix — Bring Untracked Issue into Teamwork
 
-> Triggered by `/team-issue fix #42`. Adds teamwork labels to an existing GitHub Issue so it appears on `/team` dashboard. Optionally reformats the body into MC structure.
+> Triggered by `/team-issue fix {issue}`. Adds teamwork labels to an existing GitHub Issue so it appears on `/team` dashboard. Optionally reformats the body into MC structure.
 
 ### A1: Fetch current Issue
 
@@ -670,7 +687,19 @@ gh issue edit {issue} --repo "$REPO" --body "{reformatted body}"
   **Milestone**  `{milestone}` or "—"
 
 ────────────────────────────────────────────
-`/team-claim` **#{issue}** to generate Contract + branch
+
+Use `AskUserQuestion`:
+```
+question: "Issue 已收编，下一步？"
+options:
+  - label: "Claim 这个 Issue"
+    description: "/team-claim #{issue} — 生成 Contract + 分支"
+  - label: "看 dashboard"
+    description: "/team — 回到总览"
+```
+
+If "Claim 这个 Issue" → output `/team-claim` **#{issue}** and **STOP**
+If "看 dashboard" → output `/team` and **STOP**
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
@@ -802,7 +831,19 @@ bash ~/.claude/commands/scripts/tw-notify.sh mc.created \
   {If notifications:} **Notified** {channels}
 
 ────────────────────────────────────────────
-`/team-claim` **#{N}** to start working
+
+Use `AskUserQuestion`:
+```
+question: "批量创建完成，下一步？"
+options:
+  - label: "Claim 第一个 Issue"
+    description: "/team-claim #{N1} — 生成 Contract + 分支"
+  - label: "看 dashboard"
+    description: "/team — 回到总览"
+```
+
+If "Claim 第一个 Issue" → output `/team-claim` **#{N1}** and **STOP**
+If "看 dashboard" → output `/team` and **STOP**
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 

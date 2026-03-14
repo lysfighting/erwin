@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "3.10.4"
+version: "3.11.2"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -125,7 +125,17 @@ options:
   - If "Yes, start driving" → invoke `/team-drive` → **STOP**
   - If "No, I'll do it manually" → **STOP**
 - If "交付当前 mission" → output "Run `/team-ship`" → **STOP**
-- If "放弃当前 mission" → delete Contract file → output "Contract cleared. You can now `/team-claim` a new Issue." → **STOP**
+- If "放弃当前 mission" → delete Contract file → output "Contract cleared." → Use `AskUserQuestion`:
+  ```
+  question: "下一步？"
+  options:
+    - label: "Claim 新 Issue"
+      description: "/team-claim — 认领另一个 Issue"
+    - label: "回 Dashboard"
+      description: "/team — 总览"
+  ```
+  - If "Claim 新 Issue" → invoke `/team-claim` → **STOP**
+  - If "回 Dashboard" → invoke `/team` → **STOP**
 - If "取消" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
@@ -306,6 +316,8 @@ bash ~/.claude/commands/scripts/tw-contract.sh store-comment-timestamp "$TEAMWOR
 
 Display the generated Contract summary (Objective, Sub-tasks, Success Criteria) and confirm before creating branch. State your position as AGREE+EXTEND, CHALLENGE+PROPOSE, or REDIRECT. If proposing an alternative, state what it costs. Never silent compliance.
 
+**Detail ≠ accuracy.** Before AGREE, try to falsify each concrete claim — especially factual assertions about system state (what's broken, what's missing, which environments are affected). A confident-sounding Issue with specific IPs and step counts can still be partially wrong. If you didn't independently verify a claim, you cannot AGREE with it.
+
 Use `AskUserQuestion`:
 ```
 question: "Contract ready. Confirm to create branch?"
@@ -403,10 +415,23 @@ Contract:  `$TEAMWORK_DIR/active/MISSION-{issue}.md`
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
 {If $MODE = "branch":}
-────────────────────────────────────────────
-`/team-drive` to execute │ `/team-ship` when done
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+
+Use `AskUserQuestion`:
+```
+question: "Contract 已生成，开始执行？"
+options:
+  - label: "开始 drive"
+    description: "/team-drive — 执行 mission"
+  - label: "先看 Contract"
+    description: "打开 Contract 文件确认内容"
+  - label: "回 dashboard"
+    description: "/team — 总览"
+```
+- If "开始 drive" → invoke `/team-drive` → **STOP**
+- If "先看 Contract" → read and display Contract file content → **STOP**
+- If "回 dashboard" → invoke `/team` → **STOP**
 
 ---
 

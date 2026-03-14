@@ -37,6 +37,10 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       TARGET_DIR="$2"
+      # Auto-detect project root: if target has .claude/ but isn't already .claude/commands, append it
+      if [[ -d "$TARGET_DIR/.claude" && ! "$TARGET_DIR" == */.claude/commands ]]; then
+        TARGET_DIR="$TARGET_DIR/.claude/commands"
+      fi
       shift 2
       ;;
     --help|-h)
