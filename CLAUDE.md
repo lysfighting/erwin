@@ -25,14 +25,16 @@ See `_project/GOALS.md` for OKRs and north star.
 erwin/
 ├── CLAUDE.md               ← YOU ARE HERE
 ├── CHANGELOG.md            ← Project version history
-├── install.sh              ← Skills installer (symlinks to ~/.claude/commands/)
+├── install.sh              ← Skills installer (legacy→commands/, modern→skills/)
 │
 ├── skills/                 ← Skills Factory (source of truth for all erwin skills)
 │   ├── README.md           ← Skill index + contribution guide
 │   ├── erwin-init/         ← /erwin-init skill (v1.0.0)
 │   ├── visual-test/        ← /visual-test skill (v1.0.0)
 │   ├── session-record/     ← /session-record skill (v1.0.0)
-│   └── teamwork/           ← /team, /team-issue, /team-claim, /team-drive, /team-ship, /team-rc (v3.10.4)
+│   ├── wing/               ← /wing, /wing-issue, /wing-claim, /wing-drive, /wing-ship, /wing-rc (v0.1.0)
+│   ├── skill-tester/       ← skill-lint.sh (Layer 1 static analysis)
+│   └── teamwork/           ← LEGACY — /team-* skills (v3.11.2, superseded by wing)
 │
 ├── _project/               ← Project Intelligence Layer
 │   ├── GOALS.md            ← Vision + OKRs (read when you lose direction)
@@ -97,6 +99,9 @@ See `docs/drive-showcase-v2-architecture.md`. Four-Act structure:
 | ADRs | `_project/decisions/` |
 | Skill ideas pipeline | `_project/ideas/skills/` |
 | Released skills | `skills/` |
+| Wing skills (current) | `skills/wing/` |
+| Wing architecture | `_project/ideas/skills/tw2-architecture.md` |
+| Teamwork skills (legacy) | `skills/teamwork/` |
 | Teamwork manual | `docs/teamwork-ai-manual.md` |
 | Visual encoding standard | `docs/visual-encoding-standard.md` |
 | Docs index | `docs/README.md` |
