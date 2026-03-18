@@ -21,7 +21,7 @@
 #   2 — label operation failed (gh error)
 #   3 — verification failed (label mismatch)
 #
-# READS: .teamwork/config.yml or .teamspace/config.yml via wing-config.sh
+# READS: .wing/config.yml (or .teamwork/.teamspace for compat) via wing-config.sh
 
 set -euo pipefail
 

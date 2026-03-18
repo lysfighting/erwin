@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# setup-github-labels.sh — Create GitHub labels for teamwork
+# setup-github-labels.sh — Create GitHub labels for wing
 #
 # Usage:
-#   bash ~/.claude/commands/scripts/setup-github-labels.sh
-#   bash ~/.claude/commands/scripts/setup-github-labels.sh OWNER/REPO
+#   bash setup-github-labels.sh
+#   bash setup-github-labels.sh OWNER/REPO
 #
-# Run from the project root (reads .teamwork/config.yml or .teamspace/config.yml for prefixes).
+# Run from the project root (reads .wing/config.yml for prefixes, fallback .teamwork/.teamspace).
 # Creates labels with --force so safe to re-run (updates existing labels).
 
 set -euo pipefail
@@ -24,7 +24,7 @@ fi
 
 # Read label prefixes and mc_label from config via resolve-labels
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TW_CONFIG="$SCRIPT_DIR/tw-config.sh"
+TW_CONFIG="$SCRIPT_DIR/wing-config.sh"
 
 STATUS_PREFIX="status:"
 PRIORITY_PREFIX="priority:"
@@ -40,7 +40,7 @@ else
   MISSION_LABEL=""
 fi
 
-echo "Creating teamwork labels for $REPO"
+echo "Creating wing labels for $REPO"
 echo "  Mission label:   ${MC_LABEL}"
 echo "  Status prefix:   ${STATUS_PREFIX}"
 echo "  Priority prefix: ${PRIORITY_PREFIX}"
