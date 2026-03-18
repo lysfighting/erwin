@@ -8,7 +8,7 @@ version: "0.1.0"
 
 > You own the delivery. Guard the quality boundary between code and production. Every detail you catch here saves a revert later.
 
-**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/../reference/ve-standard.md`)
+**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`)
 
 **User input**: $ARGUMENTS
 
@@ -45,12 +45,12 @@ NEXT: After merge → `/wing-ship done`
 
 ```bash
 CURRENT=$(git branch --show-current)
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" protect-check 2>/dev/null || {
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" protect-check 2>/dev/null || {
   echo "ERROR: On protected branch ($CURRENT). Switch to mission branch first."
   # STOP
 }
 GH_USER=$(gh api user --jq '.login' 2>/dev/null)
-WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" detect-dir 2>/dev/null) || {
+WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" detect-dir 2>/dev/null) || {
   echo "No wing config found. Run /wing init first."
   # STOP
 }
@@ -59,7 +59,7 @@ WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" detect-dir 2>/de
   💡 Something wrong? Run `/wing doctor` to diagnose, or `/wing doctor fix` to auto-repair.
 
 ```bash
-eval "$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" resolve-labels 2>/dev/null)"
+eval "$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" resolve-labels 2>/dev/null)"
 ```
 
 ## Step 1: Find Active Contract
@@ -77,7 +77,7 @@ Read Contract. Extract: issue, title, url, branch, priority, Sub-tasks, Success 
 ### Worktree Guard
 
 ```bash
-GUARD_RESULT=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" worktree-guard "$CONTRACT_BRANCH" 2>&1) || GUARD_EXIT=$?
+GUARD_RESULT=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" worktree-guard "$CONTRACT_BRANCH" 2>&1) || GUARD_EXIT=$?
 ```
 
 If mismatch → AskUserQuestion: "新开 tab 切到 worktree" / "在主仓库继续" / "关闭 worktree 模式"
@@ -109,7 +109,7 @@ If uncommitted changes → AskUserQuestion: "Commit all" / "Review first" / "Sta
 ### 2d: Run tests
 
 ```bash
-CI_ENABLED=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" quality.ci "false" 2>/dev/null)
+CI_ENABLED=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" quality.ci "false" 2>/dev/null)
 ```
 
 If CI enabled → skip local pre-flight (CI guards merge). Otherwise → run service-aware tests. Fail → **STOP**.
@@ -130,7 +130,7 @@ Store results for PR body injection (`$INFRA_IMPACT_ITEMS`).
 ## Step 3: Push
 
 ```bash
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" push {branch}
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" push {branch}
 ```
 
 If fails → suggest `/wing-ship sync` then retry.
@@ -150,7 +150,7 @@ PR body from Contract: Objective, Changes (completed code tasks), Manual Steps (
 ### 4c: Create PR
 
 ```bash
-PR_RESULT=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-pr.sh" create {issue} "${COMMIT_TYPE}: {title}" "$PR_BODY" "$BASE_BRANCH" "{branch}")
+PR_RESULT=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-pr.sh" create {issue} "${COMMIT_TYPE}: {title}" "$PR_BODY" "$BASE_BRANCH" "{branch}")
 ```
 
 ### 4d-f: Post comment + labels + notification
@@ -190,7 +190,7 @@ From: Contract → `.mission` → branch name → `$ARGUMENTS`
 ### D2: Verify PR merged
 
 ```bash
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-pr.sh" verify-merged "$BRANCH"
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-pr.sh" verify-merged "$BRANCH"
 ```
 
 If not merged → "PR must be merged first." → **STOP**
@@ -227,7 +227,7 @@ If on base → "Nothing to sync." → **STOP**
 ### S2: Fetch and rebase
 
 ```bash
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" rebase "$BASE_BRANCH"
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" rebase "$BASE_BRANCH"
 ```
 
 If conflicts → AI resolves: read both sides, merge intent, preserve mission changes. Flag ambiguous resolutions.

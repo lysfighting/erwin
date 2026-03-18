@@ -8,7 +8,7 @@ version: "0.1.0"
 
 > GitHub-first autonomous development protocol. Push-based task assignment.
 
-**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/../reference/ve-standard.md`)
+**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`)
 
 **User input**: $ARGUMENTS
 
@@ -102,7 +102,7 @@ if [ -z "$GH_USER" ]; then
   echo "ERROR: Run 'gh auth login' first."
   exit 1
 fi
-WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" detect-dir 2>/dev/null) || WING_DIR=""
+WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" detect-dir 2>/dev/null) || WING_DIR=""
 ```
 
 ## Step 1: Route — Init or Dashboard?
@@ -112,7 +112,7 @@ If `$WING_DIR` is empty OR `$ARGUMENTS` is `init`:
 
 If config exists → check membership:
 ```bash
-USER_LEVEL=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" get-user-level "$GH_USER" 2>/dev/null)
+USER_LEVEL=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" get-user-level "$GH_USER" 2>/dev/null)
 ```
 If user not in roster → auto-add via onboarding → continue to Dashboard.
 
@@ -131,7 +131,7 @@ Display config with edit instructions. **STOP**.
 ## Operation Queue
 
 ```bash
-eval "$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" resolve-labels 2>/dev/null)"
+eval "$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" resolve-labels 2>/dev/null)"
 gh issue list --label "$MISSION_LABEL" --state open --json number,title,assignees,labels,milestone --limit 50
 ```
 
@@ -158,9 +158,9 @@ Retroactive closure for code-first workflows: detect state → create Issue → 
 ### Fetch data (parallel)
 
 ```bash
-eval "$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" resolve-labels 2>/dev/null)"
-BASE_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" conventions.base_branch "main" 2>/dev/null)
-CURRENT_VERSION=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" versions.current "" 2>/dev/null)
+eval "$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" resolve-labels 2>/dev/null)"
+BASE_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" conventions.base_branch "main" 2>/dev/null)
+CURRENT_VERSION=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" versions.current "" 2>/dev/null)
 ```
 
 **Parallel API calls:**

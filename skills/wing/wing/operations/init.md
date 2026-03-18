@@ -9,7 +9,7 @@ Init modifies config + commits to base branch — MUST run from main repo.
 
 ```bash
 if [ -f .mission ]; then
-  MAIN_REPO=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" worktree-main-repo)
+  MAIN_REPO=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" worktree-main-repo)
   echo "⚠️ /wing init must run from main repo. cd $MAIN_REPO"
   # STOP
 fi
@@ -141,7 +141,7 @@ Create `.githooks/pre-commit` and `.githooks/pre-push`. Configure: `git config c
 ## Step 6: Setup GitHub Labels
 
 ```bash
-bash "${CLAUDE_SKILL_DIR}/../scripts/setup-github-labels.sh"
+bash "${CLAUDE_SKILL_DIR}/scripts/setup-github-labels.sh"
 ```
 
 Creates: `mission`, `status:wip`, `status:review`, `status:done`, `priority:P0`..`P3`, `size:S`..`XL`

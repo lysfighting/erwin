@@ -32,7 +32,7 @@ If milestone already exists → warn but continue (use existing).
 
 ```bash
 if [ -n "$MILESTONE_TITLE" ]; then
-  MILESTONE_TITLE=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" milestone-resolve "$MILESTONE_TITLE" 2>/dev/null)
+  MILESTONE_TITLE=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" milestone-resolve "$MILESTONE_TITLE" 2>/dev/null)
 fi
 ```
 
@@ -84,7 +84,7 @@ If individual MC creation fails → warn, continue with remaining.
 ## B6: Notify
 
 ```bash
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-notify.sh" milestone.created \
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-notify.sh" milestone.created \
   --title "$MILESTONE_TITLE" --mc_count "$MC_COUNT"
 ```
 

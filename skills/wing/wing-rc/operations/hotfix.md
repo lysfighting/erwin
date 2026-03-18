@@ -64,7 +64,7 @@ Auto-merge → poll. Fallback: watch CI → direct merge.
 
 ```bash
 git fetch origin "$PROD_BRANCH"
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" tag "$HOTFIX_VERSION" "origin/$PROD_BRANCH"
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" tag "$HOTFIX_VERSION" "origin/$PROD_BRANCH"
 ```
 
 Create GitHub Release with hotfix notes.

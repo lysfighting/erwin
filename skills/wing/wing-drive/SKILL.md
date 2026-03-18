@@ -10,7 +10,7 @@ version: "0.1.0"
 
 > Read your Mission Contract, validate the plan against actual code, then execute — sequentially for small missions, with team + wave parallelism for large ones.
 
-**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/../reference/ve-standard.md`)
+**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`)
 
 **User input**: $ARGUMENTS
 
@@ -43,7 +43,7 @@ if [ -f .mission ]; then
   WORKTREE_MODE=true
   MISSION_ISSUE=$(cat .mission)
 fi
-WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" detect-dir 2>/dev/null) || WING_DIR="NO_CONFIG"
+WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" detect-dir 2>/dev/null) || WING_DIR="NO_CONFIG"
 ```
 
 - No config → "**ERROR:** Wing not initialized. Run `/wing` first." → **STOP**
@@ -62,7 +62,7 @@ Read Contract fully. Extract: issue, title, branch, priority, Objective, Sub-tas
 ## Step 0b: Freshness Checks
 
 ```bash
-FRESHNESS=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-contract.sh" check-freshness "$CONTRACT_PATH" {issue} 2>/dev/null) || true
+FRESHNESS=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-contract.sh" check-freshness "$CONTRACT_PATH" {issue} 2>/dev/null) || true
 ```
 
 - FRESH → continue
@@ -72,7 +72,7 @@ FRESHNESS=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-contract.sh" check-freshne
 ### Comment Check
 
 ```bash
-COMMENT_STATUS=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-contract.sh" check-comments {issue} "$LAST_COMMENT_CHECK" 2>/dev/null) || true
+COMMENT_STATUS=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-contract.sh" check-comments {issue} "$LAST_COMMENT_CHECK" 2>/dev/null) || true
 ```
 
 If NEW comments: display them. If direction-changing → AskUserQuestion. Update timestamp.
@@ -84,7 +84,7 @@ Check for `🔗 Cross-MC` comments. If found → display as advisory, inject int
 ## Step 0c: Worktree Guard
 
 ```bash
-GUARD_RESULT=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" worktree-guard "$CONTRACT_BRANCH" 2>&1) || GUARD_EXIT=$?
+GUARD_RESULT=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" worktree-guard "$CONTRACT_BRANCH" 2>&1) || GUARD_EXIT=$?
 ```
 
 If mismatch → AskUserQuestion: "新开 tab 切到 worktree" / "在主仓库继续" / "关闭 worktree 模式"
@@ -197,8 +197,8 @@ Scan for non-code changes: config files, new dependencies, new env vars, remote 
 ```bash
 git add {specific files}
 git commit -m "{type}({scope}): {description} | Mission: #{issue}"
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-contract.sh" toggle-task "$CONTRACT_PATH" {N}
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-contract.sh" sync-all-checkboxes "$CONTRACT_PATH" $ISSUE_NUMBER
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-contract.sh" toggle-task "$CONTRACT_PATH" {N}
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-contract.sh" sync-all-checkboxes "$CONTRACT_PATH" $ISSUE_NUMBER
 ```
 
 ### Execution Discipline

@@ -8,12 +8,12 @@
 
 ```bash
 GH_USER=$(gh api user --jq '.login' 2>/dev/null)
-WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" detect-dir 2>/dev/null) || {
+WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" detect-dir 2>/dev/null) || {
   echo "Wing not initialized. Run /wing first."
   # STOP
 }
-BASE_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" conventions.base_branch "main" 2>/dev/null)
-eval "$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" resolve-labels 2>/dev/null)"
+BASE_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" conventions.base_branch "main" 2>/dev/null)
+eval "$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" resolve-labels 2>/dev/null)"
 ```
 
 ## Data Collection (parallel)

@@ -10,7 +10,7 @@ version: "0.1.0"
 
 > Create, view, comment, update, or batch-create GitHub Issues in mission-contract format.
 
-**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/../reference/ve-standard.md`)
+**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`)
 
 **User input**: $ARGUMENTS
 
@@ -61,7 +61,7 @@ fi
 ```
 
 ```bash
-WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" detect-dir 2>/dev/null) || {
+WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" detect-dir 2>/dev/null) || {
   echo "No wing config found. Run /wing init first."
   # STOP
 }
@@ -73,22 +73,22 @@ WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" detect-dir 2>/de
 Read `$WING_DIR/config.yml` → extract labels, members, roles.
 
 ```bash
-eval "$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" resolve-labels 2>/dev/null)"
+eval "$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" resolve-labels 2>/dev/null)"
 ```
 
 ```bash
 REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
-BASE_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" conventions.base_branch "main" 2>/dev/null)
+BASE_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" conventions.base_branch "main" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-main}"
 
 # Milestone binding — mandatory when versions.current is configured
-CURRENT_VERSION=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" versions.current "" 2>/dev/null)
+CURRENT_VERSION=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" versions.current "" 2>/dev/null)
 ```
 
 ### Team Mode Detection
 
 ```bash
-TEAM_MODE=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" team-mode 2>/dev/null)
+TEAM_MODE=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" team-mode 2>/dev/null)
 ```
 
 - If `TEAM_MODE == "solo"` → **SOLO_MODE=true** (auto-assign to self)
@@ -118,13 +118,13 @@ if echo "$ARGUMENTS" | grep -q '\-\-milestone'; then
 fi
 MILESTONE="${MILESTONE_OVERRIDE:-$CURRENT_VERSION}"
 if [ -n "$MILESTONE" ]; then
-  MILESTONE=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" milestone-resolve "$MILESTONE" 2>/dev/null)
+  MILESTONE=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" milestone-resolve "$MILESTONE" 2>/dev/null)
 fi
 ```
 
 **Extract @assignee** (if present):
 - Find `@mention` at end of description
-- Resolve: `ASSIGNEE_GH=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" resolve-member "{mention}" 2>/dev/null)`
+- Resolve: `ASSIGNEE_GH=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" resolve-member "{mention}" 2>/dev/null)`
 - Remove `@mention` from description text
 - If resolve fails → output stderr (lists available members) → **STOP**
   💡 Something wrong? Run `/wing doctor` to diagnose, or `/wing doctor fix` to auto-repair.
@@ -247,7 +247,7 @@ If milestone doesn't exist → AskUserQuestion: "创建 milestone" / "跳过"
 ### Step 7: Notify
 
 ```bash
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-notify.sh" mc.created \
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-notify.sh" mc.created \
   --issue "$ISSUE_NUMBER" --title "$TITLE" --assignee "$ASSIGNEE"
 ```
 

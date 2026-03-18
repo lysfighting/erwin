@@ -8,7 +8,7 @@ version: "0.1.0"
 
 > You own the release cadence. Every RC is a contract with users — what you ship defines trust. Verify before promoting, and never rush a release you wouldn't bet your reputation on.
 
-**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/../reference/ve-standard.md`)
+**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`)
 
 **User input**: $ARGUMENTS
 
@@ -47,24 +47,24 @@ If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 ```bash
 # Worktree guard — RC must run from main repo
 if [ -f .mission ]; then
-  MAIN_REPO=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" worktree-main-repo)
+  MAIN_REPO=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" worktree-main-repo)
   echo "⚠️ /wing-rc must run from main repo. cd $MAIN_REPO"
   # STOP
 fi
 
-WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" detect-dir 2>/dev/null) || {
+WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" detect-dir 2>/dev/null) || {
   echo "No wing config found. Run /wing init first."
   # STOP
 }
 
 REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
-VERSION_PREFIX=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" versions.current "" 2>/dev/null)
-BASE_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" conventions.base_branch "develop" 2>/dev/null)
+VERSION_PREFIX=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" versions.current "" 2>/dev/null)
+BASE_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" conventions.base_branch "develop" 2>/dev/null)
 BASE_BRANCH="${BASE_BRANCH:-develop}"
-PROD_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" conventions.production_branch "main" 2>/dev/null)
+PROD_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" conventions.production_branch "main" 2>/dev/null)
 PROD_BRANCH="${PROD_BRANCH:-main}"
-STAGING_WORKFLOW=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" deploy.staging_workflow "" 2>/dev/null)
-PROD_WORKFLOW=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" deploy.production_workflow "" 2>/dev/null)
+STAGING_WORKFLOW=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" deploy.staging_workflow "" 2>/dev/null)
+PROD_WORKFLOW=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" deploy.production_workflow "" 2>/dev/null)
 ```
 
 - No repo → **STOP**. No `versions.current` → **STOP**.
@@ -77,7 +77,7 @@ PROD_WORKFLOW=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" deploy.prod
 ### Step 1: RC Uniqueness Check
 
 ```bash
-RC_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" find-rc 2>/dev/null)
+RC_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" find-rc 2>/dev/null)
 RC_EXIT=$?
 ```
 
@@ -86,7 +86,7 @@ If RC exists → AskUserQuestion: "Promote" / "Cancel" / "退出". Route accordi
 ### Step 2: Derive Next Version
 
 ```bash
-NEXT_VERSION=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" next-version "$VERSION_PREFIX")
+NEXT_VERSION=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" next-version "$VERSION_PREFIX")
 ```
 
 ### Step 3: Verify Develop CI
@@ -108,7 +108,7 @@ AskUserQuestion: "确认" / "取消"
 ### Step 5: Cut RC Branch
 
 ```bash
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" cut-release "$NEXT_VERSION"
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" cut-release "$NEXT_VERSION"
 ```
 
 Does NOT checkout or modify working tree.
@@ -134,7 +134,7 @@ If `STAGING_WORKFLOW` set → `gh workflow run "$STAGING_WORKFLOW" --ref "rc/$NE
 ### C1: Find active RC
 
 ```bash
-RC_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" find-rc 2>/dev/null)
+RC_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" find-rc 2>/dev/null)
 ```
 
 None → "No active RC to cancel." → **STOP**. Multiple → "Delete stale ones first." → **STOP**

@@ -67,7 +67,7 @@ gh issue edit {issue} --repo "$REPO" \
 If milestone should be set:
 ```bash
 if [ -n "$CURRENT_VERSION" ]; then
-  MILESTONE=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" milestone-resolve "$CURRENT_VERSION" 2>/dev/null)
+  MILESTONE=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" milestone-resolve "$CURRENT_VERSION" 2>/dev/null)
   gh issue edit {issue} --repo "$REPO" --milestone "${MILESTONE:-$CURRENT_VERSION}"
 fi
 ```

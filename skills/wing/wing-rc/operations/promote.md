@@ -9,7 +9,7 @@ Same config as Prepare Step 1 (worktree guard, REPO, VERSION_PREFIX, BASE_BRANCH
 ## P2: Find Active RC
 
 ```bash
-RC_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" find-rc 2>/dev/null)
+RC_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" find-rc 2>/dev/null)
 RC_EXIT=$?
 ```
 
@@ -63,7 +63,7 @@ Try auto-merge first:
 ```bash
 gh pr merge "$PR_NUMBER" --squash --auto \
   --subject "release: $VERSION" --body "$RELEASE_BODY" --repo "$REPO"
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-pr.sh" wait-merged "$PR_NUMBER" "$REPO"
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-pr.sh" wait-merged "$PR_NUMBER" "$REPO"
 ```
 
 If `--auto` fails → watch CI → direct merge fallback.
@@ -75,7 +75,7 @@ git fetch origin "$PROD_BRANCH"
 if git rev-parse "$VERSION" >/dev/null 2>&1; then
   echo "Tag $VERSION already exists — skipping"
 else
-  bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" tag "$VERSION" "origin/$PROD_BRANCH"
+  bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" tag "$VERSION" "origin/$PROD_BRANCH"
 fi
 ```
 

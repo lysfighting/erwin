@@ -10,7 +10,7 @@ version: "0.1.0"
 
 > Claim a GitHub Issue, generate an AI-optimized Mission Contract, and create your working branch.
 
-**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/../reference/ve-standard.md`)
+**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`)
 
 **User input**: $ARGUMENTS
 
@@ -59,7 +59,7 @@ fi
 
 ```bash
 # Config (support both directory names)
-WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" detect-dir 2>/dev/null) || {
+WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" detect-dir 2>/dev/null) || {
   echo "No wing config found. Run /wing init first."
   # STOP
 }
@@ -72,7 +72,7 @@ WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" detect-dir 2>/de
 Read `$WING_DIR/config.yml` → extract team roster, conventions, project settings.
 
 ```bash
-eval "$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" resolve-labels 2>/dev/null)"
+eval "$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" resolve-labels 2>/dev/null)"
 # Now MISSION_LABEL, STATUS_PREFIX, PRIORITY_PREFIX are set
 ```
 
@@ -206,7 +206,7 @@ Also extract from the JSON response:
 ```bash
 ISSUE_MILESTONE=$(echo "$ISSUE_DATA" | jq -r '.milestone.title // empty' 2>/dev/null)
 if [ -z "$ISSUE_MILESTONE" ]; then
-  ISSUE_MILESTONE=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" versions.current "" 2>/dev/null)
+  ISSUE_MILESTONE=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" versions.current "" 2>/dev/null)
 fi
 ```
 
@@ -232,7 +232,7 @@ labels: [{labels}]
 branch: mission/{issue}-{slug}-{user}
 milestone: "{milestone — from Issue JSON, falls back to config versions.current, or 'none'}"
 claimed: {ISO_TIMESTAMP}
-issue_content_hash: "$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-contract.sh" hash "$TITLE" "$BODY")"
+issue_content_hash: "$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-contract.sh" hash "$TITLE" "$BODY")"
 ---
 
 # MISSION-{issue}: {title}
@@ -281,7 +281,7 @@ Use `Glob` and `Grep` with keywords from the Issue title and objective to discov
 From the `comments` field fetched in Step 3, filter using the script:
 
 ```bash
-FILTERED_COMMENTS=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-contract.sh" read-comments {issue} --exclude-bot --exclude-lifecycle 2>/dev/null) || true
+FILTERED_COMMENTS=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-contract.sh" read-comments {issue} --exclude-bot --exclude-lifecycle 2>/dev/null) || true
 ```
 
 If `$FILTERED_COMMENTS` is empty or `[]` → skip Pre-Claim Discussion section entirely, but still store timestamp.
@@ -302,7 +302,7 @@ If comments exist after filtering:
 After Contract creation, store the comment timestamp:
 
 ```bash
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-contract.sh" store-comment-timestamp "$WING_DIR/active/MISSION-{issue}.md" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-contract.sh" store-comment-timestamp "$WING_DIR/active/MISSION-{issue}.md" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ```
 
 ---
@@ -337,9 +337,9 @@ options:
 The script reads `git config --local wing.worktree` and automatically chooses the correct path (branch-only vs worktree). You do NOT need to check worktree mode yourself.
 
 ```bash
-SLUG=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" slugify "$ISSUE_TITLE")
+SLUG=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" slugify "$ISSUE_TITLE")
 
-SETUP_RESULT=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" claim-setup \
+SETUP_RESULT=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" claim-setup \
   "$ISSUE_NUMBER" "$SLUG" "$GH_USER" \
   "$WING_DIR" "$WING_DIR/active/MISSION-$ISSUE_NUMBER.md" 2>/dev/null)
 

@@ -7,12 +7,12 @@
 
 ```bash
 GH_USER=$(gh api user --jq '.login' 2>/dev/null)
-WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" detect-dir 2>/dev/null) || {
+WING_DIR=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" detect-dir 2>/dev/null) || {
   echo "No wing config found. Run /wing init first."
   # STOP
 }
-eval "$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" resolve-labels 2>/dev/null)"
-BASE_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-config.sh" conventions.base_branch "main" 2>/dev/null)
+eval "$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" resolve-labels 2>/dev/null)"
+BASE_BRANCH=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" conventions.base_branch "main" 2>/dev/null)
 REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
 ```
 
@@ -72,8 +72,8 @@ AskUserQuestion: "Start auto?" / "Cancel"
 4. Create branch (+ worktree if enabled):
 
 ```bash
-SLUG=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" slugify "$ISSUE_TITLE")
-SETUP_RESULT=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" claim-setup \
+SLUG=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" slugify "$ISSUE_TITLE")
+SETUP_RESULT=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" claim-setup \
   "$ISSUE_NUMBER" "$SLUG" "$GH_USER" \
   "$WING_DIR" "$WING_DIR/active/MISSION-$ISSUE_NUMBER.md" 2>/dev/null)
 eval "$SETUP_RESULT"
@@ -122,13 +122,13 @@ No interactive confirmations.
 6. Push branch
 
 ```bash
-bash "${CLAUDE_SKILL_DIR}/../scripts/wing-git.sh" push {branch}
+bash "${CLAUDE_SKILL_DIR}/scripts/wing-git.sh" push {branch}
 ```
 
 7. Create PR:
 
 ```bash
-PR_RESULT=$(bash "${CLAUDE_SKILL_DIR}/../scripts/wing-pr.sh" create {issue} "${COMMIT_TYPE}: {title}" "$PR_BODY" "$BASE_BRANCH" "{branch}")
+PR_RESULT=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-pr.sh" create {issue} "${COMMIT_TYPE}: {title}" "$PR_BODY" "$BASE_BRANCH" "{branch}")
 ```
 
 Determine close keyword: all `[x]` → `Closes`, unchecked remain → `Refs`.
