@@ -18,13 +18,24 @@ Revolution auto-reads from this directory — no path needed.
 
 ## What to Record
 
-Append to the debug log at each phase transition. Use the structured format below — revolution needs parseable sections, not freeform prose.
+Append to the debug log at each phase transition. Not all sections apply to all triage levels:
+
+| Section | Solo | Lightweight | Full |
+|---------|------|-------------|------|
+| 1. Triage | yes | yes | yes |
+| 2. Review Plan | skip | minimal (L1+L3 only) | yes |
+| 3. Teammate Findings | skip | yes | yes |
+| 4. Cross-Examination | skip | yes | yes |
+| 5. Lead Synthesis | yes (Lead's own findings) | yes | yes |
+| 6. Outcome | yes | yes | yes |
 
 ### Section 1: Triage
 
 ```markdown
 ## [DEBUG] Triage
+- **Start time**: [YYYY-MM-DD HH:MM]
 - **Target**: [document path(s)]
+- **Target size**: [line count, chapter count]
 - **Scale assessment**: [Solo / Lightweight / Full debate]
 - **User override?**: [yes: user chose X instead of recommended Y / no]
 - **Rationale**: [why this scale was chosen]
@@ -36,7 +47,7 @@ Append to the debug log at each phase transition. Use the structured format belo
 ## [DEBUG] Review Plan
 - **Data Authority Table**: [paste the table]
 - **Roles assigned**: [list with missions and source restrictions]
-- **Lessons injected**: [count — how many lessons from lessons.md were included]
+- **Lessons injected**: [list lesson titles — not just count, revolution needs to track which ones were used]
 - **User modifications**: [did user change anything in the plan?]
 ```
 
@@ -88,6 +99,7 @@ For each finding, record the Lead's decision:
 
 ```markdown
 ## [DEBUG] Outcome
+- **End time**: [YYYY-MM-DD HH:MM]
 - **Total findings**: N (confirmed: X, rejected: Y, merged: Z)
 - **P0/P1/P2/Doc**: [counts]
 - **Action chosen**: [fix inline / report only / selective]
