@@ -1,12 +1,15 @@
 # Debate Operation — Synthesis & Consensus
 
-> Called from SKILL.md Phase 3. The Lead synthesizes role findings, resolves conflicts, and produces the final report.
+> Called from SKILL.md Phase 3, after Phase 2 Wave 1 (cross-examination) is complete.
+> Teammates have already debated each other's findings. The Lead now does formal synthesis.
 
 ---
 
-## Step 1: Collect Findings
+## Step 1: Collect Final Findings
 
-Gather all findings from each role. Assign sequential IDs per role (e.g., CV-01, CV-02, CC-01, SS-01).
+Gather the **post-debate** findings from each role — use the revised versions after Wave 1 cross-examination. If a teammate withdrew or modified a finding during cross-examination, use the final state, not the original. If a teammate discovered new findings during Wave 1, include those too.
+
+Assign sequential IDs per role (e.g., CV-01, CV-02, CC-01, SS-01).
 
 For each finding, verify it includes required fields from the output format. Note: different formats have different required fields — the main format requires Priority but the self-sufficiency format intentionally omits it (Lead assigns priority in Step 5). Don't reject self-sufficiency findings for lacking Priority.
 
@@ -132,8 +135,10 @@ This is the most actionable section for document improvement.]
 
 ---
 
-## Consensus Decisions
-[What the team agrees should be done. Grouped by priority.]
+## Action Items
+[Derived from confirmed findings. Each item: what to do, which file to change,
+priority, and assignee/owner if known. This is the executive summary —
+readers should be able to act on this section alone without reading all findings.]
 
 ---
 
