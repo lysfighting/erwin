@@ -116,21 +116,24 @@ Follow the setup operation to:
 
 ## Phase 2: Team Review — TeamCreate + Teammates
 
-Use the same mechanism verified in gcp-compute-infra (4 rounds, 14 opus agents) and vi_agent (Round 5-6).
+**⛔ CARDINAL RULE: You MUST call TeamCreate BEFORE spawning any agent. You MUST call Agent with `team_name` and `name` parameters. Parallel sub-agents without TeamCreate are FORBIDDEN — they cannot cross-examine each other, which defeats the entire purpose of this skill. If you skip TeamCreate, the review has zero debate value.**
 
-### Step 2a: Create Team
+### Step 2a: Create Team — DO THIS FIRST
 
-```
-TeamCreate(team_name: "arch-review")
-```
+Call the TeamCreate tool now:
+- `team_name: "arch-review"`
+
+**⛔ Do NOT proceed to Step 2b until TeamCreate has been called.**
 
 ### Step 2b: Spawn Teammates
 
-Spawn each reviewer via the **Agent tool** in a single message (all in parallel). Set these as **Agent tool parameters** (not prompt text):
-- `team_name: "arch-review"`
-- `name: "[role-name]"` (e.g., "code-verifier")
-- `model: "opus"` (mandatory — no exceptions)
-- `mode: "bypassPermissions"` (reviewers don't need user confirmation)
+Call the Agent tool once per role, ALL in a single message (parallel). Every Agent call MUST include these parameters:
+- `team_name: "arch-review"` — joins the team created in 2a
+- `name: "[role-name]"` — e.g., "code-verifier", "self-sufficiency-tester"
+- `model: "opus"` — mandatory, no exceptions
+- `mode: "bypassPermissions"` — reviewers don't need user confirmation
+
+**⛔ If you omit `team_name`, the agent is a disposable sub-agent that cannot receive SendMessage. The cross-examination in Step 2d becomes impossible.**
 
 **Teammate prompt** — MUST inline all context (teammates have zero discussion context):
 
@@ -183,12 +186,20 @@ All teammates review in parallel. Lead does cross-chapter consistency personally
 
 ### Step 2d: Wave 1 — Cross-Examination
 
-Once all teammates report findings:
-1. Lead distributes each teammate's findings to the OTHER teammates via `SendMessage`
-2. Teammates challenge, confirm, or refine — citing their own evidence
-3. Lead monitors: intervene if a teammate cites a forbidden data source
+**⛔ THIS STEP IS MANDATORY. Skipping cross-examination = no debate = skill provides zero value over plain code review.**
 
-This cross-examination is the core value — teammates catch each other's data-source-confusion errors in real-time. When new challenges stop producing new insights (usually 1-2 rounds), Lead closes the debate.
+Once all teammates report findings to "team-lead" via SendMessage:
+1. Lead uses `SendMessage` to send each teammate's findings to the OTHER teammates by name
+2. Teammates challenge, confirm, or refine — citing their own evidence
+3. Lead monitors: intervene via `SendMessage` if a teammate cites a forbidden data source
+
+Example SendMessage flow:
+```
+SendMessage(to: "code-verifier", message: "self-sufficiency-tester found these issues: [paste]. Challenge any you disagree with.")
+SendMessage(to: "self-sufficiency-tester", message: "code-verifier found these issues: [paste]. Challenge any you disagree with.")
+```
+
+When new challenges stop producing new insights (usually 1-2 rounds), Lead closes the debate.
 
 ### Step 2e: Close Debate
 
