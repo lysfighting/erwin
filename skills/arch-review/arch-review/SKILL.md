@@ -114,28 +114,42 @@ Follow the setup operation to:
 
 ---
 
-## Phase 2: Team Review — TeamCreate + Teammates
+## Phase 2: Team Debate — 开辩论会
 
-**⛔ CARDINAL RULE: You MUST call TeamCreate BEFORE spawning any agent. You MUST call Agent with `team_name` and `name` parameters. Parallel sub-agents without TeamCreate are FORBIDDEN — they cannot cross-examine each other, which defeats the entire purpose of this skill. If you skip TeamCreate, the review has zero debate value.**
+**⛔ 这是辩论会，不是并行跑脚本。Teammates 必须能互相通信（SendMessage），互相质疑。**
+**⛔ Standalone Agent（没有 team_name 的 Agent 调用）绝对禁止——它们是一次性黑盒，无法接收 SendMessage，无法辩论。**
 
-### Step 2a: Create Team — DO THIS FIRST
+### Step 2a: 建团
 
-Call the TeamCreate tool now:
-- `team_name: "arch-review"`
+调用 TeamCreate：
 
-**⛔ Do NOT proceed to Step 2b until TeamCreate has been called.**
+```
+TeamCreate(team_name: "arch-review")
+```
 
-### Step 2b: Spawn Teammates
+等 TeamCreate 返回后才能继续。
 
-Call the Agent tool once per role, ALL in a single message (parallel). Every Agent call MUST include these parameters:
-- `team_name: "arch-review"` — joins the team created in 2a
-- `name: "[role-name]"` — e.g., "code-verifier", "self-sufficiency-tester"
-- `model: "opus"` — mandatory, no exceptions
-- `mode: "bypassPermissions"` — reviewers don't need user confirmation
+### Step 2b: 生成 Teammates
 
-**⛔ If you omit `team_name`, the agent is a disposable sub-agent that cannot receive SendMessage. The cross-examination in Step 2d becomes impossible.**
+对每个角色调用 Agent（一条消息内全部并行发出），**每个 Agent 调用必须带这些参数**：
 
-**Teammate prompt** — MUST inline all context (teammates have zero discussion context):
+```
+Agent(
+  team_name: "arch-review",   ← 加入 2a 建的团，能收 SendMessage
+  name: "code-verifier",      ← 队友名字，SendMessage 用这个名字寻址
+  model: "opus",              ← 强制 opus
+  mode: "bypassPermissions",  ← 不需要用户确认
+  prompt: "..."               ← 下面的 teammate prompt
+)
+```
+
+**⛔ 检查清单（spawn 前必须确认）：**
+- [ ] TeamCreate 已调用？
+- [ ] 每个 Agent 调用都有 `team_name: "arch-review"`？
+- [ ] 每个 Agent 调用都有 `name`？
+- [ ] 没有用不带 team_name 的 standalone Agent？
+
+**Teammate prompt** — MUST inline all context（teammates 没有讨论上下文）：
 
 ```
 You are [ROLE NAME] on team "arch-review".
