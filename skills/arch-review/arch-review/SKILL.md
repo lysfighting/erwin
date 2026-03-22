@@ -20,9 +20,10 @@ If `$ARGUMENTS` is empty, `help`, or `-h`, output the following and **STOP**:
 **`/arch-review`** — Multi-role debate review of architecture documents
 
 **USAGE**
-  `/arch-review path/to/document.md`       Review a single document
-  `/arch-review path/to/docs/`             Review a directory of documents
-  `/arch-review help`                      Show this help
+  `/arch-review path/to/document.md`            Review a single document
+  `/arch-review --debug path/to/docs/`          Review + record full process log
+  `/arch-review revolution path/to/debug.md`    Analyze debug log → self-optimize
+  `/arch-review help`                           Show this help
 
 **WHAT IT DOES**
   1. You define the data sources and their authority levels
@@ -37,6 +38,8 @@ If `$ARGUMENTS` is empty, `help`, or `-h`, output the following and **STOP**:
   `M4` Standard Output — Location + Evidence + Impact + Action + Priority
   `M5` Debate Orchestration — independent review → cross-validation → consensus
   `M6` Self-Sufficiency Test — can a zero-context reader use this document?
+  `M7` Debug Recording — `--debug` flag records full process log for analysis
+  `M8` Revolution — analyze debug logs → propose skill-level improvements
 
 **EXAMPLES**
   `/arch-review docs/architecture/`
@@ -44,9 +47,24 @@ If `$ARGUMENTS` is empty, `help`, or `-h`, output the following and **STOP**:
 
 ---
 
+## Argument Routing
+
+Parse `$ARGUMENTS`:
+- If starts with `revolution`: extract debug log path → jump to Revolution (below)
+- If contains `--debug`: set `DEBUG_MODE = true`, remove flag from path, continue to Phase 0
+- Otherwise: `DEBUG_MODE = false`, continue to Phase 0
+
+If `DEBUG_MODE` is true, load the debug recording protocol:
+```
+Read ${CLAUDE_SKILL_DIR}/operations/debug.md
+```
+Throughout Phases 0-5, append to the debug log as specified in debug.md.
+
+---
+
 ## Phase 0: Triage — Is a Full Debate Needed?
 
-Read the review target from `$ARGUMENTS`. Skim the document(s).
+Read the review target from `$ARGUMENTS` (with `--debug` flag already stripped). Skim the document(s).
 
 Read the lessons library and output format — needed for ALL paths:
 ```
@@ -251,3 +269,23 @@ Format: `### [Project] [Date]: [Lesson title]` followed by what happened and how
 **Note**: If running from an installed copy (`~/.claude/skills/`), lessons written there will be overwritten on next `install.sh`. Warn the user to also update the source at `skills/arch-review/reference/lessons.md`.
 
 This is how the skill improves over time — lessons accumulate at the skill level, not in external memory.
+
+---
+
+## Revolution — Process Self-Optimization
+
+Triggered by: `/arch-review revolution path/to/debug-log.md`
+
+```
+Read ${CLAUDE_SKILL_DIR}/operations/revolution.md
+```
+
+Follow the revolution operation to:
+1. Read the debug log
+2. Analyze 6 dimensions: role effectiveness, data source confusion, cross-examination value, lessons effectiveness, output quality, process efficiency
+3. Produce concrete improvement proposals (with diffs to actual skill files)
+4. Present to user for approval
+5. Apply approved changes, bump version, commit
+
+**The loop**: Review → Debug → Revolution → Better Review.
+Each revolution makes the next review more effective. Lessons.md grows from experience, not from theory.
