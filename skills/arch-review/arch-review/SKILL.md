@@ -65,7 +65,7 @@ Assess review scale:
 Present the triage result to the user. The user decides; Lead recommends but doesn't impose.
 
 - **Solo**: Lead reviews alone using lessons + output format, produce findings, done.
-- **Lightweight**: AskUserQuestion for L1 path ("Where is the source code for this document?"). L3 = the doc itself. TeamCreate → spawn 2 opus teammates (code-verifier + self-sufficiency-tester) with `bypassPermissions` → cross-examination → Lead synthesizes → TeamDelete. Done.
+- **Lightweight**: AskUserQuestion for L1 path ("Where is the source code for this document?"). L3 = the doc itself. Build a minimal Data Authority Table (L1 = user's answer, L3 = the doc). Then follow Phase 2 with 2 teammates (code-verifier + self-sufficiency-tester). Skip Phase 1's full ceremony but still inline the Data Authority Table + lessons + output format into teammate prompts.
 - **Full debate**: continue to Phase 1.
 
 ---
@@ -100,20 +100,21 @@ Use the same mechanism verified in gcp-compute-infra (4 rounds, 14 opus agents) 
 ### Step 2a: Create Team
 
 ```
-TeamCreate: team_name: "arch-review", agent_type: "team-lead"
+TeamCreate(team_name: "arch-review")
 ```
 
 ### Step 2b: Spawn Teammates
 
-Spawn ALL reviewers in a single message. Each teammate:
+Spawn each reviewer via the **Agent tool** in a single message (all in parallel). Set these as **Agent tool parameters** (not prompt text):
+- `team_name: "arch-review"`
+- `name: "[role-name]"` (e.g., "code-verifier")
 - `model: "opus"` (mandatory — no exceptions)
 - `mode: "bypassPermissions"` (reviewers don't need user confirmation)
 
-**Teammate prompt template** — MUST inline all context (teammates have zero discussion context):
+**Teammate prompt** — MUST inline all context (teammates have zero discussion context):
 
 ```
-You are [ROLE NAME] on team "arch-review". model: "opus", mode: "bypassPermissions".
-Mission: architecture document review.
+You are [ROLE NAME] on team "arch-review".
 
 ## Your Mission
 [role mission from table below]
@@ -168,9 +169,9 @@ Once all teammates report findings:
 
 This cross-examination is the core value — teammates catch each other's data-source-confusion errors in real-time. When new challenges stop producing new insights (usually 1-2 rounds), Lead closes the debate.
 
-### Step 2e: Shutdown
+### Step 2e: Close Debate
 
-After debate closes, `TeamDelete` the team. Move to Phase 3.
+When new challenges stop producing new insights (usually 1-2 rounds), Lead closes the debate. Move to Phase 3. Keep team alive — teammates may be needed in Phase 4.
 
 **Built-in roles** (use as needed, customize per review):
 
@@ -213,9 +214,14 @@ Present the Review Report to the user. Ask how to proceed:
 | **Report only** | Save report as standalone file (default: `arch-review-YYYY-MM-DD.md`) |
 | **Selective** | User picks which findings to fix now vs defer |
 
-For inline fixes: apply changes, then re-run self-sufficiency-tester on modified sections to verify improvements.
+For inline fixes: apply changes, then SendMessage the self-sufficiency-tester to re-check modified sections (team is still alive from Phase 2).
 
 **Drive escalation**: Any participant (not just the Lead) can recommend using `/drive` or `/wing-drive` for complex fixes that require multi-file changes, code modifications, or cross-repo coordination. The review identifies WHAT to fix; drive executes HOW.
+
+After Phase 4 is complete, shut down the team:
+1. SendMessage each teammate: "Review complete. Please shut down."
+2. Wait for teammates to go idle
+3. `TeamDelete()` to clean up
 
 ---
 
