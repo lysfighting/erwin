@@ -6,6 +6,7 @@ Claude Code skills created and maintained by the erwin project.
 
 | Skill | Description | Version |
 |-------|-------------|---------|
+| [/arch-review](arch-review/) | Multi-role debate review of architecture documents (M1-M8) | 0.1.0 |
 | [/erwin-init](erwin-init/) | Bootstrap any project with full AI intelligence layer | 1.0.0 |
 | [/visual-test](visual-test/) | Screenshot-driven visual bug detection and fixing | 1.0.0 |
 | [/session-record](session-record/) | Record AI session logs with structured format | 1.0.0 |

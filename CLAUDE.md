@@ -32,6 +32,7 @@ erwin/
 │   ├── erwin-init/         ← /erwin-init skill (v1.0.0)
 │   ├── visual-test/        ← /visual-test skill (v1.0.0)
 │   ├── session-record/     ← /session-record skill (v1.0.0)
+│   ├── arch-review/        ← /arch-review skill (v0.1.0) — multi-role debate review
 │   ├── wing/               ← /wing, /wing-issue, /wing-claim, /wing-drive, /wing-ship, /wing-rc (v0.1.0)
 │   ├── skill-tester/       ← skill-lint.sh (Layer 1 static analysis)
 │   └── teamwork/           ← LEGACY — /team-* skills (v3.11.2, superseded by wing)

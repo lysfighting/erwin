@@ -7,8 +7,8 @@
 ## Project Status
 
 - **Version**: 0.5.0 (in progress)
-- **Last Updated**: 2026-03-18
-- **Last Session**: 2026-03-18 (Session AM — Wing v0.1.0 launch)
+- **Last Updated**: 2026-03-22
+- **Last Session**: 2026-03-22 (arch-review v0.1.0 — creation + 5-round self-review + debug/revolution)
 
 ## Current Phase
 
@@ -67,6 +67,7 @@
 - [x] Teamwork v2.0–v3.11.2 — 40+ versions, 6 skills, 10 scripts, 48 unit tests
 - [x] Wing v0.1.0 — Anthropic skill architecture rewrite (6 SKILL.md, 10 operations, 8 scripts)
 - [x] skill-lint.sh — Layer 1 static analysis (12 checks)
+- [x] arch-review v0.1.0 — Multi-role debate review (8 mechanisms, 27 bugs fixed in 5 rounds)
 - [ ] Wing Phase 4: vi_agent migration
 - [ ] Wing Phase 5: teamwork deprecation
 - [ ] Skill-tester Layer 2: smoke tests
