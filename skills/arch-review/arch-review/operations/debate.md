@@ -34,6 +34,9 @@ Multiple roles often find the same issue from different angles. Merge duplicates
 
 > "Did the reviewer use an appropriate-authority data source to reach this conclusion?"
 
+**Green flag** (the primary valid pattern — do NOT over-protect L3):
+0. Finding cites L1/L2 evidence showing L3 is factually wrong → **CONFIRM** — this is exactly what the review should find. Verify the L1/L2 evidence is current, then accept.
+
 **Red flags** (from accumulated lessons):
 1. Finding cites L4/L5 source to contradict L3 → **REJECT** (wrong ground truth)
 2. Finding cites "I checked the config and it says X" without specifying WHICH config → **INVESTIGATE** (which config? L2 or L4?)

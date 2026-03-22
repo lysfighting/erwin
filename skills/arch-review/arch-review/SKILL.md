@@ -119,6 +119,17 @@ Follow the setup operation to:
 **⛔ 这是辩论会，不是并行跑脚本。Teammates 必须能互相通信（SendMessage），互相质疑。**
 **⛔ Standalone Agent（没有 team_name 的 Agent 调用）绝对禁止——它们是一次性黑盒，无法接收 SendMessage，无法辩论。**
 
+**Built-in roles** (select 3-4 for Full debate, 2 for Lightweight):
+
+| Role | Mission | Default Sources |
+|------|---------|-----------------|
+| `code-verifier` | Verify technical facts against source code. Flag "castle-in-the-air" claims | L1 (code) + L3 (docs) |
+| `arch-challenger` | Challenge design decisions — find hidden assumptions | L1 + L3 + independent judgment |
+| `completeness-checker` | Find gaps — what does the doc NOT mention that it should? | L1 + L2 (config) + L3 |
+| `self-sufficiency-tester` | Read ONLY the document. Where would a zero-context reader go wrong? | **L3 ONLY** — forbidden from all other sources |
+| `ops-simulator` | Follow the doc's procedures step by step, verify against code/config | L1 + L2 + L3 |
+| `devil-advocate` | Predict production failures. What breaks at 10x scale? | L1 + L2 + L3 |
+
 ### Step 2a: 建团
 
 调用 TeamCreate：
@@ -161,8 +172,10 @@ You are [ROLE NAME] on team "arch-review".
 [PASTE the full table from Review Plan]
 
 ## Golden Rule
+[For code-verifier, completeness-checker, ops-simulator, devil-advocate, arch-challenger:]
 Use L1/L2 to verify L3 facts. Use independent judgment for L3 design.
 NEVER use lower-authority sources to override higher-authority sources.
+[For self-sufficiency-tester: SKIP this rule. You read ONLY L3. Your job is to find where the TEXT misleads, not to verify facts.]
 
 ## Your Data Access
 - ALLOWED: [specific L-levels + paths]
@@ -182,6 +195,11 @@ You MUST NOT read any file under the FORBIDDEN paths.
 4. Wait — the Lead will share other teammates' findings for cross-examination.
 5. When you receive findings, challenge any you disagree with.
    Cite your evidence. This is a debate, not a rubber stamp.
+6. After cross-examination, send a FINAL consolidated message to "team-lead":
+   - Findings you MAINTAIN (with any revisions)
+   - Findings you WITHDRAW (with reason)
+   - NEW findings from cross-examination
+   Label clearly: "FINAL FINDINGS — [your role name]"
 ```
 
 **Critical**: Inline ALL context into teammate prompts. Teammates cannot resolve `${CLAUDE_SKILL_DIR}` paths and have zero discussion context from Phase 0/1 — this isolation is their superpower against context pollution.
@@ -207,34 +225,29 @@ Once all teammates report findings to "team-lead" via SendMessage:
 2. Teammates challenge, confirm, or refine — citing their own evidence
 3. Lead monitors: intervene via `SendMessage` if a teammate cites a forbidden data source
 
-Example SendMessage flow:
+Example SendMessage flow (note: `summary` is required for plain text messages):
 ```
-SendMessage(to: "code-verifier", message: "self-sufficiency-tester found these issues: [paste]. Challenge any you disagree with.")
-SendMessage(to: "self-sufficiency-tester", message: "code-verifier found these issues: [paste]. Challenge any you disagree with.")
+SendMessage(to: "code-verifier", message: "self-sufficiency-tester found: [paste]. Challenge any you disagree with.", summary: "Cross-exam: SS findings → CV")
+SendMessage(to: "self-sufficiency-tester", message: "code-verifier found: [paste]. Challenge any you disagree with.", summary: "Cross-exam: CV findings → SS")
 ```
+For N teammates: send each ONE message with ALL other teammates' findings (N messages total, not N*(N-1)).
 
-When new challenges stop producing new insights (usually 1-2 rounds), Lead closes the debate.
+### Step 2e: Failure Handling
 
-### Step 2e: Close Debate
+- **Silent teammate**: If all other teammates have reported but one hasn't, proceed without it. Note the gap in the review report.
+- **Garbled output**: If a teammate's findings don't follow the output format, the Lead reformats or discards with a note.
+- **Forbidden source violation**: If a teammate cites a forbidden data source, flag it immediately via SendMessage and reject those findings.
+- **TeamCreate failure**: If TeamCreate fails (e.g., team already exists from aborted run), call TeamDelete first, then retry.
+
+### Step 2f: Close Debate
 
 When new challenges stop producing new insights (usually 1-2 rounds), Lead closes the debate. Move to Phase 3. Keep team alive — teammates may be needed in Phase 4.
 
-**Built-in roles** (use as needed, customize per review):
-
-| Role | Mission | Default Sources |
-|------|---------|-----------------|
-| `code-verifier` | Verify document's technical facts against source code. Flag "castle-in-the-air" claims (written but no implementation evidence) | L1 (code) + L3 (docs) |
-| `arch-challenger` | Challenge design decisions — find hidden assumptions | L1 + L3 + independent judgment |
-| `completeness-checker` | Find gaps — what does the doc NOT mention that it should? | L1 + L2 (config) + L3 |
-| `self-sufficiency-tester` | Read ONLY the document. Where would a zero-context reader go wrong? | **L3 ONLY** — forbidden from all other sources |
-| `ops-simulator` | Follow the doc's procedures step by step, verify against code/config whether they actually work | L1 + L2 + L3 |
-| `devil-advocate` | Predict production failures. What breaks at 10x scale? | L1 + L2 + L3 |
-
-**Role count**: 3-4 per round. More = signal dilution. The self-sufficiency-tester is recommended for first review of any document.
-
 ---
 
-## Phase 3: Debate & Synthesis
+## Phase 3: Synthesis & Report
+
+> The debate happened in Phase 2. This phase synthesizes the results.
 
 ```
 Read ${CLAUDE_SKILL_DIR}/operations/debate.md
@@ -265,8 +278,8 @@ For inline fixes: apply changes, then SendMessage the self-sufficiency-tester to
 **Drive escalation**: Any participant (not just the Lead) can recommend using `/drive` or `/wing-drive` for complex fixes that require multi-file changes, code modifications, or cross-repo coordination. The review identifies WHAT to fix; drive executes HOW.
 
 After Phase 4 is complete, shut down the team:
-1. SendMessage each teammate: "Review complete. Please shut down."
-2. Wait for teammates to go idle
+1. SendMessage each teammate with structured shutdown: `SendMessage(to: "[name]", message: {type: "shutdown_request", reason: "Review complete"})`
+2. Wait for shutdown_response from each teammate
 3. `TeamDelete()` to clean up
 
 ---
