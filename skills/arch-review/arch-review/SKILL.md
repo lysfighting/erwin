@@ -3,7 +3,7 @@ name: arch-review
 description: "Multi-role debate review of existing architecture documents. Complementary to /architect (which designs new systems). Try: /arch-review help"
 version: "0.1.0"
 disable-model-invocation: true
-allowed-tools: Read, Grep, Glob, Bash, Agent, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Bash, Agent, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
 ---
 
 # /arch-review — Architecture Document Debate Review
@@ -65,7 +65,7 @@ Assess review scale:
 Present the triage result to the user. The user decides; Lead recommends but doesn't impose.
 
 - **Solo**: Lead reviews alone using lessons + output format, produce findings, done.
-- **Lightweight**: AskUserQuestion for L1 path ("Where is the source code for this document?"). L3 = the doc itself. Then run code-verifier (L1+L3) and self-sufficiency-tester (L3 only) in parallel via Agent (inline lessons + output format into each Agent prompt). Produce findings, done.
+- **Lightweight**: AskUserQuestion for L1 path ("Where is the source code for this document?"). L3 = the doc itself. TeamCreate → spawn 2 opus teammates (code-verifier + self-sufficiency-tester) with `bypassPermissions` → cross-examination → Lead synthesizes → TeamDelete. Done.
 - **Full debate**: continue to Phase 1.
 
 ---
@@ -93,20 +93,33 @@ Follow the setup operation to:
 
 ---
 
-## Phase 2: Independent Review
+## Phase 2: Team Review — TeamCreate + Teammates
 
-Each role reviews independently. Use `Agent` to run reviews in parallel.
+Use the same mechanism verified in gcp-compute-infra (4 rounds, 14 opus agents) and vi_agent (Round 5-6).
 
-**Agent prompt template** — every role's Agent prompt MUST inline (not reference) these elements:
+### Step 2a: Create Team
 
 ```
-You are a [ROLE NAME] reviewing [DOCUMENT PATH].
+TeamCreate: team_name: "arch-review", agent_type: "team-lead"
+```
+
+### Step 2b: Spawn Teammates
+
+Spawn ALL reviewers in a single message. Each teammate:
+- `model: "opus"` (mandatory — no exceptions)
+- `mode: "bypassPermissions"` (reviewers don't need user confirmation)
+
+**Teammate prompt template** — MUST inline all context (teammates have zero discussion context):
+
+```
+You are [ROLE NAME] on team "arch-review". model: "opus", mode: "bypassPermissions".
+Mission: architecture document review.
 
 ## Your Mission
 [role mission from table below]
 
 ## Data Authority Hierarchy
-[PASTE the full table from Review Plan — do NOT tell the agent to read a file]
+[PASTE the full table from Review Plan]
 
 ## Golden Rule
 Use L1/L2 to verify L3 facts. Use independent judgment for L3 design.
@@ -118,16 +131,46 @@ NEVER use lower-authority sources to override higher-authority sources.
 You MUST NOT read any file under the FORBIDDEN paths.
 
 ## Accumulated Lessons
-[PASTE full content of lessons.md — do NOT tell the agent to read it]
+[PASTE full content of lessons.md]
 
 ## Output Format
-[PASTE full content of output-format.md — do NOT tell the agent to read it]
+[PASTE full content of output-format.md]
 
 ## Task
-Read the document, then produce findings. Each finding MUST follow the output format.
+1. Read the document at [DOCUMENT PATH]
+2. Produce your findings. Each finding MUST follow the output format.
+3. SendMessage your findings to "team-lead" when done.
+4. Wait — the Lead will share other teammates' findings for cross-examination.
+5. When you receive findings, challenge any you disagree with.
+   Cite your evidence. This is a debate, not a rubber stamp.
 ```
 
-**Critical**: Inline all context into the Agent prompt. Sub-agents cannot resolve `${CLAUDE_SKILL_DIR}` paths. If you reference a file instead of pasting content, the agent will either fail to read it or skip it silently.
+**Critical**: Inline ALL context into teammate prompts. Teammates cannot resolve `${CLAUDE_SKILL_DIR}` paths and have zero discussion context from Phase 0/1 — this isolation is their superpower against context pollution.
+
+### Step 2c: Wave 0 — Independent Review
+
+All teammates review in parallel. Lead does cross-chapter consistency personally (NOT delegated).
+
+```
+📡 WAVE 0 LAUNCH — Width: {N}
+   [code-verifier]          → Technical fact verification (L1 vs L3)
+   [completeness-checker]   → Gap analysis (L1+L2 vs L3)
+   [self-sufficiency-tester] → Zero-context reader simulation (L3 only)
+   [team-lead]              → Cross-chapter consistency check
+```
+
+### Step 2d: Wave 1 — Cross-Examination
+
+Once all teammates report findings:
+1. Lead distributes each teammate's findings to the OTHER teammates via `SendMessage`
+2. Teammates challenge, confirm, or refine — citing their own evidence
+3. Lead monitors: intervene if a teammate cites a forbidden data source
+
+This cross-examination is the core value — teammates catch each other's data-source-confusion errors in real-time. When new challenges stop producing new insights (usually 1-2 rounds), Lead closes the debate.
+
+### Step 2e: Shutdown
+
+After debate closes, `TeamDelete` the team. Move to Phase 3.
 
 **Built-in roles** (use as needed, customize per review):
 
