@@ -20,10 +20,10 @@ If `$ARGUMENTS` is empty, `help`, or `-h`, output the following and **STOP**:
 **`/arch-review`** — Multi-role debate review of architecture documents
 
 **USAGE**
-  `/arch-review path/to/document.md`            Review a single document
-  `/arch-review --debug path/to/docs/`          Review + record full process log
-  `/arch-review revolution path/to/debug.md`    Analyze debug log → self-optimize
-  `/arch-review help`                           Show this help
+  `/arch-review path/to/document.md`       Review a single document
+  `/arch-review --debug path/to/docs/`     Review + record process log
+  `/arch-review revolution`                Analyze latest debug log → self-optimize
+  `/arch-review help`                      Show this help
 
 **WHAT IT DOES**
   1. You define the data sources and their authority levels
@@ -50,9 +50,12 @@ If `$ARGUMENTS` is empty, `help`, or `-h`, output the following and **STOP**:
 ## Argument Routing
 
 Parse `$ARGUMENTS`:
-- If starts with `revolution`: extract debug log path → jump to Revolution (below)
+- If starts with `revolution`: jump to Revolution (below) — auto-reads latest debug log
 - If contains `--debug`: set `DEBUG_MODE = true`, remove flag from path, continue to Phase 0
 - Otherwise: `DEBUG_MODE = false`, continue to Phase 0
+
+**Debug log directory**: `.claude/arch-review/debug/` (fixed location, auto-created).
+Filename: `debug-YYYY-MM-DD-HHMMSS.md` (timestamped, never overwritten).
 
 If `DEBUG_MODE` is true, load the debug recording protocol:
 ```
@@ -274,18 +277,20 @@ This is how the skill improves over time — lessons accumulate at the skill lev
 
 ## Revolution — Process Self-Optimization
 
-Triggered by: `/arch-review revolution path/to/debug-log.md`
+Triggered by: `/arch-review revolution`
 
 ```
 Read ${CLAUDE_SKILL_DIR}/operations/revolution.md
 ```
 
+Auto-reads the latest debug log from `.claude/arch-review/debug/` (by timestamp).
+If multiple logs exist, analyze all — cross-review patterns are more valuable than single-review analysis.
+
 Follow the revolution operation to:
-1. Read the debug log
+1. Read debug log(s)
 2. Analyze 6 dimensions: role effectiveness, data source confusion, cross-examination value, lessons effectiveness, output quality, process efficiency
 3. Produce concrete improvement proposals (with diffs to actual skill files)
 4. Present to user for approval
 5. Apply approved changes, bump version, commit
 
 **The loop**: Review → Debug → Revolution → Better Review.
-Each revolution makes the next review more effective. Lessons.md grows from experience, not from theory.

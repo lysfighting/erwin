@@ -7,8 +7,12 @@
 
 ## Debug Log Location
 
-Write to: `arch-review-debug-YYYY-MM-DD.md` in the same directory as the review target.
-If reviewing `docs/architecture/`, write to `docs/architecture/arch-review-debug-YYYY-MM-DD.md`.
+**Fixed directory**: `.claude/arch-review/debug/`
+**Filename**: `debug-YYYY-MM-DD-HHMMSS.md` (timestamped, never overwritten)
+
+Create the directory if it doesn't exist: `mkdir -p .claude/arch-review/debug/`
+
+Revolution auto-reads from this directory — no path needed.
 
 ---
 

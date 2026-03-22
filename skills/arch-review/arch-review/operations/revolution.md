@@ -8,9 +8,10 @@
 
 ## Input
 
-A debug log produced by `--debug` mode: `arch-review-debug-YYYY-MM-DD.md`
+Auto-read from `.claude/arch-review/debug/` — list files, sort by name (timestamp), read the latest.
+If multiple logs exist, read all — cross-review patterns reveal systemic issues that single-review analysis misses.
 
-Read the debug log fully before analysis.
+If no debug logs found, inform the user: "No debug logs found. Run `/arch-review --debug` first."
 
 ---
 
