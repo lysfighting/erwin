@@ -57,7 +57,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.11.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.11.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -137,7 +137,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.11.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.11.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -532,7 +532,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.11.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.11.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1092,7 +1092,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.11.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.11.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ✅ Config updated (merge mode — existing config preserved)
    schema_version → `3`
@@ -2279,7 +2279,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.11.1"
+SKILL_VERSION="3.11.2"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
