@@ -148,11 +148,11 @@ AskUserQuestion: "Claim 这个 Issue" (`/wing-claim` **#{N}**) / "看 dashboard"
 
 ## Operation Share
 
-Post `🔗 **Cross-MC**` comment to sibling Issue. Human gateway (AskUserQuestion before posting). **STOP**.
+> Triggered by `/wing share #N`. Load and follow `${CLAUDE_SKILL_DIR}/operations/share.md`.
 
 ## Operation Wrap
 
-Retroactive closure for code-first workflows: detect state → create Issue → create PR → label. **STOP**.
+> Triggered by `/wing wrap`. Load and follow `${CLAUDE_SKILL_DIR}/operations/wrap.md`.
 
 ---
 
