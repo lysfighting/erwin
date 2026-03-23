@@ -19,8 +19,11 @@ version: "0.1.0"
 |-------|--------|
 | (empty) | Full ship flow (push, PR, CI, cleanup) |
 | `done` | Post-merge cleanup (close Issue, update labels, clean worktree) |
+| `done help` | Show done operation usage |
 | `review` | AI code review on current PR (load `${CLAUDE_SKILL_DIR}/operations/review.md`) |
+| `review help` | Show review operation usage |
 | `sync` | Rebase current branch on base branch |
+| `sync help` | Show sync operation usage |
 | `help` or `-h` | Show usage guide |
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
@@ -146,7 +149,11 @@ If PR already exists → skip creation, use existing. Display CI/review/merge st
 
 Determine close keyword: all checkboxes `[x]` → `Closes #{issue}` | unchecked remain → `Refs #{issue}`
 
-PR body from Contract: Objective, Changes (completed code tasks), Manual Steps (if any), Success Criteria (filter out delivery-mechanism criteria), Test, AI Notes, Infra Impact (if side effects).
+PR body from Contract: Objective, Changes (completed code tasks), Manual Steps (if any), Success Criteria, Test, AI Notes, Infra Impact (if side effects).
+
+**Success Criteria FILTER RULE**: Drop any criterion whose completion requires the PR itself to be merged or CI to pass (e.g., "PR 合入", "CI 通过"). These are delivery-mechanism criteria — valid in the Issue but self-referential in a PR. Only include criteria about the actual work product.
+
+If using `Refs` (unchecked tasks remain): append warning block listing the unchecked tasks + "Close manually: `gh issue close {issue}`".
 
 ### 4c: Create PR
 
@@ -161,6 +168,20 @@ All non-fatal: warn on failure, continue.
 ## Step 5: CI Check
 
 If CI enabled → `wing-pr.sh watch {pr}`. Pass → ✅. Fail → ❌ warn but don't stop (PR exists, user iterates).
+
+## Step 5b: AI-Suggested PR Comment (conditional)
+
+Evaluate whether the PR needs an additional comment beyond the body:
+
+| Signal | Why comment |
+|--------|------------|
+| Deployment needs special steps not in Infra Impact | Merger needs before/after actions |
+| Specific files need careful review | Focus reviewer attention |
+| Known limitation or tech debt introduced | Transparency |
+| CI failed on flaky test | Prevent reviewer confusion |
+| Breaking change or API change | Downstream consumers |
+
+If none → skip silently. If any → draft comment → AskUserQuestion: "发送" / "编辑后发送" / "跳过"
 
 ## Step 6: Request Review
 
@@ -248,6 +269,28 @@ git push --force-with-lease origin {branch}
 ### S4: Info Sync
 
 After rebase, check GitHub for new comments, PR review status, Contract freshness. Display advisory info.
+
+---
+
+## Sub-Operation Help
+
+If `done help` → output and **STOP**:
+
+**`/wing-ship done`** — Post-Merge Cleanup
+  `1.` Verify PR merged  `2.` Close Issue  `3.` Labels review→done  `4.` Clean worktree  `5.` Return to base  `6.` Remove Contract
+  When: after PR merged on GitHub. "No merged PR" → wait a few seconds or check `gh pr view`.
+
+If `review help` → output and **STOP**:
+
+**`/wing-ship review`** — AI Code Review
+  `1.` Find PR  `2.` Fetch diff  `3.` Read changed files  `4.` Review (correctness/security/architecture/quality/performance)  `5.` Choose: approve / request changes / comment  `6.` Publish
+  When: before merge, or when teammate asks for review.
+
+If `sync help` → output and **STOP**:
+
+**`/wing-ship sync`** — Rebase on Base Branch
+  `1.` Verify on mission branch  `2.` Fetch + rebase  `3.` AI resolves conflicts  `4.` Force-push  `5.` Info sync (comments, PR status)
+  When: dashboard shows "behind base", or before `/wing-ship`.
 
 ---
 

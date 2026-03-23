@@ -115,7 +115,17 @@ If config exists → check membership:
 ```bash
 USER_LEVEL=$(bash "${CLAUDE_SKILL_DIR}/scripts/wing-config.sh" get-user-level "$GH_USER" 2>/dev/null)
 ```
-If user not in roster → auto-add via onboarding → continue to Dashboard.
+If user not in roster → auto-add via onboarding (AskUserQuestion for role) → commit config → continue.
+
+**Config Health Check** — verify required fields exist:
+
+| Field | Used by | Default if missing |
+|-------|---------|-------------------|
+| `project.test_command` | wing-drive, wing-ship | warn "No test command" |
+| `conventions.base_branch` | all skills | `"main"` |
+| `conventions.branch_pattern` | wing-claim | `"mission/{issue}-{slug}-{user}"` |
+
+If critical fields missing → non-blocking warning: "Config incomplete. Run `/wing init` to regenerate."
 
 → Continue to **Dashboard**
 
@@ -145,6 +155,15 @@ AskUserQuestion: "Claim #N" (`/wing-claim`) / "回 dashboard" (`/wing`)
 Fetch Issue + branch + PRs. Display formatted detail with VE.
 
 AskUserQuestion: "Claim 这个 Issue" (`/wing-claim` **#{N}**) / "看 dashboard" (`/wing`)
+
+## Operation Doctor Help
+
+If `doctor help` → output and **STOP**:
+
+**`/wing doctor`** — Local Git Health Diagnostics
+  12 checks: orphan branches, cross-contamination, staleness, stashes, worktrees, shippable PRs, issue health, remote sync, GitHub auth, contract freshness, test suite, PR CI.
+  3-layer report: snapshot tables → diagnosis → action plan.
+  `/wing doctor` read-only · `/wing doctor fix` interactive repair (auto-execute green, confirm yellow/red)
 
 ## Operation Share
 

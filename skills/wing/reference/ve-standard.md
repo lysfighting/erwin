@@ -95,6 +95,18 @@ Color-coded squares identify branch types in dashboard/worktree sections:
 
 ---
 
+## Tips (every primary output)
+
+After every command completion output, append a random tip:
+
+```
+💡 **Tip:** {random line from ${CLAUDE_SKILL_DIR}/scripts/wing-tips.txt — skip # comments}
+```
+
+Read the tips file, pick one non-comment line at random. Commands in tips must be in backticks.
+
+---
+
 ## Validation Checklist
 
 - [ ] No triple-backtick code blocks wrapping user-facing output

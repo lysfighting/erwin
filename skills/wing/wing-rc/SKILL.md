@@ -20,8 +20,11 @@ version: "0.1.0"
 | (empty) | Prepare: cut rc branch from develop → staging |
 | `cancel` | Cancel: delete current RC branch |
 | `promote` | Promote: load `${CLAUDE_SKILL_DIR}/operations/promote.md` |
+| `promote help` | Show promote usage |
 | `fix` | Fix: cherry-pick a commit onto active RC |
+| `fix help` | Show fix usage |
 | `hotfix` | Hotfix: load `${CLAUDE_SKILL_DIR}/operations/hotfix.md` |
+| `hotfix help` | Show hotfix usage |
 | `help` or `-h` | Show usage guide |
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
@@ -207,6 +210,29 @@ Commit: `{msg}`
 ────────────────────────────────────────────
 
 AskUserQuestion: "Promote" (`/wing-rc promote`) / "继续验证 staging" / "回 dashboard"
+
+---
+
+## Sub-Operation Help
+
+If `promote help` → output and **STOP**:
+
+**`/wing-rc promote`** — RC → Production
+  `1.` Find RC  `2.` Check staging  `3.` Confirm  `4.` Generate release notes  `5.` PR + squash merge  `6.` Tag  `7.` GitHub Release  `8.` Milestone check  `9.` Delete RC  `10.` Deploy
+  Prereq: RC must exist. Flow: `/wing-rc` → test staging → `/wing-rc promote`
+
+If `fix help` → output and **STOP**:
+
+**`/wing-rc fix`** — Cherry-pick to RC
+  Cherry-pick a commit from *develop* to active RC. Preserves test progress (unlike cancel + re-cut).
+  `/wing-rc fix` → select commit · `/wing-rc fix <hash>` → specific commit
+  After: re-deploy staging to verify.
+
+If `hotfix help` → output and **STOP**:
+
+**`/wing-rc hotfix`** — Production Fix + Backport
+  `1.` Branch from *main*  `2.` Fix (interactive)  `3.` PR to *main*  `4.` Tag + Release  `5.` Backport to *develop*
+  Prereq: dual-branch mode. Resumable: re-run from existing hotfix branch.
 
 ---
 
