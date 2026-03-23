@@ -10,7 +10,8 @@ version: "0.1.0"
 
 > Claim a GitHub Issue, generate an AI-optimized Mission Contract, and create your working branch.
 
-**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`)
+**Visual Encoding** (apply to ALL output — see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`):
+`**bold**` → headers/labels · `` `backtick` `` → commands/paths/counts · `*italic*` → branches · `**#NNN**` → issues (bold, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
 
 **User input**: $ARGUMENTS
 

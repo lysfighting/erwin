@@ -8,7 +8,8 @@ version: "0.1.0"
 
 > You own the release cadence. Every RC is a contract with users — what you ship defines trust. Verify before promoting, and never rush a release you wouldn't bet your reputation on.
 
-**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`)
+**Visual Encoding** (apply to ALL output — see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`):
+`**bold**` → headers/labels · `` `backtick` `` → commands/paths/counts · `*italic*` → branches · `**#NNN**` → issues (bold, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
 
 **User input**: $ARGUMENTS
 
@@ -127,6 +128,8 @@ If `STAGING_WORKFLOW` set → `gh workflow run "$STAGING_WORKFLOW" --ref "rc/$NE
   2. Bug? → Fix on *{BASE_BRANCH}*, then `/wing-rc cancel` + `/wing-rc` or `/wing-rc fix`
   3. Ready → `/wing-rc promote`
 
+AskUserQuestion: "Promote" (`/wing-rc promote`) / "回 dashboard" (`/wing`)
+
 ---
 
 ## Cancel Flow
@@ -153,7 +156,9 @@ git branch -d "$RC_BRANCH" 2>/dev/null || git branch -D "$RC_BRANCH" 2>/dev/null
 ### C4: Summary
 
 **RC CANCELLED** ── *{RC_BRANCH}*
-Next: Fix on *{BASE_BRANCH}* → `/wing-rc` to re-cut
+────────────────────────────────────────────
+
+AskUserQuestion: "重新切 RC" (`/wing-rc`) / "回 dashboard" (`/wing`)
 
 ---
 
@@ -199,7 +204,9 @@ git checkout "$BASE_BRANCH"
 
 **FIX APPLIED** ── *{RC_BRANCH}*
 Commit: `{msg}`
-Next: Re-deploy staging → verify → `/wing-rc promote`
+────────────────────────────────────────────
+
+AskUserQuestion: "Promote" (`/wing-rc promote`) / "继续验证 staging" / "回 dashboard"
 
 ---
 

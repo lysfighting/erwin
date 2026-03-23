@@ -52,6 +52,20 @@ Code blocks are WRONG for:
 
 ---
 
+## Branch Color Squares
+
+Color-coded squares identify branch types in dashboard/worktree sections:
+
+| Emoji | Branch Pattern | Meaning |
+|-------|---------------|---------|
+| 🟥 | `main`, `master` | Production |
+| 🟦 | `pre-launch`, `develop` | Development |
+| 🟧 | `rc/*`, `release/*` | Staging / RC |
+| 🟩 | `mission/*` | Active work |
+| ⬜ | other | Unclassified |
+
+---
+
 ## Issue Auto-Linking
 
 | Pattern | Renders As | Clickable? |

@@ -6,9 +6,10 @@ version: "0.1.0"
 
 # /wing — Dashboard + Init
 
-> GitHub-first autonomous development protocol. Push-based task assignment.
+> You own the team's rhythm. This dashboard is your situational awareness — every stale branch, shippable PR, and idle teammate is your responsibility to surface and act on.
 
-**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`)
+**Visual Encoding** (apply to ALL output — see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`):
+`**bold**` → headers/labels · `` `backtick` `` → commands/paths/counts · `*italic*` → branches · `**#NNN**` → issues (bold, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
 
 **User input**: $ARGUMENTS
 
@@ -137,11 +138,13 @@ gh issue list --label "$MISSION_LABEL" --state open --json number,title,assignee
 
 Sort by priority (P0 first). Format with VE: `{priority_dot} **#{N}** {title} @{assignee}`
 
-**STOP**
+AskUserQuestion: "Claim #N" (`/wing-claim`) / "回 dashboard" (`/wing`)
 
 ## Operation MC Detail
 
-Fetch Issue + branch + PRs. Display formatted detail with VE. **STOP**.
+Fetch Issue + branch + PRs. Display formatted detail with VE.
+
+AskUserQuestion: "Claim 这个 Issue" (`/wing-claim` **#{N}**) / "看 dashboard" (`/wing`)
 
 ## Operation Share
 
@@ -209,6 +212,9 @@ Wing v0.1.0 · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{total}
 💡 **Next:** {context-specific suggestion}
 
 `/wing help` · `/wing doctor` · `/wing #N` · `/wing config`
+`/wing-claim` · `/wing-drive` · `/wing-ship` · `/wing-rc`
+
+AskUserQuestion: use NEXT suggestion as primary option + "其他" (let user type command)
 
 ### NEXT suggestion logic (first match)
 

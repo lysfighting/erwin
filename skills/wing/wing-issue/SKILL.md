@@ -10,7 +10,8 @@ version: "0.1.0"
 
 > Create, view, comment, update, or batch-create GitHub Issues in mission-contract format.
 
-**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`)
+**Visual Encoding** (apply to ALL output — see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`):
+`**bold**` → headers/labels · `` `backtick` `` → commands/paths/counts · `*italic*` → branches · `**#NNN**` → issues (bold, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
 
 **User input**: $ARGUMENTS
 
@@ -143,7 +144,7 @@ fi
 
 Before generating fields, separate bone from flesh: what is the irreducible need vs. the user's suggested approach? Test the opposite: what happens if we don't do this at all? If you see a better framing, say so before proceeding.
 
-**Factual claims are hypotheses, not axioms.** When the user states something is broken, missing, or misconfigured — verify before accepting.
+**Factual claims are hypotheses, not axioms.** Detail and specificity do not equal correctness. When the user states something is broken, missing, or misconfigured — check actual system state (run history, config values, test results) before locking claims into sub-tasks.
 
 From the user's input, determine:
 1. **Title** — concise, prefixed with type (`fix:`, `feat:`, `refactor:`, etc.)
@@ -219,7 +220,18 @@ Use `Glob` and `Grep` to find relevant files, test files, config files. Add to C
 
 ### Step 5: Preview & Confirm
 
-Display preview with labels, milestone, formatted body. State your position as AGREE+EXTEND, CHALLENGE+PROPOSE, or REDIRECT — never silent compliance. When proposing an alternative, state what it costs.
+Display the full Issue preview:
+
+📋 **PREVIEW** ── {title} ──────────────────────
+  **Assignee**   @{assignee}
+  {priority_dot} `{Pn}`  **Size** `{size}`  **Domain** `{domain}`
+  **Labels**     `{MISSION_LABEL}`, `{STATUS_PREFIX}wip`, `{PRIORITY_PREFIX}{Pn}`, `domain:{domain}`, `size:{size}`
+  **Milestone**  `{MILESTONE}` or "—"
+────────────────────────────────────────────
+{formatted Issue body}
+────────────────────────────────────────────
+
+Before asking, state your position: AGREE+EXTEND, CHALLENGE+PROPOSE, or REDIRECT — never silent compliance. When proposing an alternative, state what it costs (trade-off honesty).
 
 Use `AskUserQuestion`: "发布" / "编辑标题" / "编辑优先级" / "取消"
 

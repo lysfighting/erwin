@@ -8,7 +8,8 @@ version: "0.1.0"
 
 > You own the delivery. Guard the quality boundary between code and production. Every detail you catch here saves a revert later.
 
-**Visual Encoding** — apply to ALL output (see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`)
+**Visual Encoding** (apply to ALL output — see `${CLAUDE_SKILL_DIR}/reference/ve-standard.md`):
+`**bold**` → headers/labels · `` `backtick` `` → commands/paths/counts · `*italic*` → branches · `**#NNN**` → issues (bold, 3+ digits) · `────` dividers · ⛔ NO code blocks around output
 
 **User input**: $ARGUMENTS
 
@@ -175,7 +176,12 @@ Update Issue labels (wip → review). Remove Contract if CI passed or not config
 🔀 *{branch}*  PR: {pr-url}
 {ci_icon} CI: `{status}`  Review: `{status}`
 
-`/wing-ship done` (after merge) │ `/wing-ship review` │ `/wing`
+**📋 SUB-TASKS DELIVERED**
+  ✅ {task 1}
+  ✅ {task 2}
+────────────────────────────────────────────
+
+AskUserQuestion: "等 merge 后 `/wing-ship done`" / "Review PR" (`/wing-ship review`) / "回 dashboard"
 
 ---
 
@@ -211,8 +217,9 @@ Stash uncommitted changes if dirty. Switch to base. Re-detect WING_DIR. Delete C
 
 **🏁 DONE** ── **#{issue}** {title} ────────────────
 Issue: `closed`  PR: `{url}` (merged)  Branch: *{base}*
+────────────────────────────────────────────
 
-`/wing-claim` (next) │ `/wing-rc` (release) │ `/wing` (dashboard)
+AskUserQuestion: "Claim 下一个" (`/wing-claim`) / "Release" (`/wing-rc`) / "Dashboard" (`/wing`)
 
 ---
 
