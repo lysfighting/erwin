@@ -68,3 +68,19 @@
 ### Debate output goes INTO the docs, not beside them
 - **What happened**: Some review rounds produced detailed reports that sat as separate files. The actual documents were never updated. Same issues found again in next round.
 - **Prevention**: Default action after review is "fix inline" — apply confirmed fixes directly to the document. A separate report is the fallback, not the default.
+
+---
+
+## Config & Code Defaults
+
+### vi_agent R7 (2026-03-22): Gateway defaults must be fail-closed in production
+- **What happened**: Gateway CORS_ORIGINS defaulted to `"*"` with `allow_credentials=True`. This was invisible during code review because it worked in dev. In K8s prod, if CORS_ORIGINS env var was unset, any website could call the billing API.
+- **Prevention**: Any config with a permissive default (wildcard, disabled, bypass) needs an ENVIRONMENT=production guard. Review ALL service config defaults for production safety.
+
+### vi_agent R7 (2026-03-22): Env var collision is a real class of bugs
+- **What happened**: `GCS_BUCKET` was read by both `gcs-upload.ts` (expected `vi-agent-uploads`) and `gcs-sync.ts` (expected `vi-agent-sdk`). Setting it for one feature broke the other.
+- **Prevention**: Review env var names for uniqueness across the entire codebase. Use specific names (GCS_UPLOAD_BUCKET, GCS_SDK_BUCKET) rather than generic ones.
+
+### vi_agent R7 (2026-03-22): gcloud/kubectl CLI syntax must be verified
+- **What happened**: A gcloud uptime check command had 3 syntax errors (invalid resource-type, wrong flag name, missing required flag). kubectl create job --from=job/ only supports cronjob/.
+- **Prevention**: Any CLI command in docs should be verified with `--help` or dry-run. The ops-simulator role is essential for catching these.

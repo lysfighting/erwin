@@ -1,6 +1,6 @@
 ---
 name: arch-review
-description: "Multi-role debate review of existing architecture documents. Complementary to /architect (which designs new systems). Try: /arch-review help"
+description: "Multi-role debate review of existing architecture documents. Try: /arch-review help"
 version: "0.1.0"
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash, Agent, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
@@ -11,7 +11,6 @@ allowed-tools: Read, Grep, Glob, Bash, Agent, SendMessage, TeamCreate, TeamDelet
 > Review existing documents through multi-role debate. Find errors, gaps, and contradictions
 > that a single reader would miss. Every finding must have evidence and a concrete action.
 
-> **Complementary to /architect**: architect designs new systems, arch-review audits existing documents.
 
 **User input**: $ARGUMENTS
 
