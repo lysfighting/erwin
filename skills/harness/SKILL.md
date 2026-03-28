@@ -164,5 +164,6 @@ The harness is file-backed:
 - Use `meetings summary` before adoption when you need to see synthesis readiness, debate-round depth, and blocker counts at a glance.
 - Use `meetings authority-audit` when you need a leader-facing explanation of which same-claim finding currently wins on authority.
 - Use `runs authority-audit` when a run may be drifting against fresher or higher-authority active signals, or when `doctor` reports `run-authority-conflict`.
+- Use `runs authority-audit` when a run claims it is ready/verified/clean but the live worktree is still dirty; the audit now surfaces that intent-vs-live-git disagreement explicitly.
 - After a meeting closes, either let `meeting-close` apply its outcome or explicitly run `adopt-meeting`.
 - Keep `doctor` clean. If it shows drift, repair that before piling on new execution.

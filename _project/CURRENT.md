@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.11.0 (in progress)
+- **Version**: 0.12.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Codex-native orchestration harness automated council synthesis pass completed)
+- **Last Session**: 2026-03-29 (Codex-native orchestration harness live intent authority pass completed)
 
 ## Current Phase
 
@@ -51,7 +51,10 @@
 - **Automated council synthesis added**: `meetings orchestrate` can now derive provisional findings and unresolved follow-up actions directly from bounded positions grouped by `claim` / `dimension`, while leaving manually recorded findings intact
 - **Position claim grouping added**: `meetings add-position` now accepts `--claim=` and `--dimension=` so councils can treat multiple positions as speaking about the same governed claim
 - **Meeting summary widened again**: `meetings summary` now reports auto-generated finding/action counts alongside traced-finding and authority-conflict reporting
-- **Adapter line advanced again**: `harness/adapter-manifest.yml` now declares `0.11.0-prototype` to reflect deeper council automation
+- **Live intent authority added**: `runAuthorityAudit` now flags a dirty live worktree when run/desired state already claims the execution should be clean enough for governed verification or handoff
+- **Harness-generated worktree noise excluded**: worktree authority snapshots now ignore the harness-owned `.mission` marker so live dirty detection tracks real execution drift instead of harness bookkeeping
+- **Core smoke widened again**: the live-state suite now proves both `record drift` and `intent drift`, including the case where desired clean completion intent conflicts with a dirty live worktree
+- **Adapter line advanced again**: `harness/adapter-manifest.yml` now declares `0.12.0-prototype` to reflect deeper cross-surface authority enforcement
 - **Adapter/package flow updated**: `harness/adapter-manifest.yml` now packages the Go module files and build runner, bootstrapped repos receive the Go sources, and `harness-bootstrap.sh` / `harness-sync.sh` now query adapter metadata through the Go runtime path
 - **Smoke suite de-Pythonized**: issue/core/release/teammate smoke scripts now query package files through the harness adapter surface and extract runtime ids without Python helpers
 - **Validation**: `./scripts/harness-build-runtime.sh`, `./scripts/harness-runtime-dist-smoke-test.sh`, `./scripts/harness-adapter.sh validate`, `./scripts/harness-issue-smoke-test.sh`, `./scripts/harness-smoke-test.sh`, `./scripts/harness-teammate-smoke-test.sh`, `./scripts/harness-release-smoke-test.sh`, `./scripts/harness-bootstrap-smoke-test.sh`, and `./scripts/harness-all-smoke-test.sh` all pass cleanly on the Go runtime; `./scripts/harness-maintenance.sh normalize` also upgrades older runtime state into mission-aware schema cleanly
@@ -99,7 +102,7 @@
    - A. Decide whether to formalize this under a new product name or keep `harness` as the prototype codename
    - B. Decide whether `harness/adapter-manifest.yml` should become the public package spec or stay repo-private while naming is unresolved
    - C. Continue deepening selector semantics beyond the new family-aware baseline into richer policies and transfer rules
-   - D. Deepen authority conflict resolution beyond current signal-level supersession, meeting same-claim audits, run-level active-signal adjudication, contract sync, and record-vs-live drift detection into harder contract-intent vs live-git disagreement
+   - D. Continue authority conflict resolution beyond current signal-level supersession, meeting same-claim audits, run-level active-signal adjudication, contract sync, record-vs-live drift detection, and clean-intent-vs-dirty-worktree detection into still harder contract-intent vs live-git disagreement
    - E. Continue pushing council behavior from auto-synthesis toward fuller `arch-review`-style automated debate now that phase history, linked cross-exam, claim grouping, synthesis audit, and finding provenance traces are first-class
    - F. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `_project/sessions/2026-03-28-B.md`, `_project/sessions/2026-03-28-C.md`, `_project/sessions/2026-03-29-A.md`, `_project/sessions/2026-03-29-B.md`, `_project/sessions/2026-03-29-C.md`, `_project/sessions/2026-03-29-D.md`, `harness/README.md`, `docs/research/harness-completion-context-pack-2026-03-28.md`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, and inspect recent commits on `codex/harness-release-lifecycle`

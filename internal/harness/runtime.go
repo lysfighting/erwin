@@ -1715,7 +1715,18 @@ func worktreeAuthoritySnapshot(run map[string]any) map[string]any {
 		snapshot["branch"] = strings.TrimSpace(out)
 	}
 	if out, err := runCommandAt(worktreePath, []string{"git", "status", "--porcelain"}); err == nil {
-		snapshot["dirty"] = strings.TrimSpace(out) != ""
+		filtered := []string{}
+		for _, line := range strings.Split(out, "\n") {
+			trimmed := strings.TrimSpace(line)
+			if trimmed == "" || trimmed == "?? .mission" {
+				continue
+			}
+			filtered = append(filtered, trimmed)
+		}
+		snapshot["dirty"] = len(filtered) > 0
+		if len(filtered) > 0 {
+			snapshot["dirty_entries"] = stringListToAny(filtered)
+		}
 	}
 	return snapshot
 }
@@ -1848,6 +1859,29 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 				"expected_value":  liveBranch,
 				"note":            "Live worktree branch does not match the run branch record.",
 			})
+		}
+		if boolValue(liveState["dirty"]) {
+			desired := normalizeDesiredState(run)
+			cleanIntent := stringValue(run["state"]) == "completed" ||
+				stringValue(desired["goal_state"]) == "done" ||
+				stringValue(desired["goal_state"]) == "completed" ||
+				stringValue(run["verification_status"]) == "passed" ||
+				stringValue(desired["verification_status"]) == "passed" ||
+				stringValue(run["ship_status"]) == "approved" ||
+				stringValue(run["ship_status"]) == "merged" ||
+				stringValue(desired["ship_status"]) == "approved" ||
+				stringValue(desired["ship_status"]) == "merged"
+			if cleanIntent {
+				liveStateGaps = append(liveStateGaps, map[string]any{
+					"claim_ref":       "live_dirty",
+					"resolution_kind": "live_state_disagrees",
+					"source_ref":      "worktree:" + stringValue(run["worktree_path"]),
+					"winning_source":  "worktree:" + stringValue(run["worktree_path"]),
+					"current_value":   "dirty",
+					"expected_value":  "clean",
+					"note":            "Live worktree is dirty even though run/desired state implies the execution should be clean enough for governed verification or handoff.",
+				})
+			}
 		}
 	}
 

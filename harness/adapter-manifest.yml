@@ -10,7 +10,7 @@ protocol:
     - "rc"
 adapter:
   adapter_id: "codex-native-harness"
-  adapter_version: "0.11.0-prototype"
+  adapter_version: "0.12.0-prototype"
   runtime: "codex"
   package_files:
     - "install-codex.sh"

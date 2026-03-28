@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector families beyond current normalized ownership transfer, higher-order authority adjudication when live git state contradicts contract intent without a simple record drift or governing signal, deeper automated council orchestration beyond the new auto-synthesis baseline, clearer public product contract
+- **still incomplete**: richer selector families beyond current normalized ownership transfer, higher-order authority adjudication when live git state contradicts contract intent beyond the new clean-intent-vs-dirty-worktree baseline, deeper automated council orchestration beyond the new auto-synthesis baseline, clearer public product contract
 
 ---
 
@@ -66,6 +66,8 @@ This audit was followed immediately by implementation work that materially close
 - `meetings add-position` now accepts `--claim=` and `--dimension=` so councils can group positions by governed claim instead of only by freeform summary
 - `meetings orchestrate` can now auto-synthesize provisional findings and unresolved follow-up actions from grouped positions without overwriting manual findings already on the record
 - `meetings summary` now surfaces auto-generated finding/action counts, making council automation visible to the leader
+- `runAuthorityAudit` now flags a dirty live worktree when run/desired state already claims the execution should be clean enough for governed verification or handoff
+- worktree authority snapshots now ignore the harness-owned `.mission` marker so live dirty detection tracks real execution drift rather than harness bookkeeping noise
 
 This pushes the council model much closer to the intended `arch-review` discipline instead of only “meeting exists.”
 
@@ -101,7 +103,7 @@ Authority levels are now validated and surfaced, and the system now adjudicates 
 
 What is still missing:
 
-- systematic high-vs-low authority conflict handling when live git state contradicts contract intent without a governing signal
+- systematic high-vs-low authority conflict handling when live git state contradicts contract intent beyond the new dirty-worktree-vs-clean-intent baseline
 - clearer winner/loser rules when run summary, contract, and live verification disagree without a governing signal or meeting
 - broader leader-facing explanations of why a lower-authority artifact was overridden outside the run/signal/meeting path
 

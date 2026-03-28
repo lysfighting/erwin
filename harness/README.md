@@ -100,6 +100,7 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - durable council `phase_history`, linked cross-examination targets, and synthesis audits with blocker/evidence reporting
 - leader-facing `meetings authority-audit` output for same-claim finding conflicts and higher-authority winner explanations
 - leader-facing `runs authority-audit` output for cross-surface run/signal/meeting authority conflicts and adoption gaps
+- leader-facing `runs authority-audit` output for clean-intent-vs-dirty-worktree conflicts when live git state contradicts governed verification or handoff intent
 - authority-level validation for signals and meeting findings
 - machine-readable separation between protocol contract, adapter package, and profile contract
 
