@@ -73,6 +73,8 @@ The harness is file-backed:
   `bash scripts/harness-rc.sh cancel RC_ID "staging bug found" --apply`
 - `rc-hotfix`
   `bash scripts/harness-rc.sh hotfix v1.2.4 COMMITISH --apply --push`
+- `rc-backport`
+  `bash scripts/harness-rc.sh backport v1.2.4 COMMITISH --apply --push`
 - `rc-promote`
   `bash scripts/harness-rc.sh promote RC_ID "promotion note"`
 - `maintenance`

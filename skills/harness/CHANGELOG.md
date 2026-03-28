@@ -8,7 +8,8 @@ All notable changes to the `harness` skill will be documented in this file.
 - RC surgical fix flow via `scripts/harness-rc.sh fix`, including cherry-pick and optional push to the active RC branch.
 - RC cancel flow via `scripts/harness-rc.sh cancel`, including optional local and remote RC branch cleanup.
 - Production hotfix preparation via `scripts/harness-rc.sh hotfix`.
-- Release smoke coverage for RC fix/cancel and hotfix flows.
+- Dual-branch backport flow via `scripts/harness-rc.sh backport`.
+- Release smoke coverage for RC fix/cancel, hotfix, and backport flows.
 
 ## [0.2.0] - 2026-03-28
 

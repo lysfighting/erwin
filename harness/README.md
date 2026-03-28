@@ -30,7 +30,7 @@ The first usable Codex-native harness prototype now exists in `scripts/`.
 - `harness-ship.sh` also supports branch push and PR draft generation
 - `harness-ship.sh` can also open GitHub PRs directly when `gh` is authenticated
 - `harness-ship.sh` now also handles post-merge cleanup of worktrees and local branches
-- `harness-rc.sh` — release-candidate create/verify/promote/close plus surgical `fix`, `cancel`, and `hotfix` flow
+- `harness-rc.sh` — release-candidate create/verify/promote/close plus surgical `fix`, `cancel`, `hotfix`, and `backport` flow
 - `harness-meetings.sh` — meeting inspection and council output mutation
 - `harness-maintenance.sh` — reconciliation + runtime normalization
 - `harness-bootstrap.sh` — copy the harness adapter into another git repository
@@ -54,7 +54,7 @@ The first usable Codex-native harness prototype now exists in `scripts/`.
 
 The release side is no longer limited to the happy path.
 The harness now also covers the high-friction release scenarios that used to depend on legacy operator memory:
-RC surgical fix, RC cancellation, and production hotfix prep.
+RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backport handling.
 
 ## Current guarantees
 

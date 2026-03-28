@@ -40,6 +40,7 @@ profile:
   release_mode: "single-branch"
   rc_branch_pattern: "rc/{version}"
   hotfix_branch_pattern: "hotfix/{version}"
+  backport_branch_pattern: "backport/{version}"
   staging_workflow: ""
   promote_workflow: ""
 

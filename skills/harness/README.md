@@ -28,7 +28,7 @@ Use this when the model should act as the harness leader:
 - push mission branches and draft PR payloads
 - open GitHub PRs directly when `gh` auth is available
 - perform post-merge cleanup for worktrees and local branches
-- create, surgically fix, cancel, hotfix, verify, and promote release candidates
+- create, surgically fix, cancel, hotfix, backport, verify, and promote release candidates
 - repair or normalize runtime drift
 
 ## Status
@@ -50,6 +50,7 @@ The release smoke now covers:
 - RC surgical `fix` via cherry-pick onto an active RC branch
 - RC `cancel` with branch cleanup
 - production-style `hotfix` branch preparation
+- dual-branch `backport` after production hotfix
 
 ## Install To Codex
 

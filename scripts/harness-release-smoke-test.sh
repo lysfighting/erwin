@@ -180,6 +180,100 @@ else
   fail "rc hotfix push updates remote hotfix branch"
 fi
 
+section "Dual-branch backport"
+(
+  cd "$TEST_REPO" &&
+    git checkout -q main &&
+    git checkout -q -B develop main &&
+    git push -u origin develop >/dev/null &&
+    cat > harness/profiles/erwin.yml <<'EOF'
+version: 1
+profile:
+  profile_id: "erwin-main"
+  name: "erwin"
+  repository: "liyasong/erwin"
+  default_runtime: "codex"
+  base_branch: "develop"
+  production_branch: "main"
+  branch_pattern: "mission/{issue}-{slug}"
+  worktree_enabled_default: true
+  issue_label_prefix: "status:"
+  status_labels:
+    queued: "status:queued"
+    wip: "status:wip"
+    review: "status:review"
+    done: "status:done"
+    blocked: "status:blocked"
+  priority_labels:
+    p0: "priority:P0"
+    p1: "priority:P1"
+    p2: "priority:P2"
+  milestone_strategy: "github-milestones"
+  default_verify_commands: []
+  targeted_verify_conventions:
+    - "Prefer the narrowest useful check first."
+  required_pre_ship_checks:
+    - "Relevant targeted verification has passed."
+  release_mode: "dual-branch"
+  rc_branch_pattern: "rc/{version}"
+  hotfix_branch_pattern: "hotfix/{version}"
+  backport_branch_pattern: "backport/{version}"
+  staging_workflow: ""
+  promote_workflow: ""
+  docs_entrypoints:
+    - "README.md"
+  code_entrypoints:
+    - "scripts/"
+  config_entrypoints:
+    - ".gitignore"
+  legacy_paths: []
+  max_parallel_runs: 2
+  meeting_triggers:
+    - "Release-affecting uncertainty"
+  high_risk_scopes:
+    - "release and RC flows"
+  cleanup_policies:
+    - "Report stale runs."
+EOF
+    git add harness/profiles/erwin.yml &&
+    git commit -qm "switch to dual-branch release profile"
+) || exit 1
+
+(
+  cd "$TEST_REPO" &&
+    git checkout -q -b dual-backport-source develop &&
+    printf "dual backport candidate\n" >> README.md &&
+    git add README.md &&
+    git commit -qm "dual backport candidate"
+) || exit 1
+
+dual_commit_ref="dual-backport-source"
+
+dual_hotfix_output=$(run_in_repo ./scripts/harness-rc.sh hotfix v2.0.0 "$dual_commit_ref" --apply --push)
+assert_json_field "$dual_hotfix_output" '"backport_required": true' "rc hotfix reports backport required in dual-branch mode"
+
+if git --git-dir="$ORIGIN_REPO" show-ref --verify --quiet refs/heads/hotfix/v2.0.0; then
+  pass "dual-branch hotfix push updates remote hotfix branch"
+else
+  fail "dual-branch hotfix push updates remote hotfix branch"
+fi
+
+backport_output=$(run_in_repo ./scripts/harness-rc.sh backport v2.0.0 hotfix/v2.0.0 --apply --push)
+assert_json_field "$backport_output" '"applied": true' "rc backport applies cherry-pick onto backport branch"
+assert_json_field "$backport_output" '"target_branch": "develop"' "rc backport targets develop in dual-branch mode"
+
+if git --git-dir="$ORIGIN_REPO" show-ref --verify --quiet refs/heads/backport/v2.0.0; then
+  pass "rc backport push updates remote backport branch"
+else
+  fail "rc backport push updates remote backport branch"
+fi
+
+if (cd "$TEST_REPO" && git show backport/v2.0.0:README.md | grep -q "dual backport candidate"); then
+  pass "rc backport carries fix content onto backport branch"
+else
+  fail "rc backport carries fix content onto backport branch"
+fi
+
 section "Home and doctor"
 home_output=$(run_in_repo ./scripts/harness-home.sh)
 doctor_output=$(run_in_repo ./scripts/harness-doctor.sh)

@@ -754,6 +754,39 @@ def git_cherry_pick(commitish: str) -> None:
     run_command_with_stderr(["git", "cherry-pick", commitish])
 
 
+def apply_cherry_pick_branch(
+    *,
+    branch: str,
+    base_branch: str,
+    resolved_commit: str,
+    remote: str,
+    apply_changes: bool,
+    push_changes: bool,
+) -> dict[str, Any]:
+    previous_branch = current_branch()
+    applied = False
+    pushed = False
+    if apply_changes:
+        try:
+            git_checkout_new_branch(branch, base_branch)
+            git_cherry_pick(resolved_commit)
+            applied = True
+            if push_changes:
+                git_push_branch(remote, branch)
+                pushed = True
+        finally:
+            if previous_branch and previous_branch != branch and branch_exists(previous_branch):
+                try:
+                    git_checkout_branch(previous_branch)
+                except Exception:
+                    pass
+    return {
+        "previous_branch": previous_branch,
+        "applied": applied,
+        "pushed": pushed,
+    }
+
+
 def git_create_worktree(branch: str, path: Path, base_branch: str) -> None:
     if path.exists():
         raise RuntimeError(f"worktree path already exists: {path}")
@@ -2732,18 +2765,21 @@ def cmd_rc(args: list[str]) -> int:
             resolved_commit = git_resolve_commitish(commitish)
         except Exception as exc:
             raise SystemExit(f"rc hotfix could not resolve commitish: {exc}")
-        previous_branch = current_branch()
         applied = False
         pushed = False
         pr_result: dict[str, str] = {}
         if apply_changes:
             try:
-                git_checkout_new_branch(branch, production_branch)
-                git_cherry_pick(resolved_commit)
-                applied = True
-                if push_changes:
-                    git_push_branch(remote, branch)
-                    pushed = True
+                branch_result = apply_cherry_pick_branch(
+                    branch=branch,
+                    base_branch=production_branch,
+                    resolved_commit=resolved_commit,
+                    remote=remote,
+                    apply_changes=apply_changes,
+                    push_changes=push_changes,
+                )
+                applied = bool(branch_result["applied"])
+                pushed = bool(branch_result["pushed"])
                 if pr_open:
                     body = (
                         f"## Summary\n\n"
@@ -2764,12 +2800,6 @@ def cmd_rc(args: list[str]) -> int:
                     )
             except Exception as exc:
                 raise SystemExit(f"rc hotfix failed: {exc}")
-            finally:
-                if previous_branch and previous_branch != branch and branch_exists(previous_branch):
-                    try:
-                        git_checkout_branch(previous_branch)
-                    except Exception:
-                        pass
         payload = {
             "hotfix_id": hotfix_id,
             "version": version,
@@ -2791,6 +2821,98 @@ def cmd_rc(args: list[str]) -> int:
                 f"After production merge, backport the hotfix into {base_branch}."
                 if base_branch != production_branch
                 else "No backport required in single-branch mode."
+            ),
+        }
+        print(json.dumps(payload, indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "backport":
+        if len(args) < 3:
+            raise SystemExit(
+                "rc backport requires VERSION COMMITISH [--apply] [--push] [--pr-open] [--draft] [--remote=origin] [--reviewer=...] [--target=branch]"
+            )
+        version = args[1]
+        commitish = args[2]
+        apply_changes = "--apply" in args[3:]
+        push_changes = "--push" in args[3:]
+        pr_open = "--pr-open" in args[3:]
+        draft = "--draft" in args[3:]
+        remote = "origin"
+        reviewers: list[str] = []
+        override_target = ""
+        for arg in args[3:]:
+            if arg.startswith("--remote="):
+                remote = arg.split("=", 1)[1].strip() or "origin"
+            elif arg.startswith("--reviewer="):
+                reviewer = arg.split("=", 1)[1].strip()
+                if reviewer:
+                    reviewers.append(reviewer)
+            elif arg.startswith("--target="):
+                override_target = arg.split("=", 1)[1].strip()
+        profile, _ = resolve_profile()
+        production_branch = get_key(profile, "profile.production_branch", "main")
+        target_branch = override_target or get_key(profile, "profile.base_branch", production_branch)
+        branch_pattern = get_key(profile, "profile.backport_branch_pattern", "backport/{version}")
+        branch = branch_pattern.replace("{version}", version)
+        backport_id = f"backport-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}-{slugify(version)}"
+        try:
+            resolved_commit = git_resolve_commitish(commitish)
+        except Exception as exc:
+            raise SystemExit(f"rc backport could not resolve commitish: {exc}")
+        applied = False
+        pushed = False
+        pr_result: dict[str, str] = {}
+        if apply_changes:
+            try:
+                branch_result = apply_cherry_pick_branch(
+                    branch=branch,
+                    base_branch=target_branch,
+                    resolved_commit=resolved_commit,
+                    remote=remote,
+                    apply_changes=apply_changes,
+                    push_changes=push_changes,
+                )
+                applied = bool(branch_result["applied"])
+                pushed = bool(branch_result["pushed"])
+                if pr_open:
+                    body = (
+                        f"## Summary\n\n"
+                        f"- Backport version: `{version}`\n"
+                        f"- Source ref: `{commitish}`\n"
+                        f"- Resolved commit: `{resolved_commit}`\n"
+                        f"- Production branch: `{production_branch}`\n"
+                        f"- Target branch: `{target_branch}`\n"
+                    )
+                    pr_result = open_github_pr_for_branch(
+                        branch=branch,
+                        base_branch=target_branch,
+                        title=f"[backport {version}] Cherry-pick {commitish}",
+                        body=body,
+                        draft=draft,
+                        reviewers=reviewers,
+                    )
+            except Exception as exc:
+                raise SystemExit(f"rc backport failed: {exc}")
+        payload = {
+            "backport_id": backport_id,
+            "version": version,
+            "branch": branch,
+            "target_branch": target_branch,
+            "production_branch": production_branch,
+            "commitish": commitish,
+            "resolved_commit": resolved_commit,
+            "apply_changes": apply_changes,
+            "applied": applied,
+            "pushed": pushed,
+            "remote": remote,
+            "pr_opened": bool(pr_result),
+            "pr_ref": pr_result.get("pr_ref", ""),
+            "pr_url": pr_result.get("pr_url", ""),
+            "reviewers": reviewers,
+            "next_expected_action": (
+                f"Merge the backport into {target_branch} after validating it there."
+                if target_branch
+                else "Complete the backport merge."
             ),
         }
         print(json.dumps(payload, indent=2, ensure_ascii=True))
