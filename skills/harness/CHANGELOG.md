@@ -18,6 +18,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Cross-surface run authority adjudication via `bash scripts/harness-runs.sh authority-audit RUN_ID`, including higher-authority active-signal conflict detection and meeting-outcome adoption gaps.
 - Claim-aware council auto-synthesis via `meetings add-position --claim=... --dimension=...` and `meetings orchestrate`, including provisional findings and unresolved follow-up actions.
 - Clean-intent-vs-live-git authority detection via `runs authority-audit` when a dirty live worktree contradicts governed verification or handoff intent.
+- Debate-route planning via meeting `debate_plan`, plus routed/unrouted conflicting claim reporting in `meetings summary` and `doctor`.
 
 ### Changed
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.
@@ -31,6 +32,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Legacy `ownership_claims` are now normalized into `ownership_selectors`, so overlap checks and transfer semantics operate on structured selectors instead of raw strings alone.
 - `meetings summary` now surfaces auto-generated council finding/action counts so leader views can see when synthesis is still purely manual versus partially automated.
 - Worktree authority snapshots now ignore the harness-owned `.mission` marker so live-dirty detection tracks execution drift instead of harness bookkeeping noise.
+- `doctor` now treats unrouted conflicting claims as a governance problem once a meeting has entered cross-examination or beyond.
 
 ## [0.6.0] - 2026-03-28
 

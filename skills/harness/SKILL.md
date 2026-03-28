@@ -158,6 +158,7 @@ The harness is file-backed:
 - Allow teammate-to-teammate communication only through governed links or sibling relationships.
 - Use `meetings orchestrate` to advance council phases instead of manually skipping straight to synthesis.
 - Treat `meetings orchestrate` as the council chair: once bounded positions exist, it can auto-synthesize provisional findings and unresolved-action prompts without overwriting manual judgment that is already on the record.
+- Treat routed cross-examination as first-class: when multiple roles disagree on the same `--claim`, the council now tracks whether that conflict has actually been routed into linked challenge paths before synthesis/output is trusted.
 - When recording cross-examination positions, include explicit `--responds-to-run=` / `--responds-to-role=` linkage so the council trace shows who challenged whom.
 - When recording positions that speak about the same question, include `--claim=` and `--dimension=` so auto-synthesis and authority audit can group them into the same council claim.
 - When multiple findings speak about the same claim, use `--claim=` and `--dimension=` on `meetings add-finding` so authority conflicts can be audited cleanly.

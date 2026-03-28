@@ -173,7 +173,7 @@ Current truth:
 - the runtime now stores the right meeting objects
 - the runtime can now advance meeting phases with `meetings orchestrate`
 - findings can now reference the positions that support or challenge them, so synthesis provenance is no longer implicit
-- positions can now be grouped by `claim` / `dimension`, and `meetings orchestrate` can auto-generate provisional findings plus unresolved follow-up actions from those grouped positions
+- positions can now be grouped by `claim` / `dimension`, `meetings orchestrate` can auto-generate provisional findings plus unresolved follow-up actions from those grouped positions, and meetings now track routed vs unrouted conflicting claim lanes through a first-class debate plan
 - but it still does not automate the full debate workflow itself
 
 So the system has become **meaningfully council-orchestrating**, but not yet a full automated debate controller.

@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector families beyond current normalized ownership transfer, higher-order authority adjudication when live git state contradicts contract intent beyond the new clean-intent-vs-dirty-worktree baseline, deeper automated council orchestration beyond the new auto-synthesis baseline, clearer public product contract
+- **still incomplete**: richer selector families beyond current normalized ownership transfer, higher-order authority adjudication when live git state contradicts contract intent beyond the new clean-intent-vs-dirty-worktree baseline, deeper automated council orchestration beyond the new auto-synthesis and debate-routing baseline, clearer public product contract
 
 ---
 
@@ -68,6 +68,8 @@ This audit was followed immediately by implementation work that materially close
 - `meetings summary` now surfaces auto-generated finding/action counts, making council automation visible to the leader
 - `runAuthorityAudit` now flags a dirty live worktree when run/desired state already claims the execution should be clean enough for governed verification or handoff
 - worktree authority snapshots now ignore the harness-owned `.mission` marker so live dirty detection tracks real execution drift rather than harness bookkeeping noise
+- meetings now materialize a `debate_plan` that groups conflicting claim lanes and reports whether linked cross-examination has actually been routed for each conflict
+- `doctor` now treats unrouted conflicting claims as a governance problem once the meeting has advanced into cross-examination, synthesis, or output
 
 This pushes the council model much closer to the intended `arch-review` discipline instead of only “meeting exists.”
 
@@ -87,14 +89,14 @@ What is still missing:
 
 ### 2. Automated council orchestration
 
-The meeting protocol is now much stronger, and the system can now auto-synthesize provisional findings from grouped positions, but it still does not yet automatically run a full structured debate workflow.
+The meeting protocol is now much stronger, and the system can now auto-synthesize provisional findings from grouped positions plus track routed vs unrouted conflict lanes, but it still does not yet automatically run a full structured debate workflow.
 
 What is still missing:
 
 - automated independent-review wave
 - automated cross-examination routing
 - automatic independent-review wave planning
-- automatic cross-examination routing between specific bounded roles
+- automatic cross-examination assignment between specific bounded roles beyond the new routed/unrouted conflict-lane tracking
 - automatic synthesis beyond the current provisional position-group baseline; the harness can now derive provisional findings and unresolved follow-up actions, but still depends on leader/council judgment for the richer debate workflow
 
 ### 3. Authority adjudication

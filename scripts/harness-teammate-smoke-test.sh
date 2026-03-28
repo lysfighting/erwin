@@ -157,8 +157,8 @@ assert_json_field "$participant_b" '"worker-ops"' "meeting records second partic
 orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
 assert_json_field "$orchestrate_a" '"new_phase": "independent_review"' "meeting orchestration advances setup to independent review"
 
-position_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_a" independent_review support "No schema drift in auth callers." --evidence=src/auth.ts)
-position_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" independent_review challenge "Release notes should mention the new scope requirement." --evidence=CHANGELOG.md)
+position_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_a" independent_review support "No schema drift in auth callers." --claim=release-note-scope --dimension=factual --evidence=src/auth.ts)
+position_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" independent_review challenge "Release notes should mention the new scope requirement." --claim=release-note-scope --dimension=factual --evidence=CHANGELOG.md)
 assert_json_field "$position_a" '"positions"' "meeting stores first position"
 assert_json_field "$position_b" '"independent_review"' "meeting stores second independent-review position"
 position_a_id=$(printf '%s\n' "$position_a" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
@@ -167,7 +167,7 @@ position_b_id=$(printf '%s\n' "$position_b" | sed -n 's/^[[:space:]]*"position_i
 orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
 assert_json_field "$orchestrate_b" '"new_phase": "cross_examination"' "meeting orchestration advances to cross-examination"
 
-cross_exam=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" cross_examination challenge "Operator-facing release notes must mention the new scope requirement." --evidence=CHANGELOG.md --responds-to-run="$run_a" --responds-to-role=implementation-verifier)
+cross_exam=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" cross_examination challenge "Operator-facing release notes must mention the new scope requirement." --claim=release-note-scope --dimension=factual --evidence=CHANGELOG.md --responds-to-run="$run_a" --responds-to-role=implementation-verifier)
 assert_json_field "$cross_exam" '"cross_examination"' "meeting stores cross-examination position"
 assert_json_field "$cross_exam" "\"responds_to_run_id\": \"$run_a\"" "cross-examination position records explicit response target"
 cross_exam_id=$(printf '%s\n' "$cross_exam" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
@@ -193,6 +193,8 @@ assert_json_field "$summary_output" '"authority_conflict_count": 1' "meeting sum
 assert_json_field "$summary_output" '"unresolved_authority_conflict_count": 0' "meeting summary reports no unresolved authority conflict when higher authority wins"
 assert_json_field "$summary_output" '"traced_finding_count": 3' "meeting summary reports traced findings"
 assert_json_field "$summary_output" '"untraced_finding_count": 0' "meeting summary reports no untraced findings"
+assert_json_field "$summary_output" '"planned_route_count": 1' "meeting summary reports routed conflicting claim count"
+assert_json_field "$summary_output" '"unrouted_claim_count": 0' "meeting summary reports no unrouted conflict claim"
 authority_audit=$(run_in_repo bash scripts/harness-meetings.sh authority-audit "$meeting_id")
 assert_json_field "$authority_audit" '"resolution_kind": "authority_wins"' "authority audit explains higher-authority winner"
 
