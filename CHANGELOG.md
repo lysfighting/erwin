@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Harness Prototype
+- **Automated council synthesis**: `meetings orchestrate` can now derive provisional findings and unresolved follow-up actions from grouped council positions without overwriting manual findings already on the record.
+- **Claim-aware council positions**: `meetings add-position` now accepts `--claim=` and `--dimension=` so debate inputs can be grouped into the same governed claim during synthesis.
+- **Meeting summary automation metrics**: `meetings summary` now reports auto-generated finding/action counts alongside traced-finding and authority-conflict reporting.
 - **Codex-native orchestration harness prototype**: Added repository-local `harness/` definition layer and `.harness/` runtime model with profile, templates, and policies. Implemented deterministic substrate in `scripts/harness_state.py` plus shell surfaces for `home`, `doctor`, `claim`, `drive`, `meetings`, and `maintenance`.
 - **Leader control plane features**: file-backed runtime locking, run-state transition validation, meeting materialization and archival, meeting outcome adoption back into runs, reprovisioning of existing runs into branch/worktree modes, reconciliation and normalization utilities.
 - **Codex-native skill surface**: Added `skills/harness/SKILL.md` and `skills/harness/README.md` as the first repository-local skill for operating the harness.

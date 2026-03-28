@@ -22,6 +22,17 @@ meeting:
     next_requirement: ""
     last_orchestrated_at: ""
     last_phase_reason: ""
+    auto_synthesis:
+      status: "idle"
+      generated_claim_count: 0
+      generated_finding_count: 0
+      generated_action_count: 0
+      generated_claims: []
+      generated_finding_ids: []
+      generated_action_ids: []
+      generated_summaries: []
+      skipped_claims: []
+      last_generated_at: ""
     synthesis:
       status: "pending"
       tally: {}

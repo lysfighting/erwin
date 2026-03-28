@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector families beyond current normalized ownership transfer, higher-order authority adjudication when live git state contradicts contract intent without a simple record drift or governing signal, deeper automated council orchestration, clearer public product contract
+- **still incomplete**: richer selector families beyond current normalized ownership transfer, higher-order authority adjudication when live git state contradicts contract intent without a simple record drift or governing signal, deeper automated council orchestration beyond the new auto-synthesis baseline, clearer public product contract
 
 ---
 
@@ -38,8 +38,8 @@ The current truth is:
 | Leader as chairing regulator | leader owns orchestration, not truth monopoly | **Absorbed** | leader-facing surfaces, `doctor`, `home`, meetings, teammate assignment | Still room for richer scheduling / mission-graph control |
 | Teammates as bounded execution units | delegated work with scope, reporting, escalation | **Absorbed** | `teammates assign/report/message/escalate` | No native Codex sub-agent binding yet |
 | Teammate-to-teammate communication | lateral communication under governance | **Absorbed** | sibling links + governed `teammates message` | Could later gain freshness/routing policies beyond current signal model |
-| `arch-review` meeting discipline | authority hierarchy, bounded roles, allowed/forbidden sources, cross-exam, rejected reasons | **Partially absorbed, now much stronger** | meeting `role_specs`, `locked_decisions`, `known_context`, rejected reasons, doctor checks, `meetings orchestrate`, signal-level authority adjudication, run-level authority audit | No automated multi-role debate orchestration yet; still human/leader-driven |
-| Council-corrected synthesis | leader convenes, council refines, output becomes system truth | **Absorbed** | meeting objects, findings/action items, adoption into runs | Could still deepen explicit conflict handling and synthesis traces |
+| `arch-review` meeting discipline | authority hierarchy, bounded roles, allowed/forbidden sources, cross-exam, rejected reasons | **Partially absorbed, now much stronger** | meeting `role_specs`, `locked_decisions`, `known_context`, rejected reasons, doctor checks, `meetings orchestrate`, signal-level authority adjudication, run-level authority audit, claim/dimension-aware auto-synthesis | No automated multi-role debate wave yet; still leader-guided |
+| Council-corrected synthesis | leader convenes, council refines, output becomes system truth | **Absorbed more strongly** | meeting objects, traced findings/action items, auto-synthesized provisional findings, adoption into runs | Could still deepen explicit conflict handling and debate-wave automation |
 | Runtime packaging / harness engineering | installability, portability, no project-language coupling | **Absorbed** | Go runtime, packaged binary preference, runtime-dist smoke | Public binary distribution strategy still open |
 
 ---
@@ -63,6 +63,9 @@ This audit was followed immediately by implementation work that materially close
 - `doctor` now flags unresolved `run-authority-conflict` when fresher or higher-authority active signals disagree with current run state
 - run-level control-plane mutations now refresh contract snapshots, and `maintenance normalize` can repair stale historical contracts
 - meeting findings can now carry explicit provenance back to supporting/challenging positions, and synthesis audit reports traced vs untraced findings
+- `meetings add-position` now accepts `--claim=` and `--dimension=` so councils can group positions by governed claim instead of only by freeform summary
+- `meetings orchestrate` can now auto-synthesize provisional findings and unresolved follow-up actions from grouped positions without overwriting manual findings already on the record
+- `meetings summary` now surfaces auto-generated finding/action counts, making council automation visible to the leader
 
 This pushes the council model much closer to the intended `arch-review` discipline instead of only “meeting exists.”
 
@@ -82,13 +85,15 @@ What is still missing:
 
 ### 2. Automated council orchestration
 
-The meeting protocol is now much stronger, but the system does not yet automatically run a structured debate workflow.
+The meeting protocol is now much stronger, and the system can now auto-synthesize provisional findings from grouped positions, but it still does not yet automatically run a full structured debate workflow.
 
 What is still missing:
 
 - automated independent-review wave
 - automated cross-examination routing
-- automatic synthesis from conflicting positions into accepted/rejected/unresolved truth; the provenance data model now exists, but the harness still depends on the leader to record it
+- automatic independent-review wave planning
+- automatic cross-examination routing between specific bounded roles
+- automatic synthesis beyond the current provisional position-group baseline; the harness can now derive provisional findings and unresolved follow-up actions, but still depends on leader/council judgment for the richer debate workflow
 
 ### 3. Authority adjudication
 

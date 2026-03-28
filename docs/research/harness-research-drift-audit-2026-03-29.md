@@ -30,7 +30,7 @@ But there is clear **implementation-weighted drift**:
 
 - protocol and adapter work are still a little more mature than the hardest control-plane work
 - runtime packaging was ahead of desired-state modeling, but first-class mission objects have now materially closed that gap
-- meeting governance is now strong, but automated council orchestration is still not there
+- meeting governance is now strong, and automated council orchestration has begun to materialize through claim-aware auto-synthesis, but the full debate controller is still not there
 
 So the danger is not “we forgot the vision entirely.”
 The danger is:
@@ -173,9 +173,10 @@ Current truth:
 - the runtime now stores the right meeting objects
 - the runtime can now advance meeting phases with `meetings orchestrate`
 - findings can now reference the positions that support or challenge them, so synthesis provenance is no longer implicit
-- but it still does not automate the debate workflow itself
+- positions can now be grouped by `claim` / `dimension`, and `meetings orchestrate` can auto-generate provisional findings plus unresolved follow-up actions from those grouped positions
+- but it still does not automate the full debate workflow itself
 
-So the system has become **partly council-orchestrating**, but not yet a full automated debate controller.
+So the system has become **meaningfully council-orchestrating**, but not yet a full automated debate controller.
 
 ### 5. Product surface questions are still unresolved
 
@@ -216,7 +217,7 @@ But it **has** drifted into an uneven maturity shape:
 - desired-state control plane: still partial
 - explicit ownership model: now materially stronger, still partial
 - authority enforcement across the whole harness: still partial
-- automated council orchestration: stronger, still partial
+- automated council orchestration: materially stronger, still partial
 
 That means future work should **not** primarily add new surfaces.
 It should close the remaining control-plane gaps.

@@ -1555,6 +1555,23 @@ func authorityRank(level string) int {
 	}
 }
 
+func authorityLevelForRank(rank int) string {
+	switch rank {
+	case 5:
+		return "L1"
+	case 4:
+		return "L2"
+	case 3:
+		return "L3"
+	case 2:
+		return "L4"
+	case 1:
+		return "L5"
+	default:
+		return ""
+	}
+}
+
 func isoAfter(left, right string) bool {
 	leftTime, err := parseISO(left)
 	if err != nil || leftTime == nil {
@@ -1728,12 +1745,12 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 	desiredGapRecords := []any{}
 	for _, gap := range desiredGaps {
 		desiredGapRecords = append(desiredGapRecords, map[string]any{
-			"claim_ref":        gap,
-			"resolution_kind":  "desired_state_unmet",
-			"authority_level":  "L3",
-			"source_ref":       "desired_state:" + runID,
-			"winning_source":   "run:" + runID,
-			"note":             fmt.Sprintf("Current run state does not yet satisfy desired state %s.", gap),
+			"claim_ref":         gap,
+			"resolution_kind":   "desired_state_unmet",
+			"authority_level":   "L3",
+			"source_ref":        "desired_state:" + runID,
+			"winning_source":    "run:" + runID,
+			"note":              fmt.Sprintf("Current run state does not yet satisfy desired state %s.", gap),
 			"desired_state_gap": true,
 		})
 	}
@@ -1868,17 +1885,17 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 			if stringValue(run["state"]) != "blocked" && stringValue(run["state"]) != "waiting" {
 				if signalRank > authorityRank(runLevel) || (signalRank == authorityRank(runLevel) && isoAfter(emittedAt, runUpdatedAt)) {
 					conflict = map[string]any{
-						"claim_ref":        "execution_state",
-						"signal_id":        signalID,
-						"signal_kind":      stringValue(signal["kind"]),
-						"source_ref":       "signal:" + signalID,
-						"winning_source":   "signal:" + signalID,
-						"losing_source":    "run:" + runID,
-						"authority_level":  signalLevel,
-						"resolution_kind":  "run_state_overridden",
-						"current_value":    stringValue(run["state"]),
-						"expected_value":   "blocked|waiting",
-						"note":             "Active blocked signal conflicts with the current run state and should be resolved or adopted.",
+						"claim_ref":       "execution_state",
+						"signal_id":       signalID,
+						"signal_kind":     stringValue(signal["kind"]),
+						"source_ref":      "signal:" + signalID,
+						"winning_source":  "signal:" + signalID,
+						"losing_source":   "run:" + runID,
+						"authority_level": signalLevel,
+						"resolution_kind": "run_state_overridden",
+						"current_value":   stringValue(run["state"]),
+						"expected_value":  "blocked|waiting",
+						"note":            "Active blocked signal conflicts with the current run state and should be resolved or adopted.",
 					}
 				}
 			}
@@ -1915,24 +1932,24 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 	}
 
 	return map[string]any{
-		"run_id":                        runID,
-		"canonical_source":              "run:" + runID,
-		"canonical_authority_level":     runLevel,
-		"run_claims":                    runClaims,
-		"signal_sources":                signalSources,
-		"adoption_gap_count":            len(adoptionGaps),
-		"contract_gap_count":            len(contractGaps),
+		"run_id":                          runID,
+		"canonical_source":                "run:" + runID,
+		"canonical_authority_level":       runLevel,
+		"run_claims":                      runClaims,
+		"signal_sources":                  signalSources,
+		"adoption_gap_count":              len(adoptionGaps),
+		"contract_gap_count":              len(contractGaps),
 		"higher_authority_conflict_count": len(conflicts),
-		"superseded_signal_count":       len(supersededSignals),
-		"desired_state_gap_count":       len(desiredGapRecords),
-		"live_state_gap_count":          len(liveStateGaps),
-		"desired_state_satisfied":       desiredSatisfied,
-		"adoption_gaps":                 adoptionGaps,
-		"contract_gaps":                 contractGaps,
-		"higher_authority_conflicts":    conflicts,
-		"superseded_signals":            supersededSignals,
-		"desired_state_gaps":            desiredGapRecords,
-		"live_state_gaps":               liveStateGaps,
+		"superseded_signal_count":         len(supersededSignals),
+		"desired_state_gap_count":         len(desiredGapRecords),
+		"live_state_gap_count":            len(liveStateGaps),
+		"desired_state_satisfied":         desiredSatisfied,
+		"adoption_gaps":                   adoptionGaps,
+		"contract_gaps":                   contractGaps,
+		"higher_authority_conflicts":      conflicts,
+		"superseded_signals":              supersededSignals,
+		"desired_state_gaps":              desiredGapRecords,
+		"live_state_gaps":                 liveStateGaps,
 	}
 }
 
@@ -3109,6 +3126,220 @@ func meetingCoverageAudit(meeting map[string]any) map[string]any {
 	}
 }
 
+func meetingClaimGroupKey(claimRef, dimension, fallback string) string {
+	claim := firstNonBlank(strings.TrimSpace(claimRef), strings.TrimSpace(fallback))
+	if claim == "" {
+		claim = "unspecified-claim"
+	}
+	normalized := slugify(strings.ToLower(claim))
+	if normalized == "" {
+		normalized = slugify(strings.ToLower(firstNonBlank(fallback, claim)))
+	}
+	if normalized == "" {
+		normalized = "unspecified-claim"
+	}
+	return firstNonBlank(strings.TrimSpace(dimension), "factual") + "::" + normalized
+}
+
+func meetingAutoSynthesize(meeting map[string]any) map[string]any {
+	findings, _ := toMap(meeting["findings"])
+	if findings == nil {
+		findings = map[string]any{}
+	}
+
+	manualClaims := map[string]bool{}
+	for _, bucket := range []string{"accepted", "rejected", "unresolved"} {
+		cleaned := []any{}
+		for _, item := range toList(findings[bucket]) {
+			finding, ok := toMap(item)
+			if !ok {
+				continue
+			}
+			if stringValue(finding["generated_by"]) == "orchestrate_auto_synthesis" {
+				continue
+			}
+			key := meetingClaimGroupKey(stringValue(finding["claim_ref"]), stringValue(finding["dimension"]), firstNonBlank(stringValue(finding["summary"]), stringValue(finding["finding_id"])))
+			manualClaims[key] = true
+			cleaned = append(cleaned, finding)
+		}
+		findings[bucket] = cleaned
+	}
+	meeting["findings"] = findings
+
+	actions := []any{}
+	for _, item := range toList(meeting["action_items"]) {
+		action, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		if stringValue(action["generated_by"]) == "orchestrate_auto_synthesis" {
+			continue
+		}
+		actions = append(actions, action)
+	}
+	meeting["action_items"] = actions
+
+	positionGroups := map[string][]map[string]any{}
+	claimLabels := map[string]string{}
+	for _, item := range toList(meeting["positions"]) {
+		position, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		claimRef := strings.TrimSpace(stringValue(position["claim_ref"]))
+		if claimRef == "" {
+			continue
+		}
+		dimension := firstNonBlank(stringValue(position["dimension"]), "factual")
+		key := meetingClaimGroupKey(claimRef, dimension, stringValue(position["position_id"]))
+		claimLabels[key] = claimRef
+		positionGroups[key] = append(positionGroups[key], position)
+	}
+
+	groupKeys := []string{}
+	for key := range positionGroups {
+		groupKeys = append(groupKeys, key)
+	}
+	sort.Strings(groupKeys)
+
+	generatedClaims := []string{}
+	generatedFindingIDs := []string{}
+	generatedActionIDs := []string{}
+	generatedSummaries := []string{}
+	skippedClaims := []string{}
+	claimIndex := 0
+
+	for _, key := range groupKeys {
+		if manualClaims[key] {
+			skippedClaims = append(skippedClaims, key)
+			continue
+		}
+		positions := positionGroups[key]
+		claimRef := claimLabels[key]
+		if claimRef == "" {
+			claimRef = key
+		}
+		dimension := "factual"
+		if len(positions) > 0 {
+			dimension = firstNonBlank(stringValue(positions[0]["dimension"]), "factual")
+		}
+
+		supportingIDs := []string{}
+		challengingIDs := []string{}
+		evidenceRefs := []string{}
+		supportRank := 0
+		challengeRank := 0
+		supportLevel := ""
+		challengeLevel := ""
+		supportRecordedAt := ""
+		challengeRecordedAt := ""
+		supportRole := ""
+		challengeRole := ""
+
+		for _, position := range positions {
+			rank := authorityRank(firstNonBlank(stringValue(position["authority_level"]), "L4"))
+			level := authorityLevelForRank(rank)
+			evidenceRefs = append(evidenceRefs, anyListToStrings(toList(position["evidence_refs"]))...)
+			switch strings.TrimSpace(stringValue(position["stance"])) {
+			case "support":
+				supportingIDs = append(supportingIDs, stringValue(position["position_id"]))
+				if rank > supportRank || (rank == supportRank && isoAfter(stringValue(position["recorded_at"]), firstNonBlank(supportRecordedAt, "1970-01-01T00:00:00Z"))) {
+					supportRank = rank
+					supportLevel = level
+					supportRecordedAt = stringValue(position["recorded_at"])
+					supportRole = stringValue(position["role"])
+				}
+			case "challenge":
+				challengingIDs = append(challengingIDs, stringValue(position["position_id"]))
+				if rank > challengeRank || (rank == challengeRank && isoAfter(stringValue(position["recorded_at"]), firstNonBlank(challengeRecordedAt, "1970-01-01T00:00:00Z"))) {
+					challengeRank = rank
+					challengeLevel = level
+					challengeRecordedAt = stringValue(position["recorded_at"])
+					challengeRole = stringValue(position["role"])
+				}
+			}
+		}
+
+		if len(supportingIDs) == 0 && len(challengingIDs) == 0 {
+			continue
+		}
+
+		claimIndex++
+		findingID := fmt.Sprintf("finding-%s-%02d", nowTime().UTC().Format("20060102150405"), claimIndex)
+		baseFinding := map[string]any{
+			"finding_id":               findingID,
+			"summary":                  claimRef,
+			"authority_level":          firstNonBlank(supportLevel, challengeLevel, "L4"),
+			"evidence_refs":            stringListToAny(dedupeStrings(evidenceRefs)),
+			"source_run_id":            "",
+			"source_role":              "council-synthesis",
+			"claim_ref":                claimRef,
+			"dimension":                dimension,
+			"supporting_position_ids":  stringListToAny(dedupeStrings(supportingIDs)),
+			"challenging_position_ids": stringListToAny(dedupeStrings(challengingIDs)),
+			"recorded_at":              nowISO(),
+			"generated_by":             "orchestrate_auto_synthesis",
+			"generated_claim_key":      key,
+		}
+
+		switch {
+		case len(supportingIDs) > 0 && len(challengingIDs) == 0:
+			baseFinding["reason"] = fmt.Sprintf("Auto-synthesized from %d supporting council position(s) with no recorded challenge.", len(supportingIDs))
+			findings["accepted"] = append(toList(findings["accepted"]), baseFinding)
+		case len(challengingIDs) > 0 && len(supportingIDs) == 0:
+			baseFinding["reason"] = fmt.Sprintf("Auto-synthesized from %d challenging council position(s) with no recorded support.", len(challengingIDs))
+			findings["rejected"] = append(toList(findings["rejected"]), baseFinding)
+		case supportRank > challengeRank:
+			baseFinding["authority_level"] = firstNonBlank(supportLevel, stringValue(baseFinding["authority_level"]), "L4")
+			baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: higher-authority support from %s overrides challenge from %s.", firstNonBlank(supportRole, "supporting council participant"), firstNonBlank(challengeRole, "challenging council participant"))
+			findings["accepted"] = append(toList(findings["accepted"]), baseFinding)
+		case challengeRank > supportRank:
+			baseFinding["authority_level"] = firstNonBlank(challengeLevel, stringValue(baseFinding["authority_level"]), "L4")
+			baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: higher-authority challenge from %s overrides support from %s.", firstNonBlank(challengeRole, "challenging council participant"), firstNonBlank(supportRole, "supporting council participant"))
+			findings["rejected"] = append(toList(findings["rejected"]), baseFinding)
+		default:
+			baseFinding["authority_level"] = firstNonBlank(supportLevel, challengeLevel, "L4")
+			baseFinding["reason"] = fmt.Sprintf("Auto-synthesized unresolved conflict: same-authority support and challenge remain on claim %q.", claimRef)
+			findings["unresolved"] = append(toList(findings["unresolved"]), baseFinding)
+			actionID := fmt.Sprintf("action-%s-%02d", nowTime().UTC().Format("20060102150405"), claimIndex)
+			actions = append(actions, map[string]any{
+				"action_id":           actionID,
+				"summary":             fmt.Sprintf("Leader judgment or explicit synthesis note required for claim: %s", claimRef),
+				"recorded_at":         nowISO(),
+				"state":               "open",
+				"generated_by":        "orchestrate_auto_synthesis",
+				"generated_claim_key": key,
+			})
+			generatedActionIDs = append(generatedActionIDs, actionID)
+		}
+
+		generatedClaims = append(generatedClaims, key)
+		generatedFindingIDs = append(generatedFindingIDs, findingID)
+		generatedSummaries = append(generatedSummaries, claimRef)
+	}
+
+	meeting["findings"] = findings
+	meeting["action_items"] = actions
+
+	status := "noop"
+	if len(generatedFindingIDs) > 0 || len(generatedActionIDs) > 0 {
+		status = "generated"
+	}
+
+	return map[string]any{
+		"status":                  status,
+		"generated_claim_count":   len(generatedClaims),
+		"generated_finding_count": len(generatedFindingIDs),
+		"generated_action_count":  len(generatedActionIDs),
+		"generated_claims":        stringListToAny(generatedClaims),
+		"generated_finding_ids":   stringListToAny(generatedFindingIDs),
+		"generated_action_ids":    stringListToAny(generatedActionIDs),
+		"generated_summaries":     stringListToAny(generatedSummaries),
+		"skipped_claims":          stringListToAny(dedupeStrings(skippedClaims)),
+		"last_generated_at":       nowISO(),
+	}
+}
+
 func meetingSynthesisAudit(meeting map[string]any) map[string]any {
 	coverage, _ := toMap(meetingCoverageAudit(meeting))
 	findings, _ := toMap(meeting["findings"])
@@ -3218,7 +3449,7 @@ func meetingAuthorityAudit(meeting map[string]any) map[string]any {
 			if normalizedClaim == "" {
 				normalizedClaim = stringValue(finding["finding_id"])
 			}
-			groupKey := dimension + "::" + normalizedClaim
+			groupKey := meetingClaimGroupKey(claimRef, dimension, stringValue(finding["finding_id"]))
 			entry := map[string]any{
 				"finding_id":      stringValue(finding["finding_id"]),
 				"bucket":          bucket,
@@ -3546,13 +3777,13 @@ func doctorReport() map[string]any {
 				issues = append(issues, issueRecord("warning", "run-desired-state-unmet", runID, fmt.Sprintf("Completed run does not satisfy desired state: %s", strings.Join(missing, ", ")), "Either continue the lifecycle or adjust the run's declared desired state."))
 			}
 		}
-			authorityAudit, _ := toMap(runAuthorityAudit(run, registry, signals))
-			if intValue(authorityAudit["contract_gap_count"]) > 0 {
-				issues = append(issues, issueRecord("warning", "run-contract-drift", runID, "Run control-plane state has drifted from its contract snapshot.", "Run runs authority-audit and refresh the contract so planning truth matches the active run."))
-			}
-			if intValue(authorityAudit["live_state_gap_count"]) > 0 {
-				issues = append(issues, issueRecord("warning", "run-live-state-drift", runID, "Live worktree state disagrees with the run record.", "Reconcile the run record with live git state before trusting the control plane."))
-			}
+		authorityAudit, _ := toMap(runAuthorityAudit(run, registry, signals))
+		if intValue(authorityAudit["contract_gap_count"]) > 0 {
+			issues = append(issues, issueRecord("warning", "run-contract-drift", runID, "Run control-plane state has drifted from its contract snapshot.", "Run runs authority-audit and refresh the contract so planning truth matches the active run."))
+		}
+		if intValue(authorityAudit["live_state_gap_count"]) > 0 {
+			issues = append(issues, issueRecord("warning", "run-live-state-drift", runID, "Live worktree state disagrees with the run record.", "Reconcile the run record with live git state before trusting the control plane."))
+		}
 		if intValue(authorityAudit["higher_authority_conflict_count"]) > 0 {
 			conflictRefs := []string{}
 			for _, item := range toList(authorityAudit["higher_authority_conflicts"]) {
@@ -6617,6 +6848,7 @@ func cmdMeetings(args []string) error {
 		findings, _ := toMap(meeting["findings"])
 		orchestration, _ := toMap(meeting["orchestration"])
 		synthesis, _ := toMap(orchestration["synthesis"])
+		autoSynthesis, _ := toMap(orchestration["auto_synthesis"])
 		authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
 		return printJSON(map[string]any{
 			"meeting_id":                          stringValue(meeting["meeting_id"]),
@@ -6638,6 +6870,9 @@ func cmdMeetings(args []string) error {
 			"unresolved_count":                    len(toList(findings["unresolved"])),
 			"traced_finding_count":                intValue(getKey(synthesis, "tally.traced_findings", 0)),
 			"untraced_finding_count":              intValue(getKey(synthesis, "tally.untraced_findings", 0)),
+			"auto_generated_finding_count":        intValue(autoSynthesis["generated_finding_count"]),
+			"auto_generated_action_count":         intValue(autoSynthesis["generated_action_count"]),
+			"auto_generated_claim_count":          intValue(autoSynthesis["generated_claim_count"]),
 			"open_action_count":                   openActionCount,
 		})
 	case "authority-audit":
@@ -6810,16 +7045,32 @@ func cmdMeetingsRemainder(args []string) error {
 			if orchestration == nil {
 				orchestration = map[string]any{}
 			}
+			if newPhase != oldPhase {
+				setMeetingPhase(meeting, newPhase, fmt.Sprintf("orchestrate advanced from %s", oldPhase))
+			}
+			currentPhase := firstNonBlank(stringValue(meeting["phase"]), newPhase, oldPhase)
+			autoSynthesis := map[string]any{
+				"status": "idle",
+			}
+			if currentPhase == "synthesis" || currentPhase == "output" {
+				autoSynthesis = meetingAutoSynthesize(meeting)
+			}
+			synthesis := meetingSynthesisAudit(meeting)
+			if currentPhase == "synthesis" && stringValue(synthesis["status"]) == "ready_for_output" && oldPhase == "synthesis" {
+				setMeetingPhase(meeting, "output", "orchestrate advanced from synthesis")
+				currentPhase = "output"
+				nextRequirement = "Adopt or close the meeting outcome into run state."
+			} else if currentPhase == "synthesis" && stringValue(autoSynthesis["status"]) == "generated" {
+				nextRequirement = "Review auto-synthesized council output or orchestrate again to advance toward output."
+			}
 			orchestration["last_gap_report"] = stringListToAny(gaps)
 			orchestration["next_requirement"] = nextRequirement
 			orchestration["last_orchestrated_at"] = nowISO()
 			orchestration["coverage"] = coverageAudit
-			orchestration["synthesis"] = meetingSynthesisAudit(meeting)
+			orchestration["auto_synthesis"] = autoSynthesis
+			orchestration["synthesis"] = synthesis
 			orchestration["debate_round"] = maxInt(intValue(orchestration["debate_round"]), intValue(coverageAudit["linked_cross_examination_count"]))
 			meeting["orchestration"] = orchestration
-			if newPhase != oldPhase {
-				setMeetingPhase(meeting, newPhase, fmt.Sprintf("orchestrate advanced from %s", oldPhase))
-			}
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}
@@ -6829,6 +7080,7 @@ func cmdMeetingsRemainder(args []string) error {
 				"new_phase":        firstNonBlank(stringValue(meeting["phase"]), newPhase),
 				"gaps":             stringListToAny(gaps),
 				"next_requirement": nextRequirement,
+				"auto_synthesis":   autoSynthesis,
 				"orchestration":    meeting["orchestration"],
 			})
 		})
@@ -6989,6 +7241,8 @@ func cmdMeetingsRemainder(args []string) error {
 		positionTokens := []string{}
 		evidenceRefs := []string{}
 		authorityLevel := "L2"
+		claimRef := ""
+		dimension := "factual"
 		respondsToRunID := ""
 		respondsToRole := ""
 		respondsToPositionID := ""
@@ -6998,6 +7252,10 @@ func cmdMeetingsRemainder(args []string) error {
 				evidenceRefs = append(evidenceRefs, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--evidence=")))...)
 			case strings.HasPrefix(arg, "--authority="):
 				authorityLevel = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--authority=")), "L2")
+			case strings.HasPrefix(arg, "--claim="):
+				claimRef = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--claim=")), claimRef)
+			case strings.HasPrefix(arg, "--dimension="):
+				dimension = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--dimension=")), dimension)
 			case strings.HasPrefix(arg, "--responds-to-run="):
 				respondsToRunID = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--responds-to-run=")), respondsToRunID)
 			case strings.HasPrefix(arg, "--responds-to-role="):
@@ -7059,6 +7317,8 @@ func cmdMeetingsRemainder(args []string) error {
 				"phase":                   phase,
 				"stance":                  stance,
 				"summary":                 summary,
+				"claim_ref":               strings.TrimSpace(claimRef),
+				"dimension":               firstNonBlank(dimension, "factual"),
 				"evidence_refs":           stringListToAny(evidenceRefs),
 				"authority_level":         authorityLevel,
 				"responds_to_run_id":      respondsToRunID,
@@ -7157,18 +7417,18 @@ func cmdMeetingsRemainder(args []string) error {
 				findings = map[string]any{}
 			}
 			bucket := append(toList(findings[findingKind]), map[string]any{
-				"finding_id":      "finding-" + nowTime().UTC().Format("20060102150405"),
-				"summary":         summary,
-				"reason":          reason,
-				"authority_level": authorityLevel,
-				"evidence_refs":   stringListToAny(evidenceRefs),
-				"source_run_id":   sourceRunID,
-				"source_role":     sourceRole,
-				"claim_ref":       claimRef,
-				"dimension":       dimension,
-				"supporting_position_ids": stringListToAny(dedupeStrings(supportingPositionIDs)),
+				"finding_id":               "finding-" + nowTime().UTC().Format("20060102150405"),
+				"summary":                  summary,
+				"reason":                   reason,
+				"authority_level":          authorityLevel,
+				"evidence_refs":            stringListToAny(evidenceRefs),
+				"source_run_id":            sourceRunID,
+				"source_role":              sourceRole,
+				"claim_ref":                claimRef,
+				"dimension":                dimension,
+				"supporting_position_ids":  stringListToAny(dedupeStrings(supportingPositionIDs)),
 				"challenging_position_ids": stringListToAny(dedupeStrings(challengingPositionIDs)),
-				"recorded_at":     nowISO(),
+				"recorded_at":              nowISO(),
 			})
 			findings[findingKind] = bucket
 			meeting["findings"] = findings

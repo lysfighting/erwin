@@ -16,6 +16,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Same-claim meeting finding authority audit via `meetings authority-audit`, plus `--claim=` / `--dimension=` support on `meetings add-finding`.
 - Richer ownership selector families with semantic overlap for `file:` / `dir:` / `module:` plus generic bounded-selector transfer checks.
 - Cross-surface run authority adjudication via `bash scripts/harness-runs.sh authority-audit RUN_ID`, including higher-authority active-signal conflict detection and meeting-outcome adoption gaps.
+- Claim-aware council auto-synthesis via `meetings add-position --claim=... --dimension=...` and `meetings orchestrate`, including provisional findings and unresolved follow-up actions.
 
 ### Changed
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.
@@ -27,6 +28,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Mission state is now materialized above runs so leader surfaces can reconcile against a durable mission graph instead of only per-run metadata.
 - `scripts/harness-maintenance.sh normalize` now upgrades older run-only runtime state into the mission-aware schema by backfilling ownership claims, desired state, and mission linkage.
 - Legacy `ownership_claims` are now normalized into `ownership_selectors`, so overlap checks and transfer semantics operate on structured selectors instead of raw strings alone.
+- `meetings summary` now surfaces auto-generated council finding/action counts so leader views can see when synthesis is still purely manual versus partially automated.
 
 ## [0.6.0] - 2026-03-28
 

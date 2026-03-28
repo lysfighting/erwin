@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.10.0 (in progress)
+- **Version**: 0.11.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Codex-native orchestration harness meeting synthesis trace pass completed)
+- **Last Session**: 2026-03-29 (Codex-native orchestration harness automated council synthesis pass completed)
 
 ## Current Phase
 
@@ -48,7 +48,10 @@
 - **Smoke widened again**: core and teammate smoke now explicitly prove zero contract drift for claimed runs and ownership-transfer flows
 - **Live-state drift detection proved**: core smoke now also demonstrates a real run-record vs worktree-branch mismatch, and `runs authority-audit` plus `doctor` both surface the live git drift until the run record is repaired
 - **Meeting synthesis trace added**: findings can now explicitly reference supporting and challenging positions, and `meetings summary` surfaces traced vs untraced finding counts so the leader can see whether conclusions still lack provenance
-- **Adapter line advanced again**: `harness/adapter-manifest.yml` now declares `0.10.0-prototype` to reflect broader run-level authority governance
+- **Automated council synthesis added**: `meetings orchestrate` can now derive provisional findings and unresolved follow-up actions directly from bounded positions grouped by `claim` / `dimension`, while leaving manually recorded findings intact
+- **Position claim grouping added**: `meetings add-position` now accepts `--claim=` and `--dimension=` so councils can treat multiple positions as speaking about the same governed claim
+- **Meeting summary widened again**: `meetings summary` now reports auto-generated finding/action counts alongside traced-finding and authority-conflict reporting
+- **Adapter line advanced again**: `harness/adapter-manifest.yml` now declares `0.11.0-prototype` to reflect deeper council automation
 - **Adapter/package flow updated**: `harness/adapter-manifest.yml` now packages the Go module files and build runner, bootstrapped repos receive the Go sources, and `harness-bootstrap.sh` / `harness-sync.sh` now query adapter metadata through the Go runtime path
 - **Smoke suite de-Pythonized**: issue/core/release/teammate smoke scripts now query package files through the harness adapter surface and extract runtime ids without Python helpers
 - **Validation**: `./scripts/harness-build-runtime.sh`, `./scripts/harness-runtime-dist-smoke-test.sh`, `./scripts/harness-adapter.sh validate`, `./scripts/harness-issue-smoke-test.sh`, `./scripts/harness-smoke-test.sh`, `./scripts/harness-teammate-smoke-test.sh`, `./scripts/harness-release-smoke-test.sh`, `./scripts/harness-bootstrap-smoke-test.sh`, and `./scripts/harness-all-smoke-test.sh` all pass cleanly on the Go runtime; `./scripts/harness-maintenance.sh normalize` also upgrades older runtime state into mission-aware schema cleanly
@@ -97,7 +100,7 @@
    - B. Decide whether `harness/adapter-manifest.yml` should become the public package spec or stay repo-private while naming is unresolved
    - C. Continue deepening selector semantics beyond the new family-aware baseline into richer policies and transfer rules
    - D. Deepen authority conflict resolution beyond current signal-level supersession, meeting same-claim audits, run-level active-signal adjudication, contract sync, and record-vs-live drift detection into harder contract-intent vs live-git disagreement
-   - E. Decide how much farther to push council behavior toward `arch-review`-style automated debate now that phase history, linked cross-exam, synthesis audit, and finding provenance traces are first-class
+   - E. Continue pushing council behavior from auto-synthesis toward fuller `arch-review`-style automated debate now that phase history, linked cross-exam, claim grouping, synthesis audit, and finding provenance traces are first-class
    - F. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `_project/sessions/2026-03-28-B.md`, `_project/sessions/2026-03-28-C.md`, `_project/sessions/2026-03-29-A.md`, `_project/sessions/2026-03-29-B.md`, `_project/sessions/2026-03-29-C.md`, `_project/sessions/2026-03-29-D.md`, `harness/README.md`, `docs/research/harness-completion-context-pack-2026-03-28.md`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0

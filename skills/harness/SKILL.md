@@ -86,7 +86,7 @@ The harness is file-backed:
 - `meeting-lock`
   `bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to auth release notes only." --reason="Avoid widening blast radius during review." --authority=L2 --evidence=harness/profiles/erwin.yml`
 - `meeting-position`
-  `bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID independent_review challenge "This contract leaks release policy" --evidence=docs/spec.md`
+  `bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID independent_review challenge "This contract leaks release policy" --claim=release-policy-scope --dimension=factual --evidence=docs/spec.md`
 - `meeting-orchestrate`
   `bash scripts/harness-meetings.sh orchestrate MEETING_ID`
 - `meeting-finding`
@@ -157,7 +157,9 @@ The harness is file-backed:
 - Treat `depends_on` plus desired state as part of the control plane, not just metadata.
 - Allow teammate-to-teammate communication only through governed links or sibling relationships.
 - Use `meetings orchestrate` to advance council phases instead of manually skipping straight to synthesis.
+- Treat `meetings orchestrate` as the council chair: once bounded positions exist, it can auto-synthesize provisional findings and unresolved-action prompts without overwriting manual judgment that is already on the record.
 - When recording cross-examination positions, include explicit `--responds-to-run=` / `--responds-to-role=` linkage so the council trace shows who challenged whom.
+- When recording positions that speak about the same question, include `--claim=` and `--dimension=` so auto-synthesis and authority audit can group them into the same council claim.
 - When multiple findings speak about the same claim, use `--claim=` and `--dimension=` on `meetings add-finding` so authority conflicts can be audited cleanly.
 - Use `meetings summary` before adoption when you need to see synthesis readiness, debate-round depth, and blocker counts at a glance.
 - Use `meetings authority-audit` when you need a leader-facing explanation of which same-claim finding currently wins on authority.

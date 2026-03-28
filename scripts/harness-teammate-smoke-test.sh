@@ -196,6 +196,49 @@ assert_json_field "$summary_output" '"untraced_finding_count": 0' "meeting summa
 authority_audit=$(run_in_repo bash scripts/harness-meetings.sh authority-audit "$meeting_id")
 assert_json_field "$authority_audit" '"resolution_kind": "authority_wins"' "authority audit explains higher-authority winner"
 
+section "Automated council synthesis"
+auto_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "What should the council synthesize about auth release notes?")
+assert_json_field "$auto_meeting_output" '"state": "active"' "second meeting materializes for auto-synthesis"
+auto_meeting_id=$(printf '%s\n' "$auto_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+
+run_in_repo bash scripts/harness-meetings.sh add-role "$auto_meeting_id" implementation-verifier --mission="State what the code path really changed." --allow="L1: live git state|L2: active runtime state" --forbid="L4+: stale notes" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-role "$auto_meeting_id" ops-simulator --mission="Challenge operator-facing release impact." --allow="L1: live git state|L2: active runtime state" --forbid="Unverified memory" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh lock-decision "$auto_meeting_id" "Keep this council bounded to release-note and rollback-note questions." --reason="Auto-synthesis should stay inside explicit claim lanes." --authority=L2 --evidence=harness/profiles/erwin.yml >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$auto_meeting_id" "$run_a" implementation-verifier >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$auto_meeting_id" "$run_b" ops-simulator >/dev/null
+
+auto_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
+assert_json_field "$auto_orchestrate_a" '"new_phase": "independent_review"' "auto-synthesis council advances into independent review"
+
+auto_pos_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_a" independent_review support "Release notes need the scoped auth update." --claim=release-note-scope --dimension=factual --authority=L2 --evidence=CHANGELOG.md)
+auto_pos_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_b" independent_review challenge "Release notes might be optional for this scope change." --claim=release-note-scope --dimension=factual --authority=L2 --evidence=CHANGELOG.md)
+auto_pos_c=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_a" independent_review support "Rollback guidance should be explicit if operator behavior changed." --claim=rollback-plan-note --dimension=factual --authority=L2 --evidence=docs/release.md)
+auto_pos_b_id=$(printf '%s\n' "$auto_pos_b" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
+auto_pos_c_id=$(printf '%s\n' "$auto_pos_c" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
+
+auto_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
+assert_json_field "$auto_orchestrate_b" '"new_phase": "cross_examination"' "auto-synthesis council advances into cross-examination"
+
+auto_cross_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_a" cross_examination support "Operator-facing auth scope changes require release-note coverage." --claim=release-note-scope --dimension=factual --authority=L1 --evidence=CHANGELOG.md --responds-to-position="$auto_pos_b_id")
+auto_cross_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_b" cross_examination challenge "Rollback guidance can wait until a real rollback path exists." --claim=rollback-plan-note --dimension=factual --authority=L2 --evidence=docs/release.md --responds-to-position="$auto_pos_c_id")
+assert_json_field "$auto_cross_a" '"cross_examination"' "auto-synthesis council records linked cross-examination support"
+assert_json_field "$auto_cross_b" '"cross_examination"' "auto-synthesis council records linked cross-examination challenge"
+
+auto_orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
+assert_json_field "$auto_orchestrate_c" '"new_phase": "synthesis"' "auto-synthesis council advances into synthesis"
+assert_json_field "$auto_orchestrate_c" '"generated_finding_count": 2' "orchestrate auto-generates findings from council positions"
+assert_json_field "$auto_orchestrate_c" '"generated_action_count": 1' "orchestrate auto-generates action items for unresolved council claims"
+
+auto_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$auto_meeting_id")
+assert_json_field "$auto_summary" '"accepted_count": 1' "auto-synthesis produces one accepted finding"
+assert_json_field "$auto_summary" '"unresolved_count": 1' "auto-synthesis produces one unresolved finding"
+assert_json_field "$auto_summary" '"auto_generated_finding_count": 2' "meeting summary surfaces generated finding count"
+assert_json_field "$auto_summary" '"auto_generated_action_count": 1' "meeting summary surfaces generated action count"
+assert_json_field "$auto_summary" '"traced_finding_count": 2' "auto-synthesized findings remain traceable to positions"
+
+auto_orchestrate_d=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
+assert_json_field "$auto_orchestrate_d" '"new_phase": "output"' "auto-synthesis council can advance from synthesis to output"
+
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_mission_count": 1' "home surfaces active mission count"
@@ -203,6 +246,7 @@ assert_json_field "$home_output" '"active_teammate_count": 3' "home surfaces act
 assert_json_field "$home_output" '"coordination_signal_count":' "home surfaces coordination signal count"
 assert_json_field "$home_output" '"dependency_blocked_count": 1' "home surfaces dependency-blocked runs"
 assert_json_field "$home_output" '"ownership_overlap_count": 0' "home stays free of ownership overlap"
+assert_json_field "$home_output" '"active_meeting_count":' "home surfaces active council count"
 mission_graph=$(run_in_repo bash scripts/harness-missions.sh graph)
 assert_json_field "$mission_graph" '"mission_count": 1' "mission graph reports the active mission"
 
