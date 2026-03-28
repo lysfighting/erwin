@@ -2380,6 +2380,7 @@ func materializeMeeting(meetingID string, run map[string]any, question, requeste
 		"updated_at": timestamp,
 		"closed_at":  "",
 	}))
+	ensureMeetingGovernanceState(meeting)
 	if err := dumpData(meetingPath(meetingID, false), map[string]any{"version": 1, "meeting": meeting}); err != nil {
 		return nil, err
 	}
@@ -2505,6 +2506,7 @@ func updateBacklogMeeting(meetingID string, updates map[string]any) (map[string]
 }
 
 func writeActiveMeeting(meeting map[string]any) error {
+	ensureMeetingGovernanceState(meeting)
 	meeting["updated_at"] = nowISO()
 	return dumpData(meetingPath(stringValue(meeting["meeting_id"]), false), map[string]any{"version": 1, "meeting": meeting})
 }
@@ -2556,6 +2558,230 @@ func meetingOutcome(meeting map[string]any) map[string]any {
 	return map[string]any{
 		"summary":     summary,
 		"next_action": nextAction,
+	}
+}
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func ensureMeetingGovernanceState(meeting map[string]any) map[string]any {
+	if meeting == nil {
+		return nil
+	}
+	if _, ok := toMap(meeting["orchestration"]); !ok {
+		meeting["orchestration"] = map[string]any{}
+	}
+	if len(toList(meeting["phase_history"])) == 0 {
+		meeting["phase_history"] = []any{map[string]any{
+			"phase":      firstNonBlank(stringValue(meeting["phase"]), "setup"),
+			"entered_at": firstNonBlank(stringValue(meeting["created_at"]), nowISO()),
+			"reason":     "meeting_materialized",
+		}}
+	}
+	return meeting
+}
+
+func setMeetingPhase(meeting map[string]any, phase, reason string) {
+	if meeting == nil {
+		return
+	}
+	ensureMeetingGovernanceState(meeting)
+	current := firstNonBlank(stringValue(meeting["phase"]), "setup")
+	next := firstNonBlank(strings.TrimSpace(phase), current)
+	orchestration, _ := toMap(meeting["orchestration"])
+	if orchestration == nil {
+		orchestration = map[string]any{}
+	}
+	timestamp := nowISO()
+	if current != next {
+		history := append(toList(meeting["phase_history"]), map[string]any{
+			"phase":      next,
+			"entered_at": timestamp,
+			"reason":     firstNonBlank(strings.TrimSpace(reason), "phase_transition"),
+		})
+		meeting["phase_history"] = history
+	}
+	meeting["phase"] = next
+	orchestration["last_phase_reason"] = firstNonBlank(strings.TrimSpace(reason), stringValue(orchestration["last_phase_reason"]))
+	orchestration["last_phase_at"] = timestamp
+	meeting["orchestration"] = orchestration
+}
+
+func meetingCoverageAudit(meeting map[string]any) map[string]any {
+	participants := toList(meeting["participants"])
+	positions := toList(meeting["positions"])
+	independentByRun := map[string]int{}
+	crossByRun := map[string]int{}
+	linkedCrossByRun := map[string]int{}
+	participantRoles := map[string]string{}
+	participantRunIDs := []string{}
+
+	for _, item := range participants {
+		participant, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		runID := stringValue(participant["run_id"])
+		if runID == "" {
+			continue
+		}
+		participantRunIDs = append(participantRunIDs, runID)
+		participantRoles[runID] = firstNonBlank(stringValue(participant["role"]), stringValue(participant["owner_id"]), runID)
+	}
+
+	for _, item := range positions {
+		position, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		runID := stringValue(position["run_id"])
+		if runID == "" {
+			continue
+		}
+		switch stringValue(position["phase"]) {
+		case "independent_review":
+			independentByRun[runID]++
+		case "cross_examination":
+			crossByRun[runID]++
+			if strings.TrimSpace(stringValue(position["responds_to_run_id"])) != "" ||
+				strings.TrimSpace(stringValue(position["responds_to_position_id"])) != "" ||
+				strings.TrimSpace(stringValue(position["responds_to_role"])) != "" {
+				linkedCrossByRun[runID]++
+			}
+		}
+	}
+
+	missingIndependent := []string{}
+	missingCross := []string{}
+	for _, runID := range participantRunIDs {
+		role := firstNonBlank(participantRoles[runID], runID)
+		if independentByRun[runID] == 0 {
+			missingIndependent = append(missingIndependent, role)
+		}
+		if crossByRun[runID] == 0 {
+			missingCross = append(missingCross, role)
+		}
+	}
+	sort.Strings(missingIndependent)
+	sort.Strings(missingCross)
+
+	coverageNotes := []string{}
+	if len(missingIndependent) > 0 {
+		coverageNotes = append(coverageNotes, fmt.Sprintf("participants missing independent review: %s", strings.Join(missingIndependent, ", ")))
+	}
+	if len(missingCross) > 0 {
+		coverageNotes = append(coverageNotes, fmt.Sprintf("participants without cross-examination positions: %s", strings.Join(missingCross, ", ")))
+	}
+
+	requiredIndependent := minInt(len(participantRunIDs), 2)
+	blockingGaps := []string{}
+	if len(participantRunIDs) > 0 && len(independentByRun) < requiredIndependent {
+		blockingGaps = append(blockingGaps, fmt.Sprintf("need at least %d distinct independent-review participants before debate can advance", requiredIndependent))
+	}
+	linkedCrossCount := 0
+	for _, count := range linkedCrossByRun {
+		linkedCrossCount += count
+	}
+	if len(crossByRun) > 0 && linkedCrossCount == 0 {
+		blockingGaps = append(blockingGaps, "cross-examination positions exist but none explicitly respond to another role or position")
+	}
+
+	return map[string]any{
+		"participant_count":                len(participantRunIDs),
+		"distinct_independent_reviewers":   len(independentByRun),
+		"distinct_cross_examiners":         len(crossByRun),
+		"linked_cross_examination_count":   linkedCrossCount,
+		"participants_missing_independent": stringListToAny(missingIndependent),
+		"participants_missing_cross_exam":  stringListToAny(missingCross),
+		"coverage_notes":                   stringListToAny(coverageNotes),
+		"blocking_gaps":                    stringListToAny(blockingGaps),
+	}
+}
+
+func meetingSynthesisAudit(meeting map[string]any) map[string]any {
+	coverage, _ := toMap(meetingCoverageAudit(meeting))
+	findings, _ := toMap(meeting["findings"])
+	accepted := toList(findings["accepted"])
+	rejected := toList(findings["rejected"])
+	unresolved := toList(findings["unresolved"])
+	actions := toList(meeting["action_items"])
+
+	evidenceGaps := []string{}
+	for _, bucketItem := range [][]any{accepted, rejected, unresolved} {
+		for _, item := range bucketItem {
+			finding, ok := toMap(item)
+			if !ok {
+				continue
+			}
+			summary := firstNonBlank(stringValue(finding["summary"]), stringValue(finding["finding_id"]))
+			if len(toList(finding["evidence_refs"])) == 0 {
+				evidenceGaps = append(evidenceGaps, fmt.Sprintf("finding missing evidence refs: %s", summary))
+			}
+			if strings.TrimSpace(stringValue(finding["authority_level"])) == "" {
+				evidenceGaps = append(evidenceGaps, fmt.Sprintf("finding missing authority level: %s", summary))
+			}
+			if stringValue(finding["finding_id"]) == "" {
+				evidenceGaps = append(evidenceGaps, fmt.Sprintf("finding missing finding_id: %s", summary))
+			}
+		}
+	}
+	if len(unresolved) > 0 && len(actions) == 0 {
+		evidenceGaps = append(evidenceGaps, "unresolved findings exist without any action item or escalation note")
+	}
+
+	blockingGaps := []string{}
+	for _, item := range toList(coverage["blocking_gaps"]) {
+		text := strings.TrimSpace(stringValue(item))
+		if text != "" {
+			blockingGaps = append(blockingGaps, text)
+		}
+	}
+	coverageNotes := []any{}
+	for _, item := range toList(coverage["coverage_notes"]) {
+		text := strings.TrimSpace(stringValue(item))
+		if text != "" {
+			coverageNotes = append(coverageNotes, text)
+		}
+	}
+	if len(accepted)+len(rejected)+len(unresolved)+len(actions) == 0 {
+		blockingGaps = append(blockingGaps, "no synthesized findings or action items recorded yet")
+	}
+
+	status := "ready_for_output"
+	switch {
+	case len(blockingGaps) > 0:
+		status = "blocked"
+	case len(evidenceGaps) > 0:
+		status = "needs_supplement"
+	}
+
+	return map[string]any{
+		"status": status,
+		"tally": map[string]any{
+			"accepted_findings":         len(accepted),
+			"rejected_findings":         len(rejected),
+			"unresolved_findings":       len(unresolved),
+			"action_items":              len(actions),
+			"total_positions":           len(toList(meeting["positions"])),
+			"phase_history_count":       len(toList(meeting["phase_history"])),
+			"participant_count":         coverage["participant_count"],
+			"linked_cross_examinations": coverage["linked_cross_examination_count"],
+		},
+		"blocking_gaps":  stringListToAny(blockingGaps),
+		"coverage_notes": coverageNotes,
+		"evidence_gaps":  stringListToAny(evidenceGaps),
+		"generated_at":   nowISO(),
 	}
 }
 
@@ -2916,6 +3142,7 @@ func doctorReport() map[string]any {
 	for _, meeting := range meetings {
 		meetingID := stringValue(meeting["meeting_id"])
 		runID := stringValue(meeting["run_id"])
+		ensureMeetingGovernanceState(meeting)
 		if runID != "" && !activeRunIDs[runID] {
 			issues = append(issues, issueRecord("critical", "meeting-orphaned", meetingID, "Active meeting references a missing run.", "Run maintenance reconcile before proceeding."))
 		}
@@ -2930,6 +3157,9 @@ func doctorReport() map[string]any {
 		}
 		if stringValue(meeting["phase"]) == "" {
 			issues = append(issues, issueRecord("warning", "meeting-missing-phase", meetingID, "Meeting has no active phase marker.", "Set the meeting phase before continuing the council."))
+		}
+		if len(toList(meeting["phase_history"])) == 0 {
+			issues = append(issues, issueRecord("warning", "meeting-missing-phase-history", meetingID, "Meeting has no phase history trace.", "Re-orchestrate the meeting so the council history is durable."))
 		}
 		packet, _ := toMap(meeting["packet"])
 		if strings.TrimSpace(stringValue(packet["expected_output"])) == "" {
@@ -2965,6 +3195,32 @@ func doctorReport() map[string]any {
 			if ok && stringValue(finding["authority_level"]) != "" && !validAuthorityLevel(stringValue(finding["authority_level"])) {
 				issues = append(issues, issueRecord("warning", "meeting-finding-invalid-authority", meetingID, "Meeting finding uses an invalid authority level.", "Use one of L1-L5."))
 			}
+		}
+		coverageAudit, _ := toMap(meetingCoverageAudit(meeting))
+		orchestration, _ := toMap(meeting["orchestration"])
+		synthesis, _ := toMap(orchestration["synthesis"])
+		if phase := stringValue(meeting["phase"]); phase == "cross_examination" || phase == "synthesis" || phase == "output" {
+			if len(toList(coverageAudit["blocking_gaps"])) > 0 {
+				issues = append(issues, issueRecord("warning", "meeting-debate-blocked", meetingID, fmt.Sprintf("Meeting still has debate blocking gaps: %s", strings.Join(anyListToStrings(toList(coverageAudit["blocking_gaps"])), "; ")), "Fill the debate gaps or lower the meeting phase."))
+			}
+		}
+		if len(toList(meeting["positions"])) > 0 && len(toList(coverageAudit["blocking_gaps"])) > 0 && intValue(coverageAudit["linked_cross_examination_count"]) == 0 && stringValue(meeting["phase"]) != "independent_review" {
+			issues = append(issues, issueRecord("warning", "meeting-cross-exam-unlinked", meetingID, "Cross-examination positions do not explicitly respond to another role or position.", "Record linked cross-examination positions with responds-to metadata."))
+		}
+		if phase := stringValue(meeting["phase"]); phase == "synthesis" || phase == "output" {
+			if synthesis == nil || strings.TrimSpace(stringValue(synthesis["status"])) == "" {
+				issues = append(issues, issueRecord("warning", "meeting-synthesis-missing-audit", meetingID, "Meeting reached synthesis/output without a synthesis audit trace.", "Run meetings orchestrate so synthesis state is materialized."))
+			} else {
+				if len(toList(synthesis["blocking_gaps"])) > 0 {
+					issues = append(issues, issueRecord("warning", "meeting-synthesis-blocked", meetingID, fmt.Sprintf("Synthesis still has blocking gaps: %s", strings.Join(anyListToStrings(toList(synthesis["blocking_gaps"])), "; ")), "Resolve synthesis blockers before treating the meeting as settled."))
+				}
+				if stringValue(meeting["phase"]) == "output" && stringValue(synthesis["status"]) != "ready_for_output" {
+					issues = append(issues, issueRecord("warning", "meeting-output-with-incomplete-synthesis", meetingID, "Meeting is in output phase but synthesis is not ready_for_output.", "Supplement evidence or re-open synthesis before final adoption."))
+				}
+			}
+		}
+		if len(toList(findings["unresolved"])) > 0 && len(toList(meeting["action_items"])) == 0 {
+			issues = append(issues, issueRecord("warning", "meeting-unresolved-without-action", meetingID, "Meeting has unresolved findings but no action items.", "Record a follow-up action or explicit escalation for unresolved questions."))
 		}
 		if meetingAge := ageHours(stringValue(meeting["created_at"])); meetingAge != nil {
 			if *meetingAge > 0.25 && len(toList(meeting["participants"])) == 0 {
@@ -5756,6 +6012,7 @@ func cmdMeetings(args []string) error {
 			return fmt.Errorf("meeting not found: %s", args[1])
 		}
 		meeting, _ := toMap(data["meeting"])
+		ensureMeetingGovernanceState(meeting)
 		outcome := meetingOutcome(meeting)
 		openActionCount := 0
 		for _, item := range toList(meeting["action_items"]) {
@@ -5765,18 +6022,25 @@ func cmdMeetings(args []string) error {
 			}
 		}
 		findings, _ := toMap(meeting["findings"])
+		orchestration, _ := toMap(meeting["orchestration"])
+		synthesis, _ := toMap(orchestration["synthesis"])
 		return printJSON(map[string]any{
-			"meeting_id":        stringValue(meeting["meeting_id"]),
-			"state":             stringValue(meeting["state"]),
-			"question":          stringValue(meeting["question"]),
-			"outcome_summary":   outcome["summary"],
-			"next_action":       outcome["next_action"],
-			"role_spec_count":   len(toList(meeting["role_specs"])),
-			"locked_decisions":  len(toList(meeting["locked_decisions"])),
-			"accepted_count":    len(toList(findings["accepted"])),
-			"rejected_count":    len(toList(findings["rejected"])),
-			"unresolved_count":  len(toList(findings["unresolved"])),
-			"open_action_count": openActionCount,
+			"meeting_id":          stringValue(meeting["meeting_id"]),
+			"state":               stringValue(meeting["state"]),
+			"question":            stringValue(meeting["question"]),
+			"outcome_summary":     outcome["summary"],
+			"next_action":         outcome["next_action"],
+			"phase_history_count": len(toList(meeting["phase_history"])),
+			"debate_round":        intValue(orchestration["debate_round"]),
+			"synthesis_status":    stringValue(synthesis["status"]),
+			"blocking_gap_count":  len(toList(synthesis["blocking_gaps"])),
+			"coverage_note_count": len(toList(synthesis["coverage_notes"])),
+			"role_spec_count":     len(toList(meeting["role_specs"])),
+			"locked_decisions":    len(toList(meeting["locked_decisions"])),
+			"accepted_count":      len(toList(findings["accepted"])),
+			"rejected_count":      len(toList(findings["rejected"])),
+			"unresolved_count":    len(toList(findings["unresolved"])),
+			"open_action_count":   openActionCount,
 		})
 	default:
 		return cmdMeetingsRemainder(args)
@@ -5837,7 +6101,7 @@ func cmdMeetingsRemainder(args []string) error {
 				return fmt.Errorf("active meeting not found: %s", args[1])
 			}
 			meeting, _ := toMap(data["meeting"])
-			meeting["phase"] = args[2]
+			setMeetingPhase(meeting, args[2], "manual phase override")
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}
@@ -5854,10 +6118,12 @@ func cmdMeetingsRemainder(args []string) error {
 				return fmt.Errorf("active meeting not found: %s", meetingID)
 			}
 			meeting, _ := toMap(data["meeting"])
+			ensureMeetingGovernanceState(meeting)
 			oldPhase := firstNonBlank(stringValue(meeting["phase"]), "setup")
 			packet, _ := toMap(meeting["packet"])
 			roleSpecs := toList(meeting["role_specs"])
 			participants := toList(meeting["participants"])
+			coverageAudit, _ := toMap(meetingCoverageAudit(meeting))
 			positions := toList(meeting["positions"])
 			gaps := []string{}
 			if len(roleSpecs) == 0 {
@@ -5894,6 +6160,12 @@ func cmdMeetingsRemainder(args []string) error {
 					nextRequirement = "Add packet/participant prerequisites before independent review."
 				}
 			case "independent_review":
+				for _, item := range toList(coverageAudit["blocking_gaps"]) {
+					text := strings.TrimSpace(stringValue(item))
+					if text != "" {
+						gaps = append(gaps, text)
+					}
+				}
 				if len(independentReviewRuns) >= 2 {
 					newPhase = "cross_examination"
 					nextRequirement = "Collect cross-examination positions that challenge or refine earlier claims."
@@ -5901,29 +6173,47 @@ func cmdMeetingsRemainder(args []string) error {
 					nextRequirement = "Need at least two independent-review positions before cross-examination."
 				}
 			case "cross_examination":
-				if len(crossExamRuns) >= 1 {
+				for _, item := range toList(coverageAudit["blocking_gaps"]) {
+					text := strings.TrimSpace(stringValue(item))
+					if text != "" {
+						gaps = append(gaps, text)
+					}
+				}
+				if len(crossExamRuns) >= 1 && intValue(coverageAudit["linked_cross_examination_count"]) > 0 {
 					newPhase = "synthesis"
 					nextRequirement = "Convert debated positions into accepted, rejected, unresolved findings, and action items."
 				} else {
-					nextRequirement = "Need at least one cross-examination position before synthesis."
+					nextRequirement = "Need at least one linked cross-examination position before synthesis."
 				}
 			case "synthesis":
-				if meetingHasOutput(meeting) {
+				synthesis := meetingSynthesisAudit(meeting)
+				if stringValue(synthesis["status"]) == "ready_for_output" {
 					newPhase = "output"
 					nextRequirement = "Adopt or close the meeting outcome into run state."
 				} else {
-					nextRequirement = "Record findings or action items before output."
+					nextRequirement = "Supplement synthesis gaps before output."
 				}
 			case "output":
 				nextRequirement = "Close the meeting or adopt its outcome."
 			default:
 				nextRequirement = "Unknown phase; repair the meeting phase explicitly."
 			}
+			orchestration, _ := toMap(meeting["orchestration"])
+			if orchestration == nil {
+				orchestration = map[string]any{}
+			}
+			orchestration["last_gap_report"] = stringListToAny(gaps)
+			orchestration["next_requirement"] = nextRequirement
+			orchestration["last_orchestrated_at"] = nowISO()
+			orchestration["coverage"] = coverageAudit
+			orchestration["synthesis"] = meetingSynthesisAudit(meeting)
+			orchestration["debate_round"] = maxInt(intValue(orchestration["debate_round"]), intValue(coverageAudit["linked_cross_examination_count"]))
+			meeting["orchestration"] = orchestration
 			if newPhase != oldPhase {
-				meeting["phase"] = newPhase
-				if err := writeActiveMeeting(meeting); err != nil {
-					return err
-				}
+				setMeetingPhase(meeting, newPhase, fmt.Sprintf("orchestrate advanced from %s", oldPhase))
+			}
+			if err := writeActiveMeeting(meeting); err != nil {
+				return err
 			}
 			return printJSON(map[string]any{
 				"meeting":          meeting,
@@ -5931,6 +6221,7 @@ func cmdMeetingsRemainder(args []string) error {
 				"new_phase":        firstNonBlank(stringValue(meeting["phase"]), newPhase),
 				"gaps":             stringListToAny(gaps),
 				"next_requirement": nextRequirement,
+				"orchestration":    meeting["orchestration"],
 			})
 		})
 	case "add-participant":
@@ -6090,12 +6381,21 @@ func cmdMeetingsRemainder(args []string) error {
 		positionTokens := []string{}
 		evidenceRefs := []string{}
 		authorityLevel := "L2"
+		respondsToRunID := ""
+		respondsToRole := ""
+		respondsToPositionID := ""
 		for _, arg := range args[5:] {
 			switch {
 			case strings.HasPrefix(arg, "--evidence="):
 				evidenceRefs = append(evidenceRefs, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--evidence=")))...)
 			case strings.HasPrefix(arg, "--authority="):
 				authorityLevel = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--authority=")), "L2")
+			case strings.HasPrefix(arg, "--responds-to-run="):
+				respondsToRunID = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--responds-to-run=")), respondsToRunID)
+			case strings.HasPrefix(arg, "--responds-to-role="):
+				respondsToRole = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--responds-to-role=")), respondsToRole)
+			case strings.HasPrefix(arg, "--responds-to-position="):
+				respondsToPositionID = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--responds-to-position=")), respondsToPositionID)
 			default:
 				positionTokens = append(positionTokens, arg)
 			}
@@ -6144,19 +6444,22 @@ func cmdMeetingsRemainder(args []string) error {
 			meeting["participants"] = participants
 			positions := toList(meeting["positions"])
 			positions = append(positions, map[string]any{
-				"position_id":     "position-" + nowTime().UTC().Format("20060102150405"),
-				"run_id":          runID,
-				"owner_id":        stringValue(run["owner_id"]),
-				"role":            role,
-				"phase":           phase,
-				"stance":          stance,
-				"summary":         summary,
-				"evidence_refs":   stringListToAny(evidenceRefs),
-				"authority_level": authorityLevel,
-				"recorded_at":     nowISO(),
+				"position_id":             "position-" + nowTime().UTC().Format("20060102150405"),
+				"run_id":                  runID,
+				"owner_id":                stringValue(run["owner_id"]),
+				"role":                    role,
+				"phase":                   phase,
+				"stance":                  stance,
+				"summary":                 summary,
+				"evidence_refs":           stringListToAny(evidenceRefs),
+				"authority_level":         authorityLevel,
+				"responds_to_run_id":      respondsToRunID,
+				"responds_to_role":        respondsToRole,
+				"responds_to_position_id": respondsToPositionID,
+				"recorded_at":             nowISO(),
 			})
 			meeting["positions"] = positions
-			meeting["phase"] = phase
+			setMeetingPhase(meeting, phase, fmt.Sprintf("position recorded by %s", runID))
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}

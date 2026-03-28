@@ -50,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Legacy runtime migration**: `scripts/harness-maintenance.sh normalize` now backfills ownership claims, desired state, dependency policy, and mission linkage for older pre-mission runs so existing `.harness/` state upgrades cleanly.
 - **Selector-aware ownership transfer**: normalized legacy `ownership_claims` into structured `ownership_selectors`, added formal `runs transfer-ownership` semantics for bounded selector moves inside a mission, and extended teammate smoke to guard that control-plane behavior.
 - **Signal authority adjudication**: added supersession checks so `doctor` can flag active signals that have been overtaken by fresher higher-authority run or meeting state, and `maintenance reconcile` / `signals adjudicate` can now resolve them deterministically.
+- **Council orchestration hardening**: meetings now preserve `phase_history`, explicit `orchestration` state, linked cross-examination metadata, and synthesis audits with blocker/evidence coverage instead of treating phase labels as sufficient proof of debate quality.
+- **Council health visibility**: `meetings summary` now exposes debate-round and synthesis-readiness signals, while `doctor` flags missing phase history, unlinked cross-examination, incomplete synthesis, and unresolved findings without follow-up actions.
 
 ### Changed — Project Intelligence
 - **Current project focus updated**: `_project/CURRENT.md` now reflects the shift from Wing-only transition work to the new Codex-native orchestration harness prototype.

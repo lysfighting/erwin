@@ -94,6 +94,7 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - role-bounded meeting source discipline via `allowed_sources` / `forbidden_sources`
 - rejected findings that carry explicit reasons instead of disappearing silently
 - automated meeting phase advancement via `meetings orchestrate`
+- durable council `phase_history`, linked cross-examination targets, and synthesis audits with blocker/evidence reporting
 - authority-level validation for signals and meeting findings
 - machine-readable separation between protocol contract, adapter package, and profile contract
 

@@ -12,11 +12,13 @@ All notable changes to the `harness` skill will be documented in this file.
 - `scripts/harness-missions.sh` plus a first-class mission registry and mission graph surface.
 - Selector-aware ownership transfer via `bash scripts/harness-runs.sh transfer-ownership ...`.
 - Signal authority adjudication via `bash scripts/harness-signals.sh adjudicate ...` and `bash scripts/harness-maintenance.sh reconcile`.
+- Council phase history, linked cross-examination targeting, and synthesis-readiness reporting via `meetings summary` and `meetings orchestrate`.
 
 ### Changed
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.
 - The adapter manifest and bootstrap smoke now include the packaged-runtime distribution path.
 - `harness-doctor.sh` now validates missing council source boundaries, missing expected output/context, and rejected findings without reasons.
+- `harness-doctor.sh` now also flags missing phase history, unlinked cross-examination, incomplete synthesis, and unresolved council findings without follow-up action.
 - `harness-home.sh` and `harness-doctor.sh` now surface dependency-blocked runs, ownership overlap, and desired-state drift more explicitly.
 - Mission state is now materialized above runs so leader surfaces can reconcile against a durable mission graph instead of only per-run metadata.
 - `scripts/harness-maintenance.sh normalize` now upgrades older run-only runtime state into the mission-aware schema by backfilling ownership claims, desired state, and mission linkage.

@@ -148,8 +148,9 @@ assert_json_field "$position_b" '"independent_review"' "meeting stores second in
 orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
 assert_json_field "$orchestrate_b" '"new_phase": "cross_examination"' "meeting orchestration advances to cross-examination"
 
-cross_exam=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" cross_examination challenge "Operator-facing release notes must mention the new scope requirement." --evidence=CHANGELOG.md)
+cross_exam=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" cross_examination challenge "Operator-facing release notes must mention the new scope requirement." --evidence=CHANGELOG.md --responds-to-run="$run_a" --responds-to-role=implementation-verifier)
 assert_json_field "$cross_exam" '"cross_examination"' "meeting stores cross-examination position"
+assert_json_field "$cross_exam" "\"responds_to_run_id\": \"$run_a\"" "cross-examination position records explicit response target"
 
 rejected_finding=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" rejected "Ship immediately without release note updates." --reason="Cross-examination found operator-facing behavior drift." --authority="L2" --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator)
 assert_json_field "$rejected_finding" '"reason": "Cross-examination found operator-facing behavior drift."' "meeting records rejected finding reason"
@@ -160,8 +161,12 @@ assert_json_field "$action_output" '"action_items"' "meeting records action item
 
 orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
 assert_json_field "$orchestrate_c" '"new_phase": "synthesis"' "meeting orchestration advances to synthesis"
+assert_json_field "$orchestrate_c" '"status": "ready_for_output"' "meeting orchestration materializes synthesis audit"
 orchestrate_d=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
 assert_json_field "$orchestrate_d" '"new_phase": "output"' "meeting orchestration advances to output once findings exist"
+summary_output=$(run_in_repo bash scripts/harness-meetings.sh summary "$meeting_id")
+assert_json_field "$summary_output" '"synthesis_status": "ready_for_output"' "meeting summary reports synthesis readiness"
+assert_json_field "$summary_output" '"phase_history_count":' "meeting summary reports phase history"
 
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)

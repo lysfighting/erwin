@@ -31,6 +31,7 @@ Use this when the model should act as the harness leader:
 - transfer bounded ownership selectors formally when work changes hands
 - adjudicate active signals when fresher run or meeting state supersedes them
 - record teammate reports and sibling communication as structured signals
+- run councils with explicit cross-examination linkage and inspect synthesis readiness before adoption
 - adopt meeting outcomes
 - reprovision runs safely
 - verify ship readiness and record PR lifecycle state
