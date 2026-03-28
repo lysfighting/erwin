@@ -154,7 +154,7 @@ Current truth:
 - superseded active signals can now be adjudicated against fresher run or meeting state
 - same-claim meeting findings can now be audited for higher-authority winners and unresolved same-authority conflicts
 - run-level authority audit now explains higher-authority active-signal conflicts plus meeting adoption gaps directly on runs
-- contract snapshots are now kept closer to active run state, and normalize can repair older drift
+- contract snapshots are now kept closer to active run state, normalize can repair older drift, and run-vs-worktree branch mismatch is now explicitly surfaced
 - but there is still no broad harness-wide conflict-resolution layer that systematically adjudicates live-git-vs-contract disagreement when no governing signal or council outcome exists
 
 So this area is **materially stronger, but still only partially realized**.

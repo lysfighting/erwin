@@ -4090,6 +4090,9 @@ func cmdRuns(args []string) error {
 				setOwnershipSelectors(merged, ownershipClaims(merged))
 			}
 			merged["updated_at"] = nowISO()
+			if err := persistContractForRun(merged); err != nil {
+				return err
+			}
 			runs[index] = merged
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {

@@ -41,6 +41,8 @@ EOF
     git init -q &&
     git config user.email "test@example.com" &&
     git config user.name "Harness Test" &&
+    git checkout -q -b main &&
+    git commit --allow-empty -q -m "Initial commit" &&
     chmod +x scripts/*.sh install-codex.sh
 ) || exit 1
 
@@ -70,6 +72,7 @@ assert_json_field "$claim_output" '"run_id": "run-' "claim returns run id"
 assert_json_field "$claim_output" 'issue-20001.yml' "claim materializes mission path"
 
 run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+run_branch=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"branch": "\(mission\/[^"]*\)",$/\1/p' | head -n1)
 
 section "Mission registry"
 missions_output=$(run_in_repo bash scripts/harness-missions.sh list)
@@ -79,6 +82,36 @@ assert_json_field "$mission_get_output" '"state": "claimed"' "mission starts in 
 assert_json_field "$mission_get_output" '"active_run_ids":' "mission stores active run linkage"
 authority_baseline=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$authority_baseline" '"contract_gap_count": 0' "initial run authority audit starts without contract drift"
+
+section "Live state drift"
+reprovision_output=$(run_in_repo bash scripts/harness-drive.sh reprovision "$run_id" --mode=worktree --apply)
+assert_json_field "$reprovision_output" '"worktree_path":' "reprovision can materialize worktree mode"
+worktree_path=$(printf '%s\n' "$reprovision_output" | sed -n 's/^[[:space:]]*"worktree_path": "\(\/[^"]*\)",$/\1/p' | head -n1)
+drift_update=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$run_id"
+{
+  "branch": "drift-branch"
+}
+EOF
+)
+assert_json_field "$drift_update" '"branch": "drift-branch"' "run record can be forced out of sync with live worktree state"
+live_audit_output=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
+assert_json_field "$live_audit_output" '"live_state_gap_count": 1' "run authority audit reports live worktree branch drift"
+doctor_output_live=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_json_field "$doctor_output_live" '"kind": "run-live-state-drift"' "doctor surfaces live git drift"
+repair_update=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$run_id"
+{
+  "branch": "$run_branch",
+  "worktree_path": "$worktree_path"
+}
+EOF
+)
+assert_json_field "$repair_update" "\"branch\": \"$run_branch\"" "run record can be repaired back to the live branch"
+live_audit_recovered=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
+assert_json_field "$live_audit_recovered" '"live_state_gap_count": 0' "run authority audit clears after live branch is repaired"
 
 section "Meeting lifecycle"
 meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Should this mission stay solo?")
