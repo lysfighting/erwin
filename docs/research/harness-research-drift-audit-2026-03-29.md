@@ -134,7 +134,7 @@ So Kubernetes-style ownership discipline is no longer just textual.
 The latest passes materially improved this:
 - selectors are now normalized
 - bounded ownership can be formally transferred between runs
-- selector families now capture richer path overlap semantics
+- selector families now capture richer path overlap semantics, including bounded `glob:` patterns
 
 What is still missing is the next layer above that stronger baseline.
 

@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.15.0 (in progress)
+- **Version**: 0.16.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Codex-native orchestration harness live-worktree authority pass completed)
+- **Last Session**: 2026-03-29 (Codex-native orchestration harness glob-selector ownership pass completed)
 
 ## Current Phase
 
@@ -28,6 +28,7 @@
 - **Research drift audit added**: `docs/research/harness-research-drift-audit-2026-03-29.md` now re-checks the original design docs against the current harness and confirms the remaining highest-risk drift areas are desired-state control, explicit ownership/overlap, harness-wide authority enforcement, and automated council orchestration
 - **Debate route obligations added**: `meetings orchestrate` now materializes claim-lane route obligations with assigned bounded challenger roles/runs, while `meetings summary` and `doctor` surface resolved vs open debate routes directly instead of only reporting routed/unrouted claims after the fact
 - **Live worktree absence promoted into authority audit**: `runs authority-audit` now treats a missing provisioned worktree as first-class live-state drift (`live_worktree_missing`) instead of relying only on `doctor` to notice the broken path
+- **Glob ownership selectors added**: the ownership model now understands `glob:` path selectors, so overlap control can express bounded markdown/file-set style ownership instead of forcing everything into `file:` or coarse `dir:` claims
 - **Ownership and desired state strengthened**: runs and contracts now carry explicit `ownership_claims`, `desired_state`, and dependency policy; teammate assignment now rejects exclusive overlap by default, and `drive wait` plus `home`/`doctor` surface dependency-blocked runs directly
 - **Authority and council control advanced**: invalid authority levels are now rejected or surfaced, and meetings can advance phases with `meetings orchestrate` instead of relying entirely on manual phase jumps
 - **Mission graph made first-class**: the harness now materializes durable mission objects under `.harness/missions/`, exposes them through `scripts/harness-missions.sh`, and drives `home`/`doctor` from mission-level state instead of only run-level state
@@ -59,7 +60,7 @@
 - **Debate routing plan added**: meetings now materialize a `debate_plan` that groups conflicting claim lanes, tracks routed vs unrouted cross-examination, and makes missing challenge paths explicit in the control plane
 - **Meeting summary widened again**: `meetings summary` now reports routed and unrouted conflicting claim counts in addition to synthesis and automation metrics
 - **Doctor widened again**: `doctor` now flags meetings whose conflicting claims have not yet been routed into linked cross-examination before synthesis/output is trusted
-- **Adapter line advanced again**: `harness/adapter-manifest.yml` now declares `0.15.0-prototype` to reflect deeper live-state authority adjudication
+- **Adapter line advanced again**: `harness/adapter-manifest.yml` now declares `0.16.0-prototype` to reflect richer selector-aware ownership governance
 - **Adapter/package flow updated**: `harness/adapter-manifest.yml` now packages the Go module files and build runner, bootstrapped repos receive the Go sources, and `harness-bootstrap.sh` / `harness-sync.sh` now query adapter metadata through the Go runtime path
 - **Smoke suite de-Pythonized**: issue/core/release/teammate smoke scripts now query package files through the harness adapter surface and extract runtime ids without Python helpers
 - **Validation**: `./scripts/harness-build-runtime.sh`, `./scripts/harness-runtime-dist-smoke-test.sh`, `./scripts/harness-adapter.sh validate`, `./scripts/harness-issue-smoke-test.sh`, `./scripts/harness-smoke-test.sh`, `./scripts/harness-teammate-smoke-test.sh`, `./scripts/harness-release-smoke-test.sh`, `./scripts/harness-bootstrap-smoke-test.sh`, and `./scripts/harness-all-smoke-test.sh` all pass cleanly on the Go runtime; `./scripts/harness-maintenance.sh normalize` also upgrades older runtime state into mission-aware schema cleanly

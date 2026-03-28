@@ -29,7 +29,7 @@ Use this when the model should act as the harness leader:
 - convene and close councils
 - assign and govern bounded teammate execution
 - transfer bounded ownership selectors formally when work changes hands
-- express ownership with richer selector families such as `file:`, `dir:`, `module:`, `scope:`, and `interface:`
+- express ownership with richer selector families such as `file:`, `dir:`, `module:`, `glob:`, `scope:`, and `interface:`
 - adjudicate active signals when fresher run or meeting state supersedes them
 - record teammate reports and sibling communication as structured signals
 - run councils with explicit cross-examination linkage and inspect synthesis readiness before adoption

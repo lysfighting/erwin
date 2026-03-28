@@ -21,6 +21,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Debate-route planning via meeting `debate_plan`, plus routed/unrouted conflicting claim reporting in `meetings summary` and `doctor`.
 - Debate route obligations via meeting `debate_plan.route_actions`, including assigned bounded challenger roles/runs plus resolved/open route counts in `meetings summary` and `doctor`.
 - Missing governed-worktree detection in `runs authority-audit`, so leader-facing authority review now catches absent provisioned worktrees in addition to branch drift and dirty-worktree intent drift.
+- `glob:` ownership selectors, so path-pattern ownership can participate in selector-aware overlap checks and teammate admission control.
 
 ### Changed
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.

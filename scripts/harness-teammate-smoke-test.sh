@@ -122,6 +122,16 @@ else
   fail "semantic directory/file overlap is rejected"
   echo "$semantic_overlap_output"
 fi
+set +e
+semantic_glob_overlap_output=$(cd "$TEST_REPO" && bash scripts/harness-teammates.sh assign "$leader_run_id" worker-doc-glob completeness-checker "Patch release markdown" --scope="release markdown" --owns="glob:docs/release/*.md" 2>&1)
+semantic_glob_rc=$?
+set -e
+if [ "$semantic_glob_rc" -ne 0 ] && grep -q 'glob:docs/release/\*.md~dir:docs/release' <<<"$semantic_glob_overlap_output"; then
+  pass "semantic glob/directory overlap is rejected"
+else
+  fail "semantic glob/directory overlap is rejected"
+  echo "$semantic_glob_overlap_output"
+fi
 
 section "Reporting and communication"
 report_output=$(run_in_repo bash scripts/harness-teammates.sh report "$run_a" "Auth caller patch is ready for sibling review" --kind=progress --evidence=src/auth.ts)

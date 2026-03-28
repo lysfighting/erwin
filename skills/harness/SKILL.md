@@ -151,7 +151,7 @@ The harness is file-backed:
 - Treat teammate runs as first-class runtime objects, not informal notes.
 - Treat missions as first-class durable work objects; runs are execution attempts, not the whole control plane.
 - Prefer explicit `--owns=` selectors when splitting work; shared ownership should be intentional, not accidental.
-- Use path-shaped selectors such as `file:...`, `dir:...`, and `module:...` when the boundary is code or docs structure, not just abstract scope labels.
+- Use path-shaped selectors such as `file:...`, `dir:...`, `module:...`, and `glob:...` when the boundary is code or docs structure, not just abstract scope labels.
 - Prefer formal ownership transfer over silent selector drift when bounded work needs to move between runs.
 - Treat active signals as provisional until they survive authority/freshness comparison with newer run or meeting state.
 - Treat `depends_on` plus desired state as part of the control plane, not just metadata.

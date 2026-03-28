@@ -1282,9 +1282,11 @@ func parseOwnershipSelector(raw string) map[string]any {
 		kind = "file"
 	case "component":
 		kind = "module"
+	case "pattern":
+		kind = "glob"
 	}
 	switch kind {
-	case "file", "dir", "module":
+	case "file", "dir", "module", "glob":
 		selectorValue = strings.TrimSpace(strings.TrimSuffix(selectorValue, "/"))
 		selectorValue = strings.TrimPrefix(selectorValue, "./")
 	case "scope", "interface":
@@ -1304,6 +1306,9 @@ func parseOwnershipSelector(raw string) map[string]any {
 	case "dir", "module":
 		family = "path"
 		match = "prefix"
+	case "glob":
+		family = "path"
+		match = "glob"
 	}
 	if selectorValue != "" {
 		value = kind + ":" + selectorValue
@@ -1359,6 +1364,23 @@ func pathOverlap(leftKind, leftValue, rightKind, rightValue string) bool {
 	sameOrPrefix := func(prefix, candidate string) bool {
 		return candidate == prefix || strings.HasPrefix(candidate, prefix+"/")
 	}
+	globMatchesPath := func(pattern, candidate string) bool {
+		matched, err := filepath.Match(pattern, candidate)
+		return err == nil && matched
+	}
+	globStaticPrefix := func(pattern string) string {
+		segments := strings.Split(pattern, "/")
+		staticSegments := []string{}
+		for _, segment := range segments {
+			if strings.ContainsAny(segment, "*?[") {
+				break
+			}
+			if segment != "" {
+				staticSegments = append(staticSegments, segment)
+			}
+		}
+		return strings.Join(staticSegments, "/")
+	}
 	switch {
 	case leftKind == "file" && rightKind == "file":
 		return leftValue == rightValue
@@ -1366,6 +1388,26 @@ func pathOverlap(leftKind, leftValue, rightKind, rightValue string) bool {
 		return sameOrPrefix(rightValue, leftValue)
 	case rightKind == "file" && (leftKind == "dir" || leftKind == "module"):
 		return sameOrPrefix(leftValue, rightValue)
+	case leftKind == "glob" && rightKind == "file":
+		return globMatchesPath(leftValue, rightValue)
+	case rightKind == "glob" && leftKind == "file":
+		return globMatchesPath(rightValue, leftValue)
+	case leftKind == "glob" && (rightKind == "dir" || rightKind == "module"):
+		prefix := globStaticPrefix(leftValue)
+		return prefix == "" || sameOrPrefix(rightValue, prefix) || sameOrPrefix(prefix, rightValue)
+	case rightKind == "glob" && (leftKind == "dir" || leftKind == "module"):
+		prefix := globStaticPrefix(rightValue)
+		return prefix == "" || sameOrPrefix(leftValue, prefix) || sameOrPrefix(prefix, leftValue)
+	case leftKind == "glob" && rightKind == "glob":
+		leftPrefix := globStaticPrefix(leftValue)
+		rightPrefix := globStaticPrefix(rightValue)
+		if leftValue == rightValue {
+			return true
+		}
+		if leftPrefix == "" || rightPrefix == "" {
+			return false
+		}
+		return sameOrPrefix(leftPrefix, rightPrefix) || sameOrPrefix(rightPrefix, leftPrefix)
 	case (leftKind == "dir" || leftKind == "module") && (rightKind == "dir" || rightKind == "module"):
 		return sameOrPrefix(leftValue, rightValue) || sameOrPrefix(rightValue, leftValue)
 	default:

@@ -79,11 +79,11 @@ This pushes the council model much closer to the intended `arch-review` discipli
 
 ### 1. Ownership transfer model
 
-Explicit ownership claims now exist, and selector families are now richer than the original normalized baseline, but the model is still not fully mature.
+Explicit ownership claims now exist, and selector families are now richer than the original normalized baseline, including `glob:` path patterns, but the model is still not fully mature.
 
 What is still missing:
 
-- richer selector policies beyond the new family-aware baseline (`file` / `dir` / `module` / semantic exact-match)
+- richer selector policies beyond the new family-aware baseline (`file` / `dir` / `module` / `glob` / semantic exact-match)
 - more nuanced overlap resolution than exclusive/shared
 - transfer policies beyond the current bounded `move` semantics
 
