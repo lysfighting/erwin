@@ -23,17 +23,13 @@ TEST_REPO="$TMPDIR_ROOT/repo"
 ORIGIN_REPO="$TMPDIR_ROOT/origin.git"
 mkdir -p "$TEST_REPO/scripts" "$TEST_REPO/harness/profiles" "$TEST_REPO/harness/templates" "$TEST_REPO/harness/policies"
 
-cp "$REPO_ROOT/scripts/harness_state.py" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-home.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-doctor.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-claim.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-drive.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-ship.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-rc.sh" "$TEST_REPO/scripts/"
+while IFS= read -r rel_path; do
+  [[ -n "$rel_path" ]] || continue
+  mkdir -p "$TEST_REPO/$(dirname "$rel_path")"
+  cp "$REPO_ROOT/$rel_path" "$TEST_REPO/$rel_path"
+done < <(python3 "$REPO_ROOT/scripts/harness_state.py" adapter package-files)
+
 cp "$REPO_ROOT/harness/profiles/erwin.yml" "$TEST_REPO/harness/profiles/"
-cp "$REPO_ROOT/harness/templates/"*.yml "$TEST_REPO/harness/templates/"
-cp "$REPO_ROOT/harness/templates/pr.md" "$TEST_REPO/harness/templates/"
-cp "$REPO_ROOT/harness/policies/defaults.yml" "$TEST_REPO/harness/policies/"
 
 cat > "$TEST_REPO/.gitignore" <<'EOF'
 .harness/
@@ -47,7 +43,7 @@ EOF
     git config user.email "release-smoke@example.com" &&
     git config user.name "Harness Release Test" &&
     git remote add origin "$ORIGIN_REPO" &&
-    chmod +x scripts/harness-home.sh scripts/harness-doctor.sh scripts/harness-claim.sh scripts/harness-drive.sh scripts/harness-ship.sh scripts/harness-rc.sh &&
+    chmod +x scripts/*.sh install-codex.sh &&
     printf "hello\n" > README.md &&
     git add . &&
     git commit -qm "init harness release smoke" &&
@@ -297,7 +293,9 @@ fi
 section "Home and doctor"
 home_output=$(run_in_repo ./scripts/harness-home.sh)
 doctor_output=$(run_in_repo ./scripts/harness-doctor.sh)
+adapter_output=$(run_in_repo ./scripts/harness-adapter.sh validate)
 assert_json_field "$home_output" '"active_rc_count": 0' "home clears active rc after promotion"
+assert_json_field "$adapter_output" '"valid": true' "adapter manifest validates in release smoke repo"
 assert_json_field "$doctor_output" '"issue_count": 0' "doctor stays healthy after release flow"
 
 section "Summary"

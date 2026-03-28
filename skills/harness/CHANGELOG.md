@@ -2,6 +2,16 @@
 
 All notable changes to the `harness` skill will be documented in this file.
 
+## [0.5.0] - 2026-03-28
+
+### Added
+- `scripts/harness-adapter.sh validate` for machine-readable adapter/package validation.
+- Protocol identity, bootstrap contract, and profile contract metadata in `harness/adapter-manifest.yml`.
+
+### Changed
+- Bootstrap, sync, and smoke flows now consume manifest-declared adapter files instead of shell hardcoding.
+- `harness-doctor.sh` now includes adapter validation in its runtime health report.
+
 ## [0.4.0] - 2026-03-28
 
 ### Added

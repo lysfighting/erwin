@@ -296,6 +296,290 @@ def resolve_profile(name: str | None = None) -> tuple[dict[str, Any], Path | Non
     return merged, base_path
 
 
+def adapter_manifest_path() -> Path:
+    return definitions_root() / "adapter-manifest.yml"
+
+
+def adapter_manifest() -> dict[str, Any]:
+    return load_data(adapter_manifest_path(), {})
+
+
+def adapter_protocol() -> dict[str, Any]:
+    return adapter_manifest().get("protocol", {})
+
+
+def adapter_config() -> dict[str, Any]:
+    return adapter_manifest().get("adapter", {})
+
+
+def manifest_list(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return []
+
+
+def adapter_package_files() -> list[str]:
+    return manifest_list(adapter_config().get("package_files", []))
+
+
+def adapter_smoke_scripts() -> list[str]:
+    return manifest_list(adapter_config().get("smoke_scripts", []))
+
+
+def adapter_bootstrap_config() -> dict[str, Any]:
+    return adapter_config().get("bootstrap", {})
+
+
+def adapter_profile_contract() -> dict[str, Any]:
+    return adapter_config().get("profile_contract", {})
+
+
+def repo_relative_string(path: Path) -> str:
+    try:
+        return str(path.relative_to(repo_root()))
+    except ValueError:
+        return str(path)
+
+
+def adapter_validate() -> dict[str, Any]:
+    manifest_path = adapter_manifest_path()
+    manifest = adapter_manifest()
+    protocol = adapter_protocol()
+    adapter = adapter_config()
+    bootstrap = adapter_bootstrap_config()
+    profile_contract = adapter_profile_contract()
+    package_files = adapter_package_files()
+    smoke_scripts = adapter_smoke_scripts()
+    profile, base_path = resolve_profile()
+    profile_override_path = runtime_root() / "profile.local.yml"
+    issues: list[dict[str, str]] = []
+
+    if not manifest_path.exists():
+        issues.append(
+            issue_record(
+                severity="critical",
+                kind="adapter-manifest-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter manifest is missing.",
+                recommendation="Restore harness/adapter-manifest.yml before using bootstrap, sync, or smoke flows.",
+            )
+        )
+    if not protocol.get("protocol_id"):
+        issues.append(
+            issue_record(
+                severity="warning",
+                kind="protocol-id-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter manifest does not declare protocol_id.",
+                recommendation="Declare protocol identity so protocol, adapter, and profile layers stay explicit.",
+            )
+        )
+    if not protocol.get("protocol_version"):
+        issues.append(
+            issue_record(
+                severity="warning",
+                kind="protocol-version-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter manifest does not declare protocol_version.",
+                recommendation="Declare protocol_version to anchor runtime behavior to a concrete protocol snapshot.",
+            )
+        )
+    if not adapter.get("adapter_id"):
+        issues.append(
+            issue_record(
+                severity="critical",
+                kind="adapter-id-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter manifest does not declare adapter_id.",
+                recommendation="Set adapter.adapter_id so sync/bootstrap metadata can identify the package unambiguously.",
+            )
+        )
+    if not adapter.get("adapter_version"):
+        issues.append(
+            issue_record(
+                severity="critical",
+                kind="adapter-version-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter manifest does not declare adapter_version.",
+                recommendation="Set adapter.adapter_version so bootstrap and sync can track adapter drift.",
+            )
+        )
+    if not adapter.get("runtime"):
+        issues.append(
+            issue_record(
+                severity="critical",
+                kind="adapter-runtime-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter manifest does not declare runtime.",
+                recommendation="Set adapter.runtime so the package contract stays explicit about its target runtime.",
+            )
+        )
+    if not package_files:
+        issues.append(
+            issue_record(
+                severity="critical",
+                kind="adapter-package-empty",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter manifest does not declare package_files.",
+                recommendation="List the reusable adapter files in adapter.package_files so bootstrap and sync can stay manifest-driven.",
+            )
+        )
+    for rel_path in package_files:
+        if not (repo_root() / rel_path).exists():
+            issues.append(
+                issue_record(
+                    severity="critical",
+                    kind="adapter-package-file-missing",
+                    ref=rel_path,
+                    summary=f"Manifest-declared package file is missing: {rel_path}",
+                    recommendation="Restore the file or remove it from adapter.package_files.",
+                )
+            )
+    if not smoke_scripts:
+        issues.append(
+            issue_record(
+                severity="warning",
+                kind="adapter-smoke-empty",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter manifest does not declare smoke scripts.",
+                recommendation="Declare smoke entrypoints so the reusable package documents its verification contract.",
+            )
+        )
+    for rel_path in smoke_scripts:
+        normalized = rel_path[2:] if rel_path.startswith("./") else rel_path
+        if not (repo_root() / normalized).exists():
+            issues.append(
+                issue_record(
+                    severity="critical",
+                    kind="adapter-smoke-missing",
+                    ref=rel_path,
+                    summary=f"Manifest-declared smoke script is missing: {rel_path}",
+                    recommendation="Restore the script or update adapter.smoke_scripts.",
+                )
+            )
+
+    profile_template = str(bootstrap.get("profile_template", "")).strip()
+    generated_profile_path = str(bootstrap.get("generated_profile_path", "")).strip()
+    metadata_path = str(bootstrap.get("metadata_path", "")).strip()
+    if not profile_template:
+        issues.append(
+            issue_record(
+                severity="critical",
+                kind="bootstrap-profile-template-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter bootstrap contract does not declare a profile template path.",
+                recommendation="Set adapter.bootstrap.profile_template so bootstrap can generate a repo-local profile deterministically.",
+            )
+        )
+    elif not (repo_root() / profile_template).exists():
+        issues.append(
+            issue_record(
+                severity="critical",
+                kind="bootstrap-profile-template-file-missing",
+                ref=profile_template,
+                summary=f"Bootstrap profile template is missing: {profile_template}",
+                recommendation="Restore the file or update adapter.bootstrap.profile_template.",
+            )
+        )
+    if not generated_profile_path:
+        issues.append(
+            issue_record(
+                severity="critical",
+                kind="bootstrap-generated-profile-path-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter bootstrap contract does not declare generated_profile_path.",
+                recommendation="Set adapter.bootstrap.generated_profile_path so bootstrap knows where to place the generated repo profile.",
+            )
+        )
+    if not metadata_path:
+        issues.append(
+            issue_record(
+                severity="warning",
+                kind="bootstrap-metadata-path-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter bootstrap contract does not declare metadata_path.",
+                recommendation="Set adapter.bootstrap.metadata_path so sync has a stable remembered-source contract.",
+            )
+        )
+
+    committed_profiles_root = str(profile_contract.get("committed_profiles_root", "")).strip()
+    runtime_override_path = str(profile_contract.get("runtime_local_override_path", "")).strip()
+    default_profile_hint = str(profile_contract.get("default_profile_hint", "")).strip()
+    if not committed_profiles_root:
+        issues.append(
+            issue_record(
+                severity="warning",
+                kind="profile-contract-root-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter manifest does not declare committed_profiles_root.",
+                recommendation="Declare the committed profile root so the adapter/profile split is machine-readable.",
+            )
+        )
+    elif not (repo_root() / committed_profiles_root).exists():
+        issues.append(
+            issue_record(
+                severity="warning",
+                kind="profile-contract-root-missing-on-disk",
+                ref=committed_profiles_root,
+                summary=f"Committed profiles root is missing: {committed_profiles_root}",
+                recommendation="Restore the directory or update adapter.profile_contract.committed_profiles_root.",
+            )
+        )
+    if not runtime_override_path:
+        issues.append(
+            issue_record(
+                severity="warning",
+                kind="profile-contract-override-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter manifest does not declare runtime_local_override_path.",
+                recommendation="Declare the runtime-local override path so live state stays separate from committed profile definitions.",
+            )
+        )
+    if not default_profile_hint:
+        issues.append(
+            issue_record(
+                severity="warning",
+                kind="profile-contract-default-hint-missing",
+                ref=repo_relative_string(manifest_path),
+                summary="Adapter manifest does not declare default_profile_hint.",
+                recommendation="Declare the default profile hint so bootstrapped repos expose a stable committed profile location.",
+            )
+        )
+    if not base_path and not profile_override_path.exists():
+        issues.append(
+            issue_record(
+                severity="warning",
+                kind="profile-unresolved",
+                ref=committed_profiles_root or "harness/profiles",
+                summary="No committed or runtime-local profile could be resolved.",
+                recommendation="Add a committed profile under harness/profiles or a runtime override under .harness/profile.local.yml.",
+            )
+        )
+
+    severity_order = {"critical": 0, "warning": 1, "info": 2}
+    issues.sort(key=lambda item: (severity_order.get(item["severity"], 9), item["kind"], item["ref"]))
+    return {
+        "manifest_path": repo_relative_string(manifest_path),
+        "adapter_id": str(adapter.get("adapter_id", "")),
+        "adapter_version": str(adapter.get("adapter_version", "")),
+        "runtime": str(adapter.get("runtime", "")),
+        "protocol_id": str(protocol.get("protocol_id", "")),
+        "protocol_version": str(protocol.get("protocol_version", "")),
+        "package_file_count": len(package_files),
+        "smoke_script_count": len(smoke_scripts),
+        "profile_template": profile_template,
+        "generated_profile_path": generated_profile_path,
+        "metadata_path": metadata_path,
+        "committed_profiles_root": committed_profiles_root,
+        "runtime_local_override_path": runtime_override_path,
+        "default_profile_hint": default_profile_hint,
+        "resolved_profile_path": repo_relative_string(base_path) if base_path else "",
+        "resolved_profile_id": get_key(profile, "profile.profile_id", ""),
+        "issues": issues,
+        "valid": not issues,
+    }
+
+
 def registry_path() -> Path:
     return runtime_root() / "runs" / "registry.yml"
 
@@ -1157,6 +1441,7 @@ def age_hours(value: str) -> float | None:
 def doctor_report() -> dict[str, Any]:
     ensure_runtime_dirs()
     profile, _ = resolve_profile()
+    adapter = adapter_validate()
     registry = read_registry()
     signals = read_signal_log()
     meetings = [meeting for meeting in list_meetings() if meeting.get("state") == "active"]
@@ -1170,6 +1455,7 @@ def doctor_report() -> dict[str, Any]:
     signal_stale_after = float(policy_value("cleanup.stale_signal_after_hours", 12))
     meeting_stale_after = float(policy_value("cleanup.stale_meeting_after_hours", 6))
     issues: list[dict[str, str]] = []
+    issues.extend(adapter["issues"])
 
     for run in active_runs:
         run_id = run.get("run_id", "")
@@ -1328,40 +1614,6 @@ def doctor_report() -> dict[str, Any]:
                     recommendation="Run maintenance reconcile before proceeding.",
                 )
             )
-
-    if len(active_rcs) > 1:
-        issues.append(
-            issue_record(
-                severity="critical",
-                kind="rc-multiple-active",
-                ref="rc-control-plane",
-                summary="More than one active RC exists.",
-                recommendation="Close or promote surplus RCs before proceeding.",
-            )
-        )
-
-    for rc in active_rcs:
-        rc_id = rc.get("rc_id", "")
-        if not rc.get("run_ids", []):
-            issues.append(
-                issue_record(
-                    severity="warning",
-                    kind="rc-missing-runs",
-                    ref=rc_id,
-                    summary="Active RC has no associated shipped runs.",
-                    recommendation="Attach shipped runs or close the RC.",
-                )
-            )
-        if rc.get("verification_status", "unknown") != "passed":
-            issues.append(
-                issue_record(
-                    severity="warning",
-                    kind="rc-unverified",
-                    ref=rc_id,
-                    summary="Active RC has not been marked verified.",
-                    recommendation="Record RC verification before promotion.",
-                )
-            )
         if not meeting.get("authority_hierarchy"):
             issues.append(
                 issue_record(
@@ -1404,6 +1656,40 @@ def doctor_report() -> dict[str, Any]:
                 )
             )
 
+    if len(active_rcs) > 1:
+        issues.append(
+            issue_record(
+                severity="critical",
+                kind="rc-multiple-active",
+                ref="rc-control-plane",
+                summary="More than one active RC exists.",
+                recommendation="Close or promote surplus RCs before proceeding.",
+            )
+        )
+
+    for rc in active_rcs:
+        rc_id = rc.get("rc_id", "")
+        if not rc.get("run_ids", []):
+            issues.append(
+                issue_record(
+                    severity="warning",
+                    kind="rc-missing-runs",
+                    ref=rc_id,
+                    summary="Active RC has no associated shipped runs.",
+                    recommendation="Attach shipped runs or close the RC.",
+                )
+            )
+        if rc.get("verification_status", "unknown") != "passed":
+            issues.append(
+                issue_record(
+                    severity="warning",
+                    kind="rc-unverified",
+                    ref=rc_id,
+                    summary="Active RC has not been marked verified.",
+                    recommendation="Record RC verification before promotion.",
+                )
+            )
+
     severity_order = {"critical": 0, "warning": 1, "info": 2}
     issues.sort(key=lambda item: (severity_order.get(item["severity"], 9), item["kind"], item["ref"]))
     critical = sum(1 for item in issues if item["severity"] == "critical")
@@ -1419,6 +1705,7 @@ def doctor_report() -> dict[str, Any]:
 
     return {
         "profile_id": get_key(profile, "profile.profile_id", ""),
+        "adapter": adapter,
         "issue_count": len(issues),
         "critical_count": critical,
         "warning_count": warning,
@@ -1475,6 +1762,36 @@ def cmd_profile(args: list[str]) -> int:
             print(value)
     else:
         raise SystemExit(f"unknown profile subcommand: {subcommand}")
+    return 0
+
+
+def cmd_adapter(args: list[str]) -> int:
+    if not args:
+        raise SystemExit("adapter requires a subcommand")
+    subcommand = args[0]
+    manifest = adapter_manifest()
+    if subcommand == "show":
+        print(json.dumps(manifest, indent=2, ensure_ascii=True))
+    elif subcommand == "version":
+        print(adapter_config().get("adapter_version", ""))
+    elif subcommand == "id":
+        print(adapter_config().get("adapter_id", ""))
+    elif subcommand == "package-files":
+        for rel_path in adapter_package_files():
+            print(rel_path)
+    elif subcommand == "smoke-scripts":
+        for rel_path in adapter_smoke_scripts():
+            print(rel_path)
+    elif subcommand == "profile-template":
+        print(adapter_bootstrap_config().get("profile_template", ""))
+    elif subcommand == "generated-profile-path":
+        print(adapter_bootstrap_config().get("generated_profile_path", ""))
+    elif subcommand == "metadata-path":
+        print(adapter_bootstrap_config().get("metadata_path", ""))
+    elif subcommand == "validate":
+        print(json.dumps(adapter_validate(), indent=2, ensure_ascii=True))
+    else:
+        raise SystemExit(f"unknown adapter subcommand: {subcommand}")
     return 0
 
 
@@ -3484,13 +3801,17 @@ def cmd_maintenance(args: list[str]) -> int:
 
 def main() -> int:
     if len(sys.argv) < 2:
-        raise SystemExit("usage: harness_state.py <paths|profile|runs|signals|contracts|home|doctor|issue|claim|drive|ship|rc|meetings|maintenance> ...")
+        raise SystemExit(
+            "usage: harness_state.py <paths|profile|adapter|runs|signals|contracts|home|doctor|issue|claim|drive|ship|rc|meetings|maintenance> ..."
+        )
     command = sys.argv[1]
     args = sys.argv[2:]
     if command == "paths":
         return cmd_paths(args)
     if command == "profile":
         return cmd_profile(args)
+    if command == "adapter":
+        return cmd_adapter(args)
     if command == "runs":
         return cmd_runs(args)
     if command == "signals":

@@ -25,17 +25,13 @@ section() { echo ""; echo "=== $1 ==="; }
 TEST_REPO="$TMPDIR_ROOT/repo"
 mkdir -p "$TEST_REPO/scripts" "$TEST_REPO/harness/profiles" "$TEST_REPO/harness/templates" "$TEST_REPO/harness/policies"
 
-cp "$REPO_ROOT/scripts/harness_state.py" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-home.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-doctor.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-claim.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-drive.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-meetings.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-maintenance.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/harness/README.md" "$TEST_REPO/harness/"
+while IFS= read -r rel_path; do
+  [[ -n "$rel_path" ]] || continue
+  mkdir -p "$TEST_REPO/$(dirname "$rel_path")"
+  cp "$REPO_ROOT/$rel_path" "$TEST_REPO/$rel_path"
+done < <(python3 "$REPO_ROOT/scripts/harness_state.py" adapter package-files)
+
 cp "$REPO_ROOT/harness/profiles/erwin.yml" "$TEST_REPO/harness/profiles/"
-cp "$REPO_ROOT/harness/templates/"*.yml "$TEST_REPO/harness/templates/"
-cp "$REPO_ROOT/harness/policies/defaults.yml" "$TEST_REPO/harness/policies/"
 
 cat > "$TEST_REPO/.gitignore" <<'EOF'
 .harness/
@@ -45,7 +41,8 @@ EOF
   cd "$TEST_REPO" &&
     git init -q &&
     git config user.email "test@example.com" &&
-    git config user.name "Harness Test"
+    git config user.name "Harness Test" &&
+    chmod +x scripts/*.sh install-codex.sh
 ) || exit 1
 
 run_in_repo() {
@@ -94,6 +91,9 @@ section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_run_count": 1' "home shows one active run"
 assert_json_field "$home_output" '"open_meeting_action_count": 1' "home surfaces open meeting action"
+
+adapter_output=$(run_in_repo bash scripts/harness-adapter.sh validate)
+assert_json_field "$adapter_output" '"valid": true' "adapter manifest validates in core smoke repo"
 
 doctor_output_before=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output_before" '"issue_count": 0' "doctor stays healthy after outcome adoption"

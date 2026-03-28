@@ -14,19 +14,21 @@ The harness is file-backed:
    `bash scripts/harness-home.sh`
 2. If anything looks off, inspect runtime health:
    `bash scripts/harness-doctor.sh`
-3. Create or draft executable issues when work is not yet claimable:
+3. Validate the reusable adapter contract if packaging or sync drift is suspected:
+   `bash scripts/harness-adapter.sh validate`
+4. Create or draft executable issues when work is not yet claimable:
    `bash scripts/harness-issue.sh ...`
-4. Claim work into governed execution:
+5. Claim work into governed execution:
    `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE]`
-5. Drive run state:
+6. Drive run state:
    `bash scripts/harness-drive.sh ...`
-6. Prepare release handoff when execution is done:
+7. Prepare release handoff when execution is done:
    `bash scripts/harness-ship.sh ...`
-7. Use meetings when ambiguity or blast radius is high:
+8. Use meetings when ambiguity or blast radius is high:
    `bash scripts/harness-meetings.sh ...`
-8. Use RC flow for release candidate governance:
+9. Use RC flow for release candidate governance:
    `bash scripts/harness-rc.sh ...`
-9. Repair drift or normalize runtime state when needed:
+10. Repair drift or normalize runtime state when needed:
    `bash scripts/harness-maintenance.sh ...`
 
 ## Important commands
@@ -35,6 +37,8 @@ The harness is file-backed:
   `bash scripts/harness-home.sh`
 - `doctor`
   `bash scripts/harness-doctor.sh`
+- `adapter-validate`
+  `bash scripts/harness-adapter.sh validate`
 - `issue-draft`
   `bash scripts/harness-issue.sh draft "Mission title" --criteria="A|B"`
 - `claim`
@@ -92,6 +96,7 @@ The harness is file-backed:
 ## Operating rules
 
 - Treat `harness-home` as the control plane entry point.
+- Treat `harness-adapter.sh validate` as the package boundary check when bootstrap/sync behavior is in doubt.
 - Prefer the narrowest safe state change.
 - Use meetings for high-ambiguity or high-blast-radius decisions.
 - After a meeting closes, either let `meeting-close` apply its outcome or explicitly run `adopt-meeting`.

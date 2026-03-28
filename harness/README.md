@@ -9,7 +9,8 @@ It is distinct from `.harness/`, which is reserved for local runtime state.
 - `profiles/` — committed project profiles
 - `templates/` — optional reusable templates for contracts, runs, signals, and meetings
 - `policies/` — optional committed policy defaults
-- `adapter-manifest.yml` — adapter identity, version, capabilities, and smoke entrypoints
+- `bootstrap/` — adapter-owned bootstrap assets, including profile templates
+- `adapter-manifest.yml` — machine-readable protocol, adapter, bootstrap, package, and smoke contract
 
 ## Design rule
 
@@ -18,10 +19,17 @@ Keep live execution state in `.harness/`.
 
 That split is part of the architecture, not just an implementation convenience.
 
+The current productization direction is explicit three-layer separation:
+
+- protocol semantics in the manifest and research docs
+- reusable Codex adapter package in manifest-declared files and scripts
+- repo-specific profile policy in `harness/profiles/` or `.harness/profile.local.yml`
+
 ## Implemented prototype surface
 
 The first usable Codex-native harness prototype now exists in `scripts/`.
 
+- `harness-adapter.sh` — adapter manifest introspection and package validation
 - `harness-home.sh` — leader home view
 - `harness-doctor.sh` — runtime diagnostics
 - `harness-issue.sh` — structured issue drafting and creation
@@ -60,6 +68,7 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 ## Current guarantees
 
 - file-backed runtime state with locking
+- manifest-driven adapter packaging instead of bootstrap copy-list hardcoding
 - validated run-state transitions
 - tracked PR review state and CI/check state before merge
 - deterministic merge path via `ship merge`
@@ -67,12 +76,14 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - reprovisioning of existing runs into branch/worktree mode
 - reconciliation and normalization utilities
 - leader-facing home/doctor views
+- machine-readable separation between protocol contract, adapter package, and profile contract
 
 ## Verification
 
 Run the harness smoke test:
 
 ```bash
+./scripts/harness-adapter.sh validate
 ./scripts/harness-issue-smoke-test.sh
 ./scripts/harness-smoke-test.sh
 ./scripts/harness-bootstrap-smoke-test.sh
@@ -89,5 +100,6 @@ Bootstrap the harness into another git repository:
 
 This copies the deterministic substrate, committed definition layer, smoke test, and a generated default profile into the target repository.
 It also copies `skills/harness/` and `install-codex.sh`, so the target repo gets a Codex-native local skill entry point immediately.
+The bootstrap now follows `harness/adapter-manifest.yml` for its package file list, bootstrap profile template, and metadata location.
 The bootstrap writes local source metadata to `.harness/cache/adapter-source.json`, so later `./scripts/harness-sync.sh` runs can reuse the remembered source path.
-`./scripts/harness-sync.sh status` now also compares source and target manifest versions when the source repo is still reachable.
+`./scripts/harness-sync.sh status` now reports source/target adapter identity plus manifest version alignment when the source repo is still reachable.

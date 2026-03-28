@@ -4,6 +4,7 @@ Codex-native leader surface for the repository-local orchestration harness proto
 
 ## What it wraps
 
+- `bash scripts/harness-adapter.sh`
 - `bash scripts/harness-home.sh`
 - `bash scripts/harness-doctor.sh`
 - `bash scripts/harness-issue.sh`
@@ -18,6 +19,7 @@ Codex-native leader surface for the repository-local orchestration harness proto
 
 Use this when the model should act as the harness leader:
 
+- validate adapter/package integrity before bootstrap or sync work
 - inspect governed state
 - draft or create executable issues
 - claim work into execution
@@ -40,6 +42,7 @@ Prototype, but working.
 ## Verification
 
 ```bash
+./scripts/harness-adapter.sh validate
 ./scripts/harness-issue-smoke-test.sh
 ./scripts/harness-smoke-test.sh
 ./scripts/harness-bootstrap-smoke-test.sh
@@ -85,4 +88,4 @@ After bootstrap, resync from the remembered source:
 ./scripts/harness-sync.sh status
 ```
 
-`harness-sync status` now reports source/target manifest versions when the source repo is still available.
+The file list now comes from `harness/adapter-manifest.yml`, and `harness-sync status` reports adapter identity plus source/target manifest versions when the source repo is still available.

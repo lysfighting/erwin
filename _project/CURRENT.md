@@ -8,7 +8,7 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-28
-- **Last Session**: 2026-03-28 (Codex-native orchestration harness prototype — release governance upgraded)
+- **Last Session**: 2026-03-28 (Codex-native orchestration harness prototype — adapter contract formalized)
 
 ## Current Phase
 
@@ -16,23 +16,16 @@
 
 ## What Was Just Completed
 
-**Session A** (2026-03-28) — Harness prototype became a stronger end-to-end release harness
+**Session B** (2026-03-28) — Harness prototype tightened into a more explicit reusable adapter package
 
-- **Committed definition layer**: `harness/` now has profile, templates, and policies for a Codex-native orchestration harness
-- **Deterministic substrate**: `harness_state.py` plus shell wrappers now implement `home`, `doctor`, `claim`, `drive`, `meetings`, `maintenance`
-- **Leader control plane**: run-state transitions, issue drafting, meeting materialization, meeting outcome adoption, reprovisioning, reconciliation, normalization, ship push / PR draft / PR tracking lifecycle, and RC governance
-- **Ship governance upgraded**: PR review state and checks state are now first-class ship gates instead of informal notes
-- **Merge action upgraded**: `ship merge` now performs a deterministic merge path instead of relying only on manual `merged` state updates
-- **RC hard cases absorbed**: `scripts/harness-rc.sh` now supports surgical `fix`, `cancel`, `hotfix`, and `backport` flows in addition to create / verify / promote / close
-- **Runtime governance**: file-backed locking prevents concurrent registry loss; `doctor` reached clean runtime state (`issue_count: 0`)
-- **Codex-native surface**: local `skills/harness/SKILL.md` created as the first repo-local harness skill
-- **Codex installer path**: `install-codex.sh` now installs repo Codex-native skills like `harness` into `~/.codex/skills/`, and `/harness` has been installed globally
-- **Bootstrap path**: `scripts/harness-bootstrap.sh` now seeds the harness adapter into another git repository with a generated default profile, local `skills/harness/`, and `install-codex.sh`
-- **Adapter sync path**: bootstrapped repos now record source metadata in `.harness/cache/adapter-source.json` and can resync via `scripts/harness-sync.sh`; the bootstrapped repo also carries its own `harness-bootstrap.sh`
-- **Adapter packaging upgraded**: `harness/adapter-manifest.yml` now declares adapter identity/capabilities, and `scripts/harness-all-smoke-test.sh` provides a one-command smoke suite
-- **Adapter packaging tightened**: bootstrap smoke now validates manifest + full-smoke installation, `harness-sync status` now reports manifest version alignment, and the adapter version is now `0.4.0-prototype`
-- **Validation**: branch/worktree provisioning, issue drafting, meeting create/update/close, archived meeting replay, PR review/check gates, deterministic merge, doctor/home health checks, direct `./install-codex.sh` execution, bootstrap into a temporary repo, remembered-source resync, `harness-issue-smoke-test.sh`, `harness-smoke-test.sh`, `harness-bootstrap-smoke-test.sh`, `harness-release-smoke-test.sh`, and `harness-all-smoke-test.sh` all pass
-- **Protocol coverage**: the Codex adapter now has first-class `issue`, `claim`, `drive`, `ship`, and `rc` surfaces, including RC surgical fix / cancel / hotfix / backport handling
+- **Manifest became executable contract**: `harness/adapter-manifest.yml` now declares protocol identity, adapter package files, bootstrap contract, and profile contract instead of only loose packaging metadata
+- **Adapter surface added**: `scripts/harness-adapter.sh` now exposes manifest introspection and validation as a first-class deterministic surface
+- **Bootstrap/package flow hardened**: `scripts/harness-bootstrap.sh` now copies manifest-declared adapter files instead of relying on shell hardcoded copy lists, and still generates the target repo profile from the manifest-declared bootstrap template
+- **Sync status strengthened**: `scripts/harness-sync.sh status` now reports adapter identity alignment in addition to manifest version alignment
+- **Doctor upgraded**: `scripts/harness-doctor.sh` now includes adapter/package validation and also fixes the misplaced meeting validation logic that previously lived under the active-RC loop
+- **Smoke contract upgraded**: core/release/bootstrap smoke now validate adapter integrity explicitly, and `scripts/harness-all-smoke-test.sh` now starts with adapter validation before broader lifecycle smoke
+- **Adapter version advanced**: the reusable package line is now `0.5.0-prototype`
+- **Validation**: `scripts/harness-adapter.sh validate`, `scripts/harness-doctor.sh`, and `scripts/harness-all-smoke-test.sh` all pass cleanly; full smoke remains green end-to-end
 
 ## Active Task / What's In Progress
 
@@ -44,7 +37,7 @@
 | Phase 2 | ✅ | Build repository-local harness definition layer (`harness/`) |
 | Phase 3 | ✅ | Implement runtime substrate (`scripts/harness_*`) |
 | Phase 4 | ✅ | Validate `home` / `doctor` / `claim` / `drive` / `meetings` / `maintenance` |
-| Phase 5 | 🔄 | Package the harness more formally as a reusable Codex-native skill/system |
+| Phase 5 | 🔄 | Package the harness more formally as a reusable Codex-native adapter/system |
 | Phase 6 | 🔄 | Split reusable adapter/bootstrap flow from repo-local proving ground |
 
 ## Next Session Should Start With
@@ -52,9 +45,10 @@
 1. Read this file
 2. **Harness next work**:
    - A. Decide whether to formalize this under a new product name or keep `harness` as the prototype codename
-   - B. Harden the reusable bootstrap/adapter path beyond first-copy scaffolding
-   - C. Decide whether to promote `skills/harness/` beyond prototype-local installation
-   - D. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `harness/README.md`, and inspect recent commits on `codex/harness-release-lifecycle`
+   - B. Decide whether `harness/adapter-manifest.yml` should become the public package spec or stay repo-private while naming is unresolved
+   - C. Push the adapter/profile split further by extracting any remaining repo-local assumptions from reusable package paths
+   - D. Decide whether to promote `skills/harness/` beyond prototype-local installation
+   - E. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `_project/sessions/2026-03-28-B.md`, `harness/README.md`, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
@@ -86,7 +80,7 @@
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, and now covers the main RC hard-case flows including dual-branch backport, but is still a prototype rather than a finalized product surface
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, and now has manifest-driven adapter validation/packaging with dual-branch RC hard-case coverage, but is still a prototype rather than a finalized product surface
 
 ## File Locations
 

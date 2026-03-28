@@ -25,6 +25,7 @@ run_case() {
   fi
 }
 
+run_case "adapter validate" "$SCRIPT_DIR/harness-adapter.sh" validate
 run_case "issue smoke" "$SCRIPT_DIR/harness-issue-smoke-test.sh"
 run_case "core smoke" "$SCRIPT_DIR/harness-smoke-test.sh"
 run_case "release smoke" "$SCRIPT_DIR/harness-release-smoke-test.sh"

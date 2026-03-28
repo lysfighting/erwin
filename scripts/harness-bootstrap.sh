@@ -10,7 +10,6 @@ else
 fi
 FORCE=0
 TARGET_INPUT="."
-ADAPTER_VERSION="0.4.0-prototype"
 
 usage() {
   cat <<'EOF'
@@ -47,6 +46,36 @@ fi
 
 if [[ ! -f "$SOURCE_ROOT/scripts/harness_state.py" ]] || [[ ! -f "$SOURCE_ROOT/install-codex.sh" ]]; then
   echo "ERROR: source root does not look like a harness source repo: $SOURCE_ROOT" >&2
+  exit 1
+fi
+
+adapter_query() {
+  python3 "$SOURCE_ROOT/scripts/harness_state.py" adapter "$@"
+}
+
+if ! ADAPTER_VERSION="$(adapter_query version)"; then
+  echo "ERROR: could not read adapter version from manifest" >&2
+  exit 1
+fi
+if ! PROFILE_TEMPLATE_REL="$(adapter_query profile-template)"; then
+  echo "ERROR: could not read bootstrap profile template from manifest" >&2
+  exit 1
+fi
+if ! GENERATED_PROFILE_REL="$(adapter_query generated-profile-path)"; then
+  echo "ERROR: could not read generated profile path from manifest" >&2
+  exit 1
+fi
+if ! METADATA_REL="$(adapter_query metadata-path)"; then
+  echo "ERROR: could not read adapter metadata path from manifest" >&2
+  exit 1
+fi
+PACKAGE_FILES=()
+while IFS= read -r rel_path; do
+  [[ -n "$rel_path" ]] || continue
+  PACKAGE_FILES+=("$rel_path")
+done < <(adapter_query package-files)
+if [[ "${#PACKAGE_FILES[@]}" -eq 0 ]]; then
+  echo "ERROR: adapter manifest does not declare package files" >&2
   exit 1
 fi
 
@@ -94,8 +123,8 @@ copy_file() {
 }
 
 generate_profile() {
-  local template="$SOURCE_ROOT/harness/bootstrap/profile-template.yml"
-  local output="$TARGET_ROOT/harness/profiles/default.yml"
+  local template="$SOURCE_ROOT/$PROFILE_TEMPLATE_REL"
+  local output="$TARGET_ROOT/$GENERATED_PROFILE_REL"
   mkdir -p "$(dirname "$output")"
   if [[ -e "$output" && "$FORCE" -ne 1 ]]; then
     echo "ERROR: refusing to overwrite existing file without --force: $output" >&2
@@ -121,8 +150,9 @@ ensure_gitignore_entry() {
 }
 
 write_adapter_metadata() {
-  local metadata_dir="$TARGET_ROOT/.harness/cache"
-  local metadata_path="$metadata_dir/adapter-source.json"
+  local metadata_path="$TARGET_ROOT/$METADATA_REL"
+  local metadata_dir
+  metadata_dir="$(dirname "$metadata_path")"
   mkdir -p "$metadata_dir"
   cat > "$metadata_path" <<EOF
 {
@@ -138,71 +168,25 @@ write_adapter_metadata() {
 EOF
 }
 
-copy_file "$SOURCE_ROOT/scripts/harness_state.py" "$TARGET_ROOT/scripts/harness_state.py"
-copy_file "$SOURCE_ROOT/scripts/harness-home.sh" "$TARGET_ROOT/scripts/harness-home.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-doctor.sh" "$TARGET_ROOT/scripts/harness-doctor.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-issue.sh" "$TARGET_ROOT/scripts/harness-issue.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-claim.sh" "$TARGET_ROOT/scripts/harness-claim.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-drive.sh" "$TARGET_ROOT/scripts/harness-drive.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-ship.sh" "$TARGET_ROOT/scripts/harness-ship.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-rc.sh" "$TARGET_ROOT/scripts/harness-rc.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-meetings.sh" "$TARGET_ROOT/scripts/harness-meetings.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-maintenance.sh" "$TARGET_ROOT/scripts/harness-maintenance.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-profile.sh" "$TARGET_ROOT/scripts/harness-profile.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-paths.sh" "$TARGET_ROOT/scripts/harness-paths.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-runs.sh" "$TARGET_ROOT/scripts/harness-runs.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-signals.sh" "$TARGET_ROOT/scripts/harness-signals.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-contracts.sh" "$TARGET_ROOT/scripts/harness-contracts.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-git.sh" "$TARGET_ROOT/scripts/harness-git.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-bootstrap.sh" "$TARGET_ROOT/scripts/harness-bootstrap.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-sync.sh" "$TARGET_ROOT/scripts/harness-sync.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-issue-smoke-test.sh" "$TARGET_ROOT/scripts/harness-issue-smoke-test.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-smoke-test.sh" "$TARGET_ROOT/scripts/harness-smoke-test.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-all-smoke-test.sh" "$TARGET_ROOT/scripts/harness-all-smoke-test.sh"
-copy_file "$SOURCE_ROOT/scripts/harness-release-smoke-test.sh" "$TARGET_ROOT/scripts/harness-release-smoke-test.sh"
-copy_file "$SOURCE_ROOT/install-codex.sh" "$TARGET_ROOT/install-codex.sh"
+for rel_path in "${PACKAGE_FILES[@]}"; do
+  copy_file "$SOURCE_ROOT/$rel_path" "$TARGET_ROOT/$rel_path"
+done
 
-copy_file "$SOURCE_ROOT/harness/README.md" "$TARGET_ROOT/harness/README.md"
-copy_file "$SOURCE_ROOT/harness/adapter-manifest.yml" "$TARGET_ROOT/harness/adapter-manifest.yml"
-copy_file "$SOURCE_ROOT/harness/templates/contract.yml" "$TARGET_ROOT/harness/templates/contract.yml"
-copy_file "$SOURCE_ROOT/harness/templates/issue.md" "$TARGET_ROOT/harness/templates/issue.md"
-copy_file "$SOURCE_ROOT/harness/templates/pr.md" "$TARGET_ROOT/harness/templates/pr.md"
-copy_file "$SOURCE_ROOT/harness/templates/run.yml" "$TARGET_ROOT/harness/templates/run.yml"
-copy_file "$SOURCE_ROOT/harness/templates/signal.yml" "$TARGET_ROOT/harness/templates/signal.yml"
-copy_file "$SOURCE_ROOT/harness/templates/meeting.yml" "$TARGET_ROOT/harness/templates/meeting.yml"
-copy_file "$SOURCE_ROOT/harness/templates/rc.yml" "$TARGET_ROOT/harness/templates/rc.yml"
-copy_file "$SOURCE_ROOT/harness/policies/defaults.yml" "$TARGET_ROOT/harness/policies/defaults.yml"
-copy_file "$SOURCE_ROOT/skills/harness/SKILL.md" "$TARGET_ROOT/skills/harness/SKILL.md"
-copy_file "$SOURCE_ROOT/skills/harness/README.md" "$TARGET_ROOT/skills/harness/README.md"
-copy_file "$SOURCE_ROOT/skills/harness/CHANGELOG.md" "$TARGET_ROOT/skills/harness/CHANGELOG.md"
 generate_profile
 ensure_gitignore_entry
 write_adapter_metadata
 
-chmod +x \
-  "$TARGET_ROOT/install-codex.sh" \
-  "$TARGET_ROOT/scripts/harness-home.sh" \
-  "$TARGET_ROOT/scripts/harness-doctor.sh" \
-  "$TARGET_ROOT/scripts/harness-issue.sh" \
-  "$TARGET_ROOT/scripts/harness-claim.sh" \
-  "$TARGET_ROOT/scripts/harness-drive.sh" \
-  "$TARGET_ROOT/scripts/harness-ship.sh" \
-  "$TARGET_ROOT/scripts/harness-rc.sh" \
-  "$TARGET_ROOT/scripts/harness-meetings.sh" \
-  "$TARGET_ROOT/scripts/harness-maintenance.sh" \
-  "$TARGET_ROOT/scripts/harness-profile.sh" \
-  "$TARGET_ROOT/scripts/harness-paths.sh" \
-  "$TARGET_ROOT/scripts/harness-runs.sh" \
-  "$TARGET_ROOT/scripts/harness-signals.sh" \
-  "$TARGET_ROOT/scripts/harness-contracts.sh" \
-  "$TARGET_ROOT/scripts/harness-git.sh" \
-  "$TARGET_ROOT/scripts/harness-bootstrap.sh" \
-  "$TARGET_ROOT/scripts/harness-sync.sh" \
-  "$TARGET_ROOT/scripts/harness-issue-smoke-test.sh" \
-  "$TARGET_ROOT/scripts/harness-smoke-test.sh" \
-  "$TARGET_ROOT/scripts/harness-all-smoke-test.sh" \
-  "$TARGET_ROOT/scripts/harness-release-smoke-test.sh"
+chmod_targets=()
+for rel_path in "${PACKAGE_FILES[@]}"; do
+  if [[ "$rel_path" == *.sh ]]; then
+    chmod_targets+=("$TARGET_ROOT/$rel_path")
+  fi
+done
+if [[ "${#chmod_targets[@]}" -gt 0 ]]; then
+  chmod +x "${chmod_targets[@]}"
+fi
 
+installed_json="$(printf '%s\n' "${PACKAGE_FILES[@]}" "$GENERATED_PROFILE_REL" | python3 -c 'import json,sys; print(json.dumps([line.strip() for line in sys.stdin if line.strip()], ensure_ascii=True))')"
 cat <<EOF
 {
   "adapter_version": "$ADAPTER_VERSION",
@@ -211,45 +195,7 @@ cat <<EOF
   "profile_id": "$profile_id",
   "repository": "$repository_slug",
   "base_branch": "$base_branch",
-  "metadata_path": "$TARGET_ROOT/.harness/cache/adapter-source.json",
-  "installed": [
-    "scripts/harness_state.py",
-    "scripts/harness-home.sh",
-    "scripts/harness-doctor.sh",
-    "scripts/harness-issue.sh",
-    "scripts/harness-claim.sh",
-    "scripts/harness-drive.sh",
-    "scripts/harness-ship.sh",
-    "scripts/harness-rc.sh",
-    "scripts/harness-meetings.sh",
-    "scripts/harness-maintenance.sh",
-    "scripts/harness-profile.sh",
-    "scripts/harness-paths.sh",
-    "scripts/harness-runs.sh",
-    "scripts/harness-signals.sh",
-    "scripts/harness-contracts.sh",
-    "scripts/harness-git.sh",
-    "scripts/harness-bootstrap.sh",
-    "scripts/harness-sync.sh",
-    "scripts/harness-issue-smoke-test.sh",
-    "scripts/harness-smoke-test.sh",
-    "scripts/harness-all-smoke-test.sh",
-    "scripts/harness-release-smoke-test.sh",
-    "install-codex.sh",
-    "harness/README.md",
-    "harness/adapter-manifest.yml",
-    "harness/profiles/default.yml",
-    "harness/templates/contract.yml",
-    "harness/templates/issue.md",
-    "harness/templates/pr.md",
-    "harness/templates/run.yml",
-    "harness/templates/signal.yml",
-    "harness/templates/meeting.yml",
-    "harness/templates/rc.yml",
-    "harness/policies/defaults.yml",
-    "skills/harness/SKILL.md",
-    "skills/harness/README.md",
-    "skills/harness/CHANGELOG.md"
-  ]
+  "metadata_path": "$TARGET_ROOT/$METADATA_REL",
+  "installed": $installed_json
 }
 EOF

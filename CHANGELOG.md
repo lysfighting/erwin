@@ -31,10 +31,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Adapter manifest + full smoke**: Added `harness/adapter-manifest.yml` plus `scripts/harness-all-smoke-test.sh`, and taught bootstrap/sync to carry/report richer adapter packaging metadata.
 - **Adapter version tightening**: bumped the harness adapter packaging line to `0.4.0-prototype`, and extended bootstrap smoke to verify manifest/full-smoke propagation plus sync-status manifest reporting.
 - **Expanded release smoke**: `scripts/harness-release-smoke-test.sh` now validates RC surgical fix, RC cancel, hotfix preparation, and dual-branch backport in addition to the happy-path release flow.
+- **Manifest-driven adapter contract**: `harness/adapter-manifest.yml` now declares protocol identity, adapter package files, bootstrap paths, and profile contract metadata, and the adapter line advanced to `0.5.0-prototype`.
+- **Adapter validation surface**: Added `scripts/harness-adapter.sh` plus `harness_state.py adapter ...` so the package can be introspected and validated deterministically.
+- **Manifest-driven bootstrap and smoke**: bootstrap now copies manifest-declared files instead of a shell hardcoded list, `harness-sync status` now compares adapter id as well as manifest version, and all smoke paths now validate adapter integrity explicitly.
 
 ### Changed — Project Intelligence
 - **Current project focus updated**: `_project/CURRENT.md` now reflects the shift from Wing-only transition work to the new Codex-native orchestration harness prototype.
 - **Harness documentation expanded**: `harness/README.md` now documents the implemented surfaces and operating loop; `skills/README.md` now lists `/harness` and notes the `SKILL.md`-based Codex-native prototype pattern.
+- **Harness session durability expanded**: `_project/sessions/2026-03-28-B.md` now captures the adapter-contract tightening pass so future sessions can resume from the package boundary work without replaying chat history.
 
 ### Added — Skills Factory
 - **arch-review v0.1.0 — Multi-role debate review skill**: Distilled from 3 projects (gcp-compute-infra, vi_agent), 7+ rounds, 14 opus agents. 8 mechanisms: Data Authority Hierarchy (M1), Role Templates (M2), Lessons Injection (M3), Standard Output Format (M4), Debate Orchestration via TeamCreate + opus teammates (M5), Self-Sufficiency Test (M6), Debug Recording (M7), Revolution self-optimization (M8). 27 bugs found and fixed during 5-round self-review. Complementary to /architect (which designs new systems).

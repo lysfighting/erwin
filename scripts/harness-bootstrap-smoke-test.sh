@@ -63,6 +63,7 @@ assert_contains "$bootstrap_output" '"target_repo"' "bootstrap returns summary"
 assert_contains "$bootstrap_output" '"skills/harness/SKILL.md"' "bootstrap installs local skill files"
 assert_contains "$bootstrap_output" '"install-codex.sh"' "bootstrap installs local Codex installer"
 assert_contains "$bootstrap_output" '"metadata_path"' "bootstrap writes adapter metadata"
+assert_contains "$bootstrap_output" '"scripts/harness-adapter.sh"' "bootstrap installs adapter surface"
 assert_contains "$bootstrap_output" '"scripts/harness-issue.sh"' "bootstrap installs issue surface"
 assert_contains "$bootstrap_output" '"scripts/harness-ship.sh"' "bootstrap installs ship surface"
 assert_contains "$bootstrap_output" '"scripts/harness-rc.sh"' "bootstrap installs rc surface"
@@ -70,6 +71,7 @@ assert_contains "$bootstrap_output" '"harness/adapter-manifest.yml"' "bootstrap 
 assert_contains "$bootstrap_output" '"scripts/harness-all-smoke-test.sh"' "bootstrap installs full smoke entrypoint"
 
 if run_in_target test -f scripts/harness-home.sh && \
+   run_in_target test -f scripts/harness-adapter.sh && \
    run_in_target test -f scripts/harness-bootstrap.sh && \
    run_in_target test -f scripts/harness-sync.sh && \
    run_in_target test -f scripts/harness-all-smoke-test.sh && \
@@ -85,9 +87,11 @@ else
 fi
 
 section "Leader surfaces"
+adapter_output="$(run_in_target ./scripts/harness-adapter.sh validate)"
 home_output="$(run_in_target ./scripts/harness-home.sh)"
 doctor_output="$(run_in_target ./scripts/harness-doctor.sh)"
 claim_output="$(run_in_target ./scripts/harness-claim.sh 31001 "Bootstrapped Target Mission")"
+assert_contains "$adapter_output" '"valid": true' "bootstrapped adapter validates cleanly"
 assert_contains "$home_output" '"next_action": "No active runs. Claim a mission."' "bootstrapped home starts empty"
 assert_contains "$doctor_output" '"issue_count": 0' "bootstrapped doctor starts healthy"
 assert_contains "$claim_output" '"mission_id": "issue-31001"' "bootstrapped claim creates mission"

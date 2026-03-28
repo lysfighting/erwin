@@ -3,7 +3,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_ROOT="$(git -C "$SCRIPT_DIR/.." rev-parse --show-toplevel 2>/dev/null || cd "$SCRIPT_DIR/.." && pwd)"
-METADATA_PATH="$TARGET_ROOT/.harness/cache/adapter-source.json"
 SOURCE_ROOT="${HARNESS_SOURCE_ROOT:-}"
 MODE="sync"
 FORCE=1
@@ -20,6 +19,25 @@ Usage:
 Sync a bootstrapped harness adapter from its source repository.
 If --source is omitted, the script uses .harness/cache/adapter-source.json.
 EOF
+}
+
+adapter_query() {
+  local root="$1"
+  shift
+  python3 "$root/scripts/harness_state.py" adapter "$@"
+}
+
+resolve_metadata_path() {
+  local root="$1"
+  local rel_path=""
+  if [[ -f "$root/scripts/harness_state.py" ]]; then
+    rel_path="$(adapter_query "$root" metadata-path 2>/dev/null || true)"
+  fi
+  if [[ -n "$rel_path" ]]; then
+    printf '%s\n' "$root/$rel_path"
+  else
+    printf '%s\n' "$root/.harness/cache/adapter-source.json"
+  fi
 }
 
 read_metadata_field() {
@@ -46,24 +64,20 @@ PY
 
 read_manifest_version() {
   local root="$1"
-  python3 - "$root" <<'PY'
-import pathlib
-import sys
+  if [[ -f "$root/scripts/harness_state.py" ]]; then
+    adapter_query "$root" version 2>/dev/null || true
+  else
+    printf '\n'
+  fi
+}
 
-root = pathlib.Path(sys.argv[1])
-path = root / "harness" / "adapter-manifest.yml"
-if not path.exists():
-    print("")
-    raise SystemExit(0)
-text = path.read_text(encoding="utf-8")
-for raw in text.splitlines():
-    line = raw.strip()
-    if line.startswith("adapter_version:"):
-        print(line.split(":", 1)[1].strip().strip('"'))
-        break
-else:
-    print("")
-PY
+read_manifest_id() {
+  local root="$1"
+  if [[ -f "$root/scripts/harness_state.py" ]]; then
+    adapter_query "$root" id 2>/dev/null || true
+  else
+    printf '\n'
+  fi
 }
 
 while [[ $# -gt 0 ]]; do
@@ -100,17 +114,20 @@ if ! TARGET_ROOT="$(git -C "$TARGET_INPUT" rev-parse --show-toplevel 2>/dev/null
   exit 1
 fi
 TARGET_ROOT="$(cd "$TARGET_ROOT" && pwd)"
-METADATA_PATH="$TARGET_ROOT/.harness/cache/adapter-source.json"
+METADATA_PATH="$(resolve_metadata_path "$TARGET_ROOT")"
 
 if [[ "$MODE" == "status" ]]; then
   if [[ -f "$METADATA_PATH" ]]; then
     source_root="$(read_metadata_field source_root "$METADATA_PATH")"
     target_manifest_version="$(read_manifest_version "$TARGET_ROOT")"
+    target_adapter_id="$(read_manifest_id "$TARGET_ROOT")"
     source_manifest_version=""
+    source_adapter_id=""
     if [[ -n "$source_root" ]] && [[ -d "$source_root" ]]; then
       source_manifest_version="$(read_manifest_version "$source_root")"
+      source_adapter_id="$(read_manifest_id "$source_root")"
     fi
-    python3 - "$METADATA_PATH" "$target_manifest_version" "$source_manifest_version" <<'PY'
+    python3 - "$METADATA_PATH" "$target_manifest_version" "$source_manifest_version" "$target_adapter_id" "$source_adapter_id" <<'PY'
 import json
 import pathlib
 import sys
@@ -118,9 +135,14 @@ import sys
 metadata_path = pathlib.Path(sys.argv[1])
 target_manifest_version = sys.argv[2]
 source_manifest_version = sys.argv[3]
+target_adapter_id = sys.argv[4]
+source_adapter_id = sys.argv[5]
 data = json.loads(metadata_path.read_text(encoding="utf-8"))
+data["target_adapter_id"] = target_adapter_id
+data["source_adapter_id"] = source_adapter_id
 data["target_manifest_version"] = target_manifest_version
 data["source_manifest_version"] = source_manifest_version
+data["adapter_ids_match"] = bool(target_adapter_id and source_adapter_id and target_adapter_id == source_adapter_id)
 data["manifest_versions_match"] = bool(
     target_manifest_version and source_manifest_version and target_manifest_version == source_manifest_version
 )
