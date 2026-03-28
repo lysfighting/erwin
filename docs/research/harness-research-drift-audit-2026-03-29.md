@@ -30,7 +30,7 @@ But there is clear **implementation-weighted drift**:
 
 - protocol and adapter work are still a little more mature than the hardest control-plane work
 - runtime packaging was ahead of desired-state modeling, but first-class mission objects have now materially closed that gap
-- meeting governance is now strong, and automated council orchestration has begun to materialize through claim-aware auto-synthesis, but the full debate controller is still not there
+- meeting governance is now strong, and automated council orchestration has begun to materialize through claim-aware auto-synthesis plus assigned debate-route obligations, but the full debate controller is still not there
 
 So the danger is not “we forgot the vision entirely.”
 The danger is:
@@ -173,7 +173,7 @@ Current truth:
 - the runtime now stores the right meeting objects
 - the runtime can now advance meeting phases with `meetings orchestrate`
 - findings can now reference the positions that support or challenge them, so synthesis provenance is no longer implicit
-- positions can now be grouped by `claim` / `dimension`, `meetings orchestrate` can auto-generate provisional findings plus unresolved follow-up actions from those grouped positions, and meetings now track routed vs unrouted conflicting claim lanes through a first-class debate plan
+- positions can now be grouped by `claim` / `dimension`, `meetings orchestrate` can auto-generate provisional findings plus unresolved follow-up actions from those grouped positions, and meetings now track conflicting claim lanes through a first-class debate plan with assigned route obligations
 - but it still does not automate the full debate workflow itself
 
 So the system has become **meaningfully council-orchestrating**, but not yet a full automated debate controller.

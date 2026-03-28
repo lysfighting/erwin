@@ -25,8 +25,11 @@ meeting:
     debate_plan:
       conflict_claim_count: 0
       planned_route_count: 0
+      resolved_route_count: 0
       unrouted_claim_count: 0
+      open_route_action_count: 0
       routes: []
+      route_actions: []
       blocking_gaps: []
       coverage_notes: []
     auto_synthesis:

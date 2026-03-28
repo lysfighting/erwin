@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.13.0 (in progress)
+- **Version**: 0.14.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Codex-native orchestration harness debate routing pass completed)
+- **Last Session**: 2026-03-29 (Codex-native orchestration harness debate route obligation pass completed)
 
 ## Current Phase
 
@@ -26,6 +26,7 @@
 - **Council governance hardened**: meetings now carry first-class `role_specs` with allowed/forbidden sources, known-context notes, locked decisions, and rejected-finding reasons; `doctor` validates those governance requirements instead of treating councils as loose notes
 - **Gap audit written down**: `docs/research/harness-gap-audit-2026-03-29.md` now records which original design inputs are absorbed, partial, or still missing, so future sessions can resume from an explicit audit instead of replaying chat history
 - **Research drift audit added**: `docs/research/harness-research-drift-audit-2026-03-29.md` now re-checks the original design docs against the current harness and confirms the remaining highest-risk drift areas are desired-state control, explicit ownership/overlap, harness-wide authority enforcement, and automated council orchestration
+- **Debate route obligations added**: `meetings orchestrate` now materializes claim-lane route obligations with assigned bounded challenger roles/runs, while `meetings summary` and `doctor` surface resolved vs open debate routes directly instead of only reporting routed/unrouted claims after the fact
 - **Ownership and desired state strengthened**: runs and contracts now carry explicit `ownership_claims`, `desired_state`, and dependency policy; teammate assignment now rejects exclusive overlap by default, and `drive wait` plus `home`/`doctor` surface dependency-blocked runs directly
 - **Authority and council control advanced**: invalid authority levels are now rejected or surfaced, and meetings can advance phases with `meetings orchestrate` instead of relying entirely on manual phase jumps
 - **Mission graph made first-class**: the harness now materializes durable mission objects under `.harness/missions/`, exposes them through `scripts/harness-missions.sh`, and drives `home`/`doctor` from mission-level state instead of only run-level state
@@ -57,7 +58,7 @@
 - **Debate routing plan added**: meetings now materialize a `debate_plan` that groups conflicting claim lanes, tracks routed vs unrouted cross-examination, and makes missing challenge paths explicit in the control plane
 - **Meeting summary widened again**: `meetings summary` now reports routed and unrouted conflicting claim counts in addition to synthesis and automation metrics
 - **Doctor widened again**: `doctor` now flags meetings whose conflicting claims have not yet been routed into linked cross-examination before synthesis/output is trusted
-- **Adapter line advanced again**: `harness/adapter-manifest.yml` now declares `0.13.0-prototype` to reflect deeper debate-routing governance
+- **Adapter line advanced again**: `harness/adapter-manifest.yml` now declares `0.14.0-prototype` to reflect deeper debate-route obligation governance
 - **Adapter/package flow updated**: `harness/adapter-manifest.yml` now packages the Go module files and build runner, bootstrapped repos receive the Go sources, and `harness-bootstrap.sh` / `harness-sync.sh` now query adapter metadata through the Go runtime path
 - **Smoke suite de-Pythonized**: issue/core/release/teammate smoke scripts now query package files through the harness adapter surface and extract runtime ids without Python helpers
 - **Validation**: `./scripts/harness-build-runtime.sh`, `./scripts/harness-runtime-dist-smoke-test.sh`, `./scripts/harness-adapter.sh validate`, `./scripts/harness-issue-smoke-test.sh`, `./scripts/harness-smoke-test.sh`, `./scripts/harness-teammate-smoke-test.sh`, `./scripts/harness-release-smoke-test.sh`, `./scripts/harness-bootstrap-smoke-test.sh`, and `./scripts/harness-all-smoke-test.sh` all pass cleanly on the Go runtime; `./scripts/harness-maintenance.sh normalize` also upgrades older runtime state into mission-aware schema cleanly
@@ -106,7 +107,7 @@
    - B. Decide whether `harness/adapter-manifest.yml` should become the public package spec or stay repo-private while naming is unresolved
    - C. Continue deepening selector semantics beyond the new family-aware baseline into richer policies and transfer rules
    - D. Continue authority conflict resolution beyond current signal-level supersession, meeting same-claim audits, run-level active-signal adjudication, contract sync, record-vs-live drift detection, and clean-intent-vs-dirty-worktree detection into still harder contract-intent vs live-git disagreement
-   - E. Continue pushing council behavior from auto-synthesis and debate routing toward fuller `arch-review`-style automated debate, including stronger automatic challenge assignment and richer council wave control
+   - E. Continue pushing council behavior from auto-synthesis and route obligations toward fuller `arch-review`-style automated debate, including richer wave control, multi-round challenge planning, and stronger automatic challenge assignment across more than one conflicting lane
    - F. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `_project/sessions/2026-03-28-B.md`, `_project/sessions/2026-03-28-C.md`, `_project/sessions/2026-03-29-A.md`, `_project/sessions/2026-03-29-B.md`, `_project/sessions/2026-03-29-C.md`, `_project/sessions/2026-03-29-D.md`, `harness/README.md`, `docs/research/harness-completion-context-pack-2026-03-28.md`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0

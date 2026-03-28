@@ -166,6 +166,8 @@ position_b_id=$(printf '%s\n' "$position_b" | sed -n 's/^[[:space:]]*"position_i
 
 orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
 assert_json_field "$orchestrate_b" '"new_phase": "cross_examination"' "meeting orchestration advances to cross-examination"
+assert_json_field "$orchestrate_b" '"open_route_action_count": 1' "meeting orchestration plans one open debate route for the conflicting claim lane"
+assert_json_field "$orchestrate_b" '"assigned_role": "ops-simulator"' "meeting debate route assigns the bounded challenger role"
 
 cross_exam=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" cross_examination challenge "Operator-facing release notes must mention the new scope requirement." --claim=release-note-scope --dimension=factual --evidence=CHANGELOG.md --responds-to-run="$run_a" --responds-to-role=implementation-verifier)
 assert_json_field "$cross_exam" '"cross_examination"' "meeting stores cross-examination position"
@@ -194,6 +196,8 @@ assert_json_field "$summary_output" '"unresolved_authority_conflict_count": 0' "
 assert_json_field "$summary_output" '"traced_finding_count": 3' "meeting summary reports traced findings"
 assert_json_field "$summary_output" '"untraced_finding_count": 0' "meeting summary reports no untraced findings"
 assert_json_field "$summary_output" '"planned_route_count": 1' "meeting summary reports routed conflicting claim count"
+assert_json_field "$summary_output" '"resolved_route_count": 1' "meeting summary reports resolved debate route count"
+assert_json_field "$summary_output" '"open_route_action_count": 0' "meeting summary reports no open debate route obligations"
 assert_json_field "$summary_output" '"unrouted_claim_count": 0' "meeting summary reports no unrouted conflict claim"
 authority_audit=$(run_in_repo bash scripts/harness-meetings.sh authority-audit "$meeting_id")
 assert_json_field "$authority_audit" '"resolution_kind": "authority_wins"' "authority audit explains higher-authority winner"
@@ -220,6 +224,7 @@ auto_pos_c_id=$(printf '%s\n' "$auto_pos_c" | sed -n 's/^[[:space:]]*"position_i
 
 auto_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
 assert_json_field "$auto_orchestrate_b" '"new_phase": "cross_examination"' "auto-synthesis council advances into cross-examination"
+assert_json_field "$auto_orchestrate_b" '"open_route_action_count": 1' "auto-synthesis council emits an open route obligation before linked cross-examination"
 
 auto_cross_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_a" cross_examination support "Operator-facing auth scope changes require release-note coverage." --claim=release-note-scope --dimension=factual --authority=L1 --evidence=CHANGELOG.md --responds-to-position="$auto_pos_b_id")
 auto_cross_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_b" cross_examination challenge "Rollback guidance can wait until a real rollback path exists." --claim=rollback-plan-note --dimension=factual --authority=L2 --evidence=docs/release.md --responds-to-position="$auto_pos_c_id")
@@ -237,6 +242,9 @@ assert_json_field "$auto_summary" '"unresolved_count": 1' "auto-synthesis produc
 assert_json_field "$auto_summary" '"auto_generated_finding_count": 2' "meeting summary surfaces generated finding count"
 assert_json_field "$auto_summary" '"auto_generated_action_count": 1' "meeting summary surfaces generated action count"
 assert_json_field "$auto_summary" '"traced_finding_count": 2' "auto-synthesized findings remain traceable to positions"
+assert_json_field "$auto_summary" '"planned_route_count": 2' "auto-synthesis summary surfaces both routed claim lanes"
+assert_json_field "$auto_summary" '"resolved_route_count": 2' "auto-synthesis summary shows both planned routes resolved"
+assert_json_field "$auto_summary" '"open_route_action_count": 0' "auto-synthesis summary shows no remaining route obligation"
 
 auto_orchestrate_d=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
 assert_json_field "$auto_orchestrate_d" '"new_phase": "output"' "auto-synthesis council can advance from synthesis to output"
