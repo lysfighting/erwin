@@ -40,6 +40,8 @@ lint-output.txt
 
 # Harness runtime state (local, not committed)
 .harness/
+harness/bin/*/
+!harness/bin/README.md
 
 # Worktree marker (ephemeral, should only exist in worktrees)
 .mission

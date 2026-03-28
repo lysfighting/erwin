@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Council packet strengthening**: meetings now record phase, participant roster, and role-bounded positions so councils can reflect independent review and cross-examination, not only final findings.
 - **Teammate smoke coverage**: Added `scripts/harness-teammate-smoke-test.sh`, integrated it into `scripts/harness-all-smoke-test.sh`, and extended bootstrap coverage to include the teammate surface.
 - **Completion handoff pack**: Added `docs/research/harness-completion-context-pack-2026-03-28.md` so future sessions can distinguish adapter/package progress from the larger orchestration mission.
+- **Packaged runtime preference**: `scripts/harness-runtime.sh` now prefers packaged `harness/bin/<os>-<arch>/harness-state` binaries before falling back to a local Go build in `.harness/bin/`.
+- **Runtime builder + dist smoke**: Added `scripts/harness-build-runtime.sh`, `harness/bin/README.md`, and `scripts/harness-runtime-dist-smoke-test.sh` so the adapter can prove a no-Python, no-local-Go runtime path when packaged binaries are present.
 
 ### Changed — Project Intelligence
 - **Current project focus updated**: `_project/CURRENT.md` now reflects the shift from Wing-only transition work to the new Codex-native orchestration harness prototype.
@@ -46,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Harness session durability expanded**: `_project/sessions/2026-03-28-B.md` now captures the adapter-contract tightening pass so future sessions can resume from the package boundary work without replaying chat history.
 - **Harness completion context pack**: Added `docs/research/harness-completion-context-pack-2026-03-28.md` to distinguish "current adapter/package state" from the larger remaining orchestration mission, and to define the minimum full-context bundle required for future sessions to finish the harness rather than only continue productization.
 - **Harness runtime migration**: Replaced the Python harness runtime with a local-build Go CLI (`go.mod`, `cmd/harness-state`, `internal/harness/runtime.go`, `scripts/harness-runtime.sh`), updated all first-class harness wrappers to call the Go binary path, removed `scripts/harness_state.py`, and moved bootstrap/sync/smoke flows onto the Go adapter contract.
+- **Adapter package contract**: `harness/adapter-manifest.yml` now includes the runtime builder and runtime-dist smoke path, bootstrap smoke checks those artifacts explicitly, and the docs now describe packaged binary preference plus the local-build fallback.
 
 ### Added — Skills Factory
 - **arch-review v0.1.0 — Multi-role debate review skill**: Distilled from 3 projects (gcp-compute-infra, vi_agent), 7+ rounds, 14 opus agents. 8 mechanisms: Data Authority Hierarchy (M1), Role Templates (M2), Lessons Injection (M3), Standard Output Format (M4), Debate Orchestration via TeamCreate + opus teammates (M5), Self-Sufficiency Test (M6), Debug Recording (M7), Revolution self-optimization (M8). 27 bugs found and fixed during 5-round self-review. Complementary to /architect (which designs new systems).

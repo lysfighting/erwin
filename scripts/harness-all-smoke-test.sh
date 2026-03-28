@@ -30,6 +30,7 @@ run_case "issue smoke" "$SCRIPT_DIR/harness-issue-smoke-test.sh"
 run_case "core smoke" "$SCRIPT_DIR/harness-smoke-test.sh"
 run_case "release smoke" "$SCRIPT_DIR/harness-release-smoke-test.sh"
 run_case "teammate smoke" "$SCRIPT_DIR/harness-teammate-smoke-test.sh"
+run_case "runtime dist smoke" "$SCRIPT_DIR/harness-runtime-dist-smoke-test.sh"
 run_case "bootstrap smoke" "$SCRIPT_DIR/harness-bootstrap-smoke-test.sh"
 
 echo ""

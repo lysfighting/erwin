@@ -29,8 +29,10 @@ The current productization direction is explicit three-layer separation:
 
 The first usable Codex-native harness prototype now exists in `scripts/`.
 
-The runtime core is now a local Go CLI built on demand by `scripts/harness-runtime.sh`.
-The first-class shell surfaces remain stable, but they no longer require `python3` for normal harness operation.
+The runtime core is now a Go CLI resolved by `scripts/harness-runtime.sh`.
+When a packaged binary exists under `harness/bin/<os>-<arch>/harness-state`, the shell surfaces use it directly.
+If no packaged binary is available, the runtime falls back to building a local Go binary under `.harness/bin/`.
+That means normal harness use no longer requires `python3`, and repos can opt into a no-Go runtime path by shipping packaged binaries.
 
 - `harness-adapter.sh` — adapter manifest introspection and package validation
 - `harness-home.sh` — leader home view
@@ -97,6 +99,7 @@ Run the harness smoke test:
 ./scripts/harness-bootstrap-smoke-test.sh
 ./scripts/harness-release-smoke-test.sh
 ./scripts/harness-teammate-smoke-test.sh
+./scripts/harness-runtime-dist-smoke-test.sh
 ./scripts/harness-all-smoke-test.sh
 ```
 
@@ -110,6 +113,7 @@ Bootstrap the harness into another git repository:
 This copies the deterministic substrate, committed definition layer, smoke test, and a generated default profile into the target repository.
 It also copies `skills/harness/` and `install-codex.sh`, so the target repo gets a Codex-native local skill entry point immediately.
 It also copies the Go runtime module (`go.mod`, `go.sum`, `cmd/`, `internal/`) plus the build runner, so bootstrapped repos can build the same harness CLI locally without a Python runtime dependency.
+If a repo wants to avoid a local Go dependency at runtime too, it can package platform binaries under `harness/bin/` using `./scripts/harness-build-runtime.sh`.
 The bootstrap now follows `harness/adapter-manifest.yml` for its package file list, bootstrap profile template, and metadata location.
 The bootstrap writes local source metadata to `.harness/cache/adapter-source.json`, so later `./scripts/harness-sync.sh` runs can reuse the remembered source path.
 `./scripts/harness-sync.sh status` now reports source/target adapter identity plus manifest version alignment when the source repo is still reachable.

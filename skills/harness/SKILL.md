@@ -7,7 +7,8 @@ The harness is file-backed:
 - committed definitions live in `harness/`
 - runtime state lives in `.harness/`
 - command surfaces live in `scripts/`
-- the runtime core is a local Go CLI built by `scripts/harness-runtime.sh`
+- the runtime core is a Go CLI resolved by `scripts/harness-runtime.sh`
+- packaged binaries in `harness/bin/<os>-<arch>/harness-state` are preferred; local Go build is only the fallback path
 
 ## Leader workflow
 
@@ -105,11 +106,14 @@ The harness is file-backed:
   `bash scripts/harness-maintenance.sh normalize`
 - `all-smoke`
   `bash scripts/harness-all-smoke-test.sh`
+- `runtime-dist-smoke`
+  `bash scripts/harness-runtime-dist-smoke-test.sh`
 
 ## Operating rules
 
 - Treat `harness-home` as the control plane entry point.
 - Treat `harness-adapter.sh validate` as the package boundary check when bootstrap/sync behavior is in doubt.
+- Treat `harness-runtime-dist-smoke-test.sh` as the proof that a repo can run the packaged runtime without a local Go toolchain.
 - Prefer the narrowest safe state change.
 - Use meetings for high-ambiguity or high-blast-radius decisions.
 - Treat teammate runs as first-class runtime objects, not informal notes.
