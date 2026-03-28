@@ -22,6 +22,11 @@ meeting:
     next_requirement: ""
     last_orchestrated_at: ""
     last_phase_reason: ""
+    wave_plan:
+      wave_action_count: 0
+      open_wave_action_count: 0
+      wave_actions: []
+      coverage_note_count: 0
     debate_plan:
       conflict_claim_count: 0
       planned_route_count: 0

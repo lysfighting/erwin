@@ -3212,6 +3212,51 @@ func meetingCoverageAudit(meeting map[string]any) map[string]any {
 	}
 }
 
+func meetingWavePlan(meeting map[string]any, coverage map[string]any) map[string]any {
+	participants := toList(meeting["participants"])
+	positions := toList(meeting["positions"])
+	independentByRun := map[string]int{}
+	for _, item := range positions {
+		position, ok := toMap(item)
+		if !ok || stringValue(position["phase"]) != "independent_review" {
+			continue
+		}
+		runID := strings.TrimSpace(stringValue(position["run_id"]))
+		if runID != "" {
+			independentByRun[runID]++
+		}
+	}
+
+	waveActions := []any{}
+	for _, item := range participants {
+		participant, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		runID := strings.TrimSpace(stringValue(participant["run_id"]))
+		role := firstNonBlank(stringValue(participant["role"]), stringValue(participant["owner_id"]), runID)
+		if runID == "" || independentByRun[runID] > 0 {
+			continue
+		}
+		waveActions = append(waveActions, map[string]any{
+			"wave_id":         "wave-independent-review-" + slugify(runID),
+			"wave_kind":       "independent_review",
+			"assigned_role":   role,
+			"assigned_run_id": runID,
+			"expected_phase":  "independent_review",
+			"state":           "open",
+			"summary":         fmt.Sprintf("%s still owes an independent-review position before debate can advance cleanly.", firstNonBlank(role, runID)),
+		})
+	}
+
+	return map[string]any{
+		"wave_action_count":      len(waveActions),
+		"open_wave_action_count": len(waveActions),
+		"wave_actions":           waveActions,
+		"coverage_note_count":    len(toList(coverage["coverage_notes"])),
+	}
+}
+
 func preferredMeetingPosition(positions []map[string]any, stance string) map[string]any {
 	var best map[string]any
 	bestRank := -1
@@ -4232,6 +4277,19 @@ func doctorReport() map[string]any {
 		if phase := stringValue(meeting["phase"]); phase == "cross_examination" || phase == "synthesis" || phase == "output" {
 			if len(toList(coverageAudit["blocking_gaps"])) > 0 {
 				issues = append(issues, issueRecord("warning", "meeting-debate-blocked", meetingID, fmt.Sprintf("Meeting still has debate blocking gaps: %s", strings.Join(anyListToStrings(toList(coverageAudit["blocking_gaps"])), "; ")), "Fill the debate gaps or lower the meeting phase."))
+			}
+			if wavePlan, ok := toMap(orchestration["wave_plan"]); ok && intValue(wavePlan["open_wave_action_count"]) > 0 {
+				openWaves := []string{}
+				for _, item := range toList(wavePlan["wave_actions"]) {
+					action, ok := toMap(item)
+					if !ok || stringValue(action["state"]) != "" && stringValue(action["state"]) != "open" {
+						continue
+					}
+					openWaves = append(openWaves, firstNonBlank(stringValue(action["summary"]), stringValue(action["assigned_role"])))
+				}
+				if len(openWaves) > 0 {
+					issues = append(issues, issueRecord("warning", "meeting-wave-action-open", meetingID, fmt.Sprintf("Meeting still has open debate-wave obligations: %s", strings.Join(openWaves, "; ")), "Record the missing independent-review contribution before trusting the council progression."))
+				}
 			}
 			if len(toList(debatePlan["blocking_gaps"])) > 0 {
 				issues = append(issues, issueRecord("warning", "meeting-debate-unrouted", meetingID, fmt.Sprintf("Meeting still has unrouted conflicting claims: %s", strings.Join(anyListToStrings(toList(debatePlan["blocking_gaps"])), "; ")), "Add linked cross-examination for each conflicting claim before trusting synthesis."))
@@ -7135,6 +7193,7 @@ func cmdMeetings(args []string) error {
 		synthesis, _ := toMap(orchestration["synthesis"])
 		autoSynthesis, _ := toMap(orchestration["auto_synthesis"])
 		debatePlan, _ := toMap(orchestration["debate_plan"])
+		wavePlan, _ := toMap(orchestration["wave_plan"])
 		authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
 		return printJSON(map[string]any{
 			"meeting_id":                          stringValue(meeting["meeting_id"]),
@@ -7162,6 +7221,7 @@ func cmdMeetings(args []string) error {
 			"planned_route_count":                 intValue(debatePlan["planned_route_count"]),
 			"resolved_route_count":                intValue(debatePlan["resolved_route_count"]),
 			"open_route_action_count":             intValue(debatePlan["open_route_action_count"]),
+			"open_wave_action_count":              intValue(wavePlan["open_wave_action_count"]),
 			"unrouted_claim_count":                intValue(debatePlan["unrouted_claim_count"]),
 			"open_action_count":                   openActionCount,
 		})
@@ -7257,6 +7317,7 @@ func cmdMeetingsRemainder(args []string) error {
 			roleSpecs := toList(meeting["role_specs"])
 			participants := toList(meeting["participants"])
 			coverageAudit, _ := toMap(meetingCoverageAudit(meeting))
+			wavePlan, _ := toMap(meetingWavePlan(meeting, coverageAudit))
 			debatePlan, _ := toMap(meetingDebatePlan(meeting))
 			positions := toList(meeting["positions"])
 			gaps := []string{}
@@ -7289,7 +7350,11 @@ func cmdMeetingsRemainder(args []string) error {
 			case "", "setup":
 				if len(gaps) == 0 {
 					newPhase = "independent_review"
-					nextRequirement = "Collect independent-review positions from bounded participants."
+					if intValue(wavePlan["open_wave_action_count"]) > 0 {
+						nextRequirement = fmt.Sprintf("Collect %d independent-review position(s) from bounded participants.", intValue(wavePlan["open_wave_action_count"]))
+					} else {
+						nextRequirement = "Collect independent-review positions from bounded participants."
+					}
 				} else {
 					nextRequirement = "Add packet/participant prerequisites before independent review."
 				}
@@ -7308,7 +7373,11 @@ func cmdMeetingsRemainder(args []string) error {
 						nextRequirement = "Collect cross-examination positions that challenge or refine earlier claims."
 					}
 				} else {
-					nextRequirement = "Need at least two independent-review positions before cross-examination."
+					if intValue(wavePlan["open_wave_action_count"]) > 0 {
+						nextRequirement = fmt.Sprintf("Still waiting on %d independent-review wave obligation(s) before cross-examination.", intValue(wavePlan["open_wave_action_count"]))
+					} else {
+						nextRequirement = "Need at least two independent-review positions before cross-examination."
+					}
 				}
 			case "cross_examination":
 				for _, item := range toList(coverageAudit["blocking_gaps"]) {
@@ -7372,6 +7441,7 @@ func cmdMeetingsRemainder(args []string) error {
 			orchestration["next_requirement"] = nextRequirement
 			orchestration["last_orchestrated_at"] = nowISO()
 			orchestration["coverage"] = coverageAudit
+			orchestration["wave_plan"] = wavePlan
 			orchestration["debate_plan"] = debatePlan
 			orchestration["auto_synthesis"] = autoSynthesis
 			orchestration["synthesis"] = synthesis

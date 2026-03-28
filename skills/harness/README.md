@@ -33,6 +33,7 @@ Use this when the model should act as the harness leader:
 - adjudicate active signals when fresher run or meeting state supersedes them
 - record teammate reports and sibling communication as structured signals
 - run councils with explicit cross-examination linkage and inspect synthesis readiness before adoption
+- inspect missing independent-review wave obligations before assuming a council is really ready for cross-examination
 - let `meetings orchestrate` auto-synthesize provisional findings and unresolved follow-up actions from bounded council positions
 - inspect whether conflicting council claims have been turned into explicit route obligations and then actually routed into linked cross-examination before trusting synthesis
 - inspect same-claim finding conflicts through `meetings authority-audit` when higher/lower authority evidence collides

@@ -97,6 +97,7 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - rejected findings that carry explicit reasons instead of disappearing silently
 - automated meeting phase advancement via `meetings orchestrate`
 - provisional council auto-synthesis that can derive findings and unresolved-action prompts from bounded positions without overwriting manual findings already on the record
+- debate-wave planning that surfaces missing independent-review obligations before councils move into cross-examination
 - debate-plan routing that groups conflicting claim lanes, assigns bounded challenger route obligations, and tracks whether cross-examination has actually been linked for each conflict before synthesis is trusted
 - durable council `phase_history`, linked cross-examination targets, and synthesis audits with blocker/evidence reporting
 - leader-facing `meetings authority-audit` output for same-claim finding conflicts and higher-authority winner explanations

@@ -158,11 +158,12 @@ The harness is file-backed:
 - Allow teammate-to-teammate communication only through governed links or sibling relationships.
 - Use `meetings orchestrate` to advance council phases instead of manually skipping straight to synthesis.
 - Treat `meetings orchestrate` as the council chair: once bounded positions exist, it can auto-synthesize provisional findings and unresolved-action prompts without overwriting manual judgment that is already on the record.
+- Treat missing independent review as first-class wave debt: `meetings orchestrate` now reports `open_wave_action_count` so the leader can see who still owes a bounded review before cross-examination.
 - Treat routed cross-examination as first-class: when multiple roles disagree on the same `--claim`, the council now turns that lane into an explicit route obligation with an assigned bounded challenger before synthesis/output is trusted.
 - When recording cross-examination positions, include explicit `--responds-to-run=` / `--responds-to-role=` linkage so the council trace shows who challenged whom.
 - When recording positions that speak about the same question, include `--claim=` and `--dimension=` so auto-synthesis and authority audit can group them into the same council claim.
 - When multiple findings speak about the same claim, use `--claim=` and `--dimension=` on `meetings add-finding` so authority conflicts can be audited cleanly.
-- Use `meetings summary` before adoption when you need to see synthesis readiness, debate-round depth, blocker counts, and any still-open route obligations at a glance.
+- Use `meetings summary` before adoption when you need to see synthesis readiness, debate-round depth, blocker counts, and any still-open wave/route obligations at a glance.
 - Use `meetings authority-audit` when you need a leader-facing explanation of which same-claim finding currently wins on authority.
 - Use `runs authority-audit` when a run may be drifting against fresher or higher-authority active signals, or when `doctor` reports `run-authority-conflict`.
 - Use `runs authority-audit` when a run claims it is ready/verified/clean but the live worktree is still dirty; the audit now surfaces that intent-vs-live-git disagreement explicitly.

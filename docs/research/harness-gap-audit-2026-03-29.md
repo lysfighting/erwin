@@ -89,11 +89,12 @@ What is still missing:
 
 ### 2. Automated council orchestration
 
-The meeting protocol is now much stronger, and the system can now auto-synthesize provisional findings from grouped positions plus assign and track bounded route obligations for conflicting claim lanes, but it still does not yet automatically run a full structured debate workflow.
+The meeting protocol is now much stronger, and the system can now auto-synthesize provisional findings from grouped positions plus assign and track bounded route obligations for conflicting claim lanes and missing independent-review wave obligations, but it still does not yet automatically run a full structured debate workflow.
 
 What is still missing:
 
 - automated independent-review wave
+- explicit multi-round wave planning beyond the new missing-independent-review obligation tracking
 - automated cross-examination routing
 - automatic independent-review wave planning
 - automatic multi-round cross-examination assignment beyond the new bounded route-obligation tracking

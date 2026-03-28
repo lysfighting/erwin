@@ -166,6 +166,7 @@ assert_json_field "$participant_b" '"worker-ops"' "meeting records second partic
 
 orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
 assert_json_field "$orchestrate_a" '"new_phase": "independent_review"' "meeting orchestration advances setup to independent review"
+assert_json_field "$orchestrate_a" '"open_wave_action_count": 2' "meeting orchestration plans the missing independent-review wave obligations"
 
 position_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_a" independent_review support "No schema drift in auth callers." --claim=release-note-scope --dimension=factual --evidence=src/auth.ts)
 position_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" independent_review challenge "Release notes should mention the new scope requirement." --claim=release-note-scope --dimension=factual --evidence=CHANGELOG.md)
@@ -176,6 +177,7 @@ position_b_id=$(printf '%s\n' "$position_b" | sed -n 's/^[[:space:]]*"position_i
 
 orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
 assert_json_field "$orchestrate_b" '"new_phase": "cross_examination"' "meeting orchestration advances to cross-examination"
+assert_json_field "$orchestrate_b" '"open_wave_action_count": 0' "meeting orchestration clears independent-review wave obligations once both positions exist"
 assert_json_field "$orchestrate_b" '"open_route_action_count": 1' "meeting orchestration plans one open debate route for the conflicting claim lane"
 assert_json_field "$orchestrate_b" '"assigned_role": "ops-simulator"' "meeting debate route assigns the bounded challenger role"
 
@@ -225,6 +227,7 @@ run_in_repo bash scripts/harness-meetings.sh add-participant "$auto_meeting_id" 
 
 auto_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
 assert_json_field "$auto_orchestrate_a" '"new_phase": "independent_review"' "auto-synthesis council advances into independent review"
+assert_json_field "$auto_orchestrate_a" '"open_wave_action_count": 2' "auto-synthesis council plans both independent-review wave obligations"
 
 auto_pos_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_a" independent_review support "Release notes need the scoped auth update." --claim=release-note-scope --dimension=factual --authority=L2 --evidence=CHANGELOG.md)
 auto_pos_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_b" independent_review challenge "Release notes might be optional for this scope change." --claim=release-note-scope --dimension=factual --authority=L2 --evidence=CHANGELOG.md)
@@ -234,6 +237,7 @@ auto_pos_c_id=$(printf '%s\n' "$auto_pos_c" | sed -n 's/^[[:space:]]*"position_i
 
 auto_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
 assert_json_field "$auto_orchestrate_b" '"new_phase": "cross_examination"' "auto-synthesis council advances into cross-examination"
+assert_json_field "$auto_orchestrate_b" '"open_wave_action_count": 0' "auto-synthesis council clears wave obligations after both independent reviews land"
 assert_json_field "$auto_orchestrate_b" '"open_route_action_count": 1' "auto-synthesis council emits an open route obligation before linked cross-examination"
 
 auto_cross_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_a" cross_examination support "Operator-facing auth scope changes require release-note coverage." --claim=release-note-scope --dimension=factual --authority=L1 --evidence=CHANGELOG.md --responds-to-position="$auto_pos_b_id")
