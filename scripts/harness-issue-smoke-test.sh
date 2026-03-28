@@ -20,17 +20,21 @@ fail() { FAIL=$((FAIL + 1)); echo "  FAIL  $1"; }
 section() { echo ""; echo "=== $1 ==="; }
 
 TEST_REPO="$TMPDIR_ROOT/repo"
-mkdir -p "$TEST_REPO/scripts" "$TEST_REPO/harness/templates"
+mkdir -p "$TEST_REPO/scripts" "$TEST_REPO/harness/profiles" "$TEST_REPO/harness/templates" "$TEST_REPO/harness/policies" "$TEST_REPO/cmd/harness-state" "$TEST_REPO/internal/harness"
 
-cp "$REPO_ROOT/scripts/harness_state.py" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/scripts/harness-issue.sh" "$TEST_REPO/scripts/"
-cp "$REPO_ROOT/harness/templates/issue.md" "$TEST_REPO/harness/templates/"
+while IFS= read -r rel_path; do
+  [[ -n "$rel_path" ]] || continue
+  mkdir -p "$TEST_REPO/$(dirname "$rel_path")"
+  cp "$REPO_ROOT/$rel_path" "$TEST_REPO/$rel_path"
+done < <("$REPO_ROOT/scripts/harness-adapter.sh" package-files)
+
+cp "$REPO_ROOT/harness/profiles/erwin.yml" "$TEST_REPO/harness/profiles/"
 
 (
   cd "$TEST_REPO" &&
     git init -q &&
     git checkout -qb main &&
-    chmod +x scripts/harness-issue.sh
+    chmod +x scripts/*.sh install-codex.sh
 ) || exit 1
 
 run_in_repo() {

@@ -42,7 +42,7 @@ This document exists to prevent future sessions from mistaking "adapter producti
 The current harness already has strong progress:
 
 - protocol loop implemented: `issue -> claim -> drive -> ship -> rc`
-- deterministic substrate implemented in `scripts/harness_state.py`
+- deterministic substrate implemented in the harness runtime core (now the Go CLI behind `scripts/harness-runtime.sh`)
 - ship now includes review/check gates and deterministic merge
 - rc now includes `fix`, `cancel`, `hotfix`, and `backport`
 - manifest-driven bootstrap/sync/package validation now exist
@@ -100,10 +100,13 @@ Read these first in every fresh session:
 - `_project/sessions/2026-03-28-A.md`
 - `_project/sessions/2026-03-28-B.md`
 - `_project/sessions/2026-03-28-C.md`
+- `_project/sessions/2026-03-29-A.md`
 - `harness/README.md`
 - `harness/adapter-manifest.yml`
 - `skills/harness/SKILL.md`
-- `scripts/harness_state.py`
+- `scripts/harness-runtime.sh`
+- `cmd/harness-state/main.go`
+- `internal/harness/runtime.go`
 
 Also inspect recent commits on `codex/harness-release-lifecycle`.
 

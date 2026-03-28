@@ -29,8 +29,7 @@ while IFS= read -r rel_path; do
   [[ -n "$rel_path" ]] || continue
   mkdir -p "$TEST_REPO/$(dirname "$rel_path")"
   cp "$REPO_ROOT/$rel_path" "$TEST_REPO/$rel_path"
-done < <(python3 "$REPO_ROOT/scripts/harness_state.py" adapter package-files)
-
+done < <("$REPO_ROOT/scripts/harness-adapter.sh" package-files)
 cp "$REPO_ROOT/harness/profiles/erwin.yml" "$TEST_REPO/harness/profiles/"
 
 cat > "$TEST_REPO/.gitignore" <<'EOF'
@@ -69,12 +68,12 @@ claim_output=$(run_in_repo bash scripts/harness-claim.sh 20001 "Harness Smoke Mi
 assert_json_field "$claim_output" '"mission_id": "issue-20001"' "claim creates mission"
 assert_json_field "$claim_output" '"run_id": "run-' "claim returns run id"
 
-run_id=$(echo "$claim_output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["run_id"])')
+run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 
 section "Meeting lifecycle"
 meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Should this mission stay solo?")
 assert_json_field "$meeting_output" '"state": "active"' "meeting starts active"
-meeting_id=$(echo "$meeting_output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["meeting"]["meeting_id"])')
+meeting_id=$(printf '%s\n' "$meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 
 finding_output=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" accepted "Mission should stay solo.")
 assert_json_field "$finding_output" '"accepted"' "meeting stores accepted finding"
@@ -99,7 +98,7 @@ doctor_output_before=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output_before" '"issue_count": 0' "doctor stays healthy after outcome adoption"
 
 section "Action resolution"
-action_id=$(echo "$action_output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["action_items"][0]["action_id"])')
+action_id=$(printf '%s\n' "$action_output" | sed -n 's/^[[:space:]]*"action_id": "\(action-[^"]*\)",$/\1/p' | head -n1)
 resolve_output=$(run_in_repo bash scripts/harness-meetings.sh resolve-action "$meeting_id" "$action_id" done)
 assert_json_field "$resolve_output" '"state": "done"' "meeting action can be resolved"
 

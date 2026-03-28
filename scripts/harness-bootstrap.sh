@@ -44,13 +44,13 @@ if ! TARGET_ROOT="$(git -C "$TARGET_INPUT" rev-parse --show-toplevel 2>/dev/null
   exit 1
 fi
 
-if [[ ! -f "$SOURCE_ROOT/scripts/harness_state.py" ]] || [[ ! -f "$SOURCE_ROOT/install-codex.sh" ]]; then
+if [[ ! -f "$SOURCE_ROOT/scripts/harness-runtime.sh" ]] || [[ ! -f "$SOURCE_ROOT/go.mod" ]] || [[ ! -f "$SOURCE_ROOT/install-codex.sh" ]]; then
   echo "ERROR: source root does not look like a harness source repo: $SOURCE_ROOT" >&2
   exit 1
 fi
 
 adapter_query() {
-  python3 "$SOURCE_ROOT/scripts/harness_state.py" adapter "$@"
+  "$SOURCE_ROOT/scripts/harness-runtime.sh" adapter "$@"
 }
 
 if ! ADAPTER_VERSION="$(adapter_query version)"; then
@@ -186,7 +186,25 @@ if [[ "${#chmod_targets[@]}" -gt 0 ]]; then
   chmod +x "${chmod_targets[@]}"
 fi
 
-installed_json="$(printf '%s\n' "${PACKAGE_FILES[@]}" "$GENERATED_PROFILE_REL" | python3 -c 'import json,sys; print(json.dumps([line.strip() for line in sys.stdin if line.strip()], ensure_ascii=True))')"
+json_escape() {
+  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+json_array() {
+  local first=1
+  printf '['
+  for item in "$@"; do
+    [[ -n "$item" ]] || continue
+    if [[ "$first" -eq 0 ]]; then
+      printf ', '
+    fi
+    first=0
+    printf '"%s"' "$(json_escape "$item")"
+  done
+  printf ']'
+}
+
+installed_json="$(json_array "${PACKAGE_FILES[@]}" "$GENERATED_PROFILE_REL")"
 cat <<EOF
 {
   "adapter_version": "$ADAPTER_VERSION",

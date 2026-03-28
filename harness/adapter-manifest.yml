@@ -14,7 +14,11 @@ adapter:
   runtime: "codex"
   package_files:
     - "install-codex.sh"
-    - "scripts/harness_state.py"
+    - "go.mod"
+    - "go.sum"
+    - "cmd/harness-state/main.go"
+    - "internal/harness/runtime.go"
+    - "scripts/harness-runtime.sh"
     - "scripts/harness-adapter.sh"
     - "scripts/harness-home.sh"
     - "scripts/harness-doctor.sh"

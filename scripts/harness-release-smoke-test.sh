@@ -27,7 +27,7 @@ while IFS= read -r rel_path; do
   [[ -n "$rel_path" ]] || continue
   mkdir -p "$TEST_REPO/$(dirname "$rel_path")"
   cp "$REPO_ROOT/$rel_path" "$TEST_REPO/$rel_path"
-done < <(python3 "$REPO_ROOT/scripts/harness_state.py" adapter package-files)
+done < <("$REPO_ROOT/scripts/harness-adapter.sh" package-files)
 
 cp "$REPO_ROOT/harness/profiles/erwin.yml" "$TEST_REPO/harness/profiles/"
 
@@ -72,7 +72,7 @@ assert_json_field() {
 section "Claim"
 claim_output=$(run_in_repo ./scripts/harness-claim.sh 32001 "Release Smoke Mission" --provision=branch --apply)
 assert_json_field "$claim_output" '"mission_id": "issue-32001"' "claim creates release mission"
-run_id=$(echo "$claim_output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["run_id"])')
+run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 
 section "Ship"
 verify_output=$(run_in_repo ./scripts/harness-ship.sh verify "$run_id" "targeted-test:pass")
@@ -129,7 +129,7 @@ section "RC"
 rc_create_output=$(run_in_repo ./scripts/harness-rc.sh create v1.2.3 "$run_id")
 assert_json_field "$rc_create_output" '"version": "v1.2.3"' "rc create records version"
 assert_json_field "$rc_create_output" '"state": "active"' "rc create opens active rc"
-rc_id=$(echo "$rc_create_output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["rc_id"])')
+rc_id=$(printf '%s\n' "$rc_create_output" | sed -n 's/^[[:space:]]*"rc_id": "\(rc-[^"]*\)",$/\1/p' | head -n1)
 
 rc_verify_output=$(run_in_repo ./scripts/harness-rc.sh verify "$rc_id" "staging-smoke:pass")
 assert_json_field "$rc_verify_output" '"verification_status": "passed"' "rc verify records verification"
@@ -141,7 +141,7 @@ section "RC surgical fix and cancel"
 rc_fix_create_output=$(run_in_repo ./scripts/harness-rc.sh create v1.2.4 "$run_id" --apply)
 assert_json_field "$rc_fix_create_output" '"version": "v1.2.4"' "second rc create records version"
 assert_json_field "$rc_fix_create_output" '"branch": "rc/v1.2.4"' "second rc create uses rc branch pattern"
-rc_fix_id=$(echo "$rc_fix_create_output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["rc_id"])')
+rc_fix_id=$(printf '%s\n' "$rc_fix_create_output" | sed -n 's/^[[:space:]]*"rc_id": "\(rc-[^"]*\)",$/\1/p' | head -n1)
 
 (
   cd "$TEST_REPO" &&

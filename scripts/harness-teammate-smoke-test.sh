@@ -26,7 +26,7 @@ while IFS= read -r rel_path; do
   [[ -n "$rel_path" ]] || continue
   mkdir -p "$TEST_REPO/$(dirname "$rel_path")"
   cp "$REPO_ROOT/$rel_path" "$TEST_REPO/$rel_path"
-done < <(python3 "$REPO_ROOT/scripts/harness_state.py" adapter package-files)
+done < <("$REPO_ROOT/scripts/harness-adapter.sh" package-files)
 
 cp "$REPO_ROOT/harness/profiles/erwin.yml" "$TEST_REPO/harness/profiles/"
 
@@ -64,15 +64,15 @@ assert_json_field() {
 section "Leader claim"
 claim_output=$(run_in_repo bash scripts/harness-claim.sh 33001 "Teammate Smoke Mission")
 assert_json_field "$claim_output" '"mission_id": "issue-33001"' "claim creates teammate smoke mission"
-leader_run_id=$(echo "$claim_output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["run_id"])')
+leader_run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 
 section "Delegation"
 assign_a=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-auth implementation-verifier "Patch auth callers" --scope="auth callers" --report="progress|blockers|verification")
 assign_b=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-ops ops-simulator "Check release-facing auth flows" --scope="release auth smoke" --report="progress|risk_raised|verification")
 assert_json_field "$assign_a" '"owner_id": "worker-auth"' "first teammate assignment created"
 assert_json_field "$assign_b" '"owner_id": "worker-ops"' "second teammate assignment created"
-run_a=$(echo "$assign_a" | python3 -c 'import json,sys; print(json.load(sys.stdin)["run"]["run_id"])')
-run_b=$(echo "$assign_b" | python3 -c 'import json,sys; print(json.load(sys.stdin)["run"]["run_id"])')
+run_a=$(printf '%s\n' "$assign_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+run_b=$(printf '%s\n' "$assign_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 
 list_output=$(run_in_repo bash scripts/harness-teammates.sh list "$leader_run_id")
 assert_json_field "$list_output" '"owner_id": "worker-auth"' "teammate list shows first delegated run"
@@ -91,7 +91,7 @@ section "Meeting escalation"
 escalate_output=$(run_in_repo bash scripts/harness-teammates.sh escalate "$run_b" "Do we need a release-note update for auth scope?" --materialize)
 assert_json_field "$escalate_output" '"kind": "requires_meeting"' "teammate escalation emits meeting signal"
 assert_json_field "$escalate_output" '"state": "active"' "teammate escalation materializes active meeting"
-meeting_id=$(echo "$escalate_output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["meeting"]["meeting_id"])')
+meeting_id=$(printf '%s\n' "$escalate_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 
 participant_a=$(run_in_repo bash scripts/harness-meetings.sh add-participant "$meeting_id" "$run_a" implementation-verifier)
 participant_b=$(run_in_repo bash scripts/harness-meetings.sh add-participant "$meeting_id" "$run_b" ops-simulator)

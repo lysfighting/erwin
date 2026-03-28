@@ -7,6 +7,7 @@ The harness is file-backed:
 - committed definitions live in `harness/`
 - runtime state lives in `.harness/`
 - command surfaces live in `scripts/`
+- the runtime core is a local Go CLI built by `scripts/harness-runtime.sh`
 
 ## Leader workflow
 

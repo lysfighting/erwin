@@ -24,13 +24,13 @@ EOF
 adapter_query() {
   local root="$1"
   shift
-  python3 "$root/scripts/harness_state.py" adapter "$@"
+  "$root/scripts/harness-runtime.sh" adapter "$@"
 }
 
 resolve_metadata_path() {
   local root="$1"
   local rel_path=""
-  if [[ -f "$root/scripts/harness_state.py" ]]; then
+  if [[ -f "$root/scripts/harness-runtime.sh" ]]; then
     rel_path="$(adapter_query "$root" metadata-path 2>/dev/null || true)"
   fi
   if [[ -n "$rel_path" ]]; then
@@ -43,28 +43,16 @@ resolve_metadata_path() {
 read_metadata_field() {
   local field="$1"
   local path="$2"
-  python3 - "$field" "$path" <<'PY'
-import json
-import pathlib
-import sys
-
-field = sys.argv[1]
-path = pathlib.Path(sys.argv[2])
-if not path.exists():
-    print("")
-    raise SystemExit(0)
-data = json.loads(path.read_text(encoding="utf-8"))
-value = data.get(field, "")
-if isinstance(value, (dict, list)):
-    print(json.dumps(value, ensure_ascii=True))
-else:
-    print(value)
-PY
+  if [[ ! -f "$path" ]]; then
+    printf '\n'
+    return 0
+  fi
+  sed -n "s/^[[:space:]]*\"$field\":[[:space:]]*\"\(.*\)\"[[:space:]]*,\{0,1\}[[:space:]]*$/\1/p" "$path"
 }
 
 read_manifest_version() {
   local root="$1"
-  if [[ -f "$root/scripts/harness_state.py" ]]; then
+  if [[ -f "$root/scripts/harness-runtime.sh" ]]; then
     adapter_query "$root" version 2>/dev/null || true
   else
     printf '\n'
@@ -73,7 +61,7 @@ read_manifest_version() {
 
 read_manifest_id() {
   local root="$1"
-  if [[ -f "$root/scripts/harness_state.py" ]]; then
+  if [[ -f "$root/scripts/harness-runtime.sh" ]]; then
     adapter_query "$root" id 2>/dev/null || true
   else
     printf '\n'
@@ -127,27 +115,31 @@ if [[ "$MODE" == "status" ]]; then
       source_manifest_version="$(read_manifest_version "$source_root")"
       source_adapter_id="$(read_manifest_id "$source_root")"
     fi
-    python3 - "$METADATA_PATH" "$target_manifest_version" "$source_manifest_version" "$target_adapter_id" "$source_adapter_id" <<'PY'
-import json
-import pathlib
-import sys
-
-metadata_path = pathlib.Path(sys.argv[1])
-target_manifest_version = sys.argv[2]
-source_manifest_version = sys.argv[3]
-target_adapter_id = sys.argv[4]
-source_adapter_id = sys.argv[5]
-data = json.loads(metadata_path.read_text(encoding="utf-8"))
-data["target_adapter_id"] = target_adapter_id
-data["source_adapter_id"] = source_adapter_id
-data["target_manifest_version"] = target_manifest_version
-data["source_manifest_version"] = source_manifest_version
-data["adapter_ids_match"] = bool(target_adapter_id and source_adapter_id and target_adapter_id == source_adapter_id)
-data["manifest_versions_match"] = bool(
-    target_manifest_version and source_manifest_version and target_manifest_version == source_manifest_version
-)
-print(json.dumps(data, indent=2, ensure_ascii=True))
-PY
+    adapter_ids_match=false
+    manifest_versions_match=false
+    if [[ -n "$target_adapter_id" && -n "$source_adapter_id" && "$target_adapter_id" == "$source_adapter_id" ]]; then
+      adapter_ids_match=true
+    fi
+    if [[ -n "$target_manifest_version" && -n "$source_manifest_version" && "$target_manifest_version" == "$source_manifest_version" ]]; then
+      manifest_versions_match=true
+    fi
+    cat <<EOF
+{
+  "source_root": "$(read_metadata_field source_root "$METADATA_PATH")",
+  "source_repository": "$(read_metadata_field source_repository "$METADATA_PATH")",
+  "target_repo": "$(read_metadata_field target_repo "$METADATA_PATH")",
+  "profile_id": "$(read_metadata_field profile_id "$METADATA_PATH")",
+  "repository": "$(read_metadata_field repository "$METADATA_PATH")",
+  "base_branch": "$(read_metadata_field base_branch "$METADATA_PATH")",
+  "last_synced_at": "$(read_metadata_field last_synced_at "$METADATA_PATH")",
+  "target_adapter_id": "$target_adapter_id",
+  "source_adapter_id": "$source_adapter_id",
+  "target_manifest_version": "$target_manifest_version",
+  "source_manifest_version": "$source_manifest_version",
+  "adapter_ids_match": $adapter_ids_match,
+  "manifest_versions_match": $manifest_versions_match
+}
+EOF
   else
     echo '{}'
   fi

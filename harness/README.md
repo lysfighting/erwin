@@ -29,6 +29,9 @@ The current productization direction is explicit three-layer separation:
 
 The first usable Codex-native harness prototype now exists in `scripts/`.
 
+The runtime core is now a local Go CLI built on demand by `scripts/harness-runtime.sh`.
+The first-class shell surfaces remain stable, but they no longer require `python3` for normal harness operation.
+
 - `harness-adapter.sh` — adapter manifest introspection and package validation
 - `harness-home.sh` — leader home view
 - `harness-doctor.sh` — runtime diagnostics
@@ -106,6 +109,7 @@ Bootstrap the harness into another git repository:
 
 This copies the deterministic substrate, committed definition layer, smoke test, and a generated default profile into the target repository.
 It also copies `skills/harness/` and `install-codex.sh`, so the target repo gets a Codex-native local skill entry point immediately.
+It also copies the Go runtime module (`go.mod`, `go.sum`, `cmd/`, `internal/`) plus the build runner, so bootstrapped repos can build the same harness CLI locally without a Python runtime dependency.
 The bootstrap now follows `harness/adapter-manifest.yml` for its package file list, bootstrap profile template, and metadata location.
 The bootstrap writes local source metadata to `.harness/cache/adapter-source.json`, so later `./scripts/harness-sync.sh` runs can reuse the remembered source path.
 `./scripts/harness-sync.sh status` now reports source/target adapter identity plus manifest version alignment when the source repo is still reachable.
