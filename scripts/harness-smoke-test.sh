@@ -67,8 +67,16 @@ section "Claim"
 claim_output=$(run_in_repo bash scripts/harness-claim.sh 20001 "Harness Smoke Mission")
 assert_json_field "$claim_output" '"mission_id": "issue-20001"' "claim creates mission"
 assert_json_field "$claim_output" '"run_id": "run-' "claim returns run id"
+assert_json_field "$claim_output" 'issue-20001.yml' "claim materializes mission path"
 
 run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+
+section "Mission registry"
+missions_output=$(run_in_repo bash scripts/harness-missions.sh list)
+assert_json_field "$missions_output" '"mission_id": "issue-20001"' "missions list includes claimed mission"
+mission_get_output=$(run_in_repo bash scripts/harness-missions.sh get issue-20001)
+assert_json_field "$mission_get_output" '"state": "claimed"' "mission starts in claimed state"
+assert_json_field "$mission_get_output" '"active_run_ids":' "mission stores active run linkage"
 
 section "Meeting lifecycle"
 meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Should this mission stay solo?")
@@ -88,6 +96,7 @@ assert_json_field "$close_output" '"next_expected_action": "Continue solo execut
 
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_output" '"active_mission_count": 1' "home shows one active mission"
 assert_json_field "$home_output" '"active_run_count": 1' "home shows one active run"
 assert_json_field "$home_output" '"open_meeting_action_count": 1' "home surfaces open meeting action"
 

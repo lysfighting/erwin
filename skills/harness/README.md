@@ -5,6 +5,7 @@ Codex-native leader surface for the repository-local orchestration harness proto
 ## What it wraps
 
 - `bash scripts/harness-adapter.sh`
+- `bash scripts/harness-missions.sh`
 - `bash scripts/harness-home.sh`
 - `bash scripts/harness-doctor.sh`
 - `bash scripts/harness-issue.sh`
@@ -22,6 +23,7 @@ Use this when the model should act as the harness leader:
 
 - validate adapter/package integrity before bootstrap or sync work
 - inspect governed state
+- inspect mission graph and mission-level desired state
 - draft or create executable issues
 - claim work into execution
 - convene and close councils

@@ -28,8 +28,8 @@ It then compared those commitments to the current harness implementation.
 
 But there is clear **implementation-weighted drift**:
 
-- protocol and adapter work are much more mature than control-plane work
-- runtime packaging is much more mature than desired-state modeling
+- protocol and adapter work are still a little more mature than the hardest control-plane work
+- runtime packaging was ahead of desired-state modeling, but first-class mission objects have now materially closed that gap
 - meeting governance is now strong, but automated council orchestration is still not there
 
 So the danger is not “we forgot the vision entirely.”
@@ -96,7 +96,7 @@ The adapter, bootstrap, sync, manifest, smoke suite, Go runtime, and packaged-bi
 
 These are the places where the current implementation is still weaker than the research vision.
 
-### 1. Control plane exists, but desired-state control is still under-realized
+### 1. Control plane is now materially stronger, but still not fully mission-bundle-aware
 
 The research repeatedly framed the harness as:
 
@@ -108,11 +108,11 @@ The research repeatedly framed the harness as:
 Current truth:
 
 - `doctor`, `home`, `maintenance`, dependency waiting, and run-level desired state are real
-- but a first-class **mission graph / desired-state object** still does not exist
+- a first-class **mission registry / mission graph surface** now exists
+- legacy runtime state can be upgraded into that mission-aware model through `maintenance normalize`
 
-This means the leader behaves like a regulator in spirit, but still lacks an explicit declared system model to regulate against.
-
-This is the single biggest remaining gap.
+This means the leader no longer regulates only against per-run state.
+But the harness still lacks a richer multi-mission bundle model above the current mission graph.
 
 ### 2. Ownership discipline is stronger, but still not mature enough
 
@@ -215,9 +215,9 @@ It should close the remaining control-plane gaps.
 
 ## Recommended Next Priority Order
 
-1. First-class mission graph / desired-state layer
-2. Formal ownership transfer / richer selector model
-3. Broader authority conflict resolution outside meetings
-4. Deeper automated council orchestration only after the above are stable
+1. Formal ownership transfer / richer selector model
+2. Broader authority conflict resolution outside meetings
+3. Deeper automated council orchestration
+4. Product naming / public contract once the governance model feels stable
 
 If future sessions follow this order, the harness will continue toward the original design rather than only becoming a nicer adapter.

@@ -1,0 +1,37 @@
+version: 1
+mission:
+  mission_id: ""
+  issue_number: 0
+  title: ""
+  objective: ""
+  state: "queued"
+  priority: ""
+  risk_level: ""
+  branch: ""
+  worktree_path: ""
+  contract_ref: ""
+  success_criteria: []
+  verification_commands: []
+  context_files: []
+  depends_on: []
+  ownership_claims: []
+  desired_state:
+    goal_state: "done"
+    verification_status: "passed"
+    review_status: ""
+    checks_status: ""
+    ship_status: ""
+  active_run_ids: []
+  completed_run_ids: []
+  teammate_run_ids: []
+  latest_run_id: ""
+  latest_summary: ""
+  next_expected_action: ""
+  run_count: 0
+  freshness:
+    created_at: ""
+    source_checked_at: ""
+    drift_status: "unknown"
+  created_at: ""
+  updated_at: ""
+  completed_at: ""

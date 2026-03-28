@@ -22,8 +22,8 @@ But not every earlier design input is fully realized.
 The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
-- **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement
-- **still incomplete**: full mission graph as declared desired state, deeper automated council orchestration, clearer public product contract
+- **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
+- **still incomplete**: richer ownership transfer, broader authority adjudication, deeper automated council orchestration, clearer public product contract
 
 ---
 
@@ -33,7 +33,7 @@ The current truth is:
 |---|---|---|---|---|
 | `teamwork` | Git/GitHub-ordered lifecycle, controlled execution, release governance | **Absorbed** | `issue -> claim -> drive -> ship -> rc`, `ship`, `rc`, `doctor`, `bootstrap`, `sync` | Product naming and public contract still unresolved |
 | `wing` | Skill-shaped packaging, modularity, adapter thinking, less prompt-monolith | **Absorbed** | `skills/harness/`, `harness/adapter-manifest.yml`, `scripts/harness-*.sh`, bootstrap/sync | Still more “adapter codename” than finished product |
-| Engineering cybernetics | desired vs actual state, feedback, correction, regulator model | **Partially absorbed, stronger now** | `home`, `doctor`, `maintenance reconcile`, run desired state, dependency waiting | Desired-state mission graph is not yet first-class |
+| Engineering cybernetics | desired vs actual state, feedback, correction, regulator model | **Absorbed much more strongly** | `home`, `doctor`, `maintenance reconcile`, run desired state, first-class mission registry and mission graph | Still room for richer desired-state reasoning across multi-mission bundles |
 | Kubernetes control-plane thinking | controllers, ownership boundaries, reconciliation, validation gates | **Partially absorbed, stronger now** | leader/teammate split, manifest validation, stale-state reconciliation, ownership claims, overlap guardrails | Ownership transfer and richer selectors are still incomplete |
 | Leader as chairing regulator | leader owns orchestration, not truth monopoly | **Absorbed** | leader-facing surfaces, `doctor`, `home`, meetings, teammate assignment | Still room for richer scheduling / mission-graph control |
 | Teammates as bounded execution units | delegated work with scope, reporting, escalation | **Absorbed** | `teammates assign/report/message/escalate` | No native Codex sub-agent binding yet |
@@ -66,17 +66,7 @@ This pushes the council model much closer to the intended `arch-review` discipli
 
 ## What Is Still Not Done
 
-### 1. Desired-state mission graph
-
-The leader behaves like a regulator, but the harness still lacks a first-class declared mission graph object.
-
-What is still missing:
-
-- explicit mission graph between runs
-- declared desired state for a mission bundle
-- reconciliation against graph expectations, not only local runtime health
-
-### 2. Ownership transfer model
+### 1. Ownership transfer model
 
 Explicit ownership claims now exist, but the model is still not fully mature.
 
@@ -86,7 +76,7 @@ What is still missing:
 - formal ownership transfer semantics
 - more nuanced overlap resolution than exclusive/shared
 
-### 3. Automated council orchestration
+### 2. Automated council orchestration
 
 The meeting protocol is now much stronger, but the system does not yet automatically run a structured debate workflow.
 
@@ -95,6 +85,16 @@ What is still missing:
 - automated independent-review wave
 - automated cross-examination routing
 - explicit synthesis trace from conflicting positions to final accepted truth
+
+### 3. Authority adjudication
+
+Authority levels are now validated and surfaced, but the system still does not consistently arbitrate conflicts between fresher higher-authority evidence and older lower-authority artifacts.
+
+What is still missing:
+
+- systematic high-vs-low authority conflict handling outside meetings
+- clearer winner/loser rules when run summary, signal, contract, and live git state disagree
+- broader leader-facing explanations of why a lower-authority claim was overridden
 
 ### 4. Public product contract
 

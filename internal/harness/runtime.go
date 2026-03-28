@@ -25,7 +25,7 @@ var multiDashPattern = regexp.MustCompile(`-{2,}`)
 
 func Main(args []string) int {
 	if len(args) < 1 {
-		return exitWithError(errors.New("usage: harness-state <paths|profile|adapter|runs|signals|contracts|home|doctor|issue|claim|drive|ship|rc|meetings|teammates|maintenance> ..."))
+		return exitWithError(errors.New("usage: harness-state <paths|profile|adapter|missions|runs|signals|contracts|home|doctor|issue|claim|drive|ship|rc|meetings|teammates|maintenance> ..."))
 	}
 
 	var err error
@@ -39,6 +39,8 @@ func Main(args []string) int {
 		err = cmdProfile(rest)
 	case "adapter":
 		err = cmdAdapter(rest)
+	case "missions":
+		err = cmdMissions(rest)
 	case "runs":
 		err = cmdRuns(rest)
 	case "signals":
@@ -162,6 +164,7 @@ func stateLockPath() string {
 
 func ensureRuntimeDirs() error {
 	dirs := []string{
+		filepath.Join(runtimeRoot(), "missions"),
 		filepath.Join(runtimeRoot(), "runs"),
 		filepath.Join(runtimeRoot(), "signals"),
 		filepath.Join(runtimeRoot(), "contracts"),
@@ -797,8 +800,24 @@ func registryPath() string {
 	return filepath.Join(runtimeRoot(), "runs", "registry.yml")
 }
 
+func missionsRoot() string {
+	return filepath.Join(runtimeRoot(), "missions")
+}
+
+func missionRegistryPath() string {
+	return filepath.Join(missionsRoot(), "registry.yml")
+}
+
+func missionPath(missionID string) string {
+	return filepath.Join(missionsRoot(), missionID+".yml")
+}
+
 func signalLogPath() string {
 	return filepath.Join(runtimeRoot(), "signals", "log.yml")
+}
+
+func missionTemplatePath() string {
+	return filepath.Join(definitionsRoot(), "templates", "mission.yml")
 }
 
 func contractTemplatePath() string {
@@ -880,7 +899,24 @@ func readRegistry() map[string]any {
 
 func writeRegistry(data map[string]any) error {
 	data["updated_at"] = nowISO()
-	return dumpData(registryPath(), data)
+	if err := dumpData(registryPath(), data); err != nil {
+		return err
+	}
+	return syncMissionsFromRegistry(data)
+}
+
+func readMissionRegistry() map[string]any {
+	value, _ := toMap(loadData(missionRegistryPath(), map[string]any{
+		"version":    1,
+		"updated_at": nowISO(),
+		"missions":   []any{},
+	}))
+	return value
+}
+
+func writeMissionRegistry(data map[string]any) error {
+	data["updated_at"] = nowISO()
+	return dumpData(missionRegistryPath(), data)
 }
 
 func readSignalLog() map[string]any {
@@ -924,6 +960,46 @@ func readMeeting(meetingID string) map[string]any {
 		return value
 	}
 	return nil
+}
+
+func readMission(missionID string) map[string]any {
+	path := missionPath(missionID)
+	if !exists(path) {
+		return nil
+	}
+	value, _ := toMap(loadData(path, map[string]any{}))
+	mission, _ := toMap(value["mission"])
+	if len(mission) == 0 {
+		return nil
+	}
+	return mission
+}
+
+func listMissions() []any {
+	registry := readMissionRegistry()
+	missions := []any{}
+	for _, item := range toList(registry["missions"]) {
+		mission, _ := toMap(item)
+		if len(mission) > 0 {
+			missions = append(missions, mission)
+		}
+	}
+	sort.Slice(missions, func(i, j int) bool {
+		left, _ := toMap(missions[i])
+		right, _ := toMap(missions[j])
+		leftActive := activeMission(left)
+		rightActive := activeMission(right)
+		if leftActive != rightActive {
+			return leftActive
+		}
+		leftUpdated := firstNonBlank(stringValue(left["updated_at"]), stringValue(left["created_at"]))
+		rightUpdated := firstNonBlank(stringValue(right["updated_at"]), stringValue(right["created_at"]))
+		if leftUpdated != rightUpdated {
+			return leftUpdated > rightUpdated
+		}
+		return stringValue(left["mission_id"]) < stringValue(right["mission_id"])
+	})
+	return missions
 }
 
 func readActiveMeeting(meetingID string) map[string]any {
@@ -1171,6 +1247,22 @@ func anyListToStrings(items []any) []string {
 	return result
 }
 
+func toMapSlice(items []any) []map[string]any {
+	result := []map[string]any{}
+	for _, item := range items {
+		if mapping, ok := toMap(item); ok {
+			result = append(result, mapping)
+		}
+	}
+	return result
+}
+
+func normalizedStringSet(items []string) []string {
+	values := dedupeStrings(items)
+	sort.Strings(values)
+	return values
+}
+
 func defaultDesiredStateForRun(ownerType string) map[string]any {
 	desired := map[string]any{
 		"goal_state":          "completed",
@@ -1303,6 +1395,11 @@ func activeRun(run map[string]any) bool {
 	return state != "completed" && state != "abandoned"
 }
 
+func activeMission(mission map[string]any) bool {
+	state := stringValue(mission["state"])
+	return state != "done" && state != "canceled"
+}
+
 func activeSignal(signal map[string]any) bool {
 	return stringValue(signal["state"]) == "active"
 }
@@ -1320,6 +1417,305 @@ func childRunsForParent(registry map[string]any, parentRunID string) []map[strin
 		}
 	}
 	return runs
+}
+
+func defaultDesiredStateForMission() map[string]any {
+	return map[string]any{
+		"goal_state":          "done",
+		"verification_status": "passed",
+		"review_status":       "",
+		"checks_status":       "",
+		"ship_status":         "",
+	}
+}
+
+func normalizeMissionDesiredState(mission map[string]any) map[string]any {
+	desired, _ := toMap(mission["desired_state"])
+	if desired == nil {
+		desired = map[string]any{}
+	}
+	defaults := defaultDesiredStateForMission()
+	for key, value := range defaults {
+		if _, ok := desired[key]; !ok {
+			desired[key] = value
+		}
+	}
+	if stringValue(desired["goal_state"]) == "completed" {
+		desired["goal_state"] = "done"
+	}
+	mission["desired_state"] = desired
+	return desired
+}
+
+func runSortTimestamp(run map[string]any) string {
+	return firstNonBlank(
+		stringValue(run["updated_at"]),
+		stringValue(run["last_reported_at"]),
+		stringValue(run["started_at"]),
+		stringValue(run["created_at"]),
+	)
+}
+
+func missionStateFromRuns(runs []map[string]any) string {
+	if len(runs) == 0 {
+		return "queued"
+	}
+	anyBlocked := false
+	anyReview := false
+	anyWIP := false
+	anyClaimed := false
+	anyCanceled := false
+	allCompleted := true
+	for _, run := range runs {
+		state := stringValue(run["state"])
+		if state != "completed" && state != "abandoned" {
+			allCompleted = false
+		}
+		switch state {
+		case "blocked":
+			anyBlocked = true
+		case "ready", "draft":
+			anyClaimed = true
+		case "executing", "waiting", "paused":
+			anyWIP = true
+		case "abandoned":
+			anyCanceled = true
+		}
+		if stringValue(run["pr_ref"]) != "" || stringValue(run["review_status"]) == "pending" || stringValue(run["review_status"]) == "changes_requested" || mergeReady(run) {
+			anyReview = true
+		}
+	}
+	switch {
+	case allCompleted:
+		return "done"
+	case anyBlocked:
+		return "blocked"
+	case anyReview:
+		return "review"
+	case anyWIP:
+		return "wip"
+	case anyClaimed:
+		return "claimed"
+	case anyCanceled:
+		return "canceled"
+	default:
+		return "queued"
+	}
+}
+
+func findMissionIndex(registry map[string]any, missionID string) int {
+	for index, item := range toList(registry["missions"]) {
+		mission, ok := toMap(item)
+		if ok && stringValue(mission["mission_id"]) == missionID {
+			return index
+		}
+	}
+	return -1
+}
+
+func uniqueMissionIDsFromRuns(registry map[string]any) []string {
+	missionIDs := []string{}
+	for _, item := range toList(registry["runs"]) {
+		run, _ := toMap(item)
+		missionID := strings.TrimSpace(stringValue(run["mission_id"]))
+		if missionID != "" {
+			missionIDs = append(missionIDs, missionID)
+		}
+	}
+	return dedupeStrings(missionIDs)
+}
+
+func missionDependencyTargetsFromRuns(runs []map[string]any, registry map[string]any) []string {
+	targets := []string{}
+	for _, run := range runs {
+		for _, dependencyID := range dependencyTargets(run) {
+			if index := findRunIndex(registry, dependencyID); index >= 0 {
+				dependencyRun, _ := toMap(toList(registry["runs"])[index])
+				if dependencyMissionID := strings.TrimSpace(stringValue(dependencyRun["mission_id"])); dependencyMissionID != "" {
+					targets = append(targets, dependencyMissionID)
+					continue
+				}
+			}
+			targets = append(targets, dependencyID)
+		}
+	}
+	return dedupeStrings(targets)
+}
+
+func missionDependenciesUnsatisfied(mission map[string]any, missionRegistry map[string]any) []string {
+	unsatisfied := []string{}
+	for _, dep := range toList(mission["depends_on"]) {
+		dependencyID := strings.TrimSpace(stringValue(dep))
+		if dependencyID == "" {
+			continue
+		}
+		index := findMissionIndex(missionRegistry, dependencyID)
+		if index < 0 {
+			unsatisfied = append(unsatisfied, dependencyID)
+			continue
+		}
+		dependencyMission, _ := toMap(toList(missionRegistry["missions"])[index])
+		if stringValue(dependencyMission["state"]) != "done" {
+			unsatisfied = append(unsatisfied, dependencyID)
+		}
+	}
+	return dedupeStrings(unsatisfied)
+}
+
+func syncMissionsFromRegistry(registry map[string]any) error {
+	templateRoot, _ := toMap(loadData(missionTemplatePath(), map[string]any{}))
+	template, _ := toMap(templateRoot["mission"])
+	if template == nil {
+		template = map[string]any{}
+	}
+
+	missionRegistry := readMissionRegistry()
+	missionEntries := []any{}
+	currentMissionIDs := map[string]bool{}
+	for _, missionID := range uniqueMissionIDsFromRuns(registry) {
+		mission, err := materializeMission(template, registry, missionID)
+		if err != nil {
+			return err
+		}
+		if mission == nil {
+			continue
+		}
+		currentMissionIDs[missionID] = true
+		missionEntries = append(missionEntries, mission)
+		if err := dumpData(missionPath(missionID), map[string]any{"version": 1, "mission": mission}); err != nil {
+			return err
+		}
+	}
+	if existingPaths, err := filepath.Glob(filepath.Join(missionsRoot(), "*.yml")); err == nil {
+		for _, path := range existingPaths {
+			if path == missionRegistryPath() {
+				continue
+			}
+			missionID := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
+			if currentMissionIDs[missionID] {
+				continue
+			}
+			if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
+				return err
+			}
+		}
+	}
+	sort.Slice(missionEntries, func(i, j int) bool {
+		left, _ := toMap(missionEntries[i])
+		right, _ := toMap(missionEntries[j])
+		leftUpdated := firstNonBlank(stringValue(left["updated_at"]), stringValue(left["created_at"]))
+		rightUpdated := firstNonBlank(stringValue(right["updated_at"]), stringValue(right["created_at"]))
+		if leftUpdated != rightUpdated {
+			return leftUpdated > rightUpdated
+		}
+		return stringValue(left["mission_id"]) < stringValue(right["mission_id"])
+	})
+	missionRegistry["missions"] = missionEntries
+	return writeMissionRegistry(missionRegistry)
+}
+
+func materializeMission(template map[string]any, registry map[string]any, missionID string) (map[string]any, error) {
+	runs := []map[string]any{}
+	for _, item := range toList(registry["runs"]) {
+		run, _ := toMap(item)
+		if stringValue(run["mission_id"]) == missionID {
+			runs = append(runs, run)
+		}
+	}
+	if len(runs) == 0 {
+		return nil, nil
+	}
+	sort.Slice(runs, func(i, j int) bool {
+		left := runSortTimestamp(runs[i])
+		right := runSortTimestamp(runs[j])
+		if left != right {
+			return left > right
+		}
+		return stringValue(runs[i]["run_id"]) > stringValue(runs[j]["run_id"])
+	})
+	latestRun := runs[0]
+	earliestRun := runs[len(runs)-1]
+	activeRunIDs := []string{}
+	completedRunIDs := []string{}
+	teammateRunIDs := []string{}
+	ownership := []string{}
+	dependsOn := missionDependencyTargetsFromRuns(runs, registry)
+	latestSummary := ""
+	nextAction := ""
+	branch := ""
+	worktreePath := ""
+	contractRef := ""
+	for _, run := range runs {
+		if activeRun(run) {
+			activeRunIDs = append(activeRunIDs, stringValue(run["run_id"]))
+		} else if stringValue(run["state"]) == "completed" {
+			completedRunIDs = append(completedRunIDs, stringValue(run["run_id"]))
+		}
+		if stringValue(run["owner_type"]) == "teammate" {
+			teammateRunIDs = append(teammateRunIDs, stringValue(run["run_id"]))
+		}
+		ownership = append(ownership, ownershipClaims(run)...)
+		if latestSummary == "" {
+			latestSummary = stringValue(run["latest_summary"])
+		}
+		if nextAction == "" {
+			nextAction = stringValue(run["next_expected_action"])
+		}
+		if branch == "" {
+			branch = stringValue(run["branch"])
+		}
+		if worktreePath == "" {
+			worktreePath = stringValue(run["worktree_path"])
+		}
+		if contractRef == "" {
+			contractRef = stringValue(run["contract_ref"])
+		}
+	}
+	contract := map[string]any{}
+	if contractRef != "" {
+		contractRoot, _ := toMap(loadData(contractRef, map[string]any{}))
+		contract, _ = toMap(contractRoot["contract"])
+	}
+	mission, _ := toMap(mergeDicts(template, map[string]any{
+		"mission_id":            missionID,
+		"issue_number":          intValue(firstNonBlank(stringValue(latestRun["issue_number"]), stringValue(contract["issue_number"]))),
+		"title":                 firstNonBlank(stringValue(contract["title"]), stringValue(latestRun["objective"]), missionID),
+		"objective":             firstNonBlank(stringValue(contract["objective"]), stringValue(latestRun["objective"]), missionID),
+		"state":                 missionStateFromRuns(runs),
+		"priority":              stringValue(latestRun["priority"]),
+		"risk_level":            stringValue(latestRun["risk_level"]),
+		"branch":                firstNonBlank(stringValue(contract["branch"]), branch),
+		"worktree_path":         firstNonBlank(stringValue(contract["worktree_path"]), worktreePath),
+		"contract_ref":          contractRef,
+		"success_criteria":      cloneValue(toList(contract["success_criteria"])),
+		"verification_commands": cloneValue(toList(contract["verification_commands"])),
+		"context_files":         cloneValue(toList(contract["context_files"])),
+		"depends_on":            stringListToAny(dedupeStrings(dependsOn)),
+		"ownership_claims":      stringListToAny(dedupeStrings(ownership)),
+		"active_run_ids":        stringListToAny(dedupeStrings(activeRunIDs)),
+		"completed_run_ids":     stringListToAny(dedupeStrings(completedRunIDs)),
+		"teammate_run_ids":      stringListToAny(dedupeStrings(teammateRunIDs)),
+		"latest_run_id":         stringValue(latestRun["run_id"]),
+		"latest_summary":        latestSummary,
+		"next_expected_action":  nextAction,
+		"created_at":            firstNonBlank(stringValue(getKey(contract, "freshness.created_at", "")), stringValue(earliestRun["created_at"]), stringValue(earliestRun["started_at"])),
+		"updated_at":            firstNonBlank(runSortTimestamp(latestRun), nowISO()),
+		"completed_at":          stringValue(latestRun["completed_at"]),
+		"run_count":             len(runs),
+		"freshness":             cloneValue(getKey(contract, "freshness", map[string]any{})),
+	}))
+	if desired, ok := toMap(contract["desired_state"]); ok && len(desired) > 0 {
+		mission["desired_state"] = cloneValue(desired)
+	} else if desired, ok := toMap(latestRun["desired_state"]); ok && len(desired) > 0 {
+		mission["desired_state"] = cloneValue(desired)
+	}
+	normalizeMissionDesiredState(mission)
+	if stringValue(mission["state"]) != "done" {
+		mission["completed_at"] = ""
+	} else if stringValue(mission["completed_at"]) == "" {
+		mission["completed_at"] = firstNonBlank(stringValue(latestRun["completed_at"]), nowISO())
+	}
+	return mission, nil
 }
 
 func siblingLinked(run map[string]any, targetRunID string) bool {
@@ -2150,6 +2546,7 @@ func doctorReport() map[string]any {
 	profile, _ := resolveProfile("")
 	adapter := adapterValidate()
 	registry := readRegistry()
+	missionRegistry := readMissionRegistry()
 	signals := readSignalLog()
 	meetings := []map[string]any{}
 	for _, item := range listMeetings(false) {
@@ -2168,6 +2565,7 @@ func doctorReport() map[string]any {
 	}
 	activeRuns := []map[string]any{}
 	activeTeammates := []map[string]any{}
+	activeMissions := []map[string]any{}
 	for _, item := range toList(registry["runs"]) {
 		run, _ := toMap(item)
 		if activeRun(run) {
@@ -2175,6 +2573,12 @@ func doctorReport() map[string]any {
 			if activeTeammateRun(run) {
 				activeTeammates = append(activeTeammates, run)
 			}
+		}
+	}
+	for _, item := range toList(missionRegistry["missions"]) {
+		mission, _ := toMap(item)
+		if activeMission(mission) {
+			activeMissions = append(activeMissions, mission)
 		}
 	}
 	activeSignals := []map[string]any{}
@@ -2185,8 +2589,12 @@ func doctorReport() map[string]any {
 		}
 	}
 	activeRunIDs := map[string]bool{}
+	activeMissionIDs := map[string]bool{}
 	for _, run := range activeRuns {
 		activeRunIDs[stringValue(run["run_id"])] = true
+	}
+	for _, mission := range activeMissions {
+		activeMissionIDs[stringValue(mission["mission_id"])] = true
 	}
 	runStaleAfter := floatValue(policyValue("cleanup.stale_run_after_hours", 24))
 	signalStaleAfter := floatValue(policyValue("cleanup.stale_signal_after_hours", 12))
@@ -2242,6 +2650,11 @@ func doctorReport() map[string]any {
 		if len(ownershipClaims(run)) == 0 {
 			issues = append(issues, issueRecord("warning", "run-missing-ownership-claims", runID, "Run has no explicit ownership claims.", "Record ownership selectors so overlap can be governed explicitly."))
 		}
+		if stringValue(run["mission_id"]) == "" {
+			issues = append(issues, issueRecord("critical", "run-missing-mission-id", runID, "Run is missing mission_id.", "Repair the run or recreate it under a mission."))
+		} else if !activeMissionIDs[stringValue(run["mission_id"])] && findMissionIndex(missionRegistry, stringValue(run["mission_id"])) < 0 {
+			issues = append(issues, issueRecord("critical", "run-mission-missing", runID, "Run references a mission that is missing from mission registry.", "Rebuild mission state from the run registry before continuing."))
+		}
 		unsatisfiedDeps := unsatisfiedDependencies(run, registry)
 		if len(unsatisfiedDeps) > 0 {
 			if stringValue(run["state"]) != "waiting" {
@@ -2252,6 +2665,52 @@ func doctorReport() map[string]any {
 			if satisfied, missing := runDesiredStateSatisfied(run); !satisfied {
 				issues = append(issues, issueRecord("warning", "run-desired-state-unmet", runID, fmt.Sprintf("Completed run does not satisfy desired state: %s", strings.Join(missing, ", ")), "Either continue the lifecycle or adjust the run's declared desired state."))
 			}
+		}
+	}
+
+	runIDsByMission := map[string][]string{}
+	activeRunIDsByMission := map[string][]string{}
+	for _, item := range toList(registry["runs"]) {
+		run, _ := toMap(item)
+		missionID := stringValue(run["mission_id"])
+		if missionID == "" {
+			continue
+		}
+		runIDsByMission[missionID] = append(runIDsByMission[missionID], stringValue(run["run_id"]))
+		if activeRun(run) {
+			activeRunIDsByMission[missionID] = append(activeRunIDsByMission[missionID], stringValue(run["run_id"]))
+		}
+	}
+	for _, mission := range toMapSlice(toList(missionRegistry["missions"])) {
+		missionID := stringValue(mission["mission_id"])
+		if missionID == "" {
+			issues = append(issues, issueRecord("warning", "mission-missing-id", "mission-registry", "Mission entry is missing mission_id.", "Repair or regenerate mission registry."))
+			continue
+		}
+		if len(runIDsByMission[missionID]) == 0 {
+			issues = append(issues, issueRecord("warning", "mission-without-runs", missionID, "Mission exists without any corresponding runs.", "Reconcile mission registry or recreate a run for this mission."))
+		}
+		activeIDs := normalizedStringSet(activeRunIDsByMission[missionID])
+		recordedActive := normalizedStringSet(anyListToStrings(toList(mission["active_run_ids"])))
+		if strings.Join(activeIDs, "|") != strings.Join(recordedActive, "|") {
+			issues = append(issues, issueRecord("warning", "mission-active-run-mismatch", missionID, "Mission active_run_ids do not match the active runs in run registry.", "Regenerate mission state from runs before proceeding."))
+		}
+		if latestRunID := stringValue(mission["latest_run_id"]); latestRunID == "" {
+			issues = append(issues, issueRecord("warning", "mission-missing-latest-run", missionID, "Mission has no latest_run_id.", "Repair mission linkage so leader surfaces can reconcile correctly."))
+		} else if findRunIndex(registry, latestRunID) < 0 {
+			issues = append(issues, issueRecord("warning", "mission-latest-run-missing", missionID, "Mission latest_run_id does not exist in run registry.", "Regenerate mission state from runs before proceeding."))
+		}
+		if len(toList(mission["ownership_claims"])) == 0 {
+			issues = append(issues, issueRecord("warning", "mission-missing-ownership-claims", missionID, "Mission has no explicit ownership claims.", "Carry ownership selectors up to the mission control plane."))
+		}
+		if len(toList(mission["depends_on"])) > 0 && stringValue(mission["state"]) != "blocked" && stringValue(mission["state"]) != "claimed" && stringValue(mission["state"]) != "wip" && stringValue(mission["state"]) != "review" {
+			issues = append(issues, issueRecord("info", "mission-dependency-state-unusual", missionID, "Mission has dependencies but is not in an active dependency-aware state.", "Verify the mission control-plane state is still correct."))
+		}
+		if stringValue(mission["state"]) == "done" && len(recordedActive) > 0 {
+			issues = append(issues, issueRecord("warning", "mission-done-with-active-runs", missionID, "Mission is marked done but still has active runs.", "Close or correct the active runs before trusting the mission state."))
+		}
+		if desired, ok := toMap(mission["desired_state"]); !ok || stringValue(desired["goal_state"]) == "" {
+			issues = append(issues, issueRecord("warning", "mission-missing-desired-state", missionID, "Mission is missing desired_state.goal_state.", "Record mission desired state explicitly for control-plane reconciliation."))
 		}
 	}
 
@@ -2396,6 +2855,7 @@ func doctorReport() map[string]any {
 		"critical_count":        critical,
 		"warning_count":         warning,
 		"info_count":            info,
+		"active_mission_count":  len(activeMissions),
 		"active_teammate_count": len(activeTeammates),
 		"issues":                issues,
 		"next_action":           nextAction,
@@ -2513,6 +2973,75 @@ func cmdAdapter(args []string) error {
 		return printJSON(adapterValidate())
 	default:
 		return fmt.Errorf("unknown adapter subcommand: %s", args[0])
+	}
+	return nil
+}
+
+func cmdMissions(args []string) error {
+	if err := ensureRuntimeDirs(); err != nil {
+		return err
+	}
+	if len(args) < 1 {
+		return errors.New("missions requires a subcommand")
+	}
+	registry := readMissionRegistry()
+	switch args[0] {
+	case "path":
+		fmt.Println(missionRegistryPath())
+	case "list":
+		includeAll := false
+		for _, arg := range args[1:] {
+			if arg == "--all" {
+				includeAll = true
+			}
+		}
+		missions := []any{}
+		for _, item := range listMissions() {
+			mission, _ := toMap(item)
+			if includeAll || activeMission(mission) {
+				missions = append(missions, mission)
+			}
+		}
+		return printJSON(missions)
+	case "get":
+		if len(args) < 2 {
+			return errors.New("missions get requires MISSION_ID")
+		}
+		missionID := strings.TrimSpace(args[1])
+		if missionID == "" {
+			return errors.New("missions get requires MISSION_ID")
+		}
+		if mission := readMission(missionID); mission != nil {
+			return printJSON(mission)
+		}
+		index := findMissionIndex(registry, missionID)
+		if index < 0 {
+			return fmt.Errorf("mission not found: %s", missionID)
+		}
+		mission, _ := toMap(toList(registry["missions"])[index])
+		return printJSON(mission)
+	case "graph":
+		graph := []any{}
+		for _, item := range listMissions() {
+			mission, _ := toMap(item)
+			graph = append(graph, map[string]any{
+				"mission_id":           stringValue(mission["mission_id"]),
+				"state":                stringValue(mission["state"]),
+				"depends_on":           cloneValue(toList(mission["depends_on"])),
+				"ownership_claims":     cloneValue(toList(mission["ownership_claims"])),
+				"active_run_ids":       cloneValue(toList(mission["active_run_ids"])),
+				"latest_run_id":        stringValue(mission["latest_run_id"]),
+				"next_expected_action": stringValue(mission["next_expected_action"]),
+			})
+		}
+		return printJSON(map[string]any{
+			"mission_count": len(graph),
+			"missions":      graph,
+		})
+	case "show-template":
+		return printJSON(loadData(missionTemplatePath(), map[string]any{}))
+	default:
+		return fmt.Errorf("unknown missions subcommand: %s", args[0])
 	}
 	return nil
 }
@@ -2847,8 +3376,13 @@ func cmdHome(args []string) error {
 	}
 	profile, _ := resolveProfile("")
 	registry := readRegistry()
+	missionRegistry := readMissionRegistry()
 	signals := readSignalLog()
 	meetings := []any{}
+	activeMissions := []any{}
+	blockedMissions := []any{}
+	reviewMissions := []any{}
+	dependencyBlockedMissions := []any{}
 	activeRuns := []any{}
 	activeTeammates := []any{}
 	blockedRuns := []any{}
@@ -2862,6 +3396,34 @@ func cmdHome(args []string) error {
 		meeting, _ := toMap(item)
 		if stringValue(meeting["state"]) == "active" {
 			meetings = append(meetings, meeting)
+		}
+	}
+	for _, item := range toList(missionRegistry["missions"]) {
+		mission, _ := toMap(item)
+		if !activeMission(mission) {
+			continue
+		}
+		activeMissions = append(activeMissions, mission)
+		switch stringValue(mission["state"]) {
+		case "blocked":
+			blockedMissions = append(blockedMissions, mission)
+		case "review":
+			reviewMissions = append(reviewMissions, mission)
+		}
+		if len(toList(mission["depends_on"])) > 0 && len(toList(mission["active_run_ids"])) > 0 {
+			for _, dep := range toList(mission["depends_on"]) {
+				dependencyID := stringValue(dep)
+				index := findMissionIndex(missionRegistry, dependencyID)
+				if index < 0 {
+					dependencyBlockedMissions = append(dependencyBlockedMissions, mission)
+					break
+				}
+				dependencyMission, _ := toMap(toList(missionRegistry["missions"])[index])
+				if stringValue(dependencyMission["state"]) != "done" {
+					dependencyBlockedMissions = append(dependencyBlockedMissions, mission)
+					break
+				}
+			}
 		}
 	}
 	for _, item := range toList(registry["runs"]) {
@@ -2944,16 +3506,27 @@ func cmdHome(args []string) error {
 	}
 	meetingActions := openMeetingActions()
 	activeRCRecord := activeRC()
+	missionGraphEdges := 0
+	for _, item := range activeMissions {
+		mission, _ := toMap(item)
+		missionGraphEdges += len(toList(mission["depends_on"]))
+	}
 	nextAction := "Continue active execution and monitor signals."
 	switch {
 	case len(orphanSignals) > 0 || len(orphanMeetings) > 0:
 		nextAction = "Reconcile orphaned runtime objects before proceeding."
 	case len(overlappingClaims) > 0:
 		nextAction = "Resolve ownership overlap before delegating or continuing parallel execution."
+	case len(blockedMissions) > 0:
+		nextAction = "Mission graph contains blocked work; resolve blockers before expanding execution."
 	case len(activeRuns) == 0:
 		nextAction = "No active runs. Claim a mission."
 	case len(dependencyBlockedRuns) > 0:
 		nextAction = "Some runs are ahead of their dependency graph; satisfy or serialize those dependencies."
+	case len(dependencyBlockedMissions) > 0:
+		nextAction = "Mission dependencies are not yet satisfied; avoid widening execution until the graph clears."
+	case len(reviewMissions) > 0:
+		nextAction = "At least one mission is in review; close review loops before opening more execution."
 	case len(reviewBlockedRuns) > 0 || len(checksFailedRuns) > 0:
 		nextAction = "Triage PR feedback and failing checks before continuing other work."
 	case len(mergeReadyRuns) > 0:
@@ -2970,32 +3543,39 @@ func cmdHome(args []string) error {
 		nextAction = "Review waiting runs and dependency state."
 	}
 	return printJSON(map[string]any{
-		"profile_id":                stringValue(getKey(profile, "profile.profile_id", "")),
-		"active_run_count":          len(activeRuns),
-		"active_teammate_count":     len(activeTeammates),
-		"blocked_run_count":         len(blockedRuns),
-		"dependency_blocked_count":  len(dependencyBlockedRuns),
-		"review_blocked_count":      len(reviewBlockedRuns),
-		"checks_failed_count":       len(checksFailedRuns),
-		"merge_ready_count":         len(mergeReadyRuns),
-		"ownership_overlap_count":   len(overlappingClaims),
-		"active_signal_count":       len(activeSignals),
-		"coordination_signal_count": len(coordinationSignals),
-		"active_meeting_count":      len(meetings),
-		"active_rc_count":           boolToInt(activeRCRecord != nil),
-		"open_meeting_action_count": len(meetingActions),
-		"orphan_signal_count":       len(orphanSignals),
-		"orphan_meeting_count":      len(orphanMeetings),
-		"runs":                      activeRuns,
-		"dependency_blocked_runs":   dependencyBlockedRuns,
-		"signals":                   activeSignals,
-		"meetings":                  meetings,
-		"overlapping_claims":        overlappingClaims,
-		"active_rc":                 mapOrEmpty(activeRCRecord),
-		"meeting_actions":           meetingActions,
-		"orphan_signals":            orphanSignals,
-		"orphan_meetings":           orphanMeetings,
-		"next_action":               nextAction,
+		"profile_id":                  stringValue(getKey(profile, "profile.profile_id", "")),
+		"active_mission_count":        len(activeMissions),
+		"blocked_mission_count":       len(blockedMissions),
+		"review_mission_count":        len(reviewMissions),
+		"dependency_mission_count":    len(dependencyBlockedMissions),
+		"mission_graph_edge_count":    missionGraphEdges,
+		"active_run_count":            len(activeRuns),
+		"active_teammate_count":       len(activeTeammates),
+		"blocked_run_count":           len(blockedRuns),
+		"dependency_blocked_count":    len(dependencyBlockedRuns),
+		"review_blocked_count":        len(reviewBlockedRuns),
+		"checks_failed_count":         len(checksFailedRuns),
+		"merge_ready_count":           len(mergeReadyRuns),
+		"ownership_overlap_count":     len(overlappingClaims),
+		"active_signal_count":         len(activeSignals),
+		"coordination_signal_count":   len(coordinationSignals),
+		"active_meeting_count":        len(meetings),
+		"active_rc_count":             boolToInt(activeRCRecord != nil),
+		"open_meeting_action_count":   len(meetingActions),
+		"orphan_signal_count":         len(orphanSignals),
+		"orphan_meeting_count":        len(orphanMeetings),
+		"missions":                    activeMissions,
+		"dependency_blocked_missions": dependencyBlockedMissions,
+		"runs":                        activeRuns,
+		"dependency_blocked_runs":     dependencyBlockedRuns,
+		"signals":                     activeSignals,
+		"meetings":                    meetings,
+		"overlapping_claims":          overlappingClaims,
+		"active_rc":                   mapOrEmpty(activeRCRecord),
+		"meeting_actions":             meetingActions,
+		"orphan_signals":              orphanSignals,
+		"orphan_meetings":             orphanMeetings,
+		"next_action":                 nextAction,
 	})
 }
 
@@ -3349,6 +3929,7 @@ func cmdClaim(args []string) error {
 			"issue_number":  intValue(issueNumber),
 			"title":         issueTitle,
 			"branch":        branch,
+			"mission_path":  missionPath(missionID),
 			"contract_path": contractPath,
 			"run_id":        runID,
 			"issue_url":     issueURL,
@@ -5926,6 +6507,7 @@ func cmdMaintenance(args []string) error {
 	case "normalize":
 		return withHarnessLock(func() error {
 			registry := readRegistry()
+			missionRegistry := readMissionRegistry()
 			log := readSignalLog()
 			normalizedRuns := []string{}
 			normalizedSignals := []string{}
@@ -5947,6 +6529,30 @@ func cmdMaintenance(args []string) error {
 					run["last_reported_at"] = firstNonBlank(stringValue(run["updated_at"]), stringValue(run["started_at"]), nowISO())
 					changed = true
 				}
+				if len(ownershipClaims(run)) == 0 {
+					claims := []string{}
+					if missionID := stringValue(run["mission_id"]); missionID != "" {
+						claims = append(claims, "mission:"+missionID)
+					}
+					if branch := stringValue(run["branch"]); branch != "" {
+						claims = append(claims, "branch:"+branch)
+					}
+					if assignedScope := strings.TrimSpace(stringValue(run["assigned_scope"])); assignedScope != "" {
+						claims = append(claims, "scope:"+slugify(assignedScope))
+					}
+					if len(claims) > 0 {
+						run["ownership_claims"] = stringListToAny(dedupeStrings(claims))
+						changed = true
+					}
+				}
+				if _, ok := toMap(run["desired_state"]); !ok {
+					run["desired_state"] = defaultDesiredStateForRun(stringValue(run["owner_type"]))
+					changed = true
+				}
+				if strings.TrimSpace(stringValue(run["dependency_policy"])) == "" {
+					run["dependency_policy"] = "all"
+					changed = true
+				}
 				if changed {
 					run["updated_at"] = nowISO()
 					normalizedRuns = append(normalizedRuns, stringValue(run["run_id"]))
@@ -5964,7 +6570,8 @@ func cmdMaintenance(args []string) error {
 				}
 			}
 			log["signals"] = signals
-			if len(normalizedRuns) > 0 {
+			needsMissionSync := len(toList(missionRegistry["missions"])) == 0 && len(runs) > 0
+			if len(normalizedRuns) > 0 || needsMissionSync {
 				if err := writeRegistry(registry); err != nil {
 					return err
 				}

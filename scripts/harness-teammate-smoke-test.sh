@@ -65,6 +65,8 @@ section "Leader claim"
 claim_output=$(run_in_repo bash scripts/harness-claim.sh 33001 "Teammate Smoke Mission")
 assert_json_field "$claim_output" '"mission_id": "issue-33001"' "claim creates teammate smoke mission"
 leader_run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+mission_output=$(run_in_repo bash scripts/harness-missions.sh get issue-33001)
+assert_json_field "$mission_output" '"state": "claimed"' "mission registry tracks leader claim"
 
 section "Delegation"
 assign_a=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-auth implementation-verifier "Patch auth callers" --scope="auth callers" --owns="scope:auth-callers" --report="progress|blockers|verification")
@@ -149,10 +151,13 @@ assert_json_field "$orchestrate_d" '"new_phase": "output"' "meeting orchestratio
 
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_output" '"active_mission_count": 1' "home surfaces active mission count"
 assert_json_field "$home_output" '"active_teammate_count": 2' "home surfaces active teammate runs"
 assert_json_field "$home_output" '"coordination_signal_count":' "home surfaces coordination signal count"
 assert_json_field "$home_output" '"dependency_blocked_count": 1' "home surfaces dependency-blocked runs"
 assert_json_field "$home_output" '"ownership_overlap_count": 0' "home stays free of ownership overlap"
+mission_graph=$(run_in_repo bash scripts/harness-missions.sh graph)
+assert_json_field "$mission_graph" '"mission_count": 1' "mission graph reports the active mission"
 
 doctor_output=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output" '"issue_count": 0' "doctor stays healthy with governed teammate runtime"

@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.6.0 (in progress)
+- **Version**: 0.7.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Codex-native orchestration harness ownership/desired-state/authority/council control-plane pass completed)
+- **Last Session**: 2026-03-29 (Codex-native orchestration harness mission graph and legacy-runtime migration pass completed)
 
 ## Current Phase
 
@@ -28,9 +28,11 @@
 - **Research drift audit added**: `docs/research/harness-research-drift-audit-2026-03-29.md` now re-checks the original design docs against the current harness and confirms the remaining highest-risk drift areas are desired-state control, explicit ownership/overlap, harness-wide authority enforcement, and automated council orchestration
 - **Ownership and desired state strengthened**: runs and contracts now carry explicit `ownership_claims`, `desired_state`, and dependency policy; teammate assignment now rejects exclusive overlap by default, and `drive wait` plus `home`/`doctor` surface dependency-blocked runs directly
 - **Authority and council control advanced**: invalid authority levels are now rejected or surfaced, and meetings can advance phases with `meetings orchestrate` instead of relying entirely on manual phase jumps
+- **Mission graph made first-class**: the harness now materializes durable mission objects under `.harness/missions/`, exposes them through `scripts/harness-missions.sh`, and drives `home`/`doctor` from mission-level state instead of only run-level state
+- **Legacy runtime migration path added**: `scripts/harness-maintenance.sh normalize` now backfills ownership claims, desired state, dependency policy, and mission registry state for older pre-mission runs, bringing existing `.harness/` state forward without manual surgery
 - **Adapter/package flow updated**: `harness/adapter-manifest.yml` now packages the Go module files and build runner, bootstrapped repos receive the Go sources, and `harness-bootstrap.sh` / `harness-sync.sh` now query adapter metadata through the Go runtime path
 - **Smoke suite de-Pythonized**: issue/core/release/teammate smoke scripts now query package files through the harness adapter surface and extract runtime ids without Python helpers
-- **Validation**: `./scripts/harness-build-runtime.sh`, `./scripts/harness-runtime-dist-smoke-test.sh`, `./scripts/harness-adapter.sh validate`, `./scripts/harness-issue-smoke-test.sh`, `./scripts/harness-smoke-test.sh`, `./scripts/harness-teammate-smoke-test.sh`, `./scripts/harness-release-smoke-test.sh`, `./scripts/harness-bootstrap-smoke-test.sh`, and `./scripts/harness-all-smoke-test.sh` all pass cleanly on the Go runtime
+- **Validation**: `./scripts/harness-build-runtime.sh`, `./scripts/harness-runtime-dist-smoke-test.sh`, `./scripts/harness-adapter.sh validate`, `./scripts/harness-issue-smoke-test.sh`, `./scripts/harness-smoke-test.sh`, `./scripts/harness-teammate-smoke-test.sh`, `./scripts/harness-release-smoke-test.sh`, `./scripts/harness-bootstrap-smoke-test.sh`, and `./scripts/harness-all-smoke-test.sh` all pass cleanly on the Go runtime; `./scripts/harness-maintenance.sh normalize` also upgrades older runtime state into mission-aware schema cleanly
 
 ### Previous completion
 
@@ -66,7 +68,7 @@
 | Phase 4 | ✅ | Validate `home` / `doctor` / `claim` / `drive` / `meetings` / `maintenance` |
 | Phase 5 | ✅ | Package the harness formally as a reusable Codex-native adapter/system |
 | Phase 6 | ✅ | Split reusable adapter/bootstrap flow from repo-local proving ground |
-| Phase 7 | 🔄 | Decide final product naming, public package contract, first-class mission graph, and future Codex-native multi-agent integration path |
+| Phase 7 | 🔄 | Decide final product naming, public package contract, richer ownership/authority adjudication, and future Codex-native multi-agent integration path |
 
 ## Next Session Should Start With
 
@@ -74,11 +76,10 @@
 2. **Harness next work**:
    - A. Decide whether to formalize this under a new product name or keep `harness` as the prototype codename
    - B. Decide whether `harness/adapter-manifest.yml` should become the public package spec or stay repo-private while naming is unresolved
-   - C. Make mission graph / desired state first-class above the current per-run desired-state layer
-   - D. Formalize ownership transfer and richer selector semantics above the current `ownership_claims` guardrails
-   - E. Deepen authority conflict resolution beyond level validation into actual high-vs-low authority adjudication
-   - F. Decide how much farther to push council behavior toward `arch-review`-style automated debate versus keeping it as a durable packet/protocol
-   - G. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
+   - C. Formalize ownership transfer and richer selector semantics above the current `ownership_claims` guardrails
+   - D. Deepen authority conflict resolution beyond level validation into actual high-vs-low authority adjudication
+   - E. Decide how much farther to push council behavior toward `arch-review`-style automated debate versus keeping it as a durable packet/protocol
+   - F. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `_project/sessions/2026-03-28-B.md`, `_project/sessions/2026-03-28-C.md`, `_project/sessions/2026-03-29-A.md`, `_project/sessions/2026-03-29-B.md`, `_project/sessions/2026-03-29-C.md`, `_project/sessions/2026-03-29-D.md`, `harness/README.md`, `docs/research/harness-completion-context-pack-2026-03-28.md`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0
 

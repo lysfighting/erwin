@@ -18,21 +18,23 @@ The harness is file-backed:
    `bash scripts/harness-doctor.sh`
 3. Validate the reusable adapter contract if packaging or sync drift is suspected:
    `bash scripts/harness-adapter.sh validate`
-4. Create or draft executable issues when work is not yet claimable:
+4. Inspect the mission control plane when dependency shape or execution topology is unclear:
+   `bash scripts/harness-missions.sh ...`
+5. Create or draft executable issues when work is not yet claimable:
    `bash scripts/harness-issue.sh ...`
-5. Claim work into governed execution:
+6. Claim work into governed execution:
    `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE]`
-6. Drive run state:
+7. Drive run state:
    `bash scripts/harness-drive.sh ...`
-7. Delegate bounded work when leader execution should split:
+8. Delegate bounded work when leader execution should split:
    `bash scripts/harness-teammates.sh ...`
-8. Prepare release handoff when execution is done:
+9. Prepare release handoff when execution is done:
    `bash scripts/harness-ship.sh ...`
-9. Use meetings when ambiguity or blast radius is high:
+10. Use meetings when ambiguity or blast radius is high:
    `bash scripts/harness-meetings.sh ...`
-10. Use RC flow for release candidate governance:
+11. Use RC flow for release candidate governance:
    `bash scripts/harness-rc.sh ...`
-11. Repair drift or normalize runtime state when needed:
+12. Repair drift or normalize runtime state when needed:
    `bash scripts/harness-maintenance.sh ...`
 
 ## Important commands
@@ -43,6 +45,12 @@ The harness is file-backed:
   `bash scripts/harness-doctor.sh`
 - `adapter-validate`
   `bash scripts/harness-adapter.sh validate`
+- `missions-list`
+  `bash scripts/harness-missions.sh list`
+- `missions-get`
+  `bash scripts/harness-missions.sh get issue-1234`
+- `missions-graph`
+  `bash scripts/harness-missions.sh graph`
 - `issue-draft`
   `bash scripts/harness-issue.sh draft "Mission title" --criteria="A|B"`
 - `claim`
@@ -128,11 +136,14 @@ The harness is file-backed:
 ## Operating rules
 
 - Treat `harness-home` as the control plane entry point.
+- Treat `harness-missions.sh` as the mission-level control plane above individual runs.
 - Treat `harness-adapter.sh validate` as the package boundary check when bootstrap/sync behavior is in doubt.
 - Treat `harness-runtime-dist-smoke-test.sh` as the proof that a repo can run the packaged runtime without a local Go toolchain.
+- Treat `maintenance normalize` as the migration path for older `.harness/` state when mission objects or ownership claims were introduced after those runs were created.
 - Prefer the narrowest safe state change.
 - Use meetings for high-ambiguity or high-blast-radius decisions.
 - Treat teammate runs as first-class runtime objects, not informal notes.
+- Treat missions as first-class durable work objects; runs are execution attempts, not the whole control plane.
 - Prefer explicit `--owns=` selectors when splitting work; shared ownership should be intentional, not accidental.
 - Treat `depends_on` plus desired state as part of the control plane, not just metadata.
 - Allow teammate-to-teammate communication only through governed links or sibling relationships.

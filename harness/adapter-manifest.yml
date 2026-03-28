@@ -21,6 +21,7 @@ adapter:
     - "scripts/harness-build-runtime.sh"
     - "scripts/harness-runtime.sh"
     - "scripts/harness-adapter.sh"
+    - "scripts/harness-missions.sh"
     - "scripts/harness-home.sh"
     - "scripts/harness-doctor.sh"
     - "scripts/harness-issue.sh"
@@ -52,6 +53,7 @@ adapter:
     - "harness/bootstrap/profile-template.yml"
     - "harness/templates/contract.yml"
     - "harness/templates/issue.md"
+    - "harness/templates/mission.yml"
     - "harness/templates/pr.md"
     - "harness/templates/run.yml"
     - "harness/templates/signal.yml"
@@ -70,6 +72,7 @@ adapter:
     runtime_local_override_path: ".harness/profile.local.yml"
     default_profile_hint: "harness/profiles/default.yml"
   capability_surfaces:
+    - "missions"
     - "issue"
     - "claim"
     - "drive"

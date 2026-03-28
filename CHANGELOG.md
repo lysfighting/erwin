@@ -46,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Research drift audit**: Added `docs/research/harness-research-drift-audit-2026-03-29.md` to re-check the original research set against the implemented harness and identify the remaining highest-risk drift areas.
 - **Control-plane hardening**: runs and contracts now carry `ownership_claims`, `desired_state`, and dependency policy; teammate assignment rejects exclusive overlap by default; `drive wait`, `home`, and `doctor` now surface dependency and ownership control-plane state directly.
 - **Authority + council advancement**: invalid authority levels are now rejected or surfaced, and meetings can advance phases via `meetings orchestrate` instead of relying entirely on manual phase changes.
+- **Mission graph materialization**: added `scripts/harness-missions.sh`, `harness/templates/mission.yml`, and durable `.harness/missions/` state so leader surfaces can reconcile first-class mission objects above run attempts.
+- **Legacy runtime migration**: `scripts/harness-maintenance.sh normalize` now backfills ownership claims, desired state, dependency policy, and mission linkage for older pre-mission runs so existing `.harness/` state upgrades cleanly.
 
 ### Changed — Project Intelligence
 - **Current project focus updated**: `_project/CURRENT.md` now reflects the shift from Wing-only transition work to the new Codex-native orchestration harness prototype.

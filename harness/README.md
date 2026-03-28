@@ -35,6 +35,7 @@ If no packaged binary is available, the runtime falls back to building a local G
 That means normal harness use no longer requires `python3`, and repos can opt into a no-Go runtime path by shipping packaged binaries.
 
 - `harness-adapter.sh` — adapter manifest introspection and package validation
+- `harness-missions.sh` — mission registry inspection plus mission graph view
 - `harness-home.sh` — leader home view
 - `harness-doctor.sh` — runtime diagnostics
 - `harness-issue.sh` — structured issue drafting and creation
@@ -86,6 +87,8 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - first-class teammate runs with bounded assignment scope and reporting contracts
 - explicit ownership claims plus overlap guardrails for active exclusive runs
 - dependency-aware waiting and declared desired state on runs and contracts
+- first-class mission objects and a durable mission graph above run attempts
+- `maintenance normalize` can upgrade older run-only runtime state into mission-aware schema by backfilling ownership claims, desired state, and mission registry linkage
 - governed teammate-to-teammate communication through structured sibling signals
 - meeting participants, phases, role specs, locked decisions, and recorded positions for arch-review-like councils
 - role-bounded meeting source discipline via `allowed_sources` / `forbidden_sources`
