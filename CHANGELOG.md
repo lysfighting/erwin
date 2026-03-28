@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Protocol coverage milestone**: The Codex-native harness now has first-class surfaces for the full lifecycle: `issue -> claim -> drive -> ship -> rc`.
 - **Ship delivery mechanics**: Added deterministic branch push and PR draft generation to the `ship` surface so delivery is less state-only and more action-oriented.
 - **GitHub PR opening**: Added a `ship pr-open` path that uses `gh pr create` to open real GitHub PRs when authenticated.
+- **Post-merge cleanup**: Added a `ship cleanup` path to remove worktrees and optionally delete local mission branches after delivery.
 
 ### Changed — Project Intelligence
 - **Current project focus updated**: `_project/CURRENT.md` now reflects the shift from Wing-only transition work to the new Codex-native orchestration harness prototype.

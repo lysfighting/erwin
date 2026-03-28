@@ -719,6 +719,32 @@ def git_create_worktree(branch: str, path: Path, base_branch: str) -> None:
             run_command(["git", "worktree", "add", "-b", branch, str(path), base_branch])
 
 
+def git_delete_branch(branch: str, fallback_branch: str = "main") -> None:
+    if not branch:
+        return
+    current = current_branch()
+    if current == branch:
+        ensure_clean_checkout_context()
+        run_command(["git", "checkout", fallback_branch])
+    if not branch_exists(branch):
+        return
+    run_command(["git", "branch", "-D", branch])
+
+
+def git_remove_worktree(path: Path) -> None:
+    if not path.exists():
+        return
+    main_repo = ""
+    try:
+        main_repo = run_command(["git", "worktree", "list", "--porcelain"])
+    except Exception:
+        pass
+    if str(path) and str(path) in main_repo:
+        run_command(["git", "worktree", "remove", "--force", str(path)])
+        return
+    raise RuntimeError(f"path exists but is not a registered worktree: {path}")
+
+
 def default_authority_hierarchy() -> list[str]:
     return ["L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"]
 
@@ -2298,6 +2324,45 @@ def cmd_ship(args: list[str]) -> int:
             run["next_expected_action"] = "Consider whether this shipped work should enter an RC."
             write_registry(registry)
         print(json.dumps(registry["runs"][index], indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "cleanup":
+        if len(args) < 2:
+            raise SystemExit("ship cleanup requires RUN_ID [--delete-branch] [--delete-worktree]")
+        run_id = args[1]
+        delete_branch = "--delete-branch" in args[2:]
+        delete_worktree = "--delete-worktree" in args[2:]
+        if not delete_branch and not delete_worktree:
+            delete_worktree = True
+        with harness_lock():
+            registry = read_registry()
+            index = find_run_index(registry, run_id)
+            if index < 0:
+                raise SystemExit(f"run not found: {run_id}")
+            run = registry["runs"][index]
+            profile, _ = resolve_profile()
+            cleaned: list[str] = []
+            if delete_worktree and run.get("worktree_path"):
+                try:
+                    git_remove_worktree(Path(run["worktree_path"]))
+                    cleaned.append(f"worktree:{run['worktree_path']}")
+                    run["worktree_path"] = ""
+                except Exception as exc:
+                    raise SystemExit(f"ship cleanup failed removing worktree: {exc}")
+            if delete_branch and run.get("branch"):
+                try:
+                    git_delete_branch(run["branch"], get_key(profile, "profile.base_branch", "main"))
+                    cleaned.append(f"branch:{run['branch']}")
+                except Exception as exc:
+                    raise SystemExit(f"ship cleanup failed deleting branch: {exc}")
+            for ref in cleaned:
+                record_ship_ref(run, f"cleanup:{ref}")
+            run["latest_summary"] = "Post-merge cleanup completed" if cleaned else "No cleanup action was needed"
+            run["next_expected_action"] = "Run is cleanly delivered." if run.get("ship_status") == "merged" else run.get("next_expected_action", "")
+            run["updated_at"] = now_iso()
+            update_contract_from_run(run)
+            write_registry(registry)
+        print(json.dumps({"run": registry["runs"][index], "cleaned": cleaned}, indent=2, ensure_ascii=True))
         return 0
 
     raise SystemExit(f"unknown ship subcommand: {subcommand}")

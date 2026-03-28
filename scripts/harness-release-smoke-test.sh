@@ -106,6 +106,9 @@ merged_output=$(run_in_repo ./scripts/harness-ship.sh merged "$run_id" "Merged c
 assert_json_field "$merged_output" '"ship_status": "merged"' "ship merged records merge"
 assert_json_field "$merged_output" '"state": "completed"' "ship merged completes run"
 
+cleanup_output=$(run_in_repo ./scripts/harness-ship.sh cleanup "$run_id" --delete-branch)
+assert_json_field "$cleanup_output" '"cleaned"' "ship cleanup reports cleaned artifacts"
+
 section "RC"
 rc_create_output=$(run_in_repo ./scripts/harness-rc.sh create v1.2.3 "$run_id")
 assert_json_field "$rc_create_output" '"version": "v1.2.3"' "rc create records version"

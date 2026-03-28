@@ -11,6 +11,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Release lifecycle surfaces: `ship` and `rc`.
 - Ship now covers branch push and PR draft generation in addition to lifecycle state tracking.
 - Ship can now open GitHub PRs directly via `gh pr create` when auth is available.
+- Ship now supports post-merge cleanup for worktrees and local branches.
 - Smoke coverage for issue, core, bootstrap, and release flows.
 
 ## [0.1.0] - 2026-03-28

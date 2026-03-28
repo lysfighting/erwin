@@ -29,6 +29,7 @@ The first usable Codex-native harness prototype now exists in `scripts/`.
 - `harness-ship.sh` — verification, PR lifecycle, merge readiness
 - `harness-ship.sh` also supports branch push and PR draft generation
 - `harness-ship.sh` can also open GitHub PRs directly when `gh` is authenticated
+- `harness-ship.sh` now also handles post-merge cleanup of worktrees and local branches
 - `harness-rc.sh` — release-candidate create/verify/promote/close flow
 - `harness-meetings.sh` — meeting inspection and council output mutation
 - `harness-maintenance.sh` — reconciliation + runtime normalization
