@@ -10,7 +10,7 @@ Claude Code skills created and maintained by the erwin project.
 | [/erwin-init](erwin-init/) | Bootstrap any project with full AI intelligence layer | 1.0.0 |
 | [/visual-test](visual-test/) | Screenshot-driven visual bug detection and fixing | 1.0.0 |
 | [/session-record](session-record/) | Record AI session logs with structured format | 1.0.0 |
-| [`/harness`](harness/) | Codex-native orchestration harness leader surface (prototype) | 0.3.0 |
+| [`/harness`](harness/) | Codex-native orchestration harness leader surface (prototype) | 0.4.0 |
 | [/team](teamwork/) | Init GitHub-first teamwork system + dashboard | 3.10.4 |
 | [/team-issue](teamwork/) | Create GitHub Issues with AI-enriched context | 3.10.4 |
 | [/team-claim](teamwork/) | Claim GitHub Issue → generate Contract → create branch | 3.10.4 |

@@ -30,6 +30,7 @@
 - **Bootstrap path**: `scripts/harness-bootstrap.sh` now seeds the harness adapter into another git repository with a generated default profile, local `skills/harness/`, and `install-codex.sh`
 - **Adapter sync path**: bootstrapped repos now record source metadata in `.harness/cache/adapter-source.json` and can resync via `scripts/harness-sync.sh`; the bootstrapped repo also carries its own `harness-bootstrap.sh`
 - **Adapter packaging upgraded**: `harness/adapter-manifest.yml` now declares adapter identity/capabilities, and `scripts/harness-all-smoke-test.sh` provides a one-command smoke suite
+- **Adapter packaging tightened**: bootstrap smoke now validates manifest + full-smoke installation, `harness-sync status` now reports manifest version alignment, and the adapter version is now `0.4.0-prototype`
 - **Validation**: branch/worktree provisioning, issue drafting, meeting create/update/close, archived meeting replay, PR review/check gates, deterministic merge, doctor/home health checks, direct `./install-codex.sh` execution, bootstrap into a temporary repo, remembered-source resync, `harness-issue-smoke-test.sh`, `harness-smoke-test.sh`, `harness-bootstrap-smoke-test.sh`, `harness-release-smoke-test.sh`, and `harness-all-smoke-test.sh` all pass
 - **Protocol coverage**: the Codex adapter now has first-class `issue`, `claim`, `drive`, `ship`, and `rc` surfaces, including RC surgical fix / cancel / hotfix / backport handling
 

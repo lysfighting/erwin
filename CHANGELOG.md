@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **PR gate tracking**: Added `ship review` and `ship checks` so review feedback and CI state are now first-class merge gates in the harness runtime.
 - **Deterministic merge**: Added `ship merge` so the harness can execute a real merge path instead of only recording a merged state transition.
 - **Adapter manifest + full smoke**: Added `harness/adapter-manifest.yml` plus `scripts/harness-all-smoke-test.sh`, and taught bootstrap/sync to carry/report richer adapter packaging metadata.
+- **Adapter version tightening**: bumped the harness adapter packaging line to `0.4.0-prototype`, and extended bootstrap smoke to verify manifest/full-smoke propagation plus sync-status manifest reporting.
 - **Expanded release smoke**: `scripts/harness-release-smoke-test.sh` now validates RC surgical fix, RC cancel, hotfix preparation, and dual-branch backport in addition to the happy-path release flow.
 
 ### Changed — Project Intelligence

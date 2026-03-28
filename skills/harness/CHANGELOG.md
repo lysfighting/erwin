@@ -2,6 +2,14 @@
 
 All notable changes to the `harness` skill will be documented in this file.
 
+## [0.4.0] - 2026-03-28
+
+### Added
+- Ship review/check gates and deterministic merge.
+- RC hotfix/backport coverage for dual-branch release topologies.
+- Adapter manifest and one-command full smoke suite.
+- Richer `harness-sync status` output with manifest version comparison.
+
 ## [0.3.0] - 2026-03-28
 
 ### Added

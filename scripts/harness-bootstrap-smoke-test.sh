@@ -66,13 +66,17 @@ assert_contains "$bootstrap_output" '"metadata_path"' "bootstrap writes adapter 
 assert_contains "$bootstrap_output" '"scripts/harness-issue.sh"' "bootstrap installs issue surface"
 assert_contains "$bootstrap_output" '"scripts/harness-ship.sh"' "bootstrap installs ship surface"
 assert_contains "$bootstrap_output" '"scripts/harness-rc.sh"' "bootstrap installs rc surface"
+assert_contains "$bootstrap_output" '"harness/adapter-manifest.yml"' "bootstrap installs adapter manifest"
+assert_contains "$bootstrap_output" '"scripts/harness-all-smoke-test.sh"' "bootstrap installs full smoke entrypoint"
 
 if run_in_target test -f scripts/harness-home.sh && \
    run_in_target test -f scripts/harness-bootstrap.sh && \
    run_in_target test -f scripts/harness-sync.sh && \
+   run_in_target test -f scripts/harness-all-smoke-test.sh && \
    run_in_target test -f scripts/harness-issue.sh && \
    run_in_target test -f scripts/harness-ship.sh && \
    run_in_target test -f scripts/harness-rc.sh && \
+   run_in_target test -f harness/adapter-manifest.yml && \
    run_in_target test -f skills/harness/SKILL.md && \
    run_in_target test -f install-codex.sh; then
   pass "bootstrap writes expected files"
@@ -91,6 +95,8 @@ assert_contains "$claim_output" '"mission_id": "issue-31001"' "bootstrapped clai
 section "Adapter sync"
 sync_status_output="$(run_in_target ./scripts/harness-sync.sh status)"
 assert_contains "$sync_status_output" '"source_root"' "bootstrapped repo remembers source metadata"
+assert_contains "$sync_status_output" '"target_manifest_version"' "sync status reports target manifest version"
+assert_contains "$sync_status_output" '"source_manifest_version"' "sync status reports source manifest version"
 sync_output="$(run_in_target ./scripts/harness-sync.sh)"
 assert_contains "$sync_output" '"target_repo"' "bootstrapped repo can resync from remembered source"
 
