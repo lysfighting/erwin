@@ -1233,6 +1233,10 @@ func upsertMeetingRoleSpec(meeting map[string]any, role, mission string, allowed
 }
 
 func ownershipClaims(run map[string]any) []string {
+	selectors := ownershipSelectorKeys(run)
+	if len(selectors) > 0 {
+		return selectors
+	}
 	return dedupeStrings(anyListToStrings(toList(run["ownership_claims"])))
 }
 
@@ -1261,6 +1265,62 @@ func normalizedStringSet(items []string) []string {
 	values := dedupeStrings(items)
 	sort.Strings(values)
 	return values
+}
+
+func parseOwnershipSelector(raw string) map[string]any {
+	value := strings.TrimSpace(raw)
+	kind := "opaque"
+	selectorValue := value
+	if parts := strings.SplitN(value, ":", 2); len(parts) == 2 && strings.TrimSpace(parts[0]) != "" && strings.TrimSpace(parts[1]) != "" {
+		kind = strings.TrimSpace(parts[0])
+		selectorValue = strings.TrimSpace(parts[1])
+		value = kind + ":" + selectorValue
+	}
+	return map[string]any{
+		"selector": value,
+		"kind":     kind,
+		"value":    selectorValue,
+	}
+}
+
+func selectorRecordsFromClaims(claims []string) []any {
+	records := []any{}
+	for _, claim := range dedupeStrings(claims) {
+		records = append(records, parseOwnershipSelector(claim))
+	}
+	return records
+}
+
+func ownershipSelectorKeys(mapping map[string]any) []string {
+	selectors := []string{}
+	for _, item := range toList(mapping["ownership_selectors"]) {
+		record, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		selector := strings.TrimSpace(stringValue(record["selector"]))
+		if selector == "" {
+			kind := strings.TrimSpace(stringValue(record["kind"]))
+			value := strings.TrimSpace(stringValue(record["value"]))
+			if kind != "" && value != "" {
+				selector = kind + ":" + value
+			}
+		}
+		if selector != "" {
+			selectors = append(selectors, selector)
+		}
+	}
+	return dedupeStrings(selectors)
+}
+
+func setOwnershipSelectors(mapping map[string]any, claims []string) {
+	normalized := dedupeStrings(claims)
+	mapping["ownership_claims"] = stringListToAny(normalized)
+	mapping["ownership_selectors"] = selectorRecordsFromClaims(normalized)
+}
+
+func ownershipTransferEvents(mapping map[string]any) []any {
+	return toList(mapping["ownership_transfers"])
 }
 
 func defaultDesiredStateForRun(ownerType string) map[string]any {
@@ -1639,6 +1699,7 @@ func materializeMission(template map[string]any, registry map[string]any, missio
 	completedRunIDs := []string{}
 	teammateRunIDs := []string{}
 	ownership := []string{}
+	transferEvents := []any{}
 	dependsOn := missionDependencyTargetsFromRuns(runs, registry)
 	latestSummary := ""
 	nextAction := ""
@@ -1655,6 +1716,9 @@ func materializeMission(template map[string]any, registry map[string]any, missio
 			teammateRunIDs = append(teammateRunIDs, stringValue(run["run_id"]))
 		}
 		ownership = append(ownership, ownershipClaims(run)...)
+		for _, event := range ownershipTransferEvents(run) {
+			transferEvents = append(transferEvents, cloneValue(event))
+		}
 		if latestSummary == "" {
 			latestSummary = stringValue(run["latest_summary"])
 		}
@@ -1692,6 +1756,8 @@ func materializeMission(template map[string]any, registry map[string]any, missio
 		"context_files":         cloneValue(toList(contract["context_files"])),
 		"depends_on":            stringListToAny(dedupeStrings(dependsOn)),
 		"ownership_claims":      stringListToAny(dedupeStrings(ownership)),
+		"ownership_selectors":   selectorRecordsFromClaims(ownership),
+		"ownership_transfers":   transferEvents,
 		"active_run_ids":        stringListToAny(dedupeStrings(activeRunIDs)),
 		"completed_run_ids":     stringListToAny(dedupeStrings(completedRunIDs)),
 		"teammate_run_ids":      stringListToAny(dedupeStrings(teammateRunIDs)),
@@ -2649,6 +2715,8 @@ func doctorReport() map[string]any {
 		}
 		if len(ownershipClaims(run)) == 0 {
 			issues = append(issues, issueRecord("warning", "run-missing-ownership-claims", runID, "Run has no explicit ownership claims.", "Record ownership selectors so overlap can be governed explicitly."))
+		} else if len(toList(run["ownership_selectors"])) == 0 {
+			issues = append(issues, issueRecord("warning", "run-missing-ownership-selectors", runID, "Run has legacy ownership claims but no normalized ownership_selectors.", "Normalize runtime state so selector-aware ownership transfer can work safely."))
 		}
 		if stringValue(run["mission_id"]) == "" {
 			issues = append(issues, issueRecord("critical", "run-missing-mission-id", runID, "Run is missing mission_id.", "Repair the run or recreate it under a mission."))
@@ -2702,6 +2770,8 @@ func doctorReport() map[string]any {
 		}
 		if len(toList(mission["ownership_claims"])) == 0 {
 			issues = append(issues, issueRecord("warning", "mission-missing-ownership-claims", missionID, "Mission has no explicit ownership claims.", "Carry ownership selectors up to the mission control plane."))
+		} else if len(toList(mission["ownership_selectors"])) == 0 {
+			issues = append(issues, issueRecord("warning", "mission-missing-ownership-selectors", missionID, "Mission has legacy ownership claims but no normalized ownership_selectors.", "Regenerate mission state so selector-aware governance can work safely."))
 		}
 		if len(toList(mission["depends_on"])) > 0 && stringValue(mission["state"]) != "blocked" && stringValue(mission["state"]) != "claimed" && stringValue(mission["state"]) != "wip" && stringValue(mission["state"]) != "review" {
 			issues = append(issues, issueRecord("info", "mission-dependency-state-unusual", missionID, "Mission has dependencies but is not in an active dependency-aware state.", "Verify the mission control-plane state is still correct."))
@@ -3106,6 +3176,9 @@ func cmdRuns(args []string) error {
 			}
 			timestamp := nowISO()
 			fillIfBlank(merged, "created_at", timestamp)
+			if len(ownershipClaims(merged)) > 0 {
+				setOwnershipSelectors(merged, ownershipClaims(merged))
+			}
 			state := stringValue(merged["state"])
 			if state == "ready" || state == "executing" || state == "paused" || state == "waiting" || state == "blocked" {
 				fillIfBlank(merged, "started_at", timestamp)
@@ -3135,6 +3208,9 @@ func cmdRuns(args []string) error {
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
 			merged, _ := toMap(mergeDicts(run, payload))
+			if len(ownershipClaims(merged)) > 0 {
+				setOwnershipSelectors(merged, ownershipClaims(merged))
+			}
 			merged["updated_at"] = nowISO()
 			runs[index] = merged
 			registry["runs"] = runs
@@ -3235,6 +3311,105 @@ func cmdRuns(args []string) error {
 				return err
 			}
 			return printJSON(run)
+		})
+	case "transfer-ownership":
+		if len(args) < 3 {
+			return errors.New("runs transfer-ownership requires SOURCE_RUN_ID TARGET_RUN_ID --owns=SELECTOR [--reason=TEXT]")
+		}
+		sourceRunID := args[1]
+		targetRunID := args[2]
+		selectors := []string{}
+		reason := "Leader reassigned ownership selector."
+		for _, arg := range args[3:] {
+			switch {
+			case strings.HasPrefix(arg, "--owns="):
+				selectors = append(selectors, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--owns=")))...)
+			case strings.HasPrefix(arg, "--reason="):
+				reason = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--reason=")), reason)
+			}
+		}
+		if len(selectors) == 0 {
+			return errors.New("runs transfer-ownership requires at least one --owns selector")
+		}
+		selectors = dedupeStrings(selectors)
+		for _, selector := range selectors {
+			if strings.HasPrefix(selector, "mission:") || strings.HasPrefix(selector, "branch:") {
+				return fmt.Errorf("runs transfer-ownership only supports bounded selectors, not mission/branch anchors: %s", selector)
+			}
+		}
+		return withHarnessLock(func() error {
+			registry = readRegistry()
+			sourceIndex := findRunIndex(registry, sourceRunID)
+			targetIndex := findRunIndex(registry, targetRunID)
+			if sourceIndex < 0 || targetIndex < 0 {
+				return errors.New("runs transfer-ownership requires two existing runs")
+			}
+			runs := toList(registry["runs"])
+			sourceRun, _ := toMap(runs[sourceIndex])
+			targetRun, _ := toMap(runs[targetIndex])
+			if !activeRun(sourceRun) || !activeRun(targetRun) {
+				return errors.New("runs transfer-ownership requires both source and target runs to be active")
+			}
+			if stringValue(sourceRun["mission_id"]) == "" || stringValue(sourceRun["mission_id"]) != stringValue(targetRun["mission_id"]) {
+				return errors.New("runs transfer-ownership currently requires source and target runs to belong to the same mission")
+			}
+			sourceSelectors := ownershipClaims(sourceRun)
+			targetSelectors := ownershipClaims(targetRun)
+			sourceSet := map[string]bool{}
+			for _, selector := range sourceSelectors {
+				sourceSet[selector] = true
+			}
+			missing := []string{}
+			for _, selector := range selectors {
+				if !sourceSet[selector] {
+					missing = append(missing, selector)
+				}
+			}
+			if len(missing) > 0 {
+				return fmt.Errorf("source run does not own requested selectors: %s", strings.Join(missing, ", "))
+			}
+			remainingSource := []string{}
+			transferSet := map[string]bool{}
+			for _, selector := range selectors {
+				transferSet[selector] = true
+			}
+			for _, selector := range sourceSelectors {
+				if !transferSet[selector] {
+					remainingSource = append(remainingSource, selector)
+				}
+			}
+			targetSelectors = dedupeStrings(append(targetSelectors, selectors...))
+			setOwnershipSelectors(sourceRun, remainingSource)
+			setOwnershipSelectors(targetRun, targetSelectors)
+			event := map[string]any{
+				"transfer_id":     "transfer-" + nowTime().UTC().Format("20060102150405"),
+				"selector_refs":   stringListToAny(selectors),
+				"from_run_id":     sourceRunID,
+				"to_run_id":       targetRunID,
+				"reason":          reason,
+				"mode":            "move",
+				"authority_level": "L2",
+				"transferred_at":  nowISO(),
+			}
+			sourceRun["ownership_transfers"] = append(ownershipTransferEvents(sourceRun), cloneValue(event))
+			targetRun["ownership_transfers"] = append(ownershipTransferEvents(targetRun), cloneValue(event))
+			sourceRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership selectors transferred away.")
+			sourceRun["next_expected_action"] = "Continue within the remaining bounded ownership scope."
+			targetRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership selectors transferred in.")
+			targetRun["next_expected_action"] = "Proceed with the newly transferred bounded ownership scope."
+			sourceRun["updated_at"] = nowISO()
+			targetRun["updated_at"] = nowISO()
+			runs[sourceIndex] = sourceRun
+			runs[targetIndex] = targetRun
+			registry["runs"] = runs
+			if err := writeRegistry(registry); err != nil {
+				return err
+			}
+			return printJSON(map[string]any{
+				"transfer":   event,
+				"source_run": sourceRun,
+				"target_run": targetRun,
+			})
 		})
 	default:
 		return fmt.Errorf("unknown runs subcommand: %s", subcommand)
@@ -3803,7 +3978,6 @@ func cmdClaim(args []string) error {
 			"success_criteria":      []any{},
 			"sub_tasks":             []any{},
 			"depends_on":            stringListToAny(dedupeStrings(dependsOn)),
-			"ownership_claims":      stringListToAny(ownershipClaims),
 			"desired_state":         defaultDesiredStateForRun("leader"),
 			"branch":                branch,
 			"worktree_path":         plannedWorktreePath,
@@ -3815,6 +3989,7 @@ func cmdClaim(args []string) error {
 				"discoveries":             stringListToAny(discoveries),
 			},
 		}))
+		setOwnershipSelectors(contractPayload, ownershipClaims)
 		freshness, _ := toMap(contractPayload["freshness"])
 		if freshness == nil {
 			freshness = map[string]any{}
@@ -3845,12 +4020,12 @@ func cmdClaim(args []string) error {
 			"contract_ref":         contractPath,
 			"depends_on":           stringListToAny(dedupeStrings(dependsOn)),
 			"dependency_policy":    "all",
-			"ownership_claims":     stringListToAny(ownershipClaims),
 			"desired_state":        defaultDesiredStateForRun("leader"),
 			"objective":            issueTitle,
 			"latest_summary":       "Claimed and ready for execution",
 			"next_expected_action": "Start drive flow and run the narrowest useful verification.",
 		}))
+		setOwnershipSelectors(runPayload, ownershipClaims)
 		if conflicts := overlappingOwnershipRuns(registry, ownershipClaims, overlapPolicyValue, nil); len(conflicts) > 0 {
 			return fmt.Errorf("ownership overlap detected; retry with --allow-overlap or change --owns selectors: %v", conflicts)
 		}
@@ -6153,7 +6328,6 @@ func cmdTeammatesRemainder(args []string) error {
 				"success_criteria":      stringListToAny(successCriteria),
 				"sub_tasks":             []any{},
 				"depends_on":            stringListToAny(dedupeStrings(dependsOn)),
-				"ownership_claims":      stringListToAny(dedupeStrings(append([]string{"scope:" + slugify(firstNonBlank(assignedScope, objective))}, ownershipClaimsInput...))),
 				"desired_state":         defaultDesiredStateForRun("teammate"),
 				"branch":                stringValue(parentRun["branch"]),
 				"worktree_path":         stringValue(parentRun["worktree_path"]),
@@ -6167,6 +6341,7 @@ func cmdTeammatesRemainder(args []string) error {
 					"forbidden_sources": stringListToAny(forbiddenSources),
 				},
 			}))
+			setOwnershipSelectors(contractPayload, dedupeStrings(append([]string{"scope:" + slugify(firstNonBlank(assignedScope, objective))}, ownershipClaimsInput...)))
 			freshness, _ := toMap(contractPayload["freshness"])
 			if freshness == nil {
 				freshness = map[string]any{}
@@ -6215,7 +6390,6 @@ func cmdTeammatesRemainder(args []string) error {
 				"contract_ref":           contractPath,
 				"objective":              objective,
 				"assigned_scope":         firstNonBlank(assignedScope, objective),
-				"ownership_claims":       stringListToAny(ownershipClaims),
 				"authority_refs":         stringListToAny(authorityRefList),
 				"forbidden_sources":      stringListToAny(forbiddenSources),
 				"reporting_expectations": stringListToAny(reportingList),
@@ -6231,6 +6405,7 @@ func cmdTeammatesRemainder(args []string) error {
 				"last_reported_at":       timestamp,
 				"updated_at":             timestamp,
 			}))
+			setOwnershipSelectors(teammateRun, ownershipClaims)
 			if conflicts := overlappingOwnershipRuns(registry, ownershipClaims, overlapPolicyValue, []string{parentRunID}); len(conflicts) > 0 {
 				return fmt.Errorf("ownership overlap detected for teammate assignment; retry with --allow-overlap or change --owns selectors: %v", conflicts)
 			}
@@ -6541,9 +6716,12 @@ func cmdMaintenance(args []string) error {
 						claims = append(claims, "scope:"+slugify(assignedScope))
 					}
 					if len(claims) > 0 {
-						run["ownership_claims"] = stringListToAny(dedupeStrings(claims))
+						setOwnershipSelectors(run, claims)
 						changed = true
 					}
+				} else if len(toList(run["ownership_selectors"])) == 0 {
+					setOwnershipSelectors(run, ownershipClaims(run))
+					changed = true
 				}
 				if _, ok := toMap(run["desired_state"]); !ok {
 					run["desired_state"] = defaultDesiredStateForRun(stringValue(run["owner_type"]))

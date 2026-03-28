@@ -132,6 +132,8 @@ Current truth:
 
 So Kubernetes-style ownership discipline is no longer just textual.
 But the system still lacks richer selectors and formal ownership transfer semantics.
+The latest pass materially improved this: selectors are now normalized and bounded ownership can be formally transferred between runs.
+What is still missing is the next layer above that baseline.
 
 ### 3. State authority is stronger, but still not fully harness-wide
 
@@ -215,7 +217,7 @@ It should close the remaining control-plane gaps.
 
 ## Recommended Next Priority Order
 
-1. Formal ownership transfer / richer selector model
+1. Richer selector families and transfer policies beyond the current normalized ownership-transfer baseline
 2. Broader authority conflict resolution outside meetings
 3. Deeper automated council orchestration
 4. Product naming / public contract once the governance model feels stable

@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Authority + council advancement**: invalid authority levels are now rejected or surfaced, and meetings can advance phases via `meetings orchestrate` instead of relying entirely on manual phase changes.
 - **Mission graph materialization**: added `scripts/harness-missions.sh`, `harness/templates/mission.yml`, and durable `.harness/missions/` state so leader surfaces can reconcile first-class mission objects above run attempts.
 - **Legacy runtime migration**: `scripts/harness-maintenance.sh normalize` now backfills ownership claims, desired state, dependency policy, and mission linkage for older pre-mission runs so existing `.harness/` state upgrades cleanly.
+- **Selector-aware ownership transfer**: normalized legacy `ownership_claims` into structured `ownership_selectors`, added formal `runs transfer-ownership` semantics for bounded selector moves inside a mission, and extended teammate smoke to guard that control-plane behavior.
 
 ### Changed — Project Intelligence
 - **Current project focus updated**: `_project/CURRENT.md` now reflects the shift from Wing-only transition work to the new Codex-native orchestration harness prototype.

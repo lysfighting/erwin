@@ -72,13 +72,27 @@ section "Delegation"
 assign_a=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-auth implementation-verifier "Patch auth callers" --scope="auth callers" --owns="scope:auth-callers" --report="progress|blockers|verification")
 assert_json_field "$assign_a" '"owner_id": "worker-auth"' "first teammate assignment created"
 run_a=$(printf '%s\n' "$assign_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
-assign_b=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-ops ops-simulator "Check release-facing auth flows" --scope="release auth smoke" --owns="scope:release-auth-smoke" --depends-on="$run_a" --report="progress|risk_raised|verification")
+assign_b=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-ops ops-simulator "Check release-facing auth flows" --scope="release auth smoke" --owns="scope:release-auth-smoke|file:CHANGELOG.md" --depends-on="$run_a" --report="progress|risk_raised|verification")
 assert_json_field "$assign_b" '"owner_id": "worker-ops"' "second teammate assignment created"
 run_b=$(printf '%s\n' "$assign_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 
 list_output=$(run_in_repo bash scripts/harness-teammates.sh list "$leader_run_id")
 assert_json_field "$list_output" '"owner_id": "worker-auth"' "teammate list shows first delegated run"
 assert_json_field "$list_output" '"owner_id": "worker-ops"' "teammate list shows second delegated run"
+
+section "Ownership transfer"
+transfer_output=$(run_in_repo bash scripts/harness-runs.sh transfer-ownership "$run_b" "$run_a" --owns="scope:release-auth-smoke" --reason="Shift release-auth scope into the implementation stream")
+assert_json_field "$transfer_output" '"transfer_id": "transfer-' "ownership transfer records transfer event"
+assert_json_field "$transfer_output" '"selector_refs":' "ownership transfer records moved selectors"
+run_a_after_transfer=$(run_in_repo bash scripts/harness-teammates.sh get "$run_a")
+run_b_after_transfer=$(run_in_repo bash scripts/harness-teammates.sh get "$run_b")
+assert_json_field "$run_a_after_transfer" '"selector": "scope:release-auth-smoke"' "target teammate receives transferred selector"
+if echo "$run_b_after_transfer" | grep -q '"selector": "scope:release-auth-smoke"'; then
+  fail "source teammate drops transferred selector"
+  echo "$run_b_after_transfer"
+else
+  pass "source teammate drops transferred selector"
+fi
 
 section "Ownership guard"
 set +e

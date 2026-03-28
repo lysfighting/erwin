@@ -67,6 +67,8 @@ The harness is file-backed:
   `bash scripts/harness-drive.sh meeting RUN_ID "question"`
 - `teammate-assign`
   `bash scripts/harness-teammates.sh assign RUN_ID worker-auth implementation-verifier "Update auth callers" --scope="auth callers only" --owns=scope:auth-callers --depends-on=RUN_OTHER`
+- `ownership-transfer`
+  `bash scripts/harness-runs.sh transfer-ownership SOURCE_RUN_ID TARGET_RUN_ID --owns=scope:release-auth-smoke --reason="Shift bounded ownership to the implementation path"`
 - `teammate-report`
   `bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID "Caller patch is in place" --kind=progress --evidence=src/auth.ts|tests/auth.spec.ts`
 - `teammate-message`
@@ -145,6 +147,7 @@ The harness is file-backed:
 - Treat teammate runs as first-class runtime objects, not informal notes.
 - Treat missions as first-class durable work objects; runs are execution attempts, not the whole control plane.
 - Prefer explicit `--owns=` selectors when splitting work; shared ownership should be intentional, not accidental.
+- Prefer formal ownership transfer over silent selector drift when bounded work needs to move between runs.
 - Treat `depends_on` plus desired state as part of the control plane, not just metadata.
 - Allow teammate-to-teammate communication only through governed links or sibling relationships.
 - Use `meetings orchestrate` to advance council phases instead of manually skipping straight to synthesis.

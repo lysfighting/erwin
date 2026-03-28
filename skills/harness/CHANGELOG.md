@@ -10,6 +10,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Meeting role specs, locked decisions, and known-context recording so councils can carry stronger `arch-review`-style governance.
 - Ownership claims, desired state, dependency waiting, and meeting orchestration on the harness control plane.
 - `scripts/harness-missions.sh` plus a first-class mission registry and mission graph surface.
+- Selector-aware ownership transfer via `bash scripts/harness-runs.sh transfer-ownership ...`.
 
 ### Changed
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.
@@ -18,6 +19,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - `harness-home.sh` and `harness-doctor.sh` now surface dependency-blocked runs, ownership overlap, and desired-state drift more explicitly.
 - Mission state is now materialized above runs so leader surfaces can reconcile against a durable mission graph instead of only per-run metadata.
 - `scripts/harness-maintenance.sh normalize` now upgrades older run-only runtime state into the mission-aware schema by backfilling ownership claims, desired state, and mission linkage.
+- Legacy `ownership_claims` are now normalized into `ownership_selectors`, so overlap checks and transfer semantics operate on structured selectors instead of raw strings alone.
 
 ## [0.6.0] - 2026-03-28
 

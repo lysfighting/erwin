@@ -8,6 +8,7 @@ contract:
   sub_tasks: []
   depends_on: []
   ownership_claims: []
+  ownership_selectors: []
   desired_state:
     goal_state: "completed"
     verification_status: ""

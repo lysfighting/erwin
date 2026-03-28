@@ -44,6 +44,8 @@ run:
   contract_ref: ""
   assigned_scope: ""
   ownership_claims: []
+  ownership_selectors: []
+  ownership_transfers: []
   authority_refs: []
   forbidden_sources: []
   reporting_expectations: []
