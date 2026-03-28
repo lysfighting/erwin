@@ -1,0 +1,27 @@
+version: 1
+meeting:
+  meeting_id: ""
+  mission_id: ""
+  run_id: ""
+  question: ""
+  scope: ""
+  leader_id: ""
+  requested_by: ""
+  state: "active"
+  authority_hierarchy: []
+  locked_decisions: []
+  roles: []
+  packet:
+    expected_output: ""
+    context_refs: []
+    run_summary: ""
+    status_reason: ""
+  findings:
+    accepted: []
+    rejected: []
+    unresolved: []
+  action_items: []
+  resolution_note: ""
+  created_at: ""
+  updated_at: ""
+  closed_at: ""

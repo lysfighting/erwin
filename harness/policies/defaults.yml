@@ -1,0 +1,29 @@
+version: 1
+policies:
+  execution:
+    default_mode: "solo"
+    max_parallel_runs_default: 2
+    require_explicit_parallel_justification: true
+
+  meetings:
+    default_max_roles: 4
+    require_authority_hierarchy: true
+    require_rejected_findings_log: true
+
+  state_authority:
+    require_freshness_for_active_signals: true
+    live_system_state_overrides_registry: true
+    derived_state_must_not_override_direct_state: true
+
+  cleanup:
+    track_stale_runs: true
+    track_stale_signals: true
+    track_stale_worktrees: true
+    stale_run_after_hours: 24
+    stale_signal_after_hours: 12
+    stale_meeting_after_hours: 6
+
+  admissions:
+    require_pre_claim_validation: true
+    require_pre_ship_validation: true
+    require_rc_validation: true

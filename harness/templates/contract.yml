@@ -1,0 +1,20 @@
+version: 1
+contract:
+  mission_id: ""
+  issue_number: 0
+  title: ""
+  objective: ""
+  success_criteria: []
+  sub_tasks: []
+  branch: ""
+  worktree_path: ""
+  context_files: []
+  verification_commands: []
+  freshness:
+    created_at: ""
+    source_checked_at: ""
+    drift_status: "unknown"
+  notes:
+    assumptions_invalidated: []
+    manual_followups: []
+    discoveries: []

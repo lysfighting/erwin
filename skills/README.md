@@ -10,6 +10,7 @@ Claude Code skills created and maintained by the erwin project.
 | [/erwin-init](erwin-init/) | Bootstrap any project with full AI intelligence layer | 1.0.0 |
 | [/visual-test](visual-test/) | Screenshot-driven visual bug detection and fixing | 1.0.0 |
 | [/session-record](session-record/) | Record AI session logs with structured format | 1.0.0 |
+| [`/harness`](harness/) | Codex-native orchestration harness leader surface (prototype) | 0.2.0 |
 | [/team](teamwork/) | Init GitHub-first teamwork system + dashboard | 3.10.4 |
 | [/team-issue](teamwork/) | Create GitHub Issues with AI-enriched context | 3.10.4 |
 | [/team-claim](teamwork/) | Claim GitHub Issue → generate Contract → create branch | 3.10.4 |
@@ -26,6 +27,15 @@ cd erwin
 ```
 
 Installs all skills globally via symlinks to `~/.claude/commands/`. Updates automatically with `git pull`.
+
+For Codex-native `SKILL.md` skills:
+
+```bash
+./install-codex.sh
+./install-codex.sh harness
+```
+
+Installs Codex-native skills to `~/.codex/skills/`.
 
 ## Install Individual Skills
 
@@ -82,3 +92,9 @@ description: One-line description shown in skill picker
 ```
 
 The skill content is instructions Claude follows when the user invokes `/skill-name`.
+
+## Codex-native Prototypes
+
+Newer surfaces may use `SKILL.md` rather than the older single-file command markdown.
+
+- `skills/harness/SKILL.md` is the first repository-local Codex-native harness surface.

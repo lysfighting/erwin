@@ -1,0 +1,71 @@
+version: 1
+profile:
+  profile_id: "__PROFILE_ID__"
+  name: "__NAME__"
+  repository: "__REPOSITORY__"
+  default_runtime: "codex"
+
+  base_branch: "__BASE_BRANCH__"
+  production_branch: "__BASE_BRANCH__"
+  branch_pattern: "mission/{issue}-{slug}"
+  worktree_enabled_default: true
+
+  issue_label_prefix: "status:"
+  status_labels:
+    queued: "status:queued"
+    wip: "status:wip"
+    review: "status:review"
+    done: "status:done"
+    blocked: "status:blocked"
+
+  priority_labels:
+    p0: "priority:P0"
+    p1: "priority:P1"
+    p2: "priority:P2"
+
+  milestone_strategy: "github-milestones"
+
+  default_verify_commands: []
+
+  targeted_verify_conventions:
+    - "Prefer the narrowest useful check first."
+    - "Use focused build or test commands before broad verification when possible."
+
+  required_pre_ship_checks:
+    - "Working tree is intentionally scoped."
+    - "Relevant targeted verification has passed."
+    - "Changed docs and state artifacts are updated when needed."
+
+  release_mode: "single-branch"
+  rc_branch_pattern: "rc/{version}"
+  staging_workflow: ""
+  promote_workflow: ""
+
+  docs_entrypoints:
+    - "AGENTS.md"
+    - "README.md"
+
+  code_entrypoints:
+    - "src/"
+    - "app/"
+    - "scripts/"
+
+  config_entrypoints:
+    - ".gitignore"
+
+  legacy_paths: []
+
+  max_parallel_runs: 2
+
+  meeting_triggers:
+    - "Conflicting high-authority evidence"
+    - "High-blast-radius architecture disagreement"
+    - "Release-affecting uncertainty"
+
+  high_risk_scopes:
+    - "release and RC flows"
+
+  cleanup_policies:
+    - "Report stale runs."
+    - "Report stale contracts."
+    - "Report stale signals."

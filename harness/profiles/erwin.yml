@@ -1,0 +1,83 @@
+version: 1
+profile:
+  profile_id: "erwin-main"
+  name: "erwin"
+  repository: "liyasong/erwin"
+  default_runtime: "codex"
+
+  base_branch: "main"
+  production_branch: "main"
+  branch_pattern: "mission/{issue}-{slug}"
+  worktree_enabled_default: true
+
+  issue_label_prefix: "status:"
+  status_labels:
+    queued: "status:queued"
+    wip: "status:wip"
+    review: "status:review"
+    done: "status:done"
+    blocked: "status:blocked"
+
+  priority_labels:
+    p0: "priority:P0"
+    p1: "priority:P1"
+    p2: "priority:P2"
+
+  milestone_strategy: "github-milestones"
+
+  default_verify_commands:
+    - "cd showcase && npm run build"
+
+  targeted_verify_conventions:
+    - "Prefer the narrowest useful check first."
+    - "Use focused build or test commands before broad verification when possible."
+
+  required_pre_ship_checks:
+    - "Working tree is intentionally scoped."
+    - "Relevant targeted verification has passed."
+    - "Changed docs and state artifacts are updated when needed."
+
+  release_mode: "single-branch"
+  rc_branch_pattern: "rc/{version}"
+  staging_workflow: ""
+  promote_workflow: ""
+
+  docs_entrypoints:
+    - "AGENTS.md"
+    - "_project/CURRENT.md"
+    - "_project/GOALS.md"
+    - "docs/README.md"
+
+  code_entrypoints:
+    - "skills/"
+    - "showcase/"
+    - "install.sh"
+
+  config_entrypoints:
+    - ".gitignore"
+    - "package.json"
+    - "showcase/package.json"
+
+  legacy_paths:
+    - "skills/teamwork/"
+    - ".wing/"
+    - ".teamwork/"
+    - ".teamspace/"
+
+  max_parallel_runs: 2
+
+  meeting_triggers:
+    - "Conflicting high-authority evidence"
+    - "High-blast-radius architecture disagreement"
+    - "Release-affecting uncertainty"
+
+  high_risk_scopes:
+    - "skills/wing/"
+    - "skills/teamwork/"
+    - "install.sh"
+    - "release and RC flows"
+
+  cleanup_policies:
+    - "Report stale runs."
+    - "Report stale contracts."
+    - "Report stale signals."

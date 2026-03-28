@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Harness Prototype
+- **Codex-native orchestration harness prototype**: Added repository-local `harness/` definition layer and `.harness/` runtime model with profile, templates, and policies. Implemented deterministic substrate in `scripts/harness_state.py` plus shell surfaces for `home`, `doctor`, `claim`, `drive`, `meetings`, and `maintenance`.
+- **Leader control plane features**: file-backed runtime locking, run-state transition validation, meeting materialization and archival, meeting outcome adoption back into runs, reprovisioning of existing runs into branch/worktree modes, reconciliation and normalization utilities.
+- **Codex-native skill surface**: Added `skills/harness/SKILL.md` and `skills/harness/README.md` as the first repository-local skill for operating the harness.
+- **Codex installer + smoke test**: Added `install-codex.sh` for installing Codex-native `SKILL.md` skills into `~/.codex/skills/`, plus `scripts/harness-smoke-test.sh` for isolated end-to-end verification of the harness prototype.
+- **Packaging verification**: Validated direct `./install-codex.sh` execution, made the installer and smoke-test script executable, and installed `/harness` into the global Codex skill directory.
+- **Bootstrap adapter flow**: Added `scripts/harness-bootstrap.sh` plus `harness/bootstrap/profile-template.yml` so the harness substrate, definitions, generated default profile, local `skills/harness/`, and `install-codex.sh` can be seeded into another git repository.
+- **Bootstrap smoke coverage**: Added `scripts/harness-bootstrap-smoke-test.sh` to verify bootstrap, target-repo leader surfaces, target-repo `install-codex.sh`, and overwrite safety boundaries end-to-end.
+- **Adapter sync path**: Added `.harness/cache/adapter-source.json` metadata and `scripts/harness-sync.sh` so bootstrapped repositories can resync from a remembered or explicit source repository.
+- **Release lifecycle surfaces**: Added `scripts/harness-ship.sh` and `scripts/harness-rc.sh` plus RC runtime artifacts so the harness now covers verification, PR state, merge state, RC creation, RC verification, promotion, and closure.
+- **Release smoke coverage**: Added `scripts/harness-release-smoke-test.sh` to validate the `claim -> ship -> rc` path end-to-end.
+
+### Changed — Project Intelligence
+- **Current project focus updated**: `_project/CURRENT.md` now reflects the shift from Wing-only transition work to the new Codex-native orchestration harness prototype.
+- **Harness documentation expanded**: `harness/README.md` now documents the implemented surfaces and operating loop; `skills/README.md` now lists `/harness` and notes the `SKILL.md`-based Codex-native prototype pattern.
+
 ### Added — Skills Factory
 - **arch-review v0.1.0 — Multi-role debate review skill**: Distilled from 3 projects (gcp-compute-infra, vi_agent), 7+ rounds, 14 opus agents. 8 mechanisms: Data Authority Hierarchy (M1), Role Templates (M2), Lessons Injection (M3), Standard Output Format (M4), Debate Orchestration via TeamCreate + opus teammates (M5), Self-Sufficiency Test (M6), Debug Recording (M7), Revolution self-optimization (M8). 27 bugs found and fixed during 5-round self-review. Complementary to /architect (which designs new systems).
 - **Wing v0.1.0 — Anthropic official skill architecture rewrite**: Complete rewrite of teamwork skills as "wing" — AI autonomous development lifecycle protocol. 6 SKILL.md files (all ≤500 lines, -82% from teamwork's 9,758), 10 operations files (extracted heavy ops), VE single source reference, 8 migrated scripts. New install.sh dual-mode (legacy→commands/, modern→skills/). skill-lint.sh Layer 1 static analysis (12 checks). Named after Wings of Freedom (AoT). Architecture: `~/.claude/skills/{name}/SKILL.md` per Anthropic convention.

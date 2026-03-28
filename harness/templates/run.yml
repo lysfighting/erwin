@@ -1,0 +1,37 @@
+version: 1
+run:
+  run_id: ""
+  mission_id: ""
+  issue_number: 0
+  leader_id: ""
+  owner_type: "leader"
+  owner_id: ""
+  state: "draft"
+  status_reason: ""
+  priority: ""
+  risk_level: ""
+  mode: "solo"
+  execution_surface: ""
+  branch: ""
+  worktree_path: ""
+  session_ref: ""
+  created_at: ""
+  started_at: ""
+  updated_at: ""
+  last_reported_at: ""
+  completed_at: ""
+  verification_status: "unknown"
+  verification_refs: []
+  ship_status: "unstarted"
+  ship_refs: []
+  pr_ref: ""
+  pr_url: ""
+  shipped_at: ""
+  rc_id: ""
+  depends_on: []
+  siblings: []
+  active_signals: []
+  contract_ref: ""
+  objective: ""
+  latest_summary: ""
+  next_expected_action: ""

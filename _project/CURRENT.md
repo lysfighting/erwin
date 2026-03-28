@@ -7,46 +7,47 @@
 ## Project Status
 
 - **Version**: 0.5.0 (in progress)
-- **Last Updated**: 2026-03-22
-- **Last Session**: 2026-03-22 (arch-review v0.1.0 — creation + 5-round self-review + debug/revolution)
+- **Last Updated**: 2026-03-28
+- **Last Session**: 2026-03-28 (Codex-native orchestration harness prototype — first usable control plane)
 
 ## Current Phase
 
-**Phase**: Wing v0.1.0 — Anthropic official skill architecture rewrite
+**Phase**: Codex-native orchestration harness prototype
 
 ## What Was Just Completed
 
-**Session AM** (2026-03-18) — Wing v0.1.0: full rewrite from teamwork
+**Session A** (2026-03-28) — Harness prototype became first usable end-to-end system
 
-- **Naming**: "wing" chosen (Wings of Freedom / AoT connection, short, V4-extensible)
-- **6 SKILL.md files**: wing, wing-issue, wing-claim, wing-drive, wing-ship, wing-rc (all ≤500 lines)
-- **10 operations files**: init, doctor, auto, batch, fix, update, review, promote, hotfix, team-execution
-- **VE single source**: `reference/ve-standard.md` (ends 6x duplication)
-- **8 scripts migrated**: tw-*.sh → wing-*.sh (config fallback: .wing/ → .teamwork/ → .teamspace/)
-- **skill-lint.sh**: Layer 1 static analysis (12 checks, 60 PASS across all 6 skills)
-- **install.sh**: dual-mode (legacy→commands/, modern→skills/)
-- **Validation**: config chain, git ops, contract hash all pass against `.wing/config.yml`
-- **Metrics**: 14,231 → 5,904 lines (-59%), max SKILL.md 4,592 → 441 (-90%)
+- **Committed definition layer**: `harness/` now has profile, templates, and policies for a Codex-native orchestration harness
+- **Deterministic substrate**: `harness_state.py` plus shell wrappers now implement `home`, `doctor`, `claim`, `drive`, `meetings`, `maintenance`
+- **Leader control plane**: run-state transitions, meeting materialization, meeting outcome adoption, reprovisioning, reconciliation, normalization, ship/PR lifecycle, and RC governance
+- **Runtime governance**: file-backed locking prevents concurrent registry loss; `doctor` reached clean runtime state (`issue_count: 0`)
+- **Codex-native surface**: local `skills/harness/SKILL.md` created as the first repo-local harness skill
+- **Codex installer path**: `install-codex.sh` now installs repo Codex-native skills like `harness` into `~/.codex/skills/`, and `/harness` has been installed globally
+- **Bootstrap path**: `scripts/harness-bootstrap.sh` now seeds the harness adapter into another git repository with a generated default profile, local `skills/harness/`, and `install-codex.sh`
+- **Adapter sync path**: bootstrapped repos now record source metadata in `.harness/cache/adapter-source.json` and can resync via `scripts/harness-sync.sh`; the bootstrapped repo also carries its own `harness-bootstrap.sh`
+- **Validation**: branch/worktree provisioning, meeting create/update/close, archived meeting replay, outcome adoption, doctor/home health checks, direct `./install-codex.sh` execution, bootstrap into a temporary repo, remembered-source resync, `harness-smoke-test.sh`, `harness-bootstrap-smoke-test.sh`, and `harness-release-smoke-test.sh` all pass
 
 ## Active Task / What's In Progress
 
-**Wing v0.1.0 delivered. Transition phases remaining:**
+**Harness prototype delivered. Productization tasks remain:**
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| Phase 1 | ✅ | Write 6 SKILL.md + 10 operations + reference |
-| Phase 2 | ✅ | Migrate scripts (tw-*.sh → wing-*.sh) |
-| Phase 3 | 🔄 | Switch erwin to wing (.wing/ config created, CLAUDE.md updated) |
-| Phase 4 | ⬜ | Switch vi_agent to wing (--copy install) |
-| Phase 5 | ⬜ | Delete skills/teamwork/ (after vi_agent stable on wing) |
+| Phase 1 | ✅ | Research protocol / control plane / authority / cybernetics synthesis |
+| Phase 2 | ✅ | Build repository-local harness definition layer (`harness/`) |
+| Phase 3 | ✅ | Implement runtime substrate (`scripts/harness_*`) |
+| Phase 4 | ✅ | Validate `home` / `doctor` / `claim` / `drive` / `meetings` / `maintenance` |
+| Phase 5 | 🔄 | Package the harness more formally as a reusable Codex-native skill/system |
+| Phase 6 | 🔄 | Split reusable adapter/bootstrap flow from repo-local proving ground |
 
 ## Next Session Should Start With
 
 1. Read this file
-2. **Wing remaining work**:
-   - A. End-to-end test: create an Issue with `/wing-issue`, claim with `/wing-claim`, verify full flow
-   - B. vi_agent migration (Phase 4): `./install.sh --copy --target ../vi_agent wing`
-   - C. Skill-tester Layer 2 (smoke tests with mock data)
+2. **Harness next work**:
+   - A. Decide whether to formalize this under a new product name or keep `harness` as the prototype codename
+   - B. Harden the reusable bootstrap/adapter path beyond first-copy scaffolding
+   - C. Decide whether to promote `skills/harness/` beyond prototype-local installation
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
@@ -68,6 +69,7 @@
 - [x] Wing v0.1.0 — Anthropic skill architecture rewrite (6 SKILL.md, 10 operations, 8 scripts)
 - [x] skill-lint.sh — Layer 1 static analysis (12 checks)
 - [x] arch-review v0.1.0 — Multi-role debate review (8 mechanisms, 27 bugs fixed in 5 rounds)
+- [x] Harness prototype — Codex-native repository-local orchestration harness (leader control plane + runtime substrate)
 - [ ] Wing Phase 4: vi_agent migration
 - [ ] Wing Phase 5: teamwork deprecation
 - [ ] Skill-tester Layer 2: smoke tests
@@ -77,6 +79,7 @@
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
+- Harness is now installed and validated in Codex via `install-codex.sh`, and can bootstrap into another repo, but is still a prototype rather than a finalized product surface
 
 ## File Locations
 
@@ -87,6 +90,7 @@
 | ADRs | `_project/decisions/` |
 | V2 architecture | `docs/drive-showcase-v2-architecture.md` |
 | Wing skills | `skills/wing/` |
+| Harness prototype | `harness/`, `scripts/harness_*`, `skills/harness/` |
 | Wing architecture | `_project/ideas/skills/tw2-architecture.md` |
 | Teamwork skills (legacy) | `skills/teamwork/` |
 | Docs index | `docs/README.md` |

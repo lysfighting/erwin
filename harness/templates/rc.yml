@@ -1,0 +1,16 @@
+version: 1
+rc:
+  rc_id: ""
+  version: ""
+  state: "draft"
+  branch: ""
+  base_branch: ""
+  production_branch: ""
+  run_ids: []
+  verification_status: "unknown"
+  verification_refs: []
+  notes: []
+  created_at: ""
+  updated_at: ""
+  promoted_at: ""
+  closed_at: ""

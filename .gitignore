@@ -38,5 +38,8 @@ lint-output.txt
 .teamwork/
 .teamspace/
 
+# Harness runtime state (local, not committed)
+.harness/
+
 # Worktree marker (ephemeral, should only exist in worktrees)
 .mission

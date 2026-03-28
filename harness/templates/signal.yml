@@ -1,0 +1,19 @@
+version: 1
+signal:
+  signal_id: ""
+  kind: ""
+  source_type: ""
+  source_id: ""
+  run_id: ""
+  mission_id: ""
+  applies_to: []
+  scope_type: "local"
+  title: ""
+  summary: ""
+  evidence_refs: []
+  authority_level: ""
+  confidence: "medium"
+  emitted_at: ""
+  fresh_until: ""
+  state: "active"
+  resolution_note: ""
