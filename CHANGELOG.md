@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Post-merge cleanup**: Added a `ship cleanup` path to remove worktrees and optionally delete local mission branches after delivery.
 - **RC hard-case coverage**: Added `rc fix`, `rc cancel`, and `rc hotfix` flows so the harness can now handle surgical RC cherry-picks, RC abandonment with branch cleanup, and production hotfix branch preparation.
 - **Backport flow**: Added `rc backport` so dual-branch repositories can explicitly carry production hotfixes back into the development branch via a governed branch flow.
+- **PR gate tracking**: Added `ship review` and `ship checks` so review feedback and CI state are now first-class merge gates in the harness runtime.
 - **Expanded release smoke**: `scripts/harness-release-smoke-test.sh` now validates RC surgical fix, RC cancel, hotfix preparation, and dual-branch backport in addition to the happy-path release flow.
 
 ### Changed — Project Intelligence

@@ -61,6 +61,10 @@ The harness is file-backed:
   `bash scripts/harness-ship.sh pr-open RUN_ID --draft`
 - `ship-pr`
   `bash scripts/harness-ship.sh pr RUN_ID PR-123 https://example.invalid/pr/123`
+- `ship-review`
+  `bash scripts/harness-ship.sh review RUN_ID approved "Approved after fixes"`
+- `ship-checks`
+  `bash scripts/harness-ship.sh checks RUN_ID passed "ci:passed"`
 - `ship-cleanup`
   `bash scripts/harness-ship.sh cleanup RUN_ID --delete-branch`
 - `ship-merged`

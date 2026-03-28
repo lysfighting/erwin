@@ -557,10 +557,35 @@ def record_verification(run: dict[str, Any], ref: str) -> None:
     run["updated_at"] = now_iso()
 
 
+def record_review(run: dict[str, Any], state: str, note: str = "") -> None:
+    refs = run.setdefault("review_refs", [])
+    if note:
+        append_unique_text(refs, note)
+    run["review_status"] = state
+    run["updated_at"] = now_iso()
+
+
+def record_checks(run: dict[str, Any], state: str, ref: str = "") -> None:
+    refs = run.setdefault("checks_refs", [])
+    if ref:
+        append_unique_text(refs, ref)
+    run["checks_status"] = state
+    run["updated_at"] = now_iso()
+
+
 def record_ship_ref(run: dict[str, Any], ref: str) -> None:
     refs = run.setdefault("ship_refs", [])
     append_unique_text(refs, ref)
     run["updated_at"] = now_iso()
+
+
+def merge_ready(run: dict[str, Any]) -> bool:
+    return (
+        run.get("verification_status") == "passed"
+        and run.get("review_status") == "approved"
+        and run.get("checks_status") == "passed"
+        and run.get("ship_status") in ("in_review", "approved")
+    )
 
 
 def issue_body_from_template(
@@ -1142,6 +1167,26 @@ def doctor_report() -> dict[str, Any]:
                     recommendation="Resolve the blocker or convene a meeting.",
                 )
             )
+        if run.get("pr_ref") and run.get("review_status") == "changes_requested":
+            issues.append(
+                issue_record(
+                    severity="warning",
+                    kind="pr-changes-requested",
+                    ref=run_id,
+                    summary="PR has requested changes.",
+                    recommendation="Address review feedback, push updates, and continue the review loop.",
+                )
+            )
+        if run.get("pr_ref") and run.get("checks_status") == "failed":
+            issues.append(
+                issue_record(
+                    severity="warning",
+                    kind="pr-checks-failed",
+                    ref=run_id,
+                    summary="PR checks are failing.",
+                    recommendation="Fix the failing checks before merging.",
+                )
+            )
         latest_closed_meeting = latest_closed_meeting_for_run(run_id)
         if latest_closed_meeting and meeting_has_output(latest_closed_meeting):
             outcome = meeting_outcome(latest_closed_meeting)
@@ -1560,6 +1605,9 @@ def cmd_home(args: list[str]) -> int:
     active_signals = [signal for signal in signals.get("signals", []) if active_signal(signal)]
     blocked_runs = [run for run in active_runs if run.get("state") == "blocked"]
     waiting_runs = [run for run in active_runs if run.get("state") == "waiting"]
+    review_blocked_runs = [run for run in active_runs if run.get("review_status") == "changes_requested"]
+    checks_failed_runs = [run for run in active_runs if run.get("checks_status") == "failed"]
+    merge_ready_runs = [run for run in active_runs if merge_ready(run)]
     active_run_ids = {run.get("run_id", "") for run in active_runs}
     orphan_signals = [
         signal for signal in active_signals if signal.get("run_id") and signal.get("run_id") not in active_run_ids
@@ -1572,6 +1620,10 @@ def cmd_home(args: list[str]) -> int:
         next_action = "Reconcile orphaned runtime objects before proceeding."
     elif not active_runs:
         next_action = "No active runs. Claim a mission."
+    elif review_blocked_runs or checks_failed_runs:
+        next_action = "Triage PR feedback and failing checks before continuing other work."
+    elif merge_ready_runs:
+        next_action = "One or more PRs are merge-ready."
     elif meeting_actions:
         next_action = "Review open meeting action items and translate them into active execution."
     elif blocked_runs:
@@ -1589,6 +1641,9 @@ def cmd_home(args: list[str]) -> int:
         "profile_id": get_key(profile, "profile.profile_id", ""),
         "active_run_count": len(active_runs),
         "blocked_run_count": len(blocked_runs),
+        "review_blocked_count": len(review_blocked_runs),
+        "checks_failed_count": len(checks_failed_runs),
+        "merge_ready_count": len(merge_ready_runs),
         "active_signal_count": len(active_signals),
         "active_meeting_count": len(meetings),
         "active_rc_count": 1 if active_rc_record else 0,
@@ -2226,11 +2281,16 @@ def cmd_ship(args: list[str]) -> int:
             "mission_id": run.get("mission_id", ""),
             "verification_status": run.get("verification_status", "unknown"),
             "verification_refs": run.get("verification_refs", []),
+            "review_status": run.get("review_status", "unknown"),
+            "review_refs": run.get("review_refs", []),
+            "checks_status": run.get("checks_status", "unknown"),
+            "checks_refs": run.get("checks_refs", []),
             "ship_status": run.get("ship_status", "unstarted"),
             "ship_refs": run.get("ship_refs", []),
             "pr_ref": run.get("pr_ref", ""),
             "pr_url": run.get("pr_url", ""),
             "rc_id": run.get("rc_id", ""),
+            "merge_ready": merge_ready(run),
             "next_expected_action": run.get("next_expected_action", ""),
         }
         print(json.dumps(summary, indent=2, ensure_ascii=True))
@@ -2366,9 +2426,11 @@ def cmd_ship(args: list[str]) -> int:
             run["ship_status"] = "in_review"
             run["pr_ref"] = pr_result["pr_ref"]
             run["pr_url"] = pr_result["pr_url"]
+            run["review_status"] = "requested"
+            run["checks_status"] = "pending"
             record_ship_ref(run, f"pr:{pr_result['pr_ref']}")
             run["latest_summary"] = f"PR opened via GitHub: {pr_result['pr_ref']}"
-            run["next_expected_action"] = "Track review, CI, and merge readiness."
+            run["next_expected_action"] = "Track review and checks until the PR is merge-ready."
             write_registry(registry)
         print(
             json.dumps(
@@ -2407,9 +2469,83 @@ def cmd_ship(args: list[str]) -> int:
             run["pr_ref"] = pr_ref
             if pr_url:
                 run["pr_url"] = pr_url
+            run["review_status"] = "requested"
+            run["checks_status"] = "pending"
             record_ship_ref(run, f"pr:{pr_ref}")
             run["latest_summary"] = f"PR opened or updated: {pr_ref}"
-            run["next_expected_action"] = "Track review, CI, and merge readiness."
+            run["next_expected_action"] = "Track review and checks until the PR is merge-ready."
+            write_registry(registry)
+        print(json.dumps(registry["runs"][index], indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "review":
+        if len(args) < 3:
+            raise SystemExit("ship review requires RUN_ID STATE [NOTE]")
+        run_id = args[1]
+        state = args[2]
+        note = " ".join(args[3:]).strip()
+        allowed = {"requested", "changes_requested", "approved", "commented"}
+        if state not in allowed:
+            raise SystemExit(f"ship review state must be one of: {', '.join(sorted(allowed))}")
+        with harness_lock():
+            registry = read_registry()
+            index = find_run_index(registry, run_id)
+            if index < 0:
+                raise SystemExit(f"run not found: {run_id}")
+            run = registry["runs"][index]
+            if run.get("ship_status", "unstarted") not in ("in_review", "approved"):
+                raise SystemExit("ship review requires a PR in review state first")
+            record_review(run, state, note or state)
+            if state == "approved":
+                run["ship_status"] = "approved"
+                run["latest_summary"] = note or "PR approved"
+                run["next_expected_action"] = (
+                    "Merge the PR when checks are passing."
+                    if run.get("checks_status") == "passed"
+                    else "Wait for checks to pass before merging."
+                )
+            elif state == "changes_requested":
+                run["ship_status"] = "in_review"
+                run["latest_summary"] = note or "Review requested changes"
+                run["next_expected_action"] = "Address requested changes, push updates, and continue review."
+            else:
+                run["ship_status"] = "in_review"
+                run["latest_summary"] = note or f"Review state updated: {state}"
+                run["next_expected_action"] = "Continue review and monitor checks."
+            write_registry(registry)
+        print(json.dumps(registry["runs"][index], indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "checks":
+        if len(args) < 3:
+            raise SystemExit("ship checks requires RUN_ID STATE [REF]")
+        run_id = args[1]
+        state = args[2]
+        ref = " ".join(args[3:]).strip()
+        allowed = {"pending", "failed", "passed"}
+        if state not in allowed:
+            raise SystemExit(f"ship checks state must be one of: {', '.join(sorted(allowed))}")
+        with harness_lock():
+            registry = read_registry()
+            index = find_run_index(registry, run_id)
+            if index < 0:
+                raise SystemExit(f"run not found: {run_id}")
+            run = registry["runs"][index]
+            if run.get("ship_status", "unstarted") not in ("in_review", "approved"):
+                raise SystemExit("ship checks requires a PR in review state first")
+            record_checks(run, state, ref or state)
+            if state == "failed":
+                run["ship_status"] = "in_review"
+                run["latest_summary"] = ref or "Checks failed"
+                run["next_expected_action"] = "Fix the failing checks and push an update."
+            elif state == "passed" and run.get("review_status") == "approved":
+                run["ship_status"] = "approved"
+                run["latest_summary"] = ref or "Checks passed and PR is merge-ready"
+                run["next_expected_action"] = "Merge the PR."
+            else:
+                run["ship_status"] = "in_review"
+                run["latest_summary"] = ref or f"Checks state updated: {state}"
+                run["next_expected_action"] = "Continue review and checks until merge-ready."
             write_registry(registry)
         print(json.dumps(registry["runs"][index], indent=2, ensure_ascii=True))
         return 0
@@ -2427,6 +2563,11 @@ def cmd_ship(args: list[str]) -> int:
             run = registry["runs"][index]
             if policy_value("admissions.require_pre_ship_validation", True) and run.get("verification_status") != "passed":
                 raise SystemExit("ship merged requires verification_status=passed")
+            if run.get("pr_ref"):
+                if run.get("review_status") != "approved":
+                    raise SystemExit("ship merged requires review_status=approved when a PR is tracked")
+                if run.get("checks_status") != "passed":
+                    raise SystemExit("ship merged requires checks_status=passed when a PR is tracked")
             run["ship_status"] = "merged"
             run["shipped_at"] = now_iso()
             record_ship_ref(run, "merged")

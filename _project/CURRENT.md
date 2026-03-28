@@ -21,13 +21,14 @@
 - **Committed definition layer**: `harness/` now has profile, templates, and policies for a Codex-native orchestration harness
 - **Deterministic substrate**: `harness_state.py` plus shell wrappers now implement `home`, `doctor`, `claim`, `drive`, `meetings`, `maintenance`
 - **Leader control plane**: run-state transitions, issue drafting, meeting materialization, meeting outcome adoption, reprovisioning, reconciliation, normalization, ship push / PR draft / PR tracking lifecycle, and RC governance
+- **Ship governance upgraded**: PR review state and checks state are now first-class ship gates instead of informal notes
 - **RC hard cases absorbed**: `scripts/harness-rc.sh` now supports surgical `fix`, `cancel`, `hotfix`, and `backport` flows in addition to create / verify / promote / close
 - **Runtime governance**: file-backed locking prevents concurrent registry loss; `doctor` reached clean runtime state (`issue_count: 0`)
 - **Codex-native surface**: local `skills/harness/SKILL.md` created as the first repo-local harness skill
 - **Codex installer path**: `install-codex.sh` now installs repo Codex-native skills like `harness` into `~/.codex/skills/`, and `/harness` has been installed globally
 - **Bootstrap path**: `scripts/harness-bootstrap.sh` now seeds the harness adapter into another git repository with a generated default profile, local `skills/harness/`, and `install-codex.sh`
 - **Adapter sync path**: bootstrapped repos now record source metadata in `.harness/cache/adapter-source.json` and can resync via `scripts/harness-sync.sh`; the bootstrapped repo also carries its own `harness-bootstrap.sh`
-- **Validation**: branch/worktree provisioning, issue drafting, meeting create/update/close, archived meeting replay, outcome adoption, doctor/home health checks, direct `./install-codex.sh` execution, bootstrap into a temporary repo, remembered-source resync, `harness-issue-smoke-test.sh`, `harness-smoke-test.sh`, `harness-bootstrap-smoke-test.sh`, and `harness-release-smoke-test.sh` all pass
+- **Validation**: branch/worktree provisioning, issue drafting, meeting create/update/close, archived meeting replay, outcome adoption, PR review/check gates, doctor/home health checks, direct `./install-codex.sh` execution, bootstrap into a temporary repo, remembered-source resync, `harness-issue-smoke-test.sh`, `harness-smoke-test.sh`, `harness-bootstrap-smoke-test.sh`, and `harness-release-smoke-test.sh` all pass
 - **Protocol coverage**: the Codex adapter now has first-class `issue`, `claim`, `drive`, `ship`, and `rc` surfaces, including RC surgical fix / cancel / hotfix / backport handling
 
 ## Active Task / What's In Progress

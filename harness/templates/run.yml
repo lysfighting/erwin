@@ -22,6 +22,10 @@ run:
   completed_at: ""
   verification_status: "unknown"
   verification_refs: []
+  review_status: "unknown"
+  review_refs: []
+  checks_status: "unknown"
+  checks_refs: []
   ship_status: "unstarted"
   ship_refs: []
   pr_ref: ""

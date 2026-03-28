@@ -25,6 +25,7 @@ Use this when the model should act as the harness leader:
 - adopt meeting outcomes
 - reprovision runs safely
 - verify ship readiness and record PR lifecycle state
+- track review and checks state until a PR is merge-ready
 - push mission branches and draft PR payloads
 - open GitHub PRs directly when `gh` auth is available
 - perform post-merge cleanup for worktrees and local branches
@@ -47,6 +48,7 @@ Prototype, but working.
 The release smoke now covers:
 
 - `claim -> ship -> rc promote`
+- PR review/check gate before merge
 - RC surgical `fix` via cherry-pick onto an active RC branch
 - RC `cancel` with branch cleanup
 - production-style `hotfix` branch preparation

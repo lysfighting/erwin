@@ -102,6 +102,25 @@ pr_output=$(run_in_repo ./scripts/harness-ship.sh pr "$run_id" "PR-32001" "https
 assert_json_field "$pr_output" '"ship_status": "in_review"' "ship pr records PR state"
 assert_json_field "$pr_output" '"pr_ref": "PR-32001"' "ship pr stores PR ref"
 
+review_requested_output=$(run_in_repo ./scripts/harness-ship.sh review "$run_id" requested "Review requested")
+assert_json_field "$review_requested_output" '"review_status": "requested"' "ship review tracks requested state"
+
+checks_pending_output=$(run_in_repo ./scripts/harness-ship.sh checks "$run_id" pending "ci:pending")
+assert_json_field "$checks_pending_output" '"checks_status": "pending"' "ship checks tracks pending state"
+
+review_changes_output=$(run_in_repo ./scripts/harness-ship.sh review "$run_id" changes_requested "Please address feedback")
+assert_json_field "$review_changes_output" '"review_status": "changes_requested"' "ship review tracks requested changes"
+
+checks_failed_output=$(run_in_repo ./scripts/harness-ship.sh checks "$run_id" failed "ci:failed")
+assert_json_field "$checks_failed_output" '"checks_status": "failed"' "ship checks tracks failed state"
+
+review_approved_output=$(run_in_repo ./scripts/harness-ship.sh review "$run_id" approved "Approved after fixes")
+assert_json_field "$review_approved_output" '"review_status": "approved"' "ship review tracks approval"
+
+checks_passed_output=$(run_in_repo ./scripts/harness-ship.sh checks "$run_id" passed "ci:passed")
+assert_json_field "$checks_passed_output" '"checks_status": "passed"' "ship checks tracks passed state"
+assert_json_field "$checks_passed_output" '"ship_status": "approved"' "ship checks marks merge-ready PR as approved"
+
 merged_output=$(run_in_repo ./scripts/harness-ship.sh merged "$run_id" "Merged cleanly")
 assert_json_field "$merged_output" '"ship_status": "merged"' "ship merged records merge"
 assert_json_field "$merged_output" '"state": "completed"' "ship merged completes run"

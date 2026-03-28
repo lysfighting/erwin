@@ -5,11 +5,12 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [0.3.0] - 2026-03-28
 
 ### Added
+- PR review and checks gates via `scripts/harness-ship.sh review` and `scripts/harness-ship.sh checks`.
 - RC surgical fix flow via `scripts/harness-rc.sh fix`, including cherry-pick and optional push to the active RC branch.
 - RC cancel flow via `scripts/harness-rc.sh cancel`, including optional local and remote RC branch cleanup.
 - Production hotfix preparation via `scripts/harness-rc.sh hotfix`.
 - Dual-branch backport flow via `scripts/harness-rc.sh backport`.
-- Release smoke coverage for RC fix/cancel, hotfix, and backport flows.
+- Release smoke coverage for PR review/check gates plus RC fix/cancel, hotfix, and backport flows.
 
 ## [0.2.0] - 2026-03-28
 
