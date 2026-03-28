@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Council orchestration hardening**: meetings now preserve `phase_history`, explicit `orchestration` state, linked cross-examination metadata, and synthesis audits with blocker/evidence coverage instead of treating phase labels as sufficient proof of debate quality.
 - **Council health visibility**: `meetings summary` now exposes debate-round and synthesis-readiness signals, while `doctor` flags missing phase history, unlinked cross-examination, incomplete synthesis, and unresolved findings without follow-up actions.
 - **Meeting authority audit**: same-claim council findings can now be grouped by claim/dimension, higher-authority winners are explained explicitly, unresolved same-authority conflicts block synthesis readiness, and leaders can inspect the result through `meetings authority-audit`.
+- **Richer selector semantics**: ownership selectors now carry family/match/bounded metadata, path-family selectors detect semantic overlap (`dir`/`file`/`module`), and overlap admission/reporting is no longer limited to exact raw-string equality.
 
 ### Changed — Project Intelligence
 - **Current project focus updated**: `_project/CURRENT.md` now reflects the shift from Wing-only transition work to the new Codex-native orchestration harness prototype.

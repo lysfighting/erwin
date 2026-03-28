@@ -131,9 +131,12 @@ Current truth:
 - active exclusive overlap is now rejected
 
 So Kubernetes-style ownership discipline is no longer just textual.
-But the system still lacks richer selectors and formal ownership transfer semantics.
-The latest pass materially improved this: selectors are now normalized and bounded ownership can be formally transferred between runs.
-What is still missing is the next layer above that baseline.
+The latest passes materially improved this:
+- selectors are now normalized
+- bounded ownership can be formally transferred between runs
+- selector families now capture richer path overlap semantics
+
+What is still missing is the next layer above that stronger baseline.
 
 ### 3. State authority is stronger, but still not fully harness-wide
 

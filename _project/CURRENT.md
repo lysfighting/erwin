@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.8.0 (in progress)
+- **Version**: 0.9.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Codex-native orchestration harness council orchestration hardening pass completed)
+- **Last Session**: 2026-03-29 (Codex-native orchestration harness richer selector semantics pass completed)
 
 ## Current Phase
 
@@ -38,6 +38,9 @@
 - **Doctor now audits council rigor**: active meetings are checked for missing phase history, unlinked cross-examination, missing synthesis audit, output reached before synthesis readiness, and unresolved findings with no follow-up action
 - **Teammate smoke now covers governed debate linkage**: the council path now validates explicit cross-examination targeting plus synthesis-readiness reporting in addition to the previous participant/position lifecycle
 - **Meeting authority audit added**: meetings now detect same-claim finding conflicts, explain when a higher-authority finding wins, and surface unresolved same-authority conflicts through `meetings summary`, `meetings authority-audit`, and synthesis blocking rules
+- **Richer selector semantics added**: ownership selectors now carry family/match/bounded metadata, normalize aliases like `directory -> dir`, and recognize semantic path overlap such as `dir:docs/release` conflicting with `file:docs/release/CHANGELOG.md`
+- **Semantic overlap enforcement added**: teammate assignment, claim-time admission, and doctor/home overlap accounting now operate on selector semantics instead of only exact string equality
+- **Adapter line advanced again**: `harness/adapter-manifest.yml` now declares `0.9.0-prototype` to reflect selector-family-aware ownership governance
 - **Adapter/package flow updated**: `harness/adapter-manifest.yml` now packages the Go module files and build runner, bootstrapped repos receive the Go sources, and `harness-bootstrap.sh` / `harness-sync.sh` now query adapter metadata through the Go runtime path
 - **Smoke suite de-Pythonized**: issue/core/release/teammate smoke scripts now query package files through the harness adapter surface and extract runtime ids without Python helpers
 - **Validation**: `./scripts/harness-build-runtime.sh`, `./scripts/harness-runtime-dist-smoke-test.sh`, `./scripts/harness-adapter.sh validate`, `./scripts/harness-issue-smoke-test.sh`, `./scripts/harness-smoke-test.sh`, `./scripts/harness-teammate-smoke-test.sh`, `./scripts/harness-release-smoke-test.sh`, `./scripts/harness-bootstrap-smoke-test.sh`, and `./scripts/harness-all-smoke-test.sh` all pass cleanly on the Go runtime; `./scripts/harness-maintenance.sh normalize` also upgrades older runtime state into mission-aware schema cleanly
@@ -84,7 +87,7 @@
 2. **Harness next work**:
    - A. Decide whether to formalize this under a new product name or keep `harness` as the prototype codename
    - B. Decide whether `harness/adapter-manifest.yml` should become the public package spec or stay repo-private while naming is unresolved
-   - C. Deepen selector semantics beyond current normalized `kind:value` ownership model and moved-selector events
+   - C. Continue deepening selector semantics beyond the new family-aware baseline into richer policies and transfer rules
    - D. Deepen authority conflict resolution beyond current signal-level supersession into broader high-vs-low authority adjudication; same-claim meeting finding conflicts are now surfaced, but non-meeting cross-surface adjudication is still missing
    - E. Decide how much farther to push council behavior toward `arch-review`-style automated debate versus keeping it as a durable packet/protocol now that phase history, linked cross-exam, and synthesis audits are first-class
    - F. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer

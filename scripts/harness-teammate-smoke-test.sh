@@ -53,7 +53,7 @@ assert_json_field() {
   local json="$1"
   local needle="$2"
   local label="$3"
-  if echo "$json" | grep -q "$needle"; then
+  if grep -q "$needle" <<<"$json"; then
     pass "$label"
   else
     fail "$label"
@@ -104,6 +104,19 @@ if [ "$rc" -ne 0 ] && echo "$overlap_output" | grep -q 'ownership overlap detect
 else
   fail "exclusive ownership overlap is rejected"
   echo "$overlap_output"
+fi
+
+semantic_owner=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-docs completeness-checker "Prepare release-doc updates" --scope="release docs" --owns="dir:docs/release")
+assert_json_field "$semantic_owner" '"owner_id": "worker-docs"' "directory selector assignment created"
+set +e
+semantic_overlap_output=$(cd "$TEST_REPO" && bash scripts/harness-teammates.sh assign "$leader_run_id" worker-doc-file completeness-checker "Patch release changelog" --scope="release changelog" --owns="file:docs/release/CHANGELOG.md" 2>&1)
+semantic_rc=$?
+set -e
+if [ "$semantic_rc" -ne 0 ] && grep -q 'file:docs/release/CHANGELOG.md~dir:docs/release' <<<"$semantic_overlap_output"; then
+  pass "semantic directory/file overlap is rejected"
+else
+  fail "semantic directory/file overlap is rejected"
+  echo "$semantic_overlap_output"
 fi
 
 section "Reporting and communication"
@@ -177,7 +190,7 @@ assert_json_field "$authority_audit" '"resolution_kind": "authority_wins"' "auth
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_mission_count": 1' "home surfaces active mission count"
-assert_json_field "$home_output" '"active_teammate_count": 2' "home surfaces active teammate runs"
+assert_json_field "$home_output" '"active_teammate_count": 3' "home surfaces active teammate runs"
 assert_json_field "$home_output" '"coordination_signal_count":' "home surfaces coordination signal count"
 assert_json_field "$home_output" '"dependency_blocked_count": 1' "home surfaces dependency-blocked runs"
 assert_json_field "$home_output" '"ownership_overlap_count": 0' "home stays free of ownership overlap"

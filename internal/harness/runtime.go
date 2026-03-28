@@ -1274,12 +1274,47 @@ func parseOwnershipSelector(raw string) map[string]any {
 	if parts := strings.SplitN(value, ":", 2); len(parts) == 2 && strings.TrimSpace(parts[0]) != "" && strings.TrimSpace(parts[1]) != "" {
 		kind = strings.TrimSpace(parts[0])
 		selectorValue = strings.TrimSpace(parts[1])
+	}
+	switch kind {
+	case "directory", "folder":
+		kind = "dir"
+	case "path":
+		kind = "file"
+	case "component":
+		kind = "module"
+	}
+	switch kind {
+	case "file", "dir", "module":
+		selectorValue = strings.TrimSpace(strings.TrimSuffix(selectorValue, "/"))
+		selectorValue = strings.TrimPrefix(selectorValue, "./")
+	case "scope", "interface":
+		selectorValue = slugify(selectorValue)
+	}
+	family := "opaque"
+	match := "exact"
+	bounded := true
+	switch kind {
+	case "mission", "branch":
+		family = "anchor"
+		bounded = false
+	case "scope", "interface":
+		family = "semantic"
+	case "file":
+		family = "path"
+	case "dir", "module":
+		family = "path"
+		match = "prefix"
+	}
+	if selectorValue != "" {
 		value = kind + ":" + selectorValue
 	}
 	return map[string]any{
 		"selector": value,
 		"kind":     kind,
 		"value":    selectorValue,
+		"family":   family,
+		"match":    match,
+		"bounded":  bounded,
 	}
 }
 
@@ -1311,6 +1346,60 @@ func ownershipSelectorKeys(mapping map[string]any) []string {
 		}
 	}
 	return dedupeStrings(selectors)
+}
+
+func selectorRecordFor(raw string) map[string]any {
+	return parseOwnershipSelector(raw)
+}
+
+func pathOverlap(leftKind, leftValue, rightKind, rightValue string) bool {
+	if leftValue == "" || rightValue == "" {
+		return false
+	}
+	sameOrPrefix := func(prefix, candidate string) bool {
+		return candidate == prefix || strings.HasPrefix(candidate, prefix+"/")
+	}
+	switch {
+	case leftKind == "file" && rightKind == "file":
+		return leftValue == rightValue
+	case leftKind == "file" && (rightKind == "dir" || rightKind == "module"):
+		return sameOrPrefix(rightValue, leftValue)
+	case rightKind == "file" && (leftKind == "dir" || leftKind == "module"):
+		return sameOrPrefix(leftValue, rightValue)
+	case (leftKind == "dir" || leftKind == "module") && (rightKind == "dir" || rightKind == "module"):
+		return sameOrPrefix(leftValue, rightValue) || sameOrPrefix(rightValue, leftValue)
+	default:
+		return false
+	}
+}
+
+func ownershipSelectorsOverlap(leftRaw, rightRaw string) bool {
+	left := selectorRecordFor(leftRaw)
+	right := selectorRecordFor(rightRaw)
+	leftFamily := stringValue(left["family"])
+	rightFamily := stringValue(right["family"])
+	leftKind := stringValue(left["kind"])
+	rightKind := stringValue(right["kind"])
+	leftValue := stringValue(left["value"])
+	rightValue := stringValue(right["value"])
+	if leftFamily == "" || rightFamily == "" {
+		return strings.TrimSpace(leftRaw) == strings.TrimSpace(rightRaw)
+	}
+	if leftFamily != rightFamily {
+		return false
+	}
+	switch leftFamily {
+	case "anchor", "semantic":
+		return leftKind == rightKind && leftValue == rightValue
+	case "path":
+		return pathOverlap(leftKind, leftValue, rightKind, rightValue)
+	default:
+		return leftKind == rightKind && leftValue == rightValue
+	}
+}
+
+func boundedOwnershipSelector(raw string) bool {
+	return boolValue(parseOwnershipSelector(raw)["bounded"])
 }
 
 func setOwnershipSelectors(mapping map[string]any, claims []string) {
@@ -1410,10 +1499,7 @@ func overlappingOwnershipRuns(registry map[string]any, candidateClaims []string,
 	for _, runID := range ignoreRunIDs {
 		ignore[runID] = true
 	}
-	claimSet := map[string]bool{}
-	for _, claim := range dedupeStrings(candidateClaims) {
-		claimSet[claim] = true
-	}
+	candidateClaims = dedupeStrings(candidateClaims)
 	conflicts := []map[string]any{}
 	for _, item := range toList(registry["runs"]) {
 		run, _ := toMap(item)
@@ -1422,9 +1508,11 @@ func overlappingOwnershipRuns(registry map[string]any, candidateClaims []string,
 			continue
 		}
 		shared := []string{}
-		for _, claim := range ownershipClaims(run) {
-			if claimSet[claim] {
-				shared = append(shared, claim)
+		for _, candidate := range candidateClaims {
+			for _, claim := range ownershipClaims(run) {
+				if ownershipSelectorsOverlap(candidate, claim) {
+					shared = append(shared, candidate+"~"+claim)
+				}
 			}
 		}
 		if len(shared) == 0 {
@@ -1435,7 +1523,7 @@ func overlappingOwnershipRuns(registry map[string]any, candidateClaims []string,
 			"mission_id":       stringValue(run["mission_id"]),
 			"owner_id":         stringValue(run["owner_id"]),
 			"owner_type":       stringValue(run["owner_type"]),
-			"ownership_claims": stringListToAny(shared),
+			"ownership_claims": stringListToAny(dedupeStrings(shared)),
 		})
 	}
 	return conflicts
@@ -3186,24 +3274,35 @@ func doctorReport() map[string]any {
 		}
 	}
 
-	ownershipIndex := map[string][]map[string]any{}
+	exclusiveRuns := []map[string]any{}
 	for _, run := range activeRuns {
-		if overlapPolicy(run) == "shared" {
-			continue
-		}
-		for _, claim := range ownershipClaims(run) {
-			ownershipIndex[claim] = append(ownershipIndex[claim], run)
+		if overlapPolicy(run) != "shared" {
+			exclusiveRuns = append(exclusiveRuns, run)
 		}
 	}
-	for claim, claimRuns := range ownershipIndex {
-		if len(claimRuns) < 2 {
-			continue
+	seenOwnershipOverlap := map[string]bool{}
+	for index, leftRun := range exclusiveRuns {
+		leftID := stringValue(leftRun["run_id"])
+		for _, rightRun := range exclusiveRuns[index+1:] {
+			rightID := stringValue(rightRun["run_id"])
+			shared := []string{}
+			for _, leftClaim := range ownershipClaims(leftRun) {
+				for _, rightClaim := range ownershipClaims(rightRun) {
+					if ownershipSelectorsOverlap(leftClaim, rightClaim) {
+						shared = append(shared, leftClaim+"~"+rightClaim)
+					}
+				}
+			}
+			if len(shared) == 0 {
+				continue
+			}
+			key := leftID + "::" + rightID + "::" + strings.Join(dedupeStrings(shared), "|")
+			if seenOwnershipOverlap[key] {
+				continue
+			}
+			seenOwnershipOverlap[key] = true
+			issues = append(issues, issueRecord("critical", "ownership-overlap", leftID, fmt.Sprintf("Active exclusive runs overlap semantically with %s via %s", rightID, strings.Join(dedupeStrings(shared), ", ")), "Narrow ownership selectors, transfer them formally, or explicitly mark overlap as shared."))
 		}
-		runIDs := []string{}
-		for _, run := range claimRuns {
-			runIDs = append(runIDs, stringValue(run["run_id"]))
-		}
-		issues = append(issues, issueRecord("critical", "ownership-overlap", claim, fmt.Sprintf("Multiple active exclusive runs claim the same ownership target: %s", strings.Join(runIDs, ", ")), "Narrow ownership claims or explicitly mark overlap as shared."))
 	}
 
 	for _, signal := range activeSignals {
@@ -3772,8 +3871,8 @@ func cmdRuns(args []string) error {
 		}
 		selectors = dedupeStrings(selectors)
 		for _, selector := range selectors {
-			if strings.HasPrefix(selector, "mission:") || strings.HasPrefix(selector, "branch:") {
-				return fmt.Errorf("runs transfer-ownership only supports bounded selectors, not mission/branch anchors: %s", selector)
+			if !boundedOwnershipSelector(selector) {
+				return fmt.Errorf("runs transfer-ownership only supports bounded selectors, not ownership anchors: %s", selector)
 			}
 		}
 		return withHarnessLock(func() error {
@@ -4123,11 +4222,46 @@ func cmdHome(args []string) error {
 		}
 	}
 	overlappingClaims := []any{}
+	seenOverlapPairs := map[string]bool{}
+	activeExclusiveRuns := []map[string]any{}
+	for _, item := range activeRuns {
+		run, _ := toMap(item)
+		if overlapPolicy(run) != "shared" {
+			activeExclusiveRuns = append(activeExclusiveRuns, run)
+		}
+	}
 	for claim, runIDs := range ownershipOverlapClaims {
 		if len(runIDs) > 1 {
 			overlappingClaims = append(overlappingClaims, map[string]any{
 				"claim":   claim,
 				"run_ids": stringListToAny(dedupeStrings(runIDs)),
+			})
+		}
+	}
+	for index, leftRun := range activeExclusiveRuns {
+		leftID := stringValue(leftRun["run_id"])
+		for _, rightRun := range activeExclusiveRuns[index+1:] {
+			rightID := stringValue(rightRun["run_id"])
+			shared := []string{}
+			for _, leftClaim := range ownershipClaims(leftRun) {
+				for _, rightClaim := range ownershipClaims(rightRun) {
+					if ownershipSelectorsOverlap(leftClaim, rightClaim) {
+						shared = append(shared, leftClaim+"~"+rightClaim)
+					}
+				}
+			}
+			if len(shared) == 0 {
+				continue
+			}
+			pairKey := leftID + "::" + rightID + "::" + strings.Join(dedupeStrings(shared), "|")
+			if seenOverlapPairs[pairKey] {
+				continue
+			}
+			seenOverlapPairs[pairKey] = true
+			overlappingClaims = append(overlappingClaims, map[string]any{
+				"claim":         "semantic-overlap",
+				"run_ids":       stringListToAny([]string{leftID, rightID}),
+				"selector_refs": stringListToAny(dedupeStrings(shared)),
 			})
 		}
 	}
