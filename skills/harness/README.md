@@ -10,6 +10,7 @@ Codex-native leader surface for the repository-local orchestration harness proto
 - `bash scripts/harness-issue.sh`
 - `bash scripts/harness-claim.sh`
 - `bash scripts/harness-drive.sh`
+- `bash scripts/harness-teammates.sh`
 - `bash scripts/harness-ship.sh`
 - `bash scripts/harness-rc.sh`
 - `bash scripts/harness-meetings.sh`
@@ -24,6 +25,8 @@ Use this when the model should act as the harness leader:
 - draft or create executable issues
 - claim work into execution
 - convene and close councils
+- assign and govern bounded teammate execution
+- record teammate reports and sibling communication as structured signals
 - adopt meeting outcomes
 - reprovision runs safely
 - verify ship readiness and record PR lifecycle state
@@ -47,6 +50,7 @@ Prototype, but working.
 ./scripts/harness-smoke-test.sh
 ./scripts/harness-bootstrap-smoke-test.sh
 ./scripts/harness-release-smoke-test.sh
+./scripts/harness-teammate-smoke-test.sh
 ./scripts/harness-all-smoke-test.sh
 ```
 

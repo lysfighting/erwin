@@ -235,6 +235,10 @@ def merge_dicts(base: Any, override: Any) -> Any:
     return override
 
 
+def parse_pipe_list(raw: str) -> list[str]:
+    return [item.strip() for item in raw.split("|") if item.strip()]
+
+
 def fill_if_blank(mapping: dict[str, Any], key: str, value: Any) -> None:
     if not mapping.get(key):
         mapping[key] = value
@@ -808,6 +812,29 @@ def active_signal(signal: dict[str, Any]) -> bool:
     return signal.get("state") == "active"
 
 
+def active_teammate_run(run: dict[str, Any]) -> bool:
+    return active_run(run) and run.get("owner_type") == "teammate"
+
+
+def child_runs_for_parent(registry: dict[str, Any], parent_run_id: str) -> list[dict[str, Any]]:
+    return [
+        run
+        for run in registry.get("runs", [])
+        if run.get("parent_run_id") == parent_run_id and active_teammate_run(run)
+    ]
+
+
+def sibling_linked(run: dict[str, Any], target_run_id: str) -> bool:
+    return target_run_id in run.get("communication_peers", []) or target_run_id in run.get("siblings", [])
+
+
+def source_type_for_run(run: dict[str, Any]) -> str:
+    owner_type = run.get("owner_type", "")
+    if owner_type in ("leader", "teammate", "automation", "script"):
+        return owner_type
+    return "teammate" if owner_type else "leader"
+
+
 def allowed_run_transitions() -> dict[str, set[str]]:
     return {
         "draft": {"ready", "abandoned"},
@@ -1351,6 +1378,50 @@ def meeting_outcome(meeting: dict[str, Any]) -> dict[str, str]:
     }
 
 
+def emit_signal(
+    *,
+    kind: str,
+    source_run: dict[str, Any],
+    title: str,
+    summary: str,
+    applies_to: list[str],
+    scope_type: str = "local",
+    confidence: str = "medium",
+    authority_level: str = "L2",
+    evidence_refs: list[str] | None = None,
+    fresh_hours: float = 12.0,
+) -> dict[str, Any]:
+    log = read_signal_log()
+    template = load_data(signal_template_path(), {}).get("signal", {})
+    emitted_at = now_iso()
+    fresh_until_dt = now_dt().timestamp() + (fresh_hours * 3600)
+    fresh_until = datetime.fromtimestamp(fresh_until_dt, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+    signal = merge_dicts(
+        template,
+        {
+            "signal_id": f"sig-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}-{slugify(kind)}-{slugify(source_run.get('owner_id', '') or source_run.get('run_id', ''))}",
+            "kind": kind,
+            "source_type": source_type_for_run(source_run),
+            "source_id": source_run.get("owner_id", "") or source_run.get("leader_id", ""),
+            "run_id": source_run.get("run_id", ""),
+            "mission_id": source_run.get("mission_id", ""),
+            "applies_to": applies_to,
+            "scope_type": scope_type,
+            "title": title,
+            "summary": summary,
+            "evidence_refs": evidence_refs or [],
+            "authority_level": authority_level,
+            "confidence": confidence,
+            "emitted_at": emitted_at,
+            "fresh_until": fresh_until,
+            "state": "active",
+        },
+    )
+    log.setdefault("signals", []).append(signal)
+    write_signal_log(log)
+    return signal
+
+
 def materialize_rc(
     *,
     rc_id: str,
@@ -1449,6 +1520,7 @@ def doctor_report() -> dict[str, Any]:
     active_rc_record = active_rc()
     active_rcs = [rc for rc in list_rcs() if rc.get("state") == "active"]
     active_runs = [run for run in registry.get("runs", []) if active_run(run)]
+    active_teammates = [run for run in active_runs if active_teammate_run(run)]
     active_signals = [signal for signal in signals.get("signals", []) if active_signal(signal)]
     active_run_ids = {run.get("run_id", "") for run in active_runs}
     run_stale_after = float(policy_value("cleanup.stale_run_after_hours", 24))
@@ -1554,6 +1626,37 @@ def doctor_report() -> dict[str, Any]:
                     recommendation="Re-provision the worktree or update the run record.",
                 )
             )
+        if run.get("owner_type") == "teammate":
+            if not run.get("parent_run_id"):
+                issues.append(
+                    issue_record(
+                        severity="warning",
+                        kind="teammate-missing-parent",
+                        ref=run_id,
+                        summary="Teammate run is missing parent_run_id.",
+                        recommendation="Repair the delegation link or recreate the teammate assignment.",
+                    )
+                )
+            if not run.get("assigned_scope"):
+                issues.append(
+                    issue_record(
+                        severity="warning",
+                        kind="teammate-missing-scope",
+                        ref=run_id,
+                        summary="Teammate run has no assigned scope.",
+                        recommendation="Record the bounded assignment scope explicitly.",
+                    )
+                )
+            if not run.get("reporting_expectations"):
+                issues.append(
+                    issue_record(
+                        severity="warning",
+                        kind="teammate-missing-reporting-contract",
+                        ref=run_id,
+                        summary="Teammate run has no reporting expectations.",
+                        recommendation="Record the teammate reporting contract before trusting the assignment.",
+                    )
+                )
 
     for signal in active_signals:
         signal_id = signal.get("signal_id", "")
@@ -1634,7 +1737,37 @@ def doctor_report() -> dict[str, Any]:
                     recommendation="Assign bounded roles before continuing the meeting.",
                 )
             )
+        if not meeting.get("phase"):
+            issues.append(
+                issue_record(
+                    severity="warning",
+                    kind="meeting-missing-phase",
+                    ref=meeting_id,
+                    summary="Meeting has no active phase marker.",
+                    recommendation="Set the meeting phase before continuing the council.",
+                )
+            )
         meeting_age = age_hours(meeting.get("created_at", ""))
+        if meeting_age is not None and meeting_age > 0.25 and not meeting.get("participants"):
+            issues.append(
+                issue_record(
+                    severity="warning",
+                    kind="meeting-missing-participants",
+                    ref=meeting_id,
+                    summary="Meeting is active but has no participant roster yet.",
+                    recommendation="Add bounded participants before continuing independent review.",
+                )
+            )
+        if meeting_age is not None and meeting_age > 0.5 and meeting.get("participants") and not meeting.get("positions"):
+            issues.append(
+                issue_record(
+                    severity="warning",
+                    kind="meeting-missing-positions",
+                    ref=meeting_id,
+                    summary="Meeting has participants but no recorded positions yet.",
+                    recommendation="Record independent review or cross-examination positions before synthesis.",
+                )
+            )
         if meeting_age is not None and meeting_age > meeting_stale_after:
             issues.append(
                 issue_record(
@@ -1710,6 +1843,7 @@ def doctor_report() -> dict[str, Any]:
         "critical_count": critical,
         "warning_count": warning,
         "info_count": info,
+        "active_teammate_count": len(active_teammates),
         "issues": issues,
         "next_action": next_action,
     }
@@ -1966,12 +2100,18 @@ def cmd_home(args: list[str]) -> int:
     meeting_actions = open_meeting_actions()
     active_rc_record = active_rc()
     active_runs = [run for run in registry.get("runs", []) if active_run(run)]
+    active_teammates = [run for run in active_runs if active_teammate_run(run)]
     active_signals = [signal for signal in signals.get("signals", []) if active_signal(signal)]
     blocked_runs = [run for run in active_runs if run.get("state") == "blocked"]
     waiting_runs = [run for run in active_runs if run.get("state") == "waiting"]
     review_blocked_runs = [run for run in active_runs if run.get("review_status") == "changes_requested"]
     checks_failed_runs = [run for run in active_runs if run.get("checks_status") == "failed"]
     merge_ready_runs = [run for run in active_runs if merge_ready(run)]
+    coordination_signals = [
+        signal
+        for signal in active_signals
+        if signal.get("scope_type") == "sibling" or signal.get("kind") in ("requires_meeting", "interface_change", "dependency_discovered")
+    ]
     active_run_ids = {run.get("run_id", "") for run in active_runs}
     orphan_signals = [
         signal for signal in active_signals if signal.get("run_id") and signal.get("run_id") not in active_run_ids
@@ -2004,11 +2144,13 @@ def cmd_home(args: list[str]) -> int:
     summary = {
         "profile_id": get_key(profile, "profile.profile_id", ""),
         "active_run_count": len(active_runs),
+        "active_teammate_count": len(active_teammates),
         "blocked_run_count": len(blocked_runs),
         "review_blocked_count": len(review_blocked_runs),
         "checks_failed_count": len(checks_failed_runs),
         "merge_ready_count": len(merge_ready_runs),
         "active_signal_count": len(active_signals),
+        "coordination_signal_count": len(coordination_signals),
         "active_meeting_count": len(meetings),
         "active_rc_count": 1 if active_rc_record else 0,
         "open_meeting_action_count": len(meeting_actions),
@@ -3582,6 +3724,60 @@ def cmd_meetings(args: list[str]) -> int:
             write_active_meeting(meeting)
         print(json.dumps(meeting, indent=2, ensure_ascii=True))
         return 0
+    if subcommand == "set-phase":
+        if len(args) < 3:
+            raise SystemExit("meetings set-phase requires MEETING_ID PHASE")
+        meeting_id = args[1]
+        phase = args[2]
+        allowed = {"setup", "independent_review", "cross_examination", "synthesis", "output", "closed"}
+        if phase not in allowed:
+            raise SystemExit(f"meetings set-phase phase must be one of: {', '.join(sorted(allowed))}")
+        with harness_lock():
+            data = read_active_meeting(meeting_id)
+            if not data:
+                raise SystemExit(f"active meeting not found: {meeting_id}")
+            meeting = data.get("meeting", {})
+            meeting["phase"] = phase
+            write_active_meeting(meeting)
+        print(json.dumps(meeting, indent=2, ensure_ascii=True))
+        return 0
+    if subcommand == "add-participant":
+        if len(args) < 4:
+            raise SystemExit("meetings add-participant requires MEETING_ID RUN_ID ROLE")
+        meeting_id = args[1]
+        run_id = args[2]
+        role = " ".join(args[3:]).strip()
+        with harness_lock():
+            data = read_active_meeting(meeting_id)
+            if not data:
+                raise SystemExit(f"active meeting not found: {meeting_id}")
+            meeting = data.get("meeting", {})
+            registry = read_registry()
+            index = find_run_index(registry, run_id)
+            if index < 0:
+                raise SystemExit(f"run not found: {run_id}")
+            run = registry["runs"][index]
+            participants = meeting.setdefault("participants", [])
+            if not any(item.get("run_id") == run_id for item in participants if isinstance(item, dict)):
+                participants.append(
+                    {
+                        "run_id": run_id,
+                        "owner_id": run.get("owner_id", ""),
+                        "owner_type": run.get("owner_type", ""),
+                        "role": role,
+                        "joined_at": now_iso(),
+                    }
+                )
+            roles = meeting.setdefault("roles", [])
+            if role not in roles:
+                roles.append(role)
+            meeting["phase"] = meeting.get("phase", "") or "setup"
+            write_active_meeting(meeting)
+            run["meeting_ref"] = meeting_id
+            run["updated_at"] = now_iso()
+            write_registry(registry)
+        print(json.dumps(meeting, indent=2, ensure_ascii=True))
+        return 0
     if subcommand == "add-context":
         if len(args) < 3:
             raise SystemExit("meetings add-context requires MEETING_ID REF")
@@ -3596,6 +3792,74 @@ def cmd_meetings(args: list[str]) -> int:
             refs = packet.setdefault("context_refs", [])
             if ref not in refs:
                 refs.append(ref)
+            write_active_meeting(meeting)
+        print(json.dumps(meeting, indent=2, ensure_ascii=True))
+        return 0
+    if subcommand == "add-position":
+        if len(args) < 5:
+            raise SystemExit("meetings add-position requires MEETING_ID RUN_ID PHASE STANCE TEXT")
+        meeting_id = args[1]
+        run_id = args[2]
+        phase = args[3]
+        stance = args[4]
+        position_tokens: list[str] = []
+        evidence_refs: list[str] = []
+        authority_level = "L2"
+        for arg in args[5:]:
+            if arg.startswith("--evidence="):
+                evidence_refs.extend(parse_pipe_list(arg.split("=", 1)[1].strip()))
+            elif arg.startswith("--authority="):
+                authority_level = arg.split("=", 1)[1].strip() or "L2"
+            else:
+                position_tokens.append(arg)
+        summary = " ".join(position_tokens).strip()
+        if not summary:
+            raise SystemExit("meetings add-position requires TEXT")
+        allowed_phases = {"independent_review", "cross_examination", "synthesis"}
+        if phase not in allowed_phases:
+            raise SystemExit(f"meetings add-position phase must be one of: {', '.join(sorted(allowed_phases))}")
+        with harness_lock():
+            data = read_active_meeting(meeting_id)
+            if not data:
+                raise SystemExit(f"active meeting not found: {meeting_id}")
+            meeting = data.get("meeting", {})
+            registry = read_registry()
+            index = find_run_index(registry, run_id)
+            if index < 0:
+                raise SystemExit(f"run not found: {run_id}")
+            run = registry["runs"][index]
+            participants = meeting.setdefault("participants", [])
+            existing = next(
+                (item for item in participants if isinstance(item, dict) and item.get("run_id") == run_id),
+                None,
+            )
+            role = existing.get("role", "") if existing else run.get("role", "") or run.get("owner_id", "")
+            if existing is None:
+                participants.append(
+                    {
+                        "run_id": run_id,
+                        "owner_id": run.get("owner_id", ""),
+                        "owner_type": run.get("owner_type", ""),
+                        "role": role,
+                        "joined_at": now_iso(),
+                    }
+                )
+            positions = meeting.setdefault("positions", [])
+            positions.append(
+                {
+                    "position_id": f"position-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}",
+                    "run_id": run_id,
+                    "owner_id": run.get("owner_id", ""),
+                    "role": role,
+                    "phase": phase,
+                    "stance": stance,
+                    "summary": summary,
+                    "evidence_refs": evidence_refs,
+                    "authority_level": authority_level,
+                    "recorded_at": now_iso(),
+                }
+            )
+            meeting["phase"] = phase
             write_active_meeting(meeting)
         print(json.dumps(meeting, indent=2, ensure_ascii=True))
         return 0
@@ -3693,6 +3957,390 @@ def cmd_meetings(args: list[str]) -> int:
         print(json.dumps(meeting, indent=2, ensure_ascii=True))
         return 0
     raise SystemExit(f"unknown meetings subcommand: {subcommand}")
+
+
+def cmd_teammates(args: list[str]) -> int:
+    ensure_runtime_dirs()
+    if not args:
+        raise SystemExit("teammates requires a subcommand")
+    subcommand = args[0]
+    registry = read_registry()
+
+    if subcommand == "list":
+        include_all = "--all" in args[1:]
+        scope = next((arg for arg in args[1:] if not arg.startswith("--")), "")
+        runs = [run for run in registry.get("runs", []) if run.get("owner_type") == "teammate"]
+        if not include_all:
+            runs = [run for run in runs if active_run(run)]
+        if scope:
+            runs = [
+                run
+                for run in runs
+                if run.get("parent_run_id") == scope or run.get("run_id") == scope or run.get("mission_id") == scope
+            ]
+        print(json.dumps(runs, indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "get":
+        if len(args) < 2:
+            raise SystemExit("teammates get requires RUN_ID")
+        index = find_run_index(registry, args[1])
+        if index < 0 or registry["runs"][index].get("owner_type") != "teammate":
+            raise SystemExit(f"teammate run not found: {args[1]}")
+        print(json.dumps(registry["runs"][index], indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "assign":
+        if len(args) < 5:
+            raise SystemExit("teammates assign requires PARENT_RUN_ID TEAMMATE_ID ROLE OBJECTIVE")
+        parent_run_id = args[1]
+        teammate_id = args[2]
+        role = args[3]
+        positionals: list[str] = []
+        assigned_scope = ""
+        execution_surface = "worktree-thread"
+        mode = "managed"
+        depends_on: list[str] = []
+        sibling_ids: list[str] = []
+        authority_refs: list[str] = []
+        forbidden_sources: list[str] = []
+        reporting_expectations: list[str] = []
+        for arg in args[4:]:
+            if arg.startswith("--scope="):
+                assigned_scope = arg.split("=", 1)[1].strip()
+            elif arg.startswith("--surface="):
+                execution_surface = arg.split("=", 1)[1].strip() or execution_surface
+            elif arg.startswith("--mode="):
+                mode = arg.split("=", 1)[1].strip() or mode
+            elif arg.startswith("--depends-on="):
+                depends_on.extend(parse_pipe_list(arg.split("=", 1)[1].strip()))
+            elif arg.startswith("--sibling="):
+                sibling_ids.extend(parse_pipe_list(arg.split("=", 1)[1].strip()))
+            elif arg.startswith("--allow="):
+                authority_refs.extend(parse_pipe_list(arg.split("=", 1)[1].strip()))
+            elif arg.startswith("--forbid="):
+                forbidden_sources.extend(parse_pipe_list(arg.split("=", 1)[1].strip()))
+            elif arg.startswith("--report="):
+                reporting_expectations.extend(parse_pipe_list(arg.split("=", 1)[1].strip()))
+            else:
+                positionals.append(arg)
+        objective = " ".join(positionals).strip()
+        if not objective:
+            raise SystemExit("teammates assign requires OBJECTIVE")
+
+        with harness_lock():
+            registry = read_registry()
+            parent_index = find_run_index(registry, parent_run_id)
+            if parent_index < 0:
+                raise SystemExit(f"parent run not found: {parent_run_id}")
+            parent_run = registry["runs"][parent_index]
+            if not active_run(parent_run):
+                raise SystemExit("parent run is not active")
+            if any(
+                active_teammate_run(run)
+                and run.get("parent_run_id") == parent_run_id
+                and run.get("owner_id") == teammate_id
+                for run in registry.get("runs", [])
+            ):
+                raise SystemExit(f"active teammate assignment already exists for {teammate_id}")
+
+            teammate_run_id = (
+                f"run-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}-teammate-{slugify(teammate_id)}"
+            )
+            contract_path = runtime_root() / "contracts" / f"{teammate_run_id}.yml"
+            contract_payload = merge_dicts(
+                load_data(contract_template_path(), {}).get("contract", {}),
+                {
+                    "mission_id": parent_run.get("mission_id", ""),
+                    "issue_number": parent_run.get("issue_number", 0),
+                    "title": objective,
+                    "objective": objective,
+                    "success_criteria": reporting_expectations or ["Report progress, blockers, and verification outcomes."],
+                    "sub_tasks": [],
+                    "branch": parent_run.get("branch", ""),
+                    "worktree_path": parent_run.get("worktree_path", ""),
+                    "context_files": authority_refs,
+                    "verification_commands": [],
+                    "notes": {
+                        "delegated_from": parent_run_id,
+                        "teammate_id": teammate_id,
+                        "role": role,
+                        "assigned_scope": assigned_scope or objective,
+                        "forbidden_sources": forbidden_sources,
+                    },
+                },
+            )
+            freshness = contract_payload.setdefault("freshness", {})
+            fill_if_blank(freshness, "created_at", now_iso())
+            dump_data(contract_path, {"version": 1, "contract": contract_payload})
+
+            template = load_data(run_template_path(), {}).get("run", {})
+            timestamp = now_iso()
+            sibling_runs = child_runs_for_parent(registry, parent_run_id)
+            teammate_run = merge_dicts(
+                template,
+                {
+                    "run_id": teammate_run_id,
+                    "mission_id": parent_run.get("mission_id", ""),
+                    "issue_number": parent_run.get("issue_number", 0),
+                    "parent_run_id": parent_run_id,
+                    "leader_id": parent_run.get("leader_id", ""),
+                    "owner_type": "teammate",
+                    "owner_id": teammate_id,
+                    "delegated_by": parent_run.get("owner_id", "") or parent_run.get("leader_id", ""),
+                    "role": role,
+                    "state": "ready",
+                    "mode": mode,
+                    "execution_surface": execution_surface,
+                    "branch": parent_run.get("branch", ""),
+                    "worktree_path": parent_run.get("worktree_path", ""),
+                    "contract_ref": str(contract_path),
+                    "objective": objective,
+                    "assigned_scope": assigned_scope or objective,
+                    "authority_refs": authority_refs or [parent_run.get("contract_ref", "")],
+                    "forbidden_sources": forbidden_sources,
+                    "reporting_expectations": reporting_expectations
+                    or ["Report progress, blockers, and verification outcomes."],
+                    "depends_on": depends_on,
+                    "siblings": sibling_ids + [run.get("run_id", "") for run in sibling_runs],
+                    "communication_peers": [run.get("run_id", "") for run in sibling_runs],
+                    "latest_summary": "Delegated and ready for bounded execution",
+                    "next_expected_action": "Acknowledge the assignment, gather local evidence, and report back.",
+                    "created_at": timestamp,
+                    "started_at": timestamp,
+                    "last_reported_at": timestamp,
+                    "updated_at": timestamp,
+                },
+            )
+            registry.setdefault("runs", []).append(teammate_run)
+            for run in sibling_runs:
+                append_unique_text(run.setdefault("siblings", []), teammate_run_id)
+                append_unique_text(run.setdefault("communication_peers", []), teammate_run_id)
+                run["updated_at"] = now_iso()
+            parent_run["mode"] = "parallel"
+            parent_run["latest_summary"] = f"Delegated bounded task to {teammate_id}"
+            parent_run["next_expected_action"] = "Monitor teammate reports, coordination signals, and meeting triggers."
+            parent_run["updated_at"] = now_iso()
+            write_registry(registry)
+
+            assignment_signal = emit_signal(
+                kind="progress",
+                source_run=teammate_run,
+                title=f"Delegated teammate assignment: {teammate_id}",
+                summary=f"{teammate_id} assigned as {role}: {objective}",
+                applies_to=[parent_run_id, teammate_run_id, parent_run.get("mission_id", "")],
+                scope_type="sibling",
+                confidence="high",
+                authority_level="L2",
+                evidence_refs=[str(contract_path)],
+            )
+        print(json.dumps({"run": teammate_run, "signal": assignment_signal}, indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "link":
+        if len(args) < 3:
+            raise SystemExit("teammates link requires RUN_A RUN_B [REASON]")
+        run_a_id = args[1]
+        run_b_id = args[2]
+        reason = " ".join(args[3:]).strip() or "Leader approved teammate coordination."
+        with harness_lock():
+            registry = read_registry()
+            index_a = find_run_index(registry, run_a_id)
+            index_b = find_run_index(registry, run_b_id)
+            if index_a < 0 or index_b < 0:
+                raise SystemExit("teammates link requires two existing runs")
+            run_a = registry["runs"][index_a]
+            run_b = registry["runs"][index_b]
+            for key in ("siblings", "communication_peers"):
+                append_unique_text(run_a.setdefault(key, []), run_b_id)
+                append_unique_text(run_b.setdefault(key, []), run_a_id)
+            run_a["updated_at"] = now_iso()
+            run_b["updated_at"] = now_iso()
+            write_registry(registry)
+        print(json.dumps({"linked": [run_a_id, run_b_id], "reason": reason}, indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "report":
+        if len(args) < 3:
+            raise SystemExit("teammates report requires RUN_ID SUMMARY")
+        run_id = args[1]
+        kind = "progress"
+        title = ""
+        confidence = "medium"
+        scope_type = "local"
+        authority_level = "L2"
+        fresh_hours = 12.0
+        evidence_refs: list[str] = []
+        applies_to: list[str] = []
+        next_action = ""
+        summary_tokens: list[str] = []
+        for arg in args[2:]:
+            if arg.startswith("--kind="):
+                kind = arg.split("=", 1)[1].strip() or kind
+            elif arg.startswith("--title="):
+                title = arg.split("=", 1)[1].strip()
+            elif arg.startswith("--confidence="):
+                confidence = arg.split("=", 1)[1].strip() or confidence
+            elif arg.startswith("--scope="):
+                scope_type = arg.split("=", 1)[1].strip() or scope_type
+            elif arg.startswith("--authority="):
+                authority_level = arg.split("=", 1)[1].strip() or authority_level
+            elif arg.startswith("--fresh-hours="):
+                fresh_hours = float(arg.split("=", 1)[1].strip() or "12")
+            elif arg.startswith("--evidence="):
+                evidence_refs.extend(parse_pipe_list(arg.split("=", 1)[1].strip()))
+            elif arg.startswith("--applies="):
+                applies_to.extend(parse_pipe_list(arg.split("=", 1)[1].strip()))
+            elif arg.startswith("--next="):
+                next_action = arg.split("=", 1)[1].strip()
+            else:
+                summary_tokens.append(arg)
+        summary = " ".join(summary_tokens).strip()
+        if not summary:
+            raise SystemExit("teammates report requires SUMMARY")
+        with harness_lock():
+            registry = read_registry()
+            index = find_run_index(registry, run_id)
+            if index < 0:
+                raise SystemExit(f"run not found: {run_id}")
+            run = registry["runs"][index]
+            if run.get("owner_type") != "teammate":
+                raise SystemExit("teammates report requires a teammate-owned run")
+            run["latest_summary"] = summary
+            run["last_reported_at"] = now_iso()
+            if next_action:
+                run["next_expected_action"] = next_action
+            run["updated_at"] = now_iso()
+            signal = emit_signal(
+                kind=kind,
+                source_run=run,
+                title=title or f"Teammate report: {run.get('owner_id', '')}",
+                summary=summary,
+                applies_to=applies_to or [run.get("parent_run_id", ""), run.get("mission_id", "")],
+                scope_type=scope_type,
+                confidence=confidence,
+                authority_level=authority_level,
+                evidence_refs=evidence_refs,
+                fresh_hours=fresh_hours,
+            )
+            append_unique_text(run.setdefault("active_signals", []), signal.get("signal_id", ""))
+            write_registry(registry)
+        print(json.dumps({"run": run, "signal": signal}, indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "message":
+        if len(args) < 5:
+            raise SystemExit("teammates message requires SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY")
+        source_run_id = args[1]
+        target_run_id = args[2]
+        kind = args[3]
+        title = ""
+        confidence = "medium"
+        authority_level = "L2"
+        fresh_hours = 6.0
+        evidence_refs: list[str] = []
+        summary_tokens: list[str] = []
+        for arg in args[4:]:
+            if arg.startswith("--title="):
+                title = arg.split("=", 1)[1].strip()
+            elif arg.startswith("--confidence="):
+                confidence = arg.split("=", 1)[1].strip() or confidence
+            elif arg.startswith("--authority="):
+                authority_level = arg.split("=", 1)[1].strip() or authority_level
+            elif arg.startswith("--fresh-hours="):
+                fresh_hours = float(arg.split("=", 1)[1].strip() or "6")
+            elif arg.startswith("--evidence="):
+                evidence_refs.extend(parse_pipe_list(arg.split("=", 1)[1].strip()))
+            else:
+                summary_tokens.append(arg)
+        summary = " ".join(summary_tokens).strip()
+        if not summary:
+            raise SystemExit("teammates message requires SUMMARY")
+        with harness_lock():
+            registry = read_registry()
+            source_index = find_run_index(registry, source_run_id)
+            target_index = find_run_index(registry, target_run_id)
+            if source_index < 0 or target_index < 0:
+                raise SystemExit("teammates message requires valid source and target runs")
+            source_run = registry["runs"][source_index]
+            target_run = registry["runs"][target_index]
+            if source_run.get("owner_type") != "teammate":
+                raise SystemExit("teammates message source must be a teammate run")
+            if target_run.get("owner_type") != "teammate":
+                raise SystemExit("teammates message target must be a teammate run")
+            if not sibling_linked(source_run, target_run_id):
+                raise SystemExit("teammates message requires leader-approved linkage via teammates link or shared delegation")
+            signal = emit_signal(
+                kind=kind,
+                source_run=source_run,
+                title=title or f"Teammate message to {target_run.get('owner_id', '')}",
+                summary=summary,
+                applies_to=[target_run_id, target_run.get("mission_id", "")],
+                scope_type="sibling",
+                confidence=confidence,
+                authority_level=authority_level,
+                evidence_refs=evidence_refs,
+                fresh_hours=fresh_hours,
+            )
+            append_unique_text(source_run.setdefault("active_signals", []), signal.get("signal_id", ""))
+            append_unique_text(target_run.setdefault("active_signals", []), signal.get("signal_id", ""))
+            source_run["last_reported_at"] = now_iso()
+            source_run["updated_at"] = now_iso()
+            target_run["updated_at"] = now_iso()
+            write_registry(registry)
+        print(json.dumps({"signal": signal, "source_run": source_run, "target_run": target_run}, indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "escalate":
+        if len(args) < 3:
+            raise SystemExit("teammates escalate requires RUN_ID QUESTION [--materialize]")
+        run_id = args[1]
+        materialize = "--materialize" in args[2:]
+        question = " ".join(arg for arg in args[2:] if arg != "--materialize").strip()
+        with harness_lock():
+            registry = read_registry()
+            index = find_run_index(registry, run_id)
+            if index < 0:
+                raise SystemExit(f"run not found: {run_id}")
+            run = registry["runs"][index]
+            if run.get("owner_type") != "teammate":
+                raise SystemExit("teammates escalate requires a teammate-owned run")
+            signal = emit_signal(
+                kind="requires_meeting",
+                source_run=run,
+                title=f"Meeting requested by {run.get('owner_id', '')}",
+                summary=question,
+                applies_to=[run.get("parent_run_id", ""), run.get("mission_id", "")],
+                scope_type="sibling",
+                confidence="high",
+                authority_level="L2",
+                evidence_refs=[run.get("contract_ref", "")],
+                fresh_hours=12.0,
+            )
+            run["status_reason"] = question
+            run["last_reported_at"] = now_iso()
+            run["updated_at"] = now_iso()
+            append_unique_text(run.setdefault("active_signals", []), signal.get("signal_id", ""))
+            payload: dict[str, Any] = {"signal": signal, "run": run}
+            if materialize:
+                meeting_id = f"meeting-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}-{run.get('mission_id', '')}"
+                meeting = materialize_meeting(
+                    meeting_id=meeting_id,
+                    run=run,
+                    question=question,
+                    requested_by=run.get("owner_id", ""),
+                )
+                meeting["phase"] = "setup"
+                write_active_meeting(meeting)
+                run["meeting_ref"] = meeting_id
+                run["state"] = "waiting"
+                run["next_expected_action"] = "Participate in the meeting with bounded evidence and role discipline."
+                payload["meeting"] = meeting
+            write_registry(registry)
+        print(json.dumps(payload, indent=2, ensure_ascii=True))
+        return 0
+
+    raise SystemExit(f"unknown teammates subcommand: {subcommand}")
 
 
 def cmd_maintenance(args: list[str]) -> int:
@@ -3802,7 +4450,7 @@ def cmd_maintenance(args: list[str]) -> int:
 def main() -> int:
     if len(sys.argv) < 2:
         raise SystemExit(
-            "usage: harness_state.py <paths|profile|adapter|runs|signals|contracts|home|doctor|issue|claim|drive|ship|rc|meetings|maintenance> ..."
+            "usage: harness_state.py <paths|profile|adapter|runs|signals|contracts|home|doctor|issue|claim|drive|ship|rc|meetings|teammates|maintenance> ..."
         )
     command = sys.argv[1]
     args = sys.argv[2:]
@@ -3834,6 +4482,8 @@ def main() -> int:
         return cmd_rc(args)
     if command == "meetings":
         return cmd_meetings(args)
+    if command == "teammates":
+        return cmd_teammates(args)
     if command == "maintenance":
         return cmd_maintenance(args)
     raise SystemExit(f"unknown command: {command}")

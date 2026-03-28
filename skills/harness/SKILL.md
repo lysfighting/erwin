@@ -22,13 +22,15 @@ The harness is file-backed:
    `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE]`
 6. Drive run state:
    `bash scripts/harness-drive.sh ...`
-7. Prepare release handoff when execution is done:
+7. Delegate bounded work when leader execution should split:
+   `bash scripts/harness-teammates.sh ...`
+8. Prepare release handoff when execution is done:
    `bash scripts/harness-ship.sh ...`
-8. Use meetings when ambiguity or blast radius is high:
+9. Use meetings when ambiguity or blast radius is high:
    `bash scripts/harness-meetings.sh ...`
-9. Use RC flow for release candidate governance:
+10. Use RC flow for release candidate governance:
    `bash scripts/harness-rc.sh ...`
-10. Repair drift or normalize runtime state when needed:
+11. Repair drift or normalize runtime state when needed:
    `bash scripts/harness-maintenance.sh ...`
 
 ## Important commands
@@ -49,6 +51,16 @@ The harness is file-backed:
   `bash scripts/harness-drive.sh block RUN_ID "reason"`
 - `meeting`
   `bash scripts/harness-drive.sh meeting RUN_ID "question"`
+- `teammate-assign`
+  `bash scripts/harness-teammates.sh assign RUN_ID worker-auth implementation-verifier "Update auth callers" --scope="auth callers only"`
+- `teammate-report`
+  `bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID "Caller patch is in place" --kind=progress --evidence=src/auth.ts|tests/auth.spec.ts`
+- `teammate-message`
+  `bash scripts/harness-teammates.sh message TEAMMATE_RUN_A TEAMMATE_RUN_B interface_change "Signature changed to require scope" --evidence=src/auth.ts`
+- `meeting-participant`
+  `bash scripts/harness-meetings.sh add-participant MEETING_ID TEAMMATE_RUN_ID architecture-challenger`
+- `meeting-position`
+  `bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID independent_review challenge "This contract leaks release policy" --evidence=docs/spec.md`
 - `meeting-close`
   `bash scripts/harness-drive.sh meeting-close RUN_ID MEETING_ID "resolution"`
 - `adopt-meeting`
@@ -99,5 +111,7 @@ The harness is file-backed:
 - Treat `harness-adapter.sh validate` as the package boundary check when bootstrap/sync behavior is in doubt.
 - Prefer the narrowest safe state change.
 - Use meetings for high-ambiguity or high-blast-radius decisions.
+- Treat teammate runs as first-class runtime objects, not informal notes.
+- Allow teammate-to-teammate communication only through governed links or sibling relationships.
 - After a meeting closes, either let `meeting-close` apply its outcome or explicitly run `adopt-meeting`.
 - Keep `doctor` clean. If it shows drift, repair that before piling on new execution.

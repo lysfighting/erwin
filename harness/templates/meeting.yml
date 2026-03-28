@@ -8,9 +8,12 @@ meeting:
   leader_id: ""
   requested_by: ""
   state: "active"
+  phase: "setup"
   authority_hierarchy: []
   locked_decisions: []
   roles: []
+  participants: []
+  positions: []
   packet:
     expected_output: ""
     context_refs: []

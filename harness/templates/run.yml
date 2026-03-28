@@ -3,9 +3,12 @@ run:
   run_id: ""
   mission_id: ""
   issue_number: 0
+  parent_run_id: ""
   leader_id: ""
   owner_type: "leader"
   owner_id: ""
+  delegated_by: ""
+  role: ""
   state: "draft"
   status_reason: ""
   priority: ""
@@ -34,8 +37,14 @@ run:
   rc_id: ""
   depends_on: []
   siblings: []
+  communication_peers: []
   active_signals: []
   contract_ref: ""
+  assigned_scope: ""
+  authority_refs: []
+  forbidden_sources: []
+  reporting_expectations: []
+  meeting_ref: ""
   objective: ""
   latest_summary: ""
   next_expected_action: ""

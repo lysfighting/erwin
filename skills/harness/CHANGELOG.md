@@ -2,6 +2,19 @@
 
 All notable changes to the `harness` skill will be documented in this file.
 
+## [0.6.0] - 2026-03-28
+
+### Added
+- First-class teammate runtime via `scripts/harness-teammates.sh`.
+- Governed teammate-to-teammate communication using structured sibling signals.
+- Meeting participant roster, phase tracking, and recorded positions for council-grade review.
+- Dedicated `scripts/harness-teammate-smoke-test.sh`.
+
+### Changed
+- `harness-home.sh` now surfaces active teammate and coordination signal counts.
+- `harness-doctor.sh` now validates teammate assignment quality plus meeting phase/participant/position health.
+- The reusable adapter line advanced to `0.6.0-prototype`.
+
 ## [0.5.0] - 2026-03-28
 
 ### Added

@@ -35,6 +35,7 @@ The first usable Codex-native harness prototype now exists in `scripts/`.
 - `harness-issue.sh` — structured issue drafting and creation
 - `harness-claim.sh` — mission claim + contract/run creation
 - `harness-drive.sh` — run-state control, meetings, reprovision, outcome adoption
+- `harness-teammates.sh` — bounded teammate assignment, governed communication, and meeting escalation
 - `harness-ship.sh` — verification, PR lifecycle, review/check gates, deterministic merge, merge readiness
 - `harness-ship.sh` also supports branch push and PR draft generation
 - `harness-ship.sh` can also open GitHub PRs directly when `gh` is authenticated
@@ -58,8 +59,9 @@ The first usable Codex-native harness prototype now exists in `scripts/`.
 2. `doctor` checks runtime health and drift.
 3. `claim` creates a run and contract from a mission.
 4. `drive` moves the run through execution, blocking, meeting, and completion states.
-5. `meetings` records council outputs.
-6. `maintenance` reconciles or normalizes runtime state.
+5. `teammates` turns delegated work into first-class runtime state instead of implicit chat.
+6. `meetings` records council outputs.
+7. `maintenance` reconciles or normalizes runtime state.
 
 The release side is no longer limited to the happy path.
 The harness now also covers the high-friction release scenarios that used to depend on legacy operator memory:
@@ -76,6 +78,9 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - reprovisioning of existing runs into branch/worktree mode
 - reconciliation and normalization utilities
 - leader-facing home/doctor views
+- first-class teammate runs with bounded assignment scope and reporting contracts
+- governed teammate-to-teammate communication through structured sibling signals
+- meeting participants, phases, and recorded positions for arch-review-like councils
 - machine-readable separation between protocol contract, adapter package, and profile contract
 
 ## Verification
@@ -88,6 +93,7 @@ Run the harness smoke test:
 ./scripts/harness-smoke-test.sh
 ./scripts/harness-bootstrap-smoke-test.sh
 ./scripts/harness-release-smoke-test.sh
+./scripts/harness-teammate-smoke-test.sh
 ./scripts/harness-all-smoke-test.sh
 ```
 
