@@ -3116,6 +3116,8 @@ func meetingSynthesisAudit(meeting map[string]any) map[string]any {
 	rejected := toList(findings["rejected"])
 	unresolved := toList(findings["unresolved"])
 	actions := toList(meeting["action_items"])
+	totalFindings := 0
+	tracedFindings := 0
 
 	evidenceGaps := []string{}
 	for _, bucketItem := range [][]any{accepted, rejected, unresolved} {
@@ -3133,6 +3135,12 @@ func meetingSynthesisAudit(meeting map[string]any) map[string]any {
 			}
 			if stringValue(finding["finding_id"]) == "" {
 				evidenceGaps = append(evidenceGaps, fmt.Sprintf("finding missing finding_id: %s", summary))
+			}
+			totalFindings++
+			if len(toList(finding["supporting_position_ids"])) > 0 || len(toList(finding["challenging_position_ids"])) > 0 {
+				tracedFindings++
+			} else if len(toList(meeting["positions"])) > 0 {
+				evidenceGaps = append(evidenceGaps, fmt.Sprintf("finding missing synthesis trace to meeting positions: %s", summary))
 			}
 		}
 	}
@@ -3177,6 +3185,8 @@ func meetingSynthesisAudit(meeting map[string]any) map[string]any {
 			"rejected_findings":         len(rejected),
 			"unresolved_findings":       len(unresolved),
 			"action_items":              len(actions),
+			"traced_findings":           tracedFindings,
+			"untraced_findings":         maxInt(totalFindings-tracedFindings, 0),
 			"total_positions":           len(toList(meeting["positions"])),
 			"phase_history_count":       len(toList(meeting["phase_history"])),
 			"participant_count":         coverage["participant_count"],
@@ -6626,6 +6636,8 @@ func cmdMeetings(args []string) error {
 			"accepted_count":                      len(toList(findings["accepted"])),
 			"rejected_count":                      len(toList(findings["rejected"])),
 			"unresolved_count":                    len(toList(findings["unresolved"])),
+			"traced_finding_count":                intValue(getKey(synthesis, "tally.traced_findings", 0)),
+			"untraced_finding_count":              intValue(getKey(synthesis, "tally.untraced_findings", 0)),
 			"open_action_count":                   openActionCount,
 		})
 	case "authority-audit":
@@ -7101,6 +7113,8 @@ func cmdMeetingsRemainder(args []string) error {
 		sourceRole := ""
 		claimRef := ""
 		dimension := "factual"
+		supportingPositionIDs := []string{}
+		challengingPositionIDs := []string{}
 		for _, arg := range args[3:] {
 			switch {
 			case strings.HasPrefix(arg, "--reason="):
@@ -7117,6 +7131,10 @@ func cmdMeetingsRemainder(args []string) error {
 				claimRef = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--claim=")), claimRef)
 			case strings.HasPrefix(arg, "--dimension="):
 				dimension = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--dimension=")), dimension)
+			case strings.HasPrefix(arg, "--supports="):
+				supportingPositionIDs = append(supportingPositionIDs, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--supports=")))...)
+			case strings.HasPrefix(arg, "--challenges="):
+				challengingPositionIDs = append(challengingPositionIDs, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--challenges=")))...)
 			default:
 				summaryTokens = append(summaryTokens, arg)
 			}
@@ -7148,6 +7166,8 @@ func cmdMeetingsRemainder(args []string) error {
 				"source_role":     sourceRole,
 				"claim_ref":       claimRef,
 				"dimension":       dimension,
+				"supporting_position_ids": stringListToAny(dedupeStrings(supportingPositionIDs)),
+				"challenging_position_ids": stringListToAny(dedupeStrings(challengingPositionIDs)),
 				"recorded_at":     nowISO(),
 			})
 			findings[findingKind] = bucket

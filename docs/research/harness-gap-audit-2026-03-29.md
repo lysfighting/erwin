@@ -62,6 +62,7 @@ This audit was followed immediately by implementation work that materially close
 - runs now expose `authority-audit`, which explains higher-authority active-signal conflicts, meeting adoption gaps, desired-state drift, contract drift, and live-state drift in one leader-facing output
 - `doctor` now flags unresolved `run-authority-conflict` when fresher or higher-authority active signals disagree with current run state
 - run-level control-plane mutations now refresh contract snapshots, and `maintenance normalize` can repair stale historical contracts
+- meeting findings can now carry explicit provenance back to supporting/challenging positions, and synthesis audit reports traced vs untraced findings
 
 This pushes the council model much closer to the intended `arch-review` discipline instead of only “meeting exists.”
 
@@ -87,7 +88,7 @@ What is still missing:
 
 - automated independent-review wave
 - automated cross-examination routing
-- explicit synthesis trace from conflicting positions to final accepted truth
+- automatic synthesis from conflicting positions into accepted/rejected/unresolved truth; the provenance data model now exists, but the harness still depends on the leader to record it
 
 ### 3. Authority adjudication
 

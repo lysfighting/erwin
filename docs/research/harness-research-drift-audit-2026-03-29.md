@@ -172,6 +172,7 @@ Current truth:
 
 - the runtime now stores the right meeting objects
 - the runtime can now advance meeting phases with `meetings orchestrate`
+- findings can now reference the positions that support or challenge them, so synthesis provenance is no longer implicit
 - but it still does not automate the debate workflow itself
 
 So the system has become **partly council-orchestrating**, but not yet a full automated debate controller.

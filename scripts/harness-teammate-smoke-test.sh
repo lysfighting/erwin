@@ -161,6 +161,8 @@ position_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting
 position_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" independent_review challenge "Release notes should mention the new scope requirement." --evidence=CHANGELOG.md)
 assert_json_field "$position_a" '"positions"' "meeting stores first position"
 assert_json_field "$position_b" '"independent_review"' "meeting stores second independent-review position"
+position_a_id=$(printf '%s\n' "$position_a" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
+position_b_id=$(printf '%s\n' "$position_b" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
 
 orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
 assert_json_field "$orchestrate_b" '"new_phase": "cross_examination"' "meeting orchestration advances to cross-examination"
@@ -168,12 +170,13 @@ assert_json_field "$orchestrate_b" '"new_phase": "cross_examination"' "meeting o
 cross_exam=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" cross_examination challenge "Operator-facing release notes must mention the new scope requirement." --evidence=CHANGELOG.md --responds-to-run="$run_a" --responds-to-role=implementation-verifier)
 assert_json_field "$cross_exam" '"cross_examination"' "meeting stores cross-examination position"
 assert_json_field "$cross_exam" "\"responds_to_run_id\": \"$run_a\"" "cross-examination position records explicit response target"
+cross_exam_id=$(printf '%s\n' "$cross_exam" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
 
-rejected_finding=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" rejected "Ship immediately without release note updates." --reason="Cross-examination found operator-facing behavior drift." --authority="L2" --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator)
+rejected_finding=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" rejected "Ship immediately without release note updates." --reason="Cross-examination found operator-facing behavior drift." --authority="L2" --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator --challenges="$cross_exam_id")
 assert_json_field "$rejected_finding" '"reason": "Cross-examination found operator-facing behavior drift."' "meeting records rejected finding reason"
-accepted_finding=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" accepted "Release notes need a scoped auth update before ship." --reason="Independent review and cross-examination agree on operator impact." --authority="L2" --evidence=CHANGELOG.md --run="$run_a" --role=implementation-verifier --claim=release-note-scope --dimension=factual)
+accepted_finding=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" accepted "Release notes need a scoped auth update before ship." --reason="Independent review and cross-examination agree on operator impact." --authority="L2" --evidence=CHANGELOG.md --run="$run_a" --role=implementation-verifier --claim=release-note-scope --dimension=factual --supports="$position_a_id|$cross_exam_id")
 assert_json_field "$accepted_finding" '"accepted"' "meeting records accepted findings"
-lower_authority_conflict=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" unresolved "Release notes might be optional for this scope change." --reason="Earlier hypothesis before cross-examination." --authority="L3" --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator --claim=release-note-scope --dimension=factual)
+lower_authority_conflict=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" unresolved "Release notes might be optional for this scope change." --reason="Earlier hypothesis before cross-examination." --authority="L3" --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator --claim=release-note-scope --dimension=factual --supports="$position_b_id")
 assert_json_field "$lower_authority_conflict" '"unresolved"' "meeting records lower-authority conflicting finding"
 action_output=$(run_in_repo bash scripts/harness-meetings.sh add-action "$meeting_id" "Update release notes before merging the auth change.")
 assert_json_field "$action_output" '"action_items"' "meeting records action items"
@@ -188,6 +191,8 @@ assert_json_field "$summary_output" '"synthesis_status": "ready_for_output"' "me
 assert_json_field "$summary_output" '"phase_history_count":' "meeting summary reports phase history"
 assert_json_field "$summary_output" '"authority_conflict_count": 1' "meeting summary reports authority conflicts"
 assert_json_field "$summary_output" '"unresolved_authority_conflict_count": 0' "meeting summary reports no unresolved authority conflict when higher authority wins"
+assert_json_field "$summary_output" '"traced_finding_count": 3' "meeting summary reports traced findings"
+assert_json_field "$summary_output" '"untraced_finding_count": 0' "meeting summary reports no untraced findings"
 authority_audit=$(run_in_repo bash scripts/harness-meetings.sh authority-audit "$meeting_id")
 assert_json_field "$authority_audit" '"resolution_kind": "authority_wins"' "authority audit explains higher-authority winner"
 
