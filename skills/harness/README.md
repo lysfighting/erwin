@@ -29,6 +29,7 @@ Use this when the model should act as the harness leader:
 - convene and close councils
 - assign and govern bounded teammate execution
 - transfer bounded ownership selectors formally when work changes hands
+- adjudicate active signals when fresher run or meeting state supersedes them
 - record teammate reports and sibling communication as structured signals
 - adopt meeting outcomes
 - reprovision runs safely

@@ -114,6 +114,17 @@ assert_json_field "$resolve_output" '"state": "done"' "meeting action can be res
 home_output_after=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_after" '"open_meeting_action_count": 0' "home clears resolved meeting action"
 
+section "Authority adjudication"
+block_output=$(run_in_repo bash scripts/harness-drive.sh block "$run_id" "Temporary blocker for authority reconcile")
+assert_json_field "$block_output" '"kind": "blocked"' "blocking a run emits blocked signal"
+blocked_signal_id=$(printf '%s\n' "$block_output" | sed -n 's/^[[:space:]]*"signal_id": "\(sig-[^"]*\)",$/\1/p' | head -n1)
+resume_output=$(run_in_repo bash scripts/harness-drive.sh resume "$run_id" "Blocker cleared")
+assert_json_field "$resume_output" '"state": "ready"' "run can resume after blocker clears"
+doctor_output_blocked=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_json_field "$doctor_output_blocked" '"kind": "signal-authority-superseded"' "doctor surfaces superseded blocked signal"
+reconcile_output=$(run_in_repo bash scripts/harness-maintenance.sh reconcile)
+assert_json_field "$reconcile_output" "$blocked_signal_id" "reconcile adjudicates superseded blocked signal"
+
 section "Normalize"
 cat > "$TEST_REPO/.harness/runs/registry.yml" <<'EOF'
 {

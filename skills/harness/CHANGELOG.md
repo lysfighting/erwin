@@ -11,6 +11,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Ownership claims, desired state, dependency waiting, and meeting orchestration on the harness control plane.
 - `scripts/harness-missions.sh` plus a first-class mission registry and mission graph surface.
 - Selector-aware ownership transfer via `bash scripts/harness-runs.sh transfer-ownership ...`.
+- Signal authority adjudication via `bash scripts/harness-signals.sh adjudicate ...` and `bash scripts/harness-maintenance.sh reconcile`.
 
 ### Changed
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.

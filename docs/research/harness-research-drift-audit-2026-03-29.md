@@ -148,6 +148,7 @@ Current truth:
 - meetings now model authority hierarchy well
 - signals carry authority metadata
 - invalid authority levels are now rejected or surfaced
+- superseded active signals can now be adjudicated against fresher run or meeting state
 - but there is still no broad harness-wide conflict-resolution layer that systematically downgrades low-authority state when it collides with fresher higher-authority evidence
 
 So this area is **partially preserved, not fully realized**.

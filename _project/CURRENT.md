@@ -8,7 +8,7 @@
 
 - **Version**: 0.7.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Codex-native orchestration harness selector-aware ownership transfer pass completed)
+- **Last Session**: 2026-03-29 (Codex-native orchestration harness signal authority adjudication pass completed)
 
 ## Current Phase
 
@@ -31,6 +31,7 @@
 - **Mission graph made first-class**: the harness now materializes durable mission objects under `.harness/missions/`, exposes them through `scripts/harness-missions.sh`, and drives `home`/`doctor` from mission-level state instead of only run-level state
 - **Legacy runtime migration path added**: `scripts/harness-maintenance.sh normalize` now backfills ownership claims, desired state, dependency policy, and mission registry state for older pre-mission runs, bringing existing `.harness/` state forward without manual surgery
 - **Selector-aware ownership transfer added**: runs now normalize legacy `ownership_claims` into structured `ownership_selectors`, `runs transfer-ownership` can formally move bounded selectors between active runs in the same mission, and transfer events now survive into mission-level state
+- **Signal authority adjudication added**: superseded active signals are now detected against fresher run/meeting state, surfaced by `doctor`, and automatically resolved by `maintenance reconcile` or explicitly via `signals adjudicate`
 - **Adapter/package flow updated**: `harness/adapter-manifest.yml` now packages the Go module files and build runner, bootstrapped repos receive the Go sources, and `harness-bootstrap.sh` / `harness-sync.sh` now query adapter metadata through the Go runtime path
 - **Smoke suite de-Pythonized**: issue/core/release/teammate smoke scripts now query package files through the harness adapter surface and extract runtime ids without Python helpers
 - **Validation**: `./scripts/harness-build-runtime.sh`, `./scripts/harness-runtime-dist-smoke-test.sh`, `./scripts/harness-adapter.sh validate`, `./scripts/harness-issue-smoke-test.sh`, `./scripts/harness-smoke-test.sh`, `./scripts/harness-teammate-smoke-test.sh`, `./scripts/harness-release-smoke-test.sh`, `./scripts/harness-bootstrap-smoke-test.sh`, and `./scripts/harness-all-smoke-test.sh` all pass cleanly on the Go runtime; `./scripts/harness-maintenance.sh normalize` also upgrades older runtime state into mission-aware schema cleanly
@@ -78,7 +79,7 @@
    - A. Decide whether to formalize this under a new product name or keep `harness` as the prototype codename
    - B. Decide whether `harness/adapter-manifest.yml` should become the public package spec or stay repo-private while naming is unresolved
    - C. Deepen selector semantics beyond current normalized `kind:value` ownership model and moved-selector events
-   - D. Deepen authority conflict resolution beyond level validation into actual high-vs-low authority adjudication
+   - D. Deepen authority conflict resolution beyond current signal-level supersession into broader high-vs-low authority adjudication
    - E. Decide how much farther to push council behavior toward `arch-review`-style automated debate versus keeping it as a durable packet/protocol
    - F. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `_project/sessions/2026-03-28-B.md`, `_project/sessions/2026-03-28-C.md`, `_project/sessions/2026-03-29-A.md`, `_project/sessions/2026-03-29-B.md`, `_project/sessions/2026-03-29-C.md`, `_project/sessions/2026-03-29-D.md`, `harness/README.md`, `docs/research/harness-completion-context-pack-2026-03-28.md`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, and inspect recent commits on `codex/harness-release-lifecycle`
@@ -113,7 +114,7 @@
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, selector-aware ownership transfer, teammate runtime, and council packet semantics, but product naming and public contract decisions are still unresolved
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, selector-aware ownership transfer, signal-level authority adjudication, teammate runtime, and council packet semantics, but product naming and public contract decisions are still unresolved
 
 ## File Locations
 

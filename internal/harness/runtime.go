@@ -1450,6 +1450,92 @@ func validAuthorityLevel(level string) bool {
 	}
 }
 
+func authorityRank(level string) int {
+	switch strings.TrimSpace(level) {
+	case "L1":
+		return 5
+	case "L2":
+		return 4
+	case "L3":
+		return 3
+	case "L4":
+		return 2
+	case "L5":
+		return 1
+	default:
+		return 0
+	}
+}
+
+func isoAfter(left, right string) bool {
+	leftTime, err := parseISO(left)
+	if err != nil || leftTime == nil {
+		return false
+	}
+	rightTime, err := parseISO(right)
+	if err != nil || rightTime == nil {
+		return true
+	}
+	return leftTime.After(*rightTime)
+}
+
+func runByID(registry map[string]any, runID string) map[string]any {
+	index := findRunIndex(registry, runID)
+	if index < 0 {
+		return nil
+	}
+	run, _ := toMap(toList(registry["runs"])[index])
+	return run
+}
+
+func signalSupersession(signal map[string]any, registry map[string]any) (bool, map[string]any) {
+	runID := stringValue(signal["run_id"])
+	if runID == "" {
+		return false, nil
+	}
+	run := runByID(registry, runID)
+	if run == nil {
+		return false, nil
+	}
+	emittedAt := stringValue(signal["emitted_at"])
+	signalLevel := authorityRank(stringValue(signal["authority_level"]))
+	if signalLevel == 0 {
+		signalLevel = authorityRank("L4")
+	}
+	runLevel := authorityRank("L2")
+	runUpdated := firstNonBlank(stringValue(run["updated_at"]), stringValue(run["last_reported_at"]), stringValue(run["started_at"]))
+	switch stringValue(signal["kind"]) {
+	case "blocked":
+		if stringValue(run["state"]) != "blocked" && stringValue(run["state"]) != "waiting" && runLevel >= signalLevel && isoAfter(runUpdated, emittedAt) {
+			return true, map[string]any{
+				"resolution_kind": "authority_superseded",
+				"resolution_note": "Fresher run state supersedes the blocked signal.",
+				"superseded_by":   "run:" + runID,
+			}
+		}
+	case "requires_meeting":
+		if meeting := latestClosedMeetingForRun(runID); meeting != nil {
+			closedAt := firstNonBlank(stringValue(meeting["closed_at"]), stringValue(meeting["updated_at"]))
+			if isoAfter(closedAt, emittedAt) {
+				return true, map[string]any{
+					"resolution_kind": "authority_superseded",
+					"resolution_note": "Closed meeting outcome supersedes the prior meeting-request signal.",
+					"superseded_by":   "meeting:" + stringValue(meeting["meeting_id"]),
+				}
+			}
+		}
+	case "progress":
+		if (stringValue(run["state"]) == "completed" || stringValue(run["state"]) == "blocked") && runLevel >= signalLevel && isoAfter(runUpdated, emittedAt) {
+			return true, map[string]any{
+				"resolution_kind": "authority_superseded",
+				"resolution_note": "Fresher run state supersedes the earlier progress signal.",
+				"superseded_by":   "run:" + runID,
+			}
+		}
+	}
+	return false, nil
+}
+
 func activeRun(run map[string]any) bool {
 	state := stringValue(run["state"])
 	return state != "completed" && state != "abandoned"
@@ -2822,6 +2908,9 @@ func doctorReport() map[string]any {
 		if level := stringValue(signal["authority_level"]); level != "" && !validAuthorityLevel(level) {
 			issues = append(issues, issueRecord("warning", "signal-invalid-authority", signalID, "Signal uses an invalid authority level.", "Use one of L1-L5."))
 		}
+		if superseded, resolution := signalSupersession(signal, registry); superseded {
+			issues = append(issues, issueRecord("warning", "signal-authority-superseded", signalID, firstNonBlank(stringValue(resolution["resolution_note"]), "Active signal is superseded by fresher higher-authority state."), "Run maintenance reconcile or signals adjudicate to resolve the superseded signal."))
+		}
 	}
 
 	for _, meeting := range meetings {
@@ -3495,6 +3584,55 @@ func cmdSignals(args []string) error {
 				return err
 			}
 			return printJSON(signal)
+		})
+	case "adjudicate":
+		targetAll := false
+		signalID := ""
+		for _, arg := range args[1:] {
+			if arg == "--all" {
+				targetAll = true
+			} else if !strings.HasPrefix(arg, "--") && signalID == "" {
+				signalID = arg
+			}
+		}
+		if !targetAll && signalID == "" {
+			return errors.New("signals adjudicate requires SIGNAL_ID or --all")
+		}
+		return withHarnessLock(func() error {
+			registry := readRegistry()
+			log = readSignalLog()
+			signals := toList(log["signals"])
+			resolved := []any{}
+			for index, item := range signals {
+				signal, _ := toMap(item)
+				if stringValue(signal["state"]) != "active" {
+					continue
+				}
+				if !targetAll && stringValue(signal["signal_id"]) != signalID {
+					continue
+				}
+				superseded, resolution := signalSupersession(signal, registry)
+				if !superseded {
+					continue
+				}
+				signal["state"] = "resolved"
+				signal["resolved_at"] = nowISO()
+				for key, value := range resolution {
+					signal[key] = value
+				}
+				signals[index] = signal
+				resolved = append(resolved, signal)
+			}
+			log["signals"] = signals
+			if len(resolved) > 0 {
+				if err := writeSignalLog(log); err != nil {
+					return err
+				}
+			}
+			return printJSON(map[string]any{
+				"resolved_count": len(resolved),
+				"signals":        resolved,
+			})
 		})
 	default:
 		return fmt.Errorf("unknown signals subcommand: %s", subcommand)
@@ -6778,6 +6916,7 @@ func cmdMaintenance(args []string) error {
 				}
 			}
 			reconciledSignals := []string{}
+			adjudicatedSignals := []string{}
 			signals := toList(log["signals"])
 			for index, item := range signals {
 				signal, _ := toMap(item)
@@ -6791,6 +6930,16 @@ func cmdMaintenance(args []string) error {
 					signal["resolved_at"] = nowISO()
 					signals[index] = signal
 					reconciledSignals = append(reconciledSignals, stringValue(signal["signal_id"]))
+					continue
+				}
+				if superseded, resolution := signalSupersession(signal, registry); superseded {
+					signal["state"] = "resolved"
+					signal["resolved_at"] = nowISO()
+					for key, value := range resolution {
+						signal[key] = value
+					}
+					signals[index] = signal
+					adjudicatedSignals = append(adjudicatedSignals, stringValue(signal["signal_id"]))
 				}
 			}
 			log["signals"] = signals
@@ -6822,15 +6971,16 @@ func cmdMaintenance(args []string) error {
 					reconciledMeetings = append(reconciledMeetings, stringValue(meeting["meeting_id"]))
 				}
 			}
-			if len(reconciledSignals) > 0 {
+			if len(reconciledSignals) > 0 || len(adjudicatedSignals) > 0 {
 				if err := writeSignalLog(log); err != nil {
 					return err
 				}
 			}
 			return printJSON(map[string]any{
 				"reconciled_signal_ids":  stringListToAny(reconciledSignals),
+				"adjudicated_signal_ids": stringListToAny(adjudicatedSignals),
 				"reconciled_meeting_ids": stringListToAny(reconciledMeetings),
-				"signal_count":           len(reconciledSignals),
+				"signal_count":           len(reconciledSignals) + len(adjudicatedSignals),
 				"meeting_count":          len(reconciledMeetings),
 			})
 		})
