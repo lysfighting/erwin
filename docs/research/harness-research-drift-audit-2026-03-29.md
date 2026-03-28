@@ -155,7 +155,7 @@ Current truth:
 - same-claim meeting findings can now be audited for higher-authority winners and unresolved same-authority conflicts
 - run-level authority audit now explains higher-authority active-signal conflicts plus meeting adoption gaps directly on runs
 - contract snapshots are now kept closer to active run state, normalize can repair older drift, run-vs-worktree branch mismatch is now explicitly surfaced, and dirty live worktrees can now be flagged when they contradict governed verification or handoff intent
-- but there is still no broad harness-wide conflict-resolution layer that systematically adjudicates the harder live-git-vs-contract disagreements beyond this cleaner baseline when no governing signal or council outcome exists
+- but there is still no broad harness-wide conflict-resolution layer that systematically adjudicates the harder live-git-vs-contract disagreements beyond this cleaner baseline, which now covers dirty intent and missing governed worktrees, when no governing signal or council outcome exists
 
 So this area is **materially stronger, but still only partially realized**.
 

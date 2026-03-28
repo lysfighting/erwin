@@ -114,6 +114,20 @@ assert_json_field "$repair_update" "\"branch\": \"$run_branch\"" "run record can
 live_audit_recovered=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$live_audit_recovered" '"live_state_gap_count": 0' "run authority audit clears after live branch is repaired"
 
+section "Live worktree missing"
+(
+  cd "$TEST_REPO"
+  git worktree remove --force "$worktree_path"
+)
+missing_worktree_audit=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
+assert_json_field "$missing_worktree_audit" '"claim_ref": "live_worktree_missing"' "run authority audit reports missing live worktree when the run still expects one"
+doctor_output_missing_worktree=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_json_field "$doctor_output_missing_worktree" '"kind": "run-live-state-drift"' "doctor surfaces missing live worktree as runtime drift"
+reprovision_restored=$(run_in_repo bash scripts/harness-drive.sh reprovision "$run_id" --mode=worktree --apply)
+assert_json_field "$reprovision_restored" "\"worktree_path\": \"$worktree_path\"" "reprovision can restore a missing governed worktree"
+missing_worktree_recovered=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
+assert_json_field "$missing_worktree_recovered" '"live_state_gap_count": 0' "run authority audit clears after the missing worktree is restored"
+
 section "Live intent drift"
 desired_update=$(run_in_repo bash scripts/harness-runs.sh set-desired "$run_id" --goal=done --verification=passed)
 assert_json_field "$desired_update" '"goal_state": "done"' "desired state can express clean completion intent"

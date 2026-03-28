@@ -20,6 +20,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Clean-intent-vs-live-git authority detection via `runs authority-audit` when a dirty live worktree contradicts governed verification or handoff intent.
 - Debate-route planning via meeting `debate_plan`, plus routed/unrouted conflicting claim reporting in `meetings summary` and `doctor`.
 - Debate route obligations via meeting `debate_plan.route_actions`, including assigned bounded challenger roles/runs plus resolved/open route counts in `meetings summary` and `doctor`.
+- Missing governed-worktree detection in `runs authority-audit`, so leader-facing authority review now catches absent provisioned worktrees in addition to branch drift and dirty-worktree intent drift.
 
 ### Changed
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.

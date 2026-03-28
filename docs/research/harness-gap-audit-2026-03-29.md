@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector families beyond current normalized ownership transfer, higher-order authority adjudication when live git state contradicts contract intent beyond the new clean-intent-vs-dirty-worktree baseline, deeper automated council orchestration beyond the new auto-synthesis and route-obligation baseline, clearer public product contract
+- **still incomplete**: richer selector families beyond current normalized ownership transfer, higher-order authority adjudication when live git state contradicts contract intent beyond the new clean-intent-vs-dirty-worktree and missing-worktree baseline, deeper automated council orchestration beyond the new auto-synthesis and route-obligation baseline, clearer public product contract
 
 ---
 

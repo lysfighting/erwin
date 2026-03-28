@@ -1848,7 +1848,17 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 	}
 
 	liveStateGaps := []any{}
-	if liveState := worktreeAuthoritySnapshot(run); liveState != nil {
+	if worktreePath := strings.TrimSpace(stringValue(run["worktree_path"])); worktreePath != "" && !exists(worktreePath) {
+		liveStateGaps = append(liveStateGaps, map[string]any{
+			"claim_ref":       "live_worktree_missing",
+			"resolution_kind": "live_state_missing",
+			"source_ref":      "run:" + runID,
+			"winning_source":  "run:" + runID,
+			"current_value":   worktreePath,
+			"expected_value":  "present_on_disk",
+			"note":            "Run expects a provisioned worktree, but the referenced live worktree path is missing on disk.",
+		})
+	} else if liveState := worktreeAuthoritySnapshot(run); liveState != nil {
 		if liveBranch := strings.TrimSpace(stringValue(liveState["branch"])); liveBranch != "" && liveBranch != stringValue(run["branch"]) {
 			liveStateGaps = append(liveStateGaps, map[string]any{
 				"claim_ref":       "live_branch",
