@@ -92,7 +92,7 @@ Authority levels are now validated and surfaced, but the system still does not c
 
 What is still missing:
 
-- systematic high-vs-low authority conflict handling outside meetings
+- systematic high-vs-low authority conflict handling outside meetings; meeting findings now have same-claim authority audit and winner explanations, but cross-surface runtime adjudication is still missing
 - clearer winner/loser rules when run summary, signal, contract, and live git state disagree
 - broader leader-facing explanations of why a lower-authority claim was overridden
 

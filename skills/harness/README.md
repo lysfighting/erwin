@@ -32,6 +32,7 @@ Use this when the model should act as the harness leader:
 - adjudicate active signals when fresher run or meeting state supersedes them
 - record teammate reports and sibling communication as structured signals
 - run councils with explicit cross-examination linkage and inspect synthesis readiness before adoption
+- inspect same-claim finding conflicts through `meetings authority-audit` when higher/lower authority evidence collides
 - adopt meeting outcomes
 - reprovision runs safely
 - verify ship readiness and record PR lifecycle state

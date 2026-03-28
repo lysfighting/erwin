@@ -2757,6 +2757,10 @@ func meetingSynthesisAudit(meeting map[string]any) map[string]any {
 	if len(accepted)+len(rejected)+len(unresolved)+len(actions) == 0 {
 		blockingGaps = append(blockingGaps, "no synthesized findings or action items recorded yet")
 	}
+	authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
+	if intValue(authorityAudit["unresolved_conflict_count"]) > 0 {
+		blockingGaps = append(blockingGaps, "same-claim findings still have unresolved authority conflicts")
+	}
 
 	status := "ready_for_output"
 	switch {
@@ -2778,10 +2782,96 @@ func meetingSynthesisAudit(meeting map[string]any) map[string]any {
 			"participant_count":         coverage["participant_count"],
 			"linked_cross_examinations": coverage["linked_cross_examination_count"],
 		},
-		"blocking_gaps":  stringListToAny(blockingGaps),
-		"coverage_notes": coverageNotes,
-		"evidence_gaps":  stringListToAny(evidenceGaps),
-		"generated_at":   nowISO(),
+		"blocking_gaps":   stringListToAny(blockingGaps),
+		"coverage_notes":  coverageNotes,
+		"evidence_gaps":   stringListToAny(evidenceGaps),
+		"authority_audit": authorityAudit,
+		"generated_at":    nowISO(),
+	}
+}
+
+func meetingAuthorityAudit(meeting map[string]any) map[string]any {
+	findings, _ := toMap(meeting["findings"])
+	groups := map[string][]map[string]any{}
+	for _, bucket := range []string{"accepted", "rejected", "unresolved"} {
+		for _, item := range toList(findings[bucket]) {
+			finding, ok := toMap(item)
+			if !ok {
+				continue
+			}
+			dimension := firstNonBlank(stringValue(finding["dimension"]), "factual")
+			claimRef := firstNonBlank(strings.TrimSpace(stringValue(finding["claim_ref"])), strings.TrimSpace(stringValue(finding["summary"])))
+			if claimRef == "" {
+				claimRef = stringValue(finding["finding_id"])
+			}
+			normalizedClaim := slugify(strings.ToLower(claimRef))
+			if normalizedClaim == "" {
+				normalizedClaim = stringValue(finding["finding_id"])
+			}
+			groupKey := dimension + "::" + normalizedClaim
+			entry := map[string]any{
+				"finding_id":      stringValue(finding["finding_id"]),
+				"bucket":          bucket,
+				"summary":         stringValue(finding["summary"]),
+				"claim_ref":       claimRef,
+				"dimension":       dimension,
+				"authority_level": firstNonBlank(stringValue(finding["authority_level"]), "L4"),
+				"authority_rank":  authorityRank(firstNonBlank(stringValue(finding["authority_level"]), "L4")),
+				"recorded_at":     stringValue(finding["recorded_at"]),
+				"source_role":     stringValue(finding["source_role"]),
+				"source_run_id":   stringValue(finding["source_run_id"]),
+			}
+			groups[groupKey] = append(groups[groupKey], entry)
+		}
+	}
+
+	conflicts := []any{}
+	unresolvedConflictCount := 0
+	for _, entries := range groups {
+		distinctBuckets := map[string]bool{}
+		for _, entry := range entries {
+			distinctBuckets[stringValue(entry["bucket"])] = true
+		}
+		if len(distinctBuckets) <= 1 {
+			continue
+		}
+		sort.Slice(entries, func(i, j int) bool {
+			left := intValue(entries[i]["authority_rank"])
+			right := intValue(entries[j]["authority_rank"])
+			if left != right {
+				return left > right
+			}
+			return isoAfter(stringValue(entries[i]["recorded_at"]), stringValue(entries[j]["recorded_at"]))
+		})
+		winner := entries[0]
+		losers := []any{}
+		losingBuckets := map[string]bool{}
+		for _, entry := range entries[1:] {
+			losers = append(losers, entry)
+			losingBuckets[stringValue(entry["bucket"])] = true
+		}
+		resolutionKind := "authority_wins"
+		note := fmt.Sprintf("Higher-authority %s finding from %s overrides lower-authority conflicting findings on the same %s claim.", stringValue(winner["bucket"]), firstNonBlank(stringValue(winner["source_role"]), stringValue(winner["finding_id"])), stringValue(winner["dimension"]))
+		if len(entries) > 1 && intValue(entries[1]["authority_rank"]) == intValue(winner["authority_rank"]) && stringValue(entries[1]["bucket"]) != stringValue(winner["bucket"]) {
+			resolutionKind = "tie_needs_judgment"
+			note = fmt.Sprintf("Same-authority findings disagree on the same %s claim; leader judgment or explicit synthesis note is required.", stringValue(winner["dimension"]))
+			unresolvedConflictCount++
+		}
+		conflicts = append(conflicts, map[string]any{
+			"claim_ref":           stringValue(winner["claim_ref"]),
+			"dimension":           stringValue(winner["dimension"]),
+			"winning_finding":     winner,
+			"losing_findings":     losers,
+			"losing_bucket_count": len(losingBuckets),
+			"resolution_kind":     resolutionKind,
+			"note":                note,
+		})
+	}
+
+	return map[string]any{
+		"conflict_count":            len(conflicts),
+		"unresolved_conflict_count": unresolvedConflictCount,
+		"conflicts":                 conflicts,
 	}
 }
 
@@ -3197,6 +3287,7 @@ func doctorReport() map[string]any {
 			}
 		}
 		coverageAudit, _ := toMap(meetingCoverageAudit(meeting))
+		authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
 		orchestration, _ := toMap(meeting["orchestration"])
 		synthesis, _ := toMap(orchestration["synthesis"])
 		if phase := stringValue(meeting["phase"]); phase == "cross_examination" || phase == "synthesis" || phase == "output" {
@@ -3221,6 +3312,9 @@ func doctorReport() map[string]any {
 		}
 		if len(toList(findings["unresolved"])) > 0 && len(toList(meeting["action_items"])) == 0 {
 			issues = append(issues, issueRecord("warning", "meeting-unresolved-without-action", meetingID, "Meeting has unresolved findings but no action items.", "Record a follow-up action or explicit escalation for unresolved questions."))
+		}
+		if intValue(authorityAudit["unresolved_conflict_count"]) > 0 {
+			issues = append(issues, issueRecord("warning", "meeting-unresolved-authority-conflict", meetingID, "Same-claim findings still disagree at the same authority level.", "Resolve the conflict in synthesis or record an explicit leader judgment."))
 		}
 		if meetingAge := ageHours(stringValue(meeting["created_at"])); meetingAge != nil {
 			if *meetingAge > 0.25 && len(toList(meeting["participants"])) == 0 {
@@ -6024,24 +6118,37 @@ func cmdMeetings(args []string) error {
 		findings, _ := toMap(meeting["findings"])
 		orchestration, _ := toMap(meeting["orchestration"])
 		synthesis, _ := toMap(orchestration["synthesis"])
+		authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
 		return printJSON(map[string]any{
-			"meeting_id":          stringValue(meeting["meeting_id"]),
-			"state":               stringValue(meeting["state"]),
-			"question":            stringValue(meeting["question"]),
-			"outcome_summary":     outcome["summary"],
-			"next_action":         outcome["next_action"],
-			"phase_history_count": len(toList(meeting["phase_history"])),
-			"debate_round":        intValue(orchestration["debate_round"]),
-			"synthesis_status":    stringValue(synthesis["status"]),
-			"blocking_gap_count":  len(toList(synthesis["blocking_gaps"])),
-			"coverage_note_count": len(toList(synthesis["coverage_notes"])),
-			"role_spec_count":     len(toList(meeting["role_specs"])),
-			"locked_decisions":    len(toList(meeting["locked_decisions"])),
-			"accepted_count":      len(toList(findings["accepted"])),
-			"rejected_count":      len(toList(findings["rejected"])),
-			"unresolved_count":    len(toList(findings["unresolved"])),
-			"open_action_count":   openActionCount,
+			"meeting_id":                          stringValue(meeting["meeting_id"]),
+			"state":                               stringValue(meeting["state"]),
+			"question":                            stringValue(meeting["question"]),
+			"outcome_summary":                     outcome["summary"],
+			"next_action":                         outcome["next_action"],
+			"phase_history_count":                 len(toList(meeting["phase_history"])),
+			"debate_round":                        intValue(orchestration["debate_round"]),
+			"synthesis_status":                    stringValue(synthesis["status"]),
+			"blocking_gap_count":                  len(toList(synthesis["blocking_gaps"])),
+			"coverage_note_count":                 len(toList(synthesis["coverage_notes"])),
+			"authority_conflict_count":            intValue(authorityAudit["conflict_count"]),
+			"unresolved_authority_conflict_count": intValue(authorityAudit["unresolved_conflict_count"]),
+			"role_spec_count":                     len(toList(meeting["role_specs"])),
+			"locked_decisions":                    len(toList(meeting["locked_decisions"])),
+			"accepted_count":                      len(toList(findings["accepted"])),
+			"rejected_count":                      len(toList(findings["rejected"])),
+			"unresolved_count":                    len(toList(findings["unresolved"])),
+			"open_action_count":                   openActionCount,
 		})
+	case "authority-audit":
+		if len(args) < 2 {
+			return errors.New("meetings authority-audit requires MEETING_ID")
+		}
+		data := readMeeting(args[1])
+		if data == nil {
+			return fmt.Errorf("meeting not found: %s", args[1])
+		}
+		meeting, _ := toMap(data["meeting"])
+		return printJSON(meetingAuthorityAudit(meeting))
 	default:
 		return cmdMeetingsRemainder(args)
 	}
@@ -6503,6 +6610,8 @@ func cmdMeetingsRemainder(args []string) error {
 		evidenceRefs := []string{}
 		sourceRunID := ""
 		sourceRole := ""
+		claimRef := ""
+		dimension := "factual"
 		for _, arg := range args[3:] {
 			switch {
 			case strings.HasPrefix(arg, "--reason="):
@@ -6515,6 +6624,10 @@ func cmdMeetingsRemainder(args []string) error {
 				sourceRunID = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--run=")), sourceRunID)
 			case strings.HasPrefix(arg, "--role="):
 				sourceRole = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--role=")), sourceRole)
+			case strings.HasPrefix(arg, "--claim="):
+				claimRef = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--claim=")), claimRef)
+			case strings.HasPrefix(arg, "--dimension="):
+				dimension = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--dimension=")), dimension)
 			default:
 				summaryTokens = append(summaryTokens, arg)
 			}
@@ -6544,6 +6657,8 @@ func cmdMeetingsRemainder(args []string) error {
 				"evidence_refs":   stringListToAny(evidenceRefs),
 				"source_run_id":   sourceRunID,
 				"source_role":     sourceRole,
+				"claim_ref":       claimRef,
+				"dimension":       dimension,
 				"recorded_at":     nowISO(),
 			})
 			findings[findingKind] = bucket

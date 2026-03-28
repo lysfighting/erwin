@@ -155,6 +155,8 @@ The harness is file-backed:
 - Allow teammate-to-teammate communication only through governed links or sibling relationships.
 - Use `meetings orchestrate` to advance council phases instead of manually skipping straight to synthesis.
 - When recording cross-examination positions, include explicit `--responds-to-run=` / `--responds-to-role=` linkage so the council trace shows who challenged whom.
+- When multiple findings speak about the same claim, use `--claim=` and `--dimension=` on `meetings add-finding` so authority conflicts can be audited cleanly.
 - Use `meetings summary` before adoption when you need to see synthesis readiness, debate-round depth, and blocker counts at a glance.
+- Use `meetings authority-audit` when you need a leader-facing explanation of which same-claim finding currently wins on authority.
 - After a meeting closes, either let `meeting-close` apply its outcome or explicitly run `adopt-meeting`.
 - Keep `doctor` clean. If it shows drift, repair that before piling on new execution.

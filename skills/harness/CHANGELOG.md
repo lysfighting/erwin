@@ -13,6 +13,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Selector-aware ownership transfer via `bash scripts/harness-runs.sh transfer-ownership ...`.
 - Signal authority adjudication via `bash scripts/harness-signals.sh adjudicate ...` and `bash scripts/harness-maintenance.sh reconcile`.
 - Council phase history, linked cross-examination targeting, and synthesis-readiness reporting via `meetings summary` and `meetings orchestrate`.
+- Same-claim meeting finding authority audit via `meetings authority-audit`, plus `--claim=` / `--dimension=` support on `meetings add-finding`.
 
 ### Changed
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.
