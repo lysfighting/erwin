@@ -44,6 +44,7 @@ Prototype, but working.
 ./scripts/harness-smoke-test.sh
 ./scripts/harness-bootstrap-smoke-test.sh
 ./scripts/harness-release-smoke-test.sh
+./scripts/harness-all-smoke-test.sh
 ```
 
 The release smoke now covers:
@@ -83,3 +84,5 @@ After bootstrap, resync from the remembered source:
 ./scripts/harness-sync.sh
 ./scripts/harness-sync.sh status
 ```
+
+`harness-sync status` now reports source/target manifest versions when the source repo is still available.

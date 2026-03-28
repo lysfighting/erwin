@@ -158,10 +158,12 @@ copy_file "$SOURCE_ROOT/scripts/harness-bootstrap.sh" "$TARGET_ROOT/scripts/harn
 copy_file "$SOURCE_ROOT/scripts/harness-sync.sh" "$TARGET_ROOT/scripts/harness-sync.sh"
 copy_file "$SOURCE_ROOT/scripts/harness-issue-smoke-test.sh" "$TARGET_ROOT/scripts/harness-issue-smoke-test.sh"
 copy_file "$SOURCE_ROOT/scripts/harness-smoke-test.sh" "$TARGET_ROOT/scripts/harness-smoke-test.sh"
+copy_file "$SOURCE_ROOT/scripts/harness-all-smoke-test.sh" "$TARGET_ROOT/scripts/harness-all-smoke-test.sh"
 copy_file "$SOURCE_ROOT/scripts/harness-release-smoke-test.sh" "$TARGET_ROOT/scripts/harness-release-smoke-test.sh"
 copy_file "$SOURCE_ROOT/install-codex.sh" "$TARGET_ROOT/install-codex.sh"
 
 copy_file "$SOURCE_ROOT/harness/README.md" "$TARGET_ROOT/harness/README.md"
+copy_file "$SOURCE_ROOT/harness/adapter-manifest.yml" "$TARGET_ROOT/harness/adapter-manifest.yml"
 copy_file "$SOURCE_ROOT/harness/templates/contract.yml" "$TARGET_ROOT/harness/templates/contract.yml"
 copy_file "$SOURCE_ROOT/harness/templates/issue.md" "$TARGET_ROOT/harness/templates/issue.md"
 copy_file "$SOURCE_ROOT/harness/templates/pr.md" "$TARGET_ROOT/harness/templates/pr.md"
@@ -198,6 +200,7 @@ chmod +x \
   "$TARGET_ROOT/scripts/harness-sync.sh" \
   "$TARGET_ROOT/scripts/harness-issue-smoke-test.sh" \
   "$TARGET_ROOT/scripts/harness-smoke-test.sh" \
+  "$TARGET_ROOT/scripts/harness-all-smoke-test.sh" \
   "$TARGET_ROOT/scripts/harness-release-smoke-test.sh"
 
 cat <<EOF
@@ -230,9 +233,11 @@ cat <<EOF
     "scripts/harness-sync.sh",
     "scripts/harness-issue-smoke-test.sh",
     "scripts/harness-smoke-test.sh",
+    "scripts/harness-all-smoke-test.sh",
     "scripts/harness-release-smoke-test.sh",
     "install-codex.sh",
     "harness/README.md",
+    "harness/adapter-manifest.yml",
     "harness/profiles/default.yml",
     "harness/templates/contract.yml",
     "harness/templates/issue.md",

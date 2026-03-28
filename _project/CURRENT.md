@@ -29,7 +29,8 @@
 - **Codex installer path**: `install-codex.sh` now installs repo Codex-native skills like `harness` into `~/.codex/skills/`, and `/harness` has been installed globally
 - **Bootstrap path**: `scripts/harness-bootstrap.sh` now seeds the harness adapter into another git repository with a generated default profile, local `skills/harness/`, and `install-codex.sh`
 - **Adapter sync path**: bootstrapped repos now record source metadata in `.harness/cache/adapter-source.json` and can resync via `scripts/harness-sync.sh`; the bootstrapped repo also carries its own `harness-bootstrap.sh`
-- **Validation**: branch/worktree provisioning, issue drafting, meeting create/update/close, archived meeting replay, PR review/check gates, deterministic merge, doctor/home health checks, direct `./install-codex.sh` execution, bootstrap into a temporary repo, remembered-source resync, `harness-issue-smoke-test.sh`, `harness-smoke-test.sh`, `harness-bootstrap-smoke-test.sh`, and `harness-release-smoke-test.sh` all pass
+- **Adapter packaging upgraded**: `harness/adapter-manifest.yml` now declares adapter identity/capabilities, and `scripts/harness-all-smoke-test.sh` provides a one-command smoke suite
+- **Validation**: branch/worktree provisioning, issue drafting, meeting create/update/close, archived meeting replay, PR review/check gates, deterministic merge, doctor/home health checks, direct `./install-codex.sh` execution, bootstrap into a temporary repo, remembered-source resync, `harness-issue-smoke-test.sh`, `harness-smoke-test.sh`, `harness-bootstrap-smoke-test.sh`, `harness-release-smoke-test.sh`, and `harness-all-smoke-test.sh` all pass
 - **Protocol coverage**: the Codex adapter now has first-class `issue`, `claim`, `drive`, `ship`, and `rc` surfaces, including RC surgical fix / cancel / hotfix / backport handling
 
 ## Active Task / What's In Progress

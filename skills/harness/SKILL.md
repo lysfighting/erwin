@@ -86,6 +86,8 @@ The harness is file-backed:
 - `maintenance`
   `bash scripts/harness-maintenance.sh reconcile`
   `bash scripts/harness-maintenance.sh normalize`
+- `all-smoke`
+  `bash scripts/harness-all-smoke-test.sh`
 
 ## Operating rules
 

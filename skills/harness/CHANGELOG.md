@@ -5,6 +5,8 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [0.3.0] - 2026-03-28
 
 ### Added
+- Adapter manifest at `harness/adapter-manifest.yml`.
+- One-shot smoke aggregator via `scripts/harness-all-smoke-test.sh`.
 - PR review and checks gates via `scripts/harness-ship.sh review` and `scripts/harness-ship.sh checks`.
 - Deterministic merge via `scripts/harness-ship.sh merge`, with local git merge and optional GitHub merge modes.
 - RC surgical fix flow via `scripts/harness-rc.sh fix`, including cherry-pick and optional push to the active RC branch.

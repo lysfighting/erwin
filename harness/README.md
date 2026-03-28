@@ -9,6 +9,7 @@ It is distinct from `.harness/`, which is reserved for local runtime state.
 - `profiles/` — committed project profiles
 - `templates/` — optional reusable templates for contracts, runs, signals, and meetings
 - `policies/` — optional committed policy defaults
+- `adapter-manifest.yml` — adapter identity, version, capabilities, and smoke entrypoints
 
 ## Design rule
 
@@ -76,6 +77,7 @@ Run the harness smoke test:
 ./scripts/harness-smoke-test.sh
 ./scripts/harness-bootstrap-smoke-test.sh
 ./scripts/harness-release-smoke-test.sh
+./scripts/harness-all-smoke-test.sh
 ```
 
 Bootstrap the harness into another git repository:
@@ -88,3 +90,4 @@ Bootstrap the harness into another git repository:
 This copies the deterministic substrate, committed definition layer, smoke test, and a generated default profile into the target repository.
 It also copies `skills/harness/` and `install-codex.sh`, so the target repo gets a Codex-native local skill entry point immediately.
 The bootstrap writes local source metadata to `.harness/cache/adapter-source.json`, so later `./scripts/harness-sync.sh` runs can reuse the remembered source path.
+`./scripts/harness-sync.sh status` now also compares source and target manifest versions when the source repo is still reachable.

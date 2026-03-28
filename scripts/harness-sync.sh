@@ -44,6 +44,28 @@ else:
 PY
 }
 
+read_manifest_version() {
+  local root="$1"
+  python3 - "$root" <<'PY'
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+path = root / "harness" / "adapter-manifest.yml"
+if not path.exists():
+    print("")
+    raise SystemExit(0)
+text = path.read_text(encoding="utf-8")
+for raw in text.splitlines():
+    line = raw.strip()
+    if line.startswith("adapter_version:"):
+        print(line.split(":", 1)[1].strip().strip('"'))
+        break
+else:
+    print("")
+PY
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     status)
@@ -82,7 +104,28 @@ METADATA_PATH="$TARGET_ROOT/.harness/cache/adapter-source.json"
 
 if [[ "$MODE" == "status" ]]; then
   if [[ -f "$METADATA_PATH" ]]; then
-    cat "$METADATA_PATH"
+    source_root="$(read_metadata_field source_root "$METADATA_PATH")"
+    target_manifest_version="$(read_manifest_version "$TARGET_ROOT")"
+    source_manifest_version=""
+    if [[ -n "$source_root" ]] && [[ -d "$source_root" ]]; then
+      source_manifest_version="$(read_manifest_version "$source_root")"
+    fi
+    python3 - "$METADATA_PATH" "$target_manifest_version" "$source_manifest_version" <<'PY'
+import json
+import pathlib
+import sys
+
+metadata_path = pathlib.Path(sys.argv[1])
+target_manifest_version = sys.argv[2]
+source_manifest_version = sys.argv[3]
+data = json.loads(metadata_path.read_text(encoding="utf-8"))
+data["target_manifest_version"] = target_manifest_version
+data["source_manifest_version"] = source_manifest_version
+data["manifest_versions_match"] = bool(
+    target_manifest_version and source_manifest_version and target_manifest_version == source_manifest_version
+)
+print(json.dumps(data, indent=2, ensure_ascii=True))
+PY
   else
     echo '{}'
   fi

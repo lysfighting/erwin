@@ -1,0 +1,36 @@
+version: 1
+adapter:
+  adapter_id: "codex-native-harness"
+  adapter_version: "0.3.0-prototype"
+  runtime: "codex"
+  capability_surfaces:
+    - "issue"
+    - "claim"
+    - "drive"
+    - "ship"
+    - "rc"
+    - "meetings"
+    - "maintenance"
+  ship_capabilities:
+    - "push"
+    - "pr-draft"
+    - "pr-open"
+    - "review-gates"
+    - "checks-gates"
+    - "deterministic-merge"
+    - "cleanup"
+  rc_capabilities:
+    - "create"
+    - "verify"
+    - "promote"
+    - "close"
+    - "fix"
+    - "cancel"
+    - "hotfix"
+    - "backport"
+  smoke_scripts:
+    - "./scripts/harness-issue-smoke-test.sh"
+    - "./scripts/harness-smoke-test.sh"
+    - "./scripts/harness-release-smoke-test.sh"
+    - "./scripts/harness-bootstrap-smoke-test.sh"
+    - "./scripts/harness-all-smoke-test.sh"
