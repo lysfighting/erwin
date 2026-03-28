@@ -26,7 +26,7 @@ The first usable Codex-native harness prototype now exists in `scripts/`.
 - `harness-issue.sh` — structured issue drafting and creation
 - `harness-claim.sh` — mission claim + contract/run creation
 - `harness-drive.sh` — run-state control, meetings, reprovision, outcome adoption
-- `harness-ship.sh` — verification, PR lifecycle, review/check gates, merge readiness
+- `harness-ship.sh` — verification, PR lifecycle, review/check gates, deterministic merge, merge readiness
 - `harness-ship.sh` also supports branch push and PR draft generation
 - `harness-ship.sh` can also open GitHub PRs directly when `gh` is authenticated
 - `harness-ship.sh` now also handles post-merge cleanup of worktrees and local branches
@@ -61,6 +61,7 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - file-backed runtime state with locking
 - validated run-state transitions
 - tracked PR review state and CI/check state before merge
+- deterministic merge path via `ship merge`
 - meeting outputs that can be adopted back into runs
 - reprovisioning of existing runs into branch/worktree mode
 - reconciliation and normalization utilities

@@ -65,6 +65,8 @@ The harness is file-backed:
   `bash scripts/harness-ship.sh review RUN_ID approved "Approved after fixes"`
 - `ship-checks`
   `bash scripts/harness-ship.sh checks RUN_ID passed "ci:passed"`
+- `ship-merge`
+  `bash scripts/harness-ship.sh merge RUN_ID --via=git "Merged cleanly"`
 - `ship-cleanup`
   `bash scripts/harness-ship.sh cleanup RUN_ID --delete-branch`
 - `ship-merged`

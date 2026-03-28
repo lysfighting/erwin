@@ -121,9 +121,10 @@ checks_passed_output=$(run_in_repo ./scripts/harness-ship.sh checks "$run_id" pa
 assert_json_field "$checks_passed_output" '"checks_status": "passed"' "ship checks tracks passed state"
 assert_json_field "$checks_passed_output" '"ship_status": "approved"' "ship checks marks merge-ready PR as approved"
 
-merged_output=$(run_in_repo ./scripts/harness-ship.sh merged "$run_id" "Merged cleanly")
-assert_json_field "$merged_output" '"ship_status": "merged"' "ship merged records merge"
-assert_json_field "$merged_output" '"state": "completed"' "ship merged completes run"
+merge_output=$(run_in_repo ./scripts/harness-ship.sh merge "$run_id" --via=git "Merged cleanly")
+assert_json_field "$merge_output" '"ship_status": "merged"' "ship merge records merge"
+assert_json_field "$merge_output" '"state": "completed"' "ship merge completes run"
+assert_json_field "$merge_output" '"merged_via": "git"' "ship merge reports merge transport"
 
 cleanup_output=$(run_in_repo ./scripts/harness-ship.sh cleanup "$run_id" --delete-branch)
 assert_json_field "$cleanup_output" '"cleaned"' "ship cleanup reports cleaned artifacts"

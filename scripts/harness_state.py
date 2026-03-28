@@ -588,6 +588,19 @@ def merge_ready(run: dict[str, Any]) -> bool:
     )
 
 
+def mark_run_merged(run: dict[str, Any], summary: str) -> None:
+    run["ship_status"] = "merged"
+    run["shipped_at"] = now_iso()
+    record_ship_ref(run, "merged")
+    if run.get("state") != "completed":
+        validate_run_transition(run, "completed")
+        run["state"] = "completed"
+        run["completed_at"] = now_iso()
+    run["latest_summary"] = summary
+    run["next_expected_action"] = "Consider whether this shipped work should enter an RC."
+    run["updated_at"] = now_iso()
+
+
 def issue_body_from_template(
     *,
     title: str,
@@ -829,6 +842,28 @@ def git_create_worktree(branch: str, path: Path, base_branch: str) -> None:
             run_command(["git", "worktree", "add", "-b", branch, str(path), base_branch])
 
 
+def git_merge_branch_into_base(branch: str, base_branch: str, strategy: str = "merge") -> str:
+    if strategy not in ("merge", "squash"):
+        raise RuntimeError("git merge strategy must be one of: merge, squash")
+    ensure_clean_checkout_context()
+    current = current_branch()
+    try:
+        run_command(["git", "checkout", base_branch])
+        if strategy == "squash":
+            run_command_with_stderr(["git", "merge", "--squash", branch])
+            run_command_with_stderr(["git", "commit", "-m", f"Squash merge {branch} into {base_branch}"])
+        else:
+            run_command_with_stderr(["git", "merge", "--no-ff", branch, "-m", f"Merge {branch} into {base_branch}"])
+    except Exception:
+        if current and current != base_branch and branch_exists(current):
+            try:
+                run_command(["git", "checkout", current])
+            except Exception:
+                pass
+        raise
+    return current
+
+
 def git_delete_branch(branch: str, fallback_branch: str = "main") -> None:
     if not branch:
         return
@@ -853,6 +888,18 @@ def git_remove_worktree(path: Path) -> None:
         run_command(["git", "worktree", "remove", "--force", str(path)])
         return
     raise RuntimeError(f"path exists but is not a registered worktree: {path}")
+
+
+def gh_merge_pr(pr_ref: str, strategy: str, delete_branch: bool) -> None:
+    strategy_flag = {"merge": "--merge", "squash": "--squash", "rebase": "--rebase"}.get(strategy)
+    if not strategy_flag:
+        raise RuntimeError("gh merge strategy must be one of: merge, squash, rebase")
+    cmd = ["gh", "pr", "merge", pr_ref, strategy_flag]
+    if delete_branch:
+        cmd.append("--delete-branch")
+    else:
+        cmd.append("--delete-branch=false")
+    run_command_with_stderr(cmd)
 
 
 def default_authority_hierarchy() -> list[str]:
@@ -2550,6 +2597,66 @@ def cmd_ship(args: list[str]) -> int:
         print(json.dumps(registry["runs"][index], indent=2, ensure_ascii=True))
         return 0
 
+    if subcommand == "merge":
+        if len(args) < 2:
+            raise SystemExit("ship merge requires RUN_ID [--via=git|gh] [--strategy=merge|squash|rebase] [--delete-branch] [SUMMARY]")
+        run_id = args[1]
+        merge_via = "git"
+        strategy = "merge"
+        delete_branch = False
+        summary_tokens: list[str] = []
+        for arg in args[2:]:
+            if arg.startswith("--via="):
+                merge_via = arg.split("=", 1)[1].strip() or "git"
+            elif arg.startswith("--strategy="):
+                strategy = arg.split("=", 1)[1].strip() or "merge"
+            elif arg == "--delete-branch":
+                delete_branch = True
+            else:
+                summary_tokens.append(arg)
+        summary = " ".join(summary_tokens).strip() or "Merged cleanly"
+        with harness_lock():
+            registry = read_registry()
+            index = find_run_index(registry, run_id)
+            if index < 0:
+                raise SystemExit(f"run not found: {run_id}")
+            run = registry["runs"][index]
+            if policy_value("admissions.require_pre_ship_validation", True) and run.get("verification_status") != "passed":
+                raise SystemExit("ship merge requires verification_status=passed")
+            if run.get("pr_ref"):
+                if run.get("review_status") != "approved":
+                    raise SystemExit("ship merge requires review_status=approved when a PR is tracked")
+                if run.get("checks_status") != "passed":
+                    raise SystemExit("ship merge requires checks_status=passed when a PR is tracked")
+            profile, _ = resolve_profile()
+            base_branch = get_key(profile, "profile.base_branch", "main")
+            try:
+                if merge_via == "gh":
+                    if not run.get("pr_ref"):
+                        raise SystemExit("ship merge via gh requires a tracked PR")
+                    gh_merge_pr(run["pr_ref"], strategy, delete_branch)
+                else:
+                    git_merge_branch_into_base(run.get("branch", ""), base_branch, strategy)
+            except SystemExit:
+                raise
+            except Exception as exc:
+                raise SystemExit(f"ship merge failed: {exc}")
+            mark_run_merged(run, summary)
+            write_registry(registry)
+        print(
+            json.dumps(
+                {
+                    "run": registry["runs"][index],
+                    "merged_via": merge_via,
+                    "strategy": strategy,
+                    "delete_branch_requested": delete_branch,
+                },
+                indent=2,
+                ensure_ascii=True,
+            )
+        )
+        return 0
+
     if subcommand == "merged":
         if len(args) < 2:
             raise SystemExit("ship merged requires RUN_ID [SUMMARY]")
@@ -2568,15 +2675,7 @@ def cmd_ship(args: list[str]) -> int:
                     raise SystemExit("ship merged requires review_status=approved when a PR is tracked")
                 if run.get("checks_status") != "passed":
                     raise SystemExit("ship merged requires checks_status=passed when a PR is tracked")
-            run["ship_status"] = "merged"
-            run["shipped_at"] = now_iso()
-            record_ship_ref(run, "merged")
-            if run.get("state") != "completed":
-                validate_run_transition(run, "completed")
-                run["state"] = "completed"
-                run["completed_at"] = now_iso()
-            run["latest_summary"] = summary
-            run["next_expected_action"] = "Consider whether this shipped work should enter an RC."
+            mark_run_merged(run, summary)
             write_registry(registry)
         print(json.dumps(registry["runs"][index], indent=2, ensure_ascii=True))
         return 0
