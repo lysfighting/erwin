@@ -93,6 +93,17 @@ assert_json_field "$escalate_output" '"kind": "requires_meeting"' "teammate esca
 assert_json_field "$escalate_output" '"state": "active"' "teammate escalation materializes active meeting"
 meeting_id=$(printf '%s\n' "$escalate_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 
+role_a=$(run_in_repo bash scripts/harness-meetings.sh add-role "$meeting_id" implementation-verifier --mission="Verify the scoped auth change against code and release notes." --allow="L1: live git state|L2: active runtime state|L3: committed harness definitions" --forbid="L4+: stale summaries")
+role_b=$(run_in_repo bash scripts/harness-meetings.sh add-role "$meeting_id" ops-simulator --mission="Simulate release-facing operator impact." --allow="L1: live git state|L2: active runtime state|L3: committed harness definitions" --forbid="Unverified memory")
+assert_json_field "$role_a" '"role_specs"' "meeting stores bounded role specs"
+assert_json_field "$role_b" '"ops-simulator"' "meeting keeps the second bounded role"
+
+known_context=$(run_in_repo bash scripts/harness-meetings.sh add-known-context "$meeting_id" "Release notes currently mention auth callers but not required scope.")
+assert_json_field "$known_context" '"known_context"' "meeting records known context"
+
+locked_decision=$(run_in_repo bash scripts/harness-meetings.sh lock-decision "$meeting_id" "Do not widen teammate scope beyond auth-related release notes." --reason="Bounded council scope for this meeting." --authority="L2" --evidence=harness/profiles/erwin.yml)
+assert_json_field "$locked_decision" '"locked_decisions"' "meeting records locked decisions"
+
 participant_a=$(run_in_repo bash scripts/harness-meetings.sh add-participant "$meeting_id" "$run_a" implementation-verifier)
 participant_b=$(run_in_repo bash scripts/harness-meetings.sh add-participant "$meeting_id" "$run_b" ops-simulator)
 assert_json_field "$participant_a" '"participants"' "meeting stores participant roster"
@@ -105,6 +116,9 @@ position_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting
 position_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" cross_examination challenge "Release notes should mention the new scope requirement." --evidence=CHANGELOG.md)
 assert_json_field "$position_a" '"positions"' "meeting stores first position"
 assert_json_field "$position_b" '"cross_examination"' "meeting stores cross-examination position"
+
+rejected_finding=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" rejected "Ship immediately without release note updates." --reason="Cross-examination found operator-facing behavior drift." --authority="L2" --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator)
+assert_json_field "$rejected_finding" '"reason": "Cross-examination found operator-facing behavior drift."' "meeting records rejected finding reason"
 
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)

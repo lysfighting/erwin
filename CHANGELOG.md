@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Completion handoff pack**: Added `docs/research/harness-completion-context-pack-2026-03-28.md` so future sessions can distinguish adapter/package progress from the larger orchestration mission.
 - **Packaged runtime preference**: `scripts/harness-runtime.sh` now prefers packaged `harness/bin/<os>-<arch>/harness-state` binaries before falling back to a local Go build in `.harness/bin/`.
 - **Runtime builder + dist smoke**: Added `scripts/harness-build-runtime.sh`, `harness/bin/README.md`, and `scripts/harness-runtime-dist-smoke-test.sh` so the adapter can prove a no-Python, no-local-Go runtime path when packaged binaries are present.
+- **Council governance hardening**: meetings now carry role specs with allowed/forbidden sources, known-context notes, locked decisions, and rejected-finding reasons; `doctor` validates those governance fields explicitly.
+- **Harness gap audit**: Added `docs/research/harness-gap-audit-2026-03-29.md` to track which earlier design inputs are absorbed, partial, or still missing, so future sessions do not drift from the original mission.
 
 ### Changed — Project Intelligence
 - **Current project focus updated**: `_project/CURRENT.md` now reflects the shift from Wing-only transition work to the new Codex-native orchestration harness prototype.

@@ -1090,6 +1090,72 @@ func appendUniqueText(list []any, value string) []any {
 	return append(list, value)
 }
 
+func dedupeStrings(items []string) []string {
+	if len(items) == 0 {
+		return []string{}
+	}
+	seen := map[string]bool{}
+	result := []string{}
+	for _, item := range items {
+		trimmed := strings.TrimSpace(item)
+		if trimmed == "" || seen[trimmed] {
+			continue
+		}
+		seen[trimmed] = true
+		result = append(result, trimmed)
+	}
+	return result
+}
+
+func upsertMeetingRoleSpec(meeting map[string]any, role, mission string, allowedSources, forbiddenSources []string) {
+	role = strings.TrimSpace(role)
+	if role == "" {
+		return
+	}
+	roleSpecs := toList(meeting["role_specs"])
+	allowedValues := stringListToAny(dedupeStrings(allowedSources))
+	forbiddenValues := stringListToAny(dedupeStrings(forbiddenSources))
+	updated := false
+	for index, item := range roleSpecs {
+		spec, ok := toMap(item)
+		if !ok || stringValue(spec["role"]) != role {
+			continue
+		}
+		if strings.TrimSpace(mission) != "" {
+			spec["mission"] = mission
+		}
+		if len(allowedSources) > 0 {
+			spec["allowed_sources"] = allowedValues
+		} else if _, ok := spec["allowed_sources"]; !ok {
+			spec["allowed_sources"] = []any{}
+		}
+		if len(forbiddenSources) > 0 {
+			spec["forbidden_sources"] = forbiddenValues
+		} else if _, ok := spec["forbidden_sources"]; !ok {
+			spec["forbidden_sources"] = []any{}
+		}
+		if stringValue(spec["created_at"]) == "" {
+			spec["created_at"] = nowISO()
+		}
+		spec["updated_at"] = nowISO()
+		roleSpecs[index] = spec
+		updated = true
+		break
+	}
+	if !updated {
+		roleSpecs = append(roleSpecs, map[string]any{
+			"role":              role,
+			"mission":           mission,
+			"allowed_sources":   allowedValues,
+			"forbidden_sources": forbiddenValues,
+			"created_at":        nowISO(),
+			"updated_at":        nowISO(),
+		})
+	}
+	meeting["role_specs"] = roleSpecs
+	meeting["roles"] = appendUniqueText(toList(meeting["roles"]), role)
+}
+
 func activeRun(run map[string]any) bool {
 	state := stringValue(run["state"])
 	return state != "completed" && state != "abandoned"
@@ -1566,6 +1632,36 @@ func defaultMeetingRoles() []any {
 	return []any{"fact-verifier", "architecture-challenger", "completeness-checker"}
 }
 
+func defaultMeetingRoleSpecs() []any {
+	timestamp := nowISO()
+	return []any{
+		map[string]any{
+			"role":              "fact-verifier",
+			"mission":           "Verify factual claims against the highest-authority live state before the council accepts them.",
+			"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+			"forbidden_sources": []any{"L4+: stale notes, legacy artifacts, or summaries used to override fresher evidence"},
+			"created_at":        timestamp,
+			"updated_at":        timestamp,
+		},
+		map[string]any{
+			"role":              "architecture-challenger",
+			"mission":           "Challenge hidden assumptions, blast radius, and design coupling without overriding higher-authority facts.",
+			"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+			"forbidden_sources": []any{"Lower-authority notes used as truth", "Unbounded speculation without evidence"},
+			"created_at":        timestamp,
+			"updated_at":        timestamp,
+		},
+		map[string]any{
+			"role":              "completeness-checker",
+			"mission":           "Find missing decision inputs, missing rollout details, and missing operator-facing guidance before synthesis.",
+			"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+			"forbidden_sources": []any{"Already rejected findings reused without re-verification"},
+			"created_at":        timestamp,
+			"updated_at":        timestamp,
+		},
+	}
+}
+
 func materializeMeeting(meetingID string, run map[string]any, question, requestedBy string) (map[string]any, error) {
 	templateRoot, _ := toMap(loadData(meetingTemplatePath(), map[string]any{}))
 	template, _ := toMap(templateRoot["meeting"])
@@ -1582,9 +1678,11 @@ func materializeMeeting(meetingID string, run map[string]any, question, requeste
 		"authority_hierarchy": defaultAuthorityHierarchy(),
 		"locked_decisions":    []any{},
 		"roles":               defaultMeetingRoles(),
+		"role_specs":          defaultMeetingRoleSpecs(),
 		"packet": map[string]any{
 			"expected_output": "Produce accepted findings, rejected findings, unresolved questions, and action items.",
 			"context_refs":    []any{stringValue(run["contract_ref"])},
+			"known_context":   []any{stringValue(run["status_reason"])},
 			"run_summary":     stringValue(run["latest_summary"]),
 			"status_reason":   stringValue(run["status_reason"]),
 		},
@@ -2027,8 +2125,43 @@ func doctorReport() map[string]any {
 		if len(toList(meeting["roles"])) == 0 {
 			issues = append(issues, issueRecord("warning", "meeting-missing-roles", meetingID, "Meeting has no assigned roles.", "Assign bounded roles before continuing the meeting."))
 		}
+		if len(toList(meeting["role_specs"])) == 0 {
+			issues = append(issues, issueRecord("warning", "meeting-missing-role-specs", meetingID, "Meeting has roles but no role_specs with allowed/forbidden source boundaries.", "Record role specs before trusting council output."))
+		}
 		if stringValue(meeting["phase"]) == "" {
 			issues = append(issues, issueRecord("warning", "meeting-missing-phase", meetingID, "Meeting has no active phase marker.", "Set the meeting phase before continuing the council."))
+		}
+		packet, _ := toMap(meeting["packet"])
+		if strings.TrimSpace(stringValue(packet["expected_output"])) == "" {
+			issues = append(issues, issueRecord("warning", "meeting-missing-expected-output", meetingID, "Meeting packet has no expected_output.", "Define the expected council output before continuing."))
+		}
+		if len(toList(packet["context_refs"])) == 0 && len(toList(packet["known_context"])) == 0 {
+			issues = append(issues, issueRecord("warning", "meeting-missing-context", meetingID, "Meeting packet has neither context_refs nor known_context.", "Record bounded context before continuing the council."))
+		}
+		if phase := stringValue(meeting["phase"]); phase == "cross_examination" || phase == "synthesis" || phase == "output" {
+			if len(toList(meeting["locked_decisions"])) == 0 {
+				issues = append(issues, issueRecord("warning", "meeting-missing-locked-decisions", meetingID, "Meeting reached an advanced phase without any locked decisions.", "Record locked decisions or explicitly note that none exist."))
+			}
+		}
+		for _, item := range toList(meeting["role_specs"]) {
+			spec, ok := toMap(item)
+			if !ok {
+				continue
+			}
+			role := firstNonBlank(stringValue(spec["role"]), meetingID)
+			if len(toList(spec["allowed_sources"])) == 0 {
+				issues = append(issues, issueRecord("warning", "meeting-role-missing-allowed-sources", role, "Meeting role spec has no allowed_sources.", "Record explicit allowed sources for the role."))
+			}
+			if len(toList(spec["forbidden_sources"])) == 0 {
+				issues = append(issues, issueRecord("warning", "meeting-role-missing-forbidden-sources", role, "Meeting role spec has no forbidden_sources.", "Record explicit forbidden sources for the role."))
+			}
+		}
+		findings, _ := toMap(meeting["findings"])
+		for _, item := range toList(findings["rejected"]) {
+			finding, ok := toMap(item)
+			if ok && strings.TrimSpace(stringValue(finding["reason"])) == "" {
+				issues = append(issues, issueRecord("warning", "meeting-rejected-finding-missing-reason", meetingID, "Rejected meeting finding is missing a reason.", "Record why the council rejected the finding."))
+			}
 		}
 		if meetingAge := ageHours(stringValue(meeting["created_at"])); meetingAge != nil {
 			if *meetingAge > 0.25 && len(toList(meeting["participants"])) == 0 {
@@ -4403,6 +4536,8 @@ func cmdMeetings(args []string) error {
 			"question":          stringValue(meeting["question"]),
 			"outcome_summary":   outcome["summary"],
 			"next_action":       outcome["next_action"],
+			"role_spec_count":   len(toList(meeting["role_specs"])),
+			"locked_decisions":  len(toList(meeting["locked_decisions"])),
 			"accepted_count":    len(toList(findings["accepted"])),
 			"rejected_count":    len(toList(findings["rejected"])),
 			"unresolved_count":  len(toList(findings["unresolved"])),
@@ -4421,15 +4556,33 @@ func cmdMeetingsRemainder(args []string) error {
 			return errors.New("meetings add-role requires MEETING_ID ROLE")
 		}
 		meetingID := args[1]
-		role := strings.TrimSpace(strings.Join(args[2:], " "))
+		roleTokens := []string{}
+		mission := ""
+		allowedSources := []string{}
+		forbiddenSources := []string{}
+		for _, arg := range args[2:] {
+			switch {
+			case strings.HasPrefix(arg, "--mission="):
+				mission = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--mission=")), mission)
+			case strings.HasPrefix(arg, "--allow="):
+				allowedSources = append(allowedSources, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--allow=")))...)
+			case strings.HasPrefix(arg, "--forbid="):
+				forbiddenSources = append(forbiddenSources, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--forbid=")))...)
+			default:
+				roleTokens = append(roleTokens, arg)
+			}
+		}
+		role := strings.TrimSpace(strings.Join(roleTokens, " "))
+		if role == "" {
+			return errors.New("meetings add-role requires ROLE")
+		}
 		return withHarnessLock(func() error {
 			data := readActiveMeeting(meetingID)
 			if data == nil {
 				return fmt.Errorf("active meeting not found: %s", meetingID)
 			}
 			meeting, _ := toMap(data["meeting"])
-			roles := appendUniqueText(toList(meeting["roles"]), role)
-			meeting["roles"] = roles
+			upsertMeetingRoleSpec(meeting, role, mission, allowedSources, forbiddenSources)
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}
@@ -4528,6 +4681,74 @@ func cmdMeetingsRemainder(args []string) error {
 			}
 			packet["context_refs"] = appendUniqueText(toList(packet["context_refs"]), ref)
 			meeting["packet"] = packet
+			if err := writeActiveMeeting(meeting); err != nil {
+				return err
+			}
+			return printJSON(meeting)
+		})
+	case "add-known-context":
+		if len(args) < 3 {
+			return errors.New("meetings add-known-context requires MEETING_ID TEXT")
+		}
+		meetingID := args[1]
+		note := strings.TrimSpace(strings.Join(args[2:], " "))
+		return withHarnessLock(func() error {
+			data := readActiveMeeting(meetingID)
+			if data == nil {
+				return fmt.Errorf("active meeting not found: %s", meetingID)
+			}
+			meeting, _ := toMap(data["meeting"])
+			packet, _ := toMap(meeting["packet"])
+			if packet == nil {
+				packet = map[string]any{}
+			}
+			packet["known_context"] = appendUniqueText(toList(packet["known_context"]), note)
+			meeting["packet"] = packet
+			if err := writeActiveMeeting(meeting); err != nil {
+				return err
+			}
+			return printJSON(meeting)
+		})
+	case "lock-decision":
+		if len(args) < 3 {
+			return errors.New("meetings lock-decision requires MEETING_ID TEXT")
+		}
+		meetingID := args[1]
+		textTokens := []string{}
+		reason := ""
+		authorityLevel := "L2"
+		evidenceRefs := []string{}
+		for _, arg := range args[2:] {
+			switch {
+			case strings.HasPrefix(arg, "--reason="):
+				reason = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--reason=")), reason)
+			case strings.HasPrefix(arg, "--authority="):
+				authorityLevel = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--authority=")), authorityLevel)
+			case strings.HasPrefix(arg, "--evidence="):
+				evidenceRefs = append(evidenceRefs, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--evidence=")))...)
+			default:
+				textTokens = append(textTokens, arg)
+			}
+		}
+		summary := strings.TrimSpace(strings.Join(textTokens, " "))
+		if summary == "" {
+			return errors.New("meetings lock-decision requires TEXT")
+		}
+		return withHarnessLock(func() error {
+			data := readActiveMeeting(meetingID)
+			if data == nil {
+				return fmt.Errorf("active meeting not found: %s", meetingID)
+			}
+			meeting, _ := toMap(data["meeting"])
+			locked := append(toList(meeting["locked_decisions"]), map[string]any{
+				"decision_id":     "decision-" + nowTime().UTC().Format("20060102150405"),
+				"summary":         summary,
+				"reason":          reason,
+				"authority_level": authorityLevel,
+				"evidence_refs":   stringListToAny(evidenceRefs),
+				"locked_at":       nowISO(),
+			})
+			meeting["locked_decisions"] = locked
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}
@@ -4645,9 +4866,34 @@ func cmdMeetingsRemainder(args []string) error {
 		}
 		meetingID := args[1]
 		findingKind := args[2]
-		summary := strings.TrimSpace(strings.Join(args[3:], " "))
 		if findingKind != "accepted" && findingKind != "rejected" && findingKind != "unresolved" {
 			return errors.New("meetings add-finding kind must be accepted, rejected, or unresolved")
+		}
+		summaryTokens := []string{}
+		reason := ""
+		authorityLevel := "L2"
+		evidenceRefs := []string{}
+		sourceRunID := ""
+		sourceRole := ""
+		for _, arg := range args[3:] {
+			switch {
+			case strings.HasPrefix(arg, "--reason="):
+				reason = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--reason=")), reason)
+			case strings.HasPrefix(arg, "--authority="):
+				authorityLevel = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--authority=")), authorityLevel)
+			case strings.HasPrefix(arg, "--evidence="):
+				evidenceRefs = append(evidenceRefs, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--evidence=")))...)
+			case strings.HasPrefix(arg, "--run="):
+				sourceRunID = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--run=")), sourceRunID)
+			case strings.HasPrefix(arg, "--role="):
+				sourceRole = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--role=")), sourceRole)
+			default:
+				summaryTokens = append(summaryTokens, arg)
+			}
+		}
+		summary := strings.TrimSpace(strings.Join(summaryTokens, " "))
+		if summary == "" {
+			return errors.New("meetings add-finding requires TEXT")
 		}
 		return withHarnessLock(func() error {
 			data := readActiveMeeting(meetingID)
@@ -4660,9 +4906,14 @@ func cmdMeetingsRemainder(args []string) error {
 				findings = map[string]any{}
 			}
 			bucket := append(toList(findings[findingKind]), map[string]any{
-				"finding_id":  "finding-" + nowTime().UTC().Format("20060102150405"),
-				"summary":     summary,
-				"recorded_at": nowISO(),
+				"finding_id":      "finding-" + nowTime().UTC().Format("20060102150405"),
+				"summary":         summary,
+				"reason":          reason,
+				"authority_level": authorityLevel,
+				"evidence_refs":   stringListToAny(evidenceRefs),
+				"source_run_id":   sourceRunID,
+				"source_role":     sourceRole,
+				"recorded_at":     nowISO(),
 			})
 			findings[findingKind] = bucket
 			meeting["findings"] = findings

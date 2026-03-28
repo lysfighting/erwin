@@ -61,8 +61,16 @@ The harness is file-backed:
   `bash scripts/harness-teammates.sh message TEAMMATE_RUN_A TEAMMATE_RUN_B interface_change "Signature changed to require scope" --evidence=src/auth.ts`
 - `meeting-participant`
   `bash scripts/harness-meetings.sh add-participant MEETING_ID TEAMMATE_RUN_ID architecture-challenger`
+- `meeting-role`
+  `bash scripts/harness-meetings.sh add-role MEETING_ID architecture-challenger --mission="Challenge blast radius assumptions" --allow="L1: live git state|L2: active runtime state" --forbid="L4+: stale notes"`
+- `meeting-known-context`
+  `bash scripts/harness-meetings.sh add-known-context MEETING_ID "Current release notes mention auth callers but not required scope."`
+- `meeting-lock`
+  `bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to auth release notes only." --reason="Avoid widening blast radius during review." --authority=L2 --evidence=harness/profiles/erwin.yml`
 - `meeting-position`
   `bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID independent_review challenge "This contract leaks release policy" --evidence=docs/spec.md`
+- `meeting-finding`
+  `bash scripts/harness-meetings.sh add-finding MEETING_ID rejected "Ship immediately without release-note updates." --reason="Cross-examination found operator-facing drift." --authority=L2 --evidence=CHANGELOG.md --role=ops-simulator`
 - `meeting-close`
   `bash scripts/harness-drive.sh meeting-close RUN_ID MEETING_ID "resolution"`
 - `adopt-meeting`

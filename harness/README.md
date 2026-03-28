@@ -85,7 +85,9 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - leader-facing home/doctor views
 - first-class teammate runs with bounded assignment scope and reporting contracts
 - governed teammate-to-teammate communication through structured sibling signals
-- meeting participants, phases, and recorded positions for arch-review-like councils
+- meeting participants, phases, role specs, locked decisions, and recorded positions for arch-review-like councils
+- role-bounded meeting source discipline via `allowed_sources` / `forbidden_sources`
+- rejected findings that carry explicit reasons instead of disappearing silently
 - machine-readable separation between protocol contract, adapter package, and profile contract
 
 ## Verification

@@ -12,11 +12,13 @@ meeting:
   authority_hierarchy: []
   locked_decisions: []
   roles: []
+  role_specs: []
   participants: []
   positions: []
   packet:
     expected_output: ""
     context_refs: []
+    known_context: []
     run_summary: ""
     status_reason: ""
   findings:
