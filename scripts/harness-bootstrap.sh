@@ -141,6 +141,7 @@ EOF
 copy_file "$SOURCE_ROOT/scripts/harness_state.py" "$TARGET_ROOT/scripts/harness_state.py"
 copy_file "$SOURCE_ROOT/scripts/harness-home.sh" "$TARGET_ROOT/scripts/harness-home.sh"
 copy_file "$SOURCE_ROOT/scripts/harness-doctor.sh" "$TARGET_ROOT/scripts/harness-doctor.sh"
+copy_file "$SOURCE_ROOT/scripts/harness-issue.sh" "$TARGET_ROOT/scripts/harness-issue.sh"
 copy_file "$SOURCE_ROOT/scripts/harness-claim.sh" "$TARGET_ROOT/scripts/harness-claim.sh"
 copy_file "$SOURCE_ROOT/scripts/harness-drive.sh" "$TARGET_ROOT/scripts/harness-drive.sh"
 copy_file "$SOURCE_ROOT/scripts/harness-ship.sh" "$TARGET_ROOT/scripts/harness-ship.sh"
@@ -155,12 +156,14 @@ copy_file "$SOURCE_ROOT/scripts/harness-contracts.sh" "$TARGET_ROOT/scripts/harn
 copy_file "$SOURCE_ROOT/scripts/harness-git.sh" "$TARGET_ROOT/scripts/harness-git.sh"
 copy_file "$SOURCE_ROOT/scripts/harness-bootstrap.sh" "$TARGET_ROOT/scripts/harness-bootstrap.sh"
 copy_file "$SOURCE_ROOT/scripts/harness-sync.sh" "$TARGET_ROOT/scripts/harness-sync.sh"
+copy_file "$SOURCE_ROOT/scripts/harness-issue-smoke-test.sh" "$TARGET_ROOT/scripts/harness-issue-smoke-test.sh"
 copy_file "$SOURCE_ROOT/scripts/harness-smoke-test.sh" "$TARGET_ROOT/scripts/harness-smoke-test.sh"
 copy_file "$SOURCE_ROOT/scripts/harness-release-smoke-test.sh" "$TARGET_ROOT/scripts/harness-release-smoke-test.sh"
 copy_file "$SOURCE_ROOT/install-codex.sh" "$TARGET_ROOT/install-codex.sh"
 
 copy_file "$SOURCE_ROOT/harness/README.md" "$TARGET_ROOT/harness/README.md"
 copy_file "$SOURCE_ROOT/harness/templates/contract.yml" "$TARGET_ROOT/harness/templates/contract.yml"
+copy_file "$SOURCE_ROOT/harness/templates/issue.md" "$TARGET_ROOT/harness/templates/issue.md"
 copy_file "$SOURCE_ROOT/harness/templates/run.yml" "$TARGET_ROOT/harness/templates/run.yml"
 copy_file "$SOURCE_ROOT/harness/templates/signal.yml" "$TARGET_ROOT/harness/templates/signal.yml"
 copy_file "$SOURCE_ROOT/harness/templates/meeting.yml" "$TARGET_ROOT/harness/templates/meeting.yml"
@@ -177,6 +180,7 @@ chmod +x \
   "$TARGET_ROOT/install-codex.sh" \
   "$TARGET_ROOT/scripts/harness-home.sh" \
   "$TARGET_ROOT/scripts/harness-doctor.sh" \
+  "$TARGET_ROOT/scripts/harness-issue.sh" \
   "$TARGET_ROOT/scripts/harness-claim.sh" \
   "$TARGET_ROOT/scripts/harness-drive.sh" \
   "$TARGET_ROOT/scripts/harness-ship.sh" \
@@ -191,6 +195,7 @@ chmod +x \
   "$TARGET_ROOT/scripts/harness-git.sh" \
   "$TARGET_ROOT/scripts/harness-bootstrap.sh" \
   "$TARGET_ROOT/scripts/harness-sync.sh" \
+  "$TARGET_ROOT/scripts/harness-issue-smoke-test.sh" \
   "$TARGET_ROOT/scripts/harness-smoke-test.sh" \
   "$TARGET_ROOT/scripts/harness-release-smoke-test.sh"
 
@@ -207,6 +212,7 @@ cat <<EOF
     "scripts/harness_state.py",
     "scripts/harness-home.sh",
     "scripts/harness-doctor.sh",
+    "scripts/harness-issue.sh",
     "scripts/harness-claim.sh",
     "scripts/harness-drive.sh",
     "scripts/harness-ship.sh",
@@ -221,12 +227,14 @@ cat <<EOF
     "scripts/harness-git.sh",
     "scripts/harness-bootstrap.sh",
     "scripts/harness-sync.sh",
+    "scripts/harness-issue-smoke-test.sh",
     "scripts/harness-smoke-test.sh",
     "scripts/harness-release-smoke-test.sh",
     "install-codex.sh",
     "harness/README.md",
     "harness/profiles/default.yml",
     "harness/templates/contract.yml",
+    "harness/templates/issue.md",
     "harness/templates/run.yml",
     "harness/templates/signal.yml",
     "harness/templates/meeting.yml",

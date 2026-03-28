@@ -7,8 +7,9 @@ All notable changes to the `harness` skill will be documented in this file.
 ### Added
 - Bootstrapable Codex adapter path via `scripts/harness-bootstrap.sh`.
 - Remembered-source resync via `scripts/harness-sync.sh` and adapter metadata.
+- Structured issue drafting surface via `scripts/harness-issue.sh`.
 - Release lifecycle surfaces: `ship` and `rc`.
-- Smoke coverage for core, bootstrap, and release flows.
+- Smoke coverage for issue, core, bootstrap, and release flows.
 
 ## [0.1.0] - 2026-03-28
 

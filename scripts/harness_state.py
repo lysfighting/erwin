@@ -209,6 +209,10 @@ def run_command(cmd: list[str]) -> str:
     return subprocess.check_output(cmd, cwd=repo_root(), stderr=subprocess.DEVNULL, text=True).strip()
 
 
+def run_command_with_stderr(cmd: list[str], cwd: Path | None = None) -> str:
+    return subprocess.check_output(cmd, cwd=cwd or repo_root(), stderr=subprocess.STDOUT, text=True).strip()
+
+
 def slugify(value: str) -> str:
     slug = re.sub(r"[^a-zA-Z0-9]+", "-", value.strip().lower()).strip("-")
     slug = re.sub(r"-{2,}", "-", slug)
@@ -318,6 +322,10 @@ def meeting_template_path() -> Path:
 
 def rc_template_path() -> Path:
     return definitions_root() / "templates" / "rc.yml"
+
+
+def issue_template_path() -> Path:
+    return definitions_root() / "templates" / "issue.md"
 
 
 def policies_path() -> Path:
@@ -549,6 +557,24 @@ def record_ship_ref(run: dict[str, Any], ref: str) -> None:
     refs = run.setdefault("ship_refs", [])
     append_unique_text(refs, ref)
     run["updated_at"] = now_iso()
+
+
+def issue_body_from_template(
+    *,
+    title: str,
+    objective: str,
+    success_criteria: list[str],
+    notes: list[str],
+) -> str:
+    template = issue_template_path().read_text(encoding="utf-8")
+    criteria_block = "\n".join(f"- {item}" for item in success_criteria) if success_criteria else "- TBD"
+    notes_block = "\n".join(f"- {item}" for item in notes) if notes else "- None"
+    return (
+        template.replace("__TITLE__", title)
+        .replace("__OBJECTIVE__", objective or title)
+        .replace("__SUCCESS_CRITERIA__", criteria_block)
+        .replace("__NOTES__", notes_block)
+    )
 
 
 def current_branch() -> str:
@@ -1385,6 +1411,98 @@ def cmd_home(args: list[str]) -> int:
 def cmd_doctor(args: list[str]) -> int:
     del args
     print(json.dumps(doctor_report(), indent=2, ensure_ascii=True))
+    return 0
+
+
+def cmd_issue(args: list[str]) -> int:
+    ensure_runtime_dirs()
+    if not args:
+        raise SystemExit("issue requires a subcommand")
+    subcommand = args[0]
+    if subcommand not in ("body", "draft", "create"):
+        raise SystemExit(f"unknown issue subcommand: {subcommand}")
+
+    title_parts: list[str] = []
+    objective = ""
+    criteria: list[str] = []
+    notes: list[str] = []
+    labels: list[str] = []
+    assignees: list[str] = []
+    draft_only = subcommand in ("body", "draft")
+
+    for arg in args[1:]:
+        if arg.startswith("--objective="):
+            objective = arg.split("=", 1)[1].strip()
+        elif arg.startswith("--criteria="):
+            raw = arg.split("=", 1)[1].strip()
+            criteria.extend([item.strip() for item in raw.split("|") if item.strip()])
+        elif arg.startswith("--note="):
+            note = arg.split("=", 1)[1].strip()
+            if note:
+                notes.append(note)
+        elif arg.startswith("--label="):
+            label = arg.split("=", 1)[1].strip()
+            if label:
+                labels.append(label)
+        elif arg.startswith("--assignee="):
+            assignee = arg.split("=", 1)[1].strip()
+            if assignee:
+                assignees.append(assignee)
+        elif arg == "--draft":
+            draft_only = True
+        else:
+            title_parts.append(arg)
+
+    title = " ".join(title_parts).strip()
+    if not title:
+        raise SystemExit(f"issue {subcommand} requires TITLE")
+
+    body = issue_body_from_template(
+        title=title,
+        objective=objective or title,
+        success_criteria=criteria,
+        notes=notes,
+    )
+
+    payload = {
+        "title": title,
+        "objective": objective or title,
+        "success_criteria": criteria,
+        "notes": notes,
+        "labels": labels,
+        "assignees": assignees,
+        "body": body,
+        "mode": "draft" if draft_only else "create",
+    }
+
+    if subcommand == "body":
+        print(body)
+        return 0
+
+    if draft_only:
+        print(json.dumps(payload, indent=2, ensure_ascii=True))
+        return 0
+
+    cmd = ["gh", "issue", "create", "--title", title, "--body", body]
+    for label in labels:
+        cmd.extend(["--label", label])
+    for assignee in assignees:
+        cmd.extend(["--assignee", assignee])
+
+    try:
+        output = run_command_with_stderr(cmd)
+    except Exception as exc:
+        raise SystemExit(f"issue create failed: {exc}")
+
+    issue_url = output.strip().splitlines()[-1].strip()
+    issue_number = 0
+    match = re.search(r"/issues/(\\d+)$", issue_url)
+    if match:
+        issue_number = int(match.group(1))
+
+    payload["issue_url"] = issue_url
+    payload["issue_number"] = issue_number
+    print(json.dumps(payload, indent=2, ensure_ascii=True))
     return 0
 
 
@@ -2415,7 +2533,7 @@ def cmd_maintenance(args: list[str]) -> int:
 
 def main() -> int:
     if len(sys.argv) < 2:
-        raise SystemExit("usage: harness_state.py <paths|profile|runs|signals|contracts|home|doctor|claim|drive|ship|rc|meetings|maintenance> ...")
+        raise SystemExit("usage: harness_state.py <paths|profile|runs|signals|contracts|home|doctor|issue|claim|drive|ship|rc|meetings|maintenance> ...")
     command = sys.argv[1]
     args = sys.argv[2:]
     if command == "paths":
@@ -2432,6 +2550,8 @@ def main() -> int:
         return cmd_home(args)
     if command == "doctor":
         return cmd_doctor(args)
+    if command == "issue":
+        return cmd_issue(args)
     if command == "claim":
         return cmd_claim(args)
     if command == "drive":

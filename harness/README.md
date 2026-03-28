@@ -23,6 +23,7 @@ The first usable Codex-native harness prototype now exists in `scripts/`.
 
 - `harness-home.sh` — leader home view
 - `harness-doctor.sh` — runtime diagnostics
+- `harness-issue.sh` — structured issue drafting and creation
 - `harness-claim.sh` — mission claim + contract/run creation
 - `harness-drive.sh` — run-state control, meetings, reprovision, outcome adoption
 - `harness-ship.sh` — verification, PR lifecycle, merge readiness
@@ -62,6 +63,7 @@ The first usable Codex-native harness prototype now exists in `scripts/`.
 Run the harness smoke test:
 
 ```bash
+./scripts/harness-issue-smoke-test.sh
 ./scripts/harness-smoke-test.sh
 ./scripts/harness-bootstrap-smoke-test.sh
 ./scripts/harness-release-smoke-test.sh

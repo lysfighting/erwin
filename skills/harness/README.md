@@ -6,6 +6,7 @@ Codex-native leader surface for the repository-local orchestration harness proto
 
 - `bash scripts/harness-home.sh`
 - `bash scripts/harness-doctor.sh`
+- `bash scripts/harness-issue.sh`
 - `bash scripts/harness-claim.sh`
 - `bash scripts/harness-drive.sh`
 - `bash scripts/harness-ship.sh`
@@ -18,6 +19,7 @@ Codex-native leader surface for the repository-local orchestration harness proto
 Use this when the model should act as the harness leader:
 
 - inspect governed state
+- draft or create executable issues
 - claim work into execution
 - convene and close councils
 - adopt meeting outcomes
@@ -33,6 +35,7 @@ Prototype, but working.
 ## Verification
 
 ```bash
+./scripts/harness-issue-smoke-test.sh
 ./scripts/harness-smoke-test.sh
 ./scripts/harness-bootstrap-smoke-test.sh
 ./scripts/harness-release-smoke-test.sh

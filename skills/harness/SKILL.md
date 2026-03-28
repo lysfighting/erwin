@@ -14,17 +14,19 @@ The harness is file-backed:
    `bash scripts/harness-home.sh`
 2. If anything looks off, inspect runtime health:
    `bash scripts/harness-doctor.sh`
-3. Claim work into governed execution:
+3. Create or draft executable issues when work is not yet claimable:
+   `bash scripts/harness-issue.sh ...`
+4. Claim work into governed execution:
    `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE]`
-4. Drive run state:
+5. Drive run state:
    `bash scripts/harness-drive.sh ...`
-5. Prepare release handoff when execution is done:
+6. Prepare release handoff when execution is done:
    `bash scripts/harness-ship.sh ...`
-6. Use meetings when ambiguity or blast radius is high:
+7. Use meetings when ambiguity or blast radius is high:
    `bash scripts/harness-meetings.sh ...`
-7. Use RC flow for release candidate governance:
+8. Use RC flow for release candidate governance:
    `bash scripts/harness-rc.sh ...`
-8. Repair drift or normalize runtime state when needed:
+9. Repair drift or normalize runtime state when needed:
    `bash scripts/harness-maintenance.sh ...`
 
 ## Important commands
@@ -33,6 +35,8 @@ The harness is file-backed:
   `bash scripts/harness-home.sh`
 - `doctor`
   `bash scripts/harness-doctor.sh`
+- `issue-draft`
+  `bash scripts/harness-issue.sh draft "Mission title" --criteria="A|B"`
 - `claim`
   `bash scripts/harness-claim.sh 1234`
 - `start`

@@ -63,12 +63,14 @@ assert_contains "$bootstrap_output" '"target_repo"' "bootstrap returns summary"
 assert_contains "$bootstrap_output" '"skills/harness/SKILL.md"' "bootstrap installs local skill files"
 assert_contains "$bootstrap_output" '"install-codex.sh"' "bootstrap installs local Codex installer"
 assert_contains "$bootstrap_output" '"metadata_path"' "bootstrap writes adapter metadata"
+assert_contains "$bootstrap_output" '"scripts/harness-issue.sh"' "bootstrap installs issue surface"
 assert_contains "$bootstrap_output" '"scripts/harness-ship.sh"' "bootstrap installs ship surface"
 assert_contains "$bootstrap_output" '"scripts/harness-rc.sh"' "bootstrap installs rc surface"
 
 if run_in_target test -f scripts/harness-home.sh && \
    run_in_target test -f scripts/harness-bootstrap.sh && \
    run_in_target test -f scripts/harness-sync.sh && \
+   run_in_target test -f scripts/harness-issue.sh && \
    run_in_target test -f scripts/harness-ship.sh && \
    run_in_target test -f scripts/harness-rc.sh && \
    run_in_target test -f skills/harness/SKILL.md && \

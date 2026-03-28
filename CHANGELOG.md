@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Adapter sync path**: Added `.harness/cache/adapter-source.json` metadata and `scripts/harness-sync.sh` so bootstrapped repositories can resync from a remembered or explicit source repository.
 - **Release lifecycle surfaces**: Added `scripts/harness-ship.sh` and `scripts/harness-rc.sh` plus RC runtime artifacts so the harness now covers verification, PR state, merge state, RC creation, RC verification, promotion, and closure.
 - **Release smoke coverage**: Added `scripts/harness-release-smoke-test.sh` to validate the `claim -> ship -> rc` path end-to-end.
+- **Issue surface**: Added `scripts/harness-issue.sh` plus `harness/templates/issue.md` so the harness can draft or create structured executable issues before claim.
+- **Issue smoke coverage**: Added `scripts/harness-issue-smoke-test.sh` for offline validation of structured issue drafting.
+- **Protocol coverage milestone**: The Codex-native harness now has first-class surfaces for the full lifecycle: `issue -> claim -> drive -> ship -> rc`.
 
 ### Changed — Project Intelligence
 - **Current project focus updated**: `_project/CURRENT.md` now reflects the shift from Wing-only transition work to the new Codex-native orchestration harness prototype.
