@@ -67,16 +67,28 @@ assert_json_field "$claim_output" '"mission_id": "issue-33001"' "claim creates t
 leader_run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 
 section "Delegation"
-assign_a=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-auth implementation-verifier "Patch auth callers" --scope="auth callers" --report="progress|blockers|verification")
-assign_b=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-ops ops-simulator "Check release-facing auth flows" --scope="release auth smoke" --report="progress|risk_raised|verification")
+assign_a=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-auth implementation-verifier "Patch auth callers" --scope="auth callers" --owns="scope:auth-callers" --report="progress|blockers|verification")
 assert_json_field "$assign_a" '"owner_id": "worker-auth"' "first teammate assignment created"
-assert_json_field "$assign_b" '"owner_id": "worker-ops"' "second teammate assignment created"
 run_a=$(printf '%s\n' "$assign_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+assign_b=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-ops ops-simulator "Check release-facing auth flows" --scope="release auth smoke" --owns="scope:release-auth-smoke" --depends-on="$run_a" --report="progress|risk_raised|verification")
+assert_json_field "$assign_b" '"owner_id": "worker-ops"' "second teammate assignment created"
 run_b=$(printf '%s\n' "$assign_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 
 list_output=$(run_in_repo bash scripts/harness-teammates.sh list "$leader_run_id")
 assert_json_field "$list_output" '"owner_id": "worker-auth"' "teammate list shows first delegated run"
 assert_json_field "$list_output" '"owner_id": "worker-ops"' "teammate list shows second delegated run"
+
+section "Ownership guard"
+set +e
+overlap_output=$(cd "$TEST_REPO" && bash scripts/harness-teammates.sh assign "$leader_run_id" worker-conflict architecture-challenger "Touch the same auth callers" --scope="auth callers" --owns="scope:auth-callers" 2>&1)
+rc=$?
+set -e
+if [ "$rc" -ne 0 ] && echo "$overlap_output" | grep -q 'ownership overlap detected'; then
+  pass "exclusive ownership overlap is rejected"
+else
+  fail "exclusive ownership overlap is rejected"
+  echo "$overlap_output"
+fi
 
 section "Reporting and communication"
 report_output=$(run_in_repo bash scripts/harness-teammates.sh report "$run_a" "Auth caller patch is ready for sibling review" --kind=progress --evidence=src/auth.ts)
@@ -109,21 +121,38 @@ participant_b=$(run_in_repo bash scripts/harness-meetings.sh add-participant "$m
 assert_json_field "$participant_a" '"participants"' "meeting stores participant roster"
 assert_json_field "$participant_b" '"worker-ops"' "meeting records second participant"
 
-phase_output=$(run_in_repo bash scripts/harness-meetings.sh set-phase "$meeting_id" independent_review)
-assert_json_field "$phase_output" '"phase": "independent_review"' "meeting phase advances to independent review"
+orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
+assert_json_field "$orchestrate_a" '"new_phase": "independent_review"' "meeting orchestration advances setup to independent review"
 
 position_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_a" independent_review support "No schema drift in auth callers." --evidence=src/auth.ts)
-position_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" cross_examination challenge "Release notes should mention the new scope requirement." --evidence=CHANGELOG.md)
+position_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" independent_review challenge "Release notes should mention the new scope requirement." --evidence=CHANGELOG.md)
 assert_json_field "$position_a" '"positions"' "meeting stores first position"
-assert_json_field "$position_b" '"cross_examination"' "meeting stores cross-examination position"
+assert_json_field "$position_b" '"independent_review"' "meeting stores second independent-review position"
+
+orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
+assert_json_field "$orchestrate_b" '"new_phase": "cross_examination"' "meeting orchestration advances to cross-examination"
+
+cross_exam=$(run_in_repo bash scripts/harness-meetings.sh add-position "$meeting_id" "$run_b" cross_examination challenge "Operator-facing release notes must mention the new scope requirement." --evidence=CHANGELOG.md)
+assert_json_field "$cross_exam" '"cross_examination"' "meeting stores cross-examination position"
 
 rejected_finding=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" rejected "Ship immediately without release note updates." --reason="Cross-examination found operator-facing behavior drift." --authority="L2" --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator)
 assert_json_field "$rejected_finding" '"reason": "Cross-examination found operator-facing behavior drift."' "meeting records rejected finding reason"
+accepted_finding=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" accepted "Release notes need a scoped auth update before ship." --reason="Independent review and cross-examination agree on operator impact." --authority="L2" --evidence=CHANGELOG.md --run="$run_a" --role=implementation-verifier)
+assert_json_field "$accepted_finding" '"accepted"' "meeting records accepted findings"
+action_output=$(run_in_repo bash scripts/harness-meetings.sh add-action "$meeting_id" "Update release notes before merging the auth change.")
+assert_json_field "$action_output" '"action_items"' "meeting records action items"
+
+orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
+assert_json_field "$orchestrate_c" '"new_phase": "synthesis"' "meeting orchestration advances to synthesis"
+orchestrate_d=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
+assert_json_field "$orchestrate_d" '"new_phase": "output"' "meeting orchestration advances to output once findings exist"
 
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_teammate_count": 2' "home surfaces active teammate runs"
 assert_json_field "$home_output" '"coordination_signal_count":' "home surfaces coordination signal count"
+assert_json_field "$home_output" '"dependency_blocked_count": 1' "home surfaces dependency-blocked runs"
+assert_json_field "$home_output" '"ownership_overlap_count": 0' "home stays free of ownership overlap"
 
 doctor_output=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output" '"issue_count": 0' "doctor stays healthy with governed teammate runtime"

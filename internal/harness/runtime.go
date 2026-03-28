@@ -1156,6 +1156,148 @@ func upsertMeetingRoleSpec(meeting map[string]any, role, mission string, allowed
 	meeting["roles"] = appendUniqueText(toList(meeting["roles"]), role)
 }
 
+func ownershipClaims(run map[string]any) []string {
+	return dedupeStrings(anyListToStrings(toList(run["ownership_claims"])))
+}
+
+func anyListToStrings(items []any) []string {
+	result := []string{}
+	for _, item := range items {
+		value := strings.TrimSpace(stringValue(item))
+		if value != "" {
+			result = append(result, value)
+		}
+	}
+	return result
+}
+
+func defaultDesiredStateForRun(ownerType string) map[string]any {
+	desired := map[string]any{
+		"goal_state":          "completed",
+		"verification_status": "passed",
+		"review_status":       "",
+		"checks_status":       "",
+		"ship_status":         "",
+	}
+	if ownerType == "leader" {
+		desired["verification_status"] = "passed"
+	}
+	return desired
+}
+
+func normalizeDesiredState(run map[string]any) map[string]any {
+	desired, _ := toMap(run["desired_state"])
+	if desired == nil {
+		desired = map[string]any{}
+	}
+	defaults := defaultDesiredStateForRun(stringValue(run["owner_type"]))
+	for key, value := range defaults {
+		if _, ok := desired[key]; !ok {
+			desired[key] = value
+		}
+	}
+	run["desired_state"] = desired
+	return desired
+}
+
+func runDesiredStateSatisfied(run map[string]any) (bool, []string) {
+	desired := normalizeDesiredState(run)
+	missing := []string{}
+	if goal := strings.TrimSpace(stringValue(desired["goal_state"])); goal != "" && stringValue(run["state"]) != goal {
+		missing = append(missing, "state:"+goal)
+	}
+	if expected := strings.TrimSpace(stringValue(desired["verification_status"])); expected != "" && stringValue(run["verification_status"]) != expected {
+		missing = append(missing, "verification_status:"+expected)
+	}
+	if expected := strings.TrimSpace(stringValue(desired["review_status"])); expected != "" && stringValue(run["review_status"]) != expected {
+		missing = append(missing, "review_status:"+expected)
+	}
+	if expected := strings.TrimSpace(stringValue(desired["checks_status"])); expected != "" && stringValue(run["checks_status"]) != expected {
+		missing = append(missing, "checks_status:"+expected)
+	}
+	if expected := strings.TrimSpace(stringValue(desired["ship_status"])); expected != "" && stringValue(run["ship_status"]) != expected {
+		missing = append(missing, "ship_status:"+expected)
+	}
+	return len(missing) == 0, missing
+}
+
+func dependencyTargets(run map[string]any) []string {
+	return dedupeStrings(anyListToStrings(toList(run["depends_on"])))
+}
+
+func unsatisfiedDependencies(run map[string]any, registry map[string]any) []string {
+	unsatisfied := []string{}
+	for _, dependencyID := range dependencyTargets(run) {
+		index := findRunIndex(registry, dependencyID)
+		if index < 0 {
+			unsatisfied = append(unsatisfied, dependencyID)
+			continue
+		}
+		dependencyRun, _ := toMap(toList(registry["runs"])[index])
+		satisfied, _ := runDesiredStateSatisfied(dependencyRun)
+		if !satisfied {
+			unsatisfied = append(unsatisfied, dependencyID)
+		}
+	}
+	return dedupeStrings(unsatisfied)
+}
+
+func overlapPolicy(run map[string]any) string {
+	policy := strings.TrimSpace(stringValue(run["overlap_policy"]))
+	if policy == "" {
+		return "exclusive"
+	}
+	return policy
+}
+
+func overlappingOwnershipRuns(registry map[string]any, candidateClaims []string, candidatePolicy string, ignoreRunIDs []string) []map[string]any {
+	if candidatePolicy == "shared" || len(candidateClaims) == 0 {
+		return nil
+	}
+	ignore := map[string]bool{}
+	for _, runID := range ignoreRunIDs {
+		ignore[runID] = true
+	}
+	claimSet := map[string]bool{}
+	for _, claim := range dedupeStrings(candidateClaims) {
+		claimSet[claim] = true
+	}
+	conflicts := []map[string]any{}
+	for _, item := range toList(registry["runs"]) {
+		run, _ := toMap(item)
+		runID := stringValue(run["run_id"])
+		if ignore[runID] || !activeRun(run) || overlapPolicy(run) == "shared" {
+			continue
+		}
+		shared := []string{}
+		for _, claim := range ownershipClaims(run) {
+			if claimSet[claim] {
+				shared = append(shared, claim)
+			}
+		}
+		if len(shared) == 0 {
+			continue
+		}
+		conflicts = append(conflicts, map[string]any{
+			"run_id":           runID,
+			"mission_id":       stringValue(run["mission_id"]),
+			"owner_id":         stringValue(run["owner_id"]),
+			"owner_type":       stringValue(run["owner_type"]),
+			"ownership_claims": stringListToAny(shared),
+		})
+	}
+	return conflicts
+}
+
+func validAuthorityLevel(level string) bool {
+	switch strings.TrimSpace(level) {
+	case "L1", "L2", "L3", "L4", "L5":
+		return true
+	default:
+		return false
+	}
+}
+
 func activeRun(run map[string]any) bool {
 	state := stringValue(run["state"])
 	return state != "completed" && state != "abandoned"
@@ -1870,6 +2012,9 @@ func meetingOutcome(meeting map[string]any) map[string]any {
 }
 
 func emitSignal(kind string, sourceRun map[string]any, title, summary string, appliesTo []string, scopeType, confidence, authorityLevel string, evidenceRefs []string, freshHours float64) (map[string]any, error) {
+	if authorityLevel != "" && !validAuthorityLevel(authorityLevel) {
+		return nil, fmt.Errorf("invalid authority level: %s", authorityLevel)
+	}
 	log := readSignalLog()
 	templateRoot, _ := toMap(loadData(signalTemplatePath(), map[string]any{}))
 	template, _ := toMap(templateRoot["signal"])
@@ -2094,6 +2239,40 @@ func doctorReport() map[string]any {
 				issues = append(issues, issueRecord("warning", "teammate-missing-reporting-contract", runID, "Teammate run has no reporting expectations.", "Record the teammate reporting contract before trusting the assignment."))
 			}
 		}
+		if len(ownershipClaims(run)) == 0 {
+			issues = append(issues, issueRecord("warning", "run-missing-ownership-claims", runID, "Run has no explicit ownership claims.", "Record ownership selectors so overlap can be governed explicitly."))
+		}
+		unsatisfiedDeps := unsatisfiedDependencies(run, registry)
+		if len(unsatisfiedDeps) > 0 {
+			if stringValue(run["state"]) != "waiting" {
+				issues = append(issues, issueRecord("warning", "run-dependencies-unsatisfied", runID, fmt.Sprintf("Run depends on unsatisfied runs: %s", strings.Join(unsatisfiedDeps, ", ")), "Move the run to waiting, or satisfy its dependencies first."))
+			}
+		}
+		if stringValue(run["state"]) == "completed" {
+			if satisfied, missing := runDesiredStateSatisfied(run); !satisfied {
+				issues = append(issues, issueRecord("warning", "run-desired-state-unmet", runID, fmt.Sprintf("Completed run does not satisfy desired state: %s", strings.Join(missing, ", ")), "Either continue the lifecycle or adjust the run's declared desired state."))
+			}
+		}
+	}
+
+	ownershipIndex := map[string][]map[string]any{}
+	for _, run := range activeRuns {
+		if overlapPolicy(run) == "shared" {
+			continue
+		}
+		for _, claim := range ownershipClaims(run) {
+			ownershipIndex[claim] = append(ownershipIndex[claim], run)
+		}
+	}
+	for claim, claimRuns := range ownershipIndex {
+		if len(claimRuns) < 2 {
+			continue
+		}
+		runIDs := []string{}
+		for _, run := range claimRuns {
+			runIDs = append(runIDs, stringValue(run["run_id"]))
+		}
+		issues = append(issues, issueRecord("critical", "ownership-overlap", claim, fmt.Sprintf("Multiple active exclusive runs claim the same ownership target: %s", strings.Join(runIDs, ", ")), "Narrow ownership claims or explicitly mark overlap as shared."))
 	}
 
 	for _, signal := range activeSignals {
@@ -2110,6 +2289,9 @@ func doctorReport() map[string]any {
 		}
 		if freshUntil, err := parseISO(stringValue(signal["fresh_until"])); err == nil && freshUntil != nil && freshUntil.Before(nowTime()) {
 			issues = append(issues, issueRecord("warning", "signal-expired", signalID, "Signal freshness window has expired.", "Resolve or refresh the signal."))
+		}
+		if level := stringValue(signal["authority_level"]); level != "" && !validAuthorityLevel(level) {
+			issues = append(issues, issueRecord("warning", "signal-invalid-authority", signalID, "Signal uses an invalid authority level.", "Use one of L1-L5."))
 		}
 	}
 
@@ -2161,6 +2343,9 @@ func doctorReport() map[string]any {
 			finding, ok := toMap(item)
 			if ok && strings.TrimSpace(stringValue(finding["reason"])) == "" {
 				issues = append(issues, issueRecord("warning", "meeting-rejected-finding-missing-reason", meetingID, "Rejected meeting finding is missing a reason.", "Record why the council rejected the finding."))
+			}
+			if ok && stringValue(finding["authority_level"]) != "" && !validAuthorityLevel(stringValue(finding["authority_level"])) {
+				issues = append(issues, issueRecord("warning", "meeting-finding-invalid-authority", meetingID, "Meeting finding uses an invalid authority level.", "Use one of L1-L5."))
 			}
 		}
 		if meetingAge := ageHours(stringValue(meeting["created_at"])); meetingAge != nil {
@@ -2459,6 +2644,69 @@ func cmdRuns(args []string) error {
 			}
 			return printJSON(run)
 		})
+	case "set-desired":
+		if len(args) < 2 {
+			return errors.New("runs set-desired requires RUN_ID [--goal=STATE] [--verification=STATE] [--review=STATE] [--checks=STATE] [--ship=STATE]")
+		}
+		runID := args[1]
+		goalState := ""
+		verificationStatus := ""
+		reviewStatus := ""
+		checksStatus := ""
+		shipStatus := ""
+		dependencyPolicy := ""
+		for _, arg := range args[2:] {
+			switch {
+			case strings.HasPrefix(arg, "--goal="):
+				goalState = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--goal=")), goalState)
+			case strings.HasPrefix(arg, "--verification="):
+				verificationStatus = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--verification=")), verificationStatus)
+			case strings.HasPrefix(arg, "--review="):
+				reviewStatus = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--review=")), reviewStatus)
+			case strings.HasPrefix(arg, "--checks="):
+				checksStatus = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--checks=")), checksStatus)
+			case strings.HasPrefix(arg, "--ship="):
+				shipStatus = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--ship=")), shipStatus)
+			case strings.HasPrefix(arg, "--dependency-policy="):
+				dependencyPolicy = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--dependency-policy=")), dependencyPolicy)
+			}
+		}
+		return withHarnessLock(func() error {
+			registry = readRegistry()
+			index := findRunIndex(registry, runID)
+			if index < 0 {
+				return fmt.Errorf("run not found: %s", runID)
+			}
+			runs := toList(registry["runs"])
+			run, _ := toMap(runs[index])
+			desired := normalizeDesiredState(run)
+			if goalState != "" {
+				desired["goal_state"] = goalState
+			}
+			if verificationStatus != "" {
+				desired["verification_status"] = verificationStatus
+			}
+			if reviewStatus != "" {
+				desired["review_status"] = reviewStatus
+			}
+			if checksStatus != "" {
+				desired["checks_status"] = checksStatus
+			}
+			if shipStatus != "" {
+				desired["ship_status"] = shipStatus
+			}
+			run["desired_state"] = desired
+			if dependencyPolicy != "" {
+				run["dependency_policy"] = dependencyPolicy
+			}
+			run["updated_at"] = nowISO()
+			runs[index] = run
+			registry["runs"] = runs
+			if err := writeRegistry(registry); err != nil {
+				return err
+			}
+			return printJSON(run)
+		})
 	default:
 		return fmt.Errorf("unknown runs subcommand: %s", subcommand)
 	}
@@ -2605,9 +2853,11 @@ func cmdHome(args []string) error {
 	activeTeammates := []any{}
 	blockedRuns := []any{}
 	waitingRuns := []any{}
+	dependencyBlockedRuns := []any{}
 	reviewBlockedRuns := []any{}
 	checksFailedRuns := []any{}
 	mergeReadyRuns := []any{}
+	ownershipOverlapClaims := map[string][]string{}
 	for _, item := range listMeetings(false) {
 		meeting, _ := toMap(item)
 		if stringValue(meeting["state"]) == "active" {
@@ -2629,6 +2879,9 @@ func cmdHome(args []string) error {
 		if stringValue(run["state"]) == "waiting" {
 			waitingRuns = append(waitingRuns, run)
 		}
+		if len(unsatisfiedDependencies(run, registry)) > 0 {
+			dependencyBlockedRuns = append(dependencyBlockedRuns, run)
+		}
 		if stringValue(run["review_status"]) == "changes_requested" {
 			reviewBlockedRuns = append(reviewBlockedRuns, run)
 		}
@@ -2637,6 +2890,20 @@ func cmdHome(args []string) error {
 		}
 		if mergeReady(run) {
 			mergeReadyRuns = append(mergeReadyRuns, run)
+		}
+		if overlapPolicy(run) != "shared" {
+			for _, claim := range ownershipClaims(run) {
+				ownershipOverlapClaims[claim] = append(ownershipOverlapClaims[claim], stringValue(run["run_id"]))
+			}
+		}
+	}
+	overlappingClaims := []any{}
+	for claim, runIDs := range ownershipOverlapClaims {
+		if len(runIDs) > 1 {
+			overlappingClaims = append(overlappingClaims, map[string]any{
+				"claim":   claim,
+				"run_ids": stringListToAny(dedupeStrings(runIDs)),
+			})
 		}
 	}
 	activeSignals := []any{}
@@ -2681,8 +2948,12 @@ func cmdHome(args []string) error {
 	switch {
 	case len(orphanSignals) > 0 || len(orphanMeetings) > 0:
 		nextAction = "Reconcile orphaned runtime objects before proceeding."
+	case len(overlappingClaims) > 0:
+		nextAction = "Resolve ownership overlap before delegating or continuing parallel execution."
 	case len(activeRuns) == 0:
 		nextAction = "No active runs. Claim a mission."
+	case len(dependencyBlockedRuns) > 0:
+		nextAction = "Some runs are ahead of their dependency graph; satisfy or serialize those dependencies."
 	case len(reviewBlockedRuns) > 0 || len(checksFailedRuns) > 0:
 		nextAction = "Triage PR feedback and failing checks before continuing other work."
 	case len(mergeReadyRuns) > 0:
@@ -2703,9 +2974,11 @@ func cmdHome(args []string) error {
 		"active_run_count":          len(activeRuns),
 		"active_teammate_count":     len(activeTeammates),
 		"blocked_run_count":         len(blockedRuns),
+		"dependency_blocked_count":  len(dependencyBlockedRuns),
 		"review_blocked_count":      len(reviewBlockedRuns),
 		"checks_failed_count":       len(checksFailedRuns),
 		"merge_ready_count":         len(mergeReadyRuns),
+		"ownership_overlap_count":   len(overlappingClaims),
 		"active_signal_count":       len(activeSignals),
 		"coordination_signal_count": len(coordinationSignals),
 		"active_meeting_count":      len(meetings),
@@ -2714,8 +2987,10 @@ func cmdHome(args []string) error {
 		"orphan_signal_count":       len(orphanSignals),
 		"orphan_meeting_count":      len(orphanMeetings),
 		"runs":                      activeRuns,
+		"dependency_blocked_runs":   dependencyBlockedRuns,
 		"signals":                   activeSignals,
 		"meetings":                  meetings,
+		"overlapping_claims":        overlappingClaims,
 		"active_rc":                 mapOrEmpty(activeRCRecord),
 		"meeting_actions":           meetingActions,
 		"orphan_signals":            orphanSignals,
@@ -2854,6 +3129,9 @@ func cmdClaim(args []string) error {
 	}
 	provisionMode := "none"
 	applyChanges := false
+	dependsOn := []string{}
+	ownershipClaimsInput := []string{}
+	overlapPolicyValue := "exclusive"
 	positionals := []string{}
 	for _, arg := range args {
 		switch {
@@ -2861,6 +3139,12 @@ func cmdClaim(args []string) error {
 			provisionMode = strings.TrimPrefix(arg, "--provision=")
 		case arg == "--apply":
 			applyChanges = true
+		case strings.HasPrefix(arg, "--depends-on="):
+			dependsOn = append(dependsOn, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--depends-on=")))...)
+		case strings.HasPrefix(arg, "--owns="):
+			ownershipClaimsInput = append(ownershipClaimsInput, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--owns=")))...)
+		case arg == "--allow-overlap":
+			overlapPolicyValue = "shared"
 		default:
 			positionals = append(positionals, arg)
 		}
@@ -2906,6 +3190,7 @@ func cmdClaim(args []string) error {
 		slug := slugify(issueTitle)
 		branchPattern := stringValue(getKey(profile, "profile.branch_pattern", "mission/{issue}-{slug}"))
 		branch := branchFromPattern(branchPattern, issueNumber, slug)
+		ownershipClaims := dedupeStrings(append([]string{"mission:" + missionID, "branch:" + branch}, ownershipClaimsInput...))
 		contractPath := filepath.Join(runtimeRoot(), "contracts", "issue-"+issueNumber+".yml")
 		runID := fmt.Sprintf("run-%s-claim-%s", nowTime().UTC().Format("20060102150405"), issueNumber)
 		baseBranch := stringValue(getKey(profile, "profile.base_branch", "main"))
@@ -2937,6 +3222,9 @@ func cmdClaim(args []string) error {
 			"objective":             issueTitle,
 			"success_criteria":      []any{},
 			"sub_tasks":             []any{},
+			"depends_on":            stringListToAny(dedupeStrings(dependsOn)),
+			"ownership_claims":      stringListToAny(ownershipClaims),
+			"desired_state":         defaultDesiredStateForRun("leader"),
 			"branch":                branch,
 			"worktree_path":         plannedWorktreePath,
 			"context_files":         []any{},
@@ -2971,13 +3259,21 @@ func cmdClaim(args []string) error {
 			"state":                "ready",
 			"mode":                 ternaryString(provisionMode == "none", "solo", "managed"),
 			"execution_surface":    "foreground-skill",
+			"overlap_policy":       overlapPolicyValue,
 			"branch":               branch,
 			"worktree_path":        plannedWorktreePath,
 			"contract_ref":         contractPath,
+			"depends_on":           stringListToAny(dedupeStrings(dependsOn)),
+			"dependency_policy":    "all",
+			"ownership_claims":     stringListToAny(ownershipClaims),
+			"desired_state":        defaultDesiredStateForRun("leader"),
 			"objective":            issueTitle,
 			"latest_summary":       "Claimed and ready for execution",
 			"next_expected_action": "Start drive flow and run the narrowest useful verification.",
 		}))
+		if conflicts := overlappingOwnershipRuns(registry, ownershipClaims, overlapPolicyValue, nil); len(conflicts) > 0 {
+			return fmt.Errorf("ownership overlap detected; retry with --allow-overlap or change --owns selectors: %v", conflicts)
+		}
 		timestamp := nowISO()
 		fillIfBlank(runPayload, "created_at", timestamp)
 		fillIfBlank(runPayload, "started_at", timestamp)
@@ -3120,6 +3416,51 @@ func cmdDrive(args []string) error {
 			summary = strings.TrimSpace(strings.Join(args[2:], " "))
 		}
 		return updateDriveRunState(runID, "ready", summary, "")
+	case "wait":
+		if len(args) < 2 {
+			return errors.New("drive wait requires RUN_ID [REASON] [--on=RUN_ID|RUN_ID]")
+		}
+		runID := args[1]
+		reasonTokens := []string{}
+		dependsOn := []string{}
+		for _, arg := range args[2:] {
+			switch {
+			case strings.HasPrefix(arg, "--on="):
+				dependsOn = append(dependsOn, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--on=")))...)
+			default:
+				reasonTokens = append(reasonTokens, arg)
+			}
+		}
+		reason := strings.TrimSpace(strings.Join(reasonTokens, " "))
+		if reason == "" {
+			reason = "Waiting on dependency resolution."
+		}
+		return withHarnessLock(func() error {
+			registry := readRegistry()
+			index := findRunIndex(registry, runID)
+			if index < 0 {
+				return fmt.Errorf("run not found: %s", runID)
+			}
+			runs := toList(registry["runs"])
+			run, _ := toMap(runs[index])
+			if err := validateRunTransition(run, "waiting"); err != nil {
+				return err
+			}
+			run["state"] = "waiting"
+			run["status_reason"] = reason
+			if len(dependsOn) > 0 {
+				run["depends_on"] = stringListToAny(dedupeStrings(append(dependencyTargets(run), dependsOn...)))
+			}
+			run["last_reported_at"] = nowISO()
+			run["updated_at"] = nowISO()
+			run["next_expected_action"] = "Monitor dependencies and resume when the required runs satisfy their desired state."
+			runs[index] = run
+			registry["runs"] = runs
+			if err := writeRegistry(registry); err != nil {
+				return err
+			}
+			return printJSON(run)
+		})
 	case "complete":
 		if len(args) < 2 {
 			return errors.New("drive complete requires RUN_ID [SUMMARY]")
@@ -4608,6 +4949,96 @@ func cmdMeetingsRemainder(args []string) error {
 			}
 			return printJSON(meeting)
 		})
+	case "orchestrate":
+		if len(args) < 2 {
+			return errors.New("meetings orchestrate requires MEETING_ID")
+		}
+		meetingID := args[1]
+		return withHarnessLock(func() error {
+			data := readActiveMeeting(meetingID)
+			if data == nil {
+				return fmt.Errorf("active meeting not found: %s", meetingID)
+			}
+			meeting, _ := toMap(data["meeting"])
+			oldPhase := firstNonBlank(stringValue(meeting["phase"]), "setup")
+			packet, _ := toMap(meeting["packet"])
+			roleSpecs := toList(meeting["role_specs"])
+			participants := toList(meeting["participants"])
+			positions := toList(meeting["positions"])
+			gaps := []string{}
+			if len(roleSpecs) == 0 {
+				gaps = append(gaps, "missing role specs")
+			}
+			if len(participants) == 0 {
+				gaps = append(gaps, "missing participants")
+			}
+			if strings.TrimSpace(stringValue(packet["expected_output"])) == "" {
+				gaps = append(gaps, "missing expected output")
+			}
+			independentReviewRuns := map[string]bool{}
+			crossExamRuns := map[string]bool{}
+			for _, item := range positions {
+				position, ok := toMap(item)
+				if !ok {
+					continue
+				}
+				switch stringValue(position["phase"]) {
+				case "independent_review":
+					independentReviewRuns[stringValue(position["run_id"])] = true
+				case "cross_examination":
+					crossExamRuns[stringValue(position["run_id"])] = true
+				}
+			}
+			newPhase := oldPhase
+			nextRequirement := ""
+			switch oldPhase {
+			case "", "setup":
+				if len(gaps) == 0 {
+					newPhase = "independent_review"
+					nextRequirement = "Collect independent-review positions from bounded participants."
+				} else {
+					nextRequirement = "Add packet/participant prerequisites before independent review."
+				}
+			case "independent_review":
+				if len(independentReviewRuns) >= 2 {
+					newPhase = "cross_examination"
+					nextRequirement = "Collect cross-examination positions that challenge or refine earlier claims."
+				} else {
+					nextRequirement = "Need at least two independent-review positions before cross-examination."
+				}
+			case "cross_examination":
+				if len(crossExamRuns) >= 1 {
+					newPhase = "synthesis"
+					nextRequirement = "Convert debated positions into accepted, rejected, unresolved findings, and action items."
+				} else {
+					nextRequirement = "Need at least one cross-examination position before synthesis."
+				}
+			case "synthesis":
+				if meetingHasOutput(meeting) {
+					newPhase = "output"
+					nextRequirement = "Adopt or close the meeting outcome into run state."
+				} else {
+					nextRequirement = "Record findings or action items before output."
+				}
+			case "output":
+				nextRequirement = "Close the meeting or adopt its outcome."
+			default:
+				nextRequirement = "Unknown phase; repair the meeting phase explicitly."
+			}
+			if newPhase != oldPhase {
+				meeting["phase"] = newPhase
+				if err := writeActiveMeeting(meeting); err != nil {
+					return err
+				}
+			}
+			return printJSON(map[string]any{
+				"meeting":          meeting,
+				"old_phase":        oldPhase,
+				"new_phase":        firstNonBlank(stringValue(meeting["phase"]), newPhase),
+				"gaps":             stringListToAny(gaps),
+				"next_requirement": nextRequirement,
+			})
+		})
 	case "add-participant":
 		if len(args) < 4 {
 			return errors.New("meetings add-participant requires MEETING_ID RUN_ID ROLE")
@@ -4895,6 +5326,9 @@ func cmdMeetingsRemainder(args []string) error {
 		if summary == "" {
 			return errors.New("meetings add-finding requires TEXT")
 		}
+		if authorityLevel != "" && !validAuthorityLevel(authorityLevel) {
+			return fmt.Errorf("invalid authority level: %s", authorityLevel)
+		}
 		return withHarnessLock(func() error {
 			data := readActiveMeeting(meetingID)
 			if data == nil {
@@ -5069,6 +5503,8 @@ func cmdTeammatesRemainder(args []string) error {
 		executionSurface := "worktree-thread"
 		mode := "managed"
 		dependsOn := []string{}
+		ownershipClaimsInput := []string{}
+		overlapPolicyValue := "exclusive"
 		siblingIDs := []string{}
 		authorityRefs := []string{}
 		forbiddenSources := []string{}
@@ -5083,6 +5519,10 @@ func cmdTeammatesRemainder(args []string) error {
 				mode = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--mode=")), mode)
 			case strings.HasPrefix(arg, "--depends-on="):
 				dependsOn = append(dependsOn, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--depends-on=")))...)
+			case strings.HasPrefix(arg, "--owns="):
+				ownershipClaimsInput = append(ownershipClaimsInput, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--owns=")))...)
+			case arg == "--allow-overlap":
+				overlapPolicyValue = "shared"
 			case strings.HasPrefix(arg, "--sibling="):
 				siblingIDs = append(siblingIDs, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--sibling=")))...)
 			case strings.HasPrefix(arg, "--allow="):
@@ -5131,6 +5571,9 @@ func cmdTeammatesRemainder(args []string) error {
 				"objective":             objective,
 				"success_criteria":      stringListToAny(successCriteria),
 				"sub_tasks":             []any{},
+				"depends_on":            stringListToAny(dedupeStrings(dependsOn)),
+				"ownership_claims":      stringListToAny(dedupeStrings(append([]string{"scope:" + slugify(firstNonBlank(assignedScope, objective))}, ownershipClaimsInput...))),
+				"desired_state":         defaultDesiredStateForRun("teammate"),
 				"branch":                stringValue(parentRun["branch"]),
 				"worktree_path":         stringValue(parentRun["worktree_path"]),
 				"context_files":         stringListToAny(authorityRefs),
@@ -5167,6 +5610,7 @@ func cmdTeammatesRemainder(args []string) error {
 			if len(authorityRefList) == 0 {
 				authorityRefList = []string{stringValue(parentRun["contract_ref"])}
 			}
+			ownershipClaims := dedupeStrings(append([]string{"scope:" + slugify(firstNonBlank(assignedScope, objective))}, ownershipClaimsInput...))
 			reportingList := reportingExpectations
 			if len(reportingList) == 0 {
 				reportingList = []string{"Report progress, blockers, and verification outcomes."}
@@ -5184,15 +5628,19 @@ func cmdTeammatesRemainder(args []string) error {
 				"state":                  "ready",
 				"mode":                   mode,
 				"execution_surface":      executionSurface,
+				"overlap_policy":         overlapPolicyValue,
 				"branch":                 stringValue(parentRun["branch"]),
 				"worktree_path":          stringValue(parentRun["worktree_path"]),
 				"contract_ref":           contractPath,
 				"objective":              objective,
 				"assigned_scope":         firstNonBlank(assignedScope, objective),
+				"ownership_claims":       stringListToAny(ownershipClaims),
 				"authority_refs":         stringListToAny(authorityRefList),
 				"forbidden_sources":      stringListToAny(forbiddenSources),
 				"reporting_expectations": stringListToAny(reportingList),
 				"depends_on":             stringListToAny(dependsOn),
+				"dependency_policy":      "all",
+				"desired_state":          defaultDesiredStateForRun("teammate"),
 				"siblings":               stringListToAny(siblingRunIDs),
 				"communication_peers":    stringListToAny(communicationPeers),
 				"latest_summary":         "Delegated and ready for bounded execution",
@@ -5202,6 +5650,9 @@ func cmdTeammatesRemainder(args []string) error {
 				"last_reported_at":       timestamp,
 				"updated_at":             timestamp,
 			}))
+			if conflicts := overlappingOwnershipRuns(registry, ownershipClaims, overlapPolicyValue, []string{parentRunID}); len(conflicts) > 0 {
+				return fmt.Errorf("ownership overlap detected for teammate assignment; retry with --allow-overlap or change --owns selectors: %v", conflicts)
+			}
 			runs = append(runs, teammateRun)
 			for _, sibling := range siblingRuns {
 				sibling["siblings"] = appendUniqueText(toList(sibling["siblings"]), teammateRunID)

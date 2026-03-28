@@ -47,14 +47,18 @@ The harness is file-backed:
   `bash scripts/harness-issue.sh draft "Mission title" --criteria="A|B"`
 - `claim`
   `bash scripts/harness-claim.sh 1234`
+- `claim-with-ownership`
+  `bash scripts/harness-claim.sh 1234 --depends-on=run-older-claim --owns=surface:release-notes`
 - `start`
   `bash scripts/harness-drive.sh start RUN_ID`
+- `wait`
+  `bash scripts/harness-drive.sh wait RUN_ID "Waiting on sibling verification" --on=RUN_A|RUN_B`
 - `block`
   `bash scripts/harness-drive.sh block RUN_ID "reason"`
 - `meeting`
   `bash scripts/harness-drive.sh meeting RUN_ID "question"`
 - `teammate-assign`
-  `bash scripts/harness-teammates.sh assign RUN_ID worker-auth implementation-verifier "Update auth callers" --scope="auth callers only"`
+  `bash scripts/harness-teammates.sh assign RUN_ID worker-auth implementation-verifier "Update auth callers" --scope="auth callers only" --owns=scope:auth-callers --depends-on=RUN_OTHER`
 - `teammate-report`
   `bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID "Caller patch is in place" --kind=progress --evidence=src/auth.ts|tests/auth.spec.ts`
 - `teammate-message`
@@ -69,6 +73,8 @@ The harness is file-backed:
   `bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to auth release notes only." --reason="Avoid widening blast radius during review." --authority=L2 --evidence=harness/profiles/erwin.yml`
 - `meeting-position`
   `bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID independent_review challenge "This contract leaks release policy" --evidence=docs/spec.md`
+- `meeting-orchestrate`
+  `bash scripts/harness-meetings.sh orchestrate MEETING_ID`
 - `meeting-finding`
   `bash scripts/harness-meetings.sh add-finding MEETING_ID rejected "Ship immediately without release-note updates." --reason="Cross-examination found operator-facing drift." --authority=L2 --evidence=CHANGELOG.md --role=ops-simulator`
 - `meeting-close`
@@ -112,6 +118,8 @@ The harness is file-backed:
 - `maintenance`
   `bash scripts/harness-maintenance.sh reconcile`
   `bash scripts/harness-maintenance.sh normalize`
+- `desired-state`
+  `bash scripts/harness-runtime.sh runs set-desired RUN_ID --goal=completed --verification=passed --ship=merged`
 - `all-smoke`
   `bash scripts/harness-all-smoke-test.sh`
 - `runtime-dist-smoke`
@@ -125,6 +133,9 @@ The harness is file-backed:
 - Prefer the narrowest safe state change.
 - Use meetings for high-ambiguity or high-blast-radius decisions.
 - Treat teammate runs as first-class runtime objects, not informal notes.
+- Prefer explicit `--owns=` selectors when splitting work; shared ownership should be intentional, not accidental.
+- Treat `depends_on` plus desired state as part of the control plane, not just metadata.
 - Allow teammate-to-teammate communication only through governed links or sibling relationships.
+- Use `meetings orchestrate` to advance council phases instead of manually skipping straight to synthesis.
 - After a meeting closes, either let `meeting-close` apply its outcome or explicitly run `adopt-meeting`.
 - Keep `doctor` clean. If it shows drift, repair that before piling on new execution.

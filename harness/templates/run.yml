@@ -15,6 +15,7 @@ run:
   risk_level: ""
   mode: "solo"
   execution_surface: ""
+  overlap_policy: "exclusive"
   branch: ""
   worktree_path: ""
   session_ref: ""
@@ -36,14 +37,22 @@ run:
   shipped_at: ""
   rc_id: ""
   depends_on: []
+  dependency_policy: "all"
   siblings: []
   communication_peers: []
   active_signals: []
   contract_ref: ""
   assigned_scope: ""
+  ownership_claims: []
   authority_refs: []
   forbidden_sources: []
   reporting_expectations: []
+  desired_state:
+    goal_state: "completed"
+    verification_status: ""
+    review_status: ""
+    checks_status: ""
+    ship_status: ""
   meeting_ref: ""
   objective: ""
   latest_summary: ""

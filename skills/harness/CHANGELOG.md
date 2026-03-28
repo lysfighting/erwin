@@ -8,11 +8,13 @@ All notable changes to the `harness` skill will be documented in this file.
 - `scripts/harness-build-runtime.sh` for building packaged platform binaries under `harness/bin/`.
 - `scripts/harness-runtime-dist-smoke-test.sh` to prove the harness can run without `go` in `PATH` when a packaged runtime is present.
 - Meeting role specs, locked decisions, and known-context recording so councils can carry stronger `arch-review`-style governance.
+- Ownership claims, desired state, dependency waiting, and meeting orchestration on the harness control plane.
 
 ### Changed
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.
 - The adapter manifest and bootstrap smoke now include the packaged-runtime distribution path.
 - `harness-doctor.sh` now validates missing council source boundaries, missing expected output/context, and rejected findings without reasons.
+- `harness-home.sh` and `harness-doctor.sh` now surface dependency-blocked runs, ownership overlap, and desired-state drift more explicitly.
 
 ## [0.6.0] - 2026-03-28
 

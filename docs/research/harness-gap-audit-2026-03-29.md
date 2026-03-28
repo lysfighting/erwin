@@ -22,8 +22,8 @@ But not every earlier design input is fully realized.
 The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
-- **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, arch-review-style council protocol
-- **still incomplete**: explicit overlap/ownership model, mission graph as declared desired state, deeper automated council orchestration, clearer public product contract
+- **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement
+- **still incomplete**: full mission graph as declared desired state, deeper automated council orchestration, clearer public product contract
 
 ---
 
@@ -33,12 +33,12 @@ The current truth is:
 |---|---|---|---|---|
 | `teamwork` | Git/GitHub-ordered lifecycle, controlled execution, release governance | **Absorbed** | `issue -> claim -> drive -> ship -> rc`, `ship`, `rc`, `doctor`, `bootstrap`, `sync` | Product naming and public contract still unresolved |
 | `wing` | Skill-shaped packaging, modularity, adapter thinking, less prompt-monolith | **Absorbed** | `skills/harness/`, `harness/adapter-manifest.yml`, `scripts/harness-*.sh`, bootstrap/sync | Still more “adapter codename” than finished product |
-| Engineering cybernetics | desired vs actual state, feedback, correction, regulator model | **Partially absorbed** | `home`, `doctor`, `maintenance reconcile`, runtime state model | Desired-state mission graph is not yet first-class |
-| Kubernetes control-plane thinking | controllers, ownership boundaries, reconciliation, validation gates | **Partially absorbed** | leader/teammate split, manifest validation, stale-state reconciliation | Ownership/overlap is still mostly textual, not explicit selectors/claims |
+| Engineering cybernetics | desired vs actual state, feedback, correction, regulator model | **Partially absorbed, stronger now** | `home`, `doctor`, `maintenance reconcile`, run desired state, dependency waiting | Desired-state mission graph is not yet first-class |
+| Kubernetes control-plane thinking | controllers, ownership boundaries, reconciliation, validation gates | **Partially absorbed, stronger now** | leader/teammate split, manifest validation, stale-state reconciliation, ownership claims, overlap guardrails | Ownership transfer and richer selectors are still incomplete |
 | Leader as chairing regulator | leader owns orchestration, not truth monopoly | **Absorbed** | leader-facing surfaces, `doctor`, `home`, meetings, teammate assignment | Still room for richer scheduling / mission-graph control |
 | Teammates as bounded execution units | delegated work with scope, reporting, escalation | **Absorbed** | `teammates assign/report/message/escalate` | No native Codex sub-agent binding yet |
 | Teammate-to-teammate communication | lateral communication under governance | **Absorbed** | sibling links + governed `teammates message` | Could later gain freshness/routing policies beyond current signal model |
-| `arch-review` meeting discipline | authority hierarchy, bounded roles, allowed/forbidden sources, cross-exam, rejected reasons | **Partially absorbed, now much stronger** | meeting `role_specs`, `locked_decisions`, `known_context`, rejected reasons, doctor checks | No automated multi-role debate orchestration yet; still human/leader-driven |
+| `arch-review` meeting discipline | authority hierarchy, bounded roles, allowed/forbidden sources, cross-exam, rejected reasons | **Partially absorbed, now much stronger** | meeting `role_specs`, `locked_decisions`, `known_context`, rejected reasons, doctor checks, `meetings orchestrate` | No automated multi-role debate orchestration yet; still human/leader-driven |
 | Council-corrected synthesis | leader convenes, council refines, output becomes system truth | **Absorbed** | meeting objects, findings/action items, adoption into runs | Could still deepen explicit conflict handling and synthesis traces |
 | Runtime packaging / harness engineering | installability, portability, no project-language coupling | **Absorbed** | Go runtime, packaged binary preference, runtime-dist smoke | Public binary distribution strategy still open |
 
@@ -54,6 +54,11 @@ This audit was followed immediately by implementation work that materially close
 - meetings can record `locked_decisions`
 - rejected findings can now carry explicit rejection reasons plus evidence and authority level
 - `doctor` now checks for missing role specs, missing expected output, missing context, missing locked decisions in advanced phases, and rejected findings without reasons
+- runs and contracts now carry explicit `ownership_claims`
+- active exclusive overlap is now rejected during teammate assignment and surfaced in `doctor`
+- runs now carry declared `desired_state`
+- dependency waiting is now first-class via `depends_on`, `drive wait`, and home/doctor dependency visibility
+- meetings can now auto-advance phases with `meetings orchestrate`
 
 This pushes the council model much closer to the intended `arch-review` discipline instead of only “meeting exists.”
 
@@ -61,25 +66,25 @@ This pushes the council model much closer to the intended `arch-review` discipli
 
 ## What Is Still Not Done
 
-### 1. Explicit overlap / ownership model
-
-Teammate scope is still mostly human-readable text.
-
-What is still missing:
-
-- explicit ownership selectors or execution-surface ids
-- overlap detection beyond simple bounded-scope discipline
-- formal ownership transfer semantics
-
-### 2. Desired-state mission graph
+### 1. Desired-state mission graph
 
 The leader behaves like a regulator, but the harness still lacks a first-class declared mission graph object.
 
 What is still missing:
 
-- explicit dependency graph between runs
+- explicit mission graph between runs
 - declared desired state for a mission bundle
 - reconciliation against graph expectations, not only local runtime health
+
+### 2. Ownership transfer model
+
+Explicit ownership claims now exist, but the model is still not fully mature.
+
+What is still missing:
+
+- richer selector families beyond current string claims
+- formal ownership transfer semantics
+- more nuanced overlap resolution than exclusive/shared
 
 ### 3. Automated council orchestration
 

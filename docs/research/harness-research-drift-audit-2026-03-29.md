@@ -107,14 +107,14 @@ The research repeatedly framed the harness as:
 
 Current truth:
 
-- `doctor`, `home`, `maintenance`, and runtime state are real
+- `doctor`, `home`, `maintenance`, dependency waiting, and run-level desired state are real
 - but a first-class **mission graph / desired-state object** still does not exist
 
 This means the leader behaves like a regulator in spirit, but still lacks an explicit declared system model to regulate against.
 
 This is the single biggest remaining gap.
 
-### 2. Ownership discipline is still mostly textual
+### 2. Ownership discipline is stronger, but still not mature enough
 
 The research stressed:
 
@@ -127,12 +127,13 @@ Current truth:
 
 - teammate scope is bounded
 - teammate communication is governed
-- but scope is still mostly free-text
+- runs now carry explicit ownership claims
+- active exclusive overlap is now rejected
 
-So Kubernetes-style ownership discipline has only been partially absorbed.
-The system still lacks explicit overlap selectors or a stronger ownership surface model.
+So Kubernetes-style ownership discipline is no longer just textual.
+But the system still lacks richer selectors and formal ownership transfer semantics.
 
-### 3. State authority is defined more strongly than it is enforced
+### 3. State authority is stronger, but still not fully harness-wide
 
 The research on authority hierarchy was very explicit:
 
@@ -144,11 +145,12 @@ Current truth:
 
 - meetings now model authority hierarchy well
 - signals carry authority metadata
-- but there is still no broad harness-wide enforcement layer that systematically downgrades or rejects low-authority state outside specific paths
+- invalid authority levels are now rejected or surfaced
+- but there is still no broad harness-wide conflict-resolution layer that systematically downgrades low-authority state when it collides with fresher higher-authority evidence
 
 So this area is **partially preserved, not fully realized**.
 
-### 4. Council automation is still behind council semantics
+### 4. Council automation is improving, but still behind council semantics
 
 The research wanted:
 
@@ -160,9 +162,10 @@ The research wanted:
 Current truth:
 
 - the runtime now stores the right meeting objects
+- the runtime can now advance meeting phases with `meetings orchestrate`
 - but it still does not automate the debate workflow itself
 
-So the system has become **council-ready**, but not yet **council-orchestrating**.
+So the system has become **partly council-orchestrating**, but not yet a full automated debate controller.
 
 ### 5. Product surface questions are still unresolved
 
@@ -201,9 +204,9 @@ But it **has** drifted into an uneven maturity shape:
 - leader/teammate runtime: strong
 - council governance packet: now strong
 - desired-state control plane: still partial
-- explicit ownership model: still partial
+- explicit ownership model: now materially stronger, still partial
 - authority enforcement across the whole harness: still partial
-- automated council orchestration: still partial
+- automated council orchestration: stronger, still partial
 
 That means future work should **not** primarily add new surfaces.
 It should close the remaining control-plane gaps.
@@ -212,9 +215,9 @@ It should close the remaining control-plane gaps.
 
 ## Recommended Next Priority Order
 
-1. Explicit ownership / overlap model for teammate assignments
-2. First-class mission graph / desired-state layer
-3. Broader authority enforcement outside meetings
-4. Automated council orchestration only after the above are stable
+1. First-class mission graph / desired-state layer
+2. Formal ownership transfer / richer selector model
+3. Broader authority conflict resolution outside meetings
+4. Deeper automated council orchestration only after the above are stable
 
 If future sessions follow this order, the harness will continue toward the original design rather than only becoming a nicer adapter.

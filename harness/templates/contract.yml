@@ -6,6 +6,14 @@ contract:
   objective: ""
   success_criteria: []
   sub_tasks: []
+  depends_on: []
+  ownership_claims: []
+  desired_state:
+    goal_state: "completed"
+    verification_status: ""
+    review_status: ""
+    checks_status: ""
+    ship_status: ""
   branch: ""
   worktree_path: ""
   context_files: []
