@@ -602,6 +602,41 @@ def pr_payload_for_run(run: dict[str, Any], base_branch: str, override_title: st
     }
 
 
+def open_github_pr(
+    *,
+    run: dict[str, Any],
+    base_branch: str,
+    title: str,
+    body: str,
+    draft: bool,
+    reviewers: list[str],
+) -> dict[str, str]:
+    cmd = [
+        "gh",
+        "pr",
+        "create",
+        "--base",
+        base_branch,
+        "--head",
+        run.get("branch", ""),
+        "--title",
+        title,
+        "--body",
+        body,
+    ]
+    if draft:
+        cmd.append("--draft")
+    for reviewer in reviewers:
+        cmd.extend(["--reviewer", reviewer])
+    output = run_command_with_stderr(cmd)
+    pr_url = output.strip().splitlines()[-1].strip()
+    pr_ref = pr_url.rstrip("/").split("/")[-1] if pr_url else ""
+    return {
+        "pr_ref": pr_ref,
+        "pr_url": pr_url,
+    }
+
+
 def current_branch() -> str:
     try:
         return run_command(["git", "branch", "--show-current"])
@@ -2146,6 +2181,72 @@ def cmd_ship(args: list[str]) -> int:
         payload["run_id"] = run_id
         payload["mode"] = "draft"
         print(json.dumps(payload, indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "pr-open":
+        if len(args) < 2:
+            raise SystemExit("ship pr-open requires RUN_ID [--title=...] [--base=...] [--draft] [--reviewer=...]")
+        run_id = args[1]
+        override_title = ""
+        override_base = ""
+        reviewers: list[str] = []
+        draft = False
+        for arg in args[2:]:
+            if arg.startswith("--title="):
+                override_title = arg.split("=", 1)[1].strip()
+            elif arg.startswith("--base="):
+                override_base = arg.split("=", 1)[1].strip()
+            elif arg.startswith("--reviewer="):
+                reviewer = arg.split("=", 1)[1].strip()
+                if reviewer:
+                    reviewers.append(reviewer)
+            elif arg == "--draft":
+                draft = True
+        with harness_lock():
+            registry = read_registry()
+            index = find_run_index(registry, run_id)
+            if index < 0:
+                raise SystemExit(f"run not found: {run_id}")
+            run = registry["runs"][index]
+            if run.get("ship_status", "unstarted") not in ("ready", "pushed", "in_review"):
+                raise SystemExit("ship pr-open requires ship ready or pushed state")
+            base_branch = override_base or get_key(resolve_profile()[0], "profile.base_branch", "main")
+            payload = pr_payload_for_run(run, base_branch, override_title)
+            try:
+                pr_result = open_github_pr(
+                    run=run,
+                    base_branch=base_branch,
+                    title=payload["title"],
+                    body=payload["body"],
+                    draft=draft,
+                    reviewers=reviewers,
+                )
+            except Exception as exc:
+                raise SystemExit(f"ship pr-open failed: {exc}")
+            run["ship_status"] = "in_review"
+            run["pr_ref"] = pr_result["pr_ref"]
+            run["pr_url"] = pr_result["pr_url"]
+            record_ship_ref(run, f"pr:{pr_result['pr_ref']}")
+            run["latest_summary"] = f"PR opened via GitHub: {pr_result['pr_ref']}"
+            run["next_expected_action"] = "Track review, CI, and merge readiness."
+            write_registry(registry)
+        print(
+            json.dumps(
+                {
+                    "run": registry["runs"][index],
+                    "pr": {
+                        "title": payload["title"],
+                        "base_branch": payload["base_branch"],
+                        "pr_ref": pr_result["pr_ref"],
+                        "pr_url": pr_result["pr_url"],
+                        "draft": draft,
+                        "reviewers": reviewers,
+                    },
+                },
+                indent=2,
+                ensure_ascii=True,
+            )
+        )
         return 0
 
     if subcommand == "pr":

@@ -26,6 +26,7 @@ Use this when the model should act as the harness leader:
 - reprovision runs safely
 - verify ship readiness and record PR lifecycle state
 - push mission branches and draft PR payloads
+- open GitHub PRs directly when `gh` auth is available
 - create, verify, and promote release candidates
 - repair or normalize runtime drift
 

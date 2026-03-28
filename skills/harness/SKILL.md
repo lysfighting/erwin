@@ -57,6 +57,8 @@ The harness is file-backed:
   `bash scripts/harness-ship.sh push RUN_ID`
 - `ship-pr-draft`
   `bash scripts/harness-ship.sh pr-draft RUN_ID`
+- `ship-pr-open`
+  `bash scripts/harness-ship.sh pr-open RUN_ID --draft`
 - `ship-pr`
   `bash scripts/harness-ship.sh pr RUN_ID PR-123 https://example.invalid/pr/123`
 - `ship-merged`
