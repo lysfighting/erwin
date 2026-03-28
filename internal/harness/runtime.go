@@ -1642,6 +1642,67 @@ func activeSignalsForRun(signalLog map[string]any, runID string) []map[string]an
 	return signals
 }
 
+func loadContractForRun(run map[string]any) map[string]any {
+	contractRef := strings.TrimSpace(stringValue(run["contract_ref"]))
+	if contractRef == "" {
+		return nil
+	}
+	root, _ := toMap(loadData(contractRef, map[string]any{}))
+	contract, _ := toMap(root["contract"])
+	return contract
+}
+
+func syncContractControlPlaneFields(contract, run map[string]any) map[string]any {
+	if contract == nil {
+		return nil
+	}
+	contract["branch"] = stringValue(run["branch"])
+	contract["worktree_path"] = stringValue(run["worktree_path"])
+	contract["desired_state"] = cloneValue(normalizeDesiredState(run))
+	setOwnershipSelectors(contract, ownershipClaims(run))
+	freshness, _ := toMap(contract["freshness"])
+	if freshness == nil {
+		freshness = map[string]any{}
+	}
+	freshness["source_checked_at"] = nowISO()
+	freshness["drift_status"] = "current"
+	contract["freshness"] = freshness
+	return contract
+}
+
+func persistContractForRun(run map[string]any) error {
+	contractRef := strings.TrimSpace(stringValue(run["contract_ref"]))
+	if contractRef == "" {
+		return nil
+	}
+	contract := loadContractForRun(run)
+	if contract == nil {
+		return nil
+	}
+	contract = syncContractControlPlaneFields(contract, run)
+	return dumpData(contractRef, map[string]any{
+		"version":  1,
+		"contract": contract,
+	})
+}
+
+func worktreeAuthoritySnapshot(run map[string]any) map[string]any {
+	worktreePath := strings.TrimSpace(stringValue(run["worktree_path"]))
+	if worktreePath == "" || !exists(worktreePath) {
+		return nil
+	}
+	snapshot := map[string]any{
+		"worktree_path": worktreePath,
+	}
+	if out, err := runCommandAt(worktreePath, []string{"git", "branch", "--show-current"}); err == nil {
+		snapshot["branch"] = strings.TrimSpace(out)
+	}
+	if out, err := runCommandAt(worktreePath, []string{"git", "status", "--porcelain"}); err == nil {
+		snapshot["dirty"] = strings.TrimSpace(out) != ""
+	}
+	return snapshot
+}
+
 func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog map[string]any) map[string]any {
 	runID := stringValue(run["run_id"])
 	runUpdatedAt := firstNonBlank(
@@ -1702,6 +1763,73 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 				"current_value":   stringValue(run["next_expected_action"]),
 				"expected_value":  nextAction,
 				"note":            "Closed meeting next action has not been adopted into the run state.",
+			})
+		}
+	}
+
+	contractGaps := []any{}
+	if contract := loadContractForRun(run); contract != nil {
+		contractDesired, _ := toMap(contract["desired_state"])
+		runDesired := normalizeDesiredState(run)
+		for _, field := range []string{"goal_state", "verification_status", "review_status", "checks_status", "ship_status"} {
+			if stringValue(contractDesired[field]) != stringValue(runDesired[field]) {
+				contractGaps = append(contractGaps, map[string]any{
+					"claim_ref":       "desired_state." + field,
+					"resolution_kind": "contract_stale",
+					"source_ref":      "contract:" + runID,
+					"winning_source":  "run:" + runID,
+					"current_value":   stringValue(contractDesired[field]),
+					"expected_value":  stringValue(runDesired[field]),
+					"note":            fmt.Sprintf("Contract desired state for %s is stale relative to the run control plane.", field),
+				})
+			}
+		}
+		if stringValue(contract["branch"]) != stringValue(run["branch"]) {
+			contractGaps = append(contractGaps, map[string]any{
+				"claim_ref":       "branch",
+				"resolution_kind": "contract_stale",
+				"source_ref":      "contract:" + runID,
+				"winning_source":  "run:" + runID,
+				"current_value":   stringValue(contract["branch"]),
+				"expected_value":  stringValue(run["branch"]),
+				"note":            "Contract branch does not match the current run branch.",
+			})
+		}
+		if stringValue(contract["worktree_path"]) != stringValue(run["worktree_path"]) {
+			contractGaps = append(contractGaps, map[string]any{
+				"claim_ref":       "worktree_path",
+				"resolution_kind": "contract_stale",
+				"source_ref":      "contract:" + runID,
+				"winning_source":  "run:" + runID,
+				"current_value":   stringValue(contract["worktree_path"]),
+				"expected_value":  stringValue(run["worktree_path"]),
+				"note":            "Contract worktree path does not match the current run provisioning state.",
+			})
+		}
+		if strings.Join(ownershipClaims(contract), "|") != strings.Join(ownershipClaims(run), "|") {
+			contractGaps = append(contractGaps, map[string]any{
+				"claim_ref":       "ownership_claims",
+				"resolution_kind": "contract_stale",
+				"source_ref":      "contract:" + runID,
+				"winning_source":  "run:" + runID,
+				"current_value":   strings.Join(ownershipClaims(contract), "|"),
+				"expected_value":  strings.Join(ownershipClaims(run), "|"),
+				"note":            "Contract ownership claims no longer match the run ownership boundary.",
+			})
+		}
+	}
+
+	liveStateGaps := []any{}
+	if liveState := worktreeAuthoritySnapshot(run); liveState != nil {
+		if liveBranch := strings.TrimSpace(stringValue(liveState["branch"])); liveBranch != "" && liveBranch != stringValue(run["branch"]) {
+			liveStateGaps = append(liveStateGaps, map[string]any{
+				"claim_ref":       "live_branch",
+				"resolution_kind": "live_state_disagrees",
+				"source_ref":      "worktree:" + stringValue(run["worktree_path"]),
+				"winning_source":  "worktree:" + stringValue(run["worktree_path"]),
+				"current_value":   stringValue(run["branch"]),
+				"expected_value":  liveBranch,
+				"note":            "Live worktree branch does not match the run branch record.",
 			})
 		}
 	}
@@ -1793,14 +1921,18 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 		"run_claims":                    runClaims,
 		"signal_sources":                signalSources,
 		"adoption_gap_count":            len(adoptionGaps),
+		"contract_gap_count":            len(contractGaps),
 		"higher_authority_conflict_count": len(conflicts),
 		"superseded_signal_count":       len(supersededSignals),
 		"desired_state_gap_count":       len(desiredGapRecords),
+		"live_state_gap_count":          len(liveStateGaps),
 		"desired_state_satisfied":       desiredSatisfied,
 		"adoption_gaps":                 adoptionGaps,
+		"contract_gaps":                 contractGaps,
 		"higher_authority_conflicts":    conflicts,
 		"superseded_signals":            supersededSignals,
 		"desired_state_gaps":            desiredGapRecords,
+		"live_state_gaps":               liveStateGaps,
 	}
 }
 
@@ -3404,7 +3536,13 @@ func doctorReport() map[string]any {
 				issues = append(issues, issueRecord("warning", "run-desired-state-unmet", runID, fmt.Sprintf("Completed run does not satisfy desired state: %s", strings.Join(missing, ", ")), "Either continue the lifecycle or adjust the run's declared desired state."))
 			}
 		}
-		authorityAudit, _ := toMap(runAuthorityAudit(run, registry, signals))
+			authorityAudit, _ := toMap(runAuthorityAudit(run, registry, signals))
+			if intValue(authorityAudit["contract_gap_count"]) > 0 {
+				issues = append(issues, issueRecord("warning", "run-contract-drift", runID, "Run control-plane state has drifted from its contract snapshot.", "Run runs authority-audit and refresh the contract so planning truth matches the active run."))
+			}
+			if intValue(authorityAudit["live_state_gap_count"]) > 0 {
+				issues = append(issues, issueRecord("warning", "run-live-state-drift", runID, "Live worktree state disagrees with the run record.", "Reconcile the run record with live git state before trusting the control plane."))
+			}
 		if intValue(authorityAudit["higher_authority_conflict_count"]) > 0 {
 			conflictRefs := []string{}
 			for _, item := range toList(authorityAudit["higher_authority_conflicts"]) {
@@ -4045,6 +4183,9 @@ func cmdRuns(args []string) error {
 				run["dependency_policy"] = dependencyPolicy
 			}
 			run["updated_at"] = nowISO()
+			if err := persistContractForRun(run); err != nil {
+				return err
+			}
 			runs[index] = run
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {
@@ -4121,6 +4262,12 @@ func cmdRuns(args []string) error {
 			targetSelectors = dedupeStrings(append(targetSelectors, selectors...))
 			setOwnershipSelectors(sourceRun, remainingSource)
 			setOwnershipSelectors(targetRun, targetSelectors)
+			if err := persistContractForRun(sourceRun); err != nil {
+				return err
+			}
+			if err := persistContractForRun(targetRun); err != nil {
+				return err
+			}
 			event := map[string]any{
 				"transfer_id":     "transfer-" + nowTime().UTC().Format("20060102150405"),
 				"selector_refs":   stringListToAny(selectors),
@@ -5172,6 +5319,9 @@ func cmdDrive(args []string) error {
 			updatedRun["status_reason"] = ""
 			updatedRun["next_expected_action"] = "Start drive flow and run the narrowest useful verification."
 			updatedRun["updated_at"] = nowISO()
+			if err := persistContractForRun(updatedRun); err != nil {
+				return err
+			}
 			runs[index] = updatedRun
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {
@@ -7578,6 +7728,8 @@ func cmdMaintenance(args []string) error {
 			log := readSignalLog()
 			normalizedRuns := []string{}
 			normalizedSignals := []string{}
+			normalizedContracts := []string{}
+			emptySignalLog := map[string]any{"signals": []any{}}
 			runs := toList(registry["runs"])
 			for index, item := range runs {
 				run, _ := toMap(item)
@@ -7628,6 +7780,13 @@ func cmdMaintenance(args []string) error {
 					normalizedRuns = append(normalizedRuns, stringValue(run["run_id"]))
 					runs[index] = run
 				}
+				authorityAudit, _ := toMap(runAuthorityAudit(run, registry, emptySignalLog))
+				if intValue(authorityAudit["contract_gap_count"]) > 0 {
+					if err := persistContractForRun(run); err != nil {
+						return err
+					}
+					normalizedContracts = append(normalizedContracts, stringValue(run["run_id"]))
+				}
 			}
 			registry["runs"] = runs
 			signals := toList(log["signals"])
@@ -7654,8 +7813,10 @@ func cmdMaintenance(args []string) error {
 			return printJSON(map[string]any{
 				"normalized_run_ids":    stringListToAny(normalizedRuns),
 				"normalized_signal_ids": stringListToAny(normalizedSignals),
+				"normalized_contracts":  stringListToAny(dedupeStrings(normalizedContracts)),
 				"run_count":             len(normalizedRuns),
 				"signal_count":          len(normalizedSignals),
+				"contract_count":        len(dedupeStrings(normalizedContracts)),
 			})
 		})
 	case "reconcile":

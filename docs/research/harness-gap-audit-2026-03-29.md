@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector families beyond current normalized ownership transfer, authority adjudication against contract/live-git disagreement, deeper automated council orchestration, clearer public product contract
+- **still incomplete**: richer selector families beyond current normalized ownership transfer, authority adjudication when live git state contradicts contract intent without a governing signal, deeper automated council orchestration, clearer public product contract
 
 ---
 
@@ -59,8 +59,9 @@ This audit was followed immediately by implementation work that materially close
 - runs now carry declared `desired_state`
 - dependency waiting is now first-class via `depends_on`, `drive wait`, and home/doctor dependency visibility
 - meetings can now auto-advance phases with `meetings orchestrate`
-- runs now expose `authority-audit`, which explains higher-authority active-signal conflicts, meeting adoption gaps, and desired-state drift in one leader-facing output
+- runs now expose `authority-audit`, which explains higher-authority active-signal conflicts, meeting adoption gaps, desired-state drift, and contract drift in one leader-facing output
 - `doctor` now flags unresolved `run-authority-conflict` when fresher or higher-authority active signals disagree with current run state
+- run-level control-plane mutations now refresh contract snapshots, and `maintenance normalize` can repair stale historical contracts
 
 This pushes the council model much closer to the intended `arch-review` discipline instead of only “meeting exists.”
 
@@ -94,7 +95,7 @@ Authority levels are now validated and surfaced, and the system now adjudicates 
 
 What is still missing:
 
-- systematic high-vs-low authority conflict handling when contract intent, live git state, and run state disagree
+- systematic high-vs-low authority conflict handling when live git state contradicts contract intent without a governing signal
 - clearer winner/loser rules when run summary, contract, and live verification disagree without a governing signal or meeting
 - broader leader-facing explanations of why a lower-authority artifact was overridden outside the run/signal/meeting path
 

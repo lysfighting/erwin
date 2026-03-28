@@ -77,6 +77,8 @@ assert_json_field "$missions_output" '"mission_id": "issue-20001"' "missions lis
 mission_get_output=$(run_in_repo bash scripts/harness-missions.sh get issue-20001)
 assert_json_field "$mission_get_output" '"state": "claimed"' "mission starts in claimed state"
 assert_json_field "$mission_get_output" '"active_run_ids":' "mission stores active run linkage"
+authority_baseline=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
+assert_json_field "$authority_baseline" '"contract_gap_count": 0' "initial run authority audit starts without contract drift"
 
 section "Meeting lifecycle"
 meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Should this mission stay solo?")

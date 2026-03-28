@@ -93,6 +93,10 @@ if echo "$run_b_after_transfer" | grep -q '"selector": "scope:release-auth-smoke
 else
   pass "source teammate drops transferred selector"
 fi
+authority_a_after_transfer=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_a")
+authority_b_after_transfer=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_b")
+assert_json_field "$authority_a_after_transfer" '"contract_gap_count": 0' "target teammate contract stays aligned after ownership transfer"
+assert_json_field "$authority_b_after_transfer" '"contract_gap_count": 0' "source teammate contract stays aligned after ownership transfer"
 
 section "Ownership guard"
 set +e
