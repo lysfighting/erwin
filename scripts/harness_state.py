@@ -328,6 +328,10 @@ def issue_template_path() -> Path:
     return definitions_root() / "templates" / "issue.md"
 
 
+def pr_template_path() -> Path:
+    return definitions_root() / "templates" / "pr.md"
+
+
 def policies_path() -> Path:
     return definitions_root() / "policies" / "defaults.yml"
 
@@ -575,6 +579,27 @@ def issue_body_from_template(
         .replace("__SUCCESS_CRITERIA__", criteria_block)
         .replace("__NOTES__", notes_block)
     )
+
+
+def pr_payload_for_run(run: dict[str, Any], base_branch: str, override_title: str = "") -> dict[str, str]:
+    title = override_title.strip() or f"[{run.get('mission_id', '')}] {run.get('objective', '').strip()}".strip()
+    summary = run.get("latest_summary", "").strip() or run.get("objective", "").strip() or "Mission delivery"
+    verification_refs = run.get("verification_refs", [])
+    verification_block = "\n".join(f"- {item}" for item in verification_refs) if verification_refs else "- Not yet recorded"
+    template = pr_template_path().read_text(encoding="utf-8")
+    body = (
+        template.replace("__SUMMARY__", summary)
+        .replace("__VERIFICATION__", verification_block)
+        .replace("__BRANCH__", run.get("branch", ""))
+        .replace("__RUN_ID__", run.get("run_id", ""))
+        .replace("__MISSION_ID__", run.get("mission_id", ""))
+    )
+    return {
+        "title": title,
+        "body": body,
+        "base_branch": base_branch,
+        "branch": run.get("branch", ""),
+    }
 
 
 def current_branch() -> str:
@@ -2072,6 +2097,55 @@ def cmd_ship(args: list[str]) -> int:
             run["updated_at"] = now_iso()
             write_registry(registry)
         print(json.dumps(registry["runs"][index], indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "push":
+        if len(args) < 2:
+            raise SystemExit("ship push requires RUN_ID [REMOTE]")
+        run_id = args[1]
+        remote = args[2] if len(args) > 2 else "origin"
+        with harness_lock():
+            registry = read_registry()
+            index = find_run_index(registry, run_id)
+            if index < 0:
+                raise SystemExit(f"run not found: {run_id}")
+            run = registry["runs"][index]
+            branch = run.get("branch", "")
+            if not branch:
+                raise SystemExit("ship push requires a run branch")
+            try:
+                run_command_with_stderr(["git", "push", "-u", remote, branch])
+            except Exception as exc:
+                raise SystemExit(f"ship push failed: {exc}")
+            run["ship_status"] = "pushed"
+            record_ship_ref(run, f"push:{remote}/{branch}")
+            run["latest_summary"] = f"Branch pushed to {remote}: {branch}"
+            run["next_expected_action"] = "Create or update the PR."
+            write_registry(registry)
+        print(json.dumps(registry["runs"][index], indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "pr-draft":
+        if len(args) < 2:
+            raise SystemExit("ship pr-draft requires RUN_ID [--title=...] [--base=...]")
+        run_id = args[1]
+        override_title = ""
+        override_base = ""
+        for arg in args[2:]:
+            if arg.startswith("--title="):
+                override_title = arg.split("=", 1)[1].strip()
+            elif arg.startswith("--base="):
+                override_base = arg.split("=", 1)[1].strip()
+        registry = read_registry()
+        index = find_run_index(registry, run_id)
+        if index < 0:
+            raise SystemExit(f"run not found: {run_id}")
+        run = registry["runs"][index]
+        base_branch = override_base or get_key(resolve_profile()[0], "profile.base_branch", "main")
+        payload = pr_payload_for_run(run, base_branch, override_title)
+        payload["run_id"] = run_id
+        payload["mode"] = "draft"
+        print(json.dumps(payload, indent=2, ensure_ascii=True))
         return 0
 
     if subcommand == "pr":

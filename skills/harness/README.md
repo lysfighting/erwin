@@ -25,6 +25,7 @@ Use this when the model should act as the harness leader:
 - adopt meeting outcomes
 - reprovision runs safely
 - verify ship readiness and record PR lifecycle state
+- push mission branches and draft PR payloads
 - create, verify, and promote release candidates
 - repair or normalize runtime drift
 

@@ -53,6 +53,10 @@ The harness is file-backed:
   `bash scripts/harness-drive.sh reprovision RUN_ID --mode=worktree --apply`
 - `ship-verify`
   `bash scripts/harness-ship.sh verify RUN_ID "targeted-check:pass"`
+- `ship-push`
+  `bash scripts/harness-ship.sh push RUN_ID`
+- `ship-pr-draft`
+  `bash scripts/harness-ship.sh pr-draft RUN_ID`
 - `ship-pr`
   `bash scripts/harness-ship.sh pr RUN_ID PR-123 https://example.invalid/pr/123`
 - `ship-merged`

@@ -164,6 +164,7 @@ copy_file "$SOURCE_ROOT/install-codex.sh" "$TARGET_ROOT/install-codex.sh"
 copy_file "$SOURCE_ROOT/harness/README.md" "$TARGET_ROOT/harness/README.md"
 copy_file "$SOURCE_ROOT/harness/templates/contract.yml" "$TARGET_ROOT/harness/templates/contract.yml"
 copy_file "$SOURCE_ROOT/harness/templates/issue.md" "$TARGET_ROOT/harness/templates/issue.md"
+copy_file "$SOURCE_ROOT/harness/templates/pr.md" "$TARGET_ROOT/harness/templates/pr.md"
 copy_file "$SOURCE_ROOT/harness/templates/run.yml" "$TARGET_ROOT/harness/templates/run.yml"
 copy_file "$SOURCE_ROOT/harness/templates/signal.yml" "$TARGET_ROOT/harness/templates/signal.yml"
 copy_file "$SOURCE_ROOT/harness/templates/meeting.yml" "$TARGET_ROOT/harness/templates/meeting.yml"
@@ -235,6 +236,7 @@ cat <<EOF
     "harness/profiles/default.yml",
     "harness/templates/contract.yml",
     "harness/templates/issue.md",
+    "harness/templates/pr.md",
     "harness/templates/run.yml",
     "harness/templates/signal.yml",
     "harness/templates/meeting.yml",

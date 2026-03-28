@@ -27,6 +27,7 @@ The first usable Codex-native harness prototype now exists in `scripts/`.
 - `harness-claim.sh` — mission claim + contract/run creation
 - `harness-drive.sh` — run-state control, meetings, reprovision, outcome adoption
 - `harness-ship.sh` — verification, PR lifecycle, merge readiness
+- `harness-ship.sh` also supports branch push and PR draft generation
 - `harness-rc.sh` — release-candidate create/verify/promote/close flow
 - `harness-meetings.sh` — meeting inspection and council output mutation
 - `harness-maintenance.sh` — reconciliation + runtime normalization

@@ -20,6 +20,7 @@ fail() { FAIL=$((FAIL + 1)); echo "  FAIL  $1"; }
 section() { echo ""; echo "=== $1 ==="; }
 
 TEST_REPO="$TMPDIR_ROOT/repo"
+ORIGIN_REPO="$TMPDIR_ROOT/origin.git"
 mkdir -p "$TEST_REPO/scripts" "$TEST_REPO/harness/profiles" "$TEST_REPO/harness/templates" "$TEST_REPO/harness/policies"
 
 cp "$REPO_ROOT/scripts/harness_state.py" "$TEST_REPO/scripts/"
@@ -31,6 +32,7 @@ cp "$REPO_ROOT/scripts/harness-ship.sh" "$TEST_REPO/scripts/"
 cp "$REPO_ROOT/scripts/harness-rc.sh" "$TEST_REPO/scripts/"
 cp "$REPO_ROOT/harness/profiles/erwin.yml" "$TEST_REPO/harness/profiles/"
 cp "$REPO_ROOT/harness/templates/"*.yml "$TEST_REPO/harness/templates/"
+cp "$REPO_ROOT/harness/templates/pr.md" "$TEST_REPO/harness/templates/"
 cp "$REPO_ROOT/harness/policies/defaults.yml" "$TEST_REPO/harness/policies/"
 
 cat > "$TEST_REPO/.gitignore" <<'EOF'
@@ -38,12 +40,18 @@ cat > "$TEST_REPO/.gitignore" <<'EOF'
 EOF
 
 (
+  git init -q --bare "$ORIGIN_REPO" &&
   cd "$TEST_REPO" &&
     git init -q &&
     git checkout -qb main &&
     git config user.email "release-smoke@example.com" &&
     git config user.name "Harness Release Test" &&
-    chmod +x scripts/harness-home.sh scripts/harness-doctor.sh scripts/harness-claim.sh scripts/harness-drive.sh scripts/harness-ship.sh scripts/harness-rc.sh
+    git remote add origin "$ORIGIN_REPO" &&
+    chmod +x scripts/harness-home.sh scripts/harness-doctor.sh scripts/harness-claim.sh scripts/harness-drive.sh scripts/harness-ship.sh scripts/harness-rc.sh &&
+    printf "hello\n" > README.md &&
+    git add . &&
+    git commit -qm "init harness release smoke" &&
+    git push -u origin main >/dev/null
 ) || exit 1
 
 run_in_repo() {
@@ -66,7 +74,7 @@ assert_json_field() {
 }
 
 section "Claim"
-claim_output=$(run_in_repo ./scripts/harness-claim.sh 32001 "Release Smoke Mission")
+claim_output=$(run_in_repo ./scripts/harness-claim.sh 32001 "Release Smoke Mission" --provision=branch --apply)
 assert_json_field "$claim_output" '"mission_id": "issue-32001"' "claim creates release mission"
 run_id=$(echo "$claim_output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["run_id"])')
 
@@ -76,6 +84,19 @@ assert_json_field "$verify_output" '"verification_status": "passed"' "ship verif
 
 ready_output=$(run_in_repo ./scripts/harness-ship.sh ready "$run_id" "Ready for PR")
 assert_json_field "$ready_output" '"ship_status": "ready"' "ship ready advances run"
+
+push_output=$(run_in_repo ./scripts/harness-ship.sh push "$run_id")
+assert_json_field "$push_output" '"ship_status": "pushed"' "ship push records pushed state"
+
+if git --git-dir="$ORIGIN_REPO" show-ref --verify --quiet refs/heads/mission/32001-release-smoke-mission; then
+  pass "ship push updates remote branch"
+else
+  fail "ship push updates remote branch"
+fi
+
+pr_draft_output=$(run_in_repo ./scripts/harness-ship.sh pr-draft "$run_id")
+assert_json_field "$pr_draft_output" '"mode": "draft"' "ship pr-draft returns draft payload"
+assert_json_field "$pr_draft_output" '"base_branch": "main"' "ship pr-draft uses base branch"
 
 pr_output=$(run_in_repo ./scripts/harness-ship.sh pr "$run_id" "PR-32001" "https://example.invalid/pr/32001")
 assert_json_field "$pr_output" '"ship_status": "in_review"' "ship pr records PR state"

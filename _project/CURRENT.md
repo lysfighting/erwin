@@ -20,7 +20,7 @@
 
 - **Committed definition layer**: `harness/` now has profile, templates, and policies for a Codex-native orchestration harness
 - **Deterministic substrate**: `harness_state.py` plus shell wrappers now implement `home`, `doctor`, `claim`, `drive`, `meetings`, `maintenance`
-- **Leader control plane**: run-state transitions, issue drafting, meeting materialization, meeting outcome adoption, reprovisioning, reconciliation, normalization, ship/PR lifecycle, and RC governance
+- **Leader control plane**: run-state transitions, issue drafting, meeting materialization, meeting outcome adoption, reprovisioning, reconciliation, normalization, ship push / PR draft / PR tracking lifecycle, and RC governance
 - **Runtime governance**: file-backed locking prevents concurrent registry loss; `doctor` reached clean runtime state (`issue_count: 0`)
 - **Codex-native surface**: local `skills/harness/SKILL.md` created as the first repo-local harness skill
 - **Codex installer path**: `install-codex.sh` now installs repo Codex-native skills like `harness` into `~/.codex/skills/`, and `/harness` has been installed globally
