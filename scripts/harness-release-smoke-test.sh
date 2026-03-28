@@ -121,6 +121,65 @@ assert_json_field "$rc_verify_output" '"verification_status": "passed"' "rc veri
 rc_promote_output=$(run_in_repo ./scripts/harness-rc.sh promote "$rc_id" "Promoted after staging smoke")
 assert_json_field "$rc_promote_output" '"state": "promoted"' "rc promote archives promoted rc"
 
+section "RC surgical fix and cancel"
+rc_fix_create_output=$(run_in_repo ./scripts/harness-rc.sh create v1.2.4 "$run_id" --apply)
+assert_json_field "$rc_fix_create_output" '"version": "v1.2.4"' "second rc create records version"
+assert_json_field "$rc_fix_create_output" '"branch": "rc/v1.2.4"' "second rc create uses rc branch pattern"
+rc_fix_id=$(echo "$rc_fix_create_output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["rc_id"])')
+
+(
+  cd "$TEST_REPO" &&
+    git checkout -q main &&
+    printf "base fix for rc\n" >> README.md &&
+    git add README.md &&
+    git commit -qm "base fix for rc"
+) || exit 1
+fix_commit=$(cd "$TEST_REPO" && git rev-parse HEAD)
+
+rc_fix_output=$(run_in_repo ./scripts/harness-rc.sh fix "$rc_fix_id" "$fix_commit" --apply --push)
+assert_json_field "$rc_fix_output" '"applied": true' "rc fix applies cherry-pick onto rc branch"
+assert_json_field "$rc_fix_output" '"pushed": true' "rc fix can push updated rc branch"
+
+if git --git-dir="$ORIGIN_REPO" show-ref --verify --quiet refs/heads/rc/v1.2.4; then
+  pass "rc fix push updates remote rc branch"
+else
+  fail "rc fix push updates remote rc branch"
+fi
+
+if (cd "$TEST_REPO" && git log rc/v1.2.4 --format=%s | grep -q "base fix for rc"); then
+  pass "rc fix cherry-picks base fix onto rc branch"
+else
+  fail "rc fix cherry-picks base fix onto rc branch"
+fi
+
+rc_cancel_output=$(run_in_repo ./scripts/harness-rc.sh cancel "$rc_fix_id" "Cancel after staging defect" --apply)
+assert_json_field "$rc_cancel_output" '"state": "closed"' "rc cancel archives the active rc"
+
+if git --git-dir="$ORIGIN_REPO" show-ref --verify --quiet refs/heads/rc/v1.2.4; then
+  fail "rc cancel deletes remote rc branch"
+else
+  pass "rc cancel deletes remote rc branch"
+fi
+
+section "Hotfix"
+(
+  cd "$TEST_REPO" &&
+    git checkout -q -b candidate-hotfix main &&
+    printf "candidate hotfix\n" >> README.md &&
+    git add README.md &&
+    git commit -qm "candidate hotfix"
+) || exit 1
+
+hotfix_output=$(run_in_repo ./scripts/harness-rc.sh hotfix v1.2.5 candidate-hotfix --apply --push)
+assert_json_field "$hotfix_output" '"applied": true' "rc hotfix applies hotfix branch cherry-pick"
+assert_json_field "$hotfix_output" '"backport_required": false' "rc hotfix reports no backport in single-branch mode"
+
+if git --git-dir="$ORIGIN_REPO" show-ref --verify --quiet refs/heads/hotfix/v1.2.5; then
+  pass "rc hotfix push updates remote hotfix branch"
+else
+  fail "rc hotfix push updates remote hotfix branch"
+fi
+
 section "Home and doctor"
 home_output=$(run_in_repo ./scripts/harness-home.sh)
 doctor_output=$(run_in_repo ./scripts/harness-doctor.sh)

@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Ship delivery mechanics**: Added deterministic branch push and PR draft generation to the `ship` surface so delivery is less state-only and more action-oriented.
 - **GitHub PR opening**: Added a `ship pr-open` path that uses `gh pr create` to open real GitHub PRs when authenticated.
 - **Post-merge cleanup**: Added a `ship cleanup` path to remove worktrees and optionally delete local mission branches after delivery.
+- **RC hard-case coverage**: Added `rc fix`, `rc cancel`, and `rc hotfix` flows so the harness can now handle surgical RC cherry-picks, RC abandonment with branch cleanup, and production hotfix branch preparation.
+- **Expanded release smoke**: `scripts/harness-release-smoke-test.sh` now validates RC surgical fix, RC cancel, and hotfix preparation in addition to the happy-path release flow.
 
 ### Changed — Project Intelligence
 - **Current project focus updated**: `_project/CURRENT.md` now reflects the shift from Wing-only transition work to the new Codex-native orchestration harness prototype.

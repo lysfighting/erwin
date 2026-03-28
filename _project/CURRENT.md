@@ -8,7 +8,7 @@
 
 - **Version**: 0.5.0 (in progress)
 - **Last Updated**: 2026-03-28
-- **Last Session**: 2026-03-28 (Codex-native orchestration harness prototype — first usable control plane)
+- **Last Session**: 2026-03-28 (Codex-native orchestration harness prototype — release governance upgraded)
 
 ## Current Phase
 
@@ -16,18 +16,19 @@
 
 ## What Was Just Completed
 
-**Session A** (2026-03-28) — Harness prototype became first usable end-to-end system
+**Session A** (2026-03-28) — Harness prototype became a stronger end-to-end release harness
 
 - **Committed definition layer**: `harness/` now has profile, templates, and policies for a Codex-native orchestration harness
 - **Deterministic substrate**: `harness_state.py` plus shell wrappers now implement `home`, `doctor`, `claim`, `drive`, `meetings`, `maintenance`
 - **Leader control plane**: run-state transitions, issue drafting, meeting materialization, meeting outcome adoption, reprovisioning, reconciliation, normalization, ship push / PR draft / PR tracking lifecycle, and RC governance
+- **RC hard cases absorbed**: `scripts/harness-rc.sh` now supports surgical `fix`, `cancel`, and `hotfix` flows in addition to create / verify / promote / close
 - **Runtime governance**: file-backed locking prevents concurrent registry loss; `doctor` reached clean runtime state (`issue_count: 0`)
 - **Codex-native surface**: local `skills/harness/SKILL.md` created as the first repo-local harness skill
 - **Codex installer path**: `install-codex.sh` now installs repo Codex-native skills like `harness` into `~/.codex/skills/`, and `/harness` has been installed globally
 - **Bootstrap path**: `scripts/harness-bootstrap.sh` now seeds the harness adapter into another git repository with a generated default profile, local `skills/harness/`, and `install-codex.sh`
 - **Adapter sync path**: bootstrapped repos now record source metadata in `.harness/cache/adapter-source.json` and can resync via `scripts/harness-sync.sh`; the bootstrapped repo also carries its own `harness-bootstrap.sh`
 - **Validation**: branch/worktree provisioning, issue drafting, meeting create/update/close, archived meeting replay, outcome adoption, doctor/home health checks, direct `./install-codex.sh` execution, bootstrap into a temporary repo, remembered-source resync, `harness-issue-smoke-test.sh`, `harness-smoke-test.sh`, `harness-bootstrap-smoke-test.sh`, and `harness-release-smoke-test.sh` all pass
-- **Protocol coverage**: the Codex adapter now has first-class `issue`, `claim`, `drive`, `ship`, and `rc` surfaces
+- **Protocol coverage**: the Codex adapter now has first-class `issue`, `claim`, `drive`, `ship`, and `rc` surfaces, including RC surgical fix / cancel / hotfix handling
 
 ## Active Task / What's In Progress
 
@@ -49,6 +50,7 @@
    - A. Decide whether to formalize this under a new product name or keep `harness` as the prototype codename
    - B. Harden the reusable bootstrap/adapter path beyond first-copy scaffolding
    - C. Decide whether to promote `skills/harness/` beyond prototype-local installation
+   - D. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `harness/README.md`, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
@@ -80,7 +82,7 @@
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, and can bootstrap into another repo, but is still a prototype rather than a finalized product surface
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, and now covers the main RC hard-case flows, but is still a prototype rather than a finalized product surface
 
 ## File Locations
 

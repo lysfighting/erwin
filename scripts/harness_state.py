@@ -611,6 +611,25 @@ def open_github_pr(
     draft: bool,
     reviewers: list[str],
 ) -> dict[str, str]:
+    return open_github_pr_for_branch(
+        branch=run.get("branch", ""),
+        base_branch=base_branch,
+        title=title,
+        body=body,
+        draft=draft,
+        reviewers=reviewers,
+    )
+
+
+def open_github_pr_for_branch(
+    *,
+    branch: str,
+    base_branch: str,
+    title: str,
+    body: str,
+    draft: bool,
+    reviewers: list[str],
+) -> dict[str, str]:
     cmd = [
         "gh",
         "pr",
@@ -618,7 +637,7 @@ def open_github_pr(
         "--base",
         base_branch,
         "--head",
-        run.get("branch", ""),
+        branch,
         "--title",
         title,
         "--body",
@@ -700,6 +719,39 @@ def git_checkout_new_branch(branch: str, base_branch: str) -> None:
     except Exception:
         pass
     run_command(["git", "checkout", "-b", branch])
+
+
+def git_checkout_branch(branch: str) -> None:
+    run_command(["git", "checkout", branch])
+
+
+def remote_branch_exists(remote: str, branch: str) -> bool:
+    result = subprocess.run(
+        ["git", "ls-remote", "--exit-code", "--heads", remote, branch],
+        cwd=repo_root(),
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+    return result.returncode == 0
+
+
+def git_push_branch(remote: str, branch: str) -> None:
+    run_command_with_stderr(["git", "push", "-u", remote, branch])
+
+
+def git_delete_remote_branch(remote: str, branch: str) -> None:
+    if not branch or not remote_branch_exists(remote, branch):
+        return
+    run_command_with_stderr(["git", "push", remote, "--delete", branch])
+
+
+def git_resolve_commitish(commitish: str) -> str:
+    return run_command(["git", "rev-parse", "--verify", commitish])
+
+
+def git_cherry_pick(commitish: str) -> None:
+    run_command_with_stderr(["git", "cherry-pick", commitish])
 
 
 def git_create_worktree(branch: str, path: Path, base_branch: str) -> None:
@@ -933,6 +985,7 @@ def materialize_rc(
             "run_ids": run_ids,
             "verification_status": "unknown",
             "verification_refs": [],
+            "fix_refs": [],
             "notes": [],
             "created_at": timestamp,
             "updated_at": timestamp,
@@ -959,6 +1012,34 @@ def issue_record(
         "summary": summary,
         "recommendation": recommendation,
     }
+
+
+def note_for_rc(summary: str, **extra: Any) -> dict[str, Any]:
+    note: dict[str, Any] = {"recorded_at": now_iso(), "summary": summary}
+    for key, value in extra.items():
+        if value not in ("", None, [], {}):
+            note[key] = value
+    return note
+
+
+def apply_rc_run_followup(
+    registry: dict[str, Any],
+    *,
+    run_ids: list[str],
+    summary: str,
+    next_action: str,
+    rc_id: str = "",
+) -> None:
+    for run_id in run_ids:
+        index = find_run_index(registry, run_id)
+        if index < 0:
+            continue
+        run = registry["runs"][index]
+        if rc_id:
+            run["rc_id"] = rc_id
+        run["latest_summary"] = summary
+        run["next_expected_action"] = next_action
+        run["updated_at"] = now_iso()
 
 
 def age_hours(value: str) -> float | None:
@@ -2425,17 +2506,17 @@ def cmd_rc(args: list[str]) -> int:
                 production_branch=production_branch,
                 run_ids=run_ids,
             )
-            note = {
-                "recorded_at": now_iso(),
-                "summary": f"RC created for version {version}",
-            }
+            note = note_for_rc(f"RC created for version {version}", apply_changes=apply_changes)
             rc.setdefault("notes", []).append(note)
             rc["updated_at"] = now_iso()
             dump_data(rc_path(rc_id), {"version": 1, "rc": rc})
-            for index, run in selected_runs:
-                registry["runs"][index]["rc_id"] = rc_id
-                registry["runs"][index]["next_expected_action"] = f"Verify active RC {rc_id} and decide on promote or fix."
-                registry["runs"][index]["updated_at"] = now_iso()
+            apply_rc_run_followup(
+                registry,
+                run_ids=run_ids,
+                rc_id=rc_id,
+                summary=f"RC created for {version}",
+                next_action=f"Verify active RC {rc_id} and decide on promote, fix, or close.",
+            )
             write_registry(registry)
         print(json.dumps(rc, indent=2, ensure_ascii=True))
         return 0
@@ -2454,9 +2535,265 @@ def cmd_rc(args: list[str]) -> int:
             append_unique_text(refs, ref)
             rc["verification_status"] = "passed"
             rc["updated_at"] = now_iso()
-            rc.setdefault("notes", []).append({"recorded_at": now_iso(), "summary": f"Verification recorded: {ref}"})
+            rc.setdefault("notes", []).append(note_for_rc(f"Verification recorded: {ref}"))
             dump_data(rc_path(rc_id), {"version": 1, "rc": rc})
+            registry = read_registry()
+            apply_rc_run_followup(
+                registry,
+                run_ids=rc.get("run_ids", []),
+                rc_id=rc_id,
+                summary=f"RC {rc_id} verified",
+                next_action="Promote the RC or continue staged validation if more evidence is needed.",
+            )
+            write_registry(registry)
         print(json.dumps(rc, indent=2, ensure_ascii=True))
+        return 0
+
+    if subcommand == "cancel":
+        if len(args) < 2:
+            raise SystemExit("rc cancel requires RC_ID [NOTE] [--apply] [--remote=origin]")
+        rc_id = args[1]
+        note_tokens: list[str] = []
+        apply_changes = False
+        remote = "origin"
+        for arg in args[2:]:
+            if arg == "--apply":
+                apply_changes = True
+            elif arg.startswith("--remote="):
+                remote = arg.split("=", 1)[1].strip() or "origin"
+            else:
+                note_tokens.append(arg)
+        note = " ".join(note_tokens).strip() or "RC canceled"
+        with harness_lock():
+            data = read_active_rc(rc_id)
+            if not data:
+                raise SystemExit(f"active rc not found: {rc_id}")
+            rc = data.get("rc", {})
+            branch = rc.get("branch", "")
+            local_deleted = False
+            remote_deleted = False
+            if apply_changes and branch:
+                try:
+                    git_delete_branch(branch, rc.get("base_branch", "main"))
+                    local_deleted = True
+                except Exception as exc:
+                    raise SystemExit(f"rc cancel failed deleting local branch: {exc}")
+                try:
+                    git_delete_remote_branch(remote, branch)
+                    remote_deleted = True
+                except Exception as exc:
+                    raise SystemExit(f"rc cancel failed deleting remote branch: {exc}")
+            rc["state"] = "closed"
+            rc["updated_at"] = now_iso()
+            rc["closed_at"] = now_iso()
+            rc.setdefault("notes", []).append(
+                note_for_rc(
+                    note,
+                    apply_changes=apply_changes,
+                    local_branch_deleted=local_deleted,
+                    remote_branch_deleted=remote_deleted,
+                    remote=remote,
+                )
+            )
+            dump_data(rc_path(rc_id, archived=True), {"version": 1, "rc": rc})
+            active_path = rc_path(rc_id)
+            if active_path.exists():
+                active_path.unlink()
+            registry = read_registry()
+            apply_rc_run_followup(
+                registry,
+                run_ids=rc.get("run_ids", []),
+                summary=f"RC {rc_id} canceled",
+                next_action=f"Fix on {rc.get('base_branch', 'main')} and cut a fresh RC if release still matters.",
+            )
+            write_registry(registry)
+        print(
+            json.dumps(
+                {
+                    "rc": rc,
+                    "apply_changes": apply_changes,
+                    "local_branch_deleted": local_deleted,
+                    "remote_branch_deleted": remote_deleted,
+                    "remote": remote,
+                },
+                indent=2,
+                ensure_ascii=True,
+            )
+        )
+        return 0
+
+    if subcommand == "fix":
+        if len(args) < 3:
+            raise SystemExit("rc fix requires RC_ID COMMITISH [--apply] [--push] [--remote=origin]")
+        rc_id = args[1]
+        commitish = args[2]
+        apply_changes = "--apply" in args[3:]
+        push_changes = "--push" in args[3:]
+        remote = "origin"
+        for arg in args[3:]:
+            if arg.startswith("--remote="):
+                remote = arg.split("=", 1)[1].strip() or "origin"
+        with harness_lock():
+            data = read_active_rc(rc_id)
+            if not data:
+                raise SystemExit(f"active rc not found: {rc_id}")
+            rc = data.get("rc", {})
+            try:
+                resolved_commit = git_resolve_commitish(commitish)
+            except Exception as exc:
+                raise SystemExit(f"rc fix could not resolve commitish: {exc}")
+            previous_branch = current_branch()
+            applied = False
+            pushed = False
+            if apply_changes:
+                try:
+                    git_checkout_new_branch(rc.get("branch", ""), rc.get("base_branch", "main"))
+                    git_cherry_pick(resolved_commit)
+                    applied = True
+                    if push_changes:
+                        git_push_branch(remote, rc.get("branch", ""))
+                        pushed = True
+                except Exception as exc:
+                    raise SystemExit(f"rc fix failed: {exc}")
+                finally:
+                    if previous_branch and previous_branch != rc.get("branch", "") and branch_exists(previous_branch):
+                        try:
+                            git_checkout_branch(previous_branch)
+                        except Exception:
+                            pass
+            append_unique_text(rc.setdefault("fix_refs", []), resolved_commit)
+            rc["verification_status"] = "unknown"
+            rc["updated_at"] = now_iso()
+            rc.setdefault("notes", []).append(
+                note_for_rc(
+                    f"RC fix cherry-picked from {commitish}",
+                    commitish=commitish,
+                    resolved_commit=resolved_commit,
+                    apply_changes=apply_changes,
+                    applied=applied,
+                    pushed=pushed,
+                    remote=remote,
+                )
+            )
+            dump_data(rc_path(rc_id), {"version": 1, "rc": rc})
+            registry = read_registry()
+            apply_rc_run_followup(
+                registry,
+                run_ids=rc.get("run_ids", []),
+                rc_id=rc_id,
+                summary=f"RC {rc_id} received a surgical fix",
+                next_action="Re-verify the RC after the cherry-picked fix before promotion.",
+            )
+            write_registry(registry)
+        print(
+            json.dumps(
+                {
+                    "rc": rc,
+                    "commitish": commitish,
+                    "resolved_commit": resolved_commit,
+                    "apply_changes": apply_changes,
+                    "applied": applied,
+                    "pushed": pushed,
+                    "remote": remote,
+                },
+                indent=2,
+                ensure_ascii=True,
+            )
+        )
+        return 0
+
+    if subcommand == "hotfix":
+        if len(args) < 3:
+            raise SystemExit(
+                "rc hotfix requires VERSION COMMITISH [--apply] [--push] [--pr-open] [--draft] [--remote=origin] [--reviewer=...]"
+            )
+        version = args[1]
+        commitish = args[2]
+        apply_changes = "--apply" in args[3:]
+        push_changes = "--push" in args[3:]
+        pr_open = "--pr-open" in args[3:]
+        draft = "--draft" in args[3:]
+        remote = "origin"
+        reviewers: list[str] = []
+        for arg in args[3:]:
+            if arg.startswith("--remote="):
+                remote = arg.split("=", 1)[1].strip() or "origin"
+            elif arg.startswith("--reviewer="):
+                reviewer = arg.split("=", 1)[1].strip()
+                if reviewer:
+                    reviewers.append(reviewer)
+        profile, _ = resolve_profile()
+        production_branch = get_key(profile, "profile.production_branch", "main")
+        base_branch = get_key(profile, "profile.base_branch", production_branch)
+        branch_pattern = get_key(profile, "profile.hotfix_branch_pattern", "hotfix/{version}")
+        branch = branch_pattern.replace("{version}", version)
+        hotfix_id = f"hotfix-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}-{slugify(version)}"
+        try:
+            resolved_commit = git_resolve_commitish(commitish)
+        except Exception as exc:
+            raise SystemExit(f"rc hotfix could not resolve commitish: {exc}")
+        previous_branch = current_branch()
+        applied = False
+        pushed = False
+        pr_result: dict[str, str] = {}
+        if apply_changes:
+            try:
+                git_checkout_new_branch(branch, production_branch)
+                git_cherry_pick(resolved_commit)
+                applied = True
+                if push_changes:
+                    git_push_branch(remote, branch)
+                    pushed = True
+                if pr_open:
+                    body = (
+                        f"## Summary\n\n"
+                        f"- Hotfix version: `{version}`\n"
+                        f"- Source ref: `{commitish}`\n"
+                        f"- Resolved commit: `{resolved_commit}`\n\n"
+                        f"## Backport\n\n"
+                        f"- Required: {'yes' if base_branch != production_branch else 'no'}\n"
+                        f"- Target base branch: `{base_branch}`\n"
+                    )
+                    pr_result = open_github_pr_for_branch(
+                        branch=branch,
+                        base_branch=production_branch,
+                        title=f"[hotfix {version}] Cherry-pick {commitish}",
+                        body=body,
+                        draft=draft,
+                        reviewers=reviewers,
+                    )
+            except Exception as exc:
+                raise SystemExit(f"rc hotfix failed: {exc}")
+            finally:
+                if previous_branch and previous_branch != branch and branch_exists(previous_branch):
+                    try:
+                        git_checkout_branch(previous_branch)
+                    except Exception:
+                        pass
+        payload = {
+            "hotfix_id": hotfix_id,
+            "version": version,
+            "branch": branch,
+            "production_branch": production_branch,
+            "base_branch": base_branch,
+            "commitish": commitish,
+            "resolved_commit": resolved_commit,
+            "apply_changes": apply_changes,
+            "applied": applied,
+            "pushed": pushed,
+            "remote": remote,
+            "pr_opened": bool(pr_result),
+            "pr_ref": pr_result.get("pr_ref", ""),
+            "pr_url": pr_result.get("pr_url", ""),
+            "reviewers": reviewers,
+            "backport_required": base_branch != production_branch,
+            "next_expected_action": (
+                f"After production merge, backport the hotfix into {base_branch}."
+                if base_branch != production_branch
+                else "No backport required in single-branch mode."
+            ),
+        }
+        print(json.dumps(payload, indent=2, ensure_ascii=True))
         return 0
 
     if subcommand in ("promote", "close"):
@@ -2476,11 +2813,23 @@ def cmd_rc(args: list[str]) -> int:
             rc["closed_at"] = now_iso()
             if subcommand == "promote":
                 rc["promoted_at"] = now_iso()
-            rc.setdefault("notes", []).append({"recorded_at": now_iso(), "summary": note})
+            rc.setdefault("notes", []).append(note_for_rc(note))
             dump_data(rc_path(rc_id, archived=True), {"version": 1, "rc": rc})
             active_path = rc_path(rc_id)
             if active_path.exists():
                 active_path.unlink()
+            registry = read_registry()
+            apply_rc_run_followup(
+                registry,
+                run_ids=rc.get("run_ids", []),
+                summary=f"RC {rc_id} {'promoted' if subcommand == 'promote' else 'closed'}",
+                next_action=(
+                    "Release candidate promoted. Track production health and clean up release branches."
+                    if subcommand == "promote"
+                    else "RC closed without promotion. Decide whether to re-cut or stop the release."
+                ),
+            )
+            write_registry(registry)
         print(json.dumps(rc, indent=2, ensure_ascii=True))
         return 0
 

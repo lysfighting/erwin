@@ -28,7 +28,7 @@ Use this when the model should act as the harness leader:
 - push mission branches and draft PR payloads
 - open GitHub PRs directly when `gh` auth is available
 - perform post-merge cleanup for worktrees and local branches
-- create, verify, and promote release candidates
+- create, surgically fix, cancel, hotfix, verify, and promote release candidates
 - repair or normalize runtime drift
 
 ## Status
@@ -43,6 +43,13 @@ Prototype, but working.
 ./scripts/harness-bootstrap-smoke-test.sh
 ./scripts/harness-release-smoke-test.sh
 ```
+
+The release smoke now covers:
+
+- `claim -> ship -> rc promote`
+- RC surgical `fix` via cherry-pick onto an active RC branch
+- RC `cancel` with branch cleanup
+- production-style `hotfix` branch preparation
 
 ## Install To Codex
 

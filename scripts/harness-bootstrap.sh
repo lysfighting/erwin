@@ -10,7 +10,7 @@ else
 fi
 FORCE=0
 TARGET_INPUT="."
-ADAPTER_VERSION="0.2.0-prototype"
+ADAPTER_VERSION="0.3.0-prototype"
 
 usage() {
   cat <<'EOF'

@@ -67,6 +67,12 @@ The harness is file-backed:
   `bash scripts/harness-ship.sh merged RUN_ID`
 - `rc-create`
   `bash scripts/harness-rc.sh create v1.2.3 RUN_ID`
+- `rc-fix`
+  `bash scripts/harness-rc.sh fix RC_ID COMMITISH --apply --push`
+- `rc-cancel`
+  `bash scripts/harness-rc.sh cancel RC_ID "staging bug found" --apply`
+- `rc-hotfix`
+  `bash scripts/harness-rc.sh hotfix v1.2.4 COMMITISH --apply --push`
 - `rc-promote`
   `bash scripts/harness-rc.sh promote RC_ID "promotion note"`
 - `maintenance`
