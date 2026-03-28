@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.11.2"
+version: "3.12.0"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -57,7 +57,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.11.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.12.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -137,7 +137,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.11.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.12.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -532,7 +532,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.11.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.12.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1092,7 +1092,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.11.2` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.12.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ✅ Config updated (merge mode — existing config preserved)
    schema_version → `3`
@@ -2279,7 +2279,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.11.2"
+SKILL_VERSION="3.12.0"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -2376,16 +2376,23 @@ Output a formatted dashboard based on user's role level.
 
 #### Solo / Leader Dashboard
 
-**⛔ VE FORMATTING — ISSUE NUMBERS MUST BE BOLD.** Every `#` followed by digits MUST be wrapped in `**...**`. This is the #1 VE violation — if you output bare issue numbers instead of `**#NNN**`, the hyperlink coloring is lost.
+**⛔ ISSUE NUMBERS MUST BE MARKDOWN LINKS.** Use `[**#NNN**](https://github.com/{REPO}/issues/NNN)` for every issue/PR number. This is the ONLY way to get clickable hyperlinks in the terminal. `$REPO` is already available from the data fetch step.
 
-✅ CORRECT: `🟢 **#306** Fix auth flow` · `⚪ **#099** Add tests` · `**#153** merged`
+✅ CORRECT (clickable blue link):
+  🟢 [**#636**](https://github.com/collov-ai/vi_agent/issues/636) fix: camera 拍照 @initialneil
+  🟡 [**#618**](https://github.com/collov-ai/vi_agent/issues/618) fix(nanoclaw): test-sync @initialneil
+  📋 [**#644**](https://github.com/collov-ai/vi_agent/issues/644) fix(nanoclaw): premature Redis ACK
+
+❌ WRONG (plain text, not clickable):
+  🟢 #636 fix: camera 拍照 @initialneil
+  🟢 **#636** fix: camera 拍照 @initialneil
 
 Also: commands/paths in backticks, NO code blocks, NO `- ` lists, NO `### ` headers.
 
 Output the ENTIRE dashboard as plain markdown text:
 
 ⚠️ **ACTION NEEDED**
-  Orphan contract: issue **#{N}** is CLOSED. Run: `/team doctor fix`
+  Orphan contract: issue [**#{N}**](https://github.com/{REPO}/issues/{N}) is CLOSED. Run: `/team doctor fix`
   On base branch with worktree mode — switch to mission branch or disable worktree
 {^ alert commands MUST be in backticks for purple-blue color}
 
@@ -2394,8 +2401,8 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 {If WORKTREE_ENABLED — ALWAYS show, even if only main repo worktree exists:}
 📂 **Worktrees** *(worktree mode)* 🟥 main · 🟦 develop · 🟧 rc · 🟩 mission · ⬜ other
-  ⭐ {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
-  · {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
+  ⭐ {branch_color} `{worktree_path}` ← *{branch}* → [**#{issue}**](https://github.com/{REPO}/issues/{issue}) {title}
+  · {branch_color} `{worktree_path}` ← *{branch}* → [**#{issue}**](https://github.com/{REPO}/issues/{issue}) {title}
   {or: → *(no mission)* if on main repo. Show ALL from `git worktree list`}
 {^ worktree_path: output the EXACT absolute path from `git worktree list`. Do NOT shorten, abbreviate, or replace any part (no `~`, no `...`, no truncation). Example: `/Users/liya/Project/collov/vi_agent/.claude/worktrees/foo` — output this full string.}
 {^ branch_color = 🟥 main/master · 🟦 pre-launch/develop · 🟧 rc/* · 🟩 mission/* · ⬜ other}
@@ -2412,31 +2419,31 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 👥 **TEAM** ({member_count} members)
   {username} ({role})
     {If Contract + branch/worktree exist:}
-    🟢 **#{N}** {title} {priority_dot} → *wip* {If STALE: ⚡}
+    🟢 [**#{N}**](https://github.com/{REPO}/issues/{N}) {title} {priority_dot} → *wip* {If STALE: ⚡}
     *{branch}* → `/team-ship`
-    🔀 **#{pr}** — {ci_icon}
+    🔀 [**#{pr}**](https://github.com/{REPO}/pull/{pr}) — {ci_icon}
     {If assigned but no Contract/branch:}
-    ⚪ **#{N}** {title} {priority_dot} → *assigned*
+    ⚪ [**#{N}**](https://github.com/{REPO}/issues/{N}) {title} {priority_dot} → *assigned*
   {username} ({role})
     ⚪ *(idle)*
 
 🔀 **Under Review** ({count})
-  🟡 **#{N}**  {title}  @{assignee}
+  🟡 [**#{N}**](https://github.com/{REPO}/issues/{N})  {title}  @{assignee}
   {If none:} (none)
 
 📋 **Unassigned** ({count})
-  {priority_dot} **#{N}**  {title}
+  {priority_dot} [**#{N}**](https://github.com/{REPO}/issues/{N})  {title}
   {If count > 5:} ... +{remaining} more → `/team queue`
   {If none:} (none)
 
 ⚠️ **Untracked** ({count})
   Issues with teamwork labels but missing mission label
-  Includes: **#{N}**, **#{N}**, ...
+  Includes: [**#{N}**](https://github.com/{REPO}/issues/{N}), [**#{N}**](https://github.com/{REPO}/issues/{N}), ...
   Fix: `/team-issue fix` **#N** for each, or batch-add the mission label
   {Omit entire section if count == 0}
 
 🧹 **Needs Cleanup** ({count})
-  *{branch}* — PR **#{pr}** merged
+  *{branch}* — PR [**#{pr}**](https://github.com/{REPO}/pull/{pr}) merged
   💡 Run: `/team-ship done`
   {Omit entire section if count == 0}
 
@@ -2456,14 +2463,14 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 1. Active RC branch exists, all missions complete → `/team-rc promote` to ship the release
 1b. Orphan contract (issue closed, contract exists) → `/team doctor fix` to clean up, then `/team-claim`
 2. Merged PR branch still exists locally → `/team-ship done` to clean up
-3. PR behind base → PR **#{N}** is {M} behind — `/team-ship sync`
-4. PR CI passed + approved → PR **#{N}** ready to merge — merge on GitHub, then `/team-ship done`
-5. PR CI passed, no review → PR **#{N}** CI passed — awaiting review/merge
-5b. PR open, CI still running → PR **#{N}** CI running — waiting for checks to complete
-6. PR CI failing → PR **#{N}** CI failing — fix before merge
+3. PR behind base → PR [**#{N}**](https://github.com/{REPO}/pull/{N}) is {M} behind — `/team-ship sync`
+4. PR CI passed + approved → PR [**#{N}**](https://github.com/{REPO}/pull/{N}) ready to merge — merge on GitHub, then `/team-ship done`
+5. PR CI passed, no review → PR [**#{N}**](https://github.com/{REPO}/pull/{N}) CI passed — awaiting review/merge
+5b. PR open, CI still running → PR [**#{N}**](https://github.com/{REPO}/pull/{N}) CI running — waiting for checks to complete
+6. PR CI failing → PR [**#{N}**](https://github.com/{REPO}/pull/{N}) CI failing — fix before merge
 7a. Active mission with unchecked code tasks → `/team-drive` to continue
 7b. Active mission, all code tasks done, no PR → `/team-ship` to deliver
-8a. No active mission, unassigned issues exist → `/team-claim` **#{N}** to start (pick highest-priority unassigned issue)
+8a. No active mission, unassigned issues exist → `/team-claim` [**#{N}**](https://github.com/{REPO}/issues/{N}) to start (pick highest-priority unassigned issue)
 8b. No active mission, no unassigned issues → `/team-issue` to create a new mission
 
 **Visual encoding rules** (apply to ALL teamwork output):
@@ -2493,7 +2500,7 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 **Progress bar**: Map percentage to 10 chars: `█` for filled, `░` for empty. Wrap the ENTIRE bar in backticks for color: `` `██░░░░░░░░` ``. E.g., 14% → `` `█░░░░░░░░░` ``, 50% → `` `█████░░░░░` ``.
 
-**Issue number formatting**: ALWAYS `**#NNN**` (bold + zero-pad to 3+ digits). Two-digit → three-digit: `**#099**`, `**#007**`. Bold wrapping is MANDATORY — without it Claude Code renders plain text with no clickable hyperlink. Claude Code only auto-links 3+ digit patterns as GitHub issues.
+**Issue number formatting**: ALWAYS `[**#NNN**](https://github.com/{REPO}/issues/NNN)` (markdown link + bold). This is the ONLY way to produce clickable hyperlinks in the terminal. Claude Code's auto-linker only matches `owner/repo#NNN` format — bare `#NNN` and bold-only `**#NNN**` do NOT produce hyperlinks. Use `/issues/` for issues and `/pull/` for PRs.
 
 **`{ci_icon}`** shorthand: `✅` if all checks pass, `❌` if any fail, `⏳` if pending/running.
 
@@ -2514,9 +2521,15 @@ Skills should NEVER suggest raw git/rm/shell commands as remediation. Instead, a
 
 #### Member Dashboard
 
-**⛔ VE FORMATTING — ISSUE NUMBERS MUST BE BOLD.** Every `#` followed by digits MUST be wrapped in `**...**`. This is the #1 VE violation — if you output bare issue numbers instead of `**#NNN**`, the hyperlink coloring is lost.
+**⛔ ISSUE NUMBERS MUST BE MARKDOWN LINKS.** Use `[**#NNN**](https://github.com/{REPO}/issues/NNN)` for every issue/PR number. This is the ONLY way to get clickable hyperlinks in the terminal. `$REPO` is already available from the data fetch step.
 
-✅ CORRECT: `🟢 **#306** Fix auth flow` · `⚪ **#099** Add tests` · `**#153** merged`
+✅ CORRECT (clickable blue link):
+  🟢 [**#636**](https://github.com/collov-ai/vi_agent/issues/636) fix: camera 拍照 @initialneil
+  🟡 [**#618**](https://github.com/collov-ai/vi_agent/issues/618) fix(nanoclaw): test-sync @initialneil
+
+❌ WRONG (plain text, not clickable):
+  🟢 #636 fix: camera 拍照 @initialneil
+  🟢 **#636** fix: camera 拍照 @initialneil
 
 Also: commands/paths in backticks, NO code blocks, NO `- ` lists, NO `### ` headers.
 
@@ -2525,7 +2538,7 @@ Focus on user's own work, then team summary below `────`.
 Output the ENTIRE dashboard as plain markdown text (no code blocks anywhere):
 
 ⚠️ **ACTION NEEDED**
-  Orphan contract: issue **#{N}** is CLOSED. Run: `/team doctor fix`
+  Orphan contract: issue [**#{N}**](https://github.com/{REPO}/issues/{N}) is CLOSED. Run: `/team doctor fix`
   On base branch — switch to mission branch or disable worktree
 {^ alert commands MUST be in backticks for purple-blue color}
 
@@ -2534,8 +2547,8 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 
 {If WORKTREE_ENABLED — ALWAYS show, even if only main repo worktree exists:}
 📂 **Worktrees** *(worktree mode)* 🟥 main · 🟦 develop · 🟧 rc · 🟩 mission · ⬜ other
-  ⭐ {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
-  · {branch_color} `{worktree_path}` ← *{branch}* → **#{issue}** {title}
+  ⭐ {branch_color} `{worktree_path}` ← *{branch}* → [**#{issue}**](https://github.com/{REPO}/issues/{issue}) {title}
+  · {branch_color} `{worktree_path}` ← *{branch}* → [**#{issue}**](https://github.com/{REPO}/issues/{issue}) {title}
   {or: → *(no mission)* if on main repo. Show ALL from `git worktree list`}
 {^ worktree_path: output the EXACT absolute path from `git worktree list`. Do NOT shorten, abbreviate, or replace any part (no `~`, no `...`, no truncation). Example: `/Users/liya/Project/collov/vi_agent/.claude/worktrees/foo` — output this full string.}
 {^ branch_color = 🟥 main/master · 🟦 pre-launch/develop · 🟧 rc/* · 🟩 mission/* · ⬜ other}
@@ -2546,36 +2559,36 @@ Teamwork v{SKILL_VERSION} · **{VERSION}**  `{progress_bar}`  {pct}%  {done}/{to
 🎯 **My Missions**
   {For each issue assigned to me with $MISSION_LABEL, check: does a Contract exist AND a local branch/worktree exist?}
   {YES — claimed, actively working:}
-  🟢 **#{N}** {title} {priority_dot} → *{status}*
+  🟢 [**#{N}**](https://github.com/{REPO}/issues/{N}) {title} {priority_dot} → *{status}*
     {If WORKTREE_ENABLED:}
     *{branch}* → `cd {worktree_path} && claude`
     {If worktree DISABLED:}
     *{branch}* → `/team-drive`
   {NO — assigned but not yet claimed (no Contract or no branch/worktree):}
-  ⚪ **#{N}** {title} {priority_dot} → *assigned* · `/team-claim` **#{N}**
+  ⚪ [**#{N}**](https://github.com/{REPO}/issues/{N}) {title} {priority_dot} → *assigned* · `/team-claim` [**#{N}**](https://github.com/{REPO}/issues/{N})
   {If none:} (none)
 {^ 🟢 = claimed+branch exists. ⚪ = assigned only, needs `/team-claim`. Branch italic, commands in backticks.}
 {^ worktree_path = same rule as Worktrees section (absolute path, no abbreviation).}
 {^ status = from GitHub Issue labels: wip/done/review. If Issue has done label show ⚠️ done.}
 
 🔀 **My PRs**
-  **#{pr}** {title}  {ci_icon}  {review}
+  [**#{pr}**](https://github.com/{REPO}/pull/{pr}) {title}  {ci_icon}  {review}
   {If behind > 0: ⚠️ {N} behind {BASE_BRANCH} → `/team-ship sync`}
   {If none:} (none)
 
 ────────────────────────────────────────
 
 👥 **Team WIP** ({count})
-  {priority_dot} **#{N}**  {title}  @{assignee}
+  {priority_dot} [**#{N}**](https://github.com/{REPO}/issues/{N})  {title}  @{assignee}
   {Show up to 10 items sorted by priority}
   {If count > 10:} ... +{remaining} more → `/team queue`
 
 🔀 **Under Review** ({count})
-  🟡 **#{N}**  {title}  @{assignee}  {ci_icon}
+  🟡 [**#{N}**](https://github.com/{REPO}/issues/{N})  {title}  @{assignee}  {ci_icon}
   {If none shown}
 
 📋 **Unassigned** ({count})
-  {priority_dot} **#{N}**  {title}
+  {priority_dot} [**#{N}**](https://github.com/{REPO}/issues/{N})  {title}
   {If none:} (none)
 
 📊 **Merges**  {user}: `{n}` · {user}: `{n}` · ...

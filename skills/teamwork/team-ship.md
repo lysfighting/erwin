@@ -1,6 +1,6 @@
 ---
 description: "Ship mission → PR. Try: /team-ship help"
-version: "3.11.2"
+version: "3.12.0"
 ---
 
 # /team-ship — Deliver Mission
@@ -404,7 +404,7 @@ CI_ENABLED=$(bash ~/.claude/commands/scripts/tw-config.sh quality.ci "false" 2>/
 
 ⏭ Pre-flight skipped — CI guards merge, pushing immediately for remote persistence.
 
-→ Continue to Step 2e.
+→ Continue to Step 2e (Version Bump).
 
 **If `CI_ENABLED` != "true"** → local tests are the only quality gate. Run them:
 
@@ -440,7 +440,60 @@ fi
 
 ---
 
-## Step 2e: Side Effect Triage
+## Step 2e: Version Bump (only changed services)
+
+**Versions MUST be bumped on ship for services that have code changes.** Skip if last commit is already a version bump (from `/dev`).
+
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+TODAY=$(date +%Y.%m.%d)
+
+# Skip if last commit was already a version bump
+LAST_MSG=$(git log -1 --format=%s)
+if echo "$LAST_MSG" | grep -q "chore: bump versions"; then
+  echo "Version already bumped — skipping"
+else
+  # Detect changed services vs base branch
+  CHANGED_FILES=$(git diff --name-only "origin/$BASE_BRANCH...HEAD" 2>/dev/null || git diff --name-only HEAD~5)
+
+  declare -A SVC_MAP=(
+    ["api-server"]="api-server"
+    ["nanoclaw"]="nanoclaw"
+    ["frontend"]="frontend"
+    ["realtime"]="realtime"
+    ["gateway"]="gateway/plugin"
+  )
+
+  BUMPED=""
+  for SVC in "${!SVC_MAP[@]}"; do
+    SVC_DIR="${SVC_MAP[$SVC]}"
+    if echo "$CHANGED_FILES" | grep -q "^${SVC}/\|^${SVC_DIR}/"; then
+      VER_FILE="$REPO_ROOT/$SVC_DIR/version.txt"
+      if [ -f "$VER_FILE" ]; then
+        CURRENT=$(cat "$VER_FILE" | tr -d '[:space:]')
+        CUR_DATE=$(echo "$CURRENT" | sed 's/\.[^.]*$//')
+        CUR_K=$(echo "$CURRENT" | awk -F. '{print $NF}')
+        if [ "$CUR_DATE" = "$TODAY" ]; then
+          NEW_K=$((CUR_K + 1))
+        else
+          NEW_K=0
+        fi
+        echo "${TODAY}.${NEW_K}" > "$VER_FILE"
+        BUMPED="${BUMPED:+$BUMPED, }${SVC}=${TODAY}.${NEW_K}"
+      fi
+    fi
+  done
+
+  if [ -n "$BUMPED" ]; then
+    git add */version.txt gateway/plugin/version.txt
+    git commit -m "chore: bump versions — ${BUMPED}"
+  fi
+fi
+```
+
+---
+
+## Step 2f: Side Effect Triage
 
 > Detect non-code changes that could break other environments. Gate P0 issues, surface P1 for user action, log P2 in PR body. This is the Environment Envelope — mechanism captures, LLM annotates.
 
@@ -665,7 +718,7 @@ actual work product (code changes, behavior, test results).
 ## AI Notes
 {notes from Contract's AI Notes section, if present}
 
-{If $INFRA_IMPACT_ITEMS is non-empty (from Step 2e Side Effect Triage):}
+{If $INFRA_IMPACT_ITEMS is non-empty (from Step 2f Side Effect Triage):}
 ## Infra Impact
 {For each item in $INFRA_IMPACT_ITEMS:}
 - ⚠️ {item description}
@@ -674,7 +727,7 @@ Related Issues: {list of #NNN references}
 ```
 
 **Infra Impact rules:**
-- Only include this section if Step 2e produced non-empty results
+- Only include this section if Step 2f produced non-empty results
 - P0 items resolved during ship (e.g., vars added to .env.example) → mention as "Resolved: {description}"
 - P1 items the user chose "PR 备注" for → include with action needed
 - P1 items that became Issues → reference the Issue number
@@ -767,7 +820,7 @@ If CI is not enabled → skip this step.
 
 | Signal | Why it's worth commenting |
 |--------|--------------------------|
-| Deployment needs special steps NOT already in `## Infra Impact` | Merger needs to know before/after merge actions (skip if Step 2e already covered) |
+| Deployment needs special steps NOT already in `## Infra Impact` | Merger needs to know before/after merge actions (skip if Step 2f already covered) |
 | Specific files/areas need careful review | Focus reviewer attention |
 | Known limitation or tech debt introduced | Transparency for the team |
 | CI failed on a flaky test (not a real issue) | Prevent reviewer confusion |

@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.11.2"
+version: "3.12.0"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -261,15 +261,15 @@ bash ~/.claude/commands/scripts/tw-git.sh cut-release "$NEXT_VERSION"
 
 This runs: fetch origin/develop → create `rc/$NEXT_VERSION` from it → push to origin. **Does NOT checkout or modify the working tree.**
 
-### Step 6: Trigger Staging Deploy (optional)
+### Step 6: Trigger Staging Deploy
 
 **If `STAGING_WORKFLOW` is set:**
 
 ```bash
-gh workflow run "$STAGING_WORKFLOW" --ref "rc/$NEXT_VERSION" -f environment=staging
+gh workflow run "$STAGING_WORKFLOW" --ref "rc/$NEXT_VERSION"
 ```
 
-Output: Staging deploy triggered for *rc/{NEXT_VERSION}*
+Output: Staging build triggered for *rc/{NEXT_VERSION}* (Build Images → deploy-staging.yml → ArgoCD)
 
 **If not set:** Output: *(No staging workflow configured — deploy manually)*
 

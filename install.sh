@@ -326,6 +326,21 @@ install_skill_suite() {
 # ─── Main routing ─────────────────────────────────────────────────
 
 if [[ $# -eq 0 ]]; then
+  # Safety: when targeting another project, require explicit skill name
+  if [[ "$TARGET_DIR" != "$HOME/.claude/commands" ]]; then
+    echo -e "${RED}ERROR: --target requires a skill name to prevent accidental full install${NC}"
+    echo ""
+    echo "Usage: ./install.sh --copy --target DIR <skill-name>"
+    echo ""
+    echo "Available skills:"
+    for dir in "$SKILLS_DIR"/*/; do
+      [[ -d "$dir" ]] || continue
+      skill_name="$(basename "$dir")"
+      [[ "$skill_name" == "README"* ]] && continue
+      echo "  $skill_name"
+    done
+    exit 1
+  fi
   # Install all skills
   echo "Installing all skills..."
   echo ""

@@ -2,6 +2,30 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.12.0] — 2026-03-27
+
+### Changed — Issue numbers now use markdown links for clickable hyperlinks
+
+**Root cause discovery**: Claude Code's auto-linker regex requires `owner/repo#NNN` format. Bare `#NNN` and bold-only `**#NNN**` NEVER produce hyperlinks. All previous VE efforts (v3.11.1-3.11.4) were based on incorrect assumption that bold = hyperlink.
+
+**Fix**: Dashboard templates now use `[**#NNN**](https://github.com/{REPO}/issues/NNN)` markdown link format. This produces blue underlined clickable text in terminal — the ONLY reliable way to get hyperlinks.
+
+- **team.md**: Converted all dashboard issue/PR number patterns (Leader + Member) from `**#{N}**` to `[**#{N}**](url)`. Updated VE formatting rule with ✅/❌ examples. Updated NEXT suggestion logic with link format.
+- **MEMORY.md correction**: "bare #NNN auto-links" was wrong — auto-linker only matches `owner/repo#NNN`.
+
+## [3.11.4] — 2026-03-27
+
+### Fixed — VE inline reminders for dashboard issue number bold compliance
+
+- **team.md**: Added `{^ ⛔ bold: **#NNN** not #NNN}` inline reminders inside EVERY dashboard section that outputs issue numbers (My Missions, TEAM, Under Review, Unassigned, Team WIP — both Leader and Member dashboards). Previous VE warnings were only at dashboard top; by the time LLM reaches output, it forgets. Inline reminders use concrete example numbers (e.g., `**#636**`) to leverage pattern-matching over instruction-following.
+
+## [3.11.3] — 2026-03-27
+
+### Synced — vi_agent downstream changes
+
+- **team-ship.md**: Added Step 2e (Version Bump) — auto-bumps `version.txt` for changed services on ship. Original Side Effect Triage renumbered to Step 2f, all references updated.
+- **team-rc.md**: Step 6 staging deploy is no longer optional, removed `-f environment=staging` flag, updated output message with deploy chain description.
+
 ## [3.11.2] — 2026-03-14
 
 ### Fixed — VE signal dilution (final hotfix before freeze)

@@ -85,6 +85,16 @@ cmd_create() {
     exit 1
   fi
 
+  # Safety: read base_branch from config and override if caller got it wrong
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local config_base
+  config_base=$(bash "$script_dir/tw-config.sh" conventions.base_branch "" 2>/dev/null) || true
+  if [ -n "$config_base" ] && [ "$config_base" != "$base" ]; then
+    echo "WARNING: caller passed base='$base' but config says base_branch='$config_base'. Using config value." >&2
+    base="$config_base"
+  fi
+
   local url
   url=$(gh pr create \
     --title "$title" \
