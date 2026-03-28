@@ -69,6 +69,8 @@ The harness is file-backed:
   `bash scripts/harness-teammates.sh assign RUN_ID worker-auth implementation-verifier "Update auth callers" --scope="auth callers only" --owns=scope:auth-callers --depends-on=RUN_OTHER`
 - `ownership-transfer`
   `bash scripts/harness-runs.sh transfer-ownership SOURCE_RUN_ID TARGET_RUN_ID --owns=scope:release-auth-smoke --reason="Shift bounded ownership to the implementation path"`
+- `run-authority-audit`
+  `bash scripts/harness-runs.sh authority-audit RUN_ID`
 - `teammate-report`
   `bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID "Caller patch is in place" --kind=progress --evidence=src/auth.ts|tests/auth.spec.ts`
 - `signals-adjudicate`
@@ -159,5 +161,6 @@ The harness is file-backed:
 - When multiple findings speak about the same claim, use `--claim=` and `--dimension=` on `meetings add-finding` so authority conflicts can be audited cleanly.
 - Use `meetings summary` before adoption when you need to see synthesis readiness, debate-round depth, and blocker counts at a glance.
 - Use `meetings authority-audit` when you need a leader-facing explanation of which same-claim finding currently wins on authority.
+- Use `runs authority-audit` when a run may be drifting against fresher or higher-authority active signals, or when `doctor` reports `run-authority-conflict`.
 - After a meeting closes, either let `meeting-close` apply its outcome or explicitly run `adopt-meeting`.
 - Keep `doctor` clean. If it shows drift, repair that before piling on new execution.

@@ -15,6 +15,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Council phase history, linked cross-examination targeting, and synthesis-readiness reporting via `meetings summary` and `meetings orchestrate`.
 - Same-claim meeting finding authority audit via `meetings authority-audit`, plus `--claim=` / `--dimension=` support on `meetings add-finding`.
 - Richer ownership selector families with semantic overlap for `file:` / `dir:` / `module:` plus generic bounded-selector transfer checks.
+- Cross-surface run authority adjudication via `bash scripts/harness-runs.sh authority-audit RUN_ID`, including higher-authority active-signal conflict detection and meeting-outcome adoption gaps.
 
 ### Changed
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.
@@ -22,6 +23,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - `harness-doctor.sh` now validates missing council source boundaries, missing expected output/context, and rejected findings without reasons.
 - `harness-doctor.sh` now also flags missing phase history, unlinked cross-examination, incomplete synthesis, and unresolved council findings without follow-up action.
 - `harness-home.sh` and `harness-doctor.sh` now surface dependency-blocked runs, ownership overlap, and desired-state drift more explicitly.
+- `harness-doctor.sh` now also flags unresolved run-level authority conflicts when fresher or higher-authority active signals disagree with current run state.
 - Mission state is now materialized above runs so leader surfaces can reconcile against a durable mission graph instead of only per-run metadata.
 - `scripts/harness-maintenance.sh normalize` now upgrades older run-only runtime state into the mission-aware schema by backfilling ownership claims, desired state, and mission linkage.
 - Legacy `ownership_claims` are now normalized into `ownership_selectors`, so overlap checks and transfer semantics operate on structured selectors instead of raw strings alone.

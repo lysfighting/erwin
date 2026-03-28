@@ -41,6 +41,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 - `harness-issue.sh` — structured issue drafting and creation
 - `harness-claim.sh` — mission claim + contract/run creation
 - `harness-drive.sh` — run-state control, dependency waiting, meetings, reprovision, outcome adoption
+- `harness-runs.sh` — direct run inspection, desired-state mutation, ownership transfer, and run-level authority audit
 - `harness-teammates.sh` — bounded teammate assignment, governed communication, and meeting escalation
 - `harness-ship.sh` — verification, PR lifecycle, review/check gates, deterministic merge, merge readiness
 - `harness-ship.sh` also supports branch push and PR draft generation
@@ -97,6 +98,7 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - automated meeting phase advancement via `meetings orchestrate`
 - durable council `phase_history`, linked cross-examination targets, and synthesis audits with blocker/evidence reporting
 - leader-facing `meetings authority-audit` output for same-claim finding conflicts and higher-authority winner explanations
+- leader-facing `runs authority-audit` output for cross-surface run/signal/meeting authority conflicts and adoption gaps
 - authority-level validation for signals and meeting findings
 - machine-readable separation between protocol contract, adapter package, and profile contract
 

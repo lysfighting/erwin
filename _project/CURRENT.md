@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.9.0 (in progress)
+- **Version**: 0.10.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Codex-native orchestration harness richer selector semantics pass completed)
+- **Last Session**: 2026-03-29 (Codex-native orchestration harness run-level authority adjudication pass completed)
 
 ## Current Phase
 
@@ -40,7 +40,10 @@
 - **Meeting authority audit added**: meetings now detect same-claim finding conflicts, explain when a higher-authority finding wins, and surface unresolved same-authority conflicts through `meetings summary`, `meetings authority-audit`, and synthesis blocking rules
 - **Richer selector semantics added**: ownership selectors now carry family/match/bounded metadata, normalize aliases like `directory -> dir`, and recognize semantic path overlap such as `dir:docs/release` conflicting with `file:docs/release/CHANGELOG.md`
 - **Semantic overlap enforcement added**: teammate assignment, claim-time admission, and doctor/home overlap accounting now operate on selector semantics instead of only exact string equality
-- **Adapter line advanced again**: `harness/adapter-manifest.yml` now declares `0.9.0-prototype` to reflect selector-family-aware ownership governance
+- **Run-level authority adjudication added**: `scripts/harness-runs.sh authority-audit` now explains higher-authority active-signal conflicts, meeting-outcome adoption gaps, and desired-state drift in one leader-facing view
+- **Doctor widened to run-level authority conflicts**: `harness-doctor.sh` now emits `run-authority-conflict` when fresher or higher-authority active signals disagree with the current run state
+- **Core smoke widened**: `scripts/harness-smoke-test.sh` now validates a full higher-authority blocked-signal scenario through audit, doctor surfacing, resolution, meeting re-adoption, and health recovery
+- **Adapter line advanced again**: `harness/adapter-manifest.yml` now declares `0.10.0-prototype` to reflect broader run-level authority governance
 - **Adapter/package flow updated**: `harness/adapter-manifest.yml` now packages the Go module files and build runner, bootstrapped repos receive the Go sources, and `harness-bootstrap.sh` / `harness-sync.sh` now query adapter metadata through the Go runtime path
 - **Smoke suite de-Pythonized**: issue/core/release/teammate smoke scripts now query package files through the harness adapter surface and extract runtime ids without Python helpers
 - **Validation**: `./scripts/harness-build-runtime.sh`, `./scripts/harness-runtime-dist-smoke-test.sh`, `./scripts/harness-adapter.sh validate`, `./scripts/harness-issue-smoke-test.sh`, `./scripts/harness-smoke-test.sh`, `./scripts/harness-teammate-smoke-test.sh`, `./scripts/harness-release-smoke-test.sh`, `./scripts/harness-bootstrap-smoke-test.sh`, and `./scripts/harness-all-smoke-test.sh` all pass cleanly on the Go runtime; `./scripts/harness-maintenance.sh normalize` also upgrades older runtime state into mission-aware schema cleanly
@@ -79,7 +82,7 @@
 | Phase 4 | ✅ | Validate `home` / `doctor` / `claim` / `drive` / `meetings` / `maintenance` |
 | Phase 5 | ✅ | Package the harness formally as a reusable Codex-native adapter/system |
 | Phase 6 | ✅ | Split reusable adapter/bootstrap flow from repo-local proving ground |
-| Phase 7 | 🔄 | Decide final product naming, public package contract, richer ownership/authority adjudication, and future Codex-native multi-agent integration path |
+| Phase 7 | 🔄 | Decide final product naming, public package contract, remaining contract/live-state authority adjudication, and future Codex-native multi-agent integration path |
 
 ## Next Session Should Start With
 
@@ -88,7 +91,7 @@
    - A. Decide whether to formalize this under a new product name or keep `harness` as the prototype codename
    - B. Decide whether `harness/adapter-manifest.yml` should become the public package spec or stay repo-private while naming is unresolved
    - C. Continue deepening selector semantics beyond the new family-aware baseline into richer policies and transfer rules
-   - D. Deepen authority conflict resolution beyond current signal-level supersession into broader high-vs-low authority adjudication; same-claim meeting finding conflicts are now surfaced, but non-meeting cross-surface adjudication is still missing
+   - D. Deepen authority conflict resolution beyond current signal-level supersession, meeting same-claim audits, and run-level active-signal adjudication into contract/live-state disagreement handling
    - E. Decide how much farther to push council behavior toward `arch-review`-style automated debate versus keeping it as a durable packet/protocol now that phase history, linked cross-exam, and synthesis audits are first-class
    - F. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `_project/sessions/2026-03-28-B.md`, `_project/sessions/2026-03-28-C.md`, `_project/sessions/2026-03-29-A.md`, `_project/sessions/2026-03-29-B.md`, `_project/sessions/2026-03-29-C.md`, `_project/sessions/2026-03-29-D.md`, `harness/README.md`, `docs/research/harness-completion-context-pack-2026-03-28.md`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, and inspect recent commits on `codex/harness-release-lifecycle`

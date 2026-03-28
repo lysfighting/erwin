@@ -125,6 +125,42 @@ assert_json_field "$doctor_output_blocked" '"kind": "signal-authority-superseded
 reconcile_output=$(run_in_repo bash scripts/harness-maintenance.sh reconcile)
 assert_json_field "$reconcile_output" "$blocked_signal_id" "reconcile adjudicates superseded blocked signal"
 
+authority_signal_id="sig-smoke-l1-blocked"
+authority_signal_output=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "$authority_signal_id",
+  "kind": "blocked",
+  "source_type": "leader",
+  "source_id": "chair",
+  "run_id": "$run_id",
+  "mission_id": "issue-20001",
+  "applies_to": ["$run_id", "issue-20001"],
+  "scope_type": "local",
+  "title": "Higher-authority blocker",
+  "summary": "Live release gate says this run is blocked.",
+  "authority_level": "L1",
+  "confidence": "high",
+  "emitted_at": "2099-01-01T00:00:00Z",
+  "fresh_until": "2099-01-02T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$authority_signal_output" "\"signal_id\": \"$authority_signal_id\"" "manual L1 blocked signal can be emitted"
+authority_audit_output=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
+assert_json_field "$authority_audit_output" '"higher_authority_conflict_count": 1' "run authority audit reports higher-authority cross-surface conflict"
+assert_json_field "$authority_audit_output" '"resolution_kind": "run_state_overridden"' "run authority audit explains why the signal currently wins"
+doctor_output_authority=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_json_field "$doctor_output_authority" '"kind": "run-authority-conflict"' "doctor surfaces unresolved run-level authority conflict"
+resolved_authority_signal=$(run_in_repo bash scripts/harness-signals.sh set-state "$authority_signal_id" resolved "Leader resolved the higher-authority blocker.")
+assert_json_field "$resolved_authority_signal" '"state": "resolved"' "higher-authority authority-conflict signal can be resolved"
+readopt_output=$(run_in_repo bash scripts/harness-drive.sh adopt-meeting "$run_id" "$meeting_id")
+assert_json_field "$readopt_output" "\"meeting_id\": \"$meeting_id\"" "run can re-adopt the closed meeting outcome after authority handling"
+doctor_output_recovered=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_json_field "$doctor_output_recovered" '"issue_count": 0' "doctor returns to healthy state after run-level authority conflict is resolved"
+
 section "Normalize"
 cat > "$TEST_REPO/.harness/runs/registry.yml" <<'EOF'
 {

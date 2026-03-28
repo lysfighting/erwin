@@ -34,6 +34,7 @@ Use this when the model should act as the harness leader:
 - record teammate reports and sibling communication as structured signals
 - run councils with explicit cross-examination linkage and inspect synthesis readiness before adoption
 - inspect same-claim finding conflicts through `meetings authority-audit` when higher/lower authority evidence collides
+- inspect cross-surface run conflicts through `runs authority-audit` when active signals, meeting outcomes, and current run state disagree
 - adopt meeting outcomes
 - reprovision runs safely
 - verify ship readiness and record PR lifecycle state
@@ -58,6 +59,7 @@ Prototype, but working.
 ./scripts/harness-bootstrap-smoke-test.sh
 ./scripts/harness-release-smoke-test.sh
 ./scripts/harness-teammate-smoke-test.sh
+./scripts/harness-runtime-dist-smoke-test.sh
 ./scripts/harness-all-smoke-test.sh
 ```
 

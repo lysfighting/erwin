@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector families beyond current normalized ownership transfer, broader authority adjudication, deeper automated council orchestration, clearer public product contract
+- **still incomplete**: richer selector families beyond current normalized ownership transfer, authority adjudication against contract/live-git disagreement, deeper automated council orchestration, clearer public product contract
 
 ---
 
@@ -38,7 +38,7 @@ The current truth is:
 | Leader as chairing regulator | leader owns orchestration, not truth monopoly | **Absorbed** | leader-facing surfaces, `doctor`, `home`, meetings, teammate assignment | Still room for richer scheduling / mission-graph control |
 | Teammates as bounded execution units | delegated work with scope, reporting, escalation | **Absorbed** | `teammates assign/report/message/escalate` | No native Codex sub-agent binding yet |
 | Teammate-to-teammate communication | lateral communication under governance | **Absorbed** | sibling links + governed `teammates message` | Could later gain freshness/routing policies beyond current signal model |
-| `arch-review` meeting discipline | authority hierarchy, bounded roles, allowed/forbidden sources, cross-exam, rejected reasons | **Partially absorbed, now much stronger** | meeting `role_specs`, `locked_decisions`, `known_context`, rejected reasons, doctor checks, `meetings orchestrate`, signal-level authority adjudication | No automated multi-role debate orchestration yet; still human/leader-driven |
+| `arch-review` meeting discipline | authority hierarchy, bounded roles, allowed/forbidden sources, cross-exam, rejected reasons | **Partially absorbed, now much stronger** | meeting `role_specs`, `locked_decisions`, `known_context`, rejected reasons, doctor checks, `meetings orchestrate`, signal-level authority adjudication, run-level authority audit | No automated multi-role debate orchestration yet; still human/leader-driven |
 | Council-corrected synthesis | leader convenes, council refines, output becomes system truth | **Absorbed** | meeting objects, findings/action items, adoption into runs | Could still deepen explicit conflict handling and synthesis traces |
 | Runtime packaging / harness engineering | installability, portability, no project-language coupling | **Absorbed** | Go runtime, packaged binary preference, runtime-dist smoke | Public binary distribution strategy still open |
 
@@ -59,6 +59,8 @@ This audit was followed immediately by implementation work that materially close
 - runs now carry declared `desired_state`
 - dependency waiting is now first-class via `depends_on`, `drive wait`, and home/doctor dependency visibility
 - meetings can now auto-advance phases with `meetings orchestrate`
+- runs now expose `authority-audit`, which explains higher-authority active-signal conflicts, meeting adoption gaps, and desired-state drift in one leader-facing output
+- `doctor` now flags unresolved `run-authority-conflict` when fresher or higher-authority active signals disagree with current run state
 
 This pushes the council model much closer to the intended `arch-review` discipline instead of only “meeting exists.”
 
@@ -88,13 +90,13 @@ What is still missing:
 
 ### 3. Authority adjudication
 
-Authority levels are now validated and surfaced, but the system still does not consistently arbitrate conflicts between fresher higher-authority evidence and older lower-authority artifacts.
+Authority levels are now validated and surfaced, and the system now adjudicates signal supersession, same-claim meeting conflicts, and run-level active-signal disagreement. But it still does not consistently arbitrate every cross-surface conflict.
 
 What is still missing:
 
-- systematic high-vs-low authority conflict handling outside meetings; meeting findings now have same-claim authority audit and winner explanations, but cross-surface runtime adjudication is still missing
-- clearer winner/loser rules when run summary, signal, contract, and live git state disagree
-- broader leader-facing explanations of why a lower-authority claim was overridden
+- systematic high-vs-low authority conflict handling when contract intent, live git state, and run state disagree
+- clearer winner/loser rules when run summary, contract, and live verification disagree without a governing signal or meeting
+- broader leader-facing explanations of why a lower-authority artifact was overridden outside the run/signal/meeting path
 
 ### 4. Public product contract
 

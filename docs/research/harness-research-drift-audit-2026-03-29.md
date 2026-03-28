@@ -153,9 +153,10 @@ Current truth:
 - invalid authority levels are now rejected or surfaced
 - superseded active signals can now be adjudicated against fresher run or meeting state
 - same-claim meeting findings can now be audited for higher-authority winners and unresolved same-authority conflicts
-- but there is still no broad harness-wide conflict-resolution layer that systematically downgrades low-authority state when it collides with fresher higher-authority evidence
+- run-level authority audit now explains higher-authority active-signal conflicts plus meeting adoption gaps directly on runs
+- but there is still no broad harness-wide conflict-resolution layer that systematically downgrades low-authority state when it collides with fresher higher-authority evidence from contracts or live git state
 
-So this area is **partially preserved, not fully realized**.
+So this area is **materially stronger, but still only partially realized**.
 
 ### 4. Council automation is improving, but still behind council semantics
 

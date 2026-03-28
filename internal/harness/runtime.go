@@ -1624,6 +1624,186 @@ func signalSupersession(signal map[string]any, registry map[string]any) (bool, m
 	return false, nil
 }
 
+func activeSignalsForRun(signalLog map[string]any, runID string) []map[string]any {
+	signals := []map[string]any{}
+	for _, item := range toList(signalLog["signals"]) {
+		signal, _ := toMap(item)
+		if !activeSignal(signal) || stringValue(signal["run_id"]) != runID {
+			continue
+		}
+		signals = append(signals, signal)
+	}
+	sort.Slice(signals, func(i, j int) bool {
+		return isoAfter(
+			firstNonBlank(stringValue(signals[i]["emitted_at"]), stringValue(signals[i]["updated_at"])),
+			firstNonBlank(stringValue(signals[j]["emitted_at"]), stringValue(signals[j]["updated_at"])),
+		)
+	})
+	return signals
+}
+
+func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog map[string]any) map[string]any {
+	runID := stringValue(run["run_id"])
+	runUpdatedAt := firstNonBlank(
+		stringValue(run["updated_at"]),
+		stringValue(run["last_reported_at"]),
+		stringValue(run["started_at"]),
+		stringValue(run["created_at"]),
+	)
+	runLevel := "L2"
+	runClaims := []any{
+		map[string]any{
+			"claim_ref":   "execution_state",
+			"value":       stringValue(run["state"]),
+			"source_ref":  "run:" + runID,
+			"updated_at":  runUpdatedAt,
+			"directness":  "direct",
+			"authority":   runLevel,
+			"specificity": "run_state",
+		},
+	}
+
+	desiredSatisfied, desiredGaps := runDesiredStateSatisfied(run)
+	desiredGapRecords := []any{}
+	for _, gap := range desiredGaps {
+		desiredGapRecords = append(desiredGapRecords, map[string]any{
+			"claim_ref":        gap,
+			"resolution_kind":  "desired_state_unmet",
+			"authority_level":  "L3",
+			"source_ref":       "desired_state:" + runID,
+			"winning_source":   "run:" + runID,
+			"note":             fmt.Sprintf("Current run state does not yet satisfy desired state %s.", gap),
+			"desired_state_gap": true,
+		})
+	}
+
+	adoptionGaps := []any{}
+	if meeting := latestClosedMeetingForRun(runID); meeting != nil && meetingHasOutput(meeting) {
+		outcome := meetingOutcome(meeting)
+		if summary := stringValue(outcome["summary"]); summary != "" && strings.TrimSpace(stringValue(run["latest_summary"])) != summary {
+			adoptionGaps = append(adoptionGaps, map[string]any{
+				"claim_ref":       "latest_summary",
+				"resolution_kind": "adoption_pending",
+				"authority_level": "L3",
+				"source_ref":      "meeting:" + stringValue(meeting["meeting_id"]),
+				"winning_source":  "meeting:" + stringValue(meeting["meeting_id"]),
+				"current_value":   stringValue(run["latest_summary"]),
+				"expected_value":  summary,
+				"note":            "Closed meeting summary has not been adopted into the run state.",
+			})
+		}
+		if nextAction := stringValue(outcome["next_action"]); nextAction != "" && strings.TrimSpace(stringValue(run["next_expected_action"])) != nextAction {
+			adoptionGaps = append(adoptionGaps, map[string]any{
+				"claim_ref":       "next_expected_action",
+				"resolution_kind": "adoption_pending",
+				"authority_level": "L3",
+				"source_ref":      "meeting:" + stringValue(meeting["meeting_id"]),
+				"winning_source":  "meeting:" + stringValue(meeting["meeting_id"]),
+				"current_value":   stringValue(run["next_expected_action"]),
+				"expected_value":  nextAction,
+				"note":            "Closed meeting next action has not been adopted into the run state.",
+			})
+		}
+	}
+
+	activeSignals := activeSignalsForRun(signalLog, runID)
+	signalSources := []any{}
+	conflicts := []any{}
+	supersededSignals := []any{}
+	for _, signal := range activeSignals {
+		signalID := stringValue(signal["signal_id"])
+		emittedAt := firstNonBlank(stringValue(signal["emitted_at"]), stringValue(signal["updated_at"]))
+		signalLevel := firstNonBlank(stringValue(signal["authority_level"]), "L4")
+		signalRank := authorityRank(signalLevel)
+		signalSources = append(signalSources, map[string]any{
+			"source_ref":       "signal:" + signalID,
+			"kind":             stringValue(signal["kind"]),
+			"summary":          stringValue(signal["summary"]),
+			"authority_level":  signalLevel,
+			"authority_rank":   signalRank,
+			"updated_at":       emittedAt,
+			"directness":       "local_signal",
+			"resolution_state": stringValue(signal["state"]),
+		})
+		if superseded, resolution := signalSupersession(signal, registry); superseded {
+			resolution["signal_id"] = signalID
+			resolution["signal_kind"] = stringValue(signal["kind"])
+			resolution["authority_level"] = signalLevel
+			resolution["emitted_at"] = emittedAt
+			supersededSignals = append(supersededSignals, resolution)
+			continue
+		}
+
+		conflict := map[string]any(nil)
+		switch stringValue(signal["kind"]) {
+		case "blocked":
+			if stringValue(run["state"]) != "blocked" && stringValue(run["state"]) != "waiting" {
+				if signalRank > authorityRank(runLevel) || (signalRank == authorityRank(runLevel) && isoAfter(emittedAt, runUpdatedAt)) {
+					conflict = map[string]any{
+						"claim_ref":        "execution_state",
+						"signal_id":        signalID,
+						"signal_kind":      stringValue(signal["kind"]),
+						"source_ref":       "signal:" + signalID,
+						"winning_source":   "signal:" + signalID,
+						"losing_source":    "run:" + runID,
+						"authority_level":  signalLevel,
+						"resolution_kind":  "run_state_overridden",
+						"current_value":    stringValue(run["state"]),
+						"expected_value":   "blocked|waiting",
+						"note":             "Active blocked signal conflicts with the current run state and should be resolved or adopted.",
+					}
+				}
+			}
+		case "requires_meeting":
+			hasActiveMeeting := false
+			for _, item := range listMeetings(false) {
+				meeting, _ := toMap(item)
+				if stringValue(meeting["run_id"]) == runID && stringValue(meeting["state"]) == "active" {
+					hasActiveMeeting = true
+					break
+				}
+			}
+			if !hasActiveMeeting {
+				if signalRank > authorityRank(runLevel) || (signalRank == authorityRank(runLevel) && isoAfter(emittedAt, runUpdatedAt)) {
+					conflict = map[string]any{
+						"claim_ref":       "meeting_required",
+						"signal_id":       signalID,
+						"signal_kind":     stringValue(signal["kind"]),
+						"source_ref":      "signal:" + signalID,
+						"winning_source":  "signal:" + signalID,
+						"losing_source":   "run:" + runID,
+						"authority_level": signalLevel,
+						"resolution_kind": "meeting_request_unadopted",
+						"current_value":   stringValue(run["state"]),
+						"expected_value":  "waiting_with_active_meeting",
+						"note":            "Active requires_meeting signal has not been converted into an active meeting or waiting run state.",
+					}
+				}
+			}
+		}
+		if conflict != nil {
+			conflicts = append(conflicts, conflict)
+		}
+	}
+
+	return map[string]any{
+		"run_id":                        runID,
+		"canonical_source":              "run:" + runID,
+		"canonical_authority_level":     runLevel,
+		"run_claims":                    runClaims,
+		"signal_sources":                signalSources,
+		"adoption_gap_count":            len(adoptionGaps),
+		"higher_authority_conflict_count": len(conflicts),
+		"superseded_signal_count":       len(supersededSignals),
+		"desired_state_gap_count":       len(desiredGapRecords),
+		"desired_state_satisfied":       desiredSatisfied,
+		"adoption_gaps":                 adoptionGaps,
+		"higher_authority_conflicts":    conflicts,
+		"superseded_signals":            supersededSignals,
+		"desired_state_gaps":            desiredGapRecords,
+	}
+}
+
 func activeRun(run map[string]any) bool {
 	state := stringValue(run["state"])
 	return state != "completed" && state != "abandoned"
@@ -3224,6 +3404,18 @@ func doctorReport() map[string]any {
 				issues = append(issues, issueRecord("warning", "run-desired-state-unmet", runID, fmt.Sprintf("Completed run does not satisfy desired state: %s", strings.Join(missing, ", ")), "Either continue the lifecycle or adjust the run's declared desired state."))
 			}
 		}
+		authorityAudit, _ := toMap(runAuthorityAudit(run, registry, signals))
+		if intValue(authorityAudit["higher_authority_conflict_count"]) > 0 {
+			conflictRefs := []string{}
+			for _, item := range toList(authorityAudit["higher_authority_conflicts"]) {
+				conflict, ok := toMap(item)
+				if !ok {
+					continue
+				}
+				conflictRefs = append(conflictRefs, firstNonBlank(stringValue(conflict["claim_ref"]), stringValue(conflict["signal_id"])))
+			}
+			issues = append(issues, issueRecord("warning", "run-authority-conflict", runID, fmt.Sprintf("Run has unresolved higher-authority conflicts across active signals: %s", strings.Join(dedupeStrings(conflictRefs), ", ")), "Run runs authority-audit and either adopt or resolve the conflicting higher-authority signal."))
+		}
 	}
 
 	runIDsByMission := map[string][]string{}
@@ -3696,6 +3888,16 @@ func cmdRuns(args []string) error {
 			return fmt.Errorf("run not found: %s", args[1])
 		}
 		return printJSON(toList(registry["runs"])[index])
+	case "authority-audit":
+		if len(args) < 2 {
+			return errors.New("runs authority-audit requires RUN_ID")
+		}
+		index := findRunIndex(registry, args[1])
+		if index < 0 {
+			return fmt.Errorf("run not found: %s", args[1])
+		}
+		run, _ := toMap(toList(registry["runs"])[index])
+		return printJSON(runAuthorityAudit(run, registry, readSignalLog()))
 	case "add":
 		payload, err := readStdinJSON()
 		if err != nil {
