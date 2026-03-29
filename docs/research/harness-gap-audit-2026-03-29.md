@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector policy beyond the new normalized/shared-transfer baseline, higher-order authority adjudication beyond the new run/mission/mission-graph plus dependency-governed ownership, bundle governors, and bundle-level required-action packets, deeper automated council orchestration beyond the new auto-synthesis plus bounded multi-round debate baseline, clearer final product naming
+- **still incomplete**: richer selector policy beyond the new normalized/shared-transfer baseline and hierarchical semantic overlap, higher-order authority adjudication beyond the new run/mission/mission-graph plus dependency-governed ownership, bundle governors, and bundle-level required-action packets, deeper automated council orchestration beyond the new auto-synthesis plus bounded multi-round debate baseline, clearer final product naming
 
 ---
 
@@ -34,7 +34,7 @@ The current truth is:
 | `teamwork` | Git/GitHub-ordered lifecycle, controlled execution, release governance | **Absorbed** | `issue -> claim -> drive -> ship -> rc`, `ship`, `rc`, `doctor`, `bootstrap`, `sync` | Product naming and public contract still unresolved |
 | `wing` | Skill-shaped packaging, modularity, adapter thinking, less prompt-monolith | **Absorbed** | `skills/harness/`, `harness/adapter-manifest.yml`, `scripts/harness-*.sh`, bootstrap/sync | Still more “adapter codename” than finished product |
 | Engineering cybernetics | desired vs actual state, feedback, correction, regulator model | **Absorbed much more strongly** | `home`, `doctor`, `maintenance reconcile`, run desired state, first-class mission registry and mission graph, artifact-level authority winner/loser rules, bundle-aware mission-graph grouping | Still room for richer desired-state reasoning across multi-mission bundles |
-| Kubernetes control-plane thinking | controllers, ownership boundaries, reconciliation, validation gates | **Partially absorbed, stronger now** | leader/teammate split, manifest validation, stale-state reconciliation, ownership claims, selector-aware ownership transfer, shared-copy handoff, overlap guardrails, semantic overlap across `scope` / `interface` | Richer selector families and more nuanced transfer policies are still incomplete |
+| Kubernetes control-plane thinking | controllers, ownership boundaries, reconciliation, validation gates | **Partially absorbed, stronger now** | leader/teammate split, manifest validation, stale-state reconciliation, ownership claims, selector-aware ownership transfer, shared-copy handoff, overlap guardrails, semantic overlap across `scope` / `interface`, hierarchical semantic boundary checks | Richer selector families and more nuanced transfer policies are still incomplete |
 | Leader as chairing regulator | leader owns orchestration, not truth monopoly | **Absorbed** | leader-facing surfaces, `doctor`, `home`, meetings, teammate assignment | Still room for richer scheduling / mission-graph control |
 | Teammates as bounded execution units | delegated work with scope, reporting, escalation | **Absorbed** | `teammates assign/report/message/escalate` | No native Codex sub-agent binding yet |
 | Teammate-to-teammate communication | lateral communication under governance | **Absorbed** | sibling links + governed `teammates message` | Could later gain freshness/routing policies beyond current signal model |
@@ -86,7 +86,7 @@ Explicit ownership claims now exist, and selector families are now richer than t
 
 What is still missing:
 
-- richer selector policies beyond the new family-aware baseline (`file` / `dir` / `module` / `glob` / semantic `scope`-`interface` overlap)
+- richer selector policies beyond the new family-aware baseline (`file` / `dir` / `module` / `glob` / semantic `scope`-`interface` overlap and hierarchy)
 - more nuanced overlap resolution than exclusive/shared
 - transfer policies beyond the current bounded `move` / shared `copy` semantics
 

@@ -162,6 +162,18 @@ else
   fail "semantic scope/interface overlap is rejected"
   echo "$semantic_scope_interface_overlap_output"
 fi
+semantic_hierarchy_owner=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-hierarchy hierarchy-owner "Own release notes subtree" --scope="release notes subtree" --owns="scope:release/notes")
+assert_json_field "$semantic_hierarchy_owner" '"owner_id": "worker-hierarchy"' "semantic hierarchy selector assignment created"
+set +e
+semantic_hierarchy_overlap_output=$(cd "$TEST_REPO" && bash scripts/harness-teammates.sh assign "$leader_run_id" worker-hierarchy-parent hierarchy-reviewer "Review broader release boundary" --scope="release boundary" --owns="interface:release" 2>&1)
+semantic_hierarchy_rc=$?
+set -e
+if [ "$semantic_hierarchy_rc" -ne 0 ] && grep -q 'interface:release~scope:release/notes' <<<"$semantic_hierarchy_overlap_output"; then
+  pass "semantic hierarchy overlap is rejected"
+else
+  fail "semantic hierarchy overlap is rejected"
+  echo "$semantic_hierarchy_overlap_output"
+fi
 
 section "Reporting and communication"
 report_output=$(run_in_repo bash scripts/harness-teammates.sh report "$run_a" "Auth caller patch is ready for sibling review" --kind=progress --evidence=src/auth.ts)
@@ -328,7 +340,7 @@ assert_json_field "$auto_orchestrate_f" '"new_phase": "output"' "auto-synthesis 
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_mission_count": 1' "home surfaces active mission count"
-assert_json_field "$home_output" '"active_teammate_count": 6' "home surfaces active teammate runs"
+assert_json_field "$home_output" '"active_teammate_count": 7' "home surfaces active teammate runs"
 assert_json_field "$home_output" '"coordination_signal_count":' "home surfaces coordination signal count"
 assert_json_field "$home_output" '"dependency_blocked_count": 1' "home surfaces dependency-blocked runs"
 assert_json_field "$home_output" '"ownership_overlap_count": 0' "home stays free of ownership overlap"

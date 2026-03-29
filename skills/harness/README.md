@@ -33,7 +33,7 @@ Use this when the model should act as the harness leader:
 - transfer bounded ownership selectors formally when work changes hands
 - copy bounded ownership selectors across explicitly shared runs when paired execution or review should retain the same governed boundary
 - express ownership with richer selector families such as `file:`, `dir:`, `module:`, `glob:`, `scope:`, and `interface:`
-- let semantic selector families govern the same boundary across `scope:` and `interface:` labels instead of treating them as unrelated exact strings
+- let semantic selector families govern the same boundary across `scope:` and `interface:` labels, including hierarchical prefixes like `scope:release` and `scope:release/notes`
 - adjudicate active signals when fresher run or meeting state supersedes them
 - record teammate reports and sibling communication as structured signals
 - run councils with explicit cross-examination linkage and inspect synthesis readiness before adoption

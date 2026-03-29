@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.31.0 (in progress)
+- **Version**: 0.32.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Harness bundle-level authority packets added)
+- **Last Session**: 2026-03-29 (Harness hierarchical semantic selector overlap added)
 
 ## Current Phase
 
@@ -29,6 +29,7 @@
 - **Bounded multi-round council control added**: `meetings orchestrate` now plans governed round 2 / round 3 / later replies from policy instead of stopping at a second-round special case, and teammate smoke now proves a three-round debated lane before synthesis
 - **Semantic selector-family overlap added**: ownership governance now treats same-boundary `scope:` and `interface:` selectors as overlapping semantic claims, and teammate smoke proves the runtime now rejects exclusive cross-kind semantic collisions instead of only path-family collisions
 - **Bundle-level authority packets added**: `missions authority-audit --all` now emits bundle-level `resolution_kind`, shared `selector_refs`, and leader-facing `required_action`, so the control plane explains what to do with a conflicted or governed mission bundle instead of only listing pairwise adjudications
+- **Hierarchical semantic selector overlap added**: ownership governance now treats parent/child semantic boundaries like `scope:release` and `scope:release/notes` as overlapping governed ownership, including across `scope:` / `interface:` families
 - **Debate route obligations added**: `meetings orchestrate` now materializes claim-lane route obligations with assigned bounded challenger roles/runs, while `meetings summary` and `doctor` surface resolved vs open debate routes directly instead of only reporting routed/unrouted claims after the fact
 - **Live worktree absence promoted into authority audit**: `runs authority-audit` now treats a missing provisioned worktree as first-class live-state drift (`live_worktree_missing`) instead of relying only on `doctor` to notice the broken path
 - **Glob ownership selectors added**: the ownership model now understands `glob:` path selectors, so overlap control can express bounded markdown/file-set style ownership instead of forcing everything into `file:` or coarse `dir:` claims

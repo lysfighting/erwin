@@ -1267,6 +1267,25 @@ func normalizedStringSet(items []string) []string {
 	return values
 }
 
+func normalizeSemanticSelectorValue(value string) string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return ""
+	}
+	parts := strings.Split(trimmed, "/")
+	normalized := []string{}
+	for _, part := range parts {
+		slug := slugify(part)
+		if slug != "" {
+			normalized = append(normalized, slug)
+		}
+	}
+	if len(normalized) == 0 {
+		return slugify(trimmed)
+	}
+	return strings.Join(normalized, "/")
+}
+
 func parseOwnershipSelector(raw string) map[string]any {
 	value := strings.TrimSpace(raw)
 	kind := "opaque"
@@ -1290,7 +1309,7 @@ func parseOwnershipSelector(raw string) map[string]any {
 		selectorValue = strings.TrimSpace(strings.TrimSuffix(selectorValue, "/"))
 		selectorValue = strings.TrimPrefix(selectorValue, "./")
 	case "scope", "interface":
-		selectorValue = slugify(selectorValue)
+		selectorValue = normalizeSemanticSelectorValue(selectorValue)
 	}
 	family := "opaque"
 	match := "exact"
@@ -1430,8 +1449,20 @@ func ownershipSelectorsOverlap(leftRaw, rightRaw string) bool {
 	if leftFamily != rightFamily {
 		return false
 	}
+	semanticOverlap := func(leftValue, rightValue string) bool {
+		if leftValue == "" || rightValue == "" {
+			return false
+		}
+		sameOrPrefix := func(prefix, candidate string) bool {
+			return candidate == prefix || strings.HasPrefix(candidate, prefix+"/")
+		}
+		return sameOrPrefix(leftValue, rightValue) || sameOrPrefix(rightValue, leftValue)
+	}
 	switch leftFamily {
 	case "anchor", "semantic":
+		if leftFamily == "semantic" {
+			return semanticOverlap(leftValue, rightValue)
+		}
 		return leftValue == rightValue
 	case "path":
 		return pathOverlap(leftKind, leftValue, rightKind, rightValue)
