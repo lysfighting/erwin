@@ -6907,6 +6907,83 @@ func schedulerMaintenanceActions(registry, signalLog map[string]any) ([]any, map
 	return actions, tally
 }
 
+func aggregateSchedulerHumanDecisions(decisions []any) []any {
+	bundleOrder := []string{}
+	bundlePackets := map[string]map[string]any{}
+	aggregated := []any{}
+	for _, item := range decisions {
+		decision, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		bundleID := strings.TrimSpace(stringValue(decision["bundle_id"]))
+		decisionKind := strings.TrimSpace(stringValue(decision["decision_kind"]))
+		decisionSurface := strings.TrimSpace(stringValue(decision["recommended_decision_surface"]))
+		if bundleID == "" || decisionKind == "" || decisionKind != "establish_bundle_governor" {
+			if stringValue(decision["decision_scope"]) == "" {
+				decision["decision_scope"] = "mission"
+			}
+			aggregated = append(aggregated, decision)
+			continue
+		}
+		packetKey := bundleID + "::" + decisionKind + "::" + decisionSurface
+		packet, exists := bundlePackets[packetKey]
+		if !exists {
+			packet = map[string]any{
+				"decision_scope":               "bundle",
+				"bundle_id":                    bundleID,
+				"decision_kind":                decisionKind,
+				"recommended_decision_surface": decisionSurface,
+				"recommended_action":           stringValue(decision["recommended_action"]),
+				"bundle_required_action":       stringValue(decision["bundle_required_action"]),
+				"bundle_state":                 stringValue(decision["bundle_state"]),
+				"bundle_resolution_kind":       stringValue(decision["bundle_resolution_kind"]),
+				"bundle_governing_mission_id":  stringValue(decision["bundle_governing_mission_id"]),
+				"meeting_trigger_refs":         []any{},
+				"mission_ids":                  []any{},
+				"mission_count":                0,
+				"note":                         "",
+				"notes":                        []any{},
+			}
+			bundlePackets[packetKey] = packet
+			bundleOrder = append(bundleOrder, packetKey)
+		}
+		packet["meeting_trigger_refs"] = stringListToAny(dedupeStrings(append(
+			anyListToStrings(toList(packet["meeting_trigger_refs"])),
+			anyListToStrings(toList(decision["meeting_trigger_refs"]))...,
+		)))
+		packet["mission_ids"] = stringListToAny(dedupeStrings(append(
+			append(
+				anyListToStrings(toList(packet["mission_ids"])),
+				stringValue(decision["mission_id"]),
+			),
+			anyListToStrings(toList(decision["bundle_mission_ids"]))...,
+		)))
+		notes := dedupeStrings(append(
+			anyListToStrings(toList(packet["notes"])),
+			strings.TrimSpace(stringValue(decision["note"])),
+		))
+		packet["notes"] = stringListToAny(notes)
+		packet["mission_count"] = len(anyListToStrings(toList(packet["mission_ids"])))
+		packet["recommended_action"] = firstNonBlank(
+			stringValue(packet["bundle_required_action"]),
+			stringValue(packet["recommended_action"]),
+			stringValue(decision["recommended_action"]),
+		)
+		packet["note"] = fmt.Sprintf(
+			"Bundle %s requires one governing-mission decision across %d overlapping mission(s): %s",
+			bundleID,
+			packet["mission_count"],
+			strings.Join(notes, " "),
+		)
+	}
+	for _, packetKey := range bundleOrder {
+		packet := bundlePackets[packetKey]
+		aggregated = append(aggregated, packet)
+	}
+	return aggregated
+}
+
 func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]any, includeInactive bool) map[string]any {
 	now := nowTime().UTC().Format("20060102150405")
 	generatedAt := nowISO()
@@ -6945,18 +7022,18 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				role = "conflicted"
 			}
 			bundleInfoByMission[missionID] = map[string]any{
-				"bundle_id":             bundleID,
-				"bundle_state":          bundleState,
-				"bundle_role":           role,
-				"resolution_kind":       resolutionKind,
-				"governing_mission_id":  governingMissionID,
-				"required_action":       requiredAction,
-				"bundle_mission_ids":    stringListToAny(missionIDs),
-				"governed_mission_ids":  cloneValue(bundle["governed_mission_ids"]),
-				"losing_mission_ids":    cloneValue(bundle["losing_mission_ids"]),
-				"authority_basis":       cloneValue(bundle["authority_basis"]),
-				"selector_refs":         cloneValue(bundle["selector_refs"]),
-				"governance_notes":      cloneValue(bundle["governance_notes"]),
+				"bundle_id":            bundleID,
+				"bundle_state":         bundleState,
+				"bundle_role":          role,
+				"resolution_kind":      resolutionKind,
+				"governing_mission_id": governingMissionID,
+				"required_action":      requiredAction,
+				"bundle_mission_ids":   stringListToAny(missionIDs),
+				"governed_mission_ids": cloneValue(bundle["governed_mission_ids"]),
+				"losing_mission_ids":   cloneValue(bundle["losing_mission_ids"]),
+				"authority_basis":      cloneValue(bundle["authority_basis"]),
+				"selector_refs":        cloneValue(bundle["selector_refs"]),
+				"governance_notes":     cloneValue(bundle["governance_notes"]),
 			}
 			switch bundleState {
 			case "conflicted":
@@ -7075,7 +7152,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	entryByMission := map[string]map[string]any{}
 	missionOrder := []string{}
 	rescheduleActions := []any{}
-	requiredHumanDecisions := []any{}
+	rawRequiredHumanDecisions := []any{}
 
 	for _, item := range toList(missionRegistry["missions"]) {
 		mission, _ := toMap(item)
@@ -7312,13 +7389,20 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		}
 
 		if decisionKind != "" {
-			requiredHumanDecisions = append(requiredHumanDecisions, map[string]any{
-				"mission_id":                  missionID,
-				"decision_kind":               decisionKind,
-				"recommended_action":          recommendedAction,
+			rawRequiredHumanDecisions = append(rawRequiredHumanDecisions, map[string]any{
+				"decision_scope":               "mission",
+				"mission_id":                   missionID,
+				"bundle_id":                    bundleID,
+				"bundle_state":                 bundleState,
+				"bundle_resolution_kind":       bundleResolutionKind,
+				"bundle_governing_mission_id":  bundleGovernorID,
+				"bundle_required_action":       bundleRequiredAction,
+				"bundle_mission_ids":           cloneValue(getKey(bundleInfo, "bundle_mission_ids", []any{})),
+				"decision_kind":                decisionKind,
+				"recommended_action":           recommendedAction,
 				"recommended_decision_surface": recommendedDecisionSurface,
-				"meeting_trigger_refs":        stringListToAny(meetingTriggerRefs),
-				"note":                        firstNonBlank(strings.Join(reasons, " "), recommendedAction),
+				"meeting_trigger_refs":         stringListToAny(dedupeStrings(meetingTriggerRefs)),
+				"note":                         firstNonBlank(strings.Join(dedupeStrings(reasons), " "), recommendedAction),
 			})
 		}
 
@@ -7365,6 +7449,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		entryByMission[missionID] = entry
 		missionOrder = append(missionOrder, missionID)
 	}
+	requiredHumanDecisions := aggregateSchedulerHumanDecisions(rawRequiredHumanDecisions)
 
 	sort.Strings(missionOrder)
 	runnableMissionIDs := []string{}
@@ -7559,13 +7644,13 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"needs-human-decision":  0,
 	}
 	bundleRoleTally := map[string]int{
-		"none":                 0,
-		"governor":             0,
-		"governed":             0,
-		"governed-ambiguous":   0,
-		"escalation-required":  0,
-		"conflicted":           0,
-		"member":               0,
+		"none":                0,
+		"governor":            0,
+		"governed":            0,
+		"governed-ambiguous":  0,
+		"escalation-required": 0,
+		"conflicted":          0,
+		"member":              0,
 	}
 	for _, missionID := range missionOrder {
 		entry := entryByMission[missionID]

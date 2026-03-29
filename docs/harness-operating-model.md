@@ -531,7 +531,7 @@ The following parts of the operating model are already concretely present:
 - scheduler now enforces explicit parallel-justification gating when the execution policy requires it, reducing parallelism rather than guessing
 - scheduler now enforces the control-plane rule that runnable `P0` missions do not widen into parallel foreground work
 - fresh follow-up signals can now trigger scheduler-driven reclassification and rescheduling instead of remaining display-only telemetry
-- scheduler can now distinguish generic leader decisions from council-worthy decisions by consuming profile `meeting_triggers`, surfacing `recommended_decision_surface`, `meeting_trigger_refs`, and `council_decision_count`
+- scheduler can now distinguish generic leader decisions from council-worthy decisions by consuming profile `meeting_triggers`, surfacing `recommended_decision_surface`, `meeting_trigger_refs`, and `council_decision_count`, and collapsing escalation-required mission bundles into one bundle-scoped decision packet instead of one duplicated decision per mission
 - scheduler now escalates stale runs, expired signals, and stale meetings into explicit maintenance work instead of leaving them only to doctor output
 - first-class mission objects
 - mission authority separated from freshest run activity

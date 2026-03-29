@@ -363,14 +363,16 @@ assert_json_field "$graph_authority_multi_escalation" '"required_action": "Open 
 schedule_multi_escalation_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_output" '"bundle_role": "escalation-required"' "scheduler marks tied bundles as escalation-required"
 assert_json_field "$schedule_multi_escalation_output" '"decision_kind": "establish_bundle_governor"' "scheduler escalates tied bundles into an explicit governing-mission decision"
+assert_json_field "$schedule_multi_escalation_output" '"decision_scope": "bundle"' "scheduler collapses tied bundle escalation into one bundle-scoped decision packet"
+assert_json_field "$schedule_multi_escalation_output" '"mission_count": 3' "scheduler records how many missions participate in the bundle-scoped decision"
 assert_json_field "$schedule_multi_escalation_output" '"recommended_decision_surface": "council"' "scheduler can recommend council handling when profile meeting triggers match the human decision"
 assert_json_field "$schedule_multi_escalation_output" '"meeting_trigger_refs":' "scheduler records which profile meeting triggers justify the council recommendation"
-assert_json_field "$schedule_multi_escalation_output" '"council_decision_count": 3' "scheduler counts each escalation-required mission that should be handled through a council"
+assert_json_field "$schedule_multi_escalation_output" '"council_decision_count": 1' "scheduler counts one bundle-scoped council decision instead of one per mission"
 assert_json_field "$schedule_multi_escalation_output" '"next_action": "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime."' "scheduler prioritizes council-backed bundle-governor decisions over foreground selection messaging"
 assert_json_field "$schedule_multi_escalation_output" '"bundle_role_tally":' "scheduler reports bundle-role tallies in the portfolio snapshot"
 home_output_multi_escalation=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_multi_escalation" '"mission_escalated_bundle_count": 1' "home surfaces escalation-required mission bundles"
-assert_json_field "$home_output_multi_escalation" '"scheduler_council_decision_count": 3' "home surfaces how many scheduler decisions should be handled through councils"
+assert_json_field "$home_output_multi_escalation" '"scheduler_council_decision_count": 1' "home surfaces bundle-scoped council decisions instead of per-mission duplicates"
 assert_json_field "$home_output_multi_escalation" '"next_action": "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime."' "home keeps scheduler decision-first guidance when bundle governance should become a council"
 assert_json_field "$home_output_multi_escalation" '"scheduler_bundle_role_tally":' "home surfaces scheduler bundle-role tallies"
 
