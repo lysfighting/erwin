@@ -143,6 +143,7 @@ The package currently guarantees:
 - file-backed runtime state with locking
 - leader-facing diagnosis via `home` and `doctor`, with `home` mirroring scheduler decision-first guidance when bundle-governor decisions outrank simple foreground selection
 - leader-facing scheduler summaries and durable scheduler snapshots under `.harness/scheduler/snapshots/`, including mission classification, execution-mode recommendation, bundle-aware deferral/escalation, bundle-role tallies, bounded parallel admission from profile policy, explicit parallel-justification gating, P0 foreground serialization, profile-backed high-risk scope inference, profile-backed council recommendation from meeting triggers, fresh follow-up-signal rescheduling, and next-action prioritization when human bundle decisions are still pending
+- leader-facing scheduler maintenance escalation, so stale runs, expired signals, and stale meetings become explicit `maintenance_actions` instead of remaining doctor-only observations
 - first-class mission state above run attempts
 - first-class mission authority, including an authoritative mission-control run that can differ from the freshest teammate activity
 - explicit ownership selectors with overlap enforcement across both path-family and hierarchical semantic-family boundaries

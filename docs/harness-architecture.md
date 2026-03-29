@@ -22,6 +22,7 @@ This document exists to provide one durable architectural source that explains:
 - why the Go runtime exists
 - what is already implemented
 - what remains future expansion rather than core incompleteness
+- why stale control-plane state must become explicit maintenance work
 
 This document is descriptive and architectural.
 It does not replace:
@@ -939,7 +940,7 @@ The current architecture is intentionally honest about what is not fully closed.
 High-value future expansion areas are:
 
 1. fuller scheduler behavior
-   deeper portfolio scheduling policy beyond the now-real baseline for execution-mode selection, mission classification, durable scheduler snapshots, and leader-facing rescheduling hints
+   deeper portfolio scheduling policy beyond the now-real baseline for execution-mode selection, mission classification, durable scheduler snapshots, leader-facing rescheduling hints, and maintenance escalation for stale control-plane state
 
 2. broader bundle adjudication
    larger multi-mission conflicts when no obvious governing dependency, selector-specific authority winner, signal, or council outcome exists

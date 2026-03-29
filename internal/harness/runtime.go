@@ -6809,6 +6809,104 @@ func schedulerRiskRank(value string) int {
 	}
 }
 
+func schedulerMaintenanceActions(registry, signalLog map[string]any) ([]any, map[string]int) {
+	actions := []any{}
+	tally := map[string]int{
+		"run":     0,
+		"signal":  0,
+		"meeting": 0,
+	}
+	runStaleAfter := floatValue(policyValue("cleanup.stale_run_after_hours", 24))
+	signalStaleAfter := floatValue(policyValue("cleanup.stale_signal_after_hours", 12))
+	meetingStaleAfter := floatValue(policyValue("cleanup.stale_meeting_after_hours", 6))
+
+	for _, item := range toList(registry["runs"]) {
+		run, _ := toMap(item)
+		if !activeRun(run) {
+			continue
+		}
+		runID := stringValue(run["run_id"])
+		missionID := stringValue(run["mission_id"])
+		reportAge := ageHours(stringValue(run["last_reported_at"]))
+		switch {
+		case reportAge == nil:
+			actions = append(actions, map[string]any{
+				"target_kind":        "run",
+				"target_id":          runID,
+				"mission_id":         missionID,
+				"action_kind":        "refresh_stale_run",
+				"reason":             "Active run is missing last_reported_at, so scheduler cannot trust its freshness.",
+				"recommended_action": "Have the owner emit a fresh report or repair the run metadata before widening execution.",
+			})
+			tally["run"]++
+		case *reportAge > runStaleAfter:
+			actions = append(actions, map[string]any{
+				"target_kind":        "run",
+				"target_id":          runID,
+				"mission_id":         missionID,
+				"action_kind":        "refresh_stale_run",
+				"reason":             fmt.Sprintf("Active run has not reported for %.2f hours.", *reportAge),
+				"recommended_action": "Refresh the run report or retire the stale run before widening execution.",
+			})
+			tally["run"]++
+		}
+	}
+
+	for _, item := range toList(signalLog["signals"]) {
+		signal, _ := toMap(item)
+		if !activeSignal(signal) {
+			continue
+		}
+		signalID := stringValue(signal["signal_id"])
+		missionID := stringValue(signal["mission_id"])
+		if emittedAge := ageHours(stringValue(signal["emitted_at"])); emittedAge != nil && *emittedAge > signalStaleAfter {
+			actions = append(actions, map[string]any{
+				"target_kind":        "signal",
+				"target_id":          signalID,
+				"mission_id":         missionID,
+				"action_kind":        "resolve_stale_signal",
+				"reason":             fmt.Sprintf("Active signal has been open for %.2f hours.", *emittedAge),
+				"recommended_action": "Resolve or refresh the stale signal before letting it influence future scheduling.",
+			})
+			tally["signal"]++
+			continue
+		}
+		if freshUntil, err := parseISO(stringValue(signal["fresh_until"])); err == nil && freshUntil != nil && freshUntil.Before(nowTime()) {
+			actions = append(actions, map[string]any{
+				"target_kind":        "signal",
+				"target_id":          signalID,
+				"mission_id":         missionID,
+				"action_kind":        "resolve_stale_signal",
+				"reason":             "Active signal has expired freshness and should not keep steering the scheduler silently.",
+				"recommended_action": "Resolve the expired signal or re-emit it with fresh evidence before widening execution.",
+			})
+			tally["signal"]++
+		}
+	}
+
+	for _, item := range listMeetings(true) {
+		meeting, _ := toMap(item)
+		if stringValue(meeting["state"]) != "active" {
+			continue
+		}
+		meetingID := stringValue(meeting["meeting_id"])
+		missionID := stringValue(meeting["mission_id"])
+		if meetingAge := ageHours(stringValue(meeting["updated_at"])); meetingAge != nil && *meetingAge > meetingStaleAfter {
+			actions = append(actions, map[string]any{
+				"target_kind":        "meeting",
+				"target_id":          meetingID,
+				"mission_id":         missionID,
+				"action_kind":        "refresh_stale_meeting",
+				"reason":             fmt.Sprintf("Active meeting has not been refreshed for %.2f hours.", *meetingAge),
+				"recommended_action": "Refresh or close the stale meeting before trusting it as current governance state.",
+			})
+			tally["meeting"]++
+		}
+	}
+
+	return actions, tally
+}
+
 func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]any, includeInactive bool) map[string]any {
 	now := nowTime().UTC().Format("20060102150405")
 	generatedAt := nowISO()
@@ -6884,6 +6982,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			runMissionByID[runID] = missionID
 		}
 	}
+
+	maintenanceActions, maintenanceTally := schedulerMaintenanceActions(registry, signalLog)
 
 	activeMeetingCountByMission := map[string]int{}
 	openMeetingActionCountByMission := map[string]int{}
@@ -7514,6 +7614,10 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		nextAction = "Resolve required human decisions before widening execution; keep the current foreground batch bounded in the meantime."
 	case len(requiredHumanDecisions) > 0:
 		nextAction = "Resolve required human decisions before widening execution."
+	case len(maintenanceActions) > 0 && len(selectedMissionIDs) > 0:
+		nextAction = "Keep the current foreground batch bounded and run maintenance on stale control-plane state before widening execution."
+	case len(maintenanceActions) > 0:
+		nextAction = "Run maintenance on stale control-plane state before widening execution."
 	case len(selectedMissionIDs) > 1:
 		if len(batchCapacityDeferredMissionIDs) > 0 {
 			nextAction = fmt.Sprintf("Scheduler admitted %d missions into the bounded parallel batch and deferred %d behind the current parallel capacity.", len(selectedMissionIDs), len(batchCapacityDeferredMissionIDs))
@@ -7547,6 +7651,9 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"required_human_decision_count": len(requiredHumanDecisions),
 		"council_decision_count":        councilDecisionCount,
 		"required_human_decisions":      requiredHumanDecisions,
+		"maintenance_action_count":      len(maintenanceActions),
+		"maintenance_action_tally":      maintenanceTally,
+		"maintenance_actions":           maintenanceActions,
 		"reschedule_action_count":       len(rescheduleActions),
 		"reschedule_actions":            rescheduleActions,
 		"follow_up_signal_count": len(dedupeStrings(func() []string {

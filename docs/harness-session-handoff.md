@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.51.0-prototype`
+- `adapter_version`: `0.52.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -171,6 +171,7 @@ Do not underestimate the current control-plane maturity.
 - scheduler now consumes profile-backed high-risk scopes, so configured boundaries such as `install.sh` or `skills/wing/` can escalate a mission into high-risk foreground serialization even when no manual `risk_level` was provided
 - scheduler now consumes profile-backed meeting triggers, so some required human decisions become explicitly council-worthy with durable `recommended_decision_surface` and `meeting_trigger_refs` instead of only generic decision records
 - scheduler now treats fresh coordination/dependency/blocker signals as real rescheduling triggers instead of only including them in the snapshot payload
+- scheduler now escalates stale runs, expired signals, and stale meetings into explicit `maintenance_actions` instead of leaving them only to `doctor`
 - first-class mission objects
 - separation between `latest_run_id` and `authoritative_run_id`
 - graph-level authority audit with bundle grouping, explicit bundle governors, and pairwise governor adjudication from clear authority tuples

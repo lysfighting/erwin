@@ -54,6 +54,12 @@ run_in_repo() {
   )
 }
 
+rewrite_json_in_file() {
+  local file="$1"
+  local perl_expr="$2"
+  perl -0pi -e "$perl_expr" "$file"
+}
+
 assert_json_field() {
   local json="$1"
   local needle="$2"
@@ -75,6 +81,7 @@ assert_json_field "$claim_output" 'issue-20001.yml' "claim materializes mission 
 run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 run_branch=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"branch": "\(mission\/[^"]*\)",$/\1/p' | head -n1)
 contract_path=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"contract_path": "\(.*issue-[^"]*\.yml\)",$/\1/p' | head -n1)
+registry_path="$TEST_REPO/.harness/runs/registry.yml"
 
 section "Mission registry"
 missions_output=$(run_in_repo bash scripts/harness-missions.sh list)
@@ -128,6 +135,42 @@ assert_json_field "$schedule_fresh_signal_output" '"action_kind": "pause_for_fre
 assert_json_field "$schedule_fresh_signal_output" '"follow_up_signal_count": 1' "scheduler counts fresh follow-up signals in mission classification"
 resolved_fresh_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-fresh-follow-up resolved "Fresh coordination signal reviewed.")
 assert_json_field "$resolved_fresh_signal" '"state": "resolved"' "fresh follow-up signal can be resolved after scheduler coverage"
+
+section "Maintenance escalation"
+rewrite_json_in_file "$registry_path" 's/"last_reported_at": "[^"]*"/"last_reported_at": "2026-03-01T00:00:00Z"/'
+stale_signal_output=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-stale-follow-up",
+  "kind": "interface_change",
+  "source_type": "teammate",
+  "source_id": "worker-auth",
+  "run_id": "$run_id",
+  "mission_id": "issue-20001",
+  "applies_to": ["issue-20001"],
+  "scope_type": "mission",
+  "title": "Stale coordination signal",
+  "summary": "Old interface-change note that should now be treated as maintenance work.",
+  "evidence_refs": ["$contract_path"],
+  "authority_level": "L2",
+  "confidence": "medium",
+  "emitted_at": "2026-03-01T00:00:00Z",
+  "fresh_until": "2026-03-02T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$stale_signal_output" '"signal_id": "sig-smoke-stale-follow-up"' "stale follow-up signal can be emitted directly"
+schedule_maintenance_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_maintenance_output" '"maintenance_action_count": 2' "scheduler surfaces stale-state maintenance work"
+assert_json_field "$schedule_maintenance_output" '"action_kind": "refresh_stale_run"' "scheduler emits maintenance action for stale runs"
+assert_json_field "$schedule_maintenance_output" '"action_kind": "resolve_stale_signal"' "scheduler emits maintenance action for expired signals"
+assert_json_field "$schedule_maintenance_output" '"next_action": "Keep the current foreground batch bounded and run maintenance on stale control-plane state before widening execution."' "scheduler prioritizes maintenance guidance when stale state coexists with runnable work"
+run_refresh_output=$(run_in_repo bash scripts/harness-drive.sh report "$run_id" "Refresh stale run after maintenance escalation smoke.")
+assert_json_field "$run_refresh_output" '"latest_summary": "Refresh stale run after maintenance escalation smoke."' "leader can refresh stale run after maintenance coverage"
+resolved_stale_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-stale-follow-up resolved "Stale follow-up signal retired after maintenance escalation coverage.")
+assert_json_field "$resolved_stale_signal" '"state": "resolved"' "stale follow-up signal can be retired after maintenance coverage"
 
 section "Mission graph authority"
 second_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20002 "Harness Conflict Mission" --owns="file:CHANGELOG.md" --allow-overlap)

@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.51.0 (in progress)
+- **Version**: 0.52.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Council governance policy is now runtime-enforced)
+- **Last Session**: 2026-03-29 (Scheduler now escalates stale control-plane state into maintenance work)
 
 ## Current Phase
 
@@ -18,6 +18,9 @@
 
 **Session 2026-03-29** — Harness prototype line stayed complete while bundle authority started driving scheduler behavior directly
 
+- **Scheduler maintenance escalation added**: scheduler snapshots now emit `maintenance_actions`, `maintenance_action_count`, and `maintenance_action_tally`, turning stale runs, expired signals, and stale meetings into explicit leader-facing maintenance work instead of leaving them only to `doctor`
+- **Maintenance guidance prioritized**: when stale control-plane state coexists with runnable foreground work, scheduler `next_action` now tells the leader to keep the foreground batch bounded and clean stale state before widening execution
+- **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves stale run plus stale signal maintenance escalation and verifies that refreshing the run and retiring the stale signal restores a clean control-plane path
 - **Council governance gates enforced**: `meetings orchestrate` and `meetings summary` now compute durable `governance_gaps`, and missing authority hierarchy or rejected findings without reasons now block council progression instead of only surfacing as post-hoc doctor warnings
 - **Council repair path proven**: teammate smoke now proves both setup-phase blocking on missing authority hierarchy and synthesis/output blocking on missing rejected-finding reasons, then verifies that restoring the missing governance data allows the council controller to continue
 - **Bundle-aware scheduler consumption added**: `missions schedule` now consumes mission-bundle authority packets instead of only the raw conflict list, so governed losing missions are deferred behind the current bundle governor, escalation-required bundles become explicit human decisions, and governed-but-ambiguous bundles no longer masquerade as ordinary runnable work
