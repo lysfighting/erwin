@@ -54,6 +54,10 @@ Use this when the model should act as the harness leader:
 
 Prototype, but working.
 
+The current durable package boundary is documented in:
+
+- [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
+
 ## Verification
 
 ```bash
@@ -94,6 +98,7 @@ Bootstrap the harness adapter into another git repository:
 The target repo will receive:
 
 - `scripts/harness_*`
+- `docs/harness-public-contract.md`
 - `harness/` definitions
 - `skills/harness/`
 - `install-codex.sh`

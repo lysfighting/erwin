@@ -25,6 +25,10 @@ The current productization direction is explicit three-layer separation:
 - reusable Codex adapter package in manifest-declared files and scripts
 - repo-specific profile policy in `harness/profiles/` or `.harness/profile.local.yml`
 
+The current durable public-facing contract for that split is documented in:
+
+- [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
+
 ## Implemented prototype surface
 
 The first usable Codex-native harness prototype now exists in `scripts/`.
@@ -130,6 +134,7 @@ Bootstrap the harness into another git repository:
 
 This copies the deterministic substrate, committed definition layer, smoke test, and a generated default profile into the target repository.
 It also copies `skills/harness/` and `install-codex.sh`, so the target repo gets a Codex-native local skill entry point immediately.
+It also copies the durable package contract at [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md), so the bootstrapped repo keeps the same protocol/adapter/profile boundary instead of inheriting only implementation files.
 It also copies the Go runtime module (`go.mod`, `go.sum`, `cmd/`, `internal/`) plus the build runner, so bootstrapped repos can build the same harness CLI locally without a Python runtime dependency.
 If a repo wants to avoid a local Go dependency at runtime too, it can package platform binaries under `harness/bin/` using `./scripts/harness-build-runtime.sh`.
 The bootstrap now follows `harness/adapter-manifest.yml` for its package file list, bootstrap profile template, and metadata location.

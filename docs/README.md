@@ -10,6 +10,7 @@
 | [visual-encoding-standard.md](visual-encoding-standard.md) | Teamwork output visual design language |
 | [drive-showcase-v2-architecture.md](drive-showcase-v2-architecture.md) | Showcase V2 architecture (4-Act structure) |
 | [erwin-skills-incubator-architecture.md](erwin-skills-incubator-architecture.md) | Skills factory architecture |
+| [harness-public-contract.md](harness-public-contract.md) | Durable public contract for the Codex-native orchestration harness package |
 | [version-management-architecture.md](version-management-architecture.md) | Version management infrastructure |
 
 ## Archived

@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.18.0 (in progress)
+- **Version**: 0.19.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Codex-native orchestration harness ship-gate authority pass completed)
+- **Last Session**: 2026-03-29 (Codex-native orchestration harness public contract formalized)
 
 ## Current Phase
 
@@ -31,6 +31,8 @@
 - **Glob ownership selectors added**: the ownership model now understands `glob:` path selectors, so overlap control can express bounded markdown/file-set style ownership instead of forcing everything into `file:` or coarse `dir:` claims
 - **Debate wave obligations added**: `meetings orchestrate` now materializes missing independent-review wave obligations, so the leader can see who still owes input before debate can advance instead of relying only on phase labels and coverage notes
 - **Ship-gate authority adjudication added**: `runs authority-audit` now lets `verification_status`, `review_status`, and `checks_status` explicitly override an inconsistent optimistic `ship_status`, so gate evidence can win over stale delivery state
+- **Public package contract formalized**: `docs/harness-public-contract.md` now defines the durable public boundary for the Codex-native harness package, including protocol/adapter/profile separation, required surfaces, runtime guarantees, distribution expectations, and explicit non-goals while final naming remains open
+- **Contract wired into package metadata**: `harness/adapter-manifest.yml` now points at the public contract, and the manifest package list/bootstrap flow now carry that contract into bootstrapped repositories instead of leaving the durable boundary only in the source repo
 - **Ownership and desired state strengthened**: runs and contracts now carry explicit `ownership_claims`, `desired_state`, and dependency policy; teammate assignment now rejects exclusive overlap by default, and `drive wait` plus `home`/`doctor` surface dependency-blocked runs directly
 - **Authority and council control advanced**: invalid authority levels are now rejected or surfaced, and meetings can advance phases with `meetings orchestrate` instead of relying entirely on manual phase jumps
 - **Mission graph made first-class**: the harness now materializes durable mission objects under `.harness/missions/`, exposes them through `scripts/harness-missions.sh`, and drives `home`/`doctor` from mission-level state instead of only run-level state
@@ -91,7 +93,7 @@
 
 ## Active Task / What's In Progress
 
-**Leader-led harness runtime is now delivered. Productization and naming tasks remain:**
+**Leader-led harness runtime is now delivered. Public contract is now formalized; naming and deeper control-plane polish remain:**
 
 | Phase | Status | Description |
 |-------|--------|-------------|

@@ -10,9 +10,11 @@ protocol:
     - "rc"
 adapter:
   adapter_id: "codex-native-harness"
-  adapter_version: "0.18.0-prototype"
+  adapter_version: "0.19.0-prototype"
   runtime: "codex"
+  public_contract_path: "docs/harness-public-contract.md"
   package_files:
+    - "docs/harness-public-contract.md"
     - "install-codex.sh"
     - "go.mod"
     - "go.sum"

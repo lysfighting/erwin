@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Harness Prototype
+- **Public package contract**: Added `docs/harness-public-contract.md` as the durable public boundary for the Codex-native harness package, defining protocol/adapter/profile separation, required surfaces, runtime guarantees, distribution expectations, compatibility, and non-goals while final naming remains open.
 - **Automated council synthesis**: `meetings orchestrate` can now derive provisional findings and unresolved follow-up actions from grouped council positions without overwriting manual findings already on the record.
 - **Claim-aware council positions**: `meetings add-position` now accepts `--claim=` and `--dimension=` so debate inputs can be grouped into the same governed claim during synthesis.
 - **Meeting summary automation metrics**: `meetings summary` now reports auto-generated finding/action counts alongside traced-finding and authority-conflict reporting.
@@ -153,6 +154,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Cross-skill UX audit: 5 new help routes, 2 branch readiness checks, ~12 error→guidance fixes
 
 ### Changed — Skills Factory
+- **Harness package portability**: `harness/adapter-manifest.yml` now points at the durable public contract and includes it in manifest-driven package files, while bootstrap smoke now verifies bootstrapped repos receive that contract too.
 - **Teamwork v3.4.1 — Worktree mode: shared → local**:
   - Worktree mode moved from shared `config.yml` to per-user `git config --local teamwork.worktree true`
   - Dashboard always shows worktree map when enabled (★ current, MC association, ⚠️ mismatch)
