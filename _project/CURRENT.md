@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.28.0 (in progress)
+- **Version**: 0.29.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Harness governing mission for governed bundles added)
+- **Last Session**: 2026-03-29 (Harness bounded multi-round council controller added)
 
 ## Current Phase
 
@@ -26,6 +26,7 @@
 - **Council governance hardened**: meetings now carry first-class `role_specs` with allowed/forbidden sources, known-context notes, locked decisions, and rejected-finding reasons; `doctor` validates those governance requirements instead of treating councils as loose notes
 - **Gap audit written down**: `docs/research/harness-gap-audit-2026-03-29.md` now records which original design inputs are absorbed, partial, or still missing, so future sessions can resume from an explicit audit instead of replaying chat history
 - **Research drift audit added**: `docs/research/harness-research-drift-audit-2026-03-29.md` now re-checks the original design docs against the current harness and confirms the remaining highest-risk drift areas are desired-state control, explicit ownership/overlap, harness-wide authority enforcement, and automated council orchestration
+- **Bounded multi-round council control added**: `meetings orchestrate` now plans governed round 2 / round 3 / later replies from policy instead of stopping at a second-round special case, and teammate smoke now proves a three-round debated lane before synthesis
 - **Debate route obligations added**: `meetings orchestrate` now materializes claim-lane route obligations with assigned bounded challenger roles/runs, while `meetings summary` and `doctor` surface resolved vs open debate routes directly instead of only reporting routed/unrouted claims after the fact
 - **Live worktree absence promoted into authority audit**: `runs authority-audit` now treats a missing provisioned worktree as first-class live-state drift (`live_worktree_missing`) instead of relying only on `doctor` to notice the broken path
 - **Glob ownership selectors added**: the ownership model now understands `glob:` path selectors, so overlap control can express bounded markdown/file-set style ownership instead of forcing everything into `file:` or coarse `dir:` claims
@@ -133,7 +134,7 @@
 2. **Harness next work**:
    - A. Continue deepening selector semantics beyond the current family-aware plus shared-transfer baseline into richer policies and transfer rules
    - B. Decide whether remaining authority work should extend beyond the new run/mission/mission-graph plus dependency-governed ownership, bundle-aware grouping, and bundle-governor rules into broader multi-mission bundle adjudication, or whether that now belongs to future product layers
-   - C. Continue pushing council behavior from auto-synthesis, wave obligations, route obligations, and bounded second-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
+   - C. Continue pushing council behavior from auto-synthesis, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
    - D. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `_project/sessions/2026-03-28-B.md`, `_project/sessions/2026-03-28-C.md`, `_project/sessions/2026-03-29-A.md`, `_project/sessions/2026-03-29-B.md`, `_project/sessions/2026-03-29-C.md`, `_project/sessions/2026-03-29-D.md`, `harness/README.md`, `docs/research/harness-completion-context-pack-2026-03-28.md`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0

@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector policy beyond the new normalized/shared-transfer baseline, higher-order authority adjudication beyond the new run/mission/mission-graph plus dependency-governed ownership and bundle-governor baseline, deeper automated council orchestration beyond the new auto-synthesis plus bounded second-round debate baseline, clearer final product naming
+- **still incomplete**: richer selector policy beyond the new normalized/shared-transfer baseline, higher-order authority adjudication beyond the new run/mission/mission-graph plus dependency-governed ownership and bundle-governor baseline, deeper automated council orchestration beyond the new auto-synthesis plus bounded multi-round debate baseline, clearer final product naming
 
 ---
 
@@ -38,8 +38,8 @@ The current truth is:
 | Leader as chairing regulator | leader owns orchestration, not truth monopoly | **Absorbed** | leader-facing surfaces, `doctor`, `home`, meetings, teammate assignment | Still room for richer scheduling / mission-graph control |
 | Teammates as bounded execution units | delegated work with scope, reporting, escalation | **Absorbed** | `teammates assign/report/message/escalate` | No native Codex sub-agent binding yet |
 | Teammate-to-teammate communication | lateral communication under governance | **Absorbed** | sibling links + governed `teammates message` | Could later gain freshness/routing policies beyond current signal model |
-| `arch-review` meeting discipline | authority hierarchy, bounded roles, allowed/forbidden sources, cross-exam, rejected reasons | **Partially absorbed, now much stronger** | meeting `role_specs`, `locked_decisions`, `known_context`, rejected reasons, doctor checks, `meetings orchestrate`, signal-level authority adjudication, run-level authority audit, claim/dimension-aware auto-synthesis, bounded second-round challenge obligations | No automated multi-role debate wave execution yet; still leader-guided |
-| Council-corrected synthesis | leader convenes, council refines, output becomes system truth | **Absorbed more strongly** | meeting objects, traced findings/action items, auto-synthesized provisional findings, bounded second-round reply planning, adoption into runs | Could still deepen broader multi-lane debate automation |
+| `arch-review` meeting discipline | authority hierarchy, bounded roles, allowed/forbidden sources, cross-exam, rejected reasons | **Partially absorbed, now much stronger** | meeting `role_specs`, `locked_decisions`, `known_context`, rejected reasons, doctor checks, `meetings orchestrate`, signal-level authority adjudication, run-level authority audit, claim/dimension-aware auto-synthesis, bounded multi-round challenge obligations | No automated multi-role debate wave execution yet; still leader-guided |
+| Council-corrected synthesis | leader convenes, council refines, output becomes system truth | **Absorbed more strongly** | meeting objects, traced findings/action items, auto-synthesized provisional findings, bounded multi-round reply planning, adoption into runs | Could still deepen broader multi-lane debate automation |
 | Runtime packaging / harness engineering | installability, portability, no project-language coupling | **Absorbed** | Go runtime, packaged binary preference, runtime-dist smoke | Public binary distribution strategy still open |
 
 ---
@@ -69,7 +69,7 @@ This audit was followed immediately by implementation work that materially close
 - `runAuthorityAudit` now flags a dirty live worktree when run/desired state already claims the execution should be clean enough for governed verification or handoff
 - worktree authority snapshots now ignore the harness-owned `.mission` marker so live dirty detection tracks real execution drift rather than harness bookkeeping noise
 - meetings now materialize a `debate_plan` that groups conflicting claim lanes, assigns bounded challenger route obligations, and reports whether linked cross-examination has actually been routed for each conflict
-- meetings now materialize bounded second-round debate obligations when a first linked cross-examination does not yet dominate the opposing claim lane, keeping the council in debate instead of immediately collapsing into synthesis
+- meetings now materialize bounded multi-round debate obligations, letting the council continue through successive replies until a lane prevails on authority/freshness or the configured round cap is reached
 - run authority audit now records artifact-family winner/loser conflicts so stale contract snapshots and stale run records lose explicitly to stronger run/live evidence instead of only showing generic drift
 - `doctor` now treats unrouted conflicting claims as a governance problem once the meeting has advanced into cross-examination, synthesis, or output
 
@@ -98,7 +98,7 @@ What is still missing:
 - automated independent-review wave execution
 - explicit multi-round wave planning beyond the new missing-independent-review obligation tracking
 - automated cross-examination routing across more than the current bounded route-obligation baseline
-- automatic multi-round cross-examination assignment beyond the new bounded second-round reply tracking
+- automatic multi-round cross-examination execution beyond the new bounded round-planning controller
 - automatic synthesis beyond the current provisional position-group baseline; the harness can now derive provisional findings and unresolved follow-up actions, but still depends on leader/council judgment for the richer debate workflow
 
 ### 3. Authority adjudication

@@ -105,7 +105,7 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - provisional council auto-synthesis that can derive findings and unresolved-action prompts from bounded positions without overwriting manual findings already on the record
 - debate-wave planning that surfaces missing independent-review obligations before councils move into cross-examination
 - debate-plan routing that groups conflicting claim lanes, assigns bounded challenger route obligations, and tracks whether cross-examination has actually been linked for each conflict before synthesis is trusted
-- bounded second-round debate planning that can hold a council in cross-examination when the first linked challenge did not yet outrank the opposing claim lane
+- bounded multi-round debate planning that can keep a council in cross-examination across successive replies until a response prevails on authority/freshness or the configured debate-round cap is reached
 - durable council `phase_history`, linked cross-examination targets, and synthesis audits with blocker/evidence reporting
 - leader-facing `meetings authority-audit` output for same-claim finding conflicts and higher-authority winner explanations
 - leader-facing `runs authority-audit` output for cross-surface run/signal/meeting authority conflicts and adoption gaps

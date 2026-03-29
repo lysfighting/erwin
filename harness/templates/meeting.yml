@@ -28,6 +28,7 @@ meeting:
       wave_actions: []
       coverage_note_count: 0
     debate_plan:
+      max_debate_rounds: 3
       conflict_claim_count: 0
       planned_route_count: 0
       resolved_route_count: 0

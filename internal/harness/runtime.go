@@ -3015,6 +3015,14 @@ func policyValue(key string, defaultValue any) any {
 	return getKey(policies["policies"], key, defaultValue)
 }
 
+func meetingMaxDebateRounds() int {
+	rounds := intValue(policyValue("meetings.max_debate_rounds", 3))
+	if rounds < 2 {
+		return 2
+	}
+	return rounds
+}
+
 func recordVerification(run map[string]any, ref string) {
 	refs := appendUniqueText(toList(run["verification_refs"]), ref)
 	run["verification_refs"] = refs
@@ -3903,6 +3911,7 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 	ensureMeetingGovernanceState(meeting)
 	positions := toList(meeting["positions"])
 	participants := toList(meeting["participants"])
+	maxDebateRounds := meetingMaxDebateRounds()
 	claimGroups := map[string][]map[string]any{}
 	claimLabels := map[string]string{}
 	dimensions := map[string]string{}
@@ -4012,6 +4021,7 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 			"target_position_id":             targetPositionID,
 			"target_run_id":                  targetRunID,
 			"target_role":                    targetRole,
+			"max_debate_rounds":              maxDebateRounds,
 			"linked_cross_examination_count": linkedCrossByClaim[key],
 			"status":                         "awaiting_cross_examination",
 		}
@@ -4051,7 +4061,13 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 				}
 			}
 			if linkedCrossByClaim[key] >= 2 {
+				route["latest_debate_round"] = linkedCrossByClaim[key]
+			}
+			if linkedCrossByClaim[key] >= maxDebateRounds {
 				resolvedRoundCount++
+				route["status"] = "max_rounds_reached"
+				route["resolution_kind"] = "max_rounds_reached"
+				coverageNotes = append(coverageNotes, fmt.Sprintf("claim %q reached the debate round cap (%d); hand final adjudication to synthesis.", claimLabels[key], maxDebateRounds))
 			} else if latestLinked != nil {
 				latestStance := strings.TrimSpace(stringValue(latestLinked["stance"]))
 				opposingStance := "support"
@@ -4064,13 +4080,18 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 				}
 				latestAuthorityRank := authorityRank(firstNonBlank(stringValue(latestLinked["authority_level"]), "L4"))
 				opposingAuthorityRank := authorityRank(firstNonBlank(stringValue(opposingLead["authority_level"]), "L4"))
-				if latestAuthorityRank > opposingAuthorityRank {
+				opposingRecordedAt := stringValue(opposingLead["recorded_at"])
+				if latestAuthorityRank > opposingAuthorityRank || (linkedCrossByClaim[key] >= 2 && latestAuthorityRank == opposingAuthorityRank && isoAfter(latestRecordedAt, opposingRecordedAt)) {
 					resolvedRoundCount++
+					route["status"] = "debate_resolved"
+					route["resolution_kind"] = "latest_response_prevails"
+					coverageNotes = append(coverageNotes, fmt.Sprintf("claim %q debate resolves after round %d because the latest %s response now outranks the opposing lane.", claimLabels[key], linkedCrossByClaim[key], latestStance))
 				} else {
 					assignedRole := firstNonBlank(stringValue(opposingLead["role"]), firstNonBlank(opposingRoles...))
 					assignedRunID := firstNonBlank(stringValue(opposingLead["run_id"]), participantRunByRole[assignedRole])
+					nextRoundNumber := linkedCrossByClaim[key] + 1
 					roundActions = append(roundActions, map[string]any{
-						"round_id":                routeID + "-round-2",
+						"round_id":                fmt.Sprintf("%s-round-%d", routeID, nextRoundNumber),
 						"route_id":                routeID,
 						"claim_ref":               claimLabels[key],
 						"dimension":               dimensions[key],
@@ -4081,11 +4102,13 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 						"responds_to_position_id": stringValue(latestLinked["position_id"]),
 						"responds_to_run_id":      stringValue(latestLinked["run_id"]),
 						"responds_to_role":        stringValue(latestLinked["role"]),
-						"round_number":            2,
+						"round_number":            nextRoundNumber,
 						"state":                   "open",
-						"summary":                 fmt.Sprintf("%s should answer the first-round %s on claim %q before synthesis.", firstNonBlank(assignedRole, "bounded respondent"), firstNonBlank(latestStance, "cross-examination"), claimLabels[key]),
+						"summary":                 fmt.Sprintf("%s should answer round %d with a %s response on claim %q before synthesis.", firstNonBlank(assignedRole, "bounded respondent"), nextRoundNumber, opposingStance, claimLabels[key]),
 					})
-					coverageNotes = append(coverageNotes, fmt.Sprintf("claim %q needs a second-round %s response after the first linked cross-examination.", claimLabels[key], opposingStance))
+					route["status"] = fmt.Sprintf("awaiting_round_%d", nextRoundNumber)
+					route["resolution_kind"] = "needs_follow_up_round"
+					coverageNotes = append(coverageNotes, fmt.Sprintf("claim %q needs a round %d %s response before synthesis.", claimLabels[key], nextRoundNumber, opposingStance))
 				}
 			}
 		}
@@ -4094,6 +4117,7 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 	}
 
 	return map[string]any{
+		"max_debate_rounds":       maxDebateRounds,
 		"conflict_claim_count":    conflictClaimCount,
 		"planned_route_count":     len(routes),
 		"resolved_route_count":    resolvedRouteCount,
@@ -7992,6 +8016,7 @@ func cmdMeetings(args []string) error {
 			"planned_round_count":                 intValue(debatePlan["planned_round_count"]),
 			"resolved_round_count":                intValue(debatePlan["resolved_round_count"]),
 			"open_round_action_count":             intValue(debatePlan["open_round_action_count"]),
+			"max_debate_rounds":                   intValue(debatePlan["max_debate_rounds"]),
 			"open_wave_action_count":              intValue(wavePlan["open_wave_action_count"]),
 			"unrouted_claim_count":                intValue(debatePlan["unrouted_claim_count"]),
 			"open_action_count":                   openActionCount,

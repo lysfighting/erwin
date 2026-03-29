@@ -160,6 +160,7 @@ The harness is file-backed:
 - Treat `meetings orchestrate` as the council chair: once bounded positions exist, it can auto-synthesize provisional findings and unresolved-action prompts without overwriting manual judgment that is already on the record.
 - Treat missing independent review as first-class wave debt: `meetings orchestrate` now reports `open_wave_action_count` so the leader can see who still owes a bounded review before cross-examination.
 - Treat routed cross-examination as first-class: when multiple roles disagree on the same `--claim`, the council now turns that lane into an explicit route obligation with an assigned bounded challenger before synthesis/output is trusted.
+- Treat follow-up rounds as first-class: `meetings orchestrate` can now keep assigning bounded round 2 / round 3 / ... replies until a lane resolves on authority/freshness or the configured debate-round cap is reached.
 - When recording cross-examination positions, include explicit `--responds-to-run=` / `--responds-to-role=` linkage so the council trace shows who challenged whom.
 - When recording positions that speak about the same question, include `--claim=` and `--dimension=` so auto-synthesis and authority audit can group them into the same council claim.
 - When multiple findings speak about the same claim, use `--claim=` and `--dimension=` on `meetings add-finding` so authority conflicts can be audited cleanly.

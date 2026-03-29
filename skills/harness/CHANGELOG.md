@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Bounded multi-round council control via meeting `round_actions`, configurable debate-round caps, and debate-round gating in `meetings orchestrate`.
 - Explicit `governing_mission_id` in bundle-aware mission graph authority when a governed bundle has a single root mission.
 - Bundle-aware mission graph authority via `bash scripts/harness-missions.sh authority-audit --all`, including governed-vs-conflicted bundle grouping above pairwise mission overlap verdicts.
 - Dependency-governed mission ownership adjudication via `bash scripts/harness-missions.sh authority-audit --all`, so overlapping missions can produce a winner/loser verdict when one mission explicitly depends on the other.
@@ -14,7 +15,6 @@ All notable changes to the `harness` skill will be documented in this file.
 - Runtime bundle packaging via `scripts/harness-package-runtime.sh` and `scripts/harness-runtime-package-smoke-test.sh`.
 - Accepted public prototype positioning via ADR `0013`, with `Harness` now treated as the package's public prototype name.
 - Artifact-family authority adjudication via `runs authority-audit`, covering stale contract snapshots versus active run/live state.
-- Bounded second-round debate control via meeting `round_actions` and debate-round gating in `meetings orchestrate`.
 - Durable public package contract via `docs/harness-public-contract.md`.
 - `scripts/harness-build-runtime.sh` for building packaged platform binaries under `harness/bin/`.
 - `scripts/harness-runtime-dist-smoke-test.sh` to prove the harness can run without `go` in `PATH` when a packaged runtime is present.
@@ -37,6 +37,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Ship-gate authority adjudication in `runs authority-audit`, so leader-facing run review can explain when verification/review/checks state overrides an overly optimistic delivery status.
 
 ### Changed
+- `scripts/harness-teammate-smoke-test.sh` now proves a third-round council path before synthesis, and `meetings summary` surfaces the configured `max_debate_rounds` so leader views can see the controller cap directly.
 - `scripts/harness-smoke-test.sh` now proves bundle roots plus the governing mission for a dependency-governed bundle.
 - `harness-home.sh` now surfaces mission bundle counts derived from graph-level authority audit, and `scripts/harness-smoke-test.sh` now proves conflicted and governed mission bundles explicitly.
 - `scripts/harness-smoke-test.sh` now proves dependency-governed ownership overlap resolves as graph-level adjudication instead of unresolved cross-mission conflict, and `doctor` no longer reports dependency-state noise for inactive dependent missions.
@@ -46,7 +47,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Bootstrap smoke now validates the runtime bundle packaging surfaces in addition to runtime build/dist surfaces.
 - The public contract and manifest now treat `Harness` as the public prototype name instead of leaving naming unresolved.
 - Core smoke now validates that a stale contract branch loses to active run state before live-state authority drift checks continue.
-- `meetings summary` and `doctor` now surface planned/resolved/open second-round debate obligations before synthesis.
+- `meetings summary` and `doctor` now surface planned/resolved/open bounded multi-round debate obligations before synthesis.
 - The adapter manifest now points at the durable public contract and packages it into bootstrapped target repos.
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.
 - The adapter manifest and bootstrap smoke now include the packaged-runtime distribution path.

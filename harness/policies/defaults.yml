@@ -7,6 +7,7 @@ policies:
 
   meetings:
     default_max_roles: 4
+    max_debate_rounds: 3
     require_authority_hierarchy: true
     require_rejected_findings_log: true
 
