@@ -74,6 +74,7 @@ assert_json_field "$claim_output" 'issue-20001.yml' "claim materializes mission 
 
 run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 run_branch=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"branch": "\(mission\/[^"]*\)",$/\1/p' | head -n1)
+contract_path=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"contract_path": "\(.*issue-[^"]*\.yml\)",$/\1/p' | head -n1)
 
 section "Mission registry"
 missions_output=$(run_in_repo bash scripts/harness-missions.sh list)
@@ -83,6 +84,27 @@ assert_json_field "$mission_get_output" '"state": "claimed"' "mission starts in 
 assert_json_field "$mission_get_output" '"active_run_ids":' "mission stores active run linkage"
 authority_baseline=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$authority_baseline" '"contract_gap_count": 0' "initial run authority audit starts without contract drift"
+
+section "Contract authority"
+(
+  cd "$TEST_REPO" &&
+    perl -0pi -e 's/"branch":\s*"mission\/20001-harness-smoke-mission"/"branch": "stale-contract-branch"/' "$contract_path"
+)
+contract_authority_output=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
+assert_json_field "$contract_authority_output" '"artifact_authority_conflict_count": 1' "run authority audit counts stale contract as artifact-level authority conflict"
+assert_json_field "$contract_authority_output" '"resolution_kind": "run_state_overrides_contract"' "run authority audit explains that active run state overrides stale contract state"
+assert_json_field "$contract_authority_output" "\"losing_source\": \"contract:$run_id.branch\"" "run authority audit records the stale contract branch as the losing source"
+contract_repair=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$run_id"
+{
+  "branch": "$run_branch"
+}
+EOF
+)
+assert_json_field "$contract_repair" "\"branch\": \"$run_branch\"" "run update resynchronizes the contract snapshot"
+contract_authority_recovered=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
+assert_json_field "$contract_authority_recovered" '"artifact_authority_conflict_count": 0' "artifact authority conflict clears after contract resync"
 
 section "Live state drift"
 reprovision_output=$(run_in_repo bash scripts/harness-drive.sh reprovision "$run_id" --mode=worktree --apply)
@@ -99,6 +121,7 @@ EOF
 assert_json_field "$drift_update" '"branch": "drift-branch"' "run record can be forced out of sync with live worktree state"
 live_audit_output=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$live_audit_output" '"claim_ref": "live_branch"' "run authority audit reports live worktree branch drift"
+assert_json_field "$live_audit_output" '"resolution_kind": "live_state_overrides_run"' "run authority audit explains that live branch state overrides stale run state"
 doctor_output_live=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output_live" '"kind": "run-live-state-drift"' "doctor surfaces live git drift"
 repair_update=$(

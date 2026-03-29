@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Artifact-family authority adjudication via `runs authority-audit`, covering stale contract snapshots versus active run/live state.
 - Bounded second-round debate control via meeting `round_actions` and debate-round gating in `meetings orchestrate`.
 - Durable public package contract via `docs/harness-public-contract.md`.
 - `scripts/harness-build-runtime.sh` for building packaged platform binaries under `harness/bin/`.
@@ -28,6 +29,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Ship-gate authority adjudication in `runs authority-audit`, so leader-facing run review can explain when verification/review/checks state overrides an overly optimistic delivery status.
 
 ### Changed
+- Core smoke now validates that a stale contract branch loses to active run state before live-state authority drift checks continue.
 - `meetings summary` and `doctor` now surface planned/resolved/open second-round debate obligations before synthesis.
 - The adapter manifest now points at the durable public contract and packages it into bootstrapped target repos.
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.

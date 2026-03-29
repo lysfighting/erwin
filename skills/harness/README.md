@@ -39,6 +39,7 @@ Use this when the model should act as the harness leader:
 - inspect whether a debated claim lane still requires a bounded second-round reply before synthesis is allowed to advance
 - inspect same-claim finding conflicts through `meetings authority-audit` when higher/lower authority evidence collides
 - inspect cross-surface run conflicts through `runs authority-audit` when active signals, meeting outcomes, and current run state disagree
+- inspect artifact-family authority conflicts through `runs authority-audit` when contract snapshots, active run state, and live git state disagree
 - inspect clean-intent-vs-live-git conflicts through `runs authority-audit` when a run says it is ready or verified but the live worktree is still dirty
 - adopt meeting outcomes
 - reprovision runs safely

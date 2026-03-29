@@ -154,8 +154,8 @@ Current truth:
 - superseded active signals can now be adjudicated against fresher run or meeting state
 - same-claim meeting findings can now be audited for higher-authority winners and unresolved same-authority conflicts
 - run-level authority audit now explains higher-authority active-signal conflicts plus meeting adoption gaps directly on runs
-- contract snapshots are now kept closer to active run state, normalize can repair older drift, run-vs-worktree branch mismatch is now explicitly surfaced, and dirty live worktrees can now be flagged when they contradict governed verification or handoff intent
-- but there is still no broad harness-wide conflict-resolution layer that systematically adjudicates the harder live-git-vs-contract disagreements beyond this cleaner baseline, which now covers dirty intent, missing governed worktrees, and ship-gate winner/loser rules, when no governing signal or council outcome exists
+- contract snapshots are now kept closer to active run state, normalize can repair older drift, stale contract fields can now explicitly lose to stronger run state, run-vs-worktree branch mismatch is now explicitly surfaced, and dirty live worktrees can now be flagged when they contradict governed verification or handoff intent
+- but there is still no broad harness-wide conflict-resolution layer that systematically adjudicates the harder multi-run or multi-mission disagreements when no governing signal or council outcome exists
 
 So this area is **materially stronger, but still only partially realized**.
 
@@ -229,6 +229,6 @@ It should close the remaining control-plane gaps.
 1. Richer selector families and transfer policies beyond the current normalized ownership-transfer baseline
 2. Broader authority conflict resolution outside meetings
 3. Deeper automated council orchestration
-4. Product naming once the governance model feels stable
+4. Product naming and release positioning once the governance model feels stable
 
 If future sessions follow this order, the harness will continue toward the original design rather than only becoming a nicer adapter.

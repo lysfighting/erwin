@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Harness Prototype
+- **Artifact-family authority adjudication**: `runs authority-audit` now emits explicit artifact winner/loser records across contract snapshots, active run state, and live git state, so stale planning artifacts lose explicitly instead of only surfacing as generic drift.
 - **Bounded second-round debate control**: `meetings orchestrate` now plans follow-up debate obligations when a first linked cross-examination does not yet outrank the opposing claim lane, keeping councils in `cross_examination` until the bounded second-round reply lands.
 - **Public package contract**: Added `docs/harness-public-contract.md` as the durable public boundary for the Codex-native harness package, defining protocol/adapter/profile separation, required surfaces, runtime guarantees, distribution expectations, compatibility, and non-goals while final naming remains open.
 - **Automated council synthesis**: `meetings orchestrate` can now derive provisional findings and unresolved follow-up actions from grouped council positions without overwriting manual findings already on the record.
@@ -155,6 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Cross-skill UX audit: 5 new help routes, 2 branch readiness checks, ~12 error→guidance fixes
 
 ### Changed — Skills Factory
+- **Core smoke authority coverage**: `scripts/harness-smoke-test.sh` now validates that a manually-staled contract snapshot loses to the active run before continuing into live-state authority drift checks.
 - **Council control-plane accounting**: meeting templates, summaries, and doctor now track planned/resolved/open second-round debate obligations, and teammate smoke now validates the bounded two-round council path before synthesis.
 - **Harness package portability**: `harness/adapter-manifest.yml` now points at the durable public contract and includes it in manifest-driven package files, while bootstrap smoke now verifies bootstrapped repos receive that contract too.
 - **Teamwork v3.4.1 — Worktree mode: shared → local**:

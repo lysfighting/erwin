@@ -10,7 +10,7 @@ protocol:
     - "rc"
 adapter:
   adapter_id: "codex-native-harness"
-  adapter_version: "0.20.0-prototype"
+  adapter_version: "0.21.0-prototype"
   runtime: "codex"
   public_contract_path: "docs/harness-public-contract.md"
   package_files:

@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector families beyond current normalized ownership transfer, higher-order authority adjudication when live git state contradicts contract intent beyond the new clean-intent-vs-dirty-worktree and missing-worktree baseline, deeper automated council orchestration beyond the new auto-synthesis plus bounded second-round debate baseline, clearer final product naming
+- **still incomplete**: richer selector families beyond current normalized ownership transfer, higher-order authority adjudication beyond the new artifact-family winner/loser baseline, deeper automated council orchestration beyond the new auto-synthesis plus bounded second-round debate baseline, clearer final product naming
 
 ---
 
@@ -33,13 +33,13 @@ The current truth is:
 |---|---|---|---|---|
 | `teamwork` | Git/GitHub-ordered lifecycle, controlled execution, release governance | **Absorbed** | `issue -> claim -> drive -> ship -> rc`, `ship`, `rc`, `doctor`, `bootstrap`, `sync` | Product naming and public contract still unresolved |
 | `wing` | Skill-shaped packaging, modularity, adapter thinking, less prompt-monolith | **Absorbed** | `skills/harness/`, `harness/adapter-manifest.yml`, `scripts/harness-*.sh`, bootstrap/sync | Still more “adapter codename” than finished product |
-| Engineering cybernetics | desired vs actual state, feedback, correction, regulator model | **Absorbed much more strongly** | `home`, `doctor`, `maintenance reconcile`, run desired state, first-class mission registry and mission graph | Still room for richer desired-state reasoning across multi-mission bundles |
+| Engineering cybernetics | desired vs actual state, feedback, correction, regulator model | **Absorbed much more strongly** | `home`, `doctor`, `maintenance reconcile`, run desired state, first-class mission registry and mission graph, artifact-level authority winner/loser rules | Still room for richer desired-state reasoning across multi-mission bundles |
 | Kubernetes control-plane thinking | controllers, ownership boundaries, reconciliation, validation gates | **Partially absorbed, stronger now** | leader/teammate split, manifest validation, stale-state reconciliation, ownership claims, selector-aware ownership transfer, overlap guardrails | Richer selector families and more nuanced transfer policies are still incomplete |
 | Leader as chairing regulator | leader owns orchestration, not truth monopoly | **Absorbed** | leader-facing surfaces, `doctor`, `home`, meetings, teammate assignment | Still room for richer scheduling / mission-graph control |
 | Teammates as bounded execution units | delegated work with scope, reporting, escalation | **Absorbed** | `teammates assign/report/message/escalate` | No native Codex sub-agent binding yet |
 | Teammate-to-teammate communication | lateral communication under governance | **Absorbed** | sibling links + governed `teammates message` | Could later gain freshness/routing policies beyond current signal model |
 | `arch-review` meeting discipline | authority hierarchy, bounded roles, allowed/forbidden sources, cross-exam, rejected reasons | **Partially absorbed, now much stronger** | meeting `role_specs`, `locked_decisions`, `known_context`, rejected reasons, doctor checks, `meetings orchestrate`, signal-level authority adjudication, run-level authority audit, claim/dimension-aware auto-synthesis, bounded second-round challenge obligations | No automated multi-role debate wave execution yet; still leader-guided |
-| Council-corrected synthesis | leader convenes, council refines, output becomes system truth | **Absorbed more strongly** | meeting objects, traced findings/action items, auto-synthesized provisional findings, bounded second-round reply planning, adoption into runs | Could still deepen explicit conflict handling and broader multi-lane debate automation |
+| Council-corrected synthesis | leader convenes, council refines, output becomes system truth | **Absorbed more strongly** | meeting objects, traced findings/action items, auto-synthesized provisional findings, bounded second-round reply planning, adoption into runs | Could still deepen broader multi-lane debate automation |
 | Runtime packaging / harness engineering | installability, portability, no project-language coupling | **Absorbed** | Go runtime, packaged binary preference, runtime-dist smoke | Public binary distribution strategy still open |
 
 ---
@@ -70,6 +70,7 @@ This audit was followed immediately by implementation work that materially close
 - worktree authority snapshots now ignore the harness-owned `.mission` marker so live dirty detection tracks real execution drift rather than harness bookkeeping noise
 - meetings now materialize a `debate_plan` that groups conflicting claim lanes, assigns bounded challenger route obligations, and reports whether linked cross-examination has actually been routed for each conflict
 - meetings now materialize bounded second-round debate obligations when a first linked cross-examination does not yet dominate the opposing claim lane, keeping the council in debate instead of immediately collapsing into synthesis
+- run authority audit now records artifact-family winner/loser conflicts so stale contract snapshots and stale run records lose explicitly to stronger run/live evidence instead of only showing generic drift
 - `doctor` now treats unrouted conflicting claims as a governance problem once the meeting has advanced into cross-examination, synthesis, or output
 
 This pushes the council model much closer to the intended `arch-review` discipline instead of only “meeting exists.”
@@ -106,10 +107,8 @@ Authority levels are now validated and surfaced, and the system now adjudicates 
 
 What is still missing:
 
-- systematic high-vs-low authority conflict handling when live git state contradicts contract intent beyond the new dirty-worktree-vs-clean-intent baseline
-- systematic high-vs-low authority conflict handling for other artifact families beyond the new ship-gate winner/loser rules
-- clearer winner/loser rules when run summary, contract, and live verification disagree without a governing signal or meeting
-- broader leader-facing explanations of why a lower-authority artifact was overridden outside the run/signal/meeting path
+- systematic high-vs-low authority conflict handling beyond the new run/contract/live artifact baseline and ship-gate winner/loser rules
+- broader leader-facing explanations when multiple runs or missions disagree without a governing signal or meeting
 
 ### 4. Public product contract
 

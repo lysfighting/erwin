@@ -1845,9 +1845,11 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 			if stringValue(contractDesired[field]) != stringValue(runDesired[field]) {
 				contractGaps = append(contractGaps, map[string]any{
 					"claim_ref":       "desired_state." + field,
-					"resolution_kind": "contract_stale",
-					"source_ref":      "contract:" + runID,
+					"resolution_kind": "run_state_overrides_contract",
+					"source_ref":      "contract:" + runID + ".desired_state." + field,
 					"winning_source":  "run:" + runID,
+					"losing_source":   "contract:" + runID + ".desired_state." + field,
+					"authority_level": "L2",
 					"current_value":   stringValue(contractDesired[field]),
 					"expected_value":  stringValue(runDesired[field]),
 					"note":            fmt.Sprintf("Contract desired state for %s is stale relative to the run control plane.", field),
@@ -1857,9 +1859,11 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 		if stringValue(contract["branch"]) != stringValue(run["branch"]) {
 			contractGaps = append(contractGaps, map[string]any{
 				"claim_ref":       "branch",
-				"resolution_kind": "contract_stale",
-				"source_ref":      "contract:" + runID,
+				"resolution_kind": "run_state_overrides_contract",
+				"source_ref":      "contract:" + runID + ".branch",
 				"winning_source":  "run:" + runID,
+				"losing_source":   "contract:" + runID + ".branch",
+				"authority_level": "L2",
 				"current_value":   stringValue(contract["branch"]),
 				"expected_value":  stringValue(run["branch"]),
 				"note":            "Contract branch does not match the current run branch.",
@@ -1868,9 +1872,11 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 		if stringValue(contract["worktree_path"]) != stringValue(run["worktree_path"]) {
 			contractGaps = append(contractGaps, map[string]any{
 				"claim_ref":       "worktree_path",
-				"resolution_kind": "contract_stale",
-				"source_ref":      "contract:" + runID,
+				"resolution_kind": "run_state_overrides_contract",
+				"source_ref":      "contract:" + runID + ".worktree_path",
 				"winning_source":  "run:" + runID,
+				"losing_source":   "contract:" + runID + ".worktree_path",
+				"authority_level": "L2",
 				"current_value":   stringValue(contract["worktree_path"]),
 				"expected_value":  stringValue(run["worktree_path"]),
 				"note":            "Contract worktree path does not match the current run provisioning state.",
@@ -1879,9 +1885,11 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 		if strings.Join(ownershipClaims(contract), "|") != strings.Join(ownershipClaims(run), "|") {
 			contractGaps = append(contractGaps, map[string]any{
 				"claim_ref":       "ownership_claims",
-				"resolution_kind": "contract_stale",
-				"source_ref":      "contract:" + runID,
+				"resolution_kind": "run_state_overrides_contract",
+				"source_ref":      "contract:" + runID + ".ownership_claims",
 				"winning_source":  "run:" + runID,
+				"losing_source":   "contract:" + runID + ".ownership_claims",
+				"authority_level": "L2",
 				"current_value":   strings.Join(ownershipClaims(contract), "|"),
 				"expected_value":  strings.Join(ownershipClaims(run), "|"),
 				"note":            "Contract ownership claims no longer match the run ownership boundary.",
@@ -1893,9 +1901,11 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 	if worktreePath := strings.TrimSpace(stringValue(run["worktree_path"])); worktreePath != "" && !exists(worktreePath) {
 		liveStateGaps = append(liveStateGaps, map[string]any{
 			"claim_ref":       "live_worktree_missing",
-			"resolution_kind": "live_state_missing",
+			"resolution_kind": "live_state_overrides_run",
 			"source_ref":      "run:" + runID,
-			"winning_source":  "run:" + runID,
+			"winning_source":  "worktree:" + worktreePath,
+			"losing_source":   "run:" + runID + ".worktree_path",
+			"authority_level": "L1",
 			"current_value":   worktreePath,
 			"expected_value":  "present_on_disk",
 			"note":            "Run expects a provisioned worktree, but the referenced live worktree path is missing on disk.",
@@ -1904,9 +1914,11 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 		if liveBranch := strings.TrimSpace(stringValue(liveState["branch"])); liveBranch != "" && liveBranch != stringValue(run["branch"]) {
 			liveStateGaps = append(liveStateGaps, map[string]any{
 				"claim_ref":       "live_branch",
-				"resolution_kind": "live_state_disagrees",
+				"resolution_kind": "live_state_overrides_run",
 				"source_ref":      "worktree:" + stringValue(run["worktree_path"]),
 				"winning_source":  "worktree:" + stringValue(run["worktree_path"]),
+				"losing_source":   "run:" + runID + ".branch",
+				"authority_level": "L1",
 				"current_value":   stringValue(run["branch"]),
 				"expected_value":  liveBranch,
 				"note":            "Live worktree branch does not match the run branch record.",
@@ -1926,9 +1938,11 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 			if cleanIntent {
 				liveStateGaps = append(liveStateGaps, map[string]any{
 					"claim_ref":       "live_dirty",
-					"resolution_kind": "live_state_disagrees",
+					"resolution_kind": "live_state_overrides_run",
 					"source_ref":      "worktree:" + stringValue(run["worktree_path"]),
 					"winning_source":  "worktree:" + stringValue(run["worktree_path"]),
+					"losing_source":   "run:" + runID,
+					"authority_level": "L1",
 					"current_value":   "dirty",
 					"expected_value":  "clean",
 					"note":            "Live worktree is dirty even though run/desired state implies the execution should be clean enough for governed verification or handoff.",
@@ -2061,24 +2075,26 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 	}
 
 	return map[string]any{
-		"run_id":                          runID,
-		"canonical_source":                "run:" + runID,
-		"canonical_authority_level":       runLevel,
-		"run_claims":                      runClaims,
-		"signal_sources":                  signalSources,
-		"adoption_gap_count":              len(adoptionGaps),
-		"contract_gap_count":              len(contractGaps),
-		"higher_authority_conflict_count": len(conflicts),
-		"superseded_signal_count":         len(supersededSignals),
-		"desired_state_gap_count":         len(desiredGapRecords),
-		"live_state_gap_count":            len(liveStateGaps),
-		"desired_state_satisfied":         desiredSatisfied,
-		"adoption_gaps":                   adoptionGaps,
-		"contract_gaps":                   contractGaps,
-		"higher_authority_conflicts":      conflicts,
-		"superseded_signals":              supersededSignals,
-		"desired_state_gaps":              desiredGapRecords,
-		"live_state_gaps":                 liveStateGaps,
+		"run_id":                            runID,
+		"canonical_source":                  "run:" + runID,
+		"canonical_authority_level":         runLevel,
+		"run_claims":                        runClaims,
+		"signal_sources":                    signalSources,
+		"artifact_authority_conflict_count": len(contractGaps) + len(liveStateGaps),
+		"adoption_gap_count":                len(adoptionGaps),
+		"contract_gap_count":                len(contractGaps),
+		"higher_authority_conflict_count":   len(conflicts),
+		"superseded_signal_count":           len(supersededSignals),
+		"desired_state_gap_count":           len(desiredGapRecords),
+		"live_state_gap_count":              len(liveStateGaps),
+		"desired_state_satisfied":           desiredSatisfied,
+		"adoption_gaps":                     adoptionGaps,
+		"artifact_authority_conflicts":      append(append([]any{}, contractGaps...), liveStateGaps...),
+		"contract_gaps":                     contractGaps,
+		"higher_authority_conflicts":        conflicts,
+		"superseded_signals":                supersededSignals,
+		"desired_state_gaps":                desiredGapRecords,
+		"live_state_gaps":                   liveStateGaps,
 	}
 }
 
