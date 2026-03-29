@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Harness Prototype
+- **Debate verdict adoption**: auto-synthesis can now honor a governed `latest_response_prevails` route verdict, so a debated claim lane can materialize directly into an accepted or rejected finding instead of falling back to unresolved output when the latest bounded reply has already won.
 - **Split ownership transfer**: `runs transfer-ownership` now supports `--mode=split`, so a run can keep a broader parent selector while delegating a governed child selector through explicit ownership exclusions instead of fake overlap or full handoff.
 - **Hierarchical semantic selector overlap**: ownership governance now treats parent/child semantic boundaries like `scope:release` and `scope:release/notes` as the same governed family, including cross-kind `scope`/`interface` combinations. Teammate smoke now proves an exclusive `interface:release` assignment is rejected when `scope:release/notes` already owns the child boundary.
 - **Bundle-level authority packets**: `missions authority-audit --all` now emits bundle-level `resolution_kind`, `selector_refs`, and `required_action`, so connected mission bundles explain not just that they exist, but why they are conflicted/governed and what the leader should do next.
@@ -173,6 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Cross-skill UX audit: 5 new help routes, 2 branch readiness checks, ~12 error→guidance fixes
 
 ### Changed — Skills Factory
+- **Teammate smoke widened for verdict adoption**: `scripts/harness-teammate-smoke-test.sh` now proves a same-authority debate lane can route into a second-round reply, resolve as `latest_response_prevails`, and auto-synthesize into accepted output without leaving unresolved action debt.
 - **Home overlap accounting now respects exclusions**: leader-facing overlap detection no longer flags a parent run after it splits out an explicitly excluded child boundary, so `home` stays aligned with the same exclusion-aware ownership semantics used by admission control, mission authority audit, and `doctor`.
 - **Teammate smoke widened again**: `scripts/harness-teammate-smoke-test.sh` now proves `split` transfer, including retiring the temporary child owner, reconciling superseded signals, preserving the parent selector, recording exclusions, and keeping both contracts healthy after delegation.
 - **Home/doctor graph awareness**: leader surfaces now include graph-level mission conflict/adjudication counts instead of hiding multi-mission control drift under generic overlap reporting.

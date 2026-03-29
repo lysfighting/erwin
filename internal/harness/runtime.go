@@ -4213,6 +4213,13 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 					latestRecordedAt = recordedAt
 				}
 			}
+			latestStance := strings.TrimSpace(stringValue(latestLinked["stance"]))
+			if latestLinked != nil {
+				route["latest_stance"] = latestStance
+				route["latest_position_id"] = stringValue(latestLinked["position_id"])
+				route["latest_run_id"] = stringValue(latestLinked["run_id"])
+				route["latest_role"] = stringValue(latestLinked["role"])
+			}
 			if linkedCrossByClaim[key] >= 2 {
 				route["latest_debate_round"] = linkedCrossByClaim[key]
 			}
@@ -4220,9 +4227,9 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 				resolvedRoundCount++
 				route["status"] = "max_rounds_reached"
 				route["resolution_kind"] = "max_rounds_reached"
+				route["required_follow_up"] = "leader_judgment_required"
 				coverageNotes = append(coverageNotes, fmt.Sprintf("claim %q reached the debate round cap (%d); hand final adjudication to synthesis.", claimLabels[key], maxDebateRounds))
 			} else if latestLinked != nil {
-				latestStance := strings.TrimSpace(stringValue(latestLinked["stance"]))
 				opposingStance := "support"
 				opposingRoles := supportRoles
 				opposingLead := leadSupport
@@ -4238,6 +4245,15 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 					resolvedRoundCount++
 					route["status"] = "debate_resolved"
 					route["resolution_kind"] = "latest_response_prevails"
+					route["prevailing_stance"] = latestStance
+					route["prevailing_role"] = stringValue(latestLinked["role"])
+					route["prevailing_run_id"] = stringValue(latestLinked["run_id"])
+					route["prevailing_position_id"] = stringValue(latestLinked["position_id"])
+					route["overruled_stance"] = opposingStance
+					route["overruled_role"] = stringValue(opposingLead["role"])
+					route["overruled_run_id"] = stringValue(opposingLead["run_id"])
+					route["overruled_position_id"] = stringValue(opposingLead["position_id"])
+					route["required_follow_up"] = "synthesis_can_materialize_verdict"
 					coverageNotes = append(coverageNotes, fmt.Sprintf("claim %q debate resolves after round %d because the latest %s response now outranks the opposing lane.", claimLabels[key], linkedCrossByClaim[key], latestStance))
 				} else {
 					assignedRole := firstNonBlank(stringValue(opposingLead["role"]), firstNonBlank(opposingRoles...))
@@ -4288,6 +4304,18 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 }
 
 func meetingAutoSynthesize(meeting map[string]any) map[string]any {
+	debatePlan, _ := toMap(meetingDebatePlan(meeting))
+	routeByClaimKey := map[string]map[string]any{}
+	for _, item := range toList(debatePlan["routes"]) {
+		route, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		key := strings.TrimSpace(stringValue(route["claim_key"]))
+		if key != "" {
+			routeByClaimKey[key] = route
+		}
+	}
 	findings, _ := toMap(meeting["findings"])
 	if findings == nil {
 		findings = map[string]any{}
@@ -4426,6 +4454,31 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 			"recorded_at":              nowISO(),
 			"generated_by":             "orchestrate_auto_synthesis",
 			"generated_claim_key":      key,
+		}
+
+		route, _ := toMap(routeByClaimKey[key])
+		routeResolution := stringValue(route["resolution_kind"])
+		routePrevailingStance := stringValue(route["prevailing_stance"])
+		if routeResolution == "latest_response_prevails" && routePrevailingStance != "" {
+			baseFinding["authority_level"] = firstNonBlank(
+				map[string]string{
+					"support":   supportLevel,
+					"challenge": challengeLevel,
+				}[routePrevailingStance],
+				stringValue(baseFinding["authority_level"]),
+				"L4",
+			)
+			if routePrevailingStance == "support" {
+				baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: governed debate route resolved in favor of support after the latest response from %s prevailed over %s.", firstNonBlank(stringValue(route["prevailing_role"]), supportRole, "supporting council participant"), firstNonBlank(stringValue(route["overruled_role"]), challengeRole, "challenging council participant"))
+				findings["accepted"] = append(toList(findings["accepted"]), baseFinding)
+			} else {
+				baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: governed debate route resolved in favor of challenge after the latest response from %s prevailed over %s.", firstNonBlank(stringValue(route["prevailing_role"]), challengeRole, "challenging council participant"), firstNonBlank(stringValue(route["overruled_role"]), supportRole, "supporting council participant"))
+				findings["rejected"] = append(toList(findings["rejected"]), baseFinding)
+			}
+			generatedClaims = append(generatedClaims, key)
+			generatedFindingIDs = append(generatedFindingIDs, findingID)
+			generatedSummaries = append(generatedSummaries, claimRef)
+			continue
 		}
 
 		switch {

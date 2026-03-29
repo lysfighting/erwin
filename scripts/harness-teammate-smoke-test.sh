@@ -361,6 +361,55 @@ assert_json_field "$auto_summary" '"max_debate_rounds": 3' "auto-synthesis summa
 auto_orchestrate_f=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
 assert_json_field "$auto_orchestrate_f" '"new_phase": "output"' "auto-synthesis council can advance from synthesis to output"
 
+section "Debate verdict adoption"
+verdict_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can a governed debate route materialize a final verdict after the latest reply wins?")
+assert_json_field "$verdict_meeting_output" '"state": "active"' "verdict-adoption meeting materializes"
+verdict_meeting_id=$(printf '%s\n' "$verdict_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+
+run_in_repo bash scripts/harness-meetings.sh add-role "$verdict_meeting_id" implementation-verifier --mission="State the release-note requirement." --allow="L1: live git state|L2: active runtime state" --forbid="L4+: stale notes" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-role "$verdict_meeting_id" ops-simulator --mission="Challenge the release-note requirement." --allow="L1: live git state|L2: active runtime state" --forbid="Unverified memory" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh lock-decision "$verdict_meeting_id" "Keep this council bounded to the stable release-note claim lane." --reason="Verdict-adoption coverage should stay inside one governed debate lane." --authority=L2 --evidence=harness/profiles/erwin.yml >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$verdict_meeting_id" "$run_a" implementation-verifier >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$verdict_meeting_id" "$run_b" ops-simulator >/dev/null
+
+verdict_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$verdict_meeting_id")
+assert_json_field "$verdict_orchestrate_a" '"new_phase": "independent_review"' "verdict-adoption council advances into independent review"
+
+verdict_pos_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$verdict_meeting_id" "$run_a" independent_review support "Release notes should capture the stable operator-facing contract." --claim=stable-release-note --dimension=factual --authority=L2 --evidence=CHANGELOG.md)
+verdict_pos_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$verdict_meeting_id" "$run_b" independent_review challenge "Stable release notes are optional for this contract change." --claim=stable-release-note --dimension=factual --authority=L2 --evidence=CHANGELOG.md)
+verdict_pos_a_id=$(printf '%s\n' "$verdict_pos_a" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
+verdict_pos_b_id=$(printf '%s\n' "$verdict_pos_b" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
+
+verdict_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$verdict_meeting_id")
+assert_json_field "$verdict_orchestrate_b" '"new_phase": "cross_examination"' "verdict-adoption council advances into cross-examination"
+assert_json_field "$verdict_orchestrate_b" '"open_route_action_count": 1' "verdict-adoption council plans an initial debate route"
+
+verdict_cross_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$verdict_meeting_id" "$run_b" cross_examination challenge "Until operator impact broadens, release notes can stay narrow." --claim=stable-release-note --dimension=factual --authority=L2 --evidence=CHANGELOG.md --responds-to-position="$verdict_pos_a_id")
+assert_json_field "$verdict_cross_a" '"cross_examination"' "verdict-adoption council records first debate reply"
+verdict_cross_a_id=$(printf '%s\n' "$verdict_cross_a" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
+
+verdict_orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$verdict_meeting_id")
+assert_json_field "$verdict_orchestrate_c" '"open_round_action_count": 1' "verdict-adoption council plans a follow-up round"
+assert_json_field "$verdict_orchestrate_c" '"round_number": 2' "verdict-adoption council asks for an explicit second-round reply"
+
+verdict_cross_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$verdict_meeting_id" "$run_a" cross_examination support "The latest bounded reply still says stable operator behavior needs release-note coverage." --claim=stable-release-note --dimension=factual --authority=L2 --evidence=CHANGELOG.md --responds-to-position="$verdict_cross_a_id")
+assert_json_field "$verdict_cross_b" '"cross_examination"' "verdict-adoption council records the latest winning reply"
+
+verdict_orchestrate_d=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$verdict_meeting_id")
+assert_json_field "$verdict_orchestrate_d" '"new_phase": "synthesis"' "verdict-adoption council advances into synthesis"
+assert_json_field "$verdict_orchestrate_d" '"resolution_kind": "latest_response_prevails"' "verdict-adoption debate plan records the latest-response winner"
+assert_json_field "$verdict_orchestrate_d" '"prevailing_stance": "support"' "verdict-adoption debate plan records the prevailing stance"
+assert_json_field "$verdict_orchestrate_d" '"generated_finding_count": 1' "verdict-adoption council auto-generates a final finding"
+assert_json_field "$verdict_orchestrate_d" '"generated_action_count": 0' "verdict-adoption council does not leave unresolved follow-up work"
+
+verdict_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$verdict_meeting_id")
+assert_json_field "$verdict_summary" '"accepted_count": 1' "verdict-adoption summary materializes an accepted finding"
+assert_json_field "$verdict_summary" '"unresolved_count": 0' "verdict-adoption summary avoids unresolved output when the latest reply wins"
+assert_json_field "$verdict_summary" '"auto_generated_action_count": 0' "verdict-adoption summary leaves no auto-generated action item"
+
+verdict_orchestrate_e=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$verdict_meeting_id")
+assert_json_field "$verdict_orchestrate_e" '"new_phase": "output"' "verdict-adoption council can advance from synthesis to output"
+
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_mission_count": 1' "home surfaces active mission count"

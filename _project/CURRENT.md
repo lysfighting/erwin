@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.33.0 (in progress)
+- **Version**: 0.34.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Harness split ownership transfer added)
+- **Last Session**: 2026-03-29 (Harness debate verdict adoption added)
 
 ## Current Phase
 
@@ -33,6 +33,8 @@
 - **Split ownership transfer added**: `runs transfer-ownership` now supports `--mode=split`, so a broader parent selector can delegate a governed child selector through explicit ownership exclusions without surrendering the parent boundary
 - **Exclusion-aware overlap accounting added**: leader-facing overlap detection in `home` now respects ownership exclusions, so split parent/child delegation does not appear as a false overlap once the child subtree has been explicitly carved out
 - **Teammate smoke widened for split delegation**: `scripts/harness-teammate-smoke-test.sh` now proves the full split-transfer path, including temporary child-owner retirement, superseded-signal reconciliation, source exclusion recording, target child acquisition, and clean contract alignment on both runs
+- **Debate verdict adoption added**: auto-synthesis now honors a governed `latest_response_prevails` route verdict, so a same-authority debate lane can materialize directly into accepted output once the latest bounded reply wins
+- **Teammate smoke widened for verdict adoption**: `scripts/harness-teammate-smoke-test.sh` now proves a second-round same-authority debate lane resolves as `latest_response_prevails` and lands as accepted output without unresolved action debt
 - **Debate route obligations added**: `meetings orchestrate` now materializes claim-lane route obligations with assigned bounded challenger roles/runs, while `meetings summary` and `doctor` surface resolved vs open debate routes directly instead of only reporting routed/unrouted claims after the fact
 - **Live worktree absence promoted into authority audit**: `runs authority-audit` now treats a missing provisioned worktree as first-class live-state drift (`live_worktree_missing`) instead of relying only on `doctor` to notice the broken path
 - **Glob ownership selectors added**: the ownership model now understands `glob:` path selectors, so overlap control can express bounded markdown/file-set style ownership instead of forcing everything into `file:` or coarse `dir:` claims
