@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.35.0 (in progress)
+- **Version**: 0.36.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Harness council direct-synthesis control added)
+- **Last Session**: 2026-03-29 (Harness scheduler baseline added)
 
 ## Current Phase
 
@@ -16,7 +16,14 @@
 
 ## What Was Just Completed
 
-**Session 2026-03-29** — Harness prototype line stayed complete while the council controller gained direct-synthesis control for aligned and authority-resolved lanes
+**Session 2026-03-29** — Harness prototype line stayed complete while the leader control plane gained its first real scheduler baseline
+
+- **Leader-facing scheduler baseline added**: `missions schedule` now emits durable `.harness/scheduler/snapshots/` records with per-mission classification, selected foreground batch, execution-mode recommendation (`solo`, `managed_delegation`, `scheduled_parallel_missions`), required human decisions, follow-up signals, and reschedule actions
+- **Scheduler semantics hardened**: the runtime now distinguishes true cross-mission dependency blocking from mission-internal teammate dependencies, so delegated teammate work no longer poisons mission scheduling with fake self-dependency
+- **Release-adjacent scheduling tightened**: scheduler serialization now keys off real release-gate evidence instead of template-default `unknown` review/check states, so isolated ready missions can widen into governed parallel batches instead of being accidentally serialized
+- **Leader home widened**: `home` now surfaces scheduler execution mode, selected mission batch size, classification tally, and scheduler-derived next action so the leader can reason from durable control-plane state instead of ad hoc heuristics alone
+- **Canonical docs synced with scheduler reality**: the operating-model, architecture, public-contract, and handoff docs now treat scheduler snapshots and execution-mode selection as present runtime behavior rather than purely future aspiration
+- **Smoke coverage widened again**: core smoke now proves solo scheduling, dependency-blocked reschedule hints, and governed parallel batches, while teammate smoke proves `managed_delegation` scheduling for a leader mission with bounded helper runs
 
 - **Authority-resolved council lanes added**: `meetings orchestrate` now recognizes when a higher-authority support/challenge lane already outranks its opponent during independent review, records a governed `higher_authority_prevails` route verdict, and advances directly into synthesis instead of forcing unnecessary cross-examination
 - **Aligned councils can skip empty debate**: meetings with enough independent review but no conflicting claim lane can now move straight into synthesis instead of getting stuck waiting for a synthetic cross-examination step that adds no new judgment
@@ -132,7 +139,7 @@
 
 ## Active Task / What's In Progress
 
-**The first complete `Harness` prototype line is now delivered: runtime, control plane, public contract, authority model, council model, naming, and distribution strategy are all formalized. Mission-level and graph-level authority adjudication are now also first-class. Remaining work is future expansion, not core prototype completion:**
+**The first complete `Harness` prototype line is now delivered: runtime, control plane, public contract, authority model, council model, naming, distribution strategy, and a first real leader-facing scheduler baseline are all formalized. Remaining work is future expansion, not core prototype completion:**
 
 | Phase | Status | Description |
 |-------|--------|-------------|
@@ -148,9 +155,9 @@
 
 1. Read this file
 2. **Harness next work**:
-   - A. Continue deepening selector semantics beyond the current family-aware plus shared/split-transfer baseline into richer policies and transfer rules
-   - B. Decide whether remaining authority work should extend beyond the new run/mission/mission-graph plus dependency-governed ownership, bundle-aware grouping, and bundle-governor rules into broader multi-mission bundle adjudication, or whether that now belongs to future product layers
-   - C. Continue pushing council behavior from auto-synthesis, direct synthesis for aligned/authority-resolved lanes, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
+   - A. Continue authority adjudication beyond the current run/mission/mission-graph plus dependency-governed ownership and bundle-governor rules into broader multi-mission bundle handling when no obvious governing dependency exists
+   - B. Continue pushing council behavior from auto-synthesis, direct synthesis for aligned/authority-resolved lanes, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
+   - C. Decide whether deeper scheduler work should move beyond the new snapshot/reschedule/execution-mode baseline into larger-portfolio admission and rescheduling policy, or whether that should wait until bundle adjudication is stronger
    - D. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `docs/harness-documentation-map.md`, `docs/harness-architecture.md`, `docs/harness-operating-model.md`, `docs/harness-public-contract.md`, `docs/harness-session-handoff.md`, `harness/adapter-manifest.yml`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, recent `_project/sessions/2026-03-29-*.md` logs, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0
@@ -184,7 +191,7 @@
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots and execution-mode selection, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
 
 ## File Locations
 

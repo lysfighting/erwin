@@ -90,6 +90,13 @@ assert_json_field "$mission_authority_baseline" '"adjudication_count": 0' "missi
 authority_baseline=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$authority_baseline" '"contract_gap_count": 0' "initial run authority audit starts without contract drift"
 
+section "Scheduler baseline"
+schedule_solo_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_solo_output" '"execution_mode": "solo"' "scheduler recommends solo execution for one runnable mission"
+assert_json_field "$schedule_solo_output" '"selected_mission_count": 1' "scheduler emits a selected mission batch"
+assert_json_field "$schedule_solo_output" '"snapshot_path":' "scheduler writes a durable snapshot"
+assert_json_field "$schedule_solo_output" '"mission_id": "issue-20001"' "scheduler includes the claimed mission in its classification output"
+
 section "Mission graph authority"
 second_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20002 "Harness Conflict Mission" --owns="file:CHANGELOG.md" --allow-overlap)
 assert_json_field "$second_claim_output" '"mission_id": "issue-20002"' "second claim can materialize a conflicting mission under explicit overlap allowance"
@@ -123,8 +130,22 @@ assert_json_field "$graph_authority_dependency" "\"governing_mission_id\": \"iss
 assert_json_field "$graph_authority_dependency" "\"required_action\": \"Keep bundle authority anchored to issue-20001 while dependent missions stay bounded.\"" "mission graph authority gives the governed bundle a leader-facing next action"
 assert_json_field "$graph_authority_dependency" '"resolution_kind": "dependency_governed_mission_ownership"' "mission graph authority audit explains dependency-governed ownership authority"
 assert_json_field "$graph_authority_dependency" "\"winning_source\": \"mission:issue-20001\"" "dependency-governed overlap keeps authority on the upstream mission"
+scheduler_dependency_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$scheduler_dependency_output" '"mission_id": "issue-20003"' "scheduler includes the dependency-governed mission"
+assert_json_field "$scheduler_dependency_output" '"classification": "blocked-by-dependency"' "scheduler classifies unsatisfied dependent missions as blocked-by-dependency"
+assert_json_field "$scheduler_dependency_output" '"action_kind": "move_to_waiting"' "scheduler emits a reschedule action when a dependency-blocked run is still foregrounded"
 resolved_dependent_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$dependent_run_id" completed "Resolved dependency-governed overlap smoke path.")
 assert_json_field "$resolved_dependent_run" '"state": "completed"' "dependent overlapping mission can be closed after adjudication coverage"
+
+parallel_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20004 "Harness Parallel Mission" --owns="file:go.mod")
+assert_json_field "$parallel_claim_output" '"mission_id": "issue-20004"' "independent parallel claim can materialize"
+parallel_run_id=$(printf '%s\n' "$parallel_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+scheduler_parallel_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$scheduler_parallel_output" '"execution_mode": "scheduled_parallel_missions"' "scheduler recommends a parallel batch when multiple isolated missions are runnable"
+assert_json_field "$scheduler_parallel_output" '"selected_mission_count": 2' "scheduler selects both isolated runnable missions for the batch"
+assert_json_field "$scheduler_parallel_output" '"mission_id": "issue-20004"' "scheduler includes the independent parallel mission in the batch"
+resolved_parallel_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$parallel_run_id" completed "Resolved parallel scheduling smoke path.")
+assert_json_field "$resolved_parallel_run" '"state": "completed"' "independent parallel mission can be closed after scheduling coverage"
 
 section "Contract authority"
 (
@@ -226,6 +247,8 @@ home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_mission_count": 1' "home shows one active mission"
 assert_json_field "$home_output" '"active_run_count": 1' "home shows one active run"
 assert_json_field "$home_output" '"open_meeting_action_count": 1' "home surfaces open meeting action"
+assert_json_field "$home_output" '"scheduler_execution_mode": "solo"' "home surfaces the scheduler execution mode"
+assert_json_field "$home_output" '"scheduler_selected_mission_count": 1' "home surfaces the scheduler batch size"
 
 adapter_output=$(run_in_repo bash scripts/harness-adapter.sh validate)
 assert_json_field "$adapter_output" '"valid": true' "adapter manifest validates in core smoke repo"

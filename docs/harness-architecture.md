@@ -912,7 +912,7 @@ The current architecture is intentionally honest about what is not fully closed.
 High-value future expansion areas are:
 
 1. fuller scheduler behavior
-   execution-mode selection, rescheduling, and more explicit mission scheduling beyond the current strong leader control plane
+   deeper portfolio scheduling policy beyond the now-real baseline for execution-mode selection, mission classification, durable scheduler snapshots, and leader-facing rescheduling hints
 
 2. broader bundle adjudication
    larger multi-mission conflicts when no obvious governing dependency, signal, or council outcome exists

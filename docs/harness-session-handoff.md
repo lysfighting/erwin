@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.35.0-prototype`
+- `adapter_version`: `0.36.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -145,6 +145,7 @@ When resuming implementation, the most important regions are in:
 
 High-value areas:
 
+- scheduler summary / snapshot generation / execution-mode selection / rescheduling hints
 - selector / overlap / transfer model
 - run authority audit
 - mission-level and mission-graph authority
@@ -162,6 +163,7 @@ Do not underestimate the current control-plane maturity.
 
 `Harness` already has:
 
+- leader-facing scheduler baseline with mission classification, execution-mode selection, rescheduling hints, and durable `.harness/scheduler/snapshots/`
 - first-class mission objects
 - separation between `latest_run_id` and `authoritative_run_id`
 - graph-level authority audit with bundle grouping and explicit bundle governors
@@ -204,7 +206,7 @@ The second means higher-order control-plane semantics are still open.
 
 The remaining high-value gaps are:
 
-- fuller scheduler / rescheduling / execution-mode-selection behavior beyond the current strong leader control plane
+- fuller scheduler / rescheduling / execution-mode-selection behavior beyond the current baseline snapshot-and-hint control plane
 - broader authority adjudication for larger mission bundles when no obvious governing dependency exists
 - fuller `arch-review`-style automated debate execution beyond today’s route/wave/round/verdict-adoption baseline
 - optional future mapping between Codex subagents and teammate runtime

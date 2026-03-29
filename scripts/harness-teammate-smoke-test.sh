@@ -80,6 +80,12 @@ list_output=$(run_in_repo bash scripts/harness-teammates.sh list "$leader_run_id
 assert_json_field "$list_output" '"owner_id": "worker-auth"' "teammate list shows first delegated run"
 assert_json_field "$list_output" '"owner_id": "worker-ops"' "teammate list shows second delegated run"
 
+section "Scheduler"
+schedule_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_output" '"execution_mode": "managed_delegation"' "scheduler recommends managed delegation when one mission has bounded helper runs"
+assert_json_field "$schedule_output" '"selected_mission_count": 1' "scheduler keeps one foreground mission under managed delegation"
+assert_json_field "$schedule_output" '"mission_id": "issue-33001"' "scheduler includes the delegated mission in its classification output"
+
 section "Ownership transfer"
 transfer_output=$(run_in_repo bash scripts/harness-runs.sh transfer-ownership "$run_b" "$run_a" --owns="scope:release-auth-smoke" --reason="Shift release-auth scope into the implementation stream")
 assert_json_field "$transfer_output" '"transfer_id": "transfer-' "ownership transfer records transfer event"

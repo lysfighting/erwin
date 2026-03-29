@@ -523,6 +523,7 @@ Its operating model is supposed to be executable.
 The following parts of the operating model are already concretely present:
 
 - leader-facing `home` and `doctor`
+- leader-facing scheduler baseline with durable snapshots, mission classification, execution-mode selection, and rescheduling hints
 - first-class mission objects
 - mission authority separated from freshest run activity
 - bounded teammate runs
@@ -541,7 +542,7 @@ This is enough to call the current system a true prototype line, not just a rese
 
 The operating model still has open future layers:
 
-- fuller scheduler behavior across more than a strong leader control plane
+- fuller scheduler behavior across larger mission portfolios than the current snapshot/reschedule/execution-mode baseline
 - broader authority adjudication for larger mission bundles without obvious governing dependency
 - fuller automated council execution across multiple conflicting lanes
 - optional direct mapping between real Codex sub-agents and teammate runtime

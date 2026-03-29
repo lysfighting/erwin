@@ -2395,10 +2395,14 @@ func uniqueMissionIDsFromRuns(registry map[string]any) []string {
 func missionDependencyTargetsFromRuns(runs []map[string]any, registry map[string]any) []string {
 	targets := []string{}
 	for _, run := range runs {
+		runMissionID := strings.TrimSpace(stringValue(run["mission_id"]))
 		for _, dependencyID := range dependencyTargets(run) {
 			if index := findRunIndex(registry, dependencyID); index >= 0 {
 				dependencyRun, _ := toMap(toList(registry["runs"])[index])
 				if dependencyMissionID := strings.TrimSpace(stringValue(dependencyRun["mission_id"])); dependencyMissionID != "" {
+					if dependencyMissionID == runMissionID {
+						continue
+					}
 					targets = append(targets, dependencyMissionID)
 					continue
 				}
@@ -5560,6 +5564,22 @@ func cmdMissions(args []string) error {
 			"mission_count": len(graph),
 			"missions":      graph,
 		})
+	case "schedule":
+		includeAll := false
+		for _, arg := range args[1:] {
+			if arg == "--all" {
+				includeAll = true
+			}
+		}
+		return withHarnessLock(func() error {
+			profile, _ := resolveProfile("")
+			snapshot := schedulerSummary(profile, readMissionRegistry(), readRegistry(), readSignalLog(), includeAll)
+			written, err := writeSchedulerSnapshot(snapshot)
+			if err != nil {
+				return err
+			}
+			return printJSON(written)
+		})
 	case "authority-audit":
 		if len(args) >= 2 && args[1] == "--all" {
 			return printJSON(missionGraphAuthorityAudit(registry, readRegistry(), false))
@@ -6133,6 +6153,508 @@ func cmdContracts(args []string) error {
 	return nil
 }
 
+func schedulerSnapshotsRoot() string {
+	return filepath.Join(runtimeRoot(), "scheduler", "snapshots")
+}
+
+func schedulerLatestSnapshotPath() string {
+	return filepath.Join(schedulerSnapshotsRoot(), "latest.json")
+}
+
+func schedulerSnapshotPath(snapshotID string) string {
+	return filepath.Join(schedulerSnapshotsRoot(), snapshotID+".json")
+}
+
+func schedulerPriorityRank(value string) int {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "p0", "critical", "urgent", "highest":
+		return 5
+	case "p1", "high":
+		return 4
+	case "p2", "medium", "normal":
+		return 3
+	case "p3", "low":
+		return 2
+	case "p4", "deferred":
+		return 1
+	default:
+		return 0
+	}
+}
+
+func schedulerRiskRank(value string) int {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "critical":
+		return 5
+	case "high":
+		return 4
+	case "medium":
+		return 3
+	case "low":
+		return 2
+	default:
+		return 0
+	}
+}
+
+func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]any, includeInactive bool) map[string]any {
+	now := nowTime().UTC().Format("20060102150405")
+	generatedAt := nowISO()
+	graphAuthority, _ := toMap(missionGraphAuthorityAudit(missionRegistry, registry, includeInactive))
+
+	runMissionByID := map[string]string{}
+	for _, item := range toList(registry["runs"]) {
+		run, _ := toMap(item)
+		runID := strings.TrimSpace(stringValue(run["run_id"]))
+		missionID := strings.TrimSpace(stringValue(run["mission_id"]))
+		if runID != "" && missionID != "" {
+			runMissionByID[runID] = missionID
+		}
+	}
+
+	activeMeetingCountByMission := map[string]int{}
+	openMeetingActionCountByMission := map[string]int{}
+	for _, item := range listMeetings(true) {
+		meeting, _ := toMap(item)
+		missionID := strings.TrimSpace(stringValue(meeting["mission_id"]))
+		if missionID == "" {
+			missionID = runMissionByID[strings.TrimSpace(stringValue(meeting["run_id"]))]
+		}
+		if missionID == "" {
+			continue
+		}
+		if stringValue(meeting["state"]) == "active" {
+			activeMeetingCountByMission[missionID]++
+		}
+		for _, actionItem := range toList(meeting["action_items"]) {
+			actionMap, ok := toMap(actionItem)
+			if ok && stringValue(actionMap["state"]) != "" && stringValue(actionMap["state"]) != "open" {
+				continue
+			}
+			summary := textValue(actionItem)
+			if summary == "" || stringValue(meeting["state"]) != "active" {
+				continue
+			}
+			openMeetingActionCountByMission[missionID]++
+		}
+	}
+
+	conflictMissionSet := map[string]bool{}
+	for _, item := range toList(graphAuthority["cross_mission_conflicts"]) {
+		conflict, _ := toMap(item)
+		for _, missionID := range anyListToStrings(toList(conflict["mission_ids"])) {
+			if strings.TrimSpace(missionID) != "" {
+				conflictMissionSet[missionID] = true
+			}
+		}
+	}
+
+	followUpSignalsByMission := map[string][]any{}
+	for _, item := range toList(signalLog["signals"]) {
+		signal, _ := toMap(item)
+		if !activeSignal(signal) {
+			continue
+		}
+		kind := strings.TrimSpace(stringValue(signal["kind"]))
+		if kind != "requires_meeting" && kind != "interface_change" && kind != "dependency_discovered" && kind != "blocked" {
+			continue
+		}
+		missionIDs := []string{}
+		if missionID := strings.TrimSpace(stringValue(signal["mission_id"])); missionID != "" {
+			missionIDs = append(missionIDs, missionID)
+		}
+		for _, ref := range anyListToStrings(toList(signal["applies_to"])) {
+			ref = strings.TrimSpace(ref)
+			if strings.HasPrefix(ref, "issue-") {
+				missionIDs = append(missionIDs, ref)
+			}
+		}
+		entry := map[string]any{
+			"signal_id":       stringValue(signal["signal_id"]),
+			"kind":            kind,
+			"mission_id":      firstNonBlank(strings.TrimSpace(stringValue(signal["mission_id"])), ""),
+			"run_id":          stringValue(signal["run_id"]),
+			"authority_level": stringValue(signal["authority_level"]),
+			"summary":         stringValue(signal["summary"]),
+			"fresh_until":     stringValue(signal["fresh_until"]),
+			"resolution_note": stringValue(signal["resolution_note"]),
+			"source_type":     stringValue(signal["source_type"]),
+			"source_id":       stringValue(signal["source_id"]),
+		}
+		for _, missionID := range dedupeStrings(missionIDs) {
+			if missionID == "" {
+				continue
+			}
+			followUpSignalsByMission[missionID] = append(followUpSignalsByMission[missionID], entry)
+		}
+	}
+
+	entryByMission := map[string]map[string]any{}
+	missionOrder := []string{}
+	rescheduleActions := []any{}
+	requiredHumanDecisions := []any{}
+
+	for _, item := range toList(missionRegistry["missions"]) {
+		mission, _ := toMap(item)
+		missionID := strings.TrimSpace(stringValue(mission["mission_id"]))
+		if missionID == "" {
+			continue
+		}
+		if !includeInactive && !activeMission(mission) {
+			continue
+		}
+		runs := missionRuns(registry, missionID)
+		authoritativeRun := authoritativeMissionRun(runs)
+		activeRunIDs := []string{}
+		activeTeammateCount := 0
+		releaseAdjacent := false
+		reviewBlocked := false
+		checksFailed := false
+		mergeReadyPresent := false
+		for _, run := range runs {
+			if activeRun(run) {
+				activeRunIDs = append(activeRunIDs, stringValue(run["run_id"]))
+				if stringValue(run["owner_type"]) == "teammate" {
+					activeTeammateCount++
+				}
+			}
+			shipStatus := stringValue(run["ship_status"])
+			reviewStatus := stringValue(run["review_status"])
+			checksStatus := stringValue(run["checks_status"])
+			if stringValue(run["pr_ref"]) != "" ||
+				stringValue(run["rc_id"]) != "" ||
+				(reviewStatus != "" && reviewStatus != "unknown") ||
+				(checksStatus != "" && checksStatus != "unknown") ||
+				(shipStatus != "" && shipStatus != "unstarted") {
+				releaseAdjacent = true
+			}
+			if reviewStatus == "pending" || reviewStatus == "changes_requested" {
+				reviewBlocked = true
+			}
+			if checksStatus == "failed" {
+				checksFailed = true
+			}
+			if mergeReady(run) {
+				mergeReadyPresent = true
+			}
+		}
+
+		classification := "runnable"
+		reasons := []string{}
+		recommendedAction := firstNonBlank(stringValue(mission["next_expected_action"]), "Review mission state and continue governed execution.")
+		decisionKind := ""
+		unsatisfiedMissionDeps := missionDependenciesUnsatisfied(mission, missionRegistry)
+		unsatisfiedRunDeps := []string{}
+		authoritativeRunID := ""
+		authoritativeRunState := ""
+		authoritativeRunMode := ""
+		authoritativeRunSurface := ""
+		updatedAt := firstNonBlank(stringValue(mission["updated_at"]), stringValue(mission["created_at"]))
+		if authoritativeRun != nil {
+			authoritativeRunID = stringValue(authoritativeRun["run_id"])
+			authoritativeRunState = stringValue(authoritativeRun["state"])
+			authoritativeRunMode = stringValue(authoritativeRun["mode"])
+			authoritativeRunSurface = stringValue(authoritativeRun["execution_surface"])
+			updatedAt = firstNonBlank(runSortTimestamp(authoritativeRun), updatedAt)
+			unsatisfiedRunDeps = unsatisfiedDependencies(authoritativeRun, registry)
+		}
+
+		if !activeMission(mission) {
+			classification = "completed"
+			reasons = append(reasons, "Mission is no longer active in the control plane.")
+			recommendedAction = "No active scheduling action required."
+		} else {
+			missionAudit, _ := toMap(missionAuthorityAudit(mission, registry))
+			switch {
+			case len(unsatisfiedMissionDeps) > 0 || len(unsatisfiedRunDeps) > 0:
+				classification = "blocked-by-dependency"
+				reasons = append(reasons, fmt.Sprintf("Mission dependencies are not yet satisfied: %s", strings.Join(dedupeStrings(append(unsatisfiedMissionDeps, unsatisfiedRunDeps...)), ", ")))
+				recommendedAction = "Wait for dependency missions/runs to satisfy their desired state before continuing."
+				if authoritativeRunID != "" && authoritativeRunState != "waiting" {
+					rescheduleActions = append(rescheduleActions, map[string]any{
+						"mission_id":      missionID,
+						"run_id":          authoritativeRunID,
+						"action_kind":     "move_to_waiting",
+						"target_state":    "waiting",
+						"current_state":   authoritativeRunState,
+						"reason":          "Run is still foregrounded even though scheduler sees unsatisfied dependencies.",
+						"dependency_refs": stringListToAny(dedupeStrings(append(unsatisfiedMissionDeps, unsatisfiedRunDeps...))),
+					})
+				}
+			case conflictMissionSet[missionID]:
+				classification = "blocked-by-overlap"
+				reasons = append(reasons, "Mission is in a live cross-mission ownership conflict bundle.")
+				recommendedAction = "Narrow selectors, serialize missions, or add a governing dependency/council before execution resumes."
+				decisionKind = "resolve_overlap_conflict"
+			case intValue(missionAudit["unresolved_conflict_count"]) > 0:
+				classification = "needs-human-decision"
+				reasons = append(reasons, "Mission has unresolved competing root-run authority.")
+				recommendedAction = "Close, merge, or explicitly govern the competing root run before continuing."
+				decisionKind = "resolve_parallel_root_runs"
+			case openMeetingActionCountByMission[missionID] > 0:
+				classification = "needs-human-decision"
+				reasons = append(reasons, fmt.Sprintf("Mission has %d open meeting action(s).", openMeetingActionCountByMission[missionID]))
+				recommendedAction = "Review open meeting actions and translate them into accepted execution state."
+				decisionKind = "adopt_meeting_actions"
+			case activeMeetingCountByMission[missionID] > 0:
+				classification = "needs-human-decision"
+				reasons = append(reasons, fmt.Sprintf("Mission has %d active meeting(s).", activeMeetingCountByMission[missionID]))
+				recommendedAction = "Review the active council before widening execution."
+				decisionKind = "review_active_council"
+			case stringValue(mission["state"]) == "review" || reviewBlocked || checksFailed || mergeReadyPresent:
+				classification = "needs-human-decision"
+				reasons = append(reasons, "Mission is in review/checks/merge-gate handling.")
+				recommendedAction = "Resolve review and checks or merge the ready PR before continuing other work."
+				decisionKind = "review_gate_decision"
+			case stringValue(mission["state"]) == "blocked" || authoritativeRunState == "blocked":
+				classification = "blocked-by-policy"
+				reasons = append(reasons, firstNonBlank(stringValue(mission["status_reason"]), stringValue(getKey(authoritativeRun, "status_reason", "")), "Mission is blocked by current policy or runtime state."))
+				recommendedAction = "Clear the blocking policy, signal, or state before continuing."
+			case authoritativeRunState == "waiting" || authoritativeRunState == "paused":
+				classification = "deferred"
+				reasons = append(reasons, fmt.Sprintf("Authoritative run is currently %s.", authoritativeRunState))
+				recommendedAction = firstNonBlank(stringValue(getKey(authoritativeRun, "next_expected_action", "")), recommendedAction)
+			default:
+				classification = "runnable"
+				reasons = append(reasons, "Mission is clear to run under current dependency, overlap, and authority policy.")
+			}
+		}
+
+		if decisionKind != "" {
+			requiredHumanDecisions = append(requiredHumanDecisions, map[string]any{
+				"mission_id":         missionID,
+				"decision_kind":      decisionKind,
+				"recommended_action": recommendedAction,
+				"note":               firstNonBlank(strings.Join(reasons, " "), recommendedAction),
+			})
+		}
+
+		entry := map[string]any{
+			"mission_id":                       missionID,
+			"mission_state":                    stringValue(mission["state"]),
+			"classification":                   classification,
+			"priority":                         stringValue(mission["priority"]),
+			"risk_level":                       stringValue(mission["risk_level"]),
+			"release_adjacent":                 releaseAdjacent,
+			"authoritative_run_id":             authoritativeRunID,
+			"authoritative_run_state":          authoritativeRunState,
+			"authoritative_run_mode":           authoritativeRunMode,
+			"authoritative_execution_surface":  authoritativeRunSurface,
+			"active_run_ids":                   stringListToAny(dedupeStrings(activeRunIDs)),
+			"active_run_count":                 len(dedupeStrings(activeRunIDs)),
+			"teammate_run_count":               activeTeammateCount,
+			"unsatisfied_mission_dependencies": stringListToAny(unsatisfiedMissionDeps),
+			"unsatisfied_run_dependencies":     stringListToAny(unsatisfiedRunDeps),
+			"meeting_count":                    activeMeetingCountByMission[missionID],
+			"open_meeting_action_count":        openMeetingActionCountByMission[missionID],
+			"follow_up_signal_count":           len(followUpSignalsByMission[missionID]),
+			"follow_up_signals":                cloneValue(followUpSignalsByMission[missionID]),
+			"latest_summary":                   stringValue(mission["latest_summary"]),
+			"recommended_action":               recommendedAction,
+			"reasons":                          stringListToAny(dedupeStrings(reasons)),
+			"updated_at":                       updatedAt,
+		}
+		entryByMission[missionID] = entry
+		missionOrder = append(missionOrder, missionID)
+	}
+
+	sort.Strings(missionOrder)
+	runnableMissionIDs := []string{}
+	for _, missionID := range missionOrder {
+		entry := entryByMission[missionID]
+		if stringValue(entry["classification"]) == "runnable" {
+			runnableMissionIDs = append(runnableMissionIDs, missionID)
+		}
+	}
+	sort.Slice(runnableMissionIDs, func(i, j int) bool {
+		left := entryByMission[runnableMissionIDs[i]]
+		right := entryByMission[runnableMissionIDs[j]]
+		leftPriority := schedulerPriorityRank(stringValue(left["priority"]))
+		rightPriority := schedulerPriorityRank(stringValue(right["priority"]))
+		if leftPriority != rightPriority {
+			return leftPriority > rightPriority
+		}
+		leftRisk := schedulerRiskRank(stringValue(left["risk_level"]))
+		rightRisk := schedulerRiskRank(stringValue(right["risk_level"]))
+		if leftRisk != rightRisk {
+			return leftRisk > rightRisk
+		}
+		if boolValue(left["release_adjacent"]) != boolValue(right["release_adjacent"]) {
+			return boolValue(left["release_adjacent"])
+		}
+		leftUpdated := stringValue(left["updated_at"])
+		rightUpdated := stringValue(right["updated_at"])
+		if leftUpdated != rightUpdated {
+			return leftUpdated > rightUpdated
+		}
+		return runnableMissionIDs[i] < runnableMissionIDs[j]
+	})
+
+	selectedMissionIDs := []string{}
+	serializedBehindMissionID := ""
+	if len(runnableMissionIDs) == 1 {
+		selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs[0])
+	} else if len(runnableMissionIDs) > 1 {
+		serialize := false
+		for _, missionID := range runnableMissionIDs {
+			entry := entryByMission[missionID]
+			if boolValue(entry["release_adjacent"]) || schedulerRiskRank(stringValue(entry["risk_level"])) >= 4 {
+				serialize = true
+				break
+			}
+		}
+		if serialize {
+			selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs[0])
+			serializedBehindMissionID = runnableMissionIDs[0]
+			for _, missionID := range runnableMissionIDs[1:] {
+				entry := entryByMission[missionID]
+				entry["classification"] = "deferred"
+				reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Serialized behind higher-risk or release-adjacent mission %s.", serializedBehindMissionID))
+				entry["reasons"] = stringListToAny(dedupeStrings(reasons))
+				entry["recommended_action"] = fmt.Sprintf("Defer this mission until %s clears its foreground risk.", serializedBehindMissionID)
+				if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
+					currentState := stringValue(entry["authoritative_run_state"])
+					if currentState == "ready" || currentState == "executing" {
+						rescheduleActions = append(rescheduleActions, map[string]any{
+							"mission_id":    missionID,
+							"run_id":        runID,
+							"action_kind":   "defer_until_foreground_risk_clears",
+							"target_state":  "waiting",
+							"current_state": currentState,
+							"reason":        fmt.Sprintf("Scheduler is serializing this mission behind %s due to higher-risk foreground work.", serializedBehindMissionID),
+						})
+					}
+				}
+				entryByMission[missionID] = entry
+			}
+		} else {
+			selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs...)
+		}
+	}
+
+	selectedRunIDs := []string{}
+	for _, missionID := range selectedMissionIDs {
+		if runID := stringValue(entryByMission[missionID]["authoritative_run_id"]); runID != "" {
+			selectedRunIDs = append(selectedRunIDs, runID)
+		}
+	}
+
+	executionMode := "solo"
+	if len(selectedMissionIDs) > 1 {
+		executionMode = "scheduled_parallel_missions"
+	} else if len(selectedMissionIDs) == 1 {
+		selected := entryByMission[selectedMissionIDs[0]]
+		if intValue(selected["teammate_run_count"]) > 0 || intValue(selected["active_run_count"]) > 1 {
+			executionMode = "managed_delegation"
+		}
+	}
+
+	entries := []any{}
+	classificationTally := map[string]int{
+		"runnable":              0,
+		"deferred":              0,
+		"blocked-by-dependency": 0,
+		"blocked-by-policy":     0,
+		"blocked-by-overlap":    0,
+		"completed":             0,
+		"needs-human-decision":  0,
+	}
+	for _, missionID := range missionOrder {
+		entry := entryByMission[missionID]
+		classification := stringValue(entry["classification"])
+		if _, ok := classificationTally[classification]; ok {
+			classificationTally[classification]++
+		}
+		entry["selected"] = false
+		for _, selectedMissionID := range selectedMissionIDs {
+			if missionID == selectedMissionID {
+				entry["selected"] = true
+				break
+			}
+		}
+		entries = append(entries, entry)
+		if classification == "runnable" && stringValue(entry["authoritative_run_state"]) == "waiting" {
+			rescheduleActions = append(rescheduleActions, map[string]any{
+				"mission_id":    missionID,
+				"run_id":        stringValue(entry["authoritative_run_id"]),
+				"action_kind":   "resume_candidate",
+				"target_state":  "ready",
+				"current_state": stringValue(entry["authoritative_run_state"]),
+				"reason":        "Scheduler sees the mission as runnable even though the authoritative run is still waiting.",
+			})
+		}
+	}
+
+	nextAction := "No runnable mission remains; review blockers, meetings, or dependencies."
+	switch {
+	case len(selectedMissionIDs) > 1:
+		nextAction = fmt.Sprintf("Scheduler selected %d missions for a governed parallel batch.", len(selectedMissionIDs))
+	case len(selectedMissionIDs) == 1 && executionMode == "managed_delegation":
+		nextAction = fmt.Sprintf("Scheduler recommends managed delegation on %s.", selectedMissionIDs[0])
+	case len(selectedMissionIDs) == 1:
+		nextAction = fmt.Sprintf("Scheduler selected %s as the foreground mission.", selectedMissionIDs[0])
+	case len(requiredHumanDecisions) > 0:
+		nextAction = "Resolve required human decisions before widening execution."
+	case classificationTally["blocked-by-dependency"] > 0:
+		nextAction = "Satisfy dependencies before resuming blocked missions."
+	}
+
+	snapshot := map[string]any{
+		"generated_at":                  generatedAt,
+		"profile_id":                    stringValue(getKey(profile, "profile.profile_id", "")),
+		"execution_mode":                executionMode,
+		"mission_count":                 len(entries),
+		"selected_mission_count":        len(selectedMissionIDs),
+		"selected_run_count":            len(selectedRunIDs),
+		"selected_mission_ids":          stringListToAny(selectedMissionIDs),
+		"selected_run_ids":              stringListToAny(selectedRunIDs),
+		"classification_tally":          classificationTally,
+		"mission_classifications":       entries,
+		"required_human_decision_count": len(requiredHumanDecisions),
+		"required_human_decisions":      requiredHumanDecisions,
+		"reschedule_action_count":       len(rescheduleActions),
+		"reschedule_actions":            rescheduleActions,
+		"follow_up_signal_count": len(dedupeStrings(func() []string {
+			ids := []string{}
+			for _, entry := range entries {
+				missionEntry, _ := toMap(entry)
+				for _, signal := range toList(missionEntry["follow_up_signals"]) {
+					signalMap, _ := toMap(signal)
+					if id := stringValue(signalMap["signal_id"]); id != "" {
+						ids = append(ids, id)
+					}
+				}
+			}
+			return ids
+		}())),
+		"next_action":          nextAction,
+		"snapshot_id":          "schedule-" + now,
+		"snapshot_path":        "",
+		"latest_snapshot_path": "",
+	}
+	return snapshot
+}
+
+func writeSchedulerSnapshot(snapshot map[string]any) (map[string]any, error) {
+	snapshotID := firstNonBlank(stringValue(snapshot["snapshot_id"]), "schedule-"+nowTime().UTC().Format("20060102150405"))
+	snapshot["snapshot_id"] = snapshotID
+	snapshotPath := schedulerSnapshotPath(snapshotID)
+	latestPath := schedulerLatestSnapshotPath()
+	payload := map[string]any{
+		"version":  1,
+		"snapshot": snapshot,
+	}
+	if err := dumpData(snapshotPath, payload); err != nil {
+		return nil, err
+	}
+	if err := dumpData(latestPath, payload); err != nil {
+		return nil, err
+	}
+	snapshot["snapshot_path"] = snapshotPath
+	snapshot["latest_snapshot_path"] = latestPath
+	return snapshot, nil
+}
+
 func cmdHome(args []string) error {
 	_ = args
 	if err := ensureRuntimeDirs(); err != nil {
@@ -6313,6 +6835,7 @@ func cmdHome(args []string) error {
 		missionGraphEdges += len(toList(mission["depends_on"]))
 	}
 	graphAuthorityAudit, _ := toMap(missionGraphAuthorityAudit(missionRegistry, registry, false))
+	scheduler := schedulerSummary(profile, missionRegistry, registry, signals, false)
 	nextAction := "Continue active execution and monitor signals."
 	switch {
 	case len(orphanSignals) > 0 || len(orphanMeetings) > 0:
@@ -6343,49 +6866,60 @@ func cmdHome(args []string) error {
 		nextAction = "Review active meetings and convert conclusions into run updates."
 	case activeRCRecord != nil:
 		nextAction = "Review the active RC and decide whether to promote, fix, or close it."
+	case intValue(scheduler["selected_mission_count"]) > 1:
+		nextAction = "Scheduler found a governed parallel batch; review the selected missions and widen execution deliberately."
+	case stringValue(scheduler["execution_mode"]) == "managed_delegation" && intValue(scheduler["selected_mission_count"]) == 1:
+		nextAction = "Scheduler recommends managed delegation on the selected foreground mission."
 	case len(waitingRuns) > 0:
 		nextAction = "Review waiting runs and dependency state."
 	}
 	return printJSON(map[string]any{
-		"profile_id":                            stringValue(getKey(profile, "profile.profile_id", "")),
-		"active_mission_count":                  len(activeMissions),
-		"blocked_mission_count":                 len(blockedMissions),
-		"review_mission_count":                  len(reviewMissions),
-		"dependency_mission_count":              len(dependencyBlockedMissions),
-		"mission_graph_edge_count":              missionGraphEdges,
-		"mission_bundle_count":                  intValue(graphAuthorityAudit["bundle_count"]),
-		"mission_conflicted_bundle_count":       intValue(graphAuthorityAudit["conflicted_bundle_count"]),
-		"mission_governed_bundle_count":         intValue(graphAuthorityAudit["governed_bundle_count"]),
-		"mission_graph_conflict_count":          intValue(graphAuthorityAudit["cross_mission_conflict_count"]),
-		"mission_dependency_adjudication_count": intValue(graphAuthorityAudit["dependency_adjudication_count"]),
-		"active_run_count":                      len(activeRuns),
-		"active_teammate_count":                 len(activeTeammates),
-		"blocked_run_count":                     len(blockedRuns),
-		"dependency_blocked_count":              len(dependencyBlockedRuns),
-		"review_blocked_count":                  len(reviewBlockedRuns),
-		"checks_failed_count":                   len(checksFailedRuns),
-		"merge_ready_count":                     len(mergeReadyRuns),
-		"ownership_overlap_count":               len(overlappingClaims),
-		"active_signal_count":                   len(activeSignals),
-		"coordination_signal_count":             len(coordinationSignals),
-		"active_meeting_count":                  len(meetings),
-		"active_rc_count":                       boolToInt(activeRCRecord != nil),
-		"open_meeting_action_count":             len(meetingActions),
-		"orphan_signal_count":                   len(orphanSignals),
-		"orphan_meeting_count":                  len(orphanMeetings),
-		"missions":                              activeMissions,
-		"dependency_blocked_missions":           dependencyBlockedMissions,
-		"mission_authority_audit":               graphAuthorityAudit,
-		"runs":                                  activeRuns,
-		"dependency_blocked_runs":               dependencyBlockedRuns,
-		"signals":                               activeSignals,
-		"meetings":                              meetings,
-		"overlapping_claims":                    overlappingClaims,
-		"active_rc":                             mapOrEmpty(activeRCRecord),
-		"meeting_actions":                       meetingActions,
-		"orphan_signals":                        orphanSignals,
-		"orphan_meetings":                       orphanMeetings,
-		"next_action":                           nextAction,
+		"profile_id":                              stringValue(getKey(profile, "profile.profile_id", "")),
+		"active_mission_count":                    len(activeMissions),
+		"blocked_mission_count":                   len(blockedMissions),
+		"review_mission_count":                    len(reviewMissions),
+		"dependency_mission_count":                len(dependencyBlockedMissions),
+		"mission_graph_edge_count":                missionGraphEdges,
+		"mission_bundle_count":                    intValue(graphAuthorityAudit["bundle_count"]),
+		"mission_conflicted_bundle_count":         intValue(graphAuthorityAudit["conflicted_bundle_count"]),
+		"mission_governed_bundle_count":           intValue(graphAuthorityAudit["governed_bundle_count"]),
+		"mission_graph_conflict_count":            intValue(graphAuthorityAudit["cross_mission_conflict_count"]),
+		"mission_dependency_adjudication_count":   intValue(graphAuthorityAudit["dependency_adjudication_count"]),
+		"active_run_count":                        len(activeRuns),
+		"active_teammate_count":                   len(activeTeammates),
+		"blocked_run_count":                       len(blockedRuns),
+		"dependency_blocked_count":                len(dependencyBlockedRuns),
+		"review_blocked_count":                    len(reviewBlockedRuns),
+		"checks_failed_count":                     len(checksFailedRuns),
+		"merge_ready_count":                       len(mergeReadyRuns),
+		"ownership_overlap_count":                 len(overlappingClaims),
+		"active_signal_count":                     len(activeSignals),
+		"coordination_signal_count":               len(coordinationSignals),
+		"active_meeting_count":                    len(meetings),
+		"active_rc_count":                         boolToInt(activeRCRecord != nil),
+		"open_meeting_action_count":               len(meetingActions),
+		"orphan_signal_count":                     len(orphanSignals),
+		"orphan_meeting_count":                    len(orphanMeetings),
+		"missions":                                activeMissions,
+		"dependency_blocked_missions":             dependencyBlockedMissions,
+		"mission_authority_audit":                 graphAuthorityAudit,
+		"runs":                                    activeRuns,
+		"dependency_blocked_runs":                 dependencyBlockedRuns,
+		"signals":                                 activeSignals,
+		"meetings":                                meetings,
+		"overlapping_claims":                      overlappingClaims,
+		"active_rc":                               mapOrEmpty(activeRCRecord),
+		"meeting_actions":                         meetingActions,
+		"orphan_signals":                          orphanSignals,
+		"orphan_meetings":                         orphanMeetings,
+		"scheduler_execution_mode":                stringValue(scheduler["execution_mode"]),
+		"scheduler_selected_mission_count":        intValue(scheduler["selected_mission_count"]),
+		"scheduler_required_human_decision_count": intValue(scheduler["required_human_decision_count"]),
+		"scheduler_reschedule_action_count":       intValue(scheduler["reschedule_action_count"]),
+		"scheduler_tally":                         cloneValue(getKey(scheduler, "classification_tally", map[string]any{})),
+		"scheduler_selected_mission_ids":          cloneValue(toList(scheduler["selected_mission_ids"])),
+		"scheduler_next_action":                   stringValue(scheduler["next_action"]),
+		"next_action":                             nextAction,
 	})
 }
 
