@@ -534,6 +534,7 @@ The following parts of the operating model are already concretely present:
 - scheduler can now distinguish generic leader decisions from council-worthy decisions by consuming profile `meeting_triggers`, surfacing `recommended_decision_surface`, `meeting_trigger_refs`, and `council_decision_count`, and collapsing escalation-required mission bundles into one bundle-scoped decision packet instead of one duplicated decision per mission
 - scheduler now orders human decisions into a portfolio queue, exposing a `primary_required_human_decision`, deferred-decision count, and scope/surface tallies so the leader can handle bundle-scoped council decisions before lower-scope follow-up decisions when both coexist
 - scheduler now projects that queue back into mission classifications through `human_decision_queue_position` and `primary_human_decision`, so leader-facing mission views stay aligned with the control-plane decision portfolio
+- scheduler now emits explicit `defer_pending_primary_human_decision` actions for lower-priority governed decisions, turning the decision portfolio into real rescheduling behavior instead of only display metadata
 - scheduler now escalates stale runs, expired signals, and stale meetings into explicit maintenance work instead of leaving them only to doctor output
 - first-class mission objects
 - mission authority separated from freshest run activity

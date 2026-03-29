@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.56.0 (in progress)
+- **Version**: 0.57.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Scheduler now annotates mission decision-queue position)
+- **Last Session**: 2026-03-29 (Scheduler now defers lower-priority human decisions)
 
 ## Current Phase
 
@@ -22,6 +22,7 @@
 - **Bundle-scoped scheduler decisions added**: escalation-required mission bundles no longer emit one repeated `establish_bundle_governor` decision per mission; scheduler now collapses them into one bundle-scoped human-decision packet with merged mission ids, trigger refs, and bundle-required action so the leader sees the actual decision surface instead of repeated mission noise
 - **Prioritized decision portfolio added**: scheduler now sorts required human decisions into a real portfolio queue, exposing `primary_required_human_decision`, deferred-decision count, scope/surface tallies, and bundle-vs-mission priority ordering so the leader can see which governed decision should be handled first when multiple human decisions coexist
 - **Mission-level queue visibility added**: scheduler now projects the human-decision queue back onto mission classifications, exposing `human_decision_queue_position` and `primary_human_decision` so each affected mission shows whether it is the current primary decision or waiting behind another governed decision
+- **Decision-queue deferral added**: non-primary human-decision missions now receive explicit `defer_pending_primary_human_decision` reschedule actions, so the runtime not only shows queue order but also treats lower-priority governed decisions as waiting behind the current primary decision
 - **Scheduler maintenance escalation added**: scheduler snapshots now emit `maintenance_actions`, `maintenance_action_count`, and `maintenance_action_tally`, turning stale runs, expired signals, and stale meetings into explicit leader-facing maintenance work instead of leaving them only to `doctor`
 - **Maintenance guidance prioritized**: when stale control-plane state coexists with runnable foreground work, scheduler `next_action` now tells the leader to keep the foreground batch bounded and clean stale state before widening execution
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves stale run plus stale signal maintenance escalation and verifies that refreshing the run and retiring the stale signal restores a clean control-plane path

@@ -7578,6 +7578,28 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		if queuePosition, ok := decisionQueuePositionByKey[queueKey]; ok {
 			entry["human_decision_queue_position"] = queuePosition
 			entry["primary_human_decision"] = primaryDecisionByKey[queueKey]
+			if queuePosition > 1 && stringValue(entry["classification"]) == "needs-human-decision" {
+				reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Another governed human decision currently outranks this mission in the scheduler portfolio (queue position %d).", queuePosition))
+				entry["reasons"] = stringListToAny(dedupeStrings(reasons))
+				entry["recommended_action"] = firstNonBlank(
+					stringValue(entry["recommended_action"]),
+					fmt.Sprintf("Hold this mission behind the current primary human decision until queue position %d is reached.", queuePosition),
+				)
+				if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
+					currentState := stringValue(entry["authoritative_run_state"])
+					if currentState == "ready" || currentState == "executing" {
+						rescheduleActions = append(rescheduleActions, map[string]any{
+							"mission_id":              missionID,
+							"run_id":                  runID,
+							"action_kind":             "defer_pending_primary_human_decision",
+							"target_state":            "waiting",
+							"current_state":           currentState,
+							"human_decision_position": queuePosition,
+							"reason":                  "Scheduler is deferring this mission behind a higher-priority human decision in the portfolio queue.",
+						})
+					}
+				}
+			}
 		} else {
 			entry["human_decision_queue_position"] = 0
 			entry["primary_human_decision"] = false

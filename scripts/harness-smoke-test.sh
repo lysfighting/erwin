@@ -423,6 +423,8 @@ assert_json_field "$schedule_decision_portfolio_output" '"mission_count": 3' "pr
 assert_json_field "$schedule_decision_portfolio_output" "\"mission_id\": \"issue-20023\"" "secondary mission decision remains visible in the decision portfolio"
 assert_json_field "$schedule_decision_portfolio_output" '"human_decision_queue_position": 2' "scheduler annotates the lower-priority mission decision with queue position 2"
 assert_json_field "$schedule_decision_portfolio_output" '"primary_human_decision": false' "scheduler marks non-primary human decisions explicitly"
+assert_json_field "$schedule_decision_portfolio_output" '"action_kind": "defer_pending_primary_human_decision"' "scheduler emits an explicit defer action for lower-priority human decisions"
+assert_json_field "$schedule_decision_portfolio_output" '"human_decision_position": 2' "defer action records the lower-priority decision queue position"
 resolved_decision_portfolio_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-decision-portfolio resolved "Secondary decision packet covered.")
 assert_json_field "$resolved_decision_portfolio_signal" '"state": "resolved"' "secondary mission-level decision signal can be resolved after portfolio coverage"
 resolved_decision_portfolio_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$decision_portfolio_run" completed "Closed decision-portfolio mission.")
