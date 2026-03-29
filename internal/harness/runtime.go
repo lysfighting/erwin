@@ -6777,6 +6777,12 @@ func schedulerSnapshotPath(snapshotID string) string {
 	return filepath.Join(schedulerSnapshotsRoot(), snapshotID+".json")
 }
 
+func latestSchedulerSnapshot() map[string]any {
+	payload, _ := toMap(loadData(schedulerLatestSnapshotPath(), map[string]any{}))
+	snapshot, _ := toMap(payload["snapshot"])
+	return snapshot
+}
+
 func schedulerPriorityRank(value string) int {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "p0", "critical", "urgent", "highest":
@@ -7101,6 +7107,12 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	now := nowTime().UTC().Format("20060102150405")
 	generatedAt := nowISO()
 	graphAuthority, _ := toMap(missionGraphAuthorityAudit(missionRegistry, registry, includeInactive))
+	previousSchedulerSnapshot := latestSchedulerSnapshot()
+	previousForegroundMissionID := ""
+	previousSelectedMissionIDs := dedupeStrings(anyListToStrings(toList(previousSchedulerSnapshot["selected_mission_ids"])))
+	if len(previousSelectedMissionIDs) > 0 {
+		previousForegroundMissionID = previousSelectedMissionIDs[0]
+	}
 	maxParallelRuns := intValue(getKey(profile, "profile.max_parallel_runs", 0))
 	if maxParallelRuns <= 0 {
 		maxParallelRuns = 1
@@ -7631,6 +7643,16 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		if boolValue(left["release_adjacent"]) != boolValue(right["release_adjacent"]) {
 			return boolValue(left["release_adjacent"])
 		}
+		leftID := runnableMissionIDs[i]
+		rightID := runnableMissionIDs[j]
+		if previousForegroundMissionID != "" {
+			if leftID == previousForegroundMissionID && rightID != previousForegroundMissionID {
+				return true
+			}
+			if rightID == previousForegroundMissionID && leftID != previousForegroundMissionID {
+				return false
+			}
+		}
 		leftUpdated := stringValue(left["updated_at"])
 		rightUpdated := stringValue(right["updated_at"])
 		if leftUpdated != rightUpdated {
@@ -7642,9 +7664,13 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	selectedMissionIDs := []string{}
 	serializedBehindMissionID := ""
 	batchAdmissionPolicy := "single"
+	selectionPolicy := "freshest_priority_risk"
 	batchCapacityDeferredMissionIDs := []string{}
 	if len(runnableMissionIDs) == 1 {
 		selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs[0])
+		if runnableMissionIDs[0] == previousForegroundMissionID {
+			selectionPolicy = "sticky_foreground"
+		}
 	} else if len(runnableMissionIDs) > 1 {
 		serialize := false
 		serializeReason := ""
@@ -7668,6 +7694,13 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				batchAdmissionPolicy = "serialize_high_risk"
 			}
 			selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs[0])
+			if selectedMissionIDs[0] == previousForegroundMissionID {
+				selectionPolicy = "sticky_foreground"
+			} else if serializeReason == "p0_priority" {
+				selectionPolicy = "priority_forced"
+			} else {
+				selectionPolicy = "risk_forced"
+			}
 			serializedBehindMissionID = runnableMissionIDs[0]
 			for _, missionID := range runnableMissionIDs[1:] {
 				entry := entryByMission[missionID]
@@ -7716,6 +7749,9 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				if !allCandidatesJustified {
 					batchAdmissionPolicy = "serialize_missing_parallel_justification"
 					selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs[0])
+					if selectedMissionIDs[0] == previousForegroundMissionID {
+						selectionPolicy = "sticky_foreground"
+					}
 					serializedBehindMissionID = runnableMissionIDs[0]
 					for _, missionID := range runnableMissionIDs[1:] {
 						entry := entryByMission[missionID]
@@ -7743,6 +7779,11 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			if len(selectedMissionIDs) == 0 {
 				batchAdmissionPolicy = "bounded_parallel_capacity"
 				selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs...)
+				if len(selectedMissionIDs) > 0 && selectedMissionIDs[0] == previousForegroundMissionID {
+					selectionPolicy = "sticky_foreground"
+				} else {
+					selectionPolicy = "parallel_priority_risk"
+				}
 			}
 			if len(selectedMissionIDs) > maxParallelRuns {
 				batchCapacityDeferredMissionIDs = append(batchCapacityDeferredMissionIDs, selectedMissionIDs[maxParallelRuns:]...)
@@ -7887,6 +7928,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"generated_at":                          generatedAt,
 		"profile_id":                            stringValue(getKey(profile, "profile.profile_id", "")),
 		"execution_mode":                        executionMode,
+		"selection_policy":                      selectionPolicy,
+		"previous_foreground_mission_id":        previousForegroundMissionID,
 		"mission_count":                         len(entries),
 		"selected_mission_count":                len(selectedMissionIDs),
 		"selected_run_count":                    len(selectedRunIDs),

@@ -461,10 +461,21 @@ parallel_justification_extra=$(
 EOF
 )
 assert_json_field "$parallel_justification_extra" '"parallel_justification": "Independent docs update with isolated ownership boundary."' "extra parallel mission can record explicit parallel justification"
+parallel_justification_root=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$run_id"
+{
+  "parallel_justification": "Root foreground mission remains bounded and independently justifiable."
+}
+EOF
+)
+assert_json_field "$parallel_justification_root" '"parallel_justification": "Root foreground mission remains bounded and independently justifiable."' "existing foreground mission can also record explicit parallel justification"
 scheduler_parallel_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$scheduler_parallel_output" '"execution_mode": "scheduled_parallel_missions"' "scheduler recommends a parallel batch when multiple isolated missions are runnable"
 assert_json_field "$scheduler_parallel_output" '"selected_mission_count": 2' "scheduler selects both isolated runnable missions for the batch"
-assert_json_field "$scheduler_parallel_output" '"mission_id": "issue-20004"' "scheduler includes the independent parallel mission in the batch"
+assert_json_field "$scheduler_parallel_output" '"selection_policy": "sticky_foreground"' "parallel batch keeps the existing foreground mission when tie conditions otherwise match"
+assert_json_field "$scheduler_parallel_output" '"previous_foreground_mission_id": "issue-20001"' "parallel batch records the previous foreground mission"
+assert_json_field "$scheduler_parallel_output" "\"mission_id\": \"issue-20004\"" "scheduler keeps the independent parallel mission visible in the portfolio"
 assert_json_field "$scheduler_parallel_output" '"batch_admission_policy": "bounded_parallel_capacity"' "scheduler marks bounded parallel capacity as the admission policy"
 assert_json_field "$scheduler_parallel_output" '"capacity_deferred_count": 1' "scheduler defers overflow missions behind the configured parallel capacity"
 assert_json_field "$scheduler_parallel_output" '"action_kind": "defer_due_parallel_capacity"' "scheduler emits a reschedule action when runnable missions exceed parallel capacity"
@@ -487,6 +498,29 @@ resolved_parallel_gate_run_a=$(run_in_repo bash scripts/harness-runs.sh set-stat
 assert_json_field "$resolved_parallel_gate_run_a" '"state": "completed"' "unguarded parallel mission A can be closed after justification-gate coverage"
 resolved_parallel_gate_run_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$parallel_gate_run_b" completed "Resolved missing parallel justification smoke path B.")
 assert_json_field "$resolved_parallel_gate_run_b" '"state": "completed"' "unguarded parallel mission B can be closed after justification-gate coverage"
+
+section "Sticky foreground scheduling"
+sticky_primary_claim=$(run_in_repo bash scripts/harness-claim.sh 20024 "Harness Sticky Foreground A" --owns="file:showcase/CHANGELOG.md")
+assert_json_field "$sticky_primary_claim" '"mission_id": "issue-20024"' "sticky foreground mission A can materialize"
+sticky_primary_run=$(printf '%s\n' "$sticky_primary_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+sticky_first_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$sticky_first_schedule" '"selection_policy": "sticky_foreground"' "scheduler retains the established foreground mission when a tied peer appears"
+assert_json_field "$sticky_first_schedule" '"previous_foreground_mission_id": "issue-20001"' "sticky foreground scheduling records the established foreground mission"
+assert_json_field "$sticky_first_schedule" '"selected_mission_count": 1' "sticky foreground schedule emits a foreground batch"
+sticky_secondary_claim=$(run_in_repo bash scripts/harness-claim.sh 20025 "Harness Sticky Foreground B" --owns="file:showcase/src/App.tsx")
+assert_json_field "$sticky_secondary_claim" '"mission_id": "issue-20025"' "sticky foreground mission B can materialize after the first scheduler pass"
+sticky_secondary_run=$(printf '%s\n' "$sticky_secondary_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+sticky_second_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$sticky_second_schedule" '"selection_policy": "sticky_foreground"' "scheduler keeps the previous foreground mission when tie conditions otherwise match"
+assert_json_field "$sticky_second_schedule" '"previous_foreground_mission_id": "issue-20001"' "scheduler records the previous foreground mission in the snapshot"
+assert_json_field "$sticky_second_schedule" '"batch_admission_policy": "serialize_missing_parallel_justification"' "sticky foreground scheduling still obeys the parallel-justification gate"
+assert_json_field "$sticky_second_schedule" "\"mission_id\": \"issue-20001\"" "sticky foreground scheduling keeps the established foreground mission visible in the classifications"
+assert_json_field "$sticky_second_schedule" '"selected": true' "sticky foreground scheduling leaves the retained foreground mission selected"
+assert_json_field "$sticky_second_schedule" '"action_kind": "defer_due_missing_parallel_justification"' "sticky foreground scheduling still defers peer missions behind the active foreground batch"
+resolved_sticky_primary=$(run_in_repo bash scripts/harness-runs.sh set-state "$sticky_primary_run" completed "Resolved sticky foreground mission A.")
+assert_json_field "$resolved_sticky_primary" '"state": "completed"' "sticky foreground mission A can be closed after scheduler coverage"
+resolved_sticky_secondary=$(run_in_repo bash scripts/harness-runs.sh set-state "$sticky_secondary_run" completed "Resolved sticky foreground mission B.")
+assert_json_field "$resolved_sticky_secondary" '"state": "completed"' "sticky foreground mission B can be closed after scheduler coverage"
 
 section "Profile-backed high-risk serialization"
 high_risk_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20017 "Harness High-Risk Profile Mission" --owns="file:install.sh")
