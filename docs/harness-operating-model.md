@@ -526,7 +526,7 @@ Its operating model is supposed to be executable.
 The following parts of the operating model are already concretely present:
 
 - leader-facing `home` and `doctor`
-- leader-facing scheduler baseline with durable snapshots, mission classification, execution-mode selection, bundle-aware deferral/escalation, and rescheduling hints
+- leader-facing scheduler baseline with durable snapshots, mission classification, execution-mode selection, bundle-aware deferral/escalation, bounded parallel admission from profile policy, and rescheduling hints
 - first-class mission objects
 - mission authority separated from freshest run activity
 - bounded teammate runs

@@ -6707,6 +6707,10 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	now := nowTime().UTC().Format("20060102150405")
 	generatedAt := nowISO()
 	graphAuthority, _ := toMap(missionGraphAuthorityAudit(missionRegistry, registry, includeInactive))
+	maxParallelRuns := intValue(getKey(profile, "profile.max_parallel_runs", 0))
+	if maxParallelRuns <= 0 {
+		maxParallelRuns = 1
+	}
 
 	bundleInfoByMission := map[string]map[string]any{}
 	conflictMissionSet := map[string]bool{}
@@ -7094,6 +7098,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 
 	selectedMissionIDs := []string{}
 	serializedBehindMissionID := ""
+	batchAdmissionPolicy := "single"
+	batchCapacityDeferredMissionIDs := []string{}
 	if len(runnableMissionIDs) == 1 {
 		selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs[0])
 	} else if len(runnableMissionIDs) > 1 {
@@ -7106,6 +7112,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			}
 		}
 		if serialize {
+			batchAdmissionPolicy = "serialize_high_risk"
 			selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs[0])
 			serializedBehindMissionID = runnableMissionIDs[0]
 			for _, missionID := range runnableMissionIDs[1:] {
@@ -7130,7 +7137,33 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				entryByMission[missionID] = entry
 			}
 		} else {
+			batchAdmissionPolicy = "bounded_parallel_capacity"
 			selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs...)
+			if len(selectedMissionIDs) > maxParallelRuns {
+				batchCapacityDeferredMissionIDs = append(batchCapacityDeferredMissionIDs, selectedMissionIDs[maxParallelRuns:]...)
+				selectedMissionIDs = selectedMissionIDs[:maxParallelRuns]
+				for _, missionID := range batchCapacityDeferredMissionIDs {
+					entry := entryByMission[missionID]
+					entry["classification"] = "deferred"
+					reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Deferred by scheduler capacity because the current bounded parallel limit is %d.", maxParallelRuns))
+					entry["reasons"] = stringListToAny(dedupeStrings(reasons))
+					entry["recommended_action"] = fmt.Sprintf("Defer this mission until one of the %d admitted parallel slots clears.", maxParallelRuns)
+					if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
+						currentState := stringValue(entry["authoritative_run_state"])
+						if currentState == "ready" || currentState == "executing" {
+							rescheduleActions = append(rescheduleActions, map[string]any{
+								"mission_id":    missionID,
+								"run_id":        runID,
+								"action_kind":   "defer_due_parallel_capacity",
+								"target_state":  "waiting",
+								"current_state": currentState,
+								"reason":        fmt.Sprintf("Scheduler bounded the parallel batch to %d admitted mission(s).", maxParallelRuns),
+							})
+						}
+					}
+					entryByMission[missionID] = entry
+				}
+			}
 		}
 	}
 
@@ -7207,7 +7240,11 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	case len(requiredHumanDecisions) > 0:
 		nextAction = "Resolve required human decisions before widening execution."
 	case len(selectedMissionIDs) > 1:
-		nextAction = fmt.Sprintf("Scheduler selected %d missions for a governed parallel batch.", len(selectedMissionIDs))
+		if len(batchCapacityDeferredMissionIDs) > 0 {
+			nextAction = fmt.Sprintf("Scheduler admitted %d missions into the bounded parallel batch and deferred %d behind the current parallel capacity.", len(selectedMissionIDs), len(batchCapacityDeferredMissionIDs))
+		} else {
+			nextAction = fmt.Sprintf("Scheduler selected %d missions for a governed parallel batch.", len(selectedMissionIDs))
+		}
 	case len(selectedMissionIDs) == 1 && executionMode == "managed_delegation":
 		nextAction = fmt.Sprintf("Scheduler recommends managed delegation on %s.", selectedMissionIDs[0])
 	case len(selectedMissionIDs) == 1:
@@ -7225,6 +7262,10 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"selected_run_count":            len(selectedRunIDs),
 		"selected_mission_ids":          stringListToAny(selectedMissionIDs),
 		"selected_run_ids":              stringListToAny(selectedRunIDs),
+		"max_parallel_runs":             maxParallelRuns,
+		"batch_admission_policy":        batchAdmissionPolicy,
+		"capacity_deferred_mission_ids": stringListToAny(batchCapacityDeferredMissionIDs),
+		"capacity_deferred_count":       len(batchCapacityDeferredMissionIDs),
 		"classification_tally":          classificationTally,
 		"bundle_role_tally":             bundleRoleTally,
 		"mission_classifications":       entries,
