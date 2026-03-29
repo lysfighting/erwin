@@ -110,12 +110,28 @@ assert_json_field "$review_changes_output" '"review_status": "changes_requested"
 checks_failed_output=$(run_in_repo ./scripts/harness-ship.sh checks "$run_id" failed "ci:failed")
 assert_json_field "$checks_failed_output" '"checks_status": "failed"' "ship checks tracks failed state"
 
+inconsistent_ship_update=$(
+  cd "$TEST_REPO" &&
+    cat <<'EOF' | bash scripts/harness-runs.sh update "$run_id"
+{
+  "ship_status": "approved"
+}
+EOF
+)
+assert_json_field "$inconsistent_ship_update" '"ship_status": "approved"' "release smoke can force an inconsistent optimistic ship status"
+
+gate_conflict_audit=$(run_in_repo ./scripts/harness-runs.sh authority-audit "$run_id")
+assert_json_field "$gate_conflict_audit" '"claim_ref": "review_status"' "run authority audit reports review gate overriding optimistic ship status"
+assert_json_field "$gate_conflict_audit" '"claim_ref": "checks_status"' "run authority audit reports checks gate overriding optimistic ship status"
+
 review_approved_output=$(run_in_repo ./scripts/harness-ship.sh review "$run_id" approved "Approved after fixes")
 assert_json_field "$review_approved_output" '"review_status": "approved"' "ship review tracks approval"
 
 checks_passed_output=$(run_in_repo ./scripts/harness-ship.sh checks "$run_id" passed "ci:passed")
 assert_json_field "$checks_passed_output" '"checks_status": "passed"' "ship checks tracks passed state"
 assert_json_field "$checks_passed_output" '"ship_status": "approved"' "ship checks marks merge-ready PR as approved"
+gate_conflict_cleared=$(run_in_repo ./scripts/harness-runs.sh authority-audit "$run_id")
+assert_json_field "$gate_conflict_cleared" '"higher_authority_conflict_count": 0' "run authority audit clears once review and checks agree with ship status"
 
 merge_output=$(run_in_repo ./scripts/harness-ship.sh merge "$run_id" --via=git "Merged cleanly")
 assert_json_field "$merge_output" '"ship_status": "merged"' "ship merge records merge"

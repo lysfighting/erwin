@@ -23,6 +23,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Missing governed-worktree detection in `runs authority-audit`, so leader-facing authority review now catches absent provisioned worktrees in addition to branch drift and dirty-worktree intent drift.
 - `glob:` ownership selectors, so path-pattern ownership can participate in selector-aware overlap checks and teammate admission control.
 - Debate wave obligations in `meetings orchestrate`, so leader-facing council summaries now distinguish missing independent-review wave work from later cross-examination route work.
+- Ship-gate authority adjudication in `runs authority-audit`, so leader-facing run review can explain when verification/review/checks state overrides an overly optimistic delivery status.
 
 ### Changed
 - `scripts/harness-runtime.sh` now prefers packaged binaries before falling back to local Go build.

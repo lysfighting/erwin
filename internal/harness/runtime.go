@@ -1941,6 +1941,49 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 	signalSources := []any{}
 	conflicts := []any{}
 	supersededSignals := []any{}
+
+	shipStatus := firstNonBlank(stringValue(run["ship_status"]), "unstarted")
+	if shipStatus == "approved" || shipStatus == "merged" {
+		if stringValue(run["verification_status"]) != "passed" {
+			conflicts = append(conflicts, map[string]any{
+				"claim_ref":       "verification_status",
+				"source_ref":      "run:" + runID + ".verification_status",
+				"winning_source":  "run:" + runID + ".verification_status",
+				"losing_source":   "run:" + runID + ".ship_status",
+				"authority_level": "L1",
+				"resolution_kind": "gate_state_overrides_ship_status",
+				"current_value":   shipStatus,
+				"expected_value":  "verification_status=passed",
+				"note":            "Ship status claims approval/merge readiness, but verification_status is not passed.",
+			})
+		}
+		if stringValue(run["pr_ref"]) != "" && stringValue(run["review_status"]) != "approved" {
+			conflicts = append(conflicts, map[string]any{
+				"claim_ref":       "review_status",
+				"source_ref":      "run:" + runID + ".review_status",
+				"winning_source":  "run:" + runID + ".review_status",
+				"losing_source":   "run:" + runID + ".ship_status",
+				"authority_level": "L1",
+				"resolution_kind": "gate_state_overrides_ship_status",
+				"current_value":   shipStatus,
+				"expected_value":  "review_status=approved",
+				"note":            "Ship status claims approval/merge readiness, but review_status is not approved.",
+			})
+		}
+		if stringValue(run["pr_ref"]) != "" && stringValue(run["checks_status"]) != "passed" {
+			conflicts = append(conflicts, map[string]any{
+				"claim_ref":       "checks_status",
+				"source_ref":      "run:" + runID + ".checks_status",
+				"winning_source":  "run:" + runID + ".checks_status",
+				"losing_source":   "run:" + runID + ".ship_status",
+				"authority_level": "L1",
+				"resolution_kind": "gate_state_overrides_ship_status",
+				"current_value":   shipStatus,
+				"expected_value":  "checks_status=passed",
+				"note":            "Ship status claims approval/merge readiness, but checks_status is not passed.",
+			})
+		}
+	}
 	for _, signal := range activeSignals {
 		signalID := stringValue(signal["signal_id"])
 		emittedAt := firstNonBlank(stringValue(signal["emitted_at"]), stringValue(signal["updated_at"]))

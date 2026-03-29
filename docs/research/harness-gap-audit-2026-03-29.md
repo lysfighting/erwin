@@ -102,11 +102,12 @@ What is still missing:
 
 ### 3. Authority adjudication
 
-Authority levels are now validated and surfaced, and the system now adjudicates signal supersession, same-claim meeting conflicts, and run-level active-signal disagreement. But it still does not consistently arbitrate every cross-surface conflict.
+Authority levels are now validated and surfaced, and the system now adjudicates signal supersession, same-claim meeting conflicts, run-level active-signal disagreement, and ship-gate winner/loser conflicts. But it still does not consistently arbitrate every cross-surface conflict.
 
 What is still missing:
 
 - systematic high-vs-low authority conflict handling when live git state contradicts contract intent beyond the new dirty-worktree-vs-clean-intent baseline
+- systematic high-vs-low authority conflict handling for other artifact families beyond the new ship-gate winner/loser rules
 - clearer winner/loser rules when run summary, contract, and live verification disagree without a governing signal or meeting
 - broader leader-facing explanations of why a lower-authority artifact was overridden outside the run/signal/meeting path
 
