@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.42.0 (in progress)
+- **Version**: 0.43.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Scheduler now consumes bundle authority directly)
+- **Last Session**: 2026-03-29 (Scheduler now prioritizes bundle decisions correctly)
 
 ## Current Phase
 
@@ -20,6 +20,7 @@
 
 - **Bundle-aware scheduler consumption added**: `missions schedule` now consumes mission-bundle authority packets instead of only the raw conflict list, so governed losing missions are deferred behind the current bundle governor, escalation-required bundles become explicit human decisions, and governed-but-ambiguous bundles no longer masquerade as ordinary runnable work
 - **Scheduler output widened**: mission classifications now surface `bundle_id`, `bundle_state`, `bundle_role`, `bundle_resolution_kind`, `bundle_governing_mission_id`, and `bundle_required_action`, making bundle-level control visible directly in durable scheduler snapshots
+- **Leader-facing scheduler priority fixed**: when required human bundle decisions coexist with a still-valid foreground batch, scheduler `next_action` now prioritizes the human decisions instead of pretending foreground selection is the only thing that matters; snapshots also emit `bundle_role_tally` so the leader can see the portfolio composition directly
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves pairwise governed bundles defer the losing mission behind the governor and that escalation-required bundles become explicit `establish_bundle_governor` scheduler decisions
 
 - **Stateful debate batch execution added**: `meetingDebatePlan` now computes `current_wave_batch_id`, `ready_wave_batch_count`, `blocked_wave_batch_count`, `resolved_wave_batch_count`, and batch-local `state/current` so the control plane can treat one debate batch as active while explicitly blocking the rest behind it

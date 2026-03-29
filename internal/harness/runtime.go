@@ -7161,11 +7161,24 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"completed":             0,
 		"needs-human-decision":  0,
 	}
+	bundleRoleTally := map[string]int{
+		"none":                 0,
+		"governor":             0,
+		"governed":             0,
+		"governed-ambiguous":   0,
+		"escalation-required":  0,
+		"conflicted":           0,
+		"member":               0,
+	}
 	for _, missionID := range missionOrder {
 		entry := entryByMission[missionID]
 		classification := stringValue(entry["classification"])
 		if _, ok := classificationTally[classification]; ok {
 			classificationTally[classification]++
+		}
+		bundleRole := firstNonBlank(stringValue(entry["bundle_role"]), "none")
+		if _, ok := bundleRoleTally[bundleRole]; ok {
+			bundleRoleTally[bundleRole]++
 		}
 		entry["selected"] = false
 		for _, selectedMissionID := range selectedMissionIDs {
@@ -7189,14 +7202,16 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 
 	nextAction := "No runnable mission remains; review blockers, meetings, or dependencies."
 	switch {
+	case len(requiredHumanDecisions) > 0 && len(selectedMissionIDs) > 0:
+		nextAction = "Resolve required human decisions before widening execution; keep the current foreground batch bounded in the meantime."
+	case len(requiredHumanDecisions) > 0:
+		nextAction = "Resolve required human decisions before widening execution."
 	case len(selectedMissionIDs) > 1:
 		nextAction = fmt.Sprintf("Scheduler selected %d missions for a governed parallel batch.", len(selectedMissionIDs))
 	case len(selectedMissionIDs) == 1 && executionMode == "managed_delegation":
 		nextAction = fmt.Sprintf("Scheduler recommends managed delegation on %s.", selectedMissionIDs[0])
 	case len(selectedMissionIDs) == 1:
 		nextAction = fmt.Sprintf("Scheduler selected %s as the foreground mission.", selectedMissionIDs[0])
-	case len(requiredHumanDecisions) > 0:
-		nextAction = "Resolve required human decisions before widening execution."
 	case classificationTally["blocked-by-dependency"] > 0:
 		nextAction = "Satisfy dependencies before resuming blocked missions."
 	}
@@ -7211,6 +7226,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"selected_mission_ids":          stringListToAny(selectedMissionIDs),
 		"selected_run_ids":              stringListToAny(selectedRunIDs),
 		"classification_tally":          classificationTally,
+		"bundle_role_tally":             bundleRoleTally,
 		"mission_classifications":       entries,
 		"required_human_decision_count": len(requiredHumanDecisions),
 		"required_human_decisions":      requiredHumanDecisions,

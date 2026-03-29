@@ -285,6 +285,8 @@ assert_json_field "$graph_authority_multi_escalation" '"required_action": "Open 
 schedule_multi_escalation_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_output" '"bundle_role": "escalation-required"' "scheduler marks tied bundles as escalation-required"
 assert_json_field "$schedule_multi_escalation_output" '"decision_kind": "establish_bundle_governor"' "scheduler escalates tied bundles into an explicit governing-mission decision"
+assert_json_field "$schedule_multi_escalation_output" '"next_action": "Resolve required human decisions before widening execution; keep the current foreground batch bounded in the meantime."' "scheduler prioritizes bundle-governor decisions over foreground selection messaging"
+assert_json_field "$schedule_multi_escalation_output" '"bundle_role_tally":' "scheduler reports bundle-role tallies in the portfolio snapshot"
 home_output_multi_escalation=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_multi_escalation" '"mission_escalated_bundle_count": 1' "home surfaces escalation-required mission bundles"
 
