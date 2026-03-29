@@ -1271,6 +1271,32 @@ func matchedMeetingTriggerRefs(profile map[string]any, decisionKind string, bund
 	return dedupeStrings(matches)
 }
 
+func containsReleaseMeetingTrigger(triggerRefs []string) bool {
+	for _, item := range triggerRefs {
+		if strings.Contains(strings.ToLower(strings.TrimSpace(item)), "release") {
+			return true
+		}
+	}
+	return false
+}
+
+func recommendedDecisionProtocol(decisionKind, decisionSurface string, releaseAdjacent bool, effectiveRiskLevel string, meetingTriggerRefs, freshSignalKinds []string) (string, string) {
+	surface := strings.TrimSpace(decisionSurface)
+	if surface != "council" && surface != "active-council" {
+		return "decision-record", "Decision does not require a council, so the default recommendation is to record the bounded decision and its consequences."
+	}
+	highRisk := schedulerRiskRank(effectiveRiskLevel) >= schedulerRiskRank("high")
+	if decisionKind == "review_gate_decision" ||
+		((releaseAdjacent || highRisk || containsReleaseMeetingTrigger(meetingTriggerRefs)) &&
+			(decisionKind == "review_follow_up_signals" ||
+				decisionKind == "establish_bundle_governor" ||
+				containsString(freshSignalKinds, "interface_change") ||
+				containsString(freshSignalKinds, "requires_meeting"))) {
+		return "incident-command", "Decision is release-adjacent or urgent enough that the council should optimize for bounded command, action ownership, and checkpointed stabilization."
+	}
+	return "evidence-review", "Decision benefits from bounded evidence review and challenge/synthesis rather than incident command."
+}
+
 func upsertMeetingRoleSpec(meeting map[string]any, role, mission string, allowedSources, forbiddenSources []string) {
 	role = strings.TrimSpace(role)
 	if role == "" {
@@ -3974,59 +4000,192 @@ func defaultAuthorityHierarchy() []any {
 	return []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"}
 }
 
-func defaultMeetingRoles() []any {
-	return []any{"fact-verifier", "architecture-challenger", "completeness-checker"}
-}
-
-func defaultMeetingRoleSpecs() []any {
-	timestamp := nowISO()
-	return []any{
-		map[string]any{
-			"role":              "fact-verifier",
-			"mission":           "Verify factual claims against the highest-authority live state before the council accepts them.",
-			"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
-			"forbidden_sources": []any{"L4+: stale notes, legacy artifacts, or summaries used to override fresher evidence"},
-			"created_at":        timestamp,
-			"updated_at":        timestamp,
-		},
-		map[string]any{
-			"role":              "architecture-challenger",
-			"mission":           "Challenge hidden assumptions, blast radius, and design coupling without overriding higher-authority facts.",
-			"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
-			"forbidden_sources": []any{"Lower-authority notes used as truth", "Unbounded speculation without evidence"},
-			"created_at":        timestamp,
-			"updated_at":        timestamp,
-		},
-		map[string]any{
-			"role":              "completeness-checker",
-			"mission":           "Find missing decision inputs, missing rollout details, and missing operator-facing guidance before synthesis.",
-			"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
-			"forbidden_sources": []any{"Already rejected findings reused without re-verification"},
-			"created_at":        timestamp,
-			"updated_at":        timestamp,
-		},
+func normalizeDecisionProtocol(raw string) string {
+	switch strings.TrimSpace(strings.ToLower(raw)) {
+	case "", "evidence-review", "evidence_review", "evidence":
+		return "evidence-review"
+	case "incident-command", "incident_command", "incident":
+		return "incident-command"
+	case "decision-record", "decision_record", "decision", "adr":
+		return "decision-record"
+	default:
+		return ""
 	}
 }
 
-func materializeMeeting(meetingID string, run map[string]any, question, requestedBy string) (map[string]any, error) {
+func defaultMeetingRoles(protocol string) []any {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return []any{"incident-commander", "operations-lead", "risk-assessor"}
+	case "decision-record":
+		return []any{"context-owner", "alternative-challenger", "consequence-checker"}
+	default:
+		return []any{"fact-verifier", "architecture-challenger", "completeness-checker"}
+	}
+}
+
+func defaultMeetingExpectedOutput(protocol string) string {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return "Produce current situation, chosen immediate action, owner, stop/go constraints, and the next checkpoint."
+	case "decision-record":
+		return "Produce the decision, alternatives considered, consequences, unresolved questions, and follow-up actions."
+	default:
+		return "Produce accepted findings, rejected findings, unresolved questions, and action items."
+	}
+}
+
+func defaultMeetingRoleSpecs(protocol string) []any {
+	timestamp := nowISO()
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return []any{
+			map[string]any{
+				"role":              "incident-commander",
+				"mission":           "Keep the decision bounded to the current incident, choose the immediate control action, and prevent unmanaged blast-radius expansion.",
+				"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+				"forbidden_sources": []any{"Speculation about future design work used to delay immediate stabilizing action"},
+				"created_at":        timestamp,
+				"updated_at":        timestamp,
+			},
+			map[string]any{
+				"role":              "operations-lead",
+				"mission":           "Describe the current operational state, candidate actions, dependencies, and concrete execution constraints for the immediate response window.",
+				"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+				"forbidden_sources": []any{"Stale run summaries used to override fresher execution evidence"},
+				"created_at":        timestamp,
+				"updated_at":        timestamp,
+			},
+			map[string]any{
+				"role":              "risk-assessor",
+				"mission":           "Surface rollback risk, user impact, and stop/go constraints before the meeting commits to an immediate action.",
+				"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+				"forbidden_sources": []any{"Unbounded architecture debates that do not change the immediate decision horizon"},
+				"created_at":        timestamp,
+				"updated_at":        timestamp,
+			},
+		}
+	case "decision-record":
+		return []any{
+			map[string]any{
+				"role":              "context-owner",
+				"mission":           "State the current context, constraints, and why the decision must be made now without overstating certainty.",
+				"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+				"forbidden_sources": []any{"Retrofitted rationale that does not match current evidence"},
+				"created_at":        timestamp,
+				"updated_at":        timestamp,
+			},
+			map[string]any{
+				"role":              "alternative-challenger",
+				"mission":           "Challenge default framing, surface viable alternatives, and make tradeoffs explicit before the decision is recorded.",
+				"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+				"forbidden_sources": []any{"Purely rhetorical challenge without concrete alternative or consequence"},
+				"created_at":        timestamp,
+				"updated_at":        timestamp,
+			},
+			map[string]any{
+				"role":              "consequence-checker",
+				"mission":           "Verify consequences, rollout implications, and follow-up obligations so the recorded decision is actually actionable.",
+				"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+				"forbidden_sources": []any{"Already rejected alternatives reused without updated evidence"},
+				"created_at":        timestamp,
+				"updated_at":        timestamp,
+			},
+		}
+	default:
+		return []any{
+			map[string]any{
+				"role":              "fact-verifier",
+				"mission":           "Verify factual claims against the highest-authority live state before the council accepts them.",
+				"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+				"forbidden_sources": []any{"L4+: stale notes, legacy artifacts, or summaries used to override fresher evidence"},
+				"created_at":        timestamp,
+				"updated_at":        timestamp,
+			},
+			map[string]any{
+				"role":              "architecture-challenger",
+				"mission":           "Challenge hidden assumptions, blast radius, and design coupling without overriding higher-authority facts.",
+				"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+				"forbidden_sources": []any{"Lower-authority notes used as truth", "Unbounded speculation without evidence"},
+				"created_at":        timestamp,
+				"updated_at":        timestamp,
+			},
+			map[string]any{
+				"role":              "completeness-checker",
+				"mission":           "Find missing decision inputs, missing rollout details, and missing operator-facing guidance before synthesis.",
+				"allowed_sources":   []any{"L1: live git/GitHub state", "L2: active runtime state", "L3: committed harness definitions"},
+				"forbidden_sources": []any{"Already rejected findings reused without re-verification"},
+				"created_at":        timestamp,
+				"updated_at":        timestamp,
+			},
+		}
+	}
+}
+
+func runReleaseAdjacent(run map[string]any) bool {
+	shipStatus := stringValue(run["ship_status"])
+	reviewStatus := stringValue(run["review_status"])
+	checksStatus := stringValue(run["checks_status"])
+	return stringValue(run["pr_ref"]) != "" ||
+		stringValue(run["rc_id"]) != "" ||
+		(reviewStatus != "" && reviewStatus != "unknown") ||
+		(checksStatus != "" && checksStatus != "unknown") ||
+		(shipStatus != "" && shipStatus != "unstarted")
+}
+
+func inferMeetingDecisionProtocol(run map[string]any, question string, requestedProtocol string) (string, string) {
+	if normalized := normalizeDecisionProtocol(requestedProtocol); normalized != "" {
+		return normalized, fmt.Sprintf("Explicit protocol override: %s.", normalized)
+	}
+	lowerQuestion := strings.ToLower(strings.TrimSpace(question))
+	releaseAdjacent := runReleaseAdjacent(run)
+	priority := strings.ToUpper(firstNonBlank(stringValue(run["priority"]), stringValue(run["mission_priority"])))
+	riskLevel := strings.ToLower(firstNonBlank(stringValue(run["risk_level"]), stringValue(run["effective_risk_level"])))
+	if (releaseAdjacent || priority == "P0" || riskLevel == "high") &&
+		(strings.Contains(lowerQuestion, "incident") ||
+			strings.Contains(lowerQuestion, "rollback") ||
+			strings.Contains(lowerQuestion, "restore") ||
+			strings.Contains(lowerQuestion, "hotfix") ||
+			strings.Contains(lowerQuestion, "release") ||
+			strings.Contains(lowerQuestion, "production") ||
+			strings.Contains(lowerQuestion, "rc") ||
+			strings.Contains(lowerQuestion, "promote") ||
+			strings.Contains(lowerQuestion, "deploy")) {
+		return "incident-command", "Release-adjacent or urgent-risk decision requires incident-style coordination and bounded action ownership."
+	}
+	if strings.Contains(lowerQuestion, "decision") ||
+		strings.Contains(lowerQuestion, "choose") ||
+		strings.Contains(lowerQuestion, "tradeoff") ||
+		strings.Contains(lowerQuestion, "record") ||
+		strings.Contains(lowerQuestion, "architecture") ||
+		strings.Contains(lowerQuestion, "approach") {
+		return "decision-record", "Question is primarily about recording a bounded design choice and its consequences."
+	}
+	return "evidence-review", "Default evidence-review protocol fits contested factual or technical judgment."
+}
+
+func materializeMeeting(meetingID string, run map[string]any, question, requestedBy, requestedProtocol string) (map[string]any, error) {
 	templateRoot, _ := toMap(loadData(meetingTemplatePath(), map[string]any{}))
 	template, _ := toMap(templateRoot["meeting"])
 	timestamp := nowISO()
+	protocol, protocolReason := inferMeetingDecisionProtocol(run, question, requestedProtocol)
 	meeting, _ := toMap(mergeDicts(template, map[string]any{
-		"meeting_id":          meetingID,
-		"mission_id":          stringValue(run["mission_id"]),
-		"run_id":              stringValue(run["run_id"]),
-		"question":            question,
-		"scope":               firstNonBlank(stringValue(run["objective"]), stringValue(run["mission_id"])),
-		"leader_id":           stringValue(run["leader_id"]),
-		"requested_by":        requestedBy,
-		"state":               "active",
-		"authority_hierarchy": defaultAuthorityHierarchy(),
-		"locked_decisions":    []any{},
-		"roles":               defaultMeetingRoles(),
-		"role_specs":          defaultMeetingRoleSpecs(),
+		"meeting_id":               meetingID,
+		"mission_id":               stringValue(run["mission_id"]),
+		"run_id":                   stringValue(run["run_id"]),
+		"decision_protocol":        protocol,
+		"decision_protocol_reason": protocolReason,
+		"question":                 question,
+		"scope":                    firstNonBlank(stringValue(run["objective"]), stringValue(run["mission_id"])),
+		"leader_id":                stringValue(run["leader_id"]),
+		"requested_by":             requestedBy,
+		"state":                    "active",
+		"authority_hierarchy":      defaultAuthorityHierarchy(),
+		"locked_decisions":         []any{},
+		"roles":                    defaultMeetingRoles(protocol),
+		"role_specs":               defaultMeetingRoleSpecs(protocol),
 		"packet": map[string]any{
-			"expected_output": "Produce accepted findings, rejected findings, unresolved questions, and action items.",
+			"expected_output": defaultMeetingExpectedOutput(protocol),
 			"context_refs":    []any{stringValue(run["contract_ref"])},
 			"known_context":   []any{stringValue(run["status_reason"])},
 			"run_summary":     stringValue(run["latest_summary"]),
@@ -4235,9 +4394,25 @@ func ensureMeetingGovernanceState(meeting map[string]any) map[string]any {
 	if meeting == nil {
 		return nil
 	}
+	protocol := normalizeDecisionProtocol(stringValue(meeting["decision_protocol"]))
+	if protocol == "" {
+		protocol = "evidence-review"
+	}
+	meeting["decision_protocol"] = protocol
+	if strings.TrimSpace(stringValue(meeting["decision_protocol_reason"])) == "" {
+		meeting["decision_protocol_reason"] = "Legacy or unspecified meetings default to the evidence-review protocol."
+	}
 	if _, ok := toMap(meeting["orchestration"]); !ok {
 		meeting["orchestration"] = map[string]any{}
 	}
+	packet, _ := toMap(meeting["packet"])
+	if packet == nil {
+		packet = map[string]any{}
+	}
+	if strings.TrimSpace(stringValue(packet["expected_output"])) == "" {
+		packet["expected_output"] = defaultMeetingExpectedOutput(protocol)
+	}
+	meeting["packet"] = packet
 	if len(toList(meeting["phase_history"])) == 0 {
 		meeting["phase_history"] = []any{map[string]any{
 			"phase":      firstNonBlank(stringValue(meeting["phase"]), "setup"),
@@ -6936,24 +7111,26 @@ func aggregateSchedulerHumanDecisions(decisions []any) []any {
 		packet, exists := bundlePackets[packetKey]
 		if !exists {
 			packet = map[string]any{
-				"decision_scope":               "bundle",
-				"bundle_id":                    bundleID,
-				"decision_kind":                decisionKind,
-				"recommended_decision_surface": decisionSurface,
-				"recommended_action":           stringValue(decision["recommended_action"]),
-				"bundle_required_action":       stringValue(decision["bundle_required_action"]),
-				"bundle_state":                 stringValue(decision["bundle_state"]),
-				"bundle_resolution_kind":       stringValue(decision["bundle_resolution_kind"]),
-				"bundle_governing_mission_id":  stringValue(decision["bundle_governing_mission_id"]),
-				"meeting_trigger_refs":         []any{},
-				"mission_ids":                  []any{},
-				"mission_count":                0,
-				"priority":                     "",
-				"effective_risk_level":         "",
-				"release_adjacent":             false,
-				"updated_at":                   "",
-				"note":                         "",
-				"notes":                        []any{},
+				"decision_scope":                "bundle",
+				"bundle_id":                     bundleID,
+				"decision_kind":                 decisionKind,
+				"recommended_decision_surface":  decisionSurface,
+				"recommended_decision_protocol": stringValue(decision["recommended_decision_protocol"]),
+				"recommended_protocol_reason":   stringValue(decision["recommended_protocol_reason"]),
+				"recommended_action":            stringValue(decision["recommended_action"]),
+				"bundle_required_action":        stringValue(decision["bundle_required_action"]),
+				"bundle_state":                  stringValue(decision["bundle_state"]),
+				"bundle_resolution_kind":        stringValue(decision["bundle_resolution_kind"]),
+				"bundle_governing_mission_id":   stringValue(decision["bundle_governing_mission_id"]),
+				"meeting_trigger_refs":          []any{},
+				"mission_ids":                   []any{},
+				"mission_count":                 0,
+				"priority":                      "",
+				"effective_risk_level":          "",
+				"release_adjacent":              false,
+				"updated_at":                    "",
+				"note":                          "",
+				"notes":                         []any{},
 			}
 			bundlePackets[packetKey] = packet
 			bundleOrder = append(bundleOrder, packetKey)
@@ -6984,6 +7161,10 @@ func aggregateSchedulerHumanDecisions(decisions []any) []any {
 		if boolValue(decision["release_adjacent"]) {
 			packet["release_adjacent"] = true
 		}
+		if protocolRank := decisionProtocolRank(stringValue(decision["recommended_decision_protocol"])); protocolRank > decisionProtocolRank(stringValue(packet["recommended_decision_protocol"])) {
+			packet["recommended_decision_protocol"] = stringValue(decision["recommended_decision_protocol"])
+			packet["recommended_protocol_reason"] = stringValue(decision["recommended_protocol_reason"])
+		}
 		if stringValue(decision["updated_at"]) > stringValue(packet["updated_at"]) {
 			packet["updated_at"] = stringValue(decision["updated_at"])
 		}
@@ -7013,6 +7194,19 @@ func decisionSurfaceRank(surface string) int {
 	case "council":
 		return 2
 	case "leader-decision":
+		return 1
+	default:
+		return 0
+	}
+}
+
+func decisionProtocolRank(protocol string) int {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return 3
+	case "evidence-review":
+		return 2
+	case "decision-record":
 		return 1
 	default:
 		return 0
@@ -7403,6 +7597,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		}
 		meetingTriggerRefs := []string{}
 		recommendedDecisionSurface := ""
+		recommendedDecisionProtocolValue := ""
+		recommendedProtocolReason := ""
 
 		if !activeMission(mission) {
 			classification = "completed"
@@ -7544,6 +7740,14 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			default:
 				recommendedDecisionSurface = "leader-decision"
 			}
+			recommendedDecisionProtocolValue, recommendedProtocolReason = recommendedDecisionProtocol(
+				decisionKind,
+				recommendedDecisionSurface,
+				releaseAdjacent,
+				effectiveRiskLevel,
+				meetingTriggerRefs,
+				freshFollowUpSignalKindsByMission[missionID],
+			)
 		}
 		if len(profileHighRiskScopeRefs) > 0 {
 			reasons = append(reasons, fmt.Sprintf("Mission touches profile high-risk scopes: %s.", strings.Join(profileHighRiskScopeRefs, ", ")))
@@ -7551,23 +7755,25 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 
 		if decisionKind != "" {
 			rawRequiredHumanDecisions = append(rawRequiredHumanDecisions, map[string]any{
-				"decision_scope":               "mission",
-				"mission_id":                   missionID,
-				"bundle_id":                    bundleID,
-				"bundle_state":                 bundleState,
-				"bundle_resolution_kind":       bundleResolutionKind,
-				"bundle_governing_mission_id":  bundleGovernorID,
-				"bundle_required_action":       bundleRequiredAction,
-				"bundle_mission_ids":           cloneValue(getKey(bundleInfo, "bundle_mission_ids", []any{})),
-				"decision_kind":                decisionKind,
-				"recommended_action":           recommendedAction,
-				"recommended_decision_surface": recommendedDecisionSurface,
-				"meeting_trigger_refs":         stringListToAny(dedupeStrings(meetingTriggerRefs)),
-				"note":                         firstNonBlank(strings.Join(dedupeStrings(reasons), " "), recommendedAction),
-				"priority":                     stringValue(mission["priority"]),
-				"effective_risk_level":         effectiveRiskLevel,
-				"release_adjacent":             releaseAdjacent,
-				"updated_at":                   updatedAt,
+				"decision_scope":                "mission",
+				"mission_id":                    missionID,
+				"bundle_id":                     bundleID,
+				"bundle_state":                  bundleState,
+				"bundle_resolution_kind":        bundleResolutionKind,
+				"bundle_governing_mission_id":   bundleGovernorID,
+				"bundle_required_action":        bundleRequiredAction,
+				"bundle_mission_ids":            cloneValue(getKey(bundleInfo, "bundle_mission_ids", []any{})),
+				"decision_kind":                 decisionKind,
+				"recommended_action":            recommendedAction,
+				"recommended_decision_surface":  recommendedDecisionSurface,
+				"recommended_decision_protocol": recommendedDecisionProtocolValue,
+				"recommended_protocol_reason":   recommendedProtocolReason,
+				"meeting_trigger_refs":          stringListToAny(dedupeStrings(meetingTriggerRefs)),
+				"note":                          firstNonBlank(strings.Join(dedupeStrings(reasons), " "), recommendedAction),
+				"priority":                      stringValue(mission["priority"]),
+				"effective_risk_level":          effectiveRiskLevel,
+				"release_adjacent":              releaseAdjacent,
+				"updated_at":                    updatedAt,
 			})
 		}
 
@@ -7583,6 +7789,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"profile_high_risk":                len(profileHighRiskScopeRefs) > 0,
 			"profile_high_risk_scope_refs":     stringListToAny(profileHighRiskScopeRefs),
 			"recommended_decision_surface":     recommendedDecisionSurface,
+			"recommended_decision_protocol":    recommendedDecisionProtocolValue,
+			"recommended_protocol_reason":      recommendedProtocolReason,
 			"meeting_trigger_refs":             stringListToAny(meetingTriggerRefs),
 			"release_adjacent":                 releaseAdjacent,
 			"authoritative_run_id":             authoritativeRunID,
@@ -9007,10 +9215,19 @@ func cmdDrive(args []string) error {
 		})
 	case "meeting":
 		if len(args) < 3 {
-			return errors.New("drive meeting requires RUN_ID QUESTION")
+			return errors.New("drive meeting requires RUN_ID QUESTION [--protocol=evidence-review|incident-command|decision-record]")
 		}
 		runID := args[1]
-		question := strings.TrimSpace(strings.Join(args[2:], " "))
+		protocol := ""
+		questionTokens := []string{}
+		for _, arg := range args[2:] {
+			if strings.HasPrefix(arg, "--protocol=") {
+				protocol = strings.TrimSpace(strings.TrimPrefix(arg, "--protocol="))
+			} else {
+				questionTokens = append(questionTokens, arg)
+			}
+		}
+		question := strings.TrimSpace(strings.Join(questionTokens, " "))
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			index := findRunIndex(registry, runID)
@@ -9024,7 +9241,7 @@ func cmdDrive(args []string) error {
 			}
 			backlog := readMaintenanceBacklog()
 			meetingID := fmt.Sprintf("meeting-%s-%s", nowTime().UTC().Format("20060102150405"), stringValue(run["mission_id"]))
-			meeting, err := materializeMeeting(meetingID, run, question, stringValue(run["owner_id"]))
+			meeting, err := materializeMeeting(meetingID, run, question, stringValue(run["owner_id"]), protocol)
 			if err != nil {
 				return err
 			}
@@ -10213,6 +10430,8 @@ func cmdMeetings(args []string) error {
 		return printJSON(map[string]any{
 			"meeting_id":                               stringValue(meeting["meeting_id"]),
 			"state":                                    stringValue(meeting["state"]),
+			"decision_protocol":                        stringValue(meeting["decision_protocol"]),
+			"decision_protocol_reason":                 stringValue(meeting["decision_protocol_reason"]),
 			"question":                                 stringValue(meeting["question"]),
 			"outcome_summary":                          outcome["summary"],
 			"next_action":                              outcome["next_action"],
@@ -10327,6 +10546,41 @@ func cmdMeetingsRemainder(args []string) error {
 			}
 			meeting, _ := toMap(data["meeting"])
 			setMeetingPhase(meeting, args[2], "manual phase override")
+			if err := writeActiveMeeting(meeting); err != nil {
+				return err
+			}
+			return printJSON(meeting)
+		})
+	case "set-protocol":
+		if len(args) < 3 {
+			return errors.New("meetings set-protocol requires MEETING_ID PROTOCOL")
+		}
+		protocol := normalizeDecisionProtocol(args[2])
+		if protocol == "" {
+			return errors.New("meetings set-protocol protocol must be one of: evidence-review, incident-command, decision-record")
+		}
+		return withHarnessLock(func() error {
+			data := readActiveMeeting(args[1])
+			if data == nil {
+				return fmt.Errorf("active meeting not found: %s", args[1])
+			}
+			meeting, _ := toMap(data["meeting"])
+			oldProtocol := normalizeDecisionProtocol(stringValue(meeting["decision_protocol"]))
+			packet, _ := toMap(meeting["packet"])
+			if packet == nil {
+				packet = map[string]any{}
+			}
+			if firstNonBlank(oldProtocol, "evidence-review") != protocol {
+				if stringValue(packet["expected_output"]) == "" || stringValue(packet["expected_output"]) == defaultMeetingExpectedOutput(oldProtocol) {
+					packet["expected_output"] = defaultMeetingExpectedOutput(protocol)
+				}
+				meeting["roles"] = defaultMeetingRoles(protocol)
+				meeting["role_specs"] = defaultMeetingRoleSpecs(protocol)
+			}
+			meeting["decision_protocol"] = protocol
+			meeting["decision_protocol_reason"] = fmt.Sprintf("Manual protocol override: %s.", protocol)
+			meeting["packet"] = packet
+			meeting["updated_at"] = nowISO()
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}
@@ -11404,14 +11658,17 @@ func cmdTeammatesRemainder(args []string) error {
 		})
 	case "escalate":
 		if len(args) < 3 {
-			return errors.New("teammates escalate requires RUN_ID QUESTION [--materialize]")
+			return errors.New("teammates escalate requires RUN_ID QUESTION [--materialize] [--protocol=evidence-review|incident-command|decision-record]")
 		}
 		runID := args[1]
 		materialize := false
+		protocol := ""
 		questionTokens := []string{}
 		for _, arg := range args[2:] {
 			if arg == "--materialize" {
 				materialize = true
+			} else if strings.HasPrefix(arg, "--protocol=") {
+				protocol = strings.TrimSpace(strings.TrimPrefix(arg, "--protocol="))
 			} else {
 				questionTokens = append(questionTokens, arg)
 			}
@@ -11439,7 +11696,7 @@ func cmdTeammatesRemainder(args []string) error {
 			payload := map[string]any{"signal": signal, "run": run}
 			if materialize {
 				meetingID := fmt.Sprintf("meeting-%s-%s", nowTime().UTC().Format("20060102150405"), stringValue(run["mission_id"]))
-				meeting, err := materializeMeeting(meetingID, run, question, stringValue(run["owner_id"]))
+				meeting, err := materializeMeeting(meetingID, run, question, stringValue(run["owner_id"]), protocol)
 				if err != nil {
 					return err
 				}

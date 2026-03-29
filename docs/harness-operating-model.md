@@ -46,6 +46,10 @@ It is not:
 - a set of independent workers with no common model
 - a prompt ritual for role-playing collaboration
 
+It is also not:
+
+- a system where every serious decision must impersonate one `arch-review` debate
+
 ---
 
 ## Core Roles
@@ -118,6 +122,45 @@ A council is **not**:
 - a ceremony for validating a pre-made answer
 - a free-form chat room
 - a substitute for routine execution
+
+Councils and other governed decisions should now be understood through explicit protocols rather than one default ritual.
+
+---
+
+## Decision Protocols
+
+`Harness` currently recognizes three decision protocols:
+
+### `evidence-review`
+
+Use when:
+
+- technical or factual disagreement is credible
+- authority and evidence quality determine truth
+- challenge is needed before synthesis
+
+This is the protocol most directly influenced by `arch-review`.
+
+### `incident-command`
+
+Use when:
+
+- the decision is release-adjacent or operationally urgent
+- the leader needs clear action ownership and stop/go boundaries
+- extended debate would delay bounded response
+
+### `decision-record`
+
+Use when:
+
+- the decision is important but not urgent
+- the main need is durable recording of context, alternatives, choice, and consequences
+
+Current runtime note:
+
+- the meeting engine still shares one common phased execution baseline
+- protocol choice currently affects default role packets, expected output, and scheduler guidance first
+- deeper protocol-specific automation remains future expansion
 
 ---
 
@@ -480,6 +523,9 @@ This also means:
 This is already partly implemented in runtime and is one of the clearest places where `Harness` differs from simple workflow tooling.
 
 The long-term target is a fuller `arch-review`-style debate controller, not a free-form argument engine.
+
+But that does **not** mean every governed decision in `Harness` should use the same debate shape.
+The control plane should choose among `evidence-review`, `incident-command`, and `decision-record` according to decision type.
 
 ---
 

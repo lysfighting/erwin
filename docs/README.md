@@ -40,3 +40,4 @@ One-time analysis and research reports. Moved to `research/` subdirectory.
 | [research/drive-skill-analysis.md](research/drive-skill-analysis.md) | Drive skill deep analysis |
 | [research/advanced-skills-research.md](research/advanced-skills-research.md) | Advanced skills & vibe coding survey |
 | [research/claude-code-agent-teams-community.md](research/claude-code-agent-teams-community.md) | Community multi-agent projects survey |
+| [research/harness-decision-methodology-synthesis-2026-03-30.md](research/harness-decision-methodology-synthesis-2026-03-30.md) | Decision-methodology synthesis for Harness beyond a single arch-review-style model |

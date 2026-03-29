@@ -3,6 +3,8 @@ meeting:
   meeting_id: ""
   mission_id: ""
   run_id: ""
+  decision_protocol: "evidence-review"
+  decision_protocol_reason: ""
   question: ""
   scope: ""
   leader_id: ""

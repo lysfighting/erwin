@@ -291,6 +291,7 @@ orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeti
 assert_json_field "$orchestrate_c" '"new_phase": "output"' "meeting orchestration can close directly to output once synthesis is already ready"
 assert_json_field "$orchestrate_c" '"status": "ready_for_output"' "meeting orchestration materializes synthesis audit"
 summary_output=$(run_in_repo bash scripts/harness-meetings.sh summary "$meeting_id")
+assert_json_field "$summary_output" '"decision_protocol": "evidence-review"' "meeting summary reports the default evidence-review protocol"
 assert_json_field "$summary_output" '"synthesis_status": "ready_for_output"' "meeting summary reports synthesis readiness"
 assert_json_field "$summary_output" '"phase_history_count":' "meeting summary reports phase history"
 assert_json_field "$summary_output" '"authority_conflict_count": 1' "meeting summary reports authority conflicts"
@@ -307,6 +308,7 @@ assert_json_field "$authority_audit" '"resolution_kind": "authority_wins"' "auth
 section "Automated council synthesis"
 auto_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "What should the council synthesize about auth release notes?")
 assert_json_field "$auto_meeting_output" '"state": "active"' "second meeting materializes for auto-synthesis"
+assert_json_field "$auto_meeting_output" '"decision_protocol": "evidence-review"' "default drive meeting materializes an evidence-review council"
 auto_meeting_id=$(printf '%s\n' "$auto_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 
 run_in_repo bash scripts/harness-meetings.sh add-role "$auto_meeting_id" implementation-verifier --mission="State what the code path really changed." --allow="L1: live git state|L2: active runtime state" --forbid="L4+: stale notes" >/dev/null
@@ -445,6 +447,16 @@ authority_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$autho
 assert_json_field "$authority_summary" '"accepted_count": 1' "authority-resolved summary materializes the higher-authority support finding"
 assert_json_field "$authority_summary" '"resolved_without_cross_examination_count": 1' "authority-resolved summary surfaces the skipped cross-examination count"
 assert_json_field "$authority_summary" '"authority_resolved_route_count": 1' "authority-resolved summary surfaces the authority-resolved route count"
+
+section "Protocol-aware meeting materialization"
+incident_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Should we roll back the release immediately?" --protocol=incident-command)
+assert_json_field "$incident_meeting_output" '"decision_protocol": "incident-command"' "drive meeting accepts an explicit incident-command protocol override"
+incident_meeting_id=$(printf '%s\n' "$incident_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+incident_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$incident_meeting_id")
+assert_json_field "$incident_summary" '"decision_protocol": "incident-command"' "meeting summary preserves the incident-command protocol"
+run_in_repo bash scripts/harness-meetings.sh set-protocol "$incident_meeting_id" decision-record >/dev/null
+decision_record_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$incident_meeting_id")
+assert_json_field "$decision_record_summary" '"decision_protocol": "decision-record"' "meetings set-protocol can retarget an active meeting to decision-record"
 
 section "Aligned review skips empty debate"
 aligned_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can aligned independent review go straight to synthesis when there is no conflict lane?")

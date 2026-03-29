@@ -142,7 +142,7 @@ The package currently guarantees:
 
 - file-backed runtime state with locking
 - leader-facing diagnosis via `home` and `doctor`, with `home` mirroring scheduler decision-first guidance when bundle-governor decisions outrank simple foreground selection and surfacing scheduler maintenance backlog when stale state must be cleaned
-- leader-facing scheduler summaries and durable scheduler snapshots under `.harness/scheduler/snapshots/`, including mission classification, execution-mode recommendation, bundle-aware deferral/escalation, bundle-role tallies, bundle-scoped human-decision packets for escalation-required bundles, prioritized human-decision portfolios with `primary_required_human_decision` plus scope/surface tallies, mission-level queue visibility through `human_decision_queue_position` and `primary_human_decision`, explicit `defer_pending_primary_human_decision` actions for lower-priority governed decisions, sticky primary-decision retention via `decision_selection_policy` and `previous_primary_human_decision_key`, sticky foreground retention via `selection_policy` and `previous_foreground_mission_id`, bounded parallel admission from profile policy, explicit parallel-justification gating, P0 foreground serialization, profile-backed high-risk scope inference, profile-backed council recommendation from meeting triggers, fresh follow-up-signal rescheduling, and next-action prioritization when human bundle decisions are still pending
+- leader-facing scheduler summaries and durable scheduler snapshots under `.harness/scheduler/snapshots/`, including mission classification, execution-mode recommendation, bundle-aware deferral/escalation, bundle-role tallies, bundle-scoped human-decision packets for escalation-required bundles, prioritized human-decision portfolios with `primary_required_human_decision` plus scope/surface tallies, mission-level queue visibility through `human_decision_queue_position` and `primary_human_decision`, explicit `defer_pending_primary_human_decision` actions for lower-priority governed decisions, sticky primary-decision retention via `decision_selection_policy` and `previous_primary_human_decision_key`, sticky foreground retention via `selection_policy` and `previous_foreground_mission_id`, bounded parallel admission from profile policy, explicit parallel-justification gating, P0 foreground serialization, profile-backed high-risk scope inference, profile-backed council recommendation from meeting triggers, explicit `recommended_decision_protocol` guidance for human decisions, fresh follow-up-signal rescheduling, and next-action prioritization when human bundle decisions are still pending
 - leader-facing scheduler maintenance escalation, so stale runs, expired signals, and stale meetings become explicit `maintenance_actions` instead of remaining doctor-only observations
 - first-class mission state above run attempts
 - first-class mission authority, including an authoritative mission-control run that can differ from the freshest teammate activity
@@ -150,7 +150,7 @@ The package currently guarantees:
 - bounded ownership transfer, including exclusive `move` handoff, shared `copy` handoff for selectors that are intentionally governed in parallel, and exclusion-aware `split` handoff where a parent boundary delegates a governed child subtree without surrendering the broader parent
 - desired-state tracking on contracts and runs
 - bounded teammate assignment and governed sibling communication
-- council-grade meeting packets with authority-aware findings
+- council-grade meeting packets with explicit `decision_protocol`, `decision_protocol_reason`, and authority-aware findings
 - bounded council orchestration with route, wave, and round obligations, including multi-lane debate wave batches that group simultaneous lane work by participant and round, deterministic current/blocked batch execution state, direct synthesis when a lane is aligned or already settled by higher-authority evidence, same-pass closure from `synthesis` to `output` whenever the synthesis audit is already ready and no open debate batch remains, plus governed latest-response verdict adoption when a debated lane resolves before hitting the cap
 - runtime-enforced council governance gates, so missing authority hierarchy and rejected findings without reasons block council progression instead of remaining doctor-only warnings
 - authority audit across signals, meetings, runs, and live git state
@@ -222,6 +222,7 @@ The contract assumes:
 - governed teammate-to-teammate communication
 - councils for high-ambiguity or high-blast-radius decisions
 - authority-aware reconciliation when state sources disagree
+- explicit decision protocols, currently `evidence-review`, `incident-command`, and `decision-record`
 
 The package intentionally follows ideas synthesized from:
 
@@ -229,7 +230,7 @@ The package intentionally follows ideas synthesized from:
 - `wing` skill/package restructuring
 - engineering cybernetics
 - Kubernetes control-plane / reconciliation thinking
-- `arch-review`-style council governance
+- `arch-review`-influenced evidence-review governance rather than a single inherited meeting ritual
 
 But the package contract is not identical to any one of those source systems.
 

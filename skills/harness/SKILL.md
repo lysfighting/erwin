@@ -148,6 +148,7 @@ The harness is file-backed:
 - Treat `maintenance normalize` as the migration path for older `.harness/` state when mission objects or ownership claims were introduced after those runs were created.
 - Prefer the narrowest safe state change.
 - Use meetings for high-ambiguity or high-blast-radius decisions.
+- Choose the meeting protocol deliberately: `evidence-review` for contested technical judgment, `incident-command` for urgent release/rollback decisions, and `decision-record` for bounded design choices that need durable recording more than live debate.
 - Treat teammate runs as first-class runtime objects, not informal notes.
 - Treat missions as first-class durable work objects; runs are execution attempts, not the whole control plane.
 - Prefer explicit `--owns=` selectors when splitting work; shared ownership should be intentional, not accidental.
@@ -158,6 +159,7 @@ The harness is file-backed:
 - Treat `depends_on` plus desired state as part of the control plane, not just metadata.
 - Allow teammate-to-teammate communication only through governed links or sibling relationships.
 - Use `meetings orchestrate` to advance council phases instead of manually skipping straight to synthesis.
+- Use `drive meeting ... --protocol=...` or `meetings set-protocol` when the default `evidence-review` protocol is not the right fit for the decision surface.
 - Treat `meetings orchestrate` as the council chair: once bounded positions exist, it can auto-synthesize provisional findings and unresolved-action prompts without overwriting manual judgment that is already on the record.
 - Treat missing independent review as first-class wave debt: `meetings orchestrate` now reports `open_wave_action_count` so the leader can see who still owes a bounded review before cross-examination.
 - Treat routed cross-examination as first-class: when multiple roles disagree on the same `--claim`, the council now turns that lane into an explicit route obligation with an assigned bounded challenger before synthesis/output is trusted.

@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.59.0-prototype`
+- `adapter_version`: `0.60.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -176,6 +176,8 @@ Do not underestimate the current control-plane maturity.
 - lower-priority governed decisions now also emit explicit `defer_pending_primary_human_decision` reschedule actions, so the queue influences runtime behavior instead of remaining a read-only annotation
 - scheduler now retains a sticky primary human-decision packet across otherwise-tied portfolio passes, surfacing `decision_selection_policy` and `previous_primary_human_decision_key` so the leader can see when the control plane is intentionally holding decision focus steady
 - scheduler now retains a sticky foreground mission across otherwise-tied scheduling passes, surfacing `selection_policy` and `previous_foreground_mission_id` so the leader can see when the control plane is intentionally preferring stability over freshness-only churn
+- meeting objects now carry explicit `decision_protocol` and `decision_protocol_reason`, so the control plane no longer needs to pretend every council is implicitly one inherited `arch-review` debate
+- scheduler human-decision packets now carry `recommended_decision_protocol`, letting the leader distinguish evidence-review, incident-command, and decision-record handling before materializing a meeting
 - scheduler now treats fresh coordination/dependency/blocker signals as real rescheduling triggers instead of only including them in the snapshot payload
 - scheduler now escalates stale runs, expired signals, and stale meetings into explicit `maintenance_actions` instead of leaving them only to `doctor`
 - `home` now mirrors that maintenance backlog so leader-facing surfaces stay aligned with scheduler reality
@@ -200,6 +202,11 @@ Do not underestimate the current control-plane maturity.
 - leader/teammate split with governed sibling communication
 
 This is no longer “just a prototype shell workflow.”
+
+Important interpretation rule:
+
+- `arch-review` is still an important influence on bounded evidence-review councils
+- it is no longer the sole semantic template for all governed decisions in `Harness`
 
 ---
 

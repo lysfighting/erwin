@@ -97,7 +97,7 @@ This is deliberate:
 
 The goal is not to port old commands into a new syntax.
 
-The goal is to build a Codex-native orchestration harness that preserves the serious protocol semantics learned from `teamwork`, the modular packaging discipline learned from `wing`, and the stronger governance ambitions from V4 and `arch-review`, without dragging historical runtime or project baggage forward.
+The goal is to build a Codex-native orchestration harness that preserves the serious protocol semantics learned from `teamwork`, the modular packaging discipline learned from `wing`, and the stronger governance ambitions from V4, while absorbing `arch-review` as only one input among several decision/governance methodologies instead of letting it become the whole council model.
 
 The design target is:
 
@@ -760,6 +760,60 @@ The council model includes:
 - direct output closure when synthesis is already ready
 
 This is the clearest place where `arch-review` directly shaped `Harness`.
+
+### 9. Incident Command / Incident Management
+
+Incident-management practice contributes a different decision rhythm than technical debate:
+
+- stabilize first
+- assign bounded action ownership
+- keep explicit checkpoints
+- do not let broad architecture debate delay immediate operational control
+
+This is especially relevant for:
+
+- hotfix / rollback / RC decisions
+- release-affecting uncertainty
+- urgent operational coordination
+
+### 10. Decision Records / ADRs
+
+Decision records contribute durable decision memory:
+
+- context
+- alternatives
+- chosen direction
+- consequences
+- follow-up obligations
+
+This matters because not every important decision needs a live debate controller.
+Some need bounded recording more than cross-examination.
+
+---
+
+## Decision Protocol Family
+
+`Harness` now treats decision governance as a small family of protocols, not one inherited ritual.
+
+The current protocol taxonomy is:
+
+1. `evidence-review`
+   For contested technical or factual judgment.
+
+2. `incident-command`
+   For urgent release-adjacent or operational decisions where bounded action ownership matters more than extended debate.
+
+3. `decision-record`
+   For lower-urgency design and tradeoff decisions where durable recording matters more than live rebuttal rounds.
+
+Important rule:
+
+- `arch-review` remains an important influence on `evidence-review`
+- it is **not** the whole semantics of council/decision governance in `Harness`
+
+The broader methodology synthesis is recorded in:
+
+- [`docs/research/harness-decision-methodology-synthesis-2026-03-30.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-decision-methodology-synthesis-2026-03-30.md)
 
 ---
 

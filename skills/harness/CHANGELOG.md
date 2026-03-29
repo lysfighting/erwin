@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Explicit decision-protocol support for meetings and scheduler human-decision packets, including `evidence-review`, `incident-command`, and `decision-record`.
 - Leader-facing scheduler baseline via `bash scripts/harness-missions.sh schedule`, including durable `.harness/scheduler/snapshots/`, mission classifications, execution-mode recommendation, required-human-decision reporting, and reschedule hints.
 - Direct synthesis for council lanes that are already aligned or already settled by higher-authority evidence, plus summary counters for `resolved_without_cross_examination_count` and `authority_resolved_route_count`.
 - Debate-verdict adoption in auto-synthesis, so a governed `latest_response_prevails` lane can materialize directly into accepted or rejected findings instead of defaulting to unresolved output.
@@ -44,6 +45,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Ship-gate authority adjudication in `runs authority-audit`, so leader-facing run review can explain when verification/review/checks state overrides an overly optimistic delivery status.
 
 ### Changed
+- `bash scripts/harness-drive.sh meeting` and `bash scripts/harness-teammates.sh escalate --materialize` now accept `--protocol=...`, and `bash scripts/harness-meetings.sh set-protocol` can retarget an active meeting to a different governance protocol.
 - `harness-home.sh` now surfaces scheduler execution mode, selected mission batch size, classification tally, and scheduler-derived next action, while smoke coverage now proves solo scheduling, dependency-blocked rescheduling, governed parallel batches, and managed delegation.
 - `scripts/harness-teammate-smoke-test.sh` now proves verdict adoption from a same-authority multi-round debate lane, including `latest_response_prevails` route metadata and accepted output without unresolved follow-up debt.
 - `harness-home.sh` now honors ownership exclusions when computing leader-facing overlap counts, so split parent/child delegation no longer shows up as a false positive ownership collision.
