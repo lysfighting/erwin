@@ -8,7 +8,7 @@
 
 - **Version**: 0.21.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Codex-native orchestration harness artifact authority rules widened)
+- **Last Session**: 2026-03-29 (Harness public prototype positioning accepted)
 
 ## Current Phase
 
@@ -37,6 +37,8 @@
 - **Debate-plan accounting widened**: meeting summaries and doctor now track `planned_round_count`, `resolved_round_count`, and `open_round_action_count`, while teammate smoke validates a bounded two-round council path before synthesis
 - **Artifact-family authority rules widened**: `runs authority-audit` now treats stale contract snapshots and live git drift as explicit winner/loser conflicts, with `artifact_authority_conflicts` explaining when active run state beats contract state and when live git state beats stale run records
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves a manually-staled contract branch loses to active run state before continuing into the existing live-branch/live-dirty authority path
+- **Public prototype naming accepted**: ADR [`0013-harness-prototype-positioning.md`](/Users/liyasong/Project/collov/erwin/_project/decisions/0013-harness-prototype-positioning.md) now formalizes `Harness` as the public prototype name for the Codex-native adapter line
+- **Manifest/package identity aligned**: [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml) now carries `public_name`, `release_stage`, and `positioning_adr`, while the public contract now references that naming decision explicitly
 - **Ownership and desired state strengthened**: runs and contracts now carry explicit `ownership_claims`, `desired_state`, and dependency policy; teammate assignment now rejects exclusive overlap by default, and `drive wait` plus `home`/`doctor` surface dependency-blocked runs directly
 - **Authority and council control advanced**: invalid authority levels are now rejected or surfaced, and meetings can advance phases with `meetings orchestrate` instead of relying entirely on manual phase jumps
 - **Mission graph made first-class**: the harness now materializes durable mission objects under `.harness/missions/`, exposes them through `scripts/harness-missions.sh`, and drives `home`/`doctor` from mission-level state instead of only run-level state
@@ -97,7 +99,7 @@
 
 ## Active Task / What's In Progress
 
-**Leader-led harness runtime is now delivered. Public contract, bounded second-round council control, and artifact-family authority rules are now formalized; final naming and package positioning remain:**
+**Leader-led harness runtime is now delivered. Public contract, bounded second-round council control, artifact-family authority rules, and prototype naming are now formalized; distribution strategy and future expansion layers remain:**
 
 | Phase | Status | Description |
 |-------|--------|-------------|
@@ -107,19 +109,17 @@
 | Phase 4 | ✅ | Validate `home` / `doctor` / `claim` / `drive` / `meetings` / `maintenance` |
 | Phase 5 | ✅ | Package the harness formally as a reusable Codex-native adapter/system |
 | Phase 6 | ✅ | Split reusable adapter/bootstrap flow from repo-local proving ground |
-| Phase 7 | 🔄 | Decide final product naming, public package contract, remaining contract/live-state authority adjudication, and future Codex-native multi-agent integration path |
+| Phase 7 | 🔄 | Finalize distribution strategy, remaining broader authority/adaptation layers, and future Codex-native multi-agent integration path |
 
 ## Next Session Should Start With
 
 1. Read this file
 2. **Harness next work**:
-   - A. Decide whether to formalize this under a new product name or keep `harness` as the prototype codename
-   - B. Decide whether `harness/adapter-manifest.yml` should become the public package spec or stay repo-private while naming is unresolved
-   - C. Continue deepening selector semantics beyond the new family-aware baseline into richer policies and transfer rules
-   - D. Decide whether remaining authority work should extend beyond the new artifact-family winner/loser rules into broader multi-run / multi-mission adjudication, or whether that now belongs to future product layers
-   - E. Continue pushing council behavior from auto-synthesis, wave obligations, route obligations, and bounded second-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
-   - G. Decide final naming and release positioning for the package now that public contract and core control-plane behavior are both explicit
-   - F. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
+   - A. Decide the binary distribution strategy now that `Harness` is a named public prototype line
+   - B. Continue deepening selector semantics beyond the current family-aware baseline into richer policies and transfer rules
+   - C. Decide whether remaining authority work should extend beyond the new artifact-family winner/loser rules into broader multi-run / multi-mission adjudication, or whether that now belongs to future product layers
+   - D. Continue pushing council behavior from auto-synthesis, wave obligations, route obligations, and bounded second-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
+   - E. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `_project/sessions/2026-03-28-B.md`, `_project/sessions/2026-03-28-C.md`, `_project/sessions/2026-03-29-A.md`, `_project/sessions/2026-03-29-B.md`, `_project/sessions/2026-03-29-C.md`, `_project/sessions/2026-03-29-D.md`, `harness/README.md`, `docs/research/harness-completion-context-pack-2026-03-28.md`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0
 

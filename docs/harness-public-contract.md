@@ -4,13 +4,21 @@
 >
 > Date: 2026-03-29
 >
-> Scope: define the durable public contract for the Codex-native orchestration harness package while product naming remains intentionally unresolved.
+> Scope: define the durable public contract for the Codex-native orchestration harness package.
 
 ---
 
 ## Position
 
 This package is the current public contract for the emerging Codex-native orchestration harness.
+
+Its public prototype name is:
+
+- `Harness`
+
+The naming/positioning decision is recorded in:
+
+- [`0013-harness-prototype-positioning.md`](/Users/liyasong/Project/collov/erwin/_project/decisions/0013-harness-prototype-positioning.md)
 
 It should be understood as:
 
@@ -22,11 +30,9 @@ It should **not** be understood as:
 
 - a port of `teamwork`
 - a port of `wing`
-- a promise that the prototype codename `harness` is the final product name
 - a general-purpose standalone cloud agent platform
 
-The package name may change later.
-The contract defined here is what should survive that rename.
+The package contract is still designed so the protocol can outlive any future branding change.
 
 ---
 
@@ -91,6 +97,8 @@ The package must provide:
 The current machine-readable source of truth is:
 
 - [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
+
+That manifest may evolve, but the public prototype line should continue to present itself as `Harness` unless a later ADR explicitly supersedes that positioning.
 
 The manifest is allowed to evolve, but these categories are part of the durable contract:
 

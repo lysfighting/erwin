@@ -45,3 +45,4 @@ What other options were evaluated and why were they rejected?
 | [0006](0006-new-project-skill.md) | /erwin-init skill for universal project bootstrap | Superseded by 0008 | 2026-03-02 |
 | [0007](0007-skills-incubator-structure.md) | erwin as skills incubator — repository structure | Accepted | 2026-03-02 |
 | [0008](0008-erwin-init-redesign.md) | /new-project → /erwin-init — 从脚手架到认知基础设施 | Accepted | 2026-03-02 |
+| [0013](0013-harness-prototype-positioning.md) | Harness as the public prototype name for the Codex adapter line | Accepted | 2026-03-29 |

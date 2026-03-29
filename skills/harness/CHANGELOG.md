@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Accepted public prototype positioning via ADR `0013`, with `Harness` now treated as the package's public prototype name.
 - Artifact-family authority adjudication via `runs authority-audit`, covering stale contract snapshots versus active run/live state.
 - Bounded second-round debate control via meeting `round_actions` and debate-round gating in `meetings orchestrate`.
 - Durable public package contract via `docs/harness-public-contract.md`.
@@ -29,6 +30,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Ship-gate authority adjudication in `runs authority-audit`, so leader-facing run review can explain when verification/review/checks state overrides an overly optimistic delivery status.
 
 ### Changed
+- The public contract and manifest now treat `Harness` as the public prototype name instead of leaving naming unresolved.
 - Core smoke now validates that a stale contract branch loses to active run state before live-state authority drift checks continue.
 - `meetings summary` and `doctor` now surface planned/resolved/open second-round debate obligations before synthesis.
 - The adapter manifest now points at the durable public contract and packages it into bootstrapped target repos.

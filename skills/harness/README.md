@@ -55,6 +55,7 @@ Use this when the model should act as the harness leader:
 ## Status
 
 Prototype, but working.
+Public prototype name: `Harness`.
 
 The current durable package boundary is documented in:
 
