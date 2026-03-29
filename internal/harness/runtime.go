@@ -1245,6 +1245,32 @@ func matchedProfileHighRiskScopes(profile map[string]any, ownership []string, re
 	return dedupeStrings(matches)
 }
 
+func matchedMeetingTriggerRefs(profile map[string]any, decisionKind string, bundleState string, unresolvedConflictCount int, releaseAdjacent bool, profileHighRiskScopeRefs []string, freshSignalKinds []string) []string {
+	matches := []string{}
+	for _, item := range anyListToStrings(toList(getKey(profile, "profile.meeting_triggers", []any{}))) {
+		trigger := strings.TrimSpace(item)
+		if trigger == "" {
+			continue
+		}
+		lower := strings.ToLower(trigger)
+		switch {
+		case strings.Contains(lower, "conflicting") && strings.Contains(lower, "evidence"):
+			if decisionKind == "establish_bundle_governor" || decisionKind == "resolve_parallel_root_runs" || bundleState == "escalation-required" || unresolvedConflictCount > 0 {
+				matches = append(matches, trigger)
+			}
+		case strings.Contains(lower, "blast") || strings.Contains(lower, "architecture"):
+			if len(profileHighRiskScopeRefs) > 0 || bundleState == "conflicted" || bundleState == "escalation-required" {
+				matches = append(matches, trigger)
+			}
+		case strings.Contains(lower, "release"):
+			if releaseAdjacent || containsString(profileHighRiskScopeRefs, "release and RC flows") || containsString(freshSignalKinds, "interface_change") || containsString(freshSignalKinds, "requires_meeting") {
+				matches = append(matches, trigger)
+			}
+		}
+	}
+	return dedupeStrings(matches)
+}
+
 func upsertMeetingRoleSpec(meeting map[string]any, role, mission string, allowedSources, forbiddenSources []string) {
 	role = strings.TrimSpace(role)
 	if role == "" {
@@ -7008,6 +7034,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			ownershipRefs = ownershipClaims(authoritativeRun)
 		}
 		profileHighRiskScopeRefs := matchedProfileHighRiskScopes(profile, ownershipRefs, releaseAdjacent)
+		missionAudit, _ := toMap(missionAuthorityAudit(mission, registry))
 		effectiveRiskLevel := stringValue(mission["risk_level"])
 		if authoritativeRun != nil && schedulerRiskRank(effectiveRiskLevel) == 0 {
 			effectiveRiskLevel = firstNonBlank(effectiveRiskLevel, stringValue(authoritativeRun["risk_level"]))
@@ -7015,13 +7042,14 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		if len(profileHighRiskScopeRefs) > 0 && schedulerRiskRank(effectiveRiskLevel) < schedulerRiskRank("high") {
 			effectiveRiskLevel = "high"
 		}
+		meetingTriggerRefs := []string{}
+		recommendedDecisionSurface := ""
 
 		if !activeMission(mission) {
 			classification = "completed"
 			reasons = append(reasons, "Mission is no longer active in the control plane.")
 			recommendedAction = "No active scheduling action required."
 		} else {
-			missionAudit, _ := toMap(missionAuthorityAudit(mission, registry))
 			switch {
 			case len(unsatisfiedMissionDeps) > 0 || len(unsatisfiedRunDeps) > 0:
 				classification = "blocked-by-dependency"
@@ -7147,16 +7175,29 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				}
 			}
 		}
+		if decisionKind != "" {
+			meetingTriggerRefs = matchedMeetingTriggerRefs(profile, decisionKind, bundleState, intValue(missionAudit["unresolved_conflict_count"]), releaseAdjacent, profileHighRiskScopeRefs, freshFollowUpSignalKindsByMission[missionID])
+			switch {
+			case activeMeetingCountByMission[missionID] > 0:
+				recommendedDecisionSurface = "active-council"
+			case len(meetingTriggerRefs) > 0:
+				recommendedDecisionSurface = "council"
+			default:
+				recommendedDecisionSurface = "leader-decision"
+			}
+		}
 		if len(profileHighRiskScopeRefs) > 0 {
 			reasons = append(reasons, fmt.Sprintf("Mission touches profile high-risk scopes: %s.", strings.Join(profileHighRiskScopeRefs, ", ")))
 		}
 
 		if decisionKind != "" {
 			requiredHumanDecisions = append(requiredHumanDecisions, map[string]any{
-				"mission_id":         missionID,
-				"decision_kind":      decisionKind,
-				"recommended_action": recommendedAction,
-				"note":               firstNonBlank(strings.Join(reasons, " "), recommendedAction),
+				"mission_id":                  missionID,
+				"decision_kind":               decisionKind,
+				"recommended_action":          recommendedAction,
+				"recommended_decision_surface": recommendedDecisionSurface,
+				"meeting_trigger_refs":        stringListToAny(meetingTriggerRefs),
+				"note":                        firstNonBlank(strings.Join(reasons, " "), recommendedAction),
 			})
 		}
 
@@ -7169,6 +7210,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"effective_risk_level":             effectiveRiskLevel,
 			"profile_high_risk":                len(profileHighRiskScopeRefs) > 0,
 			"profile_high_risk_scope_refs":     stringListToAny(profileHighRiskScopeRefs),
+			"recommended_decision_surface":     recommendedDecisionSurface,
+			"meeting_trigger_refs":             stringListToAny(meetingTriggerRefs),
 			"release_adjacent":                 releaseAdjacent,
 			"authoritative_run_id":             authoritativeRunID,
 			"authoritative_run_state":          authoritativeRunState,
@@ -7370,7 +7413,18 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	}
 
 	nextAction := "No runnable mission remains; review blockers, meetings, or dependencies."
+	councilDecisionCount := 0
+	for _, item := range requiredHumanDecisions {
+		decision, _ := toMap(item)
+		if stringValue(decision["recommended_decision_surface"]) == "council" || stringValue(decision["recommended_decision_surface"]) == "active-council" {
+			councilDecisionCount++
+		}
+	}
 	switch {
+	case councilDecisionCount > 0 && len(selectedMissionIDs) > 0:
+		nextAction = "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime."
+	case councilDecisionCount > 0:
+		nextAction = "Open or review councils for the required human decisions before widening execution."
 	case len(requiredHumanDecisions) > 0 && len(selectedMissionIDs) > 0:
 		nextAction = "Resolve required human decisions before widening execution; keep the current foreground batch bounded in the meantime."
 	case len(requiredHumanDecisions) > 0:
@@ -7406,6 +7460,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"bundle_role_tally":             bundleRoleTally,
 		"mission_classifications":       entries,
 		"required_human_decision_count": len(requiredHumanDecisions),
+		"council_decision_count":        councilDecisionCount,
 		"required_human_decisions":      requiredHumanDecisions,
 		"reschedule_action_count":       len(rescheduleActions),
 		"reschedule_actions":            rescheduleActions,
@@ -7713,6 +7768,7 @@ func cmdHome(args []string) error {
 		"scheduler_execution_mode":                stringValue(scheduler["execution_mode"]),
 		"scheduler_selected_mission_count":        intValue(scheduler["selected_mission_count"]),
 		"scheduler_required_human_decision_count": intValue(scheduler["required_human_decision_count"]),
+		"scheduler_council_decision_count":        intValue(scheduler["council_decision_count"]),
 		"scheduler_reschedule_action_count":       intValue(scheduler["reschedule_action_count"]),
 		"scheduler_tally":                         cloneValue(getKey(scheduler, "classification_tally", map[string]any{})),
 		"scheduler_bundle_role_tally":             cloneValue(getKey(scheduler, "bundle_role_tally", map[string]any{})),

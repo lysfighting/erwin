@@ -167,6 +167,7 @@ Do not underestimate the current control-plane maturity.
 - `home` now mirrors that decision-first scheduler guidance instead of collapsing escalation-required bundles back into generic cross-mission conflict messaging
 - scheduler now consumes profile-backed bounded parallel capacity, so overflow runnable missions can be deferred behind the current admitted batch instead of always widening all runnable work
 - scheduler now consumes profile-backed high-risk scopes, so configured boundaries such as `install.sh` or `skills/wing/` can escalate a mission into high-risk foreground serialization even when no manual `risk_level` was provided
+- scheduler now consumes profile-backed meeting triggers, so some required human decisions become explicitly council-worthy with durable `recommended_decision_surface` and `meeting_trigger_refs` instead of only generic decision records
 - scheduler now treats fresh coordination/dependency/blocker signals as real rescheduling triggers instead of only including them in the snapshot payload
 - first-class mission objects
 - separation between `latest_run_id` and `authoritative_run_id`
