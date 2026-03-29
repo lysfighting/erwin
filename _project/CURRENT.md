@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.19.0 (in progress)
+- **Version**: 0.20.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Codex-native orchestration harness public contract formalized)
+- **Last Session**: 2026-03-29 (Codex-native orchestration harness second-round debate control completed)
 
 ## Current Phase
 
@@ -33,6 +33,8 @@
 - **Ship-gate authority adjudication added**: `runs authority-audit` now lets `verification_status`, `review_status`, and `checks_status` explicitly override an inconsistent optimistic `ship_status`, so gate evidence can win over stale delivery state
 - **Public package contract formalized**: `docs/harness-public-contract.md` now defines the durable public boundary for the Codex-native harness package, including protocol/adapter/profile separation, required surfaces, runtime guarantees, distribution expectations, and explicit non-goals while final naming remains open
 - **Contract wired into package metadata**: `harness/adapter-manifest.yml` now points at the public contract, and the manifest package list/bootstrap flow now carry that contract into bootstrapped repositories instead of leaving the durable boundary only in the source repo
+- **Second-round debate control added**: `meetings orchestrate` now plans follow-up round obligations when a first linked cross-examination does not yet outrank the opposing claim lane, keeps the council in `cross_examination` until that reply lands, and surfaces the result through summary/doctor instead of collapsing every debated claim directly into synthesis after one route
+- **Debate-plan accounting widened**: meeting summaries and doctor now track `planned_round_count`, `resolved_round_count`, and `open_round_action_count`, while teammate smoke validates a bounded two-round council path before synthesis
 - **Ownership and desired state strengthened**: runs and contracts now carry explicit `ownership_claims`, `desired_state`, and dependency policy; teammate assignment now rejects exclusive overlap by default, and `drive wait` plus `home`/`doctor` surface dependency-blocked runs directly
 - **Authority and council control advanced**: invalid authority levels are now rejected or surfaced, and meetings can advance phases with `meetings orchestrate` instead of relying entirely on manual phase jumps
 - **Mission graph made first-class**: the harness now materializes durable mission objects under `.harness/missions/`, exposes them through `scripts/harness-missions.sh`, and drives `home`/`doctor` from mission-level state instead of only run-level state
@@ -93,7 +95,7 @@
 
 ## Active Task / What's In Progress
 
-**Leader-led harness runtime is now delivered. Public contract is now formalized; naming and deeper control-plane polish remain:**
+**Leader-led harness runtime is now delivered. Public contract and bounded second-round council control are now formalized; naming and broader authority polish remain:**
 
 | Phase | Status | Description |
 |-------|--------|-------------|
@@ -113,7 +115,7 @@
    - B. Decide whether `harness/adapter-manifest.yml` should become the public package spec or stay repo-private while naming is unresolved
    - C. Continue deepening selector semantics beyond the new family-aware baseline into richer policies and transfer rules
    - D. Continue authority conflict resolution beyond current signal-level supersession, meeting same-claim audits, run-level active-signal adjudication, contract sync, record-vs-live drift detection, and clean-intent-vs-dirty-worktree detection into still harder contract-intent vs live-git disagreement
-   - E. Continue pushing council behavior from auto-synthesis, wave obligations, and route obligations toward fuller `arch-review`-style automated debate, including multi-round challenge planning and stronger automatic challenge assignment across more than one conflicting lane
+   - E. Continue pushing council behavior from auto-synthesis, wave obligations, route obligations, and bounded second-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
    - F. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `_project/sessions/2026-03-28-A.md`, `_project/sessions/2026-03-28-B.md`, `_project/sessions/2026-03-28-C.md`, `_project/sessions/2026-03-29-A.md`, `_project/sessions/2026-03-29-B.md`, `_project/sessions/2026-03-29-C.md`, `_project/sessions/2026-03-29-D.md`, `harness/README.md`, `docs/research/harness-completion-context-pack-2026-03-28.md`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0

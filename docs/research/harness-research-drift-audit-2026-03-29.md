@@ -30,7 +30,7 @@ But there is clear **implementation-weighted drift**:
 
 - protocol and adapter work are still a little more mature than the hardest control-plane work
 - runtime packaging was ahead of desired-state modeling, but first-class mission objects have now materially closed that gap
-- meeting governance is now strong, and automated council orchestration has begun to materialize through claim-aware auto-synthesis plus assigned debate-route obligations, but the full debate controller is still not there
+- meeting governance is now strong, and automated council orchestration has begun to materialize through claim-aware auto-synthesis, assigned debate-route obligations, and bounded second-round reply planning, but the full debate controller is still not there
 
 So the danger is not “we forgot the vision entirely.”
 The danger is:
@@ -173,8 +173,8 @@ Current truth:
 - the runtime now stores the right meeting objects
 - the runtime can now advance meeting phases with `meetings orchestrate`
 - findings can now reference the positions that support or challenge them, so synthesis provenance is no longer implicit
-- positions can now be grouped by `claim` / `dimension`, `meetings orchestrate` can auto-generate provisional findings plus unresolved follow-up actions from those grouped positions, and meetings now track conflicting claim lanes through a first-class debate plan with assigned route obligations
-- but it still does not automate the full debate workflow itself; the harness now tracks missing independent-review wave obligations and conflict-lane route obligations, yet richer multi-round debate control is still ahead
+- positions can now be grouped by `claim` / `dimension`, `meetings orchestrate` can auto-generate provisional findings plus unresolved follow-up actions from those grouped positions, meetings now track conflicting claim lanes through a first-class debate plan with assigned route obligations, and the controller can now require a bounded second-round reply before allowing synthesis
+- but it still does not automate the full debate workflow itself; the harness now tracks missing independent-review wave obligations, conflict-lane route obligations, and bounded second-round debate obligations, yet richer multi-round debate control is still ahead
 
 So the system has become **meaningfully council-orchestrating**, but not yet a full automated debate controller.
 
@@ -229,6 +229,6 @@ It should close the remaining control-plane gaps.
 1. Richer selector families and transfer policies beyond the current normalized ownership-transfer baseline
 2. Broader authority conflict resolution outside meetings
 3. Deeper automated council orchestration
-4. Product naming / public contract once the governance model feels stable
+4. Product naming once the governance model feels stable
 
 If future sessions follow this order, the harness will continue toward the original design rather than only becoming a nicer adapter.

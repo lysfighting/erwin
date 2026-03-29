@@ -3334,6 +3334,26 @@ func meetingClaimGroupKey(claimRef, dimension, fallback string) string {
 	return firstNonBlank(strings.TrimSpace(dimension), "factual") + "::" + normalized
 }
 
+func meetingHasRecordedFindingForClaim(meeting map[string]any, claimRef, dimension string) bool {
+	findings, _ := toMap(meeting["findings"])
+	if findings == nil {
+		return false
+	}
+	for _, bucket := range []string{"accepted", "rejected", "unresolved"} {
+		for _, item := range toList(findings[bucket]) {
+			finding, ok := toMap(item)
+			if !ok {
+				continue
+			}
+			if strings.TrimSpace(stringValue(finding["claim_ref"])) == strings.TrimSpace(claimRef) &&
+				firstNonBlank(stringValue(finding["dimension"]), "factual") == firstNonBlank(strings.TrimSpace(dimension), "factual") {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func meetingDebatePlan(meeting map[string]any) map[string]any {
 	ensureMeetingGovernanceState(meeting)
 	positions := toList(meeting["positions"])
@@ -3386,10 +3406,13 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 
 	routes := []any{}
 	routeActions := []any{}
+	roundActions := []any{}
 	blockingGaps := []string{}
 	coverageNotes := []string{}
 	conflictClaimCount := 0
 	resolvedRouteCount := 0
+	plannedRoundCount := 0
+	resolvedRoundCount := 0
 
 	for _, key := range groupKeys {
 		group := claimGroups[key]
@@ -3397,6 +3420,7 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		challengeRoles := []string{}
 		supportIDs := []string{}
 		challengeIDs := []string{}
+		linkedCrossPositions := []map[string]any{}
 		for _, position := range group {
 			switch strings.TrimSpace(stringValue(position["stance"])) {
 			case "support":
@@ -3405,6 +3429,12 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 			case "challenge":
 				challengeRoles = append(challengeRoles, firstNonBlank(stringValue(position["role"]), stringValue(position["run_id"])))
 				challengeIDs = append(challengeIDs, stringValue(position["position_id"]))
+			}
+			if stringValue(position["phase"]) == "cross_examination" &&
+				(strings.TrimSpace(stringValue(position["responds_to_run_id"])) != "" ||
+					strings.TrimSpace(stringValue(position["responds_to_role"])) != "" ||
+					strings.TrimSpace(stringValue(position["responds_to_position_id"])) != "") {
+				linkedCrossPositions = append(linkedCrossPositions, position)
 			}
 		}
 		supportRoles = dedupeStrings(supportRoles)
@@ -3421,6 +3451,7 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		targetRole := firstNonBlank(stringValue(leadSupport["role"]), stringValue(leadChallenge["role"]))
 		routeID := firstNonBlank("route-"+slugify(key), fmt.Sprintf("route-%d", conflictClaimCount+1))
 		conflictClaimCount++
+		hasRecordedFinding := meetingHasRecordedFindingForClaim(meeting, claimLabels[key], dimensions[key])
 		route := map[string]any{
 			"route_id":                       routeID,
 			"claim_key":                      key,
@@ -3463,6 +3494,56 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 				"summary":                 fmt.Sprintf("%s should challenge %s on claim %q", firstNonBlank(assignedRole, "bounded challenger"), firstNonBlank(targetRole, "the supporting lane"), claimLabels[key]),
 			})
 		}
+		if linkedCrossByClaim[key] > 0 && !hasRecordedFinding {
+			plannedRoundCount++
+			latestLinked := map[string]any(nil)
+			latestRecordedAt := ""
+			for _, position := range linkedCrossPositions {
+				recordedAt := stringValue(position["recorded_at"])
+				if latestLinked == nil || isoAfter(recordedAt, latestRecordedAt) {
+					latestLinked = position
+					latestRecordedAt = recordedAt
+				}
+			}
+			if linkedCrossByClaim[key] >= 2 {
+				resolvedRoundCount++
+			} else if latestLinked != nil {
+				latestStance := strings.TrimSpace(stringValue(latestLinked["stance"]))
+				opposingStance := "support"
+				opposingRoles := supportRoles
+				opposingLead := leadSupport
+				if latestStance == "support" {
+					opposingStance = "challenge"
+					opposingRoles = challengeRoles
+					opposingLead = leadChallenge
+				}
+				latestAuthorityRank := authorityRank(firstNonBlank(stringValue(latestLinked["authority_level"]), "L4"))
+				opposingAuthorityRank := authorityRank(firstNonBlank(stringValue(opposingLead["authority_level"]), "L4"))
+				if latestAuthorityRank > opposingAuthorityRank {
+					resolvedRoundCount++
+				} else {
+					assignedRole := firstNonBlank(stringValue(opposingLead["role"]), firstNonBlank(opposingRoles...))
+					assignedRunID := firstNonBlank(stringValue(opposingLead["run_id"]), participantRunByRole[assignedRole])
+					roundActions = append(roundActions, map[string]any{
+						"round_id":                routeID + "-round-2",
+						"route_id":                routeID,
+						"claim_ref":               claimLabels[key],
+						"dimension":               dimensions[key],
+						"assigned_role":           assignedRole,
+						"assigned_run_id":         assignedRunID,
+						"expected_phase":          "cross_examination",
+						"expected_stance":         opposingStance,
+						"responds_to_position_id": stringValue(latestLinked["position_id"]),
+						"responds_to_run_id":      stringValue(latestLinked["run_id"]),
+						"responds_to_role":        stringValue(latestLinked["role"]),
+						"round_number":            2,
+						"state":                   "open",
+						"summary":                 fmt.Sprintf("%s should answer the first-round %s on claim %q before synthesis.", firstNonBlank(assignedRole, "bounded respondent"), firstNonBlank(latestStance, "cross-examination"), claimLabels[key]),
+					})
+					coverageNotes = append(coverageNotes, fmt.Sprintf("claim %q needs a second-round %s response after the first linked cross-examination.", claimLabels[key], opposingStance))
+				}
+			}
+		}
 		coverageNotes = append(coverageNotes, fmt.Sprintf("claim %q: support=%s challenge=%s assigned=%s", claimLabels[key], strings.Join(supportRoles, ", "), strings.Join(challengeRoles, ", "), firstNonBlank(assignedRole, "unassigned")))
 		routes = append(routes, route)
 	}
@@ -3471,10 +3552,14 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		"conflict_claim_count":    conflictClaimCount,
 		"planned_route_count":     len(routes),
 		"resolved_route_count":    resolvedRouteCount,
+		"planned_round_count":     plannedRoundCount,
+		"resolved_round_count":    resolvedRoundCount,
 		"unrouted_claim_count":    len(blockingGaps),
 		"open_route_action_count": len(routeActions),
+		"open_round_action_count": len(roundActions),
 		"routes":                  routes,
 		"route_actions":           routeActions,
+		"round_actions":           roundActions,
 		"blocking_gaps":           stringListToAny(blockingGaps),
 		"coverage_notes":          stringListToAny(coverageNotes),
 	}
@@ -3777,6 +3862,9 @@ func meetingSynthesisAudit(meeting map[string]any) map[string]any {
 			"planned_routes":            debatePlan["planned_route_count"],
 			"resolved_routes":           debatePlan["resolved_route_count"],
 			"open_route_actions":        debatePlan["open_route_action_count"],
+			"planned_rounds":            debatePlan["planned_round_count"],
+			"resolved_rounds":           debatePlan["resolved_round_count"],
+			"open_round_actions":        debatePlan["open_round_action_count"],
 			"unrouted_claims":           debatePlan["unrouted_claim_count"],
 		},
 		"blocking_gaps":   stringListToAny(blockingGaps),
@@ -4348,6 +4436,19 @@ func doctorReport() map[string]any {
 				}
 				if len(openRoutes) > 0 {
 					issues = append(issues, issueRecord("warning", "meeting-route-action-open", meetingID, fmt.Sprintf("Meeting still has open debate route obligations: %s", strings.Join(openRoutes, "; ")), "Record the expected linked cross-examination or explicitly narrow the conflicting claim lane."))
+				}
+			}
+			if intValue(debatePlan["open_round_action_count"]) > 0 {
+				openRounds := []string{}
+				for _, item := range toList(debatePlan["round_actions"]) {
+					action, ok := toMap(item)
+					if !ok || stringValue(action["state"]) != "open" {
+						continue
+					}
+					openRounds = append(openRounds, stringValue(action["summary"]))
+				}
+				if len(openRounds) > 0 {
+					issues = append(issues, issueRecord("warning", "meeting-round-action-open", meetingID, fmt.Sprintf("Meeting still has open follow-up debate obligations: %s", strings.Join(openRounds, "; ")), "Record the next-round response before trusting synthesis on that claim lane."))
 				}
 			}
 		}
@@ -7264,6 +7365,9 @@ func cmdMeetings(args []string) error {
 			"planned_route_count":                 intValue(debatePlan["planned_route_count"]),
 			"resolved_route_count":                intValue(debatePlan["resolved_route_count"]),
 			"open_route_action_count":             intValue(debatePlan["open_route_action_count"]),
+			"planned_round_count":                 intValue(debatePlan["planned_round_count"]),
+			"resolved_round_count":                intValue(debatePlan["resolved_round_count"]),
+			"open_round_action_count":             intValue(debatePlan["open_round_action_count"]),
 			"open_wave_action_count":              intValue(wavePlan["open_wave_action_count"]),
 			"unrouted_claim_count":                intValue(debatePlan["unrouted_claim_count"]),
 			"open_action_count":                   openActionCount,
@@ -7436,11 +7540,17 @@ func cmdMeetingsRemainder(args []string) error {
 					}
 				}
 				if len(crossExamRuns) >= 1 && intValue(coverageAudit["linked_cross_examination_count"]) > 0 {
-					newPhase = "synthesis"
-					nextRequirement = "Convert debated positions into accepted, rejected, unresolved findings, and action items."
+					if intValue(debatePlan["open_round_action_count"]) > 0 {
+						nextRequirement = fmt.Sprintf("Execute %d follow-up debate round(s) before synthesis.", intValue(debatePlan["open_round_action_count"]))
+					} else {
+						newPhase = "synthesis"
+						nextRequirement = "Convert debated positions into accepted, rejected, unresolved findings, and action items."
+					}
 				} else {
 					if intValue(debatePlan["open_route_action_count"]) > 0 {
 						nextRequirement = fmt.Sprintf("Still waiting on %d planned route obligation(s) before synthesis.", intValue(debatePlan["open_route_action_count"]))
+					} else if intValue(debatePlan["open_round_action_count"]) > 0 {
+						nextRequirement = fmt.Sprintf("Still waiting on %d follow-up debate round(s) before synthesis.", intValue(debatePlan["open_round_action_count"]))
 					} else {
 						nextRequirement = "Need at least one linked cross-examination position before synthesis."
 					}

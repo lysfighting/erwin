@@ -244,11 +244,19 @@ auto_cross_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_
 auto_cross_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_b" cross_examination challenge "Rollback guidance can wait until a real rollback path exists." --claim=rollback-plan-note --dimension=factual --authority=L2 --evidence=docs/release.md --responds-to-position="$auto_pos_c_id")
 assert_json_field "$auto_cross_a" '"cross_examination"' "auto-synthesis council records linked cross-examination support"
 assert_json_field "$auto_cross_b" '"cross_examination"' "auto-synthesis council records linked cross-examination challenge"
+auto_cross_b_id=$(printf '%s\n' "$auto_cross_b" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
 
 auto_orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
-assert_json_field "$auto_orchestrate_c" '"new_phase": "synthesis"' "auto-synthesis council advances into synthesis"
-assert_json_field "$auto_orchestrate_c" '"generated_finding_count": 2' "orchestrate auto-generates findings from council positions"
-assert_json_field "$auto_orchestrate_c" '"generated_action_count": 1' "orchestrate auto-generates action items for unresolved council claims"
+assert_json_field "$auto_orchestrate_c" '"new_phase": "cross_examination"' "auto-synthesis council stays in cross-examination when a second-round reply is required"
+assert_json_field "$auto_orchestrate_c" '"open_round_action_count": 1' "auto-synthesis council emits one follow-up debate round obligation"
+
+auto_cross_c=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_meeting_id" "$run_a" cross_examination support "Rollback guidance should still be explicit even before a concrete rollback path exists." --claim=rollback-plan-note --dimension=factual --authority=L2 --evidence=docs/release.md --responds-to-position="$auto_cross_b_id")
+assert_json_field "$auto_cross_c" '"cross_examination"' "auto-synthesis council records the second-round support reply"
+
+auto_orchestrate_d=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
+assert_json_field "$auto_orchestrate_d" '"new_phase": "synthesis"' "auto-synthesis council advances into synthesis after the follow-up round"
+assert_json_field "$auto_orchestrate_d" '"generated_finding_count": 2' "orchestrate auto-generates findings from council positions"
+assert_json_field "$auto_orchestrate_d" '"generated_action_count": 1' "orchestrate auto-generates action items for unresolved council claims"
 
 auto_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$auto_meeting_id")
 assert_json_field "$auto_summary" '"accepted_count": 1' "auto-synthesis produces one accepted finding"
@@ -259,9 +267,12 @@ assert_json_field "$auto_summary" '"traced_finding_count": 2' "auto-synthesized 
 assert_json_field "$auto_summary" '"planned_route_count": 2' "auto-synthesis summary surfaces both routed claim lanes"
 assert_json_field "$auto_summary" '"resolved_route_count": 2' "auto-synthesis summary shows both planned routes resolved"
 assert_json_field "$auto_summary" '"open_route_action_count": 0' "auto-synthesis summary shows no remaining route obligation"
+assert_json_field "$auto_summary" '"planned_round_count": 2' "auto-synthesis summary surfaces second-round planning across debated claim lanes"
+assert_json_field "$auto_summary" '"resolved_round_count": 2' "auto-synthesis summary shows no remaining unresolved second-round planning"
+assert_json_field "$auto_summary" '"open_round_action_count": 0' "auto-synthesis summary shows no remaining follow-up round obligation"
 
-auto_orchestrate_d=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
-assert_json_field "$auto_orchestrate_d" '"new_phase": "output"' "auto-synthesis council can advance from synthesis to output"
+auto_orchestrate_e=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
+assert_json_field "$auto_orchestrate_e" '"new_phase": "output"' "auto-synthesis council can advance from synthesis to output"
 
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
