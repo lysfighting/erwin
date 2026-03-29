@@ -448,6 +448,7 @@ The specific lessons absorbed from [`arch-review`](/Users/liyasong/Project/collo
 - allowed/forbidden sources
 - independent review before debate
 - rejected findings recorded with reasons
+- governance policy that blocks council advancement when those bounded-review requirements are missing
 
 This is the core reason `Harness` meetings are governance objects rather than loose notes.
 It is also why `Harness` treats debate as a bounded governance tool rather than a mandatory ritual.
@@ -541,6 +542,7 @@ The following parts of the operating model are already concretely present:
 - meeting packets with role/authority discipline
 - wave/route/round council orchestration
 - governed verdict adoption in some resolved debate lanes
+- runtime-enforced governance gaps that block councils lacking authority hierarchy or rejected-finding reasons
 
 This is enough to call the current system a true prototype line, not just a research stub.
 

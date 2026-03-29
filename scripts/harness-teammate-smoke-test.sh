@@ -49,6 +49,16 @@ run_in_repo() {
   )
 }
 
+meeting_file_path() {
+  printf '%s/.harness/meetings/active/%s.yml\n' "$TEST_REPO" "$1"
+}
+
+rewrite_json_in_file() {
+  local file="$1"
+  local perl_expr="$2"
+  perl -0pi -e "$perl_expr" "$file"
+}
+
 assert_json_field() {
   local json="$1"
   local needle="$2"
@@ -542,6 +552,56 @@ assert_json_field "$sequenced_orchestrate_b" '"ready_wave_batch_count": 1' "stat
 assert_json_field "$sequenced_orchestrate_b" '"blocked_wave_batch_count": 1' "stateful-batch council keeps one blocked batch after the blocked synthesis attempt"
 assert_json_field "$sequenced_orchestrate_b" 'Complete current debate batch before output.' "stateful-batch council tells the leader to finish the current batch before output"
 run_in_repo bash scripts/harness-drive.sh meeting-close "$leader_run_id" "$sequenced_meeting_id" "Stateful batch execution smoke complete." >/dev/null
+
+section "Council governance gates"
+governance_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can governance policy block council progress until authority hierarchy is restored?")
+assert_json_field "$governance_meeting_output" '"state": "active"' "governance-gate meeting materializes"
+governance_meeting_id=$(printf '%s\n' "$governance_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+governance_meeting_file=$(meeting_file_path "$governance_meeting_id")
+
+rewrite_json_in_file "$governance_meeting_file" 's/"authority_hierarchy": \[[^\]]*\]/"authority_hierarchy": []/s'
+governance_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$governance_meeting_id")
+assert_json_field "$governance_orchestrate_a" '"new_phase": "setup"' "governance gaps keep setup-phase councils from advancing"
+assert_json_field "$governance_orchestrate_a" 'missing authority hierarchy' "governance gaps report the missing authority hierarchy"
+governance_summary_a=$(run_in_repo bash scripts/harness-meetings.sh summary "$governance_meeting_id")
+assert_json_field "$governance_summary_a" '"governance_gap_count": 1' "meeting summary surfaces one authority-hierarchy governance gap"
+assert_json_field "$governance_summary_a" 'missing authority hierarchy' "meeting summary names the authority-hierarchy governance gap"
+
+rewrite_json_in_file "$governance_meeting_file" 's~"authority_hierarchy": \[\]~"authority_hierarchy": ["L1: live git/GitHub state","L2: active runtime state","L3: committed harness definitions"]~s'
+run_in_repo bash scripts/harness-meetings.sh add-participant "$governance_meeting_id" "$run_a" implementation-verifier >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$governance_meeting_id" "$run_b" ops-simulator >/dev/null
+governance_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$governance_meeting_id")
+assert_json_field "$governance_orchestrate_b" '"new_phase": "independent_review"' "restoring authority hierarchy re-enables council progression"
+
+rejected_reason_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can rejected findings block output until their governance record is complete?")
+assert_json_field "$rejected_reason_output" '"state": "active"' "rejected-finding governance meeting materializes"
+rejected_reason_meeting_id=$(printf '%s\n' "$rejected_reason_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+rejected_reason_meeting_file=$(meeting_file_path "$rejected_reason_meeting_id")
+
+run_in_repo bash scripts/harness-meetings.sh add-role "$rejected_reason_meeting_id" implementation-verifier --mission="State whether the broad rollout note is necessary." --allow="L1: live git state|L2: active runtime state" --forbid="L4+: stale notes" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-role "$rejected_reason_meeting_id" ops-simulator --mission="Independently confirm whether the broad rollout note is over-scoped." --allow="L1: live git state|L2: active runtime state" --forbid="Unverified memory" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$rejected_reason_meeting_id" "$run_a" implementation-verifier >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$rejected_reason_meeting_id" "$run_b" ops-simulator >/dev/null
+run_in_repo bash scripts/harness-meetings.sh orchestrate "$rejected_reason_meeting_id" >/dev/null
+rejected_reason_pos_a=$(run_in_repo bash scripts/harness-meetings.sh add-position "$rejected_reason_meeting_id" "$run_a" independent_review support "Broad rollout notes are unnecessary for this scoped auth change." --claim=rejected-reason-scope --dimension=factual --authority=L2 --evidence=CHANGELOG.md)
+rejected_reason_pos_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$rejected_reason_meeting_id" "$run_b" independent_review support "Independent review agrees the broader rollout note would overstate impact." --claim=rejected-reason-scope --dimension=factual --authority=L2 --evidence=CHANGELOG.md)
+rejected_reason_pos_a_id=$(printf '%s\n' "$rejected_reason_pos_a" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
+rejected_reason_pos_b_id=$(printf '%s\n' "$rejected_reason_pos_b" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
+run_in_repo bash scripts/harness-meetings.sh add-finding "$rejected_reason_meeting_id" rejected "Reject broad rollout note." --authority=L2 --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator --claim=rejected-reason-scope --dimension=factual --supports="$rejected_reason_pos_a_id|$rejected_reason_pos_b_id" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh set-phase "$rejected_reason_meeting_id" synthesis >/dev/null
+
+rejected_reason_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$rejected_reason_meeting_id")
+assert_json_field "$rejected_reason_orchestrate_a" '"new_phase": "synthesis"' "missing rejected-finding governance keeps synthesis from advancing to output"
+assert_json_field "$rejected_reason_orchestrate_a" 'rejected finding missing reason' "orchestrate reports the missing rejected-finding reason"
+rejected_reason_summary_a=$(run_in_repo bash scripts/harness-meetings.sh summary "$rejected_reason_meeting_id")
+assert_json_field "$rejected_reason_summary_a" '"governance_gap_count": 1' "meeting summary surfaces one rejected-finding governance gap"
+assert_json_field "$rejected_reason_summary_a" 'rejected finding missing reason' "meeting summary names the rejected-finding governance gap"
+
+rewrite_json_in_file "$rejected_reason_meeting_file" 's/"reason": ""/"reason": "Aligned review concluded the broader rollout note would overstate impact."/'
+rejected_reason_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$rejected_reason_meeting_id")
+assert_json_field "$rejected_reason_orchestrate_b" '"new_phase": "output"' "restoring rejected-finding governance lets synthesis advance to output"
+rejected_reason_summary_b=$(run_in_repo bash scripts/harness-meetings.sh summary "$rejected_reason_meeting_id")
+assert_json_field "$rejected_reason_summary_b" '"governance_gap_count": 0' "meeting summary clears governance gaps after the rejected-finding reason is restored"
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"

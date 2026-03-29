@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.50.0 (in progress)
+- **Version**: 0.51.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Scheduler now enforces explicit parallel justification)
+- **Last Session**: 2026-03-29 (Council governance policy is now runtime-enforced)
 
 ## Current Phase
 
@@ -18,6 +18,8 @@
 
 **Session 2026-03-29** — Harness prototype line stayed complete while bundle authority started driving scheduler behavior directly
 
+- **Council governance gates enforced**: `meetings orchestrate` and `meetings summary` now compute durable `governance_gaps`, and missing authority hierarchy or rejected findings without reasons now block council progression instead of only surfacing as post-hoc doctor warnings
+- **Council repair path proven**: teammate smoke now proves both setup-phase blocking on missing authority hierarchy and synthesis/output blocking on missing rejected-finding reasons, then verifies that restoring the missing governance data allows the council controller to continue
 - **Bundle-aware scheduler consumption added**: `missions schedule` now consumes mission-bundle authority packets instead of only the raw conflict list, so governed losing missions are deferred behind the current bundle governor, escalation-required bundles become explicit human decisions, and governed-but-ambiguous bundles no longer masquerade as ordinary runnable work
 - **Scheduler output widened**: mission classifications now surface `bundle_id`, `bundle_state`, `bundle_role`, `bundle_resolution_kind`, `bundle_governing_mission_id`, and `bundle_required_action`, making bundle-level control visible directly in durable scheduler snapshots
 - **Leader-facing scheduler priority fixed**: when required human bundle decisions coexist with a still-valid foreground batch, scheduler `next_action` now prioritizes the human decisions instead of pretending foreground selection is the only thing that matters; snapshots also emit `bundle_role_tally` so the leader can see the portfolio composition directly

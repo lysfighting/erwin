@@ -151,6 +151,7 @@ The package currently guarantees:
 - bounded teammate assignment and governed sibling communication
 - council-grade meeting packets with authority-aware findings
 - bounded council orchestration with route, wave, and round obligations, including multi-lane debate wave batches that group simultaneous lane work by participant and round, deterministic current/blocked batch execution state, direct synthesis when a lane is aligned or already settled by higher-authority evidence, same-pass closure from `synthesis` to `output` whenever the synthesis audit is already ready and no open debate batch remains, plus governed latest-response verdict adoption when a debated lane resolves before hitting the cap
+- runtime-enforced council governance gates, so missing authority hierarchy and rejected findings without reasons block council progression instead of remaining doctor-only warnings
 - authority audit across signals, meetings, runs, and live git state
 - mission-level authority audit across run aggregates, leader/teammate control boundaries, and multi-run mission conflicts
 - graph-level mission authority can adjudicate a pairwise conflicted bundle into a governed bundle when one mission has a uniquely stronger explicit authority tuple

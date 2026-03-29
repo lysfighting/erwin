@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.46.0-prototype`
+- `adapter_version`: `0.51.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -188,6 +188,7 @@ Do not underestimate the current control-plane maturity.
 - direct synthesis when a council lane is aligned or already resolved by higher-authority evidence
 - auto-synthesis of provisional findings
 - latest-response verdict adoption when a governed debate lane resolves
+- runtime-enforced council governance gaps, so missing authority hierarchy and rejected findings without reasons block council progression until repaired
 - leader/teammate split with governed sibling communication
 
 This is no longer “just a prototype shell workflow.”

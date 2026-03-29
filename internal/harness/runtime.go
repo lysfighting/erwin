@@ -5280,6 +5280,24 @@ func meetingSynthesisAudit(meeting map[string]any) map[string]any {
 	}
 }
 
+func meetingGovernancePolicyGaps(meeting map[string]any) []string {
+	gaps := []string{}
+	if boolValue(policyValue("meetings.require_authority_hierarchy", true)) && len(toList(meeting["authority_hierarchy"])) == 0 {
+		gaps = append(gaps, "missing authority hierarchy")
+	}
+	if boolValue(policyValue("meetings.require_rejected_findings_log", true)) {
+		findings, _ := toMap(meeting["findings"])
+		for _, item := range toList(findings["rejected"]) {
+			finding, ok := toMap(item)
+			if ok && strings.TrimSpace(stringValue(finding["reason"])) == "" {
+				gaps = append(gaps, "rejected finding missing reason")
+				break
+			}
+		}
+	}
+	return dedupeStrings(gaps)
+}
+
 func meetingAuthorityAudit(meeting map[string]any) map[string]any {
 	findings, _ := toMap(meeting["findings"])
 	groups := map[string][]map[string]any{}
@@ -9728,6 +9746,7 @@ func cmdMeetings(args []string) error {
 		debatePlan, _ := toMap(orchestration["debate_plan"])
 		wavePlan, _ := toMap(orchestration["wave_plan"])
 		authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
+		governanceGaps := meetingGovernancePolicyGaps(meeting)
 		return printJSON(map[string]any{
 			"meeting_id":                               stringValue(meeting["meeting_id"]),
 			"state":                                    stringValue(meeting["state"]),
@@ -9735,6 +9754,8 @@ func cmdMeetings(args []string) error {
 			"outcome_summary":                          outcome["summary"],
 			"next_action":                              outcome["next_action"],
 			"phase_history_count":                      len(toList(meeting["phase_history"])),
+			"governance_gap_count":                     len(governanceGaps),
+			"governance_gaps":                          stringListToAny(governanceGaps),
 			"debate_round":                             intValue(orchestration["debate_round"]),
 			"synthesis_status":                         stringValue(synthesis["status"]),
 			"blocking_gap_count":                       len(toList(synthesis["blocking_gaps"])),
@@ -9867,6 +9888,7 @@ func cmdMeetingsRemainder(args []string) error {
 			coverageAudit, _ := toMap(meetingCoverageAudit(meeting))
 			wavePlan, _ := toMap(meetingWavePlan(meeting, coverageAudit))
 			debatePlan, _ := toMap(meetingDebatePlan(meeting))
+			governanceGaps := meetingGovernancePolicyGaps(meeting)
 			openDebateBatchCount := intValue(debatePlan["open_wave_batch_count"])
 			blockedDebateBatchCount := intValue(debatePlan["blocked_wave_batch_count"])
 			currentDebateBatchSummary := strings.TrimSpace(stringValue(debatePlan["current_wave_batch_summary"]))
@@ -9912,6 +9934,7 @@ func cmdMeetingsRemainder(args []string) error {
 			}
 			switch oldPhase {
 			case "", "setup":
+				gaps = append(gaps, governanceGaps...)
 				if len(gaps) == 0 {
 					newPhase = "independent_review"
 					if intValue(wavePlan["open_wave_action_count"]) > 0 {
@@ -9923,6 +9946,7 @@ func cmdMeetingsRemainder(args []string) error {
 					nextRequirement = "Add packet/participant prerequisites before independent review."
 				}
 			case "independent_review":
+				gaps = append(gaps, governanceGaps...)
 				for _, item := range toList(coverageAudit["blocking_gaps"]) {
 					text := strings.TrimSpace(stringValue(item))
 					if text != "" {
@@ -9955,6 +9979,7 @@ func cmdMeetingsRemainder(args []string) error {
 					}
 				}
 			case "cross_examination":
+				gaps = append(gaps, governanceGaps...)
 				for _, item := range toList(coverageAudit["blocking_gaps"]) {
 					text := strings.TrimSpace(stringValue(item))
 					if text != "" {
@@ -9993,8 +10018,11 @@ func cmdMeetingsRemainder(args []string) error {
 					}
 				}
 			case "synthesis":
+				gaps = append(gaps, governanceGaps...)
 				synthesis := meetingSynthesisAudit(meeting)
-				if openDebateBatchCount > 0 {
+				if len(governanceGaps) > 0 {
+					nextRequirement = fmt.Sprintf("Repair council governance gaps before output: %s.", strings.Join(governanceGaps, "; "))
+				} else if openDebateBatchCount > 0 {
 					nextRequirement = currentDebateBatchRequirement("Complete current debate batch before output.", "Complete outstanding debate batches before output.")
 				} else if stringValue(synthesis["status"]) == "ready_for_output" {
 					newPhase = "output"
@@ -10022,7 +10050,9 @@ func cmdMeetingsRemainder(args []string) error {
 				autoSynthesis = meetingAutoSynthesize(meeting)
 			}
 			synthesis := meetingSynthesisAudit(meeting)
-			if currentPhase == "synthesis" && openDebateBatchCount > 0 {
+			if currentPhase == "synthesis" && len(governanceGaps) > 0 {
+				nextRequirement = fmt.Sprintf("Repair council governance gaps before output: %s.", strings.Join(governanceGaps, "; "))
+			} else if currentPhase == "synthesis" && openDebateBatchCount > 0 {
 				nextRequirement = currentDebateBatchRequirement("Complete current debate batch before output.", "Complete outstanding debate batches before output.")
 			} else if currentPhase == "synthesis" && stringValue(synthesis["status"]) == "ready_for_output" {
 				setMeetingPhase(meeting, "output", "orchestrate advanced from synthesis")
@@ -10041,6 +10071,11 @@ func cmdMeetingsRemainder(args []string) error {
 			orchestration["synthesis"] = synthesis
 			orchestration["debate_round"] = maxInt(intValue(orchestration["debate_round"]), intValue(coverageAudit["linked_cross_examination_count"]))
 			meeting["orchestration"] = orchestration
+			if len(governanceGaps) > 0 {
+				meeting["governance_gaps"] = stringListToAny(governanceGaps)
+			} else {
+				meeting["governance_gaps"] = []any{}
+			}
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}

@@ -262,6 +262,7 @@ Important references:
 - allowed and forbidden sources
 - independent review before cross-examination when conflict remains
 - synthesis that records rejected findings and reasons
+- governance gates that stop councils from advancing while those bounded-review records are incomplete
 
 This is why meetings in `Harness` are governance objects rather than loose notes.
 It is also why `Harness` does not treat cross-examination as mandatory ceremony when a lane is aligned or already settled by higher-authority evidence.
@@ -735,6 +736,7 @@ Every meeting should carry:
 - question
 - scope
 - authority hierarchy
+- runtime-enforced governance gaps for missing authority hierarchy and missing rejected-finding reasons
 - roles
 - known context
 - locked decisions
