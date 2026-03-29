@@ -153,7 +153,7 @@ The package currently guarantees:
 - bounded council orchestration with route, wave, and round obligations, including direct synthesis when a lane is aligned or already settled by higher-authority evidence, plus governed latest-response verdict adoption when a debated lane resolves before hitting the cap
 - authority audit across signals, meetings, runs, and live git state
 - mission-level authority audit across run aggregates, leader/teammate control boundaries, and multi-run mission conflicts
-- graph-level mission authority audit across cross-mission ownership conflicts, dependency-governed execution boundaries, dependency-governed ownership adjudication, selector-specificity ownership adjudication, bundle-aware mission-graph grouping, and explicit bundle governors when a governed bundle has either a single root or one clear authority winner
+- graph-level mission authority audit across cross-mission ownership conflicts, dependency-governed execution boundaries, dependency-governed ownership adjudication, selector-specificity ownership adjudication, council-governed ownership adjudication, bundle-aware mission-graph grouping, and explicit bundle governors when a governed bundle has either a single root, one clear authority winner, or one active council anchor
 - bundle-level mission authority packets that summarize shared selectors, `resolution_kind`, and leader-facing `required_action` for connected mission bundles
 - deterministic ship and rc control-plane actions
 - bootstrapable reuse in another git repository

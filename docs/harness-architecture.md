@@ -591,6 +591,7 @@ This graph supports:
 - bundle governors
 - dependency-governed authority
 - selector-specificity authority
+- council-governed authority
 - leader-facing required actions
 
 This is one of the ways `Harness` moved beyond a plain run registry.
@@ -598,6 +599,8 @@ This is one of the ways `Harness` moved beyond a plain run registry.
 When two active missions overlap without a dependency edge, the graph does not have to fall straight to generic conflict.
 
 If one mission holds the more specific ownership boundary and no competing higher-authority evidence contradicts that shape, the control plane may adjudicate that narrower mission as the current bundle governor.
+
+If one mission is already chairing the relevant active council, the control plane may also keep bundle authority anchored to that council-host mission until the governed meeting outcome is adopted.
 
 ---
 

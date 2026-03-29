@@ -8,7 +8,7 @@
 
 - **Version**: 0.37.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Selector-specific bundle authority added)
+- **Last Session**: 2026-03-29 (Council-governed bundle authority added)
 
 ## Current Phase
 
@@ -16,7 +16,11 @@
 
 ## What Was Just Completed
 
-**Session 2026-03-29** — Harness prototype line stayed complete while the leader control plane gained its first real scheduler baseline
+**Session 2026-03-29** — Harness prototype line stayed complete while the leader control plane widened bundle authority beyond dependency-only governance
+
+- **Council-governed bundle authority added**: `missions authority-audit --all` now treats a single active council anchor as a first-class ownership adjudication source, so overlapping missions can become a governed bundle even without an explicit dependency edge when one mission is already chairing the relevant council
+- **Bundle packets widened again**: governed mission bundles can now emit `council_governed_mission_ownership` and `council_governed_bundle`, with `governing_mission_id` and a leader-facing action that keeps authority on the council-host mission until adoption
+- **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves an active council on `issue-20001` converts a later overlapping mission into governed bundle authority instead of unresolved graph conflict
 
 - **Leader-facing scheduler baseline added**: `missions schedule` now emits durable `.harness/scheduler/snapshots/` records with per-mission classification, selected foreground batch, execution-mode recommendation (`solo`, `managed_delegation`, `scheduled_parallel_missions`), required human decisions, follow-up signals, and reschedule actions
 - **Scheduler semantics hardened**: the runtime now distinguishes true cross-mission dependency blocking from mission-internal teammate dependencies, so delegated teammate work no longer poisons mission scheduling with fake self-dependency
@@ -156,7 +160,7 @@
 
 1. Read this file
 2. **Harness next work**:
-   - A. Continue authority adjudication beyond the current run/mission/mission-graph plus dependency-governed ownership and bundle-governor rules into broader multi-mission bundle handling when no obvious governing dependency exists
+   - A. Continue authority adjudication beyond the current run/mission/mission-graph plus dependency-governed ownership, selector-specificity winners, council-governed bundle authority, and bundle-governor rules into broader multi-mission bundle handling when no obvious governing dependency or single active council anchor exists
    - B. Continue pushing council behavior from auto-synthesis, direct synthesis for aligned/authority-resolved lanes, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
    - C. Decide whether deeper scheduler work should move beyond the new snapshot/reschedule/execution-mode baseline into larger-portfolio admission and rescheduling policy, or whether that should wait until bundle adjudication is stronger
    - D. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
@@ -192,7 +196,7 @@
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots and execution-mode selection, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots and execution-mode selection, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
 
 ## File Locations
 
