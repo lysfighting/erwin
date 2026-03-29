@@ -7064,6 +7064,39 @@ func sortSchedulerHumanDecisions(decisions []any) []any {
 	return sorted
 }
 
+func schedulerDecisionQueueMaps(decisions []any) (map[string]int, map[string]bool) {
+	queuePositionByKey := map[string]int{}
+	primaryByKey := map[string]bool{}
+	for index, item := range decisions {
+		decision, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		scope := firstNonBlank(stringValue(decision["decision_scope"]), "mission")
+		switch scope {
+		case "bundle":
+			bundleID := strings.TrimSpace(stringValue(decision["bundle_id"]))
+			if bundleID == "" {
+				continue
+			}
+			queuePositionByKey["bundle:"+bundleID] = index + 1
+			if index == 0 {
+				primaryByKey["bundle:"+bundleID] = true
+			}
+		default:
+			missionID := strings.TrimSpace(stringValue(decision["mission_id"]))
+			if missionID == "" {
+				continue
+			}
+			queuePositionByKey["mission:"+missionID] = index + 1
+			if index == 0 {
+				primaryByKey["mission:"+missionID] = true
+			}
+		}
+	}
+	return queuePositionByKey, primaryByKey
+}
+
 func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]any, includeInactive bool) map[string]any {
 	now := nowTime().UTC().Format("20060102150405")
 	generatedAt := nowISO()
@@ -7534,6 +7567,23 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		missionOrder = append(missionOrder, missionID)
 	}
 	requiredHumanDecisions := sortSchedulerHumanDecisions(aggregateSchedulerHumanDecisions(rawRequiredHumanDecisions))
+	decisionQueuePositionByKey, primaryDecisionByKey := schedulerDecisionQueueMaps(requiredHumanDecisions)
+
+	for _, missionID := range missionOrder {
+		entry := entryByMission[missionID]
+		queueKey := "mission:" + missionID
+		if bundleID := stringValue(entry["bundle_id"]); bundleID != "" && stringValue(entry["bundle_state"]) == "escalation-required" {
+			queueKey = "bundle:" + bundleID
+		}
+		if queuePosition, ok := decisionQueuePositionByKey[queueKey]; ok {
+			entry["human_decision_queue_position"] = queuePosition
+			entry["primary_human_decision"] = primaryDecisionByKey[queueKey]
+		} else {
+			entry["human_decision_queue_position"] = 0
+			entry["primary_human_decision"] = false
+		}
+		entryByMission[missionID] = entry
+	}
 
 	sort.Strings(missionOrder)
 	runnableMissionIDs := []string{}

@@ -374,6 +374,8 @@ assert_json_field "$schedule_multi_escalation_output" '"required_human_decision_
 assert_json_field "$schedule_multi_escalation_output" '"required_human_decision_surface_tally":' "scheduler reports human-decision surface tallies"
 assert_json_field "$schedule_multi_escalation_output" '"primary_required_human_decision": {' "scheduler exposes the primary decision packet"
 assert_json_field "$schedule_multi_escalation_output" '"decision_scope": "bundle"' "scheduler marks the primary escalation packet as bundle-scoped"
+assert_json_field "$schedule_multi_escalation_output" '"human_decision_queue_position": 1' "scheduler annotates primary escalation missions with queue position 1"
+assert_json_field "$schedule_multi_escalation_output" '"primary_human_decision": true' "scheduler marks primary escalation missions explicitly"
 home_output_multi_escalation=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_multi_escalation" '"mission_escalated_bundle_count": 1' "home surfaces escalation-required mission bundles"
 assert_json_field "$home_output_multi_escalation" '"scheduler_council_decision_count": 1' "home surfaces bundle-scoped council decisions instead of per-mission duplicates"
@@ -418,6 +420,9 @@ assert_json_field "$schedule_decision_portfolio_output" '"council": 2' "schedule
 assert_json_field "$schedule_decision_portfolio_output" '"primary_required_human_decision": {' "scheduler keeps a primary decision packet for the portfolio"
 assert_json_field "$schedule_decision_portfolio_output" '"bundle_id": "bundle-issue-20011-issue-20012-issue-20013"' "scheduler prioritizes the escalation bundle as the primary decision packet"
 assert_json_field "$schedule_decision_portfolio_output" '"mission_count": 3' "primary bundle decision packet keeps the grouped mission count"
+assert_json_field "$schedule_decision_portfolio_output" "\"mission_id\": \"issue-20023\"" "secondary mission decision remains visible in the decision portfolio"
+assert_json_field "$schedule_decision_portfolio_output" '"human_decision_queue_position": 2' "scheduler annotates the lower-priority mission decision with queue position 2"
+assert_json_field "$schedule_decision_portfolio_output" '"primary_human_decision": false' "scheduler marks non-primary human decisions explicitly"
 resolved_decision_portfolio_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-decision-portfolio resolved "Secondary decision packet covered.")
 assert_json_field "$resolved_decision_portfolio_signal" '"state": "resolved"' "secondary mission-level decision signal can be resolved after portfolio coverage"
 resolved_decision_portfolio_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$decision_portfolio_run" completed "Closed decision-portfolio mission.")
