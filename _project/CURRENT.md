@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.34.0 (in progress)
+- **Version**: 0.35.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Harness single architecture doc added)
+- **Last Session**: 2026-03-29 (Harness council direct-synthesis control added)
 
 ## Current Phase
 
@@ -16,7 +16,12 @@
 
 ## What Was Just Completed
 
-**Session 2026-03-29** — Harness runtime migrated from Python to Go end-to-end, then gained packaged-binary preference
+**Session 2026-03-29** — Harness prototype line stayed complete while the council controller gained direct-synthesis control for aligned and authority-resolved lanes
+
+- **Authority-resolved council lanes added**: `meetings orchestrate` now recognizes when a higher-authority support/challenge lane already outranks its opponent during independent review, records a governed `higher_authority_prevails` route verdict, and advances directly into synthesis instead of forcing unnecessary cross-examination
+- **Aligned councils can skip empty debate**: meetings with enough independent review but no conflicting claim lane can now move straight into synthesis instead of getting stuck waiting for a synthetic cross-examination step that adds no new judgment
+- **Council summaries widened for direct synthesis**: `meetings summary` now surfaces `resolved_without_cross_examination_count` and `authority_resolved_route_count`, so the leader can see when the controller deliberately skipped debate because no unresolved lane remained
+- **Teammate smoke widened again**: `scripts/harness-teammate-smoke-test.sh` now proves both new control-plane paths end-to-end, covering higher-authority direct synthesis and zero-conflict direct synthesis before output
 
 - **Go runtime core added**: introduced a real Go module plus `cmd/harness-state` / `internal/harness/runtime.go`, migrating the harness control-plane and state-engine behavior out of `scripts/harness_state.py`
 - **Shell surfaces preserved**: all first-class harness entrypoints now route through `scripts/harness-runtime.sh`, which builds and executes the local Go CLI while keeping the existing `home`, `doctor`, `issue`, `claim`, `drive`, `teammates`, `ship`, `rc`, `meetings`, `maintenance`, and adapter/profile/path surfaces stable
@@ -144,7 +149,7 @@
 2. **Harness next work**:
    - A. Continue deepening selector semantics beyond the current family-aware plus shared/split-transfer baseline into richer policies and transfer rules
    - B. Decide whether remaining authority work should extend beyond the new run/mission/mission-graph plus dependency-governed ownership, bundle-aware grouping, and bundle-governor rules into broader multi-mission bundle adjudication, or whether that now belongs to future product layers
-   - C. Continue pushing council behavior from auto-synthesis, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
+   - C. Continue pushing council behavior from auto-synthesis, direct synthesis for aligned/authority-resolved lanes, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
    - D. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `docs/harness-documentation-map.md`, `docs/harness-architecture.md`, `docs/harness-operating-model.md`, `docs/harness-public-contract.md`, `docs/harness-session-handoff.md`, `harness/adapter-manifest.yml`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, recent `_project/sessions/2026-03-29-*.md` logs, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0

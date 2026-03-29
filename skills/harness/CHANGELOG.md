@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Direct synthesis for council lanes that are already aligned or already settled by higher-authority evidence, plus summary counters for `resolved_without_cross_examination_count` and `authority_resolved_route_count`.
 - Debate-verdict adoption in auto-synthesis, so a governed `latest_response_prevails` lane can materialize directly into accepted or rejected findings instead of defaulting to unresolved output.
 - Exclusion-aware split ownership transfer via `bash scripts/harness-runs.sh transfer-ownership ... --mode=split`, so a parent selector can delegate a governed child boundary without giving up the broader parent scope.
 - Hierarchical semantic selector overlap so parent/child `scope:` and `interface:` boundaries now collide under exclusive governance instead of only exact semantic matches.

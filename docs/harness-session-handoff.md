@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.34.0-prototype`
+- `adapter_version`: `0.35.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -174,6 +174,7 @@ Do not underestimate the current control-plane maturity.
 - exclusion-aware parent/child delegation for split transfer
 - role-bounded, authority-aware, claim/dimension-aware meetings
 - wave / route / round obligations in councils
+- direct synthesis when a council lane is aligned or already resolved by higher-authority evidence
 - auto-synthesis of provisional findings
 - latest-response verdict adoption when a governed debate lane resolves
 - leader/teammate split with governed sibling communication

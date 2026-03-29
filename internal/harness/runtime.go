@@ -4118,6 +4118,8 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 	coverageNotes := []string{}
 	conflictClaimCount := 0
 	resolvedRouteCount := 0
+	resolvedWithoutCrossExaminationCount := 0
+	authorityResolvedRouteCount := 0
 	plannedRoundCount := 0
 	resolvedRoundCount := 0
 
@@ -4151,6 +4153,8 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		}
 		leadSupport := preferredMeetingPosition(group, "support")
 		leadChallenge := preferredMeetingPosition(group, "challenge")
+		leadSupportRank := authorityRank(firstNonBlank(stringValue(leadSupport["authority_level"]), "L4"))
+		leadChallengeRank := authorityRank(firstNonBlank(stringValue(leadChallenge["authority_level"]), "L4"))
 		assignedRole := firstNonBlank(stringValue(leadChallenge["role"]), firstNonBlank(challengeRoles...))
 		assignedRunID := firstNonBlank(stringValue(leadChallenge["run_id"]), participantRunByRole[assignedRole])
 		targetPositionID := firstNonBlank(stringValue(leadSupport["position_id"]), stringValue(leadChallenge["position_id"]))
@@ -4181,6 +4185,39 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		if linkedCrossByClaim[key] > 0 {
 			route["status"] = "routed"
 			resolvedRouteCount++
+		} else if leadSupportRank != leadChallengeRank {
+			prevailingStance := "support"
+			prevailingLead := leadSupport
+			prevailingRole := stringValue(leadSupport["role"])
+			prevailingRunID := stringValue(leadSupport["run_id"])
+			prevailingPositionID := stringValue(leadSupport["position_id"])
+			overruledStance := "challenge"
+			overruledLead := leadChallenge
+			if leadChallengeRank > leadSupportRank {
+				prevailingStance = "challenge"
+				prevailingLead = leadChallenge
+				prevailingRole = stringValue(leadChallenge["role"])
+				prevailingRunID = stringValue(leadChallenge["run_id"])
+				prevailingPositionID = stringValue(leadChallenge["position_id"])
+				overruledStance = "support"
+				overruledLead = leadSupport
+			}
+			resolvedRouteCount++
+			resolvedWithoutCrossExaminationCount++
+			authorityResolvedRouteCount++
+			route["status"] = "authority_resolved"
+			route["resolution_kind"] = "higher_authority_prevails"
+			route["prevailing_stance"] = prevailingStance
+			route["prevailing_role"] = prevailingRole
+			route["prevailing_run_id"] = prevailingRunID
+			route["prevailing_position_id"] = prevailingPositionID
+			route["overruled_stance"] = overruledStance
+			route["overruled_role"] = stringValue(overruledLead["role"])
+			route["overruled_run_id"] = stringValue(overruledLead["run_id"])
+			route["overruled_position_id"] = stringValue(overruledLead["position_id"])
+			route["required_follow_up"] = "synthesis_can_materialize_verdict"
+			route["resolved_without_cross_examination"] = true
+			coverageNotes = append(coverageNotes, fmt.Sprintf("claim %q does not need cross-examination because %s authority from %s already outranks %s authority from %s.", claimLabels[key], firstNonBlank(stringValue(prevailingLead["authority_level"]), "L4"), firstNonBlank(prevailingRole, prevailingStance+" lane"), firstNonBlank(stringValue(overruledLead["authority_level"]), "L4"), firstNonBlank(stringValue(overruledLead["role"]), overruledStance+" lane")))
 		} else {
 			note := fmt.Sprintf("claim %q lacks linked cross-examination between supporting and challenging roles", claimLabels[key])
 			if assignedRole != "" {
@@ -4286,20 +4323,22 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 	}
 
 	return map[string]any{
-		"max_debate_rounds":       maxDebateRounds,
-		"conflict_claim_count":    conflictClaimCount,
-		"planned_route_count":     len(routes),
-		"resolved_route_count":    resolvedRouteCount,
-		"planned_round_count":     plannedRoundCount,
-		"resolved_round_count":    resolvedRoundCount,
-		"unrouted_claim_count":    len(blockingGaps),
-		"open_route_action_count": len(routeActions),
-		"open_round_action_count": len(roundActions),
-		"routes":                  routes,
-		"route_actions":           routeActions,
-		"round_actions":           roundActions,
-		"blocking_gaps":           stringListToAny(blockingGaps),
-		"coverage_notes":          stringListToAny(coverageNotes),
+		"max_debate_rounds":                        maxDebateRounds,
+		"conflict_claim_count":                     conflictClaimCount,
+		"planned_route_count":                      len(routes),
+		"resolved_route_count":                     resolvedRouteCount,
+		"resolved_without_cross_examination_count": resolvedWithoutCrossExaminationCount,
+		"authority_resolved_route_count":           authorityResolvedRouteCount,
+		"planned_round_count":                      plannedRoundCount,
+		"resolved_round_count":                     resolvedRoundCount,
+		"unrouted_claim_count":                     len(blockingGaps),
+		"open_route_action_count":                  len(routeActions),
+		"open_round_action_count":                  len(roundActions),
+		"routes":                                   routes,
+		"route_actions":                            routeActions,
+		"round_actions":                            roundActions,
+		"blocking_gaps":                            stringListToAny(blockingGaps),
+		"coverage_notes":                           stringListToAny(coverageNotes),
 	}
 }
 
@@ -4459,7 +4498,7 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 		route, _ := toMap(routeByClaimKey[key])
 		routeResolution := stringValue(route["resolution_kind"])
 		routePrevailingStance := stringValue(route["prevailing_stance"])
-		if routeResolution == "latest_response_prevails" && routePrevailingStance != "" {
+		if (routeResolution == "latest_response_prevails" || routeResolution == "higher_authority_prevails") && routePrevailingStance != "" {
 			baseFinding["authority_level"] = firstNonBlank(
 				map[string]string{
 					"support":   supportLevel,
@@ -4469,10 +4508,18 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 				"L4",
 			)
 			if routePrevailingStance == "support" {
-				baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: governed debate route resolved in favor of support after the latest response from %s prevailed over %s.", firstNonBlank(stringValue(route["prevailing_role"]), supportRole, "supporting council participant"), firstNonBlank(stringValue(route["overruled_role"]), challengeRole, "challenging council participant"))
+				if routeResolution == "higher_authority_prevails" {
+					baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: governed claim lane resolved in favor of support without cross-examination because higher-authority support from %s outranked challenge from %s.", firstNonBlank(stringValue(route["prevailing_role"]), supportRole, "supporting council participant"), firstNonBlank(stringValue(route["overruled_role"]), challengeRole, "challenging council participant"))
+				} else {
+					baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: governed debate route resolved in favor of support after the latest response from %s prevailed over %s.", firstNonBlank(stringValue(route["prevailing_role"]), supportRole, "supporting council participant"), firstNonBlank(stringValue(route["overruled_role"]), challengeRole, "challenging council participant"))
+				}
 				findings["accepted"] = append(toList(findings["accepted"]), baseFinding)
 			} else {
-				baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: governed debate route resolved in favor of challenge after the latest response from %s prevailed over %s.", firstNonBlank(stringValue(route["prevailing_role"]), challengeRole, "challenging council participant"), firstNonBlank(stringValue(route["overruled_role"]), supportRole, "supporting council participant"))
+				if routeResolution == "higher_authority_prevails" {
+					baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: governed claim lane resolved in favor of challenge without cross-examination because higher-authority challenge from %s outranked support from %s.", firstNonBlank(stringValue(route["prevailing_role"]), challengeRole, "challenging council participant"), firstNonBlank(stringValue(route["overruled_role"]), supportRole, "supporting council participant"))
+				} else {
+					baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: governed debate route resolved in favor of challenge after the latest response from %s prevailed over %s.", firstNonBlank(stringValue(route["prevailing_role"]), challengeRole, "challenging council participant"), firstNonBlank(stringValue(route["overruled_role"]), supportRole, "supporting council participant"))
+				}
 				findings["rejected"] = append(toList(findings["rejected"]), baseFinding)
 			}
 			generatedClaims = append(generatedClaims, key)
@@ -8226,38 +8273,40 @@ func cmdMeetings(args []string) error {
 		wavePlan, _ := toMap(orchestration["wave_plan"])
 		authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
 		return printJSON(map[string]any{
-			"meeting_id":                          stringValue(meeting["meeting_id"]),
-			"state":                               stringValue(meeting["state"]),
-			"question":                            stringValue(meeting["question"]),
-			"outcome_summary":                     outcome["summary"],
-			"next_action":                         outcome["next_action"],
-			"phase_history_count":                 len(toList(meeting["phase_history"])),
-			"debate_round":                        intValue(orchestration["debate_round"]),
-			"synthesis_status":                    stringValue(synthesis["status"]),
-			"blocking_gap_count":                  len(toList(synthesis["blocking_gaps"])),
-			"coverage_note_count":                 len(toList(synthesis["coverage_notes"])),
-			"authority_conflict_count":            intValue(authorityAudit["conflict_count"]),
-			"unresolved_authority_conflict_count": intValue(authorityAudit["unresolved_conflict_count"]),
-			"role_spec_count":                     len(toList(meeting["role_specs"])),
-			"locked_decisions":                    len(toList(meeting["locked_decisions"])),
-			"accepted_count":                      len(toList(findings["accepted"])),
-			"rejected_count":                      len(toList(findings["rejected"])),
-			"unresolved_count":                    len(toList(findings["unresolved"])),
-			"traced_finding_count":                intValue(getKey(synthesis, "tally.traced_findings", 0)),
-			"untraced_finding_count":              intValue(getKey(synthesis, "tally.untraced_findings", 0)),
-			"auto_generated_finding_count":        intValue(autoSynthesis["generated_finding_count"]),
-			"auto_generated_action_count":         intValue(autoSynthesis["generated_action_count"]),
-			"auto_generated_claim_count":          intValue(autoSynthesis["generated_claim_count"]),
-			"planned_route_count":                 intValue(debatePlan["planned_route_count"]),
-			"resolved_route_count":                intValue(debatePlan["resolved_route_count"]),
-			"open_route_action_count":             intValue(debatePlan["open_route_action_count"]),
-			"planned_round_count":                 intValue(debatePlan["planned_round_count"]),
-			"resolved_round_count":                intValue(debatePlan["resolved_round_count"]),
-			"open_round_action_count":             intValue(debatePlan["open_round_action_count"]),
-			"max_debate_rounds":                   intValue(debatePlan["max_debate_rounds"]),
-			"open_wave_action_count":              intValue(wavePlan["open_wave_action_count"]),
-			"unrouted_claim_count":                intValue(debatePlan["unrouted_claim_count"]),
-			"open_action_count":                   openActionCount,
+			"meeting_id":                               stringValue(meeting["meeting_id"]),
+			"state":                                    stringValue(meeting["state"]),
+			"question":                                 stringValue(meeting["question"]),
+			"outcome_summary":                          outcome["summary"],
+			"next_action":                              outcome["next_action"],
+			"phase_history_count":                      len(toList(meeting["phase_history"])),
+			"debate_round":                             intValue(orchestration["debate_round"]),
+			"synthesis_status":                         stringValue(synthesis["status"]),
+			"blocking_gap_count":                       len(toList(synthesis["blocking_gaps"])),
+			"coverage_note_count":                      len(toList(synthesis["coverage_notes"])),
+			"authority_conflict_count":                 intValue(authorityAudit["conflict_count"]),
+			"unresolved_authority_conflict_count":      intValue(authorityAudit["unresolved_conflict_count"]),
+			"role_spec_count":                          len(toList(meeting["role_specs"])),
+			"locked_decisions":                         len(toList(meeting["locked_decisions"])),
+			"accepted_count":                           len(toList(findings["accepted"])),
+			"rejected_count":                           len(toList(findings["rejected"])),
+			"unresolved_count":                         len(toList(findings["unresolved"])),
+			"traced_finding_count":                     intValue(getKey(synthesis, "tally.traced_findings", 0)),
+			"untraced_finding_count":                   intValue(getKey(synthesis, "tally.untraced_findings", 0)),
+			"auto_generated_finding_count":             intValue(autoSynthesis["generated_finding_count"]),
+			"auto_generated_action_count":              intValue(autoSynthesis["generated_action_count"]),
+			"auto_generated_claim_count":               intValue(autoSynthesis["generated_claim_count"]),
+			"planned_route_count":                      intValue(debatePlan["planned_route_count"]),
+			"resolved_route_count":                     intValue(debatePlan["resolved_route_count"]),
+			"open_route_action_count":                  intValue(debatePlan["open_route_action_count"]),
+			"resolved_without_cross_examination_count": intValue(debatePlan["resolved_without_cross_examination_count"]),
+			"authority_resolved_route_count":           intValue(debatePlan["authority_resolved_route_count"]),
+			"planned_round_count":                      intValue(debatePlan["planned_round_count"]),
+			"resolved_round_count":                     intValue(debatePlan["resolved_round_count"]),
+			"open_round_action_count":                  intValue(debatePlan["open_round_action_count"]),
+			"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),
+			"open_wave_action_count":                   intValue(wavePlan["open_wave_action_count"]),
+			"unrouted_claim_count":                     intValue(debatePlan["unrouted_claim_count"]),
+			"open_action_count":                        openActionCount,
 		})
 	case "authority-audit":
 		if len(args) < 2 {
@@ -8400,11 +8449,22 @@ func cmdMeetingsRemainder(args []string) error {
 					}
 				}
 				if len(independentReviewRuns) >= 2 {
-					newPhase = "cross_examination"
-					if intValue(debatePlan["open_route_action_count"]) > 0 {
-						nextRequirement = fmt.Sprintf("Execute %d planned cross-examination route(s) before synthesis.", intValue(debatePlan["open_route_action_count"]))
+					if intValue(debatePlan["open_route_action_count"]) == 0 && intValue(debatePlan["open_round_action_count"]) == 0 {
+						newPhase = "synthesis"
+						if intValue(debatePlan["planned_route_count"]) == 0 {
+							nextRequirement = "No conflicting claim lanes remain; synthesize the independent-review record."
+						} else if intValue(debatePlan["resolved_without_cross_examination_count"]) > 0 {
+							nextRequirement = "No unresolved debate lanes remain; synthesize the authority-resolved council record."
+						} else {
+							nextRequirement = "Synthesize the current council record."
+						}
 					} else {
-						nextRequirement = "Collect cross-examination positions that challenge or refine earlier claims."
+						newPhase = "cross_examination"
+						if intValue(debatePlan["open_route_action_count"]) > 0 {
+							nextRequirement = fmt.Sprintf("Execute %d planned cross-examination route(s) before synthesis.", intValue(debatePlan["open_route_action_count"]))
+						} else {
+							nextRequirement = "Collect cross-examination positions that challenge or refine earlier claims."
+						}
 					}
 				} else {
 					if intValue(wavePlan["open_wave_action_count"]) > 0 {
@@ -8426,7 +8486,16 @@ func cmdMeetingsRemainder(args []string) error {
 						gaps = append(gaps, text)
 					}
 				}
-				if len(crossExamRuns) >= 1 && intValue(coverageAudit["linked_cross_examination_count"]) > 0 {
+				if intValue(debatePlan["open_route_action_count"]) == 0 &&
+					intValue(debatePlan["open_round_action_count"]) == 0 &&
+					(intValue(debatePlan["planned_route_count"]) == 0 || intValue(debatePlan["resolved_route_count"]) >= intValue(debatePlan["planned_route_count"])) {
+					newPhase = "synthesis"
+					if intValue(debatePlan["resolved_without_cross_examination_count"]) > 0 {
+						nextRequirement = "No unresolved debate lanes remain; synthesize the authority-resolved council record."
+					} else {
+						nextRequirement = "Convert debated positions into accepted, rejected, unresolved findings, and action items."
+					}
+				} else if len(crossExamRuns) >= 1 && intValue(coverageAudit["linked_cross_examination_count"]) > 0 {
 					if intValue(debatePlan["open_round_action_count"]) > 0 {
 						nextRequirement = fmt.Sprintf("Execute %d follow-up debate round(s) before synthesis.", intValue(debatePlan["open_round_action_count"]))
 					} else {

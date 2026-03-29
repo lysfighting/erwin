@@ -410,6 +410,66 @@ assert_json_field "$verdict_summary" '"auto_generated_action_count": 0' "verdict
 verdict_orchestrate_e=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$verdict_meeting_id")
 assert_json_field "$verdict_orchestrate_e" '"new_phase": "output"' "verdict-adoption council can advance from synthesis to output"
 
+section "Authority-resolved council lanes"
+authority_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can higher-authority review settle a claim lane without forced cross-examination?")
+assert_json_field "$authority_meeting_output" '"state": "active"' "authority-resolved meeting materializes"
+authority_meeting_id=$(printf '%s\n' "$authority_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+
+run_in_repo bash scripts/harness-meetings.sh add-role "$authority_meeting_id" implementation-verifier --mission="State the operator-visible release note requirement." --allow="L1: live git state|L2: active runtime state" --forbid="L4+: stale notes" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-role "$authority_meeting_id" ops-simulator --mission="Challenge whether the release note requirement is real." --allow="L2: active runtime state|L3: current planning notes" --forbid="Unverified memory" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh lock-decision "$authority_meeting_id" "Keep this council bounded to one release-note claim lane." --reason="Authority-resolution coverage should stay inside one governed claim." --authority=L2 --evidence=harness/profiles/erwin.yml >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$authority_meeting_id" "$run_a" implementation-verifier >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$authority_meeting_id" "$run_b" ops-simulator >/dev/null
+
+authority_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$authority_meeting_id")
+assert_json_field "$authority_orchestrate_a" '"new_phase": "independent_review"' "authority-resolved council advances into independent review"
+
+run_in_repo bash scripts/harness-meetings.sh add-position "$authority_meeting_id" "$run_a" independent_review support "Live operator impact means release notes are required." --claim=authority-release-note --dimension=factual --authority=L1 --evidence=CHANGELOG.md >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$authority_meeting_id" "$run_b" independent_review challenge "Planning notes suggest release notes could stay optional." --claim=authority-release-note --dimension=factual --authority=L3 --evidence=docs/release.md >/dev/null
+
+authority_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$authority_meeting_id")
+assert_json_field "$authority_orchestrate_b" '"new_phase": "synthesis"' "authority-resolved council skips cross-examination when higher-authority evidence already wins"
+assert_json_field "$authority_orchestrate_b" '"resolution_kind": "higher_authority_prevails"' "authority-resolved council records an explicit higher-authority verdict"
+assert_json_field "$authority_orchestrate_b" '"resolved_without_cross_examination": true' "authority-resolved council marks the lane as settled without cross-examination"
+assert_json_field "$authority_orchestrate_b" '"generated_finding_count": 1' "authority-resolved council auto-generates a final finding"
+
+authority_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$authority_meeting_id")
+assert_json_field "$authority_summary" '"accepted_count": 1' "authority-resolved summary materializes the higher-authority support finding"
+assert_json_field "$authority_summary" '"resolved_without_cross_examination_count": 1' "authority-resolved summary surfaces the skipped cross-examination count"
+assert_json_field "$authority_summary" '"authority_resolved_route_count": 1' "authority-resolved summary surfaces the authority-resolved route count"
+
+authority_orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$authority_meeting_id")
+assert_json_field "$authority_orchestrate_c" '"new_phase": "output"' "authority-resolved council can advance from synthesis to output"
+
+section "Aligned review skips empty debate"
+aligned_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can aligned independent review go straight to synthesis when there is no conflict lane?")
+assert_json_field "$aligned_meeting_output" '"state": "active"' "aligned-review meeting materializes"
+aligned_meeting_id=$(printf '%s\n' "$aligned_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+
+run_in_repo bash scripts/harness-meetings.sh add-role "$aligned_meeting_id" implementation-verifier --mission="State the aligned operator note requirement." --allow="L1: live git state|L2: active runtime state" --forbid="L4+: stale notes" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-role "$aligned_meeting_id" ops-simulator --mission="Provide an independent aligned review of the same note requirement." --allow="L1: live git state|L2: active runtime state" --forbid="Unverified memory" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh lock-decision "$aligned_meeting_id" "Keep this council bounded to one aligned release-note claim." --reason="Aligned-review coverage should prove debate is skipped when no conflict lane exists." --authority=L2 --evidence=harness/profiles/erwin.yml >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$aligned_meeting_id" "$run_a" implementation-verifier >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$aligned_meeting_id" "$run_b" ops-simulator >/dev/null
+
+aligned_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$aligned_meeting_id")
+assert_json_field "$aligned_orchestrate_a" '"new_phase": "independent_review"' "aligned-review council advances into independent review"
+
+run_in_repo bash scripts/harness-meetings.sh add-position "$aligned_meeting_id" "$run_a" independent_review support "Release notes should mention the stable auth behavior." --claim=aligned-release-note --dimension=factual --authority=L2 --evidence=CHANGELOG.md >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$aligned_meeting_id" "$run_b" independent_review support "Independent review agrees the stable auth behavior needs release-note coverage." --claim=aligned-release-note --dimension=factual --authority=L2 --evidence=CHANGELOG.md >/dev/null
+
+aligned_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$aligned_meeting_id")
+assert_json_field "$aligned_orchestrate_b" '"new_phase": "synthesis"' "aligned-review council skips cross-examination when no conflicting claim lane exists"
+assert_json_field "$aligned_orchestrate_b" '"planned_route_count": 0' "aligned-review council records zero debate routes when no conflict exists"
+assert_json_field "$aligned_orchestrate_b" '"generated_finding_count": 1' "aligned-review council auto-generates the aligned finding"
+
+aligned_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$aligned_meeting_id")
+assert_json_field "$aligned_summary" '"accepted_count": 1' "aligned-review summary materializes the shared support finding"
+assert_json_field "$aligned_summary" '"planned_route_count": 0' "aligned-review summary stays free of debate-route planning"
+
+aligned_orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$aligned_meeting_id")
+assert_json_field "$aligned_orchestrate_c" '"new_phase": "output"' "aligned-review council can advance from synthesis to output"
+
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_mission_count": 1' "home surfaces active mission count"
