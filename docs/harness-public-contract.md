@@ -149,7 +149,7 @@ The package currently guarantees:
 - desired-state tracking on contracts and runs
 - bounded teammate assignment and governed sibling communication
 - council-grade meeting packets with authority-aware findings
-- bounded multi-round council orchestration with route, wave, and round obligations, plus governed latest-response verdict adoption when a debate lane resolves before hitting the cap
+- bounded council orchestration with route, wave, and round obligations, including direct synthesis when a lane is aligned or already settled by higher-authority evidence, plus governed latest-response verdict adoption when a debated lane resolves before hitting the cap
 - authority audit across signals, meetings, runs, and live git state
 - mission-level authority audit across run aggregates, leader/teammate control boundaries, and multi-run mission conflicts
 - graph-level mission authority audit across cross-mission ownership conflicts, dependency-governed execution boundaries, dependency-governed ownership adjudication, bundle-aware mission-graph grouping, and explicit bundle governors when a governed bundle has a single root

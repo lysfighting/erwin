@@ -20,6 +20,7 @@
 
 - **Authority-resolved council lanes added**: `meetings orchestrate` now recognizes when a higher-authority support/challenge lane already outranks its opponent during independent review, records a governed `higher_authority_prevails` route verdict, and advances directly into synthesis instead of forcing unnecessary cross-examination
 - **Aligned councils can skip empty debate**: meetings with enough independent review but no conflicting claim lane can now move straight into synthesis instead of getting stuck waiting for a synthetic cross-examination step that adds no new judgment
+- **Canonical docs synced with council semantics**: the architecture, operating-model, and public-contract docs now explicitly state that cross-examination is the normal path for unresolved contested lanes, not a mandatory ritual for aligned or already authority-settled lanes
 - **Council summaries widened for direct synthesis**: `meetings summary` now surfaces `resolved_without_cross_examination_count` and `authority_resolved_route_count`, so the leader can see when the controller deliberately skipped debate because no unresolved lane remained
 - **Teammate smoke widened again**: `scripts/harness-teammate-smoke-test.sh` now proves both new control-plane paths end-to-end, covering higher-authority direct synthesis and zero-conflict direct synthesis before output
 

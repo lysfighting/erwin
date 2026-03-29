@@ -260,10 +260,11 @@ Important references:
 - explicit authority hierarchy
 - bounded roles
 - allowed and forbidden sources
-- independent review before cross-examination
+- independent review before cross-examination when conflict remains
 - synthesis that records rejected findings and reasons
 
 This is why meetings in `Harness` are governance objects rather than loose notes.
+It is also why `Harness` does not treat cross-examination as mandatory ceremony when a lane is aligned or already settled by higher-authority evidence.
 
 Key references:
 

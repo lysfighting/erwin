@@ -424,9 +424,17 @@ The intended flow is:
 
 1. setup
 2. independent review
-3. cross-examination
+3. cross-examination when conflict remains materially unresolved
 4. synthesis
 5. output / action
+
+Important clarification:
+
+- cross-examination is the normal path when a credible contested lane remains
+- cross-examination is not mandatory ceremony when there is no conflicting lane
+- cross-examination is also not required when higher-authority evidence already settles the lane during independent review
+
+In those cases, the leader may move directly into synthesis with an explicit authority-aware record of why further debate is unnecessary.
 
 ### `arch-review` Influence
 
@@ -440,6 +448,7 @@ The specific lessons absorbed from [`arch-review`](/Users/liyasong/Project/collo
 - rejected findings recorded with reasons
 
 This is the core reason `Harness` meetings are governance objects rather than loose notes.
+It is also why `Harness` treats debate as a bounded governance tool rather than a mandatory ritual.
 
 ---
 
@@ -456,6 +465,13 @@ The goal is bounded, governed improvement of judgment.
 - waves can be obligated
 - rounds can be capped
 - verdicts can be adopted when rules allow
+
+This also means:
+
+- empty debate should be skipped
+- aligned lanes may go directly to synthesis
+- authority-settled lanes may go directly to synthesis with an explicit verdict record
+- only unresolved contested lanes should consume cross-examination rounds
 
 This is already partly implemented in runtime and is one of the clearest places where `Harness` differs from simple workflow tooling.
 
