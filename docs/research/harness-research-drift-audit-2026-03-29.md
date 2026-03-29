@@ -109,10 +109,11 @@ Current truth:
 
 - `doctor`, `home`, `maintenance`, dependency waiting, and run-level desired state are real
 - a first-class **mission registry / mission graph surface** now exists
+- graph-level authority can now group connected active missions into bundle-aware views instead of stopping at pairwise overlap verdicts
 - legacy runtime state can be upgraded into that mission-aware model through `maintenance normalize`
 
 This means the leader no longer regulates only against per-run state.
-But the harness still lacks a richer multi-mission bundle model above the current mission graph.
+But the harness still lacks a richer multi-mission bundle model above the current mission graph bundle baseline.
 
 ### 2. Ownership discipline is stronger, but still not mature enough
 

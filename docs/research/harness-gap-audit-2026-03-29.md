@@ -33,7 +33,7 @@ The current truth is:
 |---|---|---|---|---|
 | `teamwork` | Git/GitHub-ordered lifecycle, controlled execution, release governance | **Absorbed** | `issue -> claim -> drive -> ship -> rc`, `ship`, `rc`, `doctor`, `bootstrap`, `sync` | Product naming and public contract still unresolved |
 | `wing` | Skill-shaped packaging, modularity, adapter thinking, less prompt-monolith | **Absorbed** | `skills/harness/`, `harness/adapter-manifest.yml`, `scripts/harness-*.sh`, bootstrap/sync | Still more “adapter codename” than finished product |
-| Engineering cybernetics | desired vs actual state, feedback, correction, regulator model | **Absorbed much more strongly** | `home`, `doctor`, `maintenance reconcile`, run desired state, first-class mission registry and mission graph, artifact-level authority winner/loser rules | Still room for richer desired-state reasoning across multi-mission bundles |
+| Engineering cybernetics | desired vs actual state, feedback, correction, regulator model | **Absorbed much more strongly** | `home`, `doctor`, `maintenance reconcile`, run desired state, first-class mission registry and mission graph, artifact-level authority winner/loser rules, bundle-aware mission-graph grouping | Still room for richer desired-state reasoning across multi-mission bundles |
 | Kubernetes control-plane thinking | controllers, ownership boundaries, reconciliation, validation gates | **Partially absorbed, stronger now** | leader/teammate split, manifest validation, stale-state reconciliation, ownership claims, selector-aware ownership transfer, shared-copy handoff, overlap guardrails | Richer selector families and more nuanced transfer policies are still incomplete |
 | Leader as chairing regulator | leader owns orchestration, not truth monopoly | **Absorbed** | leader-facing surfaces, `doctor`, `home`, meetings, teammate assignment | Still room for richer scheduling / mission-graph control |
 | Teammates as bounded execution units | delegated work with scope, reporting, escalation | **Absorbed** | `teammates assign/report/message/escalate` | No native Codex sub-agent binding yet |
@@ -108,7 +108,7 @@ Authority levels are now validated and surfaced, and the system now adjudicates 
 What is still missing:
 
 - systematic high-vs-low authority conflict handling beyond the new run/contract/live artifact baseline and ship-gate winner/loser rules
-- broader leader-facing explanations when larger mission bundles disagree without a governing dependency, signal, or meeting
+- broader leader-facing explanations when larger mission bundles disagree without a governing dependency, signal, or meeting beyond the new bundle-aware graph baseline
 
 ### 4. Public product contract
 

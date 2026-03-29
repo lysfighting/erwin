@@ -2666,13 +2666,16 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 
 	missionAudits := []any{}
 	missionIDs := []string{}
+	missionIDSet := map[string]bool{}
 	missionGapCount := 0
 	missionAdjudicationCount := 0
 	missionUnresolvedCount := 0
 	for _, mission := range missions {
 		audit, _ := toMap(missionAuthorityAudit(mission, registry))
 		missionAudits = append(missionAudits, audit)
-		missionIDs = append(missionIDs, stringValue(mission["mission_id"]))
+		missionID := stringValue(mission["mission_id"])
+		missionIDs = append(missionIDs, missionID)
+		missionIDSet[missionID] = true
 		missionGapCount += intValue(audit["mission_gap_count"])
 		missionAdjudicationCount += intValue(audit["adjudication_count"])
 		missionUnresolvedCount += intValue(audit["unresolved_conflict_count"])
@@ -2680,6 +2683,31 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 
 	crossMissionConflicts := []any{}
 	crossMissionAdjudications := []any{}
+	bundleAdjacency := map[string]map[string]bool{}
+	bundlePairKinds := map[string][]string{}
+	addBundleEdge := func(leftID, rightID, kind string) {
+		leftID = strings.TrimSpace(leftID)
+		rightID = strings.TrimSpace(rightID)
+		kind = strings.TrimSpace(kind)
+		if leftID == "" || rightID == "" || leftID == rightID || kind == "" {
+			return
+		}
+		if bundleAdjacency[leftID] == nil {
+			bundleAdjacency[leftID] = map[string]bool{}
+		}
+		if bundleAdjacency[rightID] == nil {
+			bundleAdjacency[rightID] = map[string]bool{}
+		}
+		bundleAdjacency[leftID][rightID] = true
+		bundleAdjacency[rightID][leftID] = true
+		ordered := dedupeStrings([]string{leftID, rightID})
+		sort.Strings(ordered)
+		if len(ordered) != 2 {
+			return
+		}
+		pairKey := ordered[0] + "::" + ordered[1]
+		bundlePairKinds[pairKey] = dedupeStrings(append(bundlePairKinds[pairKey], kind))
+	}
 	for index, leftMission := range missions {
 		if !activeMission(leftMission) {
 			continue
@@ -2690,6 +2718,8 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 				continue
 			}
 			rightID := stringValue(rightMission["mission_id"])
+			leftDependsOnRight := missionDependsOnTarget(missionRegistry, leftID, rightID, map[string]bool{})
+			rightDependsOnLeft := missionDependsOnTarget(missionRegistry, rightID, leftID, map[string]bool{})
 			shared := []string{}
 			for _, leftClaim := range ownershipClaims(leftMission) {
 				for _, rightClaim := range ownershipClaims(rightMission) {
@@ -2699,12 +2729,16 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 				}
 			}
 			if len(shared) == 0 {
+				if leftDependsOnRight || rightDependsOnLeft {
+					addBundleEdge(leftID, rightID, "dependency")
+				}
 				continue
 			}
-			leftDependsOnRight := missionDependsOnTarget(missionRegistry, leftID, rightID, map[string]bool{})
-			rightDependsOnLeft := missionDependsOnTarget(missionRegistry, rightID, leftID, map[string]bool{})
+			addBundleEdge(leftID, rightID, "ownership_overlap")
 			switch {
 			case leftDependsOnRight && !rightDependsOnLeft:
+				addBundleEdge(leftID, rightID, "dependency")
+				addBundleEdge(leftID, rightID, "dependency_governed_ownership")
 				crossMissionAdjudications = append(crossMissionAdjudications, map[string]any{
 					"claim_ref":       "mission_ownership_boundary",
 					"resolution_kind": "dependency_governed_mission_ownership",
@@ -2718,6 +2752,8 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 				})
 				continue
 			case rightDependsOnLeft && !leftDependsOnRight:
+				addBundleEdge(leftID, rightID, "dependency")
+				addBundleEdge(leftID, rightID, "dependency_governed_ownership")
 				crossMissionAdjudications = append(crossMissionAdjudications, map[string]any{
 					"claim_ref":       "mission_ownership_boundary",
 					"resolution_kind": "dependency_governed_mission_ownership",
@@ -2731,6 +2767,10 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 				})
 				continue
 			}
+			if leftDependsOnRight || rightDependsOnLeft {
+				addBundleEdge(leftID, rightID, "dependency")
+			}
+			addBundleEdge(leftID, rightID, "parallel_conflict")
 			crossMissionConflicts = append(crossMissionConflicts, map[string]any{
 				"claim_ref":       "mission_ownership_boundary",
 				"resolution_kind": "parallel_mission_ownership_conflict",
@@ -2752,6 +2792,10 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		}
 		missionID := stringValue(mission["mission_id"])
 		for _, dependencyID := range missionDependenciesUnsatisfied(mission, missionRegistry) {
+			if missionIDSet[dependencyID] {
+				addBundleEdge(missionID, dependencyID, "dependency")
+				addBundleEdge(missionID, dependencyID, "dependency_block")
+			}
 			dependencyAdjudications = append(dependencyAdjudications, map[string]any{
 				"claim_ref":       "mission_dependency",
 				"resolution_kind": "dependency_mission_blocks_execution",
@@ -2766,6 +2810,107 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		}
 	}
 
+	bundles := []any{}
+	visitedBundles := map[string]bool{}
+	conflictedBundleCount := 0
+	governedBundleCount := 0
+	for _, missionID := range missionIDs {
+		if visitedBundles[missionID] || len(bundleAdjacency[missionID]) == 0 {
+			continue
+		}
+		queue := []string{missionID}
+		visitedBundles[missionID] = true
+		component := []string{}
+		for len(queue) > 0 {
+			current := queue[0]
+			queue = queue[1:]
+			component = append(component, current)
+			neighbors := []string{}
+			for neighbor := range bundleAdjacency[current] {
+				neighbors = append(neighbors, neighbor)
+			}
+			sort.Strings(neighbors)
+			for _, neighbor := range neighbors {
+				if visitedBundles[neighbor] {
+					continue
+				}
+				visitedBundles[neighbor] = true
+				queue = append(queue, neighbor)
+			}
+		}
+		sort.Strings(component)
+		componentSet := map[string]bool{}
+		for _, id := range component {
+			componentSet[id] = true
+		}
+		edgeKinds := []string{}
+		edgeCount := 0
+		for pairKey, kinds := range bundlePairKinds {
+			pair := strings.Split(pairKey, "::")
+			if len(pair) != 2 || !componentSet[pair[0]] || !componentSet[pair[1]] {
+				continue
+			}
+			edgeCount++
+			edgeKinds = append(edgeKinds, kinds...)
+		}
+		conflictCount := 0
+		for _, item := range crossMissionConflicts {
+			conflict, _ := toMap(item)
+			inBundle := true
+			for _, id := range anyListToStrings(toList(conflict["mission_ids"])) {
+				if !componentSet[id] {
+					inBundle = false
+					break
+				}
+			}
+			if inBundle {
+				conflictCount++
+			}
+		}
+		adjudicationCount := 0
+		for _, item := range crossMissionAdjudications {
+			adjudication, _ := toMap(item)
+			inBundle := true
+			for _, id := range anyListToStrings(toList(adjudication["mission_ids"])) {
+				if !componentSet[id] {
+					inBundle = false
+					break
+				}
+			}
+			if inBundle {
+				adjudicationCount++
+			}
+		}
+		for _, item := range dependencyAdjudications {
+			adjudication, _ := toMap(item)
+			missionID := stringValue(adjudication["mission_id"])
+			dependencyID := stringValue(adjudication["dependency_id"])
+			if componentSet[missionID] && componentSet[dependencyID] {
+				adjudicationCount++
+			}
+		}
+		state := "linked"
+		switch {
+		case conflictCount > 0:
+			state = "conflicted"
+			conflictedBundleCount++
+		case adjudicationCount > 0:
+			state = "governed"
+			governedBundleCount++
+		}
+		bundles = append(bundles, map[string]any{
+			"bundle_id":            "bundle-" + slugify(strings.Join(component, "-")),
+			"mission_ids":          stringListToAny(component),
+			"mission_count":        len(component),
+			"edge_count":           edgeCount,
+			"edge_kinds":           stringListToAny(dedupeStrings(edgeKinds)),
+			"conflict_count":       conflictCount,
+			"adjudication_count":   adjudicationCount,
+			"bundle_state":         state,
+			"canonical_mission_id": component[0],
+		})
+	}
+
 	return map[string]any{
 		"mission_count":                     len(missions),
 		"mission_ids":                       stringListToAny(missionIDs),
@@ -2775,7 +2920,11 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		"cross_mission_conflict_count":      len(crossMissionConflicts),
 		"cross_mission_adjudication_count":  len(crossMissionAdjudications),
 		"dependency_adjudication_count":     len(dependencyAdjudications),
+		"bundle_count":                      len(bundles),
+		"conflicted_bundle_count":           conflictedBundleCount,
+		"governed_bundle_count":             governedBundleCount,
 		"mission_authority_audits":          missionAudits,
+		"bundles":                           bundles,
 		"cross_mission_adjudications":       crossMissionAdjudications,
 		"cross_mission_conflicts":           crossMissionConflicts,
 		"dependency_adjudications":          dependencyAdjudications,
@@ -5865,6 +6014,9 @@ func cmdHome(args []string) error {
 		"review_mission_count":                  len(reviewMissions),
 		"dependency_mission_count":              len(dependencyBlockedMissions),
 		"mission_graph_edge_count":              missionGraphEdges,
+		"mission_bundle_count":                  intValue(graphAuthorityAudit["bundle_count"]),
+		"mission_conflicted_bundle_count":       intValue(graphAuthorityAudit["conflicted_bundle_count"]),
+		"mission_governed_bundle_count":         intValue(graphAuthorityAudit["governed_bundle_count"]),
 		"mission_graph_conflict_count":          intValue(graphAuthorityAudit["cross_mission_conflict_count"]),
 		"mission_dependency_adjudication_count": intValue(graphAuthorityAudit["dependency_adjudication_count"]),
 		"active_run_count":                      len(activeRuns),

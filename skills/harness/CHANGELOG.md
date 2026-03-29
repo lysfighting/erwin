@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Bundle-aware mission graph authority via `bash scripts/harness-missions.sh authority-audit --all`, including governed-vs-conflicted bundle grouping above pairwise mission overlap verdicts.
 - Dependency-governed mission ownership adjudication via `bash scripts/harness-missions.sh authority-audit --all`, so overlapping missions can produce a winner/loser verdict when one mission explicitly depends on the other.
 - Shared ownership transfer via `bash scripts/harness-runs.sh transfer-ownership ... --mode=copy`, allowing bounded selectors to be intentionally copied across runs that both declare shared overlap.
 - Multi-mission authority adjudication via `bash scripts/harness-missions.sh authority-audit --all`, including cross-mission ownership conflicts and dependency-governed mission blocking.
@@ -35,6 +36,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Ship-gate authority adjudication in `runs authority-audit`, so leader-facing run review can explain when verification/review/checks state overrides an overly optimistic delivery status.
 
 ### Changed
+- `harness-home.sh` now surfaces mission bundle counts derived from graph-level authority audit, and `scripts/harness-smoke-test.sh` now proves conflicted and governed mission bundles explicitly.
 - `scripts/harness-smoke-test.sh` now proves dependency-governed ownership overlap resolves as graph-level adjudication instead of unresolved cross-mission conflict, and `doctor` no longer reports dependency-state noise for inactive dependent missions.
 - `scripts/harness-teammate-smoke-test.sh` now validates shared-selector copy transfer, including source retention, target acquisition, and contract alignment for both runs.
 - `harness-home.sh` and `harness-doctor.sh` now surface graph-level mission authority conflicts so multi-mission control drift is visible above per-run overlap noise.
