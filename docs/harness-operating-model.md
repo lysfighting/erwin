@@ -530,7 +530,7 @@ The following parts of the operating model are already concretely present:
 - governed sibling communication
 - ownership selectors and governed transfer
 - authority audit across multiple state families
-- mission-bundle authority that can now let a more specific ownership boundary govern a broader overlapping mission even without a dependency edge
+- mission-bundle authority that can now let either a more specific ownership boundary or a single active council anchor govern a broader overlapping mission even without a dependency edge
 - meeting packets with role/authority discipline
 - wave/route/round council orchestration
 - governed verdict adoption in some resolved debate lanes
