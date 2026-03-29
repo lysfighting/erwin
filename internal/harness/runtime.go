@@ -6708,6 +6708,62 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	generatedAt := nowISO()
 	graphAuthority, _ := toMap(missionGraphAuthorityAudit(missionRegistry, registry, includeInactive))
 
+	bundleInfoByMission := map[string]map[string]any{}
+	conflictMissionSet := map[string]bool{}
+	escalatedBundleMissionSet := map[string]bool{}
+	governedLoserMissionSet := map[string]bool{}
+	ambiguousGovernedMissionSet := map[string]bool{}
+	for _, item := range toList(graphAuthority["bundles"]) {
+		bundle, _ := toMap(item)
+		bundleID := strings.TrimSpace(stringValue(bundle["bundle_id"]))
+		bundleState := strings.TrimSpace(stringValue(bundle["bundle_state"]))
+		resolutionKind := strings.TrimSpace(stringValue(bundle["resolution_kind"]))
+		governingMissionID := strings.TrimSpace(stringValue(bundle["governing_mission_id"]))
+		requiredAction := strings.TrimSpace(stringValue(bundle["required_action"]))
+		missionIDs := dedupeStrings(anyListToStrings(toList(bundle["mission_ids"])))
+		for _, missionID := range missionIDs {
+			role := "member"
+			switch {
+			case bundleState == "governed" && governingMissionID != "" && missionID == governingMissionID:
+				role = "governor"
+			case bundleState == "governed" && governingMissionID != "" && missionID != governingMissionID:
+				role = "governed"
+			case bundleState == "governed":
+				role = "governed-ambiguous"
+			case bundleState == "escalation-required":
+				role = "escalation-required"
+			case bundleState == "conflicted":
+				role = "conflicted"
+			}
+			bundleInfoByMission[missionID] = map[string]any{
+				"bundle_id":             bundleID,
+				"bundle_state":          bundleState,
+				"bundle_role":           role,
+				"resolution_kind":       resolutionKind,
+				"governing_mission_id":  governingMissionID,
+				"required_action":       requiredAction,
+				"bundle_mission_ids":    stringListToAny(missionIDs),
+				"governed_mission_ids":  cloneValue(bundle["governed_mission_ids"]),
+				"losing_mission_ids":    cloneValue(bundle["losing_mission_ids"]),
+				"authority_basis":       cloneValue(bundle["authority_basis"]),
+				"selector_refs":         cloneValue(bundle["selector_refs"]),
+				"governance_notes":      cloneValue(bundle["governance_notes"]),
+			}
+			switch bundleState {
+			case "conflicted":
+				conflictMissionSet[missionID] = true
+			case "escalation-required":
+				escalatedBundleMissionSet[missionID] = true
+			case "governed":
+				if governingMissionID == "" {
+					ambiguousGovernedMissionSet[missionID] = true
+				} else if missionID != governingMissionID {
+					governedLoserMissionSet[missionID] = true
+				}
+			}
+		}
+	}
+
 	runMissionByID := map[string]string{}
 	for _, item := range toList(registry["runs"]) {
 		run, _ := toMap(item)
@@ -6745,7 +6801,6 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		}
 	}
 
-	conflictMissionSet := map[string]bool{}
 	for _, item := range toList(graphAuthority["cross_mission_conflicts"]) {
 		conflict, _ := toMap(item)
 		for _, missionID := range anyListToStrings(toList(conflict["mission_ids"])) {
@@ -6856,6 +6911,13 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		authoritativeRunMode := ""
 		authoritativeRunSurface := ""
 		updatedAt := firstNonBlank(stringValue(mission["updated_at"]), stringValue(mission["created_at"]))
+		bundleInfo, _ := toMap(bundleInfoByMission[missionID])
+		bundleID := stringValue(bundleInfo["bundle_id"])
+		bundleState := stringValue(bundleInfo["bundle_state"])
+		bundleRole := stringValue(bundleInfo["bundle_role"])
+		bundleResolutionKind := stringValue(bundleInfo["resolution_kind"])
+		bundleGovernorID := stringValue(bundleInfo["governing_mission_id"])
+		bundleRequiredAction := stringValue(bundleInfo["required_action"])
 		if authoritativeRun != nil {
 			authoritativeRunID = stringValue(authoritativeRun["run_id"])
 			authoritativeRunState = stringValue(authoritativeRun["state"])
@@ -6885,6 +6947,30 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 						"current_state":   authoritativeRunState,
 						"reason":          "Run is still foregrounded even though scheduler sees unsatisfied dependencies.",
 						"dependency_refs": stringListToAny(dedupeStrings(append(unsatisfiedMissionDeps, unsatisfiedRunDeps...))),
+					})
+				}
+			case ambiguousGovernedMissionSet[missionID]:
+				classification = "needs-human-decision"
+				reasons = append(reasons, fmt.Sprintf("Mission is in governed bundle %s, but the control plane does not yet have a single governing mission.", bundleID))
+				recommendedAction = firstNonBlank(bundleRequiredAction, "Inspect bundle authority before widening execution.")
+				decisionKind = "inspect_bundle_authority"
+			case escalatedBundleMissionSet[missionID]:
+				classification = "needs-human-decision"
+				reasons = append(reasons, fmt.Sprintf("Mission is in escalation-required bundle %s.", bundleID))
+				recommendedAction = firstNonBlank(bundleRequiredAction, "Open a council or add an explicit dependency/ownership transfer before widening execution.")
+				decisionKind = "establish_bundle_governor"
+			case governedLoserMissionSet[missionID]:
+				classification = "deferred"
+				reasons = append(reasons, fmt.Sprintf("Mission is currently governed by %s inside bundle %s.", firstNonBlank(bundleGovernorID, "another mission"), bundleID))
+				recommendedAction = firstNonBlank(bundleRequiredAction, fmt.Sprintf("Defer this mission behind bundle governor %s until bundle authority changes.", firstNonBlank(bundleGovernorID, "the governing mission")))
+				if authoritativeRunID != "" && (authoritativeRunState == "ready" || authoritativeRunState == "executing") {
+					rescheduleActions = append(rescheduleActions, map[string]any{
+						"mission_id":    missionID,
+						"run_id":        authoritativeRunID,
+						"action_kind":   "defer_until_bundle_governor_clears",
+						"target_state":  "waiting",
+						"current_state": authoritativeRunState,
+						"reason":        fmt.Sprintf("Scheduler is deferring this mission behind bundle governor %s.", firstNonBlank(bundleGovernorID, "the governing mission")),
 					})
 				}
 			case conflictMissionSet[missionID]:
@@ -6923,6 +7009,10 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			default:
 				classification = "runnable"
 				reasons = append(reasons, "Mission is clear to run under current dependency, overlap, and authority policy.")
+				if bundleState == "governed" && bundleGovernorID == missionID {
+					reasons = append(reasons, fmt.Sprintf("Mission currently governs bundle %s under %s.", bundleID, bundleResolutionKind))
+					recommendedAction = firstNonBlank(bundleRequiredAction, fmt.Sprintf("Keep bundle authority anchored to %s while governed missions stay bounded.", missionID))
+				}
 			}
 		}
 
@@ -6955,6 +7045,12 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"open_meeting_action_count":        openMeetingActionCountByMission[missionID],
 			"follow_up_signal_count":           len(followUpSignalsByMission[missionID]),
 			"follow_up_signals":                cloneValue(followUpSignalsByMission[missionID]),
+			"bundle_id":                        bundleID,
+			"bundle_state":                     bundleState,
+			"bundle_role":                      bundleRole,
+			"bundle_resolution_kind":           bundleResolutionKind,
+			"bundle_governing_mission_id":      bundleGovernorID,
+			"bundle_required_action":           bundleRequiredAction,
 			"latest_summary":                   stringValue(mission["latest_summary"]),
 			"recommended_action":               recommendedAction,
 			"reasons":                          stringListToAny(dedupeStrings(reasons)),

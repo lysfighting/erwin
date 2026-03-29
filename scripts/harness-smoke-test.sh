@@ -190,6 +190,10 @@ assert_json_field "$graph_authority_pair_governor" '"resolution_kind": "bundle_g
 assert_json_field "$graph_authority_pair_governor" "\"governing_mission_id\": \"issue-20014\"" "pairwise mission bundle authority anchors governance to the strongest mission"
 assert_json_field "$graph_authority_pair_governor" '"bundle_state": "governed"' "pairwise mission bundle authority marks the adjudicated pair as governed"
 assert_json_field "$graph_authority_pair_governor" '"authority_basis":' "pairwise mission bundle authority exposes why the governor won"
+scheduler_pair_governor_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$scheduler_pair_governor_output" "\"bundle_governing_mission_id\": \"issue-20014\"" "scheduler surfaces the governing mission for pairwise governed bundles"
+assert_json_field "$scheduler_pair_governor_output" '"bundle_role": "governed"' "scheduler marks the losing mission in a governed bundle"
+assert_json_field "$scheduler_pair_governor_output" '"action_kind": "defer_until_bundle_governor_clears"' "scheduler defers losing missions behind the current bundle governor"
 resolved_pair_governor_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$pair_governor_run_a" completed "Closed pairwise governed bundle winner.")
 assert_json_field "$resolved_pair_governor_a" '"state": "completed"' "pairwise governed bundle winner can be closed"
 resolved_pair_governor_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$pair_governor_run_b" completed "Closed pairwise governed bundle peer.")
@@ -278,6 +282,9 @@ assert_json_field "$graph_authority_multi_escalation" '"resolution_kind": "bundl
 assert_json_field "$graph_authority_multi_escalation" '"bundle_state": "escalation-required"' "multi-mission bundle authority marks tied bundles as escalation-required"
 assert_json_field "$graph_authority_multi_escalation" '"escalated_bundle_count": 1' "mission graph authority counts escalation-required bundles separately"
 assert_json_field "$graph_authority_multi_escalation" '"required_action": "Open a council or add an explicit dependency/ownership transfer to establish a governing mission before parallel execution."' "escalation-required bundles get a leader-facing next action"
+schedule_multi_escalation_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_multi_escalation_output" '"bundle_role": "escalation-required"' "scheduler marks tied bundles as escalation-required"
+assert_json_field "$schedule_multi_escalation_output" '"decision_kind": "establish_bundle_governor"' "scheduler escalates tied bundles into an explicit governing-mission decision"
 home_output_multi_escalation=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_multi_escalation" '"mission_escalated_bundle_count": 1' "home surfaces escalation-required mission bundles"
 

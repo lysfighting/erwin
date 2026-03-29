@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.41.0 (in progress)
+- **Version**: 0.42.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Pairwise bundle governor adjudication added)
+- **Last Session**: 2026-03-29 (Scheduler now consumes bundle authority directly)
 
 ## Current Phase
 
@@ -16,7 +16,11 @@
 
 ## What Was Just Completed
 
-**Session 2026-03-29** — Harness prototype line stayed complete while the council controller became more execution-aware across multiple lanes
+**Session 2026-03-29** — Harness prototype line stayed complete while bundle authority started driving scheduler behavior directly
+
+- **Bundle-aware scheduler consumption added**: `missions schedule` now consumes mission-bundle authority packets instead of only the raw conflict list, so governed losing missions are deferred behind the current bundle governor, escalation-required bundles become explicit human decisions, and governed-but-ambiguous bundles no longer masquerade as ordinary runnable work
+- **Scheduler output widened**: mission classifications now surface `bundle_id`, `bundle_state`, `bundle_role`, `bundle_resolution_kind`, `bundle_governing_mission_id`, and `bundle_required_action`, making bundle-level control visible directly in durable scheduler snapshots
+- **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves pairwise governed bundles defer the losing mission behind the governor and that escalation-required bundles become explicit `establish_bundle_governor` scheduler decisions
 
 - **Stateful debate batch execution added**: `meetingDebatePlan` now computes `current_wave_batch_id`, `ready_wave_batch_count`, `blocked_wave_batch_count`, `resolved_wave_batch_count`, and batch-local `state/current` so the control plane can treat one debate batch as active while explicitly blocking the rest behind it
 - **Synthesis/output guard tightened**: `meetings orchestrate` now refuses to jump from `synthesis` to `output` while an open debate batch still exists, even if someone manually pushed the meeting phase forward before the controller finished the active batch
@@ -174,7 +178,7 @@
 2. **Harness next work**:
    - A. Continue authority adjudication beyond the current run/mission/mission-graph plus dependency-governed ownership, selector-specificity winners, council-governed bundle authority, and bundle-governor rules into broader multi-mission bundle handling when no obvious governing dependency or single active council anchor exists
    - B. Continue pushing council behavior from auto-synthesis, direct synthesis for aligned/authority-resolved lanes, stateful current/blocked debate batching, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate execution across more than one conflicting lane
-   - C. Decide whether deeper scheduler work should move beyond the new snapshot/reschedule/execution-mode baseline into larger-portfolio admission and rescheduling policy, or whether that should wait until bundle adjudication is stronger
+   - C. Continue scheduler beyond the current snapshot/execution-mode plus bundle-aware deferral baseline into larger-portfolio admission, rescheduling, and execution-portfolio policy
    - D. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `docs/harness-documentation-map.md`, `docs/harness-architecture.md`, `docs/harness-operating-model.md`, `docs/harness-public-contract.md`, `docs/harness-session-handoff.md`, `harness/adapter-manifest.yml`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, recent `_project/sessions/2026-03-29-*.md` logs, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0
@@ -208,7 +212,7 @@
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots and execution-mode selection, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, and direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
 
 ## File Locations
 

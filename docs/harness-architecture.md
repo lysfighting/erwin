@@ -603,6 +603,14 @@ If one mission holds the more specific ownership boundary and no competing highe
 
 If one mission is already chairing the relevant active council, the control plane may also keep bundle authority anchored to that council-host mission until the governed meeting outcome is adopted.
 
+The scheduler now consumes these bundle packets directly rather than leaving them as audit-only output.
+
+That means:
+
+- the governing mission can remain foreground-runnable
+- governed losing missions can be deferred behind the current bundle governor
+- escalation-required bundles can surface as explicit human decisions instead of generic overlap noise
+
 ---
 
 ## Ownership Model
