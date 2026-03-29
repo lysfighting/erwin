@@ -97,6 +97,38 @@ assert_json_field "$schedule_solo_output" '"selected_mission_count": 1' "schedul
 assert_json_field "$schedule_solo_output" '"snapshot_path":' "scheduler writes a durable snapshot"
 assert_json_field "$schedule_solo_output" '"mission_id": "issue-20001"' "scheduler includes the claimed mission in its classification output"
 
+section "Fresh signal rescheduling"
+fresh_signal_output=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-fresh-follow-up",
+  "kind": "requires_meeting",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$run_id",
+  "mission_id": "issue-20001",
+  "applies_to": ["issue-20001"],
+  "scope_type": "mission",
+  "title": "Fresh coordination signal",
+  "summary": "Review the fresh coordination evidence before continuing.",
+  "evidence_refs": ["$contract_path"],
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T00:00:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$fresh_signal_output" '"kind": "requires_meeting"' "fresh follow-up signal can be emitted directly"
+schedule_fresh_signal_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_fresh_signal_output" '"decision_kind": "review_follow_up_signals"' "scheduler escalates fresh coordination signals into an explicit decision"
+assert_json_field "$schedule_fresh_signal_output" '"action_kind": "pause_for_fresh_follow_up_signal"' "scheduler emits a reschedule action for fresh coordination signals"
+assert_json_field "$schedule_fresh_signal_output" '"follow_up_signal_count": 1' "scheduler counts fresh follow-up signals in mission classification"
+resolved_fresh_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-fresh-follow-up resolved "Fresh coordination signal reviewed.")
+assert_json_field "$resolved_fresh_signal" '"state": "resolved"' "fresh follow-up signal can be resolved after scheduler coverage"
+
 section "Mission graph authority"
 second_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20002 "Harness Conflict Mission" --owns="file:CHANGELOG.md" --allow-overlap)
 assert_json_field "$second_claim_output" '"mission_id": "issue-20002"' "second claim can materialize a conflicting mission under explicit overlap allowance"

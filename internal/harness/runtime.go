@@ -1183,6 +1183,19 @@ func dedupeStrings(items []string) []string {
 	return result
 }
 
+func containsString(items []string, target string) bool {
+	target = strings.TrimSpace(target)
+	if target == "" {
+		return false
+	}
+	for _, item := range items {
+		if strings.TrimSpace(item) == target {
+			return true
+		}
+	}
+	return false
+}
+
 func upsertMeetingRoleSpec(meeting map[string]any, role, mission string, allowedSources, forbiddenSources []string) {
 	role = strings.TrimSpace(role)
 	if role == "" {
@@ -6815,6 +6828,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	}
 
 	followUpSignalsByMission := map[string][]any{}
+	staleFollowUpSignalsByMission := map[string][]any{}
+	freshFollowUpSignalKindsByMission := map[string][]string{}
 	for _, item := range toList(signalLog["signals"]) {
 		signal, _ := toMap(item)
 		if !activeSignal(signal) {
@@ -6846,11 +6861,20 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"source_type":     stringValue(signal["source_type"]),
 			"source_id":       stringValue(signal["source_id"]),
 		}
+		isFresh := true
+		if freshUntil, err := parseISO(stringValue(signal["fresh_until"])); err == nil && freshUntil != nil && freshUntil.Before(nowTime()) {
+			isFresh = false
+		}
 		for _, missionID := range dedupeStrings(missionIDs) {
 			if missionID == "" {
 				continue
 			}
-			followUpSignalsByMission[missionID] = append(followUpSignalsByMission[missionID], entry)
+			if isFresh {
+				followUpSignalsByMission[missionID] = append(followUpSignalsByMission[missionID], entry)
+				freshFollowUpSignalKindsByMission[missionID] = append(freshFollowUpSignalKindsByMission[missionID], kind)
+			} else {
+				staleFollowUpSignalsByMission[missionID] = append(staleFollowUpSignalsByMission[missionID], entry)
+			}
 		}
 	}
 
@@ -6982,6 +7006,49 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				reasons = append(reasons, "Mission is in a live cross-mission ownership conflict bundle.")
 				recommendedAction = "Narrow selectors, serialize missions, or add a governing dependency/council before execution resumes."
 				decisionKind = "resolve_overlap_conflict"
+			case containsString(freshFollowUpSignalKindsByMission[missionID], "blocked"):
+				classification = "blocked-by-policy"
+				reasons = append(reasons, "Mission has a fresh blocked signal that has not yet been adopted into runtime state.")
+				recommendedAction = "Adopt or resolve the fresh blocker signal before continuing."
+				if authoritativeRunID != "" && (authoritativeRunState == "ready" || authoritativeRunState == "executing") {
+					rescheduleActions = append(rescheduleActions, map[string]any{
+						"mission_id":    missionID,
+						"run_id":        authoritativeRunID,
+						"action_kind":   "pause_for_fresh_blocker_signal",
+						"target_state":  "waiting",
+						"current_state": authoritativeRunState,
+						"reason":        "Scheduler detected a fresh blocker signal that has not yet been adopted into run state.",
+					})
+				}
+			case containsString(freshFollowUpSignalKindsByMission[missionID], "dependency_discovered"):
+				classification = "blocked-by-dependency"
+				reasons = append(reasons, "Mission has a fresh dependency-discovered signal that has not yet been converted into dependency state.")
+				recommendedAction = "Adopt the fresh dependency signal before continuing this mission."
+				if authoritativeRunID != "" && (authoritativeRunState == "ready" || authoritativeRunState == "executing") {
+					rescheduleActions = append(rescheduleActions, map[string]any{
+						"mission_id":    missionID,
+						"run_id":        authoritativeRunID,
+						"action_kind":   "pause_for_fresh_dependency_signal",
+						"target_state":  "waiting",
+						"current_state": authoritativeRunState,
+						"reason":        "Scheduler detected a fresh dependency-discovered signal that has not yet been adopted into mission state.",
+					})
+				}
+			case containsString(freshFollowUpSignalKindsByMission[missionID], "requires_meeting") || containsString(freshFollowUpSignalKindsByMission[missionID], "interface_change"):
+				classification = "needs-human-decision"
+				reasons = append(reasons, "Mission has fresh follow-up coordination signals that should be reviewed before widening execution.")
+				recommendedAction = "Review the fresh coordination signals and either adopt them into state or materialize the required meeting."
+				decisionKind = "review_follow_up_signals"
+				if authoritativeRunID != "" && (authoritativeRunState == "ready" || authoritativeRunState == "executing") {
+					rescheduleActions = append(rescheduleActions, map[string]any{
+						"mission_id":    missionID,
+						"run_id":        authoritativeRunID,
+						"action_kind":   "pause_for_fresh_follow_up_signal",
+						"target_state":  "waiting",
+						"current_state": authoritativeRunState,
+						"reason":        "Scheduler detected fresh coordination signals that have not yet been adopted into runtime state.",
+					})
+				}
 			case intValue(missionAudit["unresolved_conflict_count"]) > 0:
 				classification = "needs-human-decision"
 				reasons = append(reasons, "Mission has unresolved competing root-run authority.")
@@ -7049,6 +7116,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"open_meeting_action_count":        openMeetingActionCountByMission[missionID],
 			"follow_up_signal_count":           len(followUpSignalsByMission[missionID]),
 			"follow_up_signals":                cloneValue(followUpSignalsByMission[missionID]),
+			"stale_follow_up_signal_count":     len(staleFollowUpSignalsByMission[missionID]),
+			"stale_follow_up_signals":          cloneValue(staleFollowUpSignalsByMission[missionID]),
 			"bundle_id":                        bundleID,
 			"bundle_state":                     bundleState,
 			"bundle_role":                      bundleRole,
