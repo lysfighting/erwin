@@ -463,6 +463,7 @@ The goal is bounded, governed improvement of judgment.
 - claims and dimensions can be grouped
 - routes can be planned
 - waves can be obligated
+- the same bounded participant can receive one multi-lane debate wave batch instead of several invisible scattered obligations
 - rounds can be capped
 - verdicts can be adopted when rules allow
 
