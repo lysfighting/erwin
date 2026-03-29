@@ -370,11 +370,58 @@ assert_json_field "$schedule_multi_escalation_output" '"meeting_trigger_refs":' 
 assert_json_field "$schedule_multi_escalation_output" '"council_decision_count": 1' "scheduler counts one bundle-scoped council decision instead of one per mission"
 assert_json_field "$schedule_multi_escalation_output" '"next_action": "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime."' "scheduler prioritizes council-backed bundle-governor decisions over foreground selection messaging"
 assert_json_field "$schedule_multi_escalation_output" '"bundle_role_tally":' "scheduler reports bundle-role tallies in the portfolio snapshot"
+assert_json_field "$schedule_multi_escalation_output" '"required_human_decision_scope_tally":' "scheduler reports human-decision scope tallies"
+assert_json_field "$schedule_multi_escalation_output" '"required_human_decision_surface_tally":' "scheduler reports human-decision surface tallies"
+assert_json_field "$schedule_multi_escalation_output" '"primary_required_human_decision": {' "scheduler exposes the primary decision packet"
+assert_json_field "$schedule_multi_escalation_output" '"decision_scope": "bundle"' "scheduler marks the primary escalation packet as bundle-scoped"
 home_output_multi_escalation=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_multi_escalation" '"mission_escalated_bundle_count": 1' "home surfaces escalation-required mission bundles"
 assert_json_field "$home_output_multi_escalation" '"scheduler_council_decision_count": 1' "home surfaces bundle-scoped council decisions instead of per-mission duplicates"
 assert_json_field "$home_output_multi_escalation" '"next_action": "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime."' "home keeps scheduler decision-first guidance when bundle governance should become a council"
 assert_json_field "$home_output_multi_escalation" '"scheduler_bundle_role_tally":' "home surfaces scheduler bundle-role tallies"
+assert_json_field "$home_output_multi_escalation" '"scheduler_primary_required_human_decision": {' "home surfaces the scheduler's primary decision packet"
+
+decision_portfolio_claim=$(run_in_repo bash scripts/harness-claim.sh 20023 "Harness Decision Portfolio" --owns="file:docs/README.md")
+assert_json_field "$decision_portfolio_claim" '"mission_id": "issue-20023"' "independent human-decision mission can materialize"
+decision_portfolio_run=$(printf '%s\n' "$decision_portfolio_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+decision_portfolio_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-decision-portfolio",
+  "kind": "requires_meeting",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$decision_portfolio_run",
+  "mission_id": "issue-20023",
+  "applies_to": ["issue-20023"],
+  "scope_type": "mission",
+  "title": "Secondary decision packet",
+  "summary": "An isolated mission now also requires a governed human decision.",
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T00:00:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$decision_portfolio_signal" '"signal_id": "sig-smoke-decision-portfolio"' "secondary mission-level decision signal can be emitted directly"
+schedule_decision_portfolio_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_decision_portfolio_output" '"required_human_decision_count": 2' "scheduler counts bundle and mission decisions together in the portfolio"
+assert_json_field "$schedule_decision_portfolio_output" '"deferred_human_decision_count": 1' "scheduler records how many additional decisions remain behind the primary packet"
+assert_json_field "$schedule_decision_portfolio_output" '"required_human_decision_scope_tally": {' "scheduler exposes decision-scope portfolio tallies"
+assert_json_field "$schedule_decision_portfolio_output" '"bundle": 1' "scheduler counts one bundle-scoped decision in the portfolio"
+assert_json_field "$schedule_decision_portfolio_output" '"mission": 1' "scheduler counts one mission-scoped decision in the portfolio"
+assert_json_field "$schedule_decision_portfolio_output" '"required_human_decision_surface_tally": {' "scheduler exposes decision-surface portfolio tallies"
+assert_json_field "$schedule_decision_portfolio_output" '"council": 2' "scheduler counts both portfolio decisions as council-surface under the current profile triggers"
+assert_json_field "$schedule_decision_portfolio_output" '"primary_required_human_decision": {' "scheduler keeps a primary decision packet for the portfolio"
+assert_json_field "$schedule_decision_portfolio_output" '"bundle_id": "bundle-issue-20011-issue-20012-issue-20013"' "scheduler prioritizes the escalation bundle as the primary decision packet"
+assert_json_field "$schedule_decision_portfolio_output" '"mission_count": 3' "primary bundle decision packet keeps the grouped mission count"
+resolved_decision_portfolio_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-decision-portfolio resolved "Secondary decision packet covered.")
+assert_json_field "$resolved_decision_portfolio_signal" '"state": "resolved"' "secondary mission-level decision signal can be resolved after portfolio coverage"
+resolved_decision_portfolio_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$decision_portfolio_run" completed "Closed decision-portfolio mission.")
+assert_json_field "$resolved_decision_portfolio_run" '"state": "completed"' "secondary mission-level decision can be closed after portfolio coverage"
 
 resolved_multi_escalation_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_a" completed "Closed escalated multi-mission bundle member.")
 assert_json_field "$resolved_multi_escalation_a" '"state": "completed"' "first escalation bundle member can be closed"

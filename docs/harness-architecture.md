@@ -940,7 +940,7 @@ The current architecture is intentionally honest about what is not fully closed.
 High-value future expansion areas are:
 
 1. fuller scheduler behavior
-   deeper portfolio scheduling policy beyond the now-real baseline for execution-mode selection, mission classification, durable scheduler snapshots, bundle-scoped human-decision packets, leader-facing rescheduling hints, and maintenance escalation for stale control-plane state
+   deeper portfolio scheduling policy beyond the now-real baseline for execution-mode selection, mission classification, durable scheduler snapshots, prioritized human-decision portfolios, leader-facing rescheduling hints, and maintenance escalation for stale control-plane state
 
 2. broader bundle adjudication
    larger multi-mission conflicts when no obvious governing dependency, selector-specific authority winner, signal, or council outcome exists
