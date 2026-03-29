@@ -6799,6 +6799,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	if maxParallelRuns <= 0 {
 		maxParallelRuns = 1
 	}
+	requireExplicitParallelJustification := boolValue(policyValue("execution.require_explicit_parallel_justification", true))
 
 	bundleInfoByMission := map[string]map[string]any{}
 	conflictMissionSet := map[string]bool{}
@@ -7029,6 +7030,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			updatedAt = firstNonBlank(runSortTimestamp(authoritativeRun), updatedAt)
 			unsatisfiedRunDeps = unsatisfiedDependencies(authoritativeRun, registry)
 		}
+		parallelJustification := firstNonBlank(stringValue(mission["parallel_justification"]), stringValue(getKey(authoritativeRun, "parallel_justification", "")))
+		parallelJustified := strings.TrimSpace(parallelJustification) != ""
 		ownershipRefs := ownershipClaims(mission)
 		if len(ownershipRefs) == 0 && authoritativeRun != nil {
 			ownershipRefs = ownershipClaims(authoritativeRun)
@@ -7207,6 +7210,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"classification":                   classification,
 			"priority":                         stringValue(mission["priority"]),
 			"risk_level":                       stringValue(mission["risk_level"]),
+			"parallel_justified":               parallelJustified,
+			"parallel_justification":           parallelJustification,
 			"effective_risk_level":             effectiveRiskLevel,
 			"profile_high_risk":                len(profileHighRiskScopeRefs) > 0,
 			"profile_high_risk_scope_refs":     stringListToAny(profileHighRiskScopeRefs),
@@ -7337,8 +7342,49 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				entryByMission[missionID] = entry
 			}
 		} else {
-			batchAdmissionPolicy = "bounded_parallel_capacity"
-			selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs...)
+			candidateMissionIDs := append([]string{}, runnableMissionIDs...)
+			if len(candidateMissionIDs) > maxParallelRuns {
+				candidateMissionIDs = candidateMissionIDs[:maxParallelRuns]
+			}
+			if requireExplicitParallelJustification {
+				allCandidatesJustified := len(candidateMissionIDs) > 0
+				for _, missionID := range candidateMissionIDs {
+					if !boolValue(entryByMission[missionID]["parallel_justified"]) {
+						allCandidatesJustified = false
+						break
+					}
+				}
+				if !allCandidatesJustified {
+					batchAdmissionPolicy = "serialize_missing_parallel_justification"
+					selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs[0])
+					serializedBehindMissionID = runnableMissionIDs[0]
+					for _, missionID := range runnableMissionIDs[1:] {
+						entry := entryByMission[missionID]
+						entry["classification"] = "deferred"
+						reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Deferred because the current scheduler batch lacks explicit parallel justification for all candidate missions; foreground remains on %s.", serializedBehindMissionID))
+						entry["reasons"] = stringListToAny(dedupeStrings(reasons))
+						entry["recommended_action"] = fmt.Sprintf("Record explicit parallel justification before widening this mission alongside %s.", serializedBehindMissionID)
+						if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
+							currentState := stringValue(entry["authoritative_run_state"])
+							if currentState == "ready" || currentState == "executing" {
+								rescheduleActions = append(rescheduleActions, map[string]any{
+									"mission_id":    missionID,
+									"run_id":        runID,
+									"action_kind":   "defer_due_missing_parallel_justification",
+									"target_state":  "waiting",
+									"current_state": currentState,
+									"reason":        fmt.Sprintf("Scheduler kept the foreground batch on %s because explicit parallel justification is missing for at least one candidate mission.", serializedBehindMissionID),
+								})
+							}
+						}
+						entryByMission[missionID] = entry
+					}
+				}
+			}
+			if len(selectedMissionIDs) == 0 {
+				batchAdmissionPolicy = "bounded_parallel_capacity"
+				selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs...)
+			}
 			if len(selectedMissionIDs) > maxParallelRuns {
 				batchCapacityDeferredMissionIDs = append(batchCapacityDeferredMissionIDs, selectedMissionIDs[maxParallelRuns:]...)
 				selectedMissionIDs = selectedMissionIDs[:maxParallelRuns]

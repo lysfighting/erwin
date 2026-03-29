@@ -341,6 +341,24 @@ parallel_run_id=$(printf '%s\n' "$parallel_claim_output" | sed -n 's/^[[:space:]
 parallel_claim_output_extra=$(run_in_repo bash scripts/harness-claim.sh 20016 "Harness Parallel Mission Extra" --owns="file:README.md")
 assert_json_field "$parallel_claim_output_extra" '"mission_id": "issue-20016"' "extra independent parallel claim can materialize"
 parallel_run_id_extra=$(printf '%s\n' "$parallel_claim_output_extra" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+parallel_justification_primary=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$parallel_run_id"
+{
+  "parallel_justification": "Independent module change with isolated ownership boundary."
+}
+EOF
+)
+assert_json_field "$parallel_justification_primary" '"parallel_justification": "Independent module change with isolated ownership boundary."' "parallel mission can record explicit parallel justification"
+parallel_justification_extra=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$parallel_run_id_extra"
+{
+  "parallel_justification": "Independent docs update with isolated ownership boundary."
+}
+EOF
+)
+assert_json_field "$parallel_justification_extra" '"parallel_justification": "Independent docs update with isolated ownership boundary."' "extra parallel mission can record explicit parallel justification"
 scheduler_parallel_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$scheduler_parallel_output" '"execution_mode": "scheduled_parallel_missions"' "scheduler recommends a parallel batch when multiple isolated missions are runnable"
 assert_json_field "$scheduler_parallel_output" '"selected_mission_count": 2' "scheduler selects both isolated runnable missions for the batch"
@@ -352,6 +370,21 @@ resolved_parallel_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$par
 assert_json_field "$resolved_parallel_run" '"state": "completed"' "independent parallel mission can be closed after scheduling coverage"
 resolved_parallel_run_extra=$(run_in_repo bash scripts/harness-runs.sh set-state "$parallel_run_id_extra" completed "Resolved overflow parallel scheduling smoke path.")
 assert_json_field "$resolved_parallel_run_extra" '"state": "completed"' "overflow independent parallel mission can be closed after capacity coverage"
+
+section "Parallel justification gate"
+parallel_gate_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20021 "Harness Ungrounded Parallel A" --owns="file:docs/README.md")
+assert_json_field "$parallel_gate_claim_a" '"mission_id": "issue-20021"' "unguarded parallel mission A can materialize"
+parallel_gate_run_a=$(printf '%s\n' "$parallel_gate_claim_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+parallel_gate_claim_b=$(run_in_repo bash scripts/harness-claim.sh 20022 "Harness Ungrounded Parallel B" --owns="file:package-lock.json")
+assert_json_field "$parallel_gate_claim_b" '"mission_id": "issue-20022"' "unguarded parallel mission B can materialize"
+parallel_gate_run_b=$(printf '%s\n' "$parallel_gate_claim_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+schedule_parallel_gate_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_parallel_gate_output" '"batch_admission_policy": "serialize_missing_parallel_justification"' "scheduler reduces parallelism when candidate missions lack explicit parallel justification"
+assert_json_field "$schedule_parallel_gate_output" '"action_kind": "defer_due_missing_parallel_justification"' "scheduler emits a reschedule action when parallel widening lacks justification"
+resolved_parallel_gate_run_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$parallel_gate_run_a" completed "Resolved missing parallel justification smoke path A.")
+assert_json_field "$resolved_parallel_gate_run_a" '"state": "completed"' "unguarded parallel mission A can be closed after justification-gate coverage"
+resolved_parallel_gate_run_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$parallel_gate_run_b" completed "Resolved missing parallel justification smoke path B.")
+assert_json_field "$resolved_parallel_gate_run_b" '"state": "completed"' "unguarded parallel mission B can be closed after justification-gate coverage"
 
 section "Profile-backed high-risk serialization"
 high_risk_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20017 "Harness High-Risk Profile Mission" --owns="file:install.sh")
