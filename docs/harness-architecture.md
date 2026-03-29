@@ -179,6 +179,8 @@ It is also meant to preserve a stronger execution attitude than old workflow-onl
 
 Primary references:
 
+- [`reference/drive-skill/commands/drive.md`](/Users/liyasong/Project/collov/erwin/reference/drive-skill/commands/drive.md)
+- [`docs/research/drive-skill-analysis.md`](/Users/liyasong/Project/collov/erwin/docs/research/drive-skill-analysis.md)
 - [`docs/research/protocol-core-spec-2026-03-28.md`](/Users/liyasong/Project/collov/erwin/docs/research/protocol-core-spec-2026-03-28.md)
 - [`_project/sessions/2026-03-13-AL.md`](/Users/liyasong/Project/collov/erwin/_project/sessions/2026-03-13-AL.md)
 
@@ -238,7 +240,7 @@ This is why meetings in `Harness` are governance objects rather than loose notes
 
 Key references:
 
-- [`skills/arch-review/arch-review`](/Users/liyasong/Project/collov/erwin/skills/arch-review/arch-review)
+- [`skills/arch-review/arch-review/SKILL.md`](/Users/liyasong/Project/collov/erwin/skills/arch-review/arch-review/SKILL.md)
 - [`docs/research/meeting-protocol-spec-2026-03-28.md`](/Users/liyasong/Project/collov/erwin/docs/research/meeting-protocol-spec-2026-03-28.md)
 - [`docs/research/state-authority-spec-2026-03-28.md`](/Users/liyasong/Project/collov/erwin/docs/research/state-authority-spec-2026-03-28.md)
 
