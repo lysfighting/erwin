@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.32.0 (in progress)
+- **Version**: 0.33.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Harness hierarchical semantic selector overlap added)
+- **Last Session**: 2026-03-29 (Harness split ownership transfer added)
 
 ## Current Phase
 
@@ -30,6 +30,9 @@
 - **Semantic selector-family overlap added**: ownership governance now treats same-boundary `scope:` and `interface:` selectors as overlapping semantic claims, and teammate smoke proves the runtime now rejects exclusive cross-kind semantic collisions instead of only path-family collisions
 - **Bundle-level authority packets added**: `missions authority-audit --all` now emits bundle-level `resolution_kind`, shared `selector_refs`, and leader-facing `required_action`, so the control plane explains what to do with a conflicted or governed mission bundle instead of only listing pairwise adjudications
 - **Hierarchical semantic selector overlap added**: ownership governance now treats parent/child semantic boundaries like `scope:release` and `scope:release/notes` as overlapping governed ownership, including across `scope:` / `interface:` families
+- **Split ownership transfer added**: `runs transfer-ownership` now supports `--mode=split`, so a broader parent selector can delegate a governed child selector through explicit ownership exclusions without surrendering the parent boundary
+- **Exclusion-aware overlap accounting added**: leader-facing overlap detection in `home` now respects ownership exclusions, so split parent/child delegation does not appear as a false overlap once the child subtree has been explicitly carved out
+- **Teammate smoke widened for split delegation**: `scripts/harness-teammate-smoke-test.sh` now proves the full split-transfer path, including temporary child-owner retirement, superseded-signal reconciliation, source exclusion recording, target child acquisition, and clean contract alignment on both runs
 - **Debate route obligations added**: `meetings orchestrate` now materializes claim-lane route obligations with assigned bounded challenger roles/runs, while `meetings summary` and `doctor` surface resolved vs open debate routes directly instead of only reporting routed/unrouted claims after the fact
 - **Live worktree absence promoted into authority audit**: `runs authority-audit` now treats a missing provisioned worktree as first-class live-state drift (`live_worktree_missing`) instead of relying only on `doctor` to notice the broken path
 - **Glob ownership selectors added**: the ownership model now understands `glob:` path selectors, so overlap control can express bounded markdown/file-set style ownership instead of forcing everything into `file:` or coarse `dir:` claims
@@ -135,7 +138,7 @@
 
 1. Read this file
 2. **Harness next work**:
-   - A. Continue deepening selector semantics beyond the current family-aware plus shared-transfer baseline into richer policies and transfer rules
+   - A. Continue deepening selector semantics beyond the current family-aware plus shared/split-transfer baseline into richer policies and transfer rules
    - B. Decide whether remaining authority work should extend beyond the new run/mission/mission-graph plus dependency-governed ownership, bundle-aware grouping, and bundle-governor rules into broader multi-mission bundle adjudication, or whether that now belongs to future product layers
    - C. Continue pushing council behavior from auto-synthesis, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
    - D. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
@@ -171,7 +174,7 @@
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy mode, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
 
 ## File Locations
 

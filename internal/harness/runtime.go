@@ -1286,6 +1286,13 @@ func normalizeSemanticSelectorValue(value string) string {
 	return strings.Join(normalized, "/")
 }
 
+func hierarchicalPrefixMatch(prefix, candidate string) bool {
+	if prefix == "" || candidate == "" {
+		return false
+	}
+	return candidate == prefix || strings.HasPrefix(candidate, prefix+"/")
+}
+
 func parseOwnershipSelector(raw string) map[string]any {
 	value := strings.TrimSpace(raw)
 	kind := "opaque"
@@ -1372,8 +1379,101 @@ func ownershipSelectorKeys(mapping map[string]any) []string {
 	return dedupeStrings(selectors)
 }
 
+func ownershipExclusions(mapping map[string]any) []string {
+	selectors := []string{}
+	for _, item := range toList(mapping["ownership_exclusion_selectors"]) {
+		record, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		selector := strings.TrimSpace(stringValue(record["selector"]))
+		if selector == "" {
+			kind := strings.TrimSpace(stringValue(record["kind"]))
+			value := strings.TrimSpace(stringValue(record["value"]))
+			if kind != "" && value != "" {
+				selector = kind + ":" + value
+			}
+		}
+		if selector != "" {
+			selectors = append(selectors, selector)
+		}
+	}
+	if len(selectors) > 0 {
+		return dedupeStrings(selectors)
+	}
+	return dedupeStrings(anyListToStrings(toList(mapping["ownership_exclusions"])))
+}
+
 func selectorRecordFor(raw string) map[string]any {
 	return parseOwnershipSelector(raw)
+}
+
+func globStaticPrefix(pattern string) string {
+	segments := strings.Split(pattern, "/")
+	staticSegments := []string{}
+	for _, segment := range segments {
+		if strings.ContainsAny(segment, "*?[") {
+			break
+		}
+		if segment != "" {
+			staticSegments = append(staticSegments, segment)
+		}
+	}
+	return strings.Join(staticSegments, "/")
+}
+
+func selectorContains(containerRaw, memberRaw string) bool {
+	container := selectorRecordFor(containerRaw)
+	member := selectorRecordFor(memberRaw)
+	containerFamily := stringValue(container["family"])
+	memberFamily := stringValue(member["family"])
+	containerKind := stringValue(container["kind"])
+	memberKind := stringValue(member["kind"])
+	containerValue := stringValue(container["value"])
+	memberValue := stringValue(member["value"])
+	if containerFamily == "" || memberFamily == "" || containerFamily != memberFamily {
+		return false
+	}
+	switch containerFamily {
+	case "semantic":
+		return hierarchicalPrefixMatch(containerValue, memberValue)
+	case "path":
+		switch containerKind {
+		case "file":
+			return memberKind == "file" && containerValue == memberValue
+		case "dir", "module":
+			switch memberKind {
+			case "file", "dir", "module":
+				return hierarchicalPrefixMatch(containerValue, memberValue)
+			case "glob":
+				prefix := globStaticPrefix(memberValue)
+				return prefix != "" && hierarchicalPrefixMatch(containerValue, prefix)
+			}
+		}
+	}
+	return strings.TrimSpace(containerRaw) == strings.TrimSpace(memberRaw)
+}
+
+func selectorExcluded(candidate string, exclusions []string) bool {
+	for _, exclusion := range exclusions {
+		if strings.TrimSpace(exclusion) == strings.TrimSpace(candidate) || selectorContains(exclusion, candidate) {
+			return true
+		}
+	}
+	return false
+}
+
+func selectorsConflict(leftClaim string, leftExclusions []string, rightClaim string, rightExclusions []string) bool {
+	if !ownershipSelectorsOverlap(leftClaim, rightClaim) {
+		return false
+	}
+	if selectorExcluded(rightClaim, leftExclusions) {
+		return false
+	}
+	if selectorExcluded(leftClaim, rightExclusions) {
+		return false
+	}
+	return true
 }
 
 func pathOverlap(leftKind, leftValue, rightKind, rightValue string) bool {
@@ -1386,19 +1486,6 @@ func pathOverlap(leftKind, leftValue, rightKind, rightValue string) bool {
 	globMatchesPath := func(pattern, candidate string) bool {
 		matched, err := filepath.Match(pattern, candidate)
 		return err == nil && matched
-	}
-	globStaticPrefix := func(pattern string) string {
-		segments := strings.Split(pattern, "/")
-		staticSegments := []string{}
-		for _, segment := range segments {
-			if strings.ContainsAny(segment, "*?[") {
-				break
-			}
-			if segment != "" {
-				staticSegments = append(staticSegments, segment)
-			}
-		}
-		return strings.Join(staticSegments, "/")
 	}
 	switch {
 	case leftKind == "file" && rightKind == "file":
@@ -1453,10 +1540,7 @@ func ownershipSelectorsOverlap(leftRaw, rightRaw string) bool {
 		if leftValue == "" || rightValue == "" {
 			return false
 		}
-		sameOrPrefix := func(prefix, candidate string) bool {
-			return candidate == prefix || strings.HasPrefix(candidate, prefix+"/")
-		}
-		return sameOrPrefix(leftValue, rightValue) || sameOrPrefix(rightValue, leftValue)
+		return hierarchicalPrefixMatch(leftValue, rightValue) || hierarchicalPrefixMatch(rightValue, leftValue)
 	}
 	switch leftFamily {
 	case "anchor", "semantic":
@@ -1479,6 +1563,12 @@ func setOwnershipSelectors(mapping map[string]any, claims []string) {
 	normalized := dedupeStrings(claims)
 	mapping["ownership_claims"] = stringListToAny(normalized)
 	mapping["ownership_selectors"] = selectorRecordsFromClaims(normalized)
+}
+
+func setOwnershipExclusions(mapping map[string]any, claims []string) {
+	normalized := dedupeStrings(claims)
+	mapping["ownership_exclusions"] = stringListToAny(normalized)
+	mapping["ownership_exclusion_selectors"] = selectorRecordsFromClaims(normalized)
 }
 
 func ownershipTransferEvents(mapping map[string]any) []any {
@@ -1581,9 +1671,10 @@ func overlappingOwnershipRuns(registry map[string]any, candidateClaims []string,
 			continue
 		}
 		shared := []string{}
+		runExclusions := ownershipExclusions(run)
 		for _, candidate := range candidateClaims {
 			for _, claim := range ownershipClaims(run) {
-				if ownershipSelectorsOverlap(candidate, claim) {
+				if selectorsConflict(candidate, nil, claim, runExclusions) {
 					shared = append(shared, candidate+"~"+claim)
 				}
 			}
@@ -1750,6 +1841,7 @@ func syncContractControlPlaneFields(contract, run map[string]any) map[string]any
 	contract["worktree_path"] = stringValue(run["worktree_path"])
 	contract["desired_state"] = cloneValue(normalizeDesiredState(run))
 	setOwnershipSelectors(contract, ownershipClaims(run))
+	setOwnershipExclusions(contract, ownershipExclusions(run))
 	freshness, _ := toMap(contract["freshness"])
 	if freshness == nil {
 		freshness = map[string]any{}
@@ -2752,9 +2844,11 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			leftDependsOnRight := missionDependsOnTarget(missionRegistry, leftID, rightID, map[string]bool{})
 			rightDependsOnLeft := missionDependsOnTarget(missionRegistry, rightID, leftID, map[string]bool{})
 			shared := []string{}
+			leftExclusions := ownershipExclusions(leftMission)
+			rightExclusions := ownershipExclusions(rightMission)
 			for _, leftClaim := range ownershipClaims(leftMission) {
 				for _, rightClaim := range ownershipClaims(rightMission) {
-					if ownershipSelectorsOverlap(leftClaim, rightClaim) {
+					if selectorsConflict(leftClaim, leftExclusions, rightClaim, rightExclusions) {
 						shared = append(shared, leftClaim+"~"+rightClaim)
 					}
 				}
@@ -4960,9 +5054,11 @@ func doctorReport() map[string]any {
 		for _, rightRun := range exclusiveRuns[index+1:] {
 			rightID := stringValue(rightRun["run_id"])
 			shared := []string{}
+			leftExclusions := ownershipExclusions(leftRun)
+			rightExclusions := ownershipExclusions(rightRun)
 			for _, leftClaim := range ownershipClaims(leftRun) {
 				for _, rightClaim := range ownershipClaims(rightRun) {
-					if ownershipSelectorsOverlap(leftClaim, rightClaim) {
+					if selectorsConflict(leftClaim, leftExclusions, rightClaim, rightExclusions) {
 						shared = append(shared, leftClaim+"~"+rightClaim)
 					}
 				}
@@ -5606,7 +5702,7 @@ func cmdRuns(args []string) error {
 		})
 	case "transfer-ownership":
 		if len(args) < 3 {
-			return errors.New("runs transfer-ownership requires SOURCE_RUN_ID TARGET_RUN_ID --owns=SELECTOR [--reason=TEXT] [--mode=move|copy]")
+			return errors.New("runs transfer-ownership requires SOURCE_RUN_ID TARGET_RUN_ID --owns=SELECTOR [--reason=TEXT] [--mode=move|copy|split]")
 		}
 		sourceRunID := args[1]
 		targetRunID := args[2]
@@ -5623,8 +5719,8 @@ func cmdRuns(args []string) error {
 				mode = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--mode=")), mode)
 			}
 		}
-		if mode != "move" && mode != "copy" {
-			return errors.New("runs transfer-ownership --mode must be one of: move, copy")
+		if mode != "move" && mode != "copy" && mode != "split" {
+			return errors.New("runs transfer-ownership --mode must be one of: move, copy, split")
 		}
 		if len(selectors) == 0 {
 			return errors.New("runs transfer-ownership requires at least one --owns selector")
@@ -5657,13 +5753,30 @@ func cmdRuns(args []string) error {
 				}
 			}
 			sourceSelectors := ownershipClaims(sourceRun)
+			sourceExclusions := ownershipExclusions(sourceRun)
 			targetSelectors := ownershipClaims(targetRun)
 			sourceSet := map[string]bool{}
 			for _, selector := range sourceSelectors {
 				sourceSet[selector] = true
 			}
 			missing := []string{}
+			splitParents := map[string][]string{}
 			for _, selector := range selectors {
+				if mode == "split" {
+					if sourceSet[selector] {
+						missing = append(missing, selector+" (exact selector already owned; use --mode=move for exact handoff)")
+						continue
+					}
+					for _, sourceSelector := range sourceSelectors {
+						if strings.TrimSpace(sourceSelector) != strings.TrimSpace(selector) && selectorContains(sourceSelector, selector) {
+							splitParents[selector] = append(splitParents[selector], sourceSelector)
+						}
+					}
+					if len(splitParents[selector]) == 0 {
+						missing = append(missing, selector+" (split requires a broader source selector)")
+					}
+					continue
+				}
 				if !sourceSet[selector] {
 					missing = append(missing, selector)
 				}
@@ -5677,13 +5790,19 @@ func cmdRuns(args []string) error {
 				transferSet[selector] = true
 			}
 			for _, selector := range sourceSelectors {
-				if mode == "copy" || !transferSet[selector] {
+				if mode == "copy" || mode == "split" || !transferSet[selector] {
 					remainingSource = append(remainingSource, selector)
 				}
 			}
+			nextSourceExclusions := dedupeStrings(sourceExclusions)
+			if mode == "split" {
+				nextSourceExclusions = dedupeStrings(append(nextSourceExclusions, selectors...))
+			}
 			targetSelectors = dedupeStrings(append(targetSelectors, selectors...))
 			setOwnershipSelectors(sourceRun, remainingSource)
+			setOwnershipExclusions(sourceRun, nextSourceExclusions)
 			setOwnershipSelectors(targetRun, targetSelectors)
+			setOwnershipExclusions(targetRun, ownershipExclusions(targetRun))
 			if err := persistContractForRun(sourceRun); err != nil {
 				return err
 			}
@@ -5707,6 +5826,11 @@ func cmdRuns(args []string) error {
 				sourceRun["next_expected_action"] = "Continue within the shared bounded ownership scope without drifting across other claims."
 				targetRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership selectors shared in.")
 				targetRun["next_expected_action"] = "Proceed inside the explicitly shared bounded ownership scope."
+			} else if mode == "split" {
+				sourceRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership subtree delegated while the broader boundary stays owned with exclusions.")
+				sourceRun["next_expected_action"] = "Continue within the remaining parent boundary without reclaiming the delegated child subtree."
+				targetRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership subtree transferred in under a split parent boundary.")
+				targetRun["next_expected_action"] = "Proceed inside the delegated child boundary without widening back into the parent scope."
 			} else {
 				sourceRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership selectors transferred away.")
 				sourceRun["next_expected_action"] = "Continue within the remaining bounded ownership scope."
@@ -6021,9 +6145,11 @@ func cmdHome(args []string) error {
 		for _, rightRun := range activeExclusiveRuns[index+1:] {
 			rightID := stringValue(rightRun["run_id"])
 			shared := []string{}
+			leftExclusions := ownershipExclusions(leftRun)
+			rightExclusions := ownershipExclusions(rightRun)
 			for _, leftClaim := range ownershipClaims(leftRun) {
 				for _, rightClaim := range ownershipClaims(rightRun) {
-					if ownershipSelectorsOverlap(leftClaim, rightClaim) {
+					if selectorsConflict(leftClaim, leftExclusions, rightClaim, rightExclusions) {
 						shared = append(shared, leftClaim+"~"+rightClaim)
 					}
 				}

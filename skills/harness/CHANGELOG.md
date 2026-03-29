@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Exclusion-aware split ownership transfer via `bash scripts/harness-runs.sh transfer-ownership ... --mode=split`, so a parent selector can delegate a governed child boundary without giving up the broader parent scope.
 - Hierarchical semantic selector overlap so parent/child `scope:` and `interface:` boundaries now collide under exclusive governance instead of only exact semantic matches.
 - Bundle-level authority packets in `missions authority-audit --all`, including `resolution_kind`, shared `selector_refs`, and leader-facing `required_action`.
 - Semantic selector-family overlap so same-boundary `scope:` and `interface:` claims now collide under exclusive governance instead of passing as unrelated labels.
@@ -40,6 +41,8 @@ All notable changes to the `harness` skill will be documented in this file.
 - Ship-gate authority adjudication in `runs authority-audit`, so leader-facing run review can explain when verification/review/checks state overrides an overly optimistic delivery status.
 
 ### Changed
+- `harness-home.sh` now honors ownership exclusions when computing leader-facing overlap counts, so split parent/child delegation no longer shows up as a false positive ownership collision.
+- `scripts/harness-teammate-smoke-test.sh` now proves split-transfer delegation end-to-end, including temporary child-owner retirement, signal reconciliation, parent exclusion recording, child acquisition, and contract alignment after the split handoff.
 - `scripts/harness-teammate-smoke-test.sh` now proves hierarchy-aware semantic overlap between `scope:` and `interface:` selectors in addition to same-boundary semantic overlap.
 - `scripts/harness-smoke-test.sh` now proves conflicted and governed mission bundles expose bundle-level next actions in addition to pairwise mission-graph verdicts.
 - `scripts/harness-teammate-smoke-test.sh` now proves cross-kind semantic overlap between `scope:` and `interface:` selectors in addition to the existing path-family overlap checks.

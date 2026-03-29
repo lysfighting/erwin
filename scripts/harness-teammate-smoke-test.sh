@@ -130,6 +130,7 @@ fi
 
 semantic_owner=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-docs completeness-checker "Prepare release-doc updates" --scope="release docs" --owns="dir:docs/release")
 assert_json_field "$semantic_owner" '"owner_id": "worker-docs"' "directory selector assignment created"
+docs_run=$(printf '%s\n' "$semantic_owner" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 set +e
 semantic_overlap_output=$(cd "$TEST_REPO" && bash scripts/harness-teammates.sh assign "$leader_run_id" worker-doc-file completeness-checker "Patch release changelog" --scope="release changelog" --owns="file:docs/release/CHANGELOG.md" 2>&1)
 semantic_rc=$?
@@ -164,6 +165,7 @@ else
 fi
 semantic_hierarchy_owner=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-hierarchy hierarchy-owner "Own release notes subtree" --scope="release notes subtree" --owns="scope:release/notes")
 assert_json_field "$semantic_hierarchy_owner" '"owner_id": "worker-hierarchy"' "semantic hierarchy selector assignment created"
+semantic_hierarchy_run=$(printf '%s\n' "$semantic_hierarchy_owner" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 set +e
 semantic_hierarchy_overlap_output=$(cd "$TEST_REPO" && bash scripts/harness-teammates.sh assign "$leader_run_id" worker-hierarchy-parent hierarchy-reviewer "Review broader release boundary" --scope="release boundary" --owns="interface:release" 2>&1)
 semantic_hierarchy_rc=$?
@@ -174,6 +176,28 @@ else
   fail "semantic hierarchy overlap is rejected"
   echo "$semantic_hierarchy_overlap_output"
 fi
+
+retired_hierarchy_owner=$(run_in_repo bash scripts/harness-runs.sh set-state "$semantic_hierarchy_run" completed "Hierarchy overlap guard verified; retire temporary child owner before split-transfer coverage.")
+assert_json_field "$retired_hierarchy_owner" '"state": "completed"' "temporary hierarchy owner can retire before split transfer coverage"
+hierarchy_reconcile=$(run_in_repo bash scripts/harness-maintenance.sh reconcile)
+assert_json_field "$hierarchy_reconcile" '"reconciled_signal_ids"' "retiring the temporary hierarchy owner can reconcile superseded signals"
+
+section "Split transfer policy"
+split_source=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-split-parent hierarchy-owner "Own broad release boundary" --scope="release")
+assert_json_field "$split_source" '"owner_id": "worker-split-parent"' "split source teammate assignment created"
+split_source_run=$(printf '%s\n' "$split_source" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+split_transfer=$(run_in_repo bash scripts/harness-runs.sh transfer-ownership "$split_source_run" "$docs_run" --owns="scope:release/notes" --mode=split --reason="Delegate the release-notes subtree without losing the broader release boundary.")
+assert_json_field "$split_transfer" '"mode": "split"' "ownership transfer supports split mode for hierarchical boundaries"
+split_source_after=$(run_in_repo bash scripts/harness-runs.sh get "$split_source_run")
+docs_after_split=$(run_in_repo bash scripts/harness-runs.sh get "$docs_run")
+assert_json_field "$split_source_after" '"selector": "scope:release"' "split-mode transfer keeps the broader selector on source run"
+assert_json_field "$split_source_after" '"ownership_exclusions"' "split-mode transfer records ownership exclusions on the source run"
+assert_json_field "$split_source_after" '"scope:release/notes"' "split-mode transfer excludes the delegated child boundary from the source run"
+assert_json_field "$docs_after_split" '"selector": "scope:release/notes"' "split-mode transfer adds delegated child selector to target run"
+split_authority_source=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$split_source_run")
+split_authority_target=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$docs_run")
+assert_json_field "$split_authority_source" '"contract_gap_count": 0' "split-mode transfer keeps source contract aligned"
+assert_json_field "$split_authority_target" '"contract_gap_count": 0' "split-mode transfer keeps target contract aligned"
 
 section "Reporting and communication"
 report_output=$(run_in_repo bash scripts/harness-teammates.sh report "$run_a" "Auth caller patch is ready for sibling review" --kind=progress --evidence=src/auth.ts)

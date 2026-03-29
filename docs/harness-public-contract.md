@@ -145,7 +145,7 @@ The package currently guarantees:
 - first-class mission state above run attempts
 - first-class mission authority, including an authoritative mission-control run that can differ from the freshest teammate activity
 - explicit ownership selectors with overlap enforcement across both path-family and hierarchical semantic-family boundaries
-- bounded ownership transfer, including exclusive `move` handoff and shared `copy` handoff for selectors that are intentionally governed in parallel
+- bounded ownership transfer, including exclusive `move` handoff, shared `copy` handoff for selectors that are intentionally governed in parallel, and exclusion-aware `split` handoff where a parent boundary delegates a governed child subtree without surrendering the broader parent
 - desired-state tracking on contracts and runs
 - bounded teammate assignment and governed sibling communication
 - council-grade meeting packets with authority-aware findings
