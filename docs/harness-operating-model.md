@@ -526,7 +526,7 @@ Its operating model is supposed to be executable.
 The following parts of the operating model are already concretely present:
 
 - leader-facing `home` and `doctor`
-- leader-facing scheduler baseline with durable snapshots, mission classification, execution-mode selection, bundle-aware deferral/escalation, bounded parallel admission from profile policy, and rescheduling hints
+- leader-facing scheduler baseline with durable snapshots, mission classification, execution-mode selection, bundle-aware deferral/escalation, bounded parallel admission from profile policy, profile-backed high-risk scope inference, and rescheduling hints
 - fresh follow-up signals can now trigger scheduler-driven reclassification and rescheduling instead of remaining display-only telemetry
 - first-class mission objects
 - mission authority separated from freshest run activity

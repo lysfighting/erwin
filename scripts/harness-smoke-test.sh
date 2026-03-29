@@ -349,6 +349,25 @@ assert_json_field "$resolved_parallel_run" '"state": "completed"' "independent p
 resolved_parallel_run_extra=$(run_in_repo bash scripts/harness-runs.sh set-state "$parallel_run_id_extra" completed "Resolved overflow parallel scheduling smoke path.")
 assert_json_field "$resolved_parallel_run_extra" '"state": "completed"' "overflow independent parallel mission can be closed after capacity coverage"
 
+section "Profile-backed high-risk serialization"
+high_risk_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20017 "Harness High-Risk Profile Mission" --owns="file:install.sh")
+assert_json_field "$high_risk_claim_output" '"mission_id": "issue-20017"' "profile-backed high-risk mission can materialize"
+high_risk_run_id=$(printf '%s\n' "$high_risk_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+low_risk_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20018 "Harness Low-Risk Peer Mission" --owns="file:go.mod")
+assert_json_field "$low_risk_claim_output" '"mission_id": "issue-20018"' "low-risk peer mission can materialize next to a profile-backed high-risk mission"
+low_risk_run_id=$(printf '%s\n' "$low_risk_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+schedule_high_risk_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_high_risk_output" '"batch_admission_policy": "serialize_high_risk"' "scheduler serializes the batch when a profile-backed high-risk mission is runnable"
+assert_json_field "$schedule_high_risk_output" '"mission_id": "issue-20017"' "scheduler includes the profile-backed high-risk mission in the classification output"
+assert_json_field "$schedule_high_risk_output" '"profile_high_risk": true' "scheduler marks profile-backed high-risk missions explicitly"
+assert_json_field "$schedule_high_risk_output" '"profile_high_risk_scope_refs":' "scheduler records which profile high-risk scopes triggered the escalation"
+assert_json_field "$schedule_high_risk_output" '"effective_risk_level": "high"' "scheduler upgrades effective risk when a profile high-risk scope is matched"
+assert_json_field "$schedule_high_risk_output" '"action_kind": "defer_until_foreground_risk_clears"' "scheduler defers lower-risk missions behind the profile-backed high-risk foreground mission"
+resolved_high_risk_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$high_risk_run_id" completed "Resolved profile-backed high-risk scheduling smoke path.")
+assert_json_field "$resolved_high_risk_run" '"state": "completed"' "profile-backed high-risk mission can be closed after serialization coverage"
+resolved_low_risk_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$low_risk_run_id" completed "Resolved low-risk peer scheduling smoke path.")
+assert_json_field "$resolved_low_risk_run" '"state": "completed"' "low-risk peer mission can be closed after high-risk serialization coverage"
+
 section "Council-governed mission graph authority"
 council_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Resolve the overlapping release-note ownership boundary before widening execution.")
 assert_json_field "$council_meeting_output" '"state": "active"' "drive meeting materializes an active council on the root mission"

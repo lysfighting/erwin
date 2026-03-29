@@ -610,6 +610,7 @@ That means:
 - the governing mission can remain foreground-runnable
 - governed losing missions can be deferred behind the current bundle governor
 - escalation-required bundles can surface as explicit human decisions instead of generic overlap noise
+- profile policy can now also escalate a foreground mission into high-risk serialization when its governed ownership boundary matches configured high-risk scopes, even if no one manually set `risk_level`
 
 ---
 

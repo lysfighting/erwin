@@ -1196,6 +1196,55 @@ func containsString(items []string, target string) bool {
 	return false
 }
 
+func profileHighRiskScopeSelector(raw string) string {
+	scope := strings.TrimSpace(raw)
+	if scope == "" {
+		return ""
+	}
+	scope = strings.TrimPrefix(scope, "./")
+	if strings.ContainsAny(scope, "*?[") {
+		return "glob:" + strings.TrimSpace(strings.TrimSuffix(scope, "/"))
+	}
+	if strings.HasSuffix(scope, "/") {
+		return "dir:" + strings.TrimSpace(strings.TrimSuffix(scope, "/"))
+	}
+	if strings.Contains(scope, "/") || strings.Contains(scope, ".") {
+		return "file:" + strings.TrimSpace(scope)
+	}
+	return ""
+}
+
+func matchedProfileHighRiskScopes(profile map[string]any, ownership []string, releaseAdjacent bool) []string {
+	matches := []string{}
+	for _, item := range anyListToStrings(toList(getKey(profile, "profile.high_risk_scopes", []any{}))) {
+		scope := strings.TrimSpace(item)
+		if scope == "" {
+			continue
+		}
+		lower := strings.ToLower(scope)
+		if strings.Contains(lower, "release") && strings.Contains(lower, "rc") {
+			if releaseAdjacent {
+				matches = append(matches, scope)
+			}
+			continue
+		}
+		scopeSelector := profileHighRiskScopeSelector(scope)
+		if scopeSelector == "" {
+			continue
+		}
+		for _, claim := range dedupeStrings(ownership) {
+			if strings.TrimSpace(claim) == "" {
+				continue
+			}
+			if selectorsConflict(scopeSelector, nil, claim, nil) || selectorContains(scopeSelector, claim) || selectorContains(claim, scopeSelector) {
+				matches = append(matches, scope)
+				break
+			}
+		}
+	}
+	return dedupeStrings(matches)
+}
+
 func upsertMeetingRoleSpec(meeting map[string]any, role, mission string, allowedSources, forbiddenSources []string) {
 	role = strings.TrimSpace(role)
 	if role == "" {
@@ -6954,6 +7003,18 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			updatedAt = firstNonBlank(runSortTimestamp(authoritativeRun), updatedAt)
 			unsatisfiedRunDeps = unsatisfiedDependencies(authoritativeRun, registry)
 		}
+		ownershipRefs := ownershipClaims(mission)
+		if len(ownershipRefs) == 0 && authoritativeRun != nil {
+			ownershipRefs = ownershipClaims(authoritativeRun)
+		}
+		profileHighRiskScopeRefs := matchedProfileHighRiskScopes(profile, ownershipRefs, releaseAdjacent)
+		effectiveRiskLevel := stringValue(mission["risk_level"])
+		if authoritativeRun != nil && schedulerRiskRank(effectiveRiskLevel) == 0 {
+			effectiveRiskLevel = firstNonBlank(effectiveRiskLevel, stringValue(authoritativeRun["risk_level"]))
+		}
+		if len(profileHighRiskScopeRefs) > 0 && schedulerRiskRank(effectiveRiskLevel) < schedulerRiskRank("high") {
+			effectiveRiskLevel = "high"
+		}
 
 		if !activeMission(mission) {
 			classification = "completed"
@@ -7086,6 +7147,9 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				}
 			}
 		}
+		if len(profileHighRiskScopeRefs) > 0 {
+			reasons = append(reasons, fmt.Sprintf("Mission touches profile high-risk scopes: %s.", strings.Join(profileHighRiskScopeRefs, ", ")))
+		}
 
 		if decisionKind != "" {
 			requiredHumanDecisions = append(requiredHumanDecisions, map[string]any{
@@ -7102,6 +7166,9 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"classification":                   classification,
 			"priority":                         stringValue(mission["priority"]),
 			"risk_level":                       stringValue(mission["risk_level"]),
+			"effective_risk_level":             effectiveRiskLevel,
+			"profile_high_risk":                len(profileHighRiskScopeRefs) > 0,
+			"profile_high_risk_scope_refs":     stringListToAny(profileHighRiskScopeRefs),
 			"release_adjacent":                 releaseAdjacent,
 			"authoritative_run_id":             authoritativeRunID,
 			"authoritative_run_state":          authoritativeRunState,
@@ -7149,8 +7216,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		if leftPriority != rightPriority {
 			return leftPriority > rightPriority
 		}
-		leftRisk := schedulerRiskRank(stringValue(left["risk_level"]))
-		rightRisk := schedulerRiskRank(stringValue(right["risk_level"]))
+		leftRisk := schedulerRiskRank(firstNonBlank(stringValue(left["effective_risk_level"]), stringValue(left["risk_level"])))
+		rightRisk := schedulerRiskRank(firstNonBlank(stringValue(right["effective_risk_level"]), stringValue(right["risk_level"])))
 		if leftRisk != rightRisk {
 			return leftRisk > rightRisk
 		}
@@ -7175,7 +7242,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		serialize := false
 		for _, missionID := range runnableMissionIDs {
 			entry := entryByMission[missionID]
-			if boolValue(entry["release_adjacent"]) || schedulerRiskRank(stringValue(entry["risk_level"])) >= 4 {
+			if boolValue(entry["release_adjacent"]) || schedulerRiskRank(firstNonBlank(stringValue(entry["effective_risk_level"]), stringValue(entry["risk_level"]))) >= 4 {
 				serialize = true
 				break
 			}

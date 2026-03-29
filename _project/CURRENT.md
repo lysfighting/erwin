@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.46.0 (in progress)
+- **Version**: 0.47.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Scheduler now reacts to fresh follow-up signals)
+- **Last Session**: 2026-03-29 (Scheduler now infers profile-backed high-risk foreground work)
 
 ## Current Phase
 
@@ -24,6 +24,7 @@
 - **Home/scheduler parity restored**: `home` now reuses scheduler decision-first guidance when escalation-required bundle decisions outrank generic cross-mission conflict wording, and it surfaces `scheduler_bundle_role_tally` so the leader sees the same bundle portfolio shape in both places
 - **Bounded portfolio admission added**: scheduler now consumes profile-backed `max_parallel_runs`, so parallel execution no longer widens to all runnable missions by default; overflow runnable missions are deferred with explicit `defer_due_parallel_capacity` actions and the snapshot records `batch_admission_policy`, `max_parallel_runs`, and `capacity_deferred_*` metadata
 - **Fresh-signal rescheduling added**: scheduler now treats fresh `requires_meeting`, `interface_change`, `dependency_discovered`, and `blocked` signals as real control-plane triggers instead of display-only telemetry, reclassifying missions and emitting pause/reschedule actions when the signal has not yet been adopted into runtime state
+- **Profile-backed high-risk inference added**: scheduler now consumes profile `high_risk_scopes`, matching them against mission/run ownership selectors and release-adjacent semantics to derive `profile_high_risk`, `profile_high_risk_scope_refs`, and `effective_risk_level`; missions touching configured high-risk boundaries such as `install.sh` now serialize the foreground batch even when no manual `risk_level` was set
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves pairwise governed bundles defer the losing mission behind the governor and that escalation-required bundles become explicit `establish_bundle_governor` scheduler decisions
 
 - **Stateful debate batch execution added**: `meetingDebatePlan` now computes `current_wave_batch_id`, `ready_wave_batch_count`, `blocked_wave_batch_count`, `resolved_wave_batch_count`, and batch-local `state/current` so the control plane can treat one debate batch as active while explicitly blocking the rest behind it
