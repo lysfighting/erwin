@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Harness Prototype
+- **Harness documentation system**: added `docs/harness-documentation-map.md` to define the canonical Harness doc set and read paths, plus `docs/harness-operating-model.md` to capture the leader/teammate/council execution model as a first-class durable design artifact instead of leaving that core behavior scattered across architecture prose, research, and chat history.
 - **Single architecture source of truth**: added `docs/harness-architecture.md` as the complete design overview for `Harness`, unifying identity, lineage, preserved protocol semantics, intentionally dropped historical baggage, control-plane model, Go runtime rationale, current control-plane maturity, and remaining expansion gaps in one durable architecture document.
 - **Durable session handoff doc**: added `docs/harness-session-handoff.md` as the active file-first entrypoint for fresh sessions, explicitly telling future work to resume from committed state, manifest metadata, recent session logs, and recent commits instead of relying on chat memory.
 - **Debate verdict adoption**: auto-synthesis can now honor a governed `latest_response_prevails` route verdict, so a debated claim lane can materialize directly into an accepted or rejected finding instead of falling back to unresolved output when the latest bounded reply has already won.

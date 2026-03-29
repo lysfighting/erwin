@@ -29,6 +29,10 @@ It does not replace:
 - the machine-readable package truth in [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
 - the durable external boundary in [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
 
+It is now also part of a managed documentation system described in:
+
+- [`docs/harness-documentation-map.md`](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md)
+
 ---
 
 ## Identity
@@ -62,6 +66,29 @@ Authoritative positioning references:
 - [`_project/decisions/0013-harness-prototype-positioning.md`](/Users/liyasong/Project/collov/erwin/_project/decisions/0013-harness-prototype-positioning.md)
 - [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
 - [`docs/harness-session-handoff.md`](/Users/liyasong/Project/collov/erwin/docs/harness-session-handoff.md)
+
+---
+
+## Canonical Document Set
+
+`Harness` should no longer be understood through scattered files alone.
+
+The canonical documentation set is:
+
+1. this file for the complete architecture narrative
+2. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md) for the leader/teammate/council execution model
+3. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md) for the durable package boundary
+4. [`docs/harness-session-handoff.md`](/Users/liyasong/Project/collov/erwin/docs/harness-session-handoff.md) for safe continuation rules
+5. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml) for machine-readable package truth
+6. [`docs/harness-documentation-map.md`](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md) for how the whole document system is meant to be read and maintained
+
+This is deliberate:
+
+- one document explains the whole system
+- one document explains how it operates
+- one document defines the public contract
+- one document explains how future sessions should resume
+- one file anchors the machine-readable truth
 
 ---
 
