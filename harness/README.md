@@ -45,7 +45,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 - `harness-issue.sh` — structured issue drafting and creation
 - `harness-claim.sh` — mission claim + contract/run creation
 - `harness-drive.sh` — run-state control, dependency waiting, meetings, reprovision, outcome adoption
-- `harness-runs.sh` — direct run inspection, desired-state mutation, ownership transfer, and run-level authority audit
+- `harness-runs.sh` — direct run inspection, desired-state mutation, bounded ownership transfer, and run-level authority audit
 - `harness-teammates.sh` — bounded teammate assignment, governed communication, and meeting escalation
 - `harness-ship.sh` — verification, PR lifecycle, review/check gates, deterministic merge, merge readiness
 - `harness-ship.sh` also supports branch push and PR draft generation
@@ -92,6 +92,7 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - first-class teammate runs with bounded assignment scope and reporting contracts
 - explicit ownership claims plus overlap guardrails for active exclusive runs
 - richer selector semantics for ownership claims, including path-family overlap between `file`, `dir`, and `module`
+- bounded ownership transfer with `move` semantics for exclusive handoff and `copy` semantics for explicitly shared selectors
 - dependency-aware waiting and declared desired state on runs and contracts
 - first-class mission objects and a durable mission graph above run attempts
 - first-class mission authority with `latest_run_id` separated from `authoritative_run_id`, so teammate activity cannot silently take over leader-facing mission control

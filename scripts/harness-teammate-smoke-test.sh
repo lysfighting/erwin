@@ -98,6 +98,24 @@ authority_b_after_transfer=$(run_in_repo bash scripts/harness-runs.sh authority-
 assert_json_field "$authority_a_after_transfer" '"contract_gap_count": 0' "target teammate contract stays aligned after ownership transfer"
 assert_json_field "$authority_b_after_transfer" '"contract_gap_count": 0' "source teammate contract stays aligned after ownership transfer"
 
+section "Shared transfer policy"
+shared_a=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-shared-a interface-owner "Own auth interface boundary" --scope="auth interface" --owns="interface:auth-scope" --allow-overlap)
+shared_b=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-shared-b interface-reviewer "Review auth interface boundary" --scope="auth interface review" --owns="scope:auth-interface-review" --allow-overlap)
+assert_json_field "$shared_a" '"owner_id": "worker-shared-a"' "shared source teammate assignment created"
+assert_json_field "$shared_b" '"owner_id": "worker-shared-b"' "shared target teammate assignment created"
+shared_run_a=$(printf '%s\n' "$shared_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+shared_run_b=$(printf '%s\n' "$shared_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+shared_transfer=$(run_in_repo bash scripts/harness-runs.sh transfer-ownership "$shared_run_a" "$shared_run_b" --owns="interface:auth-scope" --mode=copy --reason="Share auth interface scope for paired implementation and review.")
+assert_json_field "$shared_transfer" '"mode": "copy"' "ownership transfer supports copy mode for shared boundaries"
+shared_a_after=$(run_in_repo bash scripts/harness-teammates.sh get "$shared_run_a")
+shared_b_after=$(run_in_repo bash scripts/harness-teammates.sh get "$shared_run_b")
+assert_json_field "$shared_a_after" '"selector": "interface:auth-scope"' "copy-mode transfer keeps selector on source run"
+assert_json_field "$shared_b_after" '"selector": "interface:auth-scope"' "copy-mode transfer adds selector to target run"
+shared_authority_a=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$shared_run_a")
+shared_authority_b=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$shared_run_b")
+assert_json_field "$shared_authority_a" '"contract_gap_count": 0' "copy-mode transfer keeps source contract aligned"
+assert_json_field "$shared_authority_b" '"contract_gap_count": 0' "copy-mode transfer keeps target contract aligned"
+
 section "Ownership guard"
 set +e
 overlap_output=$(cd "$TEST_REPO" && bash scripts/harness-teammates.sh assign "$leader_run_id" worker-conflict architecture-challenger "Touch the same auth callers" --scope="auth callers" --owns="scope:auth-callers" 2>&1)
@@ -287,7 +305,7 @@ assert_json_field "$auto_orchestrate_e" '"new_phase": "output"' "auto-synthesis 
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_mission_count": 1' "home surfaces active mission count"
-assert_json_field "$home_output" '"active_teammate_count": 3' "home surfaces active teammate runs"
+assert_json_field "$home_output" '"active_teammate_count": 5' "home surfaces active teammate runs"
 assert_json_field "$home_output" '"coordination_signal_count":' "home surfaces coordination signal count"
 assert_json_field "$home_output" '"dependency_blocked_count": 1' "home surfaces dependency-blocked runs"
 assert_json_field "$home_output" '"ownership_overlap_count": 0' "home stays free of ownership overlap"

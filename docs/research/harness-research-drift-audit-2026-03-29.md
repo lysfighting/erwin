@@ -133,7 +133,7 @@ Current truth:
 So Kubernetes-style ownership discipline is no longer just textual.
 The latest passes materially improved this:
 - selectors are now normalized
-- bounded ownership can be formally transferred between runs
+- bounded ownership can be formally moved between runs and explicitly copied across shared overlap boundaries
 - selector families now capture richer path overlap semantics, including bounded `glob:` patterns
 
 What is still missing is the next layer above that stronger baseline.
@@ -227,7 +227,7 @@ It should close the remaining control-plane gaps.
 
 ## Recommended Next Priority Order
 
-1. Richer selector families and transfer policies beyond the current normalized ownership-transfer baseline
+1. Richer selector families and transfer policies beyond the current normalized ownership-transfer plus shared-copy baseline
 2. Broader authority conflict resolution outside meetings
 3. Deeper automated council orchestration
 4. Product naming and release positioning once the governance model feels stable

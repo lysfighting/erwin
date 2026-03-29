@@ -145,6 +145,7 @@ The package currently guarantees:
 - first-class mission state above run attempts
 - first-class mission authority, including an authoritative mission-control run that can differ from the freshest teammate activity
 - explicit ownership selectors with overlap enforcement
+- bounded ownership transfer, including exclusive `move` handoff and shared `copy` handoff for selectors that are intentionally governed in parallel
 - desired-state tracking on contracts and runs
 - bounded teammate assignment and governed sibling communication
 - council-grade meeting packets with authority-aware findings

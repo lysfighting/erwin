@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.24.0 (in progress)
+- **Version**: 0.25.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Harness multi-mission authority adjudication added)
+- **Last Session**: 2026-03-29 (Harness shared ownership transfer added)
 
 ## Current Phase
 
@@ -48,6 +48,8 @@
 - **Multi-mission authority adjudication added**: [`scripts/harness-missions.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-missions.sh) now exposes `authority-audit --all`, surfacing cross-mission ownership collisions and dependency-governed mission blocking as first-class control-plane verdicts
 - **Doctor/home now consume graph authority**: `doctor` surfaces `mission-graph-authority-conflict`, and `home` now reports graph-level mission conflict and dependency-adjudication counts instead of hiding multi-mission control drift under per-run overlap noise
 - **Core smoke widened again**: core smoke now proves a cross-mission overlap can be created under explicit allowance, surfaced by `missions authority-audit --all`, reported by `doctor`, and then cleared by closing the conflicting mission
+- **Shared ownership transfer added**: `runs transfer-ownership` now supports `--mode=copy`, allowing bounded selectors to be intentionally shared between active runs when both sides explicitly allow `shared` overlap instead of forcing every transfer into exclusive handoff semantics
+- **Teammate smoke widened again**: teammate smoke now proves shared-selector copy transfer end-to-end, including source retention, target acquisition, and zero contract drift on both runs
 - **Ownership and desired state strengthened**: runs and contracts now carry explicit `ownership_claims`, `desired_state`, and dependency policy; teammate assignment now rejects exclusive overlap by default, and `drive wait` plus `home`/`doctor` surface dependency-blocked runs directly
 - **Authority and council control advanced**: invalid authority levels are now rejected or surfaced, and meetings can advance phases with `meetings orchestrate` instead of relying entirely on manual phase jumps
 - **Mission graph made first-class**: the harness now materializes durable mission objects under `.harness/missions/`, exposes them through `scripts/harness-missions.sh`, and drives `home`/`doctor` from mission-level state instead of only run-level state
@@ -124,7 +126,7 @@
 
 1. Read this file
 2. **Harness next work**:
-   - A. Continue deepening selector semantics beyond the current family-aware baseline into richer policies and transfer rules
+   - A. Continue deepening selector semantics beyond the current family-aware plus shared-transfer baseline into richer policies and transfer rules
    - B. Decide whether remaining authority work should extend beyond the new run/mission/mission-graph winner/loser rules into broader multi-mission bundle adjudication, or whether that now belongs to future product layers
    - C. Continue pushing council behavior from auto-synthesis, wave obligations, route obligations, and bounded second-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
    - D. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
@@ -160,7 +162,7 @@
 - OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, mission-level and graph-level authority adjudication, selector-aware ownership transfer, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, mission-level and graph-level authority adjudication, selector-aware ownership transfer with shared-copy mode, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
 
 ## File Locations
 

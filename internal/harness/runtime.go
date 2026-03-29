@@ -5281,19 +5281,25 @@ func cmdRuns(args []string) error {
 		})
 	case "transfer-ownership":
 		if len(args) < 3 {
-			return errors.New("runs transfer-ownership requires SOURCE_RUN_ID TARGET_RUN_ID --owns=SELECTOR [--reason=TEXT]")
+			return errors.New("runs transfer-ownership requires SOURCE_RUN_ID TARGET_RUN_ID --owns=SELECTOR [--reason=TEXT] [--mode=move|copy]")
 		}
 		sourceRunID := args[1]
 		targetRunID := args[2]
 		selectors := []string{}
 		reason := "Leader reassigned ownership selector."
+		mode := "move"
 		for _, arg := range args[3:] {
 			switch {
 			case strings.HasPrefix(arg, "--owns="):
 				selectors = append(selectors, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--owns=")))...)
 			case strings.HasPrefix(arg, "--reason="):
 				reason = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--reason=")), reason)
+			case strings.HasPrefix(arg, "--mode="):
+				mode = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--mode=")), mode)
 			}
+		}
+		if mode != "move" && mode != "copy" {
+			return errors.New("runs transfer-ownership --mode must be one of: move, copy")
 		}
 		if len(selectors) == 0 {
 			return errors.New("runs transfer-ownership requires at least one --owns selector")
@@ -5320,6 +5326,11 @@ func cmdRuns(args []string) error {
 			if stringValue(sourceRun["mission_id"]) == "" || stringValue(sourceRun["mission_id"]) != stringValue(targetRun["mission_id"]) {
 				return errors.New("runs transfer-ownership currently requires source and target runs to belong to the same mission")
 			}
+			if mode == "copy" {
+				if overlapPolicy(sourceRun) != "shared" || overlapPolicy(targetRun) != "shared" {
+					return errors.New("runs transfer-ownership --mode=copy requires both source and target runs to allow shared overlap")
+				}
+			}
 			sourceSelectors := ownershipClaims(sourceRun)
 			targetSelectors := ownershipClaims(targetRun)
 			sourceSet := map[string]bool{}
@@ -5341,7 +5352,7 @@ func cmdRuns(args []string) error {
 				transferSet[selector] = true
 			}
 			for _, selector := range sourceSelectors {
-				if !transferSet[selector] {
+				if mode == "copy" || !transferSet[selector] {
 					remainingSource = append(remainingSource, selector)
 				}
 			}
@@ -5360,16 +5371,23 @@ func cmdRuns(args []string) error {
 				"from_run_id":     sourceRunID,
 				"to_run_id":       targetRunID,
 				"reason":          reason,
-				"mode":            "move",
+				"mode":            mode,
 				"authority_level": "L2",
 				"transferred_at":  nowISO(),
 			}
 			sourceRun["ownership_transfers"] = append(ownershipTransferEvents(sourceRun), cloneValue(event))
 			targetRun["ownership_transfers"] = append(ownershipTransferEvents(targetRun), cloneValue(event))
-			sourceRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership selectors transferred away.")
-			sourceRun["next_expected_action"] = "Continue within the remaining bounded ownership scope."
-			targetRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership selectors transferred in.")
-			targetRun["next_expected_action"] = "Proceed with the newly transferred bounded ownership scope."
+			if mode == "copy" {
+				sourceRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership selectors shared with another bounded run.")
+				sourceRun["next_expected_action"] = "Continue within the shared bounded ownership scope without drifting across other claims."
+				targetRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership selectors shared in.")
+				targetRun["next_expected_action"] = "Proceed inside the explicitly shared bounded ownership scope."
+			} else {
+				sourceRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership selectors transferred away.")
+				sourceRun["next_expected_action"] = "Continue within the remaining bounded ownership scope."
+				targetRun["latest_summary"] = firstNonBlank(strings.TrimSpace(reason), "Ownership selectors transferred in.")
+				targetRun["next_expected_action"] = "Proceed with the newly transferred bounded ownership scope."
+			}
 			sourceRun["updated_at"] = nowISO()
 			targetRun["updated_at"] = nowISO()
 			runs[sourceIndex] = sourceRun
