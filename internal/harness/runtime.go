@@ -4634,6 +4634,7 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 	}
 
 	type waveBatch struct {
+		Key          string
 		Phase        string
 		RoundNumber  int
 		AssignedRole string
@@ -4655,6 +4656,7 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		batch := waveBatchByKey[key]
 		if batch == nil {
 			batch = &waveBatch{
+				Key:          key,
 				Phase:        expectedPhase,
 				RoundNumber:  roundNumber,
 				AssignedRole: assignedRole,
@@ -4683,11 +4685,64 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		waveBatchKeys = append(waveBatchKeys, key)
 	}
 	sort.Strings(waveBatchKeys)
+	waveBatchList := []*waveBatch{}
+	for _, key := range waveBatchKeys {
+		if batch := waveBatchByKey[key]; batch != nil {
+			waveBatchList = append(waveBatchList, batch)
+		}
+	}
+	phaseOrder := func(phase string) int {
+		switch strings.TrimSpace(phase) {
+		case "cross_examination":
+			return 0
+		case "independent_review":
+			return 1
+		case "synthesis":
+			return 2
+		case "output":
+			return 3
+		default:
+			return 9
+		}
+	}
+	sort.SliceStable(waveBatchList, func(i, j int) bool {
+		left := waveBatchList[i]
+		right := waveBatchList[j]
+		if left == nil || right == nil {
+			return left != nil
+		}
+		if phaseOrder(left.Phase) != phaseOrder(right.Phase) {
+			return phaseOrder(left.Phase) < phaseOrder(right.Phase)
+		}
+		if left.RoundNumber != right.RoundNumber {
+			return left.RoundNumber < right.RoundNumber
+		}
+		leftActor := firstNonBlank(left.AssignedRun, left.AssignedRole, "unassigned")
+		rightActor := firstNonBlank(right.AssignedRun, right.AssignedRole, "unassigned")
+		if leftActor != rightActor {
+			return leftActor < rightActor
+		}
+		leftClaims := strings.Join(dedupeStrings(left.ClaimRefs), "|")
+		rightClaims := strings.Join(dedupeStrings(right.ClaimRefs), "|")
+		if leftClaims != rightClaims {
+			return leftClaims < rightClaims
+		}
+		return left.Key < right.Key
+	})
 	waveBatches := []any{}
 	maxWaveLaneCount := 0
 	multiLaneBatchCount := 0
-	for _, key := range waveBatchKeys {
-		batch := waveBatchByKey[key]
+	openWaveBatchCount := 0
+	readyWaveBatchCount := 0
+	blockedWaveBatchCount := 0
+	resolvedWaveBatchCount := 0
+	currentWaveBatchID := ""
+	currentWaveBatchLaneCount := 0
+	currentWaveBatchSummary := ""
+	for _, batch := range waveBatchList {
+		if batch == nil {
+			continue
+		}
 		laneCount := len(dedupeStrings(batch.ClaimRefs))
 		if laneCount > maxWaveLaneCount {
 			maxWaveLaneCount = laneCount
@@ -4695,17 +4750,54 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		if laneCount > 1 {
 			multiLaneBatchCount++
 		}
+		actionIDs := dedupeStrings(batch.ActionIDs)
+		state := "resolved"
+		current := false
+		if len(actionIDs) > 0 {
+			openWaveBatchCount++
+			if currentWaveBatchID == "" {
+				state = "ready"
+				current = true
+				readyWaveBatchCount++
+			} else {
+				state = "blocked"
+				blockedWaveBatchCount++
+			}
+		} else {
+			resolvedWaveBatchCount++
+		}
+		batchID := "debate-batch-" + slugify(batch.Key)
+		summary := fmt.Sprintf("%s should cover %d governed lane(s) in %s round %d.", firstNonBlank(batch.AssignedRole, batch.AssignedRun, "bounded participant"), laneCount, batch.Phase, batch.RoundNumber)
+		if current {
+			currentWaveBatchID = batchID
+			currentWaveBatchLaneCount = laneCount
+			currentWaveBatchSummary = summary
+		}
 		waveBatches = append(waveBatches, map[string]any{
-			"batch_id":        "debate-batch-" + slugify(key),
+			"batch_id":        batchID,
 			"expected_phase":  batch.Phase,
 			"round_number":    batch.RoundNumber,
 			"assigned_role":   batch.AssignedRole,
 			"assigned_run_id": batch.AssignedRun,
-			"state":           "open",
-			"action_ids":      stringListToAny(dedupeStrings(batch.ActionIDs)),
-			"claim_refs":      stringListToAny(dedupeStrings(batch.ClaimRefs)),
-			"lane_count":      laneCount,
-			"summary":         fmt.Sprintf("%s should cover %d governed lane(s) in %s round %d.", firstNonBlank(batch.AssignedRole, batch.AssignedRun, "bounded participant"), laneCount, batch.Phase, batch.RoundNumber),
+			"state":           state,
+			"current":         current,
+			"action_count":    len(actionIDs),
+			"open_action_count": func() int {
+				if state == "resolved" {
+					return 0
+				}
+				return len(actionIDs)
+			}(),
+			"resolved_action_count": func() int {
+				if state == "resolved" {
+					return len(actionIDs)
+				}
+				return 0
+			}(),
+			"action_ids": stringListToAny(actionIDs),
+			"claim_refs": stringListToAny(dedupeStrings(batch.ClaimRefs)),
+			"lane_count": laneCount,
+			"summary":    summary,
 		})
 	}
 
@@ -4722,7 +4814,13 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		"open_route_action_count":                  len(routeActions),
 		"open_round_action_count":                  len(roundActions),
 		"wave_batch_count":                         len(waveBatches),
-		"open_wave_batch_count":                    len(waveBatches),
+		"open_wave_batch_count":                    openWaveBatchCount,
+		"ready_wave_batch_count":                   readyWaveBatchCount,
+		"blocked_wave_batch_count":                 blockedWaveBatchCount,
+		"resolved_wave_batch_count":                resolvedWaveBatchCount,
+		"current_wave_batch_id":                    currentWaveBatchID,
+		"current_wave_batch_lane_count":            currentWaveBatchLaneCount,
+		"current_wave_batch_summary":               currentWaveBatchSummary,
 		"multi_lane_batch_count":                   multiLaneBatchCount,
 		"max_wave_lane_count":                      maxWaveLaneCount,
 		"routes":                                   routes,
@@ -5698,6 +5796,18 @@ func doctorReport() map[string]any {
 					issues = append(issues, issueRecord("warning", "meeting-round-action-open", meetingID, fmt.Sprintf("Meeting still has open follow-up debate obligations: %s", strings.Join(openRounds, "; ")), "Record the next-round response before trusting synthesis on that claim lane."))
 				}
 			}
+			openBatchCount := intValue(debatePlan["open_wave_batch_count"])
+			readyBatchCount := intValue(debatePlan["ready_wave_batch_count"])
+			currentBatchID := strings.TrimSpace(stringValue(debatePlan["current_wave_batch_id"]))
+			if (intValue(debatePlan["open_route_action_count"]) > 0 || intValue(debatePlan["open_round_action_count"]) > 0) && openBatchCount == 0 {
+				issues = append(issues, issueRecord("warning", "meeting-batch-plan-missing", meetingID, "Meeting has open debate obligations but no active wave batch plan.", "Re-run meetings orchestrate and repair debate batching before trusting council control flow."))
+			}
+			if openBatchCount > 0 && currentBatchID == "" {
+				issues = append(issues, issueRecord("warning", "meeting-current-batch-missing", meetingID, "Meeting has open debate batches but no deterministic current batch.", "Repair debate batch selection so one active batch is chosen before execution continues."))
+			}
+			if openBatchCount > 0 && readyBatchCount != 1 {
+				issues = append(issues, issueRecord("warning", "meeting-batch-selection-ambiguous", meetingID, fmt.Sprintf("Meeting has %d open debate batch(es) but %d ready batch(es).", openBatchCount, readyBatchCount), "Ensure debate batching exposes exactly one current ready batch and leaves the rest blocked."))
+			}
 		}
 		if len(toList(meeting["positions"])) > 0 && len(toList(coverageAudit["blocking_gaps"])) > 0 && intValue(coverageAudit["linked_cross_examination_count"]) == 0 && stringValue(meeting["phase"]) != "independent_review" {
 			issues = append(issues, issueRecord("warning", "meeting-cross-exam-unlinked", meetingID, "Cross-examination positions do not explicitly respond to another role or position.", "Record linked cross-examination positions with responds-to metadata."))
@@ -5712,6 +5822,9 @@ func doctorReport() map[string]any {
 				if stringValue(meeting["phase"]) == "output" && stringValue(synthesis["status"]) != "ready_for_output" {
 					issues = append(issues, issueRecord("warning", "meeting-output-with-incomplete-synthesis", meetingID, "Meeting is in output phase but synthesis is not ready_for_output.", "Supplement evidence or re-open synthesis before final adoption."))
 				}
+			}
+			if intValue(debatePlan["open_wave_batch_count"]) > 0 {
+				issues = append(issues, issueRecord("warning", "meeting-output-with-open-batch", meetingID, "Meeting reached synthesis/output while an active debate batch still remains open.", "Finish the current debate batch before treating the council as ready for adoption."))
 			}
 		}
 		if len(toList(findings["unresolved"])) > 0 && len(toList(meeting["action_items"])) == 0 {
@@ -9228,6 +9341,11 @@ func cmdMeetings(args []string) error {
 			"open_round_action_count":                  intValue(debatePlan["open_round_action_count"]),
 			"wave_batch_count":                         intValue(debatePlan["wave_batch_count"]),
 			"open_wave_batch_count":                    intValue(debatePlan["open_wave_batch_count"]),
+			"ready_wave_batch_count":                   intValue(debatePlan["ready_wave_batch_count"]),
+			"blocked_wave_batch_count":                 intValue(debatePlan["blocked_wave_batch_count"]),
+			"resolved_wave_batch_count":                intValue(debatePlan["resolved_wave_batch_count"]),
+			"current_wave_batch_id":                    stringValue(debatePlan["current_wave_batch_id"]),
+			"current_wave_batch_lane_count":            intValue(debatePlan["current_wave_batch_lane_count"]),
 			"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),
 			"max_wave_lane_count":                      intValue(debatePlan["max_wave_lane_count"]),
 			"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),
@@ -9329,6 +9447,9 @@ func cmdMeetingsRemainder(args []string) error {
 			coverageAudit, _ := toMap(meetingCoverageAudit(meeting))
 			wavePlan, _ := toMap(meetingWavePlan(meeting, coverageAudit))
 			debatePlan, _ := toMap(meetingDebatePlan(meeting))
+			openDebateBatchCount := intValue(debatePlan["open_wave_batch_count"])
+			blockedDebateBatchCount := intValue(debatePlan["blocked_wave_batch_count"])
+			currentDebateBatchSummary := strings.TrimSpace(stringValue(debatePlan["current_wave_batch_summary"]))
 			positions := toList(meeting["positions"])
 			gaps := []string{}
 			if len(roleSpecs) == 0 {
@@ -9356,6 +9477,19 @@ func cmdMeetingsRemainder(args []string) error {
 			}
 			newPhase := oldPhase
 			nextRequirement := ""
+			currentDebateBatchRequirement := func(prefix, fallback string) string {
+				if currentDebateBatchSummary == "" {
+					if blockedDebateBatchCount > 0 {
+						return fmt.Sprintf("%s %d additional debate batch(es) remain blocked.", fallback, blockedDebateBatchCount)
+					}
+					return fallback
+				}
+				message := fmt.Sprintf("%s %s", prefix, currentDebateBatchSummary)
+				if blockedDebateBatchCount > 0 {
+					message = fmt.Sprintf("%s %d additional debate batch(es) remain blocked behind it.", message, blockedDebateBatchCount)
+				}
+				return message
+			}
 			switch oldPhase {
 			case "", "setup":
 				if len(gaps) == 0 {
@@ -9431,16 +9565,18 @@ func cmdMeetingsRemainder(args []string) error {
 					}
 				} else {
 					if intValue(debatePlan["open_route_action_count"]) > 0 {
-						nextRequirement = fmt.Sprintf("Still waiting on %d planned route obligation(s) before synthesis.", intValue(debatePlan["open_route_action_count"]))
+						nextRequirement = currentDebateBatchRequirement("Complete current debate batch before synthesis.", fmt.Sprintf("Still waiting on %d planned route obligation(s) before synthesis.", intValue(debatePlan["open_route_action_count"])))
 					} else if intValue(debatePlan["open_round_action_count"]) > 0 {
-						nextRequirement = fmt.Sprintf("Still waiting on %d follow-up debate round(s) before synthesis.", intValue(debatePlan["open_round_action_count"]))
+						nextRequirement = currentDebateBatchRequirement("Complete current debate batch before synthesis.", fmt.Sprintf("Still waiting on %d follow-up debate round(s) before synthesis.", intValue(debatePlan["open_round_action_count"])))
 					} else {
 						nextRequirement = "Need at least one linked cross-examination position before synthesis."
 					}
 				}
 			case "synthesis":
 				synthesis := meetingSynthesisAudit(meeting)
-				if stringValue(synthesis["status"]) == "ready_for_output" {
+				if openDebateBatchCount > 0 {
+					nextRequirement = currentDebateBatchRequirement("Complete current debate batch before output.", "Complete outstanding debate batches before output.")
+				} else if stringValue(synthesis["status"]) == "ready_for_output" {
 					newPhase = "output"
 					nextRequirement = "Adopt or close the meeting outcome into run state."
 				} else {
@@ -9466,7 +9602,9 @@ func cmdMeetingsRemainder(args []string) error {
 				autoSynthesis = meetingAutoSynthesize(meeting)
 			}
 			synthesis := meetingSynthesisAudit(meeting)
-			if currentPhase == "synthesis" && stringValue(synthesis["status"]) == "ready_for_output" {
+			if currentPhase == "synthesis" && openDebateBatchCount > 0 {
+				nextRequirement = currentDebateBatchRequirement("Complete current debate batch before output.", "Complete outstanding debate batches before output.")
+			} else if currentPhase == "synthesis" && stringValue(synthesis["status"]) == "ready_for_output" {
 				setMeetingPhase(meeting, "output", "orchestrate advanced from synthesis")
 				currentPhase = "output"
 				nextRequirement = "Adopt or close the meeting outcome into run state."

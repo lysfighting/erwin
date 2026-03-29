@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.39.0 (in progress)
+- **Version**: 0.40.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Direct council output closure fully synced)
+- **Last Session**: 2026-03-29 (Stateful debate batch execution added)
 
 ## Current Phase
 
@@ -18,6 +18,9 @@
 
 **Session 2026-03-29** — Harness prototype line stayed complete while the council controller became more execution-aware across multiple lanes
 
+- **Stateful debate batch execution added**: `meetingDebatePlan` now computes `current_wave_batch_id`, `ready_wave_batch_count`, `blocked_wave_batch_count`, `resolved_wave_batch_count`, and batch-local `state/current` so the control plane can treat one debate batch as active while explicitly blocking the rest behind it
+- **Synthesis/output guard tightened**: `meetings orchestrate` now refuses to jump from `synthesis` to `output` while an open debate batch still exists, even if someone manually pushed the meeting phase forward before the controller finished the active batch
+- **Leader visibility widened again**: `meetings summary` now surfaces current/ready/blocked/resolved batch state, and `doctor` now warns when open debate obligations lack a deterministic current batch or when a meeting reaches `synthesis`/`output` while a debate batch still remains open
 - **Direct output closure added**: `meetings orchestrate` now advances straight from a newly synthesized council record into `output` when no synthesis gaps remain, so multi-lane, authority-resolved, and aligned councils no longer need a second orchestration pass just to leave `synthesis`
 - **Teammate smoke widened again**: `scripts/harness-teammate-smoke-test.sh` now proves auto-synthesized, verdict-adopted, authority-resolved, and aligned councils all close to `output` in the same orchestration call that materializes their governed findings
 - **Multi-lane debate batching added**: `meetingDebatePlan` now groups open route/round obligations into `wave_batches`, so one participant can receive a visible batch of same-round work across multiple conflicting claim lanes instead of only a flat list of isolated obligations
@@ -167,7 +170,7 @@
 1. Read this file
 2. **Harness next work**:
    - A. Continue authority adjudication beyond the current run/mission/mission-graph plus dependency-governed ownership, selector-specificity winners, council-governed bundle authority, and bundle-governor rules into broader multi-mission bundle handling when no obvious governing dependency or single active council anchor exists
-   - B. Continue pushing council behavior from auto-synthesis, direct synthesis for aligned/authority-resolved lanes, wave obligations, multi-lane debate batching, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate execution across more than one conflicting lane
+   - B. Continue pushing council behavior from auto-synthesis, direct synthesis for aligned/authority-resolved lanes, stateful current/blocked debate batching, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate execution across more than one conflicting lane
    - C. Decide whether deeper scheduler work should move beyond the new snapshot/reschedule/execution-mode baseline into larger-portfolio admission and rescheduling policy, or whether that should wait until bundle adjudication is stronger
    - D. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `docs/harness-documentation-map.md`, `docs/harness-architecture.md`, `docs/harness-operating-model.md`, `docs/harness-public-contract.md`, `docs/harness-session-handoff.md`, `harness/adapter-manifest.yml`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, recent `_project/sessions/2026-03-29-*.md` logs, and inspect recent commits on `codex/harness-release-lifecycle`

@@ -754,6 +754,7 @@ Current capabilities include:
 - phase orchestration
 - wave obligations
 - multi-lane debate wave batching
+- deterministic current/blocked debate-batch execution control
 - route obligations
 - multi-round debate planning
 - same-pass closure from synthesis to output when no synthesis gaps remain

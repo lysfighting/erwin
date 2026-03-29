@@ -436,6 +436,7 @@ Important clarification:
 
 In those cases, the leader may move directly into synthesis with an explicit authority-aware record of why further debate is unnecessary.
 If that synthesis record is already ready for output, the same orchestration pass may close the council directly into `output` instead of requiring a second ceremonial pass just to advance the phase marker.
+When more than one debate batch is open, the controller should expose one deterministic current batch and keep the others explicitly blocked behind it instead of pretending every open lane is equally active at once.
 
 ### `arch-review` Influence
 

@@ -499,14 +499,49 @@ batch_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "
 assert_json_field "$batch_orchestrate_b" '"new_phase": "cross_examination"' "multi-lane batching council advances into cross-examination for conflicting lanes"
 assert_json_field "$batch_orchestrate_b" '"open_route_action_count": 2' "multi-lane batching council opens two route obligations"
 assert_json_field "$batch_orchestrate_b" '"wave_batch_count": 1' "multi-lane batching controller groups the two open route obligations into one wave batch"
+assert_json_field "$batch_orchestrate_b" '"ready_wave_batch_count": 1' "multi-lane batching controller exposes one ready batch"
+assert_json_field "$batch_orchestrate_b" '"blocked_wave_batch_count": 0' "multi-lane batching controller leaves no blocked batch when only one participant batch exists"
+assert_json_field "$batch_orchestrate_b" '"current_wave_batch_id": "debate-batch-' "multi-lane batching controller exposes a deterministic current batch"
 assert_json_field "$batch_orchestrate_b" '"multi_lane_batch_count": 1' "multi-lane batching controller records one batch that spans multiple claim lanes"
 assert_json_field "$batch_orchestrate_b" '"max_wave_lane_count": 2' "multi-lane batching controller reports the largest lane bundle in one batch"
 
 batch_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$batch_meeting_id")
 assert_json_field "$batch_summary" '"open_route_action_count": 2' "multi-lane batching summary keeps both open route obligations visible"
 assert_json_field "$batch_summary" '"wave_batch_count": 1' "multi-lane batching summary surfaces one open debate batch"
+assert_json_field "$batch_summary" '"ready_wave_batch_count": 1' "multi-lane batching summary surfaces one ready batch"
+assert_json_field "$batch_summary" '"blocked_wave_batch_count": 0' "multi-lane batching summary surfaces zero blocked batches"
+assert_json_field "$batch_summary" '"current_wave_batch_lane_count": 2' "multi-lane batching summary surfaces the current batch lane count"
 assert_json_field "$batch_summary" '"multi_lane_batch_count": 1' "multi-lane batching summary reports a multi-lane batch"
 assert_json_field "$batch_summary" '"max_wave_lane_count": 2' "multi-lane batching summary reports the lane count of the largest batch"
+
+section "Stateful debate batch execution"
+sequenced_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can the council controller choose one current debate batch while blocking the next?")
+assert_json_field "$sequenced_meeting_output" '"state": "active"' "stateful-batch meeting materializes"
+sequenced_meeting_id=$(printf '%s\n' "$sequenced_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+run_in_repo bash scripts/harness-meetings.sh orchestrate "$sequenced_meeting_id" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$sequenced_meeting_id" "$leader_run_id" chair >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$sequenced_meeting_id" "$run_a" challenger-a >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$sequenced_meeting_id" "$run_b" challenger-b >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$sequenced_meeting_id" "$leader_run_id" independent_review support "Scope A must stay enforced." --claim=batch-lane-a --dimension=factual --authority=L2 --evidence=docs/a.md >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$sequenced_meeting_id" "$run_a" independent_review challenge "Scope A may be narrower than described." --claim=batch-lane-a --dimension=factual --authority=L2 --evidence=docs/a-review.md >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$sequenced_meeting_id" "$leader_run_id" independent_review support "Scope B also needs explicit coverage." --claim=batch-lane-b --dimension=factual --authority=L2 --evidence=docs/b.md >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$sequenced_meeting_id" "$run_b" independent_review challenge "Scope B may still be optional." --claim=batch-lane-b --dimension=factual --authority=L2 --evidence=docs/b-review.md >/dev/null
+
+sequenced_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$sequenced_meeting_id")
+assert_json_field "$sequenced_orchestrate_a" '"new_phase": "cross_examination"' "stateful-batch council advances into cross-examination"
+assert_json_field "$sequenced_orchestrate_a" '"wave_batch_count": 2' "stateful-batch council creates two debate batches when different challengers own different lanes"
+assert_json_field "$sequenced_orchestrate_a" '"ready_wave_batch_count": 1' "stateful-batch council exposes exactly one ready batch"
+assert_json_field "$sequenced_orchestrate_a" '"blocked_wave_batch_count": 1' "stateful-batch council leaves the second batch blocked behind the current one"
+assert_json_field "$sequenced_orchestrate_a" '"current_wave_batch_id": "debate-batch-' "stateful-batch council exposes a current batch id"
+assert_json_field "$sequenced_orchestrate_a" '"current_wave_batch_lane_count": 1' "stateful-batch council shows the current batch covers one lane"
+
+run_in_repo bash scripts/harness-meetings.sh set-phase "$sequenced_meeting_id" synthesis >/dev/null
+sequenced_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$sequenced_meeting_id")
+assert_json_field "$sequenced_orchestrate_b" '"new_phase": "synthesis"' "stateful-batch council refuses to jump from synthesis to output while debate batches remain open"
+assert_json_field "$sequenced_orchestrate_b" '"ready_wave_batch_count": 1' "stateful-batch council keeps one ready batch after the blocked synthesis attempt"
+assert_json_field "$sequenced_orchestrate_b" '"blocked_wave_batch_count": 1' "stateful-batch council keeps one blocked batch after the blocked synthesis attempt"
+assert_json_field "$sequenced_orchestrate_b" 'Complete current debate batch before output.' "stateful-batch council tells the leader to finish the current batch before output"
+run_in_repo bash scripts/harness-drive.sh meeting-close "$leader_run_id" "$sequenced_meeting_id" "Stateful batch execution smoke complete." >/dev/null
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"
