@@ -109,7 +109,7 @@ Current truth:
 
 - `doctor`, `home`, `maintenance`, dependency waiting, and run-level desired state are real
 - a first-class **mission registry / mission graph surface** now exists
-- graph-level authority can now group connected active missions into bundle-aware views instead of stopping at pairwise overlap verdicts
+- graph-level authority can now group connected active missions into bundle-aware views and surface explicit bundle governors when a governed bundle has a single root, instead of stopping at pairwise overlap verdicts
 - legacy runtime state can be upgraded into that mission-aware model through `maintenance normalize`
 
 This means the leader no longer regulates only against per-run state.

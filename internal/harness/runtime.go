@@ -2843,6 +2843,29 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		for _, id := range component {
 			componentSet[id] = true
 		}
+		bundleRoots := []string{}
+		dependentMissionIDs := []string{}
+		for _, id := range component {
+			index := findMissionIndex(missionRegistry, id)
+			if index < 0 {
+				continue
+			}
+			mission, _ := toMap(toList(missionRegistry["missions"])[index])
+			internalDependencyCount := 0
+			for _, dep := range toList(mission["depends_on"]) {
+				dependencyID := strings.TrimSpace(stringValue(dep))
+				if dependencyID != "" && componentSet[dependencyID] {
+					internalDependencyCount++
+				}
+			}
+			if internalDependencyCount == 0 {
+				bundleRoots = append(bundleRoots, id)
+			} else {
+				dependentMissionIDs = append(dependentMissionIDs, id)
+			}
+		}
+		sort.Strings(bundleRoots)
+		sort.Strings(dependentMissionIDs)
 		edgeKinds := []string{}
 		edgeCount := 0
 		for pairKey, kinds := range bundlePairKinds {
@@ -2890,24 +2913,31 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			}
 		}
 		state := "linked"
+		governingMissionID := ""
 		switch {
 		case conflictCount > 0:
 			state = "conflicted"
 			conflictedBundleCount++
 		case adjudicationCount > 0:
 			state = "governed"
+			if len(bundleRoots) == 1 {
+				governingMissionID = bundleRoots[0]
+			}
 			governedBundleCount++
 		}
 		bundles = append(bundles, map[string]any{
-			"bundle_id":            "bundle-" + slugify(strings.Join(component, "-")),
-			"mission_ids":          stringListToAny(component),
-			"mission_count":        len(component),
-			"edge_count":           edgeCount,
-			"edge_kinds":           stringListToAny(dedupeStrings(edgeKinds)),
-			"conflict_count":       conflictCount,
-			"adjudication_count":   adjudicationCount,
-			"bundle_state":         state,
-			"canonical_mission_id": component[0],
+			"bundle_id":             "bundle-" + slugify(strings.Join(component, "-")),
+			"mission_ids":           stringListToAny(component),
+			"mission_count":         len(component),
+			"edge_count":            edgeCount,
+			"edge_kinds":            stringListToAny(dedupeStrings(edgeKinds)),
+			"conflict_count":        conflictCount,
+			"adjudication_count":    adjudicationCount,
+			"bundle_state":          state,
+			"canonical_mission_id":  component[0],
+			"root_mission_ids":      stringListToAny(bundleRoots),
+			"dependent_mission_ids": stringListToAny(dependentMissionIDs),
+			"governing_mission_id":  governingMissionID,
 		})
 	}
 

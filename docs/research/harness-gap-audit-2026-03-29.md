@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector policy beyond the new normalized/shared-transfer baseline, higher-order authority adjudication beyond the new run/mission/mission-graph plus dependency-governed ownership baseline, deeper automated council orchestration beyond the new auto-synthesis plus bounded second-round debate baseline, clearer final product naming
+- **still incomplete**: richer selector policy beyond the new normalized/shared-transfer baseline, higher-order authority adjudication beyond the new run/mission/mission-graph plus dependency-governed ownership and bundle-governor baseline, deeper automated council orchestration beyond the new auto-synthesis plus bounded second-round debate baseline, clearer final product naming
 
 ---
 
