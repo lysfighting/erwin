@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Runtime bundle packaging via `scripts/harness-package-runtime.sh` and `scripts/harness-runtime-package-smoke-test.sh`.
 - Accepted public prototype positioning via ADR `0013`, with `Harness` now treated as the package's public prototype name.
 - Artifact-family authority adjudication via `runs authority-audit`, covering stale contract snapshots versus active run/live state.
 - Bounded second-round debate control via meeting `round_actions` and debate-round gating in `meetings orchestrate`.
@@ -30,6 +31,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Ship-gate authority adjudication in `runs authority-audit`, so leader-facing run review can explain when verification/review/checks state overrides an overly optimistic delivery status.
 
 ### Changed
+- Bootstrap smoke now validates the runtime bundle packaging surfaces in addition to runtime build/dist surfaces.
 - The public contract and manifest now treat `Harness` as the public prototype name instead of leaving naming unresolved.
 - Core smoke now validates that a stale contract branch loses to active run state before live-state authority drift checks continue.
 - `meetings summary` and `doctor` now surface planned/resolved/open second-round debate obligations before synthesis.

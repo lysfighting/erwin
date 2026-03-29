@@ -69,7 +69,9 @@ assert_contains "$bootstrap_output" '"scripts/harness-ship.sh"' "bootstrap insta
 assert_contains "$bootstrap_output" '"scripts/harness-rc.sh"' "bootstrap installs rc surface"
 assert_contains "$bootstrap_output" '"scripts/harness-teammates.sh"' "bootstrap installs teammate surface"
 assert_contains "$bootstrap_output" '"scripts/harness-build-runtime.sh"' "bootstrap installs runtime build surface"
+assert_contains "$bootstrap_output" '"scripts/harness-package-runtime.sh"' "bootstrap installs runtime package surface"
 assert_contains "$bootstrap_output" '"scripts/harness-runtime-dist-smoke-test.sh"' "bootstrap installs runtime dist smoke"
+assert_contains "$bootstrap_output" '"scripts/harness-runtime-package-smoke-test.sh"' "bootstrap installs runtime package smoke"
 assert_contains "$bootstrap_output" '"harness/adapter-manifest.yml"' "bootstrap installs adapter manifest"
 assert_contains "$bootstrap_output" '"docs/harness-public-contract.md"' "bootstrap installs public contract"
 assert_contains "$bootstrap_output" '"scripts/harness-all-smoke-test.sh"' "bootstrap installs full smoke entrypoint"
@@ -84,7 +86,9 @@ if run_in_target test -f scripts/harness-home.sh && \
    run_in_target test -f scripts/harness-rc.sh && \
    run_in_target test -f scripts/harness-teammates.sh && \
    run_in_target test -f scripts/harness-build-runtime.sh && \
+   run_in_target test -f scripts/harness-package-runtime.sh && \
    run_in_target test -f scripts/harness-runtime-dist-smoke-test.sh && \
+   run_in_target test -f scripts/harness-runtime-package-smoke-test.sh && \
    run_in_target test -f docs/harness-public-contract.md && \
    run_in_target test -f harness/adapter-manifest.yml && \
    run_in_target test -f skills/harness/SKILL.md && \
