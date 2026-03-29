@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.43.0-prototype`
+- `adapter_version`: `0.44.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -164,6 +164,7 @@ Do not underestimate the current control-plane maturity.
 `Harness` already has:
 
 - leader-facing scheduler baseline with mission classification, execution-mode selection, bundle-aware deferral/escalation, bundle-role tallies, decision-first next-action prioritization, rescheduling hints, and durable `.harness/scheduler/snapshots/`
+- `home` now mirrors that decision-first scheduler guidance instead of collapsing escalation-required bundles back into generic cross-mission conflict messaging
 - first-class mission objects
 - separation between `latest_run_id` and `authoritative_run_id`
 - graph-level authority audit with bundle grouping, explicit bundle governors, and pairwise governor adjudication from clear authority tuples

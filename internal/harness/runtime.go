@@ -7458,6 +7458,8 @@ func cmdHome(args []string) error {
 	switch {
 	case len(orphanSignals) > 0 || len(orphanMeetings) > 0:
 		nextAction = "Reconcile orphaned runtime objects before proceeding."
+	case intValue(scheduler["required_human_decision_count"]) > 0:
+		nextAction = stringValue(scheduler["next_action"])
 	case intValue(graphAuthorityAudit["cross_mission_conflict_count"]) > 0:
 		nextAction = "Resolve cross-mission authority conflicts before widening execution."
 	case len(overlappingClaims) > 0:
@@ -7536,6 +7538,7 @@ func cmdHome(args []string) error {
 		"scheduler_required_human_decision_count": intValue(scheduler["required_human_decision_count"]),
 		"scheduler_reschedule_action_count":       intValue(scheduler["reschedule_action_count"]),
 		"scheduler_tally":                         cloneValue(getKey(scheduler, "classification_tally", map[string]any{})),
+		"scheduler_bundle_role_tally":             cloneValue(getKey(scheduler, "bundle_role_tally", map[string]any{})),
 		"scheduler_selected_mission_ids":          cloneValue(toList(scheduler["selected_mission_ids"])),
 		"scheduler_next_action":                   stringValue(scheduler["next_action"]),
 		"next_action":                             nextAction,
