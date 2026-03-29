@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Harness Prototype
+- **Durable session handoff doc**: added `docs/harness-session-handoff.md` as the active file-first entrypoint for fresh sessions, explicitly telling future work to resume from committed state, manifest metadata, recent session logs, and recent commits instead of relying on chat memory.
 - **Debate verdict adoption**: auto-synthesis can now honor a governed `latest_response_prevails` route verdict, so a debated claim lane can materialize directly into an accepted or rejected finding instead of falling back to unresolved output when the latest bounded reply has already won.
 - **Split ownership transfer**: `runs transfer-ownership` now supports `--mode=split`, so a run can keep a broader parent selector while delegating a governed child selector through explicit ownership exclusions instead of fake overlap or full handoff.
 - **Hierarchical semantic selector overlap**: ownership governance now treats parent/child semantic boundaries like `scope:release` and `scope:release/notes` as the same governed family, including cross-kind `scope`/`interface` combinations. Teammate smoke now proves an exclusive `interface:release` assignment is rejected when `scope:release/notes` already owns the child boundary.

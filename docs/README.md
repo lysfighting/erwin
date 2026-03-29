@@ -12,6 +12,7 @@
 | [erwin-skills-incubator-architecture.md](erwin-skills-incubator-architecture.md) | Skills factory architecture |
 | [harness-distribution-strategy.md](harness-distribution-strategy.md) | Distribution tiers and runtime bundle strategy for Harness |
 | [harness-public-contract.md](harness-public-contract.md) | Durable public contract for the Codex-native orchestration harness package |
+| [harness-session-handoff.md](harness-session-handoff.md) | Durable fresh-session handoff and state-persistence entrypoint for Harness |
 | [version-management-architecture.md](version-management-architecture.md) | Version management infrastructure |
 
 ## Archived
