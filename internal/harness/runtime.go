@@ -3226,104 +3226,109 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		}
 		switch {
 		case conflictCount > 0:
-			if len(component) >= 3 {
-				candidateMissionIDs := dedupeStrings(bundleRoots)
-				if len(candidateMissionIDs) == 0 {
-					candidateMissionIDs = dedupeStrings(component)
-				}
+			candidateMissionIDs := dedupeStrings(bundleRoots)
+			if len(candidateMissionIDs) == 0 {
+				candidateMissionIDs = dedupeStrings(component)
+			}
 
-				selectedWinnerID := ""
-				maxVoteCount := 0
-				voteLeaders := []string{}
+			selectedWinnerID := ""
+			hasBundleAuthoritySignal := false
+			maxVoteCount := 0
+			voteLeaders := []string{}
+			for _, candidateMissionID := range candidateMissionIDs {
+				votes := governingMissionVotes[candidateMissionID]
+				if votes > maxVoteCount {
+					maxVoteCount = votes
+					voteLeaders = []string{candidateMissionID}
+				} else if votes > 0 && votes == maxVoteCount {
+					voteLeaders = append(voteLeaders, candidateMissionID)
+				}
+			}
+			if maxVoteCount > 0 {
+				hasBundleAuthoritySignal = true
+			}
+			if maxVoteCount > 0 && len(dedupeStrings(voteLeaders)) == 1 {
+				selectedWinnerID = voteLeaders[0]
+				authorityBasis = append(authorityBasis, "bundle_adjudication_votes")
+			}
+
+			if selectedWinnerID == "" && len(candidateMissionIDs) >= 2 {
+				type bundleAuthorityCandidate struct {
+					missionID string
+					priority  int
+					risk      int
+				}
+				candidates := []bundleAuthorityCandidate{}
 				for _, candidateMissionID := range candidateMissionIDs {
-					votes := governingMissionVotes[candidateMissionID]
-					if votes > maxVoteCount {
-						maxVoteCount = votes
-						voteLeaders = []string{candidateMissionID}
-					} else if votes > 0 && votes == maxVoteCount {
-						voteLeaders = append(voteLeaders, candidateMissionID)
-					}
-				}
-				if maxVoteCount > 0 && len(dedupeStrings(voteLeaders)) == 1 {
-					selectedWinnerID = voteLeaders[0]
-					authorityBasis = append(authorityBasis, "bundle_adjudication_votes")
-				}
-
-				if selectedWinnerID == "" && len(candidateMissionIDs) >= 2 {
-					type bundleAuthorityCandidate struct {
-						missionID string
-						priority  int
-						risk      int
-					}
-					candidates := []bundleAuthorityCandidate{}
-					for _, candidateMissionID := range candidateMissionIDs {
-						mission := missionByID[candidateMissionID]
-						candidates = append(candidates, bundleAuthorityCandidate{
-							missionID: candidateMissionID,
-							priority:  schedulerPriorityRank(stringValue(mission["priority"])),
-							risk:      schedulerRiskRank(stringValue(mission["risk_level"])),
-						})
-					}
-					sort.Slice(candidates, func(i, j int) bool {
-						if candidates[i].priority != candidates[j].priority {
-							return candidates[i].priority > candidates[j].priority
-						}
-						if candidates[i].risk != candidates[j].risk {
-							return candidates[i].risk > candidates[j].risk
-						}
-						return candidates[i].missionID < candidates[j].missionID
+					mission := missionByID[candidateMissionID]
+					candidates = append(candidates, bundleAuthorityCandidate{
+						missionID: candidateMissionID,
+						priority:  schedulerPriorityRank(stringValue(mission["priority"])),
+						risk:      schedulerRiskRank(stringValue(mission["risk_level"])),
 					})
-					best := candidates[0]
-					second := candidates[0]
-					if len(candidates) > 1 {
-						second = candidates[1]
-					}
-					hasAuthoritySignal := best.priority > 0 || best.risk > 0
-					hasUniqueTopTuple := len(candidates) == 1 || best.priority != second.priority || best.risk != second.risk
-					if hasAuthoritySignal && hasUniqueTopTuple {
-						selectedWinnerID = best.missionID
-						if best.priority != second.priority {
-							authorityBasis = append(authorityBasis, "priority")
-						}
-						if best.risk != second.risk {
-							authorityBasis = append(authorityBasis, "risk_level")
-						}
-						if len(authorityBasis) == 0 {
-							authorityBasis = append(authorityBasis, "priority", "risk_level")
-						}
-					} else if len(candidates) > 0 {
-						tiedMissionIDs := []string{}
-						for _, candidate := range candidates {
-							if candidate.priority == best.priority && candidate.risk == best.risk {
-								tiedMissionIDs = append(tiedMissionIDs, candidate.missionID)
-							}
-						}
-						governanceNotes = append(governanceNotes, fmt.Sprintf("No unique priority/risk winner exists across the multi-mission bundle roots: %s.", strings.Join(dedupeStrings(tiedMissionIDs), ", ")))
-					}
 				}
+				sort.Slice(candidates, func(i, j int) bool {
+					if candidates[i].priority != candidates[j].priority {
+						return candidates[i].priority > candidates[j].priority
+					}
+					if candidates[i].risk != candidates[j].risk {
+						return candidates[i].risk > candidates[j].risk
+					}
+					return candidates[i].missionID < candidates[j].missionID
+				})
+				best := candidates[0]
+				second := candidates[0]
+				if len(candidates) > 1 {
+					second = candidates[1]
+				}
+				hasAuthoritySignal := best.priority > 0 || best.risk > 0
+				hasUniqueTopTuple := len(candidates) == 1 || best.priority != second.priority || best.risk != second.risk
+				if hasAuthoritySignal {
+					hasBundleAuthoritySignal = true
+				}
+				if hasAuthoritySignal && hasUniqueTopTuple {
+					selectedWinnerID = best.missionID
+					if best.priority != second.priority {
+						authorityBasis = append(authorityBasis, "priority")
+					}
+					if best.risk != second.risk {
+						authorityBasis = append(authorityBasis, "risk_level")
+					}
+					if len(authorityBasis) == 0 {
+						authorityBasis = append(authorityBasis, "priority", "risk_level")
+					}
+				} else if hasAuthoritySignal {
+					tiedMissionIDs := []string{}
+					for _, candidate := range candidates {
+						if candidate.priority == best.priority && candidate.risk == best.risk {
+							tiedMissionIDs = append(tiedMissionIDs, candidate.missionID)
+						}
+					}
+					governanceNotes = append(governanceNotes, fmt.Sprintf("No unique priority/risk winner exists across candidate bundle governors: %s.", strings.Join(dedupeStrings(tiedMissionIDs), ", ")))
+				}
+			}
 
-				if selectedWinnerID != "" {
-					state = "governed"
-					governingMissionID = selectedWinnerID
-					governedMissionIDs = append(governedMissionIDs, selectedWinnerID)
-					for _, id := range component {
-						if id != selectedWinnerID {
-							losingMissionIDs = append(losingMissionIDs, id)
-						}
+			if selectedWinnerID != "" {
+				state = "governed"
+				governingMissionID = selectedWinnerID
+				governedMissionIDs = append(governedMissionIDs, selectedWinnerID)
+				for _, id := range component {
+					if id != selectedWinnerID {
+						losingMissionIDs = append(losingMissionIDs, id)
 					}
-					resolutionKind = "bundle_governor_adjudicated"
-					requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s and serialize the other overlapping missions behind it unless a council overrides the current bundle governor.", selectedWinnerID)
-					governanceNotes = append(governanceNotes, fmt.Sprintf("No explicit governing dependency exists; %s currently governs the multi-mission bundle by %s.", selectedWinnerID, strings.Join(dedupeStrings(authorityBasis), "/")))
-					governedBundleCount++
-				} else {
-					state = "escalation-required"
-					resolutionKind = "bundle_governor_required"
-					requiredAction = "Open a council or add an explicit dependency/ownership transfer to establish a governing mission before parallel execution."
-					if len(bundleRoots) > 1 {
-						governanceNotes = append(governanceNotes, "Multiple root missions still claim overlapping bundle authority without a decisive governing dependency.")
-					}
-					escalatedBundleCount++
 				}
+				resolutionKind = "bundle_governor_adjudicated"
+				requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s and serialize the other overlapping missions behind it unless a council overrides the current bundle governor.", selectedWinnerID)
+				governanceNotes = append(governanceNotes, fmt.Sprintf("No explicit governing dependency exists; %s currently governs the bundle by %s.", selectedWinnerID, strings.Join(dedupeStrings(authorityBasis), "/")))
+				governedBundleCount++
+			} else if hasBundleAuthoritySignal {
+				state = "escalation-required"
+				resolutionKind = "bundle_governor_required"
+				requiredAction = "Open a council or add an explicit dependency/ownership transfer to establish a governing mission before parallel execution."
+				if len(bundleRoots) > 1 {
+					governanceNotes = append(governanceNotes, "Multiple root missions still claim overlapping bundle authority without a decisive governing dependency.")
+				}
+				escalatedBundleCount++
 			} else {
 				state = "conflicted"
 				resolutionKind = "bundle_conflict"

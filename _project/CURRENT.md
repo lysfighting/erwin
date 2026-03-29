@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.40.0 (in progress)
+- **Version**: 0.41.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Stateful debate batch execution added)
+- **Last Session**: 2026-03-29 (Pairwise bundle governor adjudication added)
 
 ## Current Phase
 
@@ -21,6 +21,9 @@
 - **Stateful debate batch execution added**: `meetingDebatePlan` now computes `current_wave_batch_id`, `ready_wave_batch_count`, `blocked_wave_batch_count`, `resolved_wave_batch_count`, and batch-local `state/current` so the control plane can treat one debate batch as active while explicitly blocking the rest behind it
 - **Synthesis/output guard tightened**: `meetings orchestrate` now refuses to jump from `synthesis` to `output` while an open debate batch still exists, even if someone manually pushed the meeting phase forward before the controller finished the active batch
 - **Leader visibility widened again**: `meetings summary` now surfaces current/ready/blocked/resolved batch state, and `doctor` now warns when open debate obligations lack a deterministic current batch or when a meeting reaches `synthesis`/`output` while a debate batch still remains open
+- **Pairwise bundle governor adjudication added**: mission-graph authority no longer reserves priority/risk-based governor selection for only larger components; a two-mission conflicted bundle can now become governed when one mission clearly outranks the other on authority tuple
+- **Bundle escalation semantics sharpened**: conflicted bundles now remain generic `bundle_conflict` only when no meaningful authority signal exists; when authority signals exist but still fail to produce a unique governor, the control plane escalates to `bundle_governor_required` instead
+- **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves a pairwise overlapping mission bundle becomes `bundle_governor_adjudicated` without dependency, council, or selector-specificity help when one mission has a uniquely stronger priority/risk tuple
 - **Direct output closure added**: `meetings orchestrate` now advances straight from a newly synthesized council record into `output` when no synthesis gaps remain, so multi-lane, authority-resolved, and aligned councils no longer need a second orchestration pass just to leave `synthesis`
 - **Teammate smoke widened again**: `scripts/harness-teammate-smoke-test.sh` now proves auto-synthesized, verdict-adopted, authority-resolved, and aligned councils all close to `output` in the same orchestration call that materializes their governed findings
 - **Multi-lane debate batching added**: `meetingDebatePlan` now groups open route/round obligations into `wave_batches`, so one participant can receive a visible batch of same-round work across multiple conflicting claim lanes instead of only a flat list of isolated obligations

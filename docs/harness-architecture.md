@@ -589,6 +589,7 @@ This graph supports:
 
 - bundle grouping
 - bundle governors
+- pairwise governor adjudication from clear authority tuples
 - dependency-governed authority
 - selector-specificity authority
 - council-governed authority

@@ -157,6 +157,44 @@ assert_json_field "$resolved_broader_run" '"state": "completed"' "broader specif
 resolved_narrower_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$narrower_run_id" completed "Resolved narrower specificity-governed overlap smoke path.")
 assert_json_field "$resolved_narrower_run" '"state": "completed"' "narrower specificity-governed mission can be closed after adjudication coverage"
 
+pair_governor_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20014 "Harness Pair Governor A" --owns="file:docs/README.md" --allow-overlap)
+assert_json_field "$pair_governor_claim_a" '"mission_id": "issue-20014"' "pairwise governor claim A can materialize"
+pair_governor_run_a=$(printf '%s\n' "$pair_governor_claim_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+pair_governor_claim_b=$(run_in_repo bash scripts/harness-claim.sh 20015 "Harness Pair Governor B" --owns="file:docs/README.md" --allow-overlap)
+assert_json_field "$pair_governor_claim_b" '"mission_id": "issue-20015"' "pairwise governor claim B can materialize"
+pair_governor_run_b=$(printf '%s\n' "$pair_governor_claim_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+
+pair_governor_update_a=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$pair_governor_run_a"
+{
+  "priority": "P0",
+  "risk_level": "high"
+}
+EOF
+)
+assert_json_field "$pair_governor_update_a" '"priority": "P0"' "pairwise governor candidate can raise its authority tuple"
+pair_governor_update_b=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$pair_governor_run_b"
+{
+  "priority": "P2",
+  "risk_level": "low"
+}
+EOF
+)
+assert_json_field "$pair_governor_update_b" '"priority": "P2"' "pairwise governor peer can keep a lower authority tuple"
+
+graph_authority_pair_governor=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_pair_governor" '"resolution_kind": "bundle_governor_adjudicated"' "pairwise mission bundle authority can now adjudicate a governing mission without a dependency edge"
+assert_json_field "$graph_authority_pair_governor" "\"governing_mission_id\": \"issue-20014\"" "pairwise mission bundle authority anchors governance to the strongest mission"
+assert_json_field "$graph_authority_pair_governor" '"bundle_state": "governed"' "pairwise mission bundle authority marks the adjudicated pair as governed"
+assert_json_field "$graph_authority_pair_governor" '"authority_basis":' "pairwise mission bundle authority exposes why the governor won"
+resolved_pair_governor_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$pair_governor_run_a" completed "Closed pairwise governed bundle winner.")
+assert_json_field "$resolved_pair_governor_a" '"state": "completed"' "pairwise governed bundle winner can be closed"
+resolved_pair_governor_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$pair_governor_run_b" completed "Closed pairwise governed bundle peer.")
+assert_json_field "$resolved_pair_governor_b" '"state": "completed"' "pairwise governed bundle peer can be closed"
+
 multi_governor_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20008 "Harness Bundle Governor Mission" --owns="file:install-codex.sh" --allow-overlap)
 assert_json_field "$multi_governor_claim_a" '"mission_id": "issue-20008"' "first multi-mission bundle claim can materialize"
 multi_governor_run_a=$(printf '%s\n' "$multi_governor_claim_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
