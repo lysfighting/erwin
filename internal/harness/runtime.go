@@ -1432,7 +1432,7 @@ func ownershipSelectorsOverlap(leftRaw, rightRaw string) bool {
 	}
 	switch leftFamily {
 	case "anchor", "semantic":
-		return leftKind == rightKind && leftValue == rightValue
+		return leftValue == rightValue
 	case "path":
 		return pathOverlap(leftKind, leftValue, rightKind, rightValue)
 	default:

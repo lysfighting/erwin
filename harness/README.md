@@ -91,7 +91,7 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - leader-facing home/doctor views
 - first-class teammate runs with bounded assignment scope and reporting contracts
 - explicit ownership claims plus overlap guardrails for active exclusive runs
-- richer selector semantics for ownership claims, including path-family overlap between `file`, `dir`, and `module`
+- richer selector semantics for ownership claims, including path-family overlap between `file`, `dir`, `module`, and `glob`, plus semantic-family overlap between `scope` and `interface`
 - bounded ownership transfer with `move` semantics for exclusive handoff and `copy` semantics for explicitly shared selectors
 - dependency-aware waiting and declared desired state on runs and contracts
 - first-class mission objects and a durable mission graph above run attempts
