@@ -739,6 +739,7 @@ The council model includes:
 - output
 - rejected reasons
 - findings with provenance
+- direct output closure when synthesis is already ready
 
 This is the clearest place where `arch-review` directly shaped `Harness`.
 
@@ -755,6 +756,7 @@ Current capabilities include:
 - multi-lane debate wave batching
 - route obligations
 - multi-round debate planning
+- same-pass closure from synthesis to output when no synthesis gaps remain
 - summary and readiness metrics
 - same-claim authority audit
 - latest-response verdict adoption

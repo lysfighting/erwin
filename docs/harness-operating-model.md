@@ -435,6 +435,7 @@ Important clarification:
 - cross-examination is also not required when higher-authority evidence already settles the lane during independent review
 
 In those cases, the leader may move directly into synthesis with an explicit authority-aware record of why further debate is unnecessary.
+If that synthesis record is already ready for output, the same orchestration pass may close the council directly into `output` instead of requiring a second ceremonial pass just to advance the phase marker.
 
 ### `arch-review` Influence
 

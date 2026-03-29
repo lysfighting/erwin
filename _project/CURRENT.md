@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.38.0 (in progress)
+- **Version**: 0.39.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Council orchestration now closes straight to output)
+- **Last Session**: 2026-03-29 (Direct council output closure fully synced)
 
 ## Current Phase
 
