@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.58.0-prototype`
+- `adapter_version`: `0.59.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -174,6 +174,7 @@ Do not underestimate the current control-plane maturity.
 - scheduler now exposes a prioritized human-decision portfolio, including a `primary_required_human_decision`, deferred decision count, and scope/surface tallies, so leader-facing surfaces can reason about more than one pending governed decision at once
 - mission classifications now mirror that human-decision queue through `human_decision_queue_position` and `primary_human_decision`, so leader-facing mission surfaces can see which pending decision is currently first-class
 - lower-priority governed decisions now also emit explicit `defer_pending_primary_human_decision` reschedule actions, so the queue influences runtime behavior instead of remaining a read-only annotation
+- scheduler now retains a sticky primary human-decision packet across otherwise-tied portfolio passes, surfacing `decision_selection_policy` and `previous_primary_human_decision_key` so the leader can see when the control plane is intentionally holding decision focus steady
 - scheduler now retains a sticky foreground mission across otherwise-tied scheduling passes, surfacing `selection_policy` and `previous_foreground_mission_id` so the leader can see when the control plane is intentionally preferring stability over freshness-only churn
 - scheduler now treats fresh coordination/dependency/blocker signals as real rescheduling triggers instead of only including them in the snapshot payload
 - scheduler now escalates stale runs, expired signals, and stale meetings into explicit `maintenance_actions` instead of leaving them only to `doctor`

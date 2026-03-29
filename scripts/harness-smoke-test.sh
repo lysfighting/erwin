@@ -437,6 +437,81 @@ assert_json_field "$resolved_multi_escalation_b" '"state": "completed"' "second 
 resolved_multi_escalation_c=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_c" completed "Closed escalated multi-mission bundle member.")
 assert_json_field "$resolved_multi_escalation_c" '"state": "completed"' "third escalation bundle member can be closed"
 
+section "Sticky decision portfolio"
+sticky_decision_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20026 "Harness Sticky Decision A" --owns="file:docs/README.md")
+assert_json_field "$sticky_decision_claim_a" '"mission_id": "issue-20026"' "sticky decision mission A can materialize"
+sticky_decision_run_a=$(printf '%s\n' "$sticky_decision_claim_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+sticky_decision_signal_a=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-sticky-decision-a",
+  "kind": "requires_meeting",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$sticky_decision_run_a",
+  "mission_id": "issue-20026",
+  "applies_to": ["issue-20026"],
+  "scope_type": "mission",
+  "title": "Sticky decision A",
+  "summary": "First mission-scoped decision packet in the portfolio.",
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T16:00:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$sticky_decision_signal_a" '"signal_id": "sig-smoke-sticky-decision-a"' "sticky decision signal A can be emitted directly"
+sticky_decision_first_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$sticky_decision_first_schedule" '"decision_selection_policy": "portfolio_priority_risk"' "single decision portfolio starts with the default decision-selection policy"
+assert_json_field "$sticky_decision_first_schedule" '"required_human_decision_count": 1' "single decision portfolio starts with exactly one human decision"
+assert_json_field "$sticky_decision_first_schedule" "\"mission_id\": \"issue-20026\"" "single decision portfolio keeps mission A as the primary packet"
+sticky_decision_claim_b=$(run_in_repo bash scripts/harness-claim.sh 20027 "Harness Sticky Decision B" --owns="file:docs/harness-public-contract.md")
+assert_json_field "$sticky_decision_claim_b" '"mission_id": "issue-20027"' "sticky decision mission B can materialize"
+sticky_decision_run_b=$(printf '%s\n' "$sticky_decision_claim_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+sticky_decision_signal_b=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-sticky-decision-b",
+  "kind": "requires_meeting",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$sticky_decision_run_b",
+  "mission_id": "issue-20027",
+  "applies_to": ["issue-20027"],
+  "scope_type": "mission",
+  "title": "Sticky decision B",
+  "summary": "Second mission-scoped decision packet with the same decision class.",
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T16:05:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$sticky_decision_signal_b" '"signal_id": "sig-smoke-sticky-decision-b"' "sticky decision signal B can be emitted directly"
+sticky_decision_second_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$sticky_decision_second_schedule" '"decision_selection_policy": "sticky_primary_human_decision"' "decision portfolio retains the previous primary packet when a same-class peer arrives"
+assert_json_field "$sticky_decision_second_schedule" '"previous_primary_human_decision_key": "mission:issue-20026"' "decision portfolio records the previous primary decision key"
+assert_json_field "$sticky_decision_second_schedule" '"required_human_decision_count": 2' "decision portfolio sees both same-class mission decisions"
+assert_json_field "$sticky_decision_second_schedule" "\"mission_id\": \"issue-20026\"" "decision portfolio keeps mission A as the primary packet under a same-class tie"
+assert_json_field "$sticky_decision_second_schedule" '"human_decision_queue_position": 2' "decision portfolio still places the new same-class peer behind the retained primary packet"
+home_output_sticky_decision=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_output_sticky_decision" '"scheduler_decision_selection_policy": "sticky_primary_human_decision"' "home mirrors the sticky primary decision policy"
+assert_json_field "$home_output_sticky_decision" '"scheduler_previous_primary_human_decision_key": "mission:issue-20026"' "home mirrors the previous primary decision key"
+resolved_sticky_decision_signal_a=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-sticky-decision-a resolved "Sticky decision A covered.")
+assert_json_field "$resolved_sticky_decision_signal_a" '"state": "resolved"' "sticky decision signal A can be resolved after portfolio coverage"
+resolved_sticky_decision_signal_b=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-sticky-decision-b resolved "Sticky decision B covered.")
+assert_json_field "$resolved_sticky_decision_signal_b" '"state": "resolved"' "sticky decision signal B can be resolved after portfolio coverage"
+resolved_sticky_decision_run_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$sticky_decision_run_a" completed "Closed sticky decision mission A.")
+assert_json_field "$resolved_sticky_decision_run_a" '"state": "completed"' "sticky decision mission A can be closed after portfolio coverage"
+resolved_sticky_decision_run_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$sticky_decision_run_b" completed "Closed sticky decision mission B.")
+assert_json_field "$resolved_sticky_decision_run_b" '"state": "completed"' "sticky decision mission B can be closed after portfolio coverage"
+
 parallel_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20004 "Harness Parallel Mission" --owns="file:go.mod")
 assert_json_field "$parallel_claim_output" '"mission_id": "issue-20004"' "independent parallel claim can materialize"
 parallel_run_id=$(printf '%s\n' "$parallel_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)

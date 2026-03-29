@@ -7030,7 +7030,31 @@ func decisionScopeRank(scope string) int {
 	}
 }
 
-func sortSchedulerHumanDecisions(decisions []any) []any {
+func schedulerDecisionKey(decision map[string]any) string {
+	scope := firstNonBlank(stringValue(decision["decision_scope"]), "mission")
+	if scope == "bundle" {
+		if bundleID := strings.TrimSpace(stringValue(decision["bundle_id"])); bundleID != "" {
+			return "bundle:" + bundleID
+		}
+	}
+	if missionID := strings.TrimSpace(stringValue(decision["mission_id"])); missionID != "" {
+		return "mission:" + missionID
+	}
+	return ""
+}
+
+func schedulerDecisionClass(decision map[string]any) string {
+	return fmt.Sprintf(
+		"%d|%d|%d|%d|%t",
+		decisionSurfaceRank(stringValue(decision["recommended_decision_surface"])),
+		decisionScopeRank(stringValue(decision["decision_scope"])),
+		schedulerPriorityRank(stringValue(decision["priority"])),
+		schedulerRiskRank(stringValue(decision["effective_risk_level"])),
+		boolValue(decision["release_adjacent"]),
+	)
+}
+
+func sortSchedulerHumanDecisions(decisions []any, previousPrimaryDecisionKey string) []any {
 	sorted := append([]any{}, decisions...)
 	sort.Slice(sorted, func(i, j int) bool {
 		left, _ := toMap(sorted[i])
@@ -7057,6 +7081,16 @@ func sortSchedulerHumanDecisions(decisions []any) []any {
 		}
 		if boolValue(left["release_adjacent"]) != boolValue(right["release_adjacent"]) {
 			return boolValue(left["release_adjacent"])
+		}
+		if previousPrimaryDecisionKey != "" {
+			leftKey := schedulerDecisionKey(left)
+			rightKey := schedulerDecisionKey(right)
+			if leftKey == previousPrimaryDecisionKey && rightKey != previousPrimaryDecisionKey {
+				return true
+			}
+			if rightKey == previousPrimaryDecisionKey && leftKey != previousPrimaryDecisionKey {
+				return false
+			}
 		}
 		leftUpdated := stringValue(left["updated_at"])
 		rightUpdated := stringValue(right["updated_at"])
@@ -7113,6 +7147,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	if len(previousSelectedMissionIDs) > 0 {
 		previousForegroundMissionID = previousSelectedMissionIDs[0]
 	}
+	previousPrimaryDecision, _ := toMap(previousSchedulerSnapshot["primary_required_human_decision"])
+	previousPrimaryDecisionKey := schedulerDecisionKey(previousPrimaryDecision)
 	maxParallelRuns := intValue(getKey(profile, "profile.max_parallel_runs", 0))
 	if maxParallelRuns <= 0 {
 		maxParallelRuns = 1
@@ -7578,7 +7614,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		entryByMission[missionID] = entry
 		missionOrder = append(missionOrder, missionID)
 	}
-	requiredHumanDecisions := sortSchedulerHumanDecisions(aggregateSchedulerHumanDecisions(rawRequiredHumanDecisions))
+	requiredHumanDecisions := sortSchedulerHumanDecisions(aggregateSchedulerHumanDecisions(rawRequiredHumanDecisions), previousPrimaryDecisionKey)
 	decisionQueuePositionByKey, primaryDecisionByKey := schedulerDecisionQueueMaps(requiredHumanDecisions)
 
 	for _, missionID := range missionOrder {
@@ -7894,8 +7930,20 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		decisionSurfaceTally[surface]++
 	}
 	primaryRequiredHumanDecision := map[string]any{}
+	decisionSelectionPolicy := "portfolio_priority_risk"
 	if len(requiredHumanDecisions) > 0 {
 		primaryRequiredHumanDecision, _ = toMap(requiredHumanDecisions[0])
+		primaryKey := schedulerDecisionKey(primaryRequiredHumanDecision)
+		if previousPrimaryDecisionKey != "" && primaryKey == previousPrimaryDecisionKey && len(requiredHumanDecisions) > 1 {
+			primaryClass := schedulerDecisionClass(primaryRequiredHumanDecision)
+			for _, item := range requiredHumanDecisions[1:] {
+				peer, _ := toMap(item)
+				if schedulerDecisionClass(peer) == primaryClass {
+					decisionSelectionPolicy = "sticky_primary_human_decision"
+					break
+				}
+			}
+		}
 	}
 	switch {
 	case councilDecisionCount > 0 && len(selectedMissionIDs) > 0:
@@ -7947,6 +7995,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"council_decision_count":                councilDecisionCount,
 		"required_human_decision_scope_tally":   decisionScopeTally,
 		"required_human_decision_surface_tally": decisionSurfaceTally,
+		"decision_selection_policy":             decisionSelectionPolicy,
+		"previous_primary_human_decision_key":   previousPrimaryDecisionKey,
 		"primary_required_human_decision":       primaryRequiredHumanDecision,
 		"required_human_decisions":              requiredHumanDecisions,
 		"maintenance_action_count":              len(maintenanceActions),
@@ -8266,6 +8316,8 @@ func cmdHome(args []string) error {
 		"scheduler_bundle_role_tally":                     cloneValue(getKey(scheduler, "bundle_role_tally", map[string]any{})),
 		"scheduler_required_human_decision_scope_tally":   cloneValue(getKey(scheduler, "required_human_decision_scope_tally", map[string]any{})),
 		"scheduler_required_human_decision_surface_tally": cloneValue(getKey(scheduler, "required_human_decision_surface_tally", map[string]any{})),
+		"scheduler_decision_selection_policy":             stringValue(scheduler["decision_selection_policy"]),
+		"scheduler_previous_primary_human_decision_key":   stringValue(scheduler["previous_primary_human_decision_key"]),
 		"scheduler_primary_required_human_decision":       cloneValue(getKey(scheduler, "primary_required_human_decision", map[string]any{})),
 		"scheduler_maintenance_action_tally":              cloneValue(getKey(scheduler, "maintenance_action_tally", map[string]any{})),
 		"scheduler_selected_mission_ids":                  cloneValue(toList(scheduler["selected_mission_ids"])),

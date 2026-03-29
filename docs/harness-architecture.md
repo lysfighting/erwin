@@ -612,6 +612,7 @@ That means:
 - the governing mission can remain foreground-runnable
 - governed losing missions can be deferred behind the current bundle governor
 - escalation-required bundles can surface as explicit human decisions instead of generic overlap noise
+- the scheduler can now retain a sticky primary human-decision packet across otherwise-tied portfolio passes, preferring decision stability over freshness-only churn when the decision class still matches
 - parallel widening now requires explicit justification when execution policy says the control plane should reduce parallelism rather than guess
 - the scheduler can now retain a sticky foreground mission across otherwise-tied passes, preferring stability over timestamp churn when priority, effective risk, and release posture still match
 - a runnable `P0` mission now serializes the foreground batch even when other runnable missions are otherwise isolated
