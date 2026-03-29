@@ -11,6 +11,7 @@
 | [drive-showcase-v2-architecture.md](drive-showcase-v2-architecture.md) | Showcase V2 architecture (4-Act structure) |
 | [erwin-skills-incubator-architecture.md](erwin-skills-incubator-architecture.md) | Skills factory architecture |
 | [harness-distribution-strategy.md](harness-distribution-strategy.md) | Distribution tiers and runtime bundle strategy for Harness |
+| [harness-architecture.md](harness-architecture.md) | Single authoritative architecture narrative for Harness |
 | [harness-public-contract.md](harness-public-contract.md) | Durable public contract for the Codex-native orchestration harness package |
 | [harness-session-handoff.md](harness-session-handoff.md) | Durable fresh-session handoff and state-persistence entrypoint for Harness |
 | [version-management-architecture.md](version-management-architecture.md) | Version management infrastructure |

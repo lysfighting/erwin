@@ -8,7 +8,7 @@
 
 - **Version**: 0.34.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Harness debate verdict adoption added)
+- **Last Session**: 2026-03-29 (Harness single architecture doc added)
 
 ## Current Phase
 
@@ -34,6 +34,7 @@
 - **Exclusion-aware overlap accounting added**: leader-facing overlap detection in `home` now respects ownership exclusions, so split parent/child delegation does not appear as a false overlap once the child subtree has been explicitly carved out
 - **Teammate smoke widened for split delegation**: `scripts/harness-teammate-smoke-test.sh` now proves the full split-transfer path, including temporary child-owner retirement, superseded-signal reconciliation, source exclusion recording, target child acquisition, and clean contract alignment on both runs
 - **Debate verdict adoption added**: auto-synthesis now honors a governed `latest_response_prevails` route verdict, so a same-authority debate lane can materialize directly into accepted output once the latest bounded reply wins
+- **Single architecture doc added**: `docs/harness-architecture.md` now serves as the complete design overview for `Harness`, unifying identity, lineage, retained protocol semantics, dropped historical baggage, control-plane model, Go runtime rationale, current capability surface, and remaining expansion gaps in one place instead of forcing fresh sessions to reconstruct the architecture from scattered docs
 - **Teammate smoke widened for verdict adoption**: `scripts/harness-teammate-smoke-test.sh` now proves a second-round same-authority debate lane resolves as `latest_response_prevails` and lands as accepted output without unresolved action debt
 - **Debate route obligations added**: `meetings orchestrate` now materializes claim-lane route obligations with assigned bounded challenger roles/runs, while `meetings summary` and `doctor` surface resolved vs open debate routes directly instead of only reporting routed/unrouted claims after the fact
 - **Live worktree absence promoted into authority audit**: `runs authority-audit` now treats a missing provisioned worktree as first-class live-state drift (`live_worktree_missing`) instead of relying only on `doctor` to notice the broken path
@@ -144,7 +145,7 @@
    - B. Decide whether remaining authority work should extend beyond the new run/mission/mission-graph plus dependency-governed ownership, bundle-aware grouping, and bundle-governor rules into broader multi-mission bundle adjudication, or whether that now belongs to future product layers
    - C. Continue pushing council behavior from auto-synthesis, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
    - D. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
-   - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `docs/harness-public-contract.md`, `docs/harness-session-handoff.md`, `harness/adapter-manifest.yml`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, recent `_project/sessions/2026-03-29-*.md` logs, and inspect recent commits on `codex/harness-release-lifecycle`
+   - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `docs/harness-architecture.md`, `docs/harness-public-contract.md`, `docs/harness-session-handoff.md`, `harness/adapter-manifest.yml`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, recent `_project/sessions/2026-03-29-*.md` logs, and inspect recent commits on `codex/harness-release-lifecycle`
 3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0
 
 ## Implementation Roadmap
