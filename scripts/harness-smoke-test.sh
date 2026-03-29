@@ -137,6 +137,119 @@ assert_json_field "$scheduler_dependency_output" '"action_kind": "move_to_waitin
 resolved_dependent_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$dependent_run_id" completed "Resolved dependency-governed overlap smoke path.")
 assert_json_field "$resolved_dependent_run" '"state": "completed"' "dependent overlapping mission can be closed after adjudication coverage"
 
+mkdir -p "$TEST_REPO/docs/release"
+touch "$TEST_REPO/docs/release/CHANGELOG.md"
+broader_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20005 "Harness Broad Release Docs Mission" --owns="dir:docs/release" --allow-overlap)
+assert_json_field "$broader_claim_output" '"mission_id": "issue-20005"' "broader release-doc mission can claim a directory boundary under explicit overlap allowance"
+broader_run_id=$(printf '%s\n' "$broader_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+narrower_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20006 "Harness Narrow Release Changelog Mission" --owns="file:docs/release/CHANGELOG.md" --allow-overlap)
+assert_json_field "$narrower_claim_output" '"mission_id": "issue-20006"' "narrow release-doc mission can claim a more specific file boundary under explicit overlap allowance"
+narrower_run_id=$(printf '%s\n' "$narrower_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+graph_authority_specificity=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_specificity" '"resolution_kind": "selector_specificity_governed_mission_ownership"' "mission graph authority adjudicates broader-vs-narrower mission overlap by selector specificity"
+assert_json_field "$graph_authority_specificity" "\"winning_source\": \"mission:issue-20006\"" "mission graph authority keeps the more specific mission as the selector winner"
+assert_json_field "$graph_authority_specificity" "\"losing_source\": \"mission:issue-20005\"" "mission graph authority marks the broader mission as losing the shared selector boundary"
+assert_json_field "$graph_authority_specificity" '"resolution_kind": "single_winner_governed_bundle"' "mission graph authority upgrades a specificity-resolved bundle into a single-winner governed bundle"
+assert_json_field "$graph_authority_specificity" "\"governing_mission_id\": \"issue-20006\"" "mission graph authority exposes the specific governing mission even without a dependency edge"
+assert_json_field "$graph_authority_specificity" "\"required_action\": \"Keep bundle authority anchored to issue-20006, and narrow or transfer broader overlapping missions before widening execution.\"" "mission graph authority gives the specificity-governed bundle a concrete leader-facing action"
+resolved_broader_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$broader_run_id" completed "Resolved broader specificity-governed overlap smoke path.")
+assert_json_field "$resolved_broader_run" '"state": "completed"' "broader specificity-governed mission can be closed after adjudication coverage"
+resolved_narrower_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$narrower_run_id" completed "Resolved narrower specificity-governed overlap smoke path.")
+assert_json_field "$resolved_narrower_run" '"state": "completed"' "narrower specificity-governed mission can be closed after adjudication coverage"
+
+multi_governor_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20008 "Harness Bundle Governor Mission" --owns="file:install-codex.sh" --allow-overlap)
+assert_json_field "$multi_governor_claim_a" '"mission_id": "issue-20008"' "first multi-mission bundle claim can materialize"
+multi_governor_run_a=$(printf '%s\n' "$multi_governor_claim_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+multi_governor_claim_b=$(run_in_repo bash scripts/harness-claim.sh 20009 "Harness Bundle Governor Peer" --owns="file:install-codex.sh" --allow-overlap)
+assert_json_field "$multi_governor_claim_b" '"mission_id": "issue-20009"' "second multi-mission bundle claim can materialize"
+multi_governor_run_b=$(printf '%s\n' "$multi_governor_claim_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+multi_governor_claim_c=$(run_in_repo bash scripts/harness-claim.sh 20010 "Harness Bundle Governor Peer 2" --owns="file:install-codex.sh" --allow-overlap)
+assert_json_field "$multi_governor_claim_c" '"mission_id": "issue-20010"' "third multi-mission bundle claim can materialize"
+multi_governor_run_c=$(printf '%s\n' "$multi_governor_claim_c" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+
+multi_governor_update_a=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$multi_governor_run_a"
+{
+  "priority": "P0",
+  "risk_level": "high"
+}
+EOF
+)
+assert_json_field "$multi_governor_update_a" '"priority": "P0"' "multi-mission bundle governor can raise its priority"
+multi_governor_update_b=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$multi_governor_run_b"
+{
+  "priority": "P2",
+  "risk_level": "low"
+}
+EOF
+)
+assert_json_field "$multi_governor_update_b" '"priority": "P2"' "multi-mission bundle peer can keep a lower authority tuple"
+multi_governor_update_c=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$multi_governor_run_c"
+{
+  "priority": "P2",
+  "risk_level": "low"
+}
+EOF
+)
+assert_json_field "$multi_governor_update_c" '"priority": "P2"' "third multi-mission bundle peer can keep a lower authority tuple"
+
+graph_authority_multi_governor=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_multi_governor" '"resolution_kind": "bundle_governor_adjudicated"' "multi-mission bundle authority can adjudicate a bundle governor without a dependency edge"
+assert_json_field "$graph_authority_multi_governor" '"bundle_state": "governed"' "multi-mission bundle authority marks the adjudicated bundle as governed"
+assert_json_field "$graph_authority_multi_governor" "\"governing_mission_id\": \"issue-20008\"" "multi-mission bundle authority anchors governance to the strongest authority tuple"
+assert_json_field "$graph_authority_multi_governor" '"authority_basis":' "multi-mission bundle authority exposes why the governor won"
+assert_json_field "$graph_authority_multi_governor" '"losing_mission_ids":' "multi-mission bundle authority records losing missions for the adjudicated bundle"
+
+resolved_multi_governor_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_governor_run_a" completed "Closed governed multi-mission bundle winner.")
+assert_json_field "$resolved_multi_governor_a" '"state": "completed"' "governed multi-mission bundle winner can be closed"
+resolved_multi_governor_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_governor_run_b" completed "Closed governed multi-mission bundle peer.")
+assert_json_field "$resolved_multi_governor_b" '"state": "completed"' "governed multi-mission bundle peer can be closed"
+resolved_multi_governor_c=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_governor_run_c" completed "Closed governed multi-mission bundle peer.")
+assert_json_field "$resolved_multi_governor_c" '"state": "completed"' "third governed multi-mission bundle peer can be closed"
+
+multi_escalation_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20011 "Harness Bundle Escalation A" --owns="file:harness/README.md" --allow-overlap)
+assert_json_field "$multi_escalation_claim_a" '"mission_id": "issue-20011"' "first escalation bundle claim can materialize"
+multi_escalation_run_a=$(printf '%s\n' "$multi_escalation_claim_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+multi_escalation_claim_b=$(run_in_repo bash scripts/harness-claim.sh 20012 "Harness Bundle Escalation B" --owns="file:harness/README.md" --allow-overlap)
+assert_json_field "$multi_escalation_claim_b" '"mission_id": "issue-20012"' "second escalation bundle claim can materialize"
+multi_escalation_run_b=$(printf '%s\n' "$multi_escalation_claim_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+multi_escalation_claim_c=$(run_in_repo bash scripts/harness-claim.sh 20013 "Harness Bundle Escalation C" --owns="file:harness/README.md" --allow-overlap)
+assert_json_field "$multi_escalation_claim_c" '"mission_id": "issue-20013"' "third escalation bundle claim can materialize"
+multi_escalation_run_c=$(printf '%s\n' "$multi_escalation_claim_c" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+
+for escalated_run in "$multi_escalation_run_a" "$multi_escalation_run_b" "$multi_escalation_run_c"; do
+  escalated_update=$(
+    cd "$TEST_REPO" &&
+      cat <<EOF | bash scripts/harness-runs.sh update "$escalated_run"
+{
+  "priority": "P1",
+  "risk_level": "medium"
+}
+EOF
+  )
+  assert_json_field "$escalated_update" '"priority": "P1"' "escalation bundle run can keep an equal authority tuple"
+done
+
+graph_authority_multi_escalation=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_multi_escalation" '"resolution_kind": "bundle_governor_required"' "multi-mission bundle authority escalates when no unique governor exists"
+assert_json_field "$graph_authority_multi_escalation" '"bundle_state": "escalation-required"' "multi-mission bundle authority marks tied bundles as escalation-required"
+assert_json_field "$graph_authority_multi_escalation" '"escalated_bundle_count": 1' "mission graph authority counts escalation-required bundles separately"
+assert_json_field "$graph_authority_multi_escalation" '"required_action": "Open a council or add an explicit dependency/ownership transfer to establish a governing mission before parallel execution."' "escalation-required bundles get a leader-facing next action"
+home_output_multi_escalation=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_output_multi_escalation" '"mission_escalated_bundle_count": 1' "home surfaces escalation-required mission bundles"
+
+resolved_multi_escalation_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_a" completed "Closed escalated multi-mission bundle member.")
+assert_json_field "$resolved_multi_escalation_a" '"state": "completed"' "first escalation bundle member can be closed"
+resolved_multi_escalation_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_b" completed "Closed escalated multi-mission bundle member.")
+assert_json_field "$resolved_multi_escalation_b" '"state": "completed"' "second escalation bundle member can be closed"
+resolved_multi_escalation_c=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_c" completed "Closed escalated multi-mission bundle member.")
+assert_json_field "$resolved_multi_escalation_c" '"state": "completed"' "third escalation bundle member can be closed"
+
 parallel_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20004 "Harness Parallel Mission" --owns="file:go.mod")
 assert_json_field "$parallel_claim_output" '"mission_id": "issue-20004"' "independent parallel claim can materialize"
 parallel_run_id=$(printf '%s\n' "$parallel_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
@@ -146,6 +259,26 @@ assert_json_field "$scheduler_parallel_output" '"selected_mission_count": 2' "sc
 assert_json_field "$scheduler_parallel_output" '"mission_id": "issue-20004"' "scheduler includes the independent parallel mission in the batch"
 resolved_parallel_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$parallel_run_id" completed "Resolved parallel scheduling smoke path.")
 assert_json_field "$resolved_parallel_run" '"state": "completed"' "independent parallel mission can be closed after scheduling coverage"
+
+section "Council-governed mission graph authority"
+council_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Resolve the overlapping release-note ownership boundary before widening execution.")
+assert_json_field "$council_meeting_output" '"state": "active"' "drive meeting materializes an active council on the root mission"
+council_meeting_id=$(printf '%s\n' "$council_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+council_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20007 "Harness Council Governed Mission" --owns="file:CHANGELOG.md" --allow-overlap)
+assert_json_field "$council_claim_output" '"mission_id": "issue-20007"' "a second overlapping mission can materialize under an active council anchor"
+council_run_id=$(printf '%s\n' "$council_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+graph_authority_council=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_council" '"cross_mission_conflict_count": 0' "mission graph authority treats a single active council anchor as governed rather than unresolved conflict"
+assert_json_field "$graph_authority_council" '"cross_mission_adjudication_count": 1' "mission graph authority records one council-governed mission adjudication"
+assert_json_field "$graph_authority_council" '"governed_bundle_count": 1' "mission graph authority reports one governed bundle under council control"
+assert_json_field "$graph_authority_council" '"resolution_kind": "council_governed_bundle"' "mission graph authority gives the council-governed bundle a distinct bundle-level resolution kind"
+assert_json_field "$graph_authority_council" '"resolution_kind": "council_governed_mission_ownership"' "mission graph authority explains the council-governed ownership verdict"
+assert_json_field "$graph_authority_council" "\"governing_mission_id\": \"issue-20001\"" "mission graph authority keeps bundle control on the council-host mission"
+assert_json_field "$graph_authority_council" "\"required_action\": \"Keep bundle authority anchored to issue-20001 until its active council conclusions are adopted.\"" "mission graph authority tells the leader to keep authority on the active council host until adoption"
+resolved_council_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$council_run_id" completed "Resolved council-governed overlap smoke path.")
+assert_json_field "$resolved_council_run" '"state": "completed"' "council-governed overlapping mission can be closed after authority coverage"
+closed_council_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$run_id" "$council_meeting_id" "Council-governed overlap resolved.")
+assert_json_field "$closed_council_meeting" '"state": "closed"' "council-governed meeting can close cleanly after bundle authority coverage"
 
 section "Contract authority"
 (

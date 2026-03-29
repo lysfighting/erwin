@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.36.0 (in progress)
+- **Version**: 0.37.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Harness scheduler baseline added)
+- **Last Session**: 2026-03-29 (Selector-specific bundle authority added)
 
 ## Current Phase
 
@@ -23,6 +23,7 @@
 - **Release-adjacent scheduling tightened**: scheduler serialization now keys off real release-gate evidence instead of template-default `unknown` review/check states, so isolated ready missions can widen into governed parallel batches instead of being accidentally serialized
 - **Leader home widened**: `home` now surfaces scheduler execution mode, selected mission batch size, classification tally, and scheduler-derived next action so the leader can reason from durable control-plane state instead of ad hoc heuristics alone
 - **Canonical docs synced with scheduler reality**: the operating-model, architecture, public-contract, and handoff docs now treat scheduler snapshots and execution-mode selection as present runtime behavior rather than purely future aspiration
+- **Selector-specific bundle adjudication added**: mission-graph authority can now let a narrower ownership selector govern a broader overlapping mission without an explicit dependency edge, producing `selector_specificity_governed_mission_ownership`, `single_winner_governed_bundle`, and a concrete leader-facing `required_action` instead of dropping every such case into `bundle_conflict`
 - **Smoke coverage widened again**: core smoke now proves solo scheduling, dependency-blocked reschedule hints, and governed parallel batches, while teammate smoke proves `managed_delegation` scheduling for a leader mission with bounded helper runs
 
 - **Authority-resolved council lanes added**: `meetings orchestrate` now recognizes when a higher-authority support/challenge lane already outranks its opponent during independent review, records a governed `higher_authority_prevails` route verdict, and advances directly into synthesis instead of forcing unnecessary cross-examination

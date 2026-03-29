@@ -1476,6 +1476,39 @@ func selectorsConflict(leftClaim string, leftExclusions []string, rightClaim str
 	return true
 }
 
+func moreSpecificSelectorWinner(leftRaw, rightRaw string) (string, bool) {
+	left := selectorRecordFor(leftRaw)
+	right := selectorRecordFor(rightRaw)
+	leftFamily := stringValue(left["family"])
+	rightFamily := stringValue(right["family"])
+	leftKind := stringValue(left["kind"])
+	rightKind := stringValue(right["kind"])
+	if leftFamily == "" || rightFamily == "" || leftFamily != rightFamily {
+		return "", false
+	}
+	if strings.TrimSpace(leftRaw) == strings.TrimSpace(rightRaw) {
+		return "", false
+	}
+	if leftFamily == "path" {
+		if leftKind == "file" && rightKind != "file" && ownershipSelectorsOverlap(leftRaw, rightRaw) {
+			return "left", true
+		}
+		if rightKind == "file" && leftKind != "file" && ownershipSelectorsOverlap(leftRaw, rightRaw) {
+			return "right", true
+		}
+	}
+	leftContainsRight := selectorContains(leftRaw, rightRaw)
+	rightContainsLeft := selectorContains(rightRaw, leftRaw)
+	switch {
+	case leftContainsRight && !rightContainsLeft:
+		return "right", true
+	case rightContainsLeft && !leftContainsRight:
+		return "left", true
+	default:
+		return "", false
+	}
+}
+
 func pathOverlap(leftKind, leftValue, rightKind, rightValue string) bool {
 	if leftValue == "" || rightValue == "" {
 		return false
@@ -2463,6 +2496,45 @@ func missionDependsOnTarget(missionRegistry map[string]any, missionID, targetID 
 	return false
 }
 
+func meetingActivityByMission(registry map[string]any) (map[string]int, map[string]int) {
+	activeMeetingCountByMission := map[string]int{}
+	openMeetingActionCountByMission := map[string]int{}
+	runMissionByID := map[string]string{}
+	for _, item := range toList(registry["runs"]) {
+		run, _ := toMap(item)
+		runID := strings.TrimSpace(stringValue(run["run_id"]))
+		missionID := strings.TrimSpace(stringValue(run["mission_id"]))
+		if runID != "" && missionID != "" {
+			runMissionByID[runID] = missionID
+		}
+	}
+	for _, item := range listMeetings(true) {
+		meeting, _ := toMap(item)
+		missionID := strings.TrimSpace(stringValue(meeting["mission_id"]))
+		if missionID == "" {
+			missionID = runMissionByID[strings.TrimSpace(stringValue(meeting["run_id"]))]
+		}
+		if missionID == "" {
+			continue
+		}
+		if stringValue(meeting["state"]) == "active" {
+			activeMeetingCountByMission[missionID]++
+		}
+		for _, actionItem := range toList(meeting["action_items"]) {
+			actionMap, ok := toMap(actionItem)
+			if ok && stringValue(actionMap["state"]) != "" && stringValue(actionMap["state"]) != "open" {
+				continue
+			}
+			summary := textValue(actionItem)
+			if summary == "" || stringValue(meeting["state"]) != "active" {
+				continue
+			}
+			openMeetingActionCountByMission[missionID]++
+		}
+	}
+	return activeMeetingCountByMission, openMeetingActionCountByMission
+}
+
 func syncMissionsFromRegistry(registry map[string]any) error {
 	templateRoot, _ := toMap(loadData(missionTemplatePath(), map[string]any{}))
 	template, _ := toMap(templateRoot["mission"])
@@ -2776,6 +2848,7 @@ func missionAuthorityAudit(mission map[string]any, registry map[string]any) map[
 
 func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[string]any, includeInactive bool) map[string]any {
 	missions := []map[string]any{}
+	missionByID := map[string]map[string]any{}
 	for _, item := range toList(missionRegistry["missions"]) {
 		mission, _ := toMap(item)
 		if len(mission) == 0 {
@@ -2783,6 +2856,10 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		}
 		if includeInactive || activeMission(mission) {
 			missions = append(missions, mission)
+			missionID := strings.TrimSpace(stringValue(mission["mission_id"]))
+			if missionID != "" {
+				missionByID[missionID] = mission
+			}
 		}
 	}
 	sort.Slice(missions, func(i, j int) bool {
@@ -2790,6 +2867,7 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		right := stringValue(missions[j]["mission_id"])
 		return left < right
 	})
+	activeMeetingCountByMission, openMeetingActionCountByMission := meetingActivityByMission(registry)
 
 	missionAudits := []any{}
 	missionIDs := []string{}
@@ -2848,12 +2926,32 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			leftDependsOnRight := missionDependsOnTarget(missionRegistry, leftID, rightID, map[string]bool{})
 			rightDependsOnLeft := missionDependsOnTarget(missionRegistry, rightID, leftID, map[string]bool{})
 			shared := []string{}
+			decisiveWinnerID := ""
+			decisiveSelectorRefs := []string{}
+			unresolvedSelectorRefs := []string{}
 			leftExclusions := ownershipExclusions(leftMission)
 			rightExclusions := ownershipExclusions(rightMission)
 			for _, leftClaim := range ownershipClaims(leftMission) {
 				for _, rightClaim := range ownershipClaims(rightMission) {
 					if selectorsConflict(leftClaim, leftExclusions, rightClaim, rightExclusions) {
-						shared = append(shared, leftClaim+"~"+rightClaim)
+						selectorRef := leftClaim + "~" + rightClaim
+						shared = append(shared, selectorRef)
+						if winner, ok := moreSpecificSelectorWinner(leftClaim, rightClaim); ok {
+							winnerMissionID := leftID
+							if winner == "right" {
+								winnerMissionID = rightID
+							}
+							if decisiveWinnerID == "" {
+								decisiveWinnerID = winnerMissionID
+							}
+							if decisiveWinnerID == winnerMissionID {
+								decisiveSelectorRefs = append(decisiveSelectorRefs, selectorRef)
+							} else {
+								unresolvedSelectorRefs = append(unresolvedSelectorRefs, selectorRef)
+							}
+							continue
+						}
+						unresolvedSelectorRefs = append(unresolvedSelectorRefs, selectorRef)
 					}
 				}
 			}
@@ -2896,8 +2994,61 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 				})
 				continue
 			}
+			leftCouncilAnchored := activeMeetingCountByMission[leftID] > 0 || openMeetingActionCountByMission[leftID] > 0
+			rightCouncilAnchored := activeMeetingCountByMission[rightID] > 0 || openMeetingActionCountByMission[rightID] > 0
+			switch {
+			case leftCouncilAnchored && !rightCouncilAnchored:
+				addBundleEdge(leftID, rightID, "council")
+				addBundleEdge(leftID, rightID, "council_governed_ownership")
+				crossMissionAdjudications = append(crossMissionAdjudications, map[string]any{
+					"claim_ref":       "mission_ownership_boundary",
+					"resolution_kind": "council_governed_mission_ownership",
+					"source_ref":      "mission:" + leftID,
+					"winning_source":  "mission:" + leftID,
+					"losing_source":   "mission:" + rightID,
+					"authority_level": "L2",
+					"mission_ids":     stringListToAny([]string{leftID, rightID}),
+					"selector_refs":   stringListToAny(dedupeStrings(shared)),
+					"note":            "An active council already governs this overlapping ownership boundary; keep execution anchored to the council-host mission until the meeting outcome is adopted.",
+				})
+				continue
+			case rightCouncilAnchored && !leftCouncilAnchored:
+				addBundleEdge(leftID, rightID, "council")
+				addBundleEdge(leftID, rightID, "council_governed_ownership")
+				crossMissionAdjudications = append(crossMissionAdjudications, map[string]any{
+					"claim_ref":       "mission_ownership_boundary",
+					"resolution_kind": "council_governed_mission_ownership",
+					"source_ref":      "mission:" + rightID,
+					"winning_source":  "mission:" + rightID,
+					"losing_source":   "mission:" + leftID,
+					"authority_level": "L2",
+					"mission_ids":     stringListToAny([]string{leftID, rightID}),
+					"selector_refs":   stringListToAny(dedupeStrings(shared)),
+					"note":            "An active council already governs this overlapping ownership boundary; keep execution anchored to the council-host mission until the meeting outcome is adopted.",
+				})
+				continue
+			}
 			if leftDependsOnRight || rightDependsOnLeft {
 				addBundleEdge(leftID, rightID, "dependency")
+			}
+			if len(unresolvedSelectorRefs) == 0 && decisiveWinnerID != "" && len(decisiveSelectorRefs) > 0 {
+				losingMissionID := rightID
+				if decisiveWinnerID == rightID {
+					losingMissionID = leftID
+				}
+				addBundleEdge(leftID, rightID, "selector_specificity_governed_ownership")
+				crossMissionAdjudications = append(crossMissionAdjudications, map[string]any{
+					"claim_ref":       "mission_ownership_boundary",
+					"resolution_kind": "selector_specificity_governed_mission_ownership",
+					"source_ref":      "mission:" + decisiveWinnerID,
+					"winning_source":  "mission:" + decisiveWinnerID,
+					"losing_source":   "mission:" + losingMissionID,
+					"authority_level": "L2",
+					"mission_ids":     stringListToAny([]string{leftID, rightID}),
+					"selector_refs":   stringListToAny(dedupeStrings(decisiveSelectorRefs)),
+					"note":            "The more specific mission ownership selector governs the broader overlapping selector until the boundary is narrowed or explicitly transferred.",
+				})
+				continue
 			}
 			addBundleEdge(leftID, rightID, "parallel_conflict")
 			crossMissionConflicts = append(crossMissionConflicts, map[string]any{
@@ -2943,6 +3094,7 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 	visitedBundles := map[string]bool{}
 	conflictedBundleCount := 0
 	governedBundleCount := 0
+	escalatedBundleCount := 0
 	for _, missionID := range missionIDs {
 		if visitedBundles[missionID] || len(bundleAdjacency[missionID]) == 0 {
 			continue
@@ -2995,10 +3147,18 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		}
 		sort.Strings(bundleRoots)
 		sort.Strings(dependentMissionIDs)
+		councilAnchorMissionIDs := []string{}
+		for _, id := range component {
+			if activeMeetingCountByMission[id] > 0 || openMeetingActionCountByMission[id] > 0 {
+				councilAnchorMissionIDs = append(councilAnchorMissionIDs, id)
+			}
+		}
+		sort.Strings(councilAnchorMissionIDs)
 		edgeKinds := []string{}
 		edgeCount := 0
 		bundleSelectorRefs := []string{}
 		resolutionKinds := []string{}
+		governingMissionVotes := map[string]int{}
 		for pairKey, kinds := range bundlePairKinds {
 			pair := strings.Split(pairKey, "::")
 			if len(pair) != 2 || !componentSet[pair[0]] || !componentSet[pair[1]] {
@@ -3037,6 +3197,9 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 				adjudicationCount++
 				resolutionKinds = append(resolutionKinds, stringValue(adjudication["resolution_kind"]))
 				bundleSelectorRefs = append(bundleSelectorRefs, anyListToStrings(toList(adjudication["selector_refs"]))...)
+				if winningMissionID := strings.TrimPrefix(stringValue(adjudication["winning_source"]), "mission:"); componentSet[winningMissionID] {
+					governingMissionVotes[winningMissionID]++
+				}
 			}
 		}
 		for _, item := range dependencyAdjudications {
@@ -3050,29 +3213,169 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		}
 		state := "linked"
 		governingMissionID := ""
+		governedMissionIDs := []string{}
+		losingMissionIDs := []string{}
+		authorityBasis := []string{}
 		resolutionKind := "linked_bundle"
 		requiredAction := "Inspect linked missions before widening parallel execution."
 		governanceNotes := []string{}
+		if len(governingMissionVotes) == 1 {
+			for missionID := range governingMissionVotes {
+				governingMissionID = missionID
+			}
+		}
 		switch {
 		case conflictCount > 0:
-			state = "conflicted"
-			resolutionKind = "bundle_conflict"
-			requiredAction = "Narrow selectors, serialize missions, or add a governing dependency/council before parallel execution."
-			if len(bundleRoots) > 1 {
-				governanceNotes = append(governanceNotes, "Multiple root missions still claim overlapping bundle authority.")
+			if len(component) >= 3 {
+				candidateMissionIDs := dedupeStrings(bundleRoots)
+				if len(candidateMissionIDs) == 0 {
+					candidateMissionIDs = dedupeStrings(component)
+				}
+
+				selectedWinnerID := ""
+				maxVoteCount := 0
+				voteLeaders := []string{}
+				for _, candidateMissionID := range candidateMissionIDs {
+					votes := governingMissionVotes[candidateMissionID]
+					if votes > maxVoteCount {
+						maxVoteCount = votes
+						voteLeaders = []string{candidateMissionID}
+					} else if votes > 0 && votes == maxVoteCount {
+						voteLeaders = append(voteLeaders, candidateMissionID)
+					}
+				}
+				if maxVoteCount > 0 && len(dedupeStrings(voteLeaders)) == 1 {
+					selectedWinnerID = voteLeaders[0]
+					authorityBasis = append(authorityBasis, "bundle_adjudication_votes")
+				}
+
+				if selectedWinnerID == "" && len(candidateMissionIDs) >= 2 {
+					type bundleAuthorityCandidate struct {
+						missionID string
+						priority  int
+						risk      int
+					}
+					candidates := []bundleAuthorityCandidate{}
+					for _, candidateMissionID := range candidateMissionIDs {
+						mission := missionByID[candidateMissionID]
+						candidates = append(candidates, bundleAuthorityCandidate{
+							missionID: candidateMissionID,
+							priority:  schedulerPriorityRank(stringValue(mission["priority"])),
+							risk:      schedulerRiskRank(stringValue(mission["risk_level"])),
+						})
+					}
+					sort.Slice(candidates, func(i, j int) bool {
+						if candidates[i].priority != candidates[j].priority {
+							return candidates[i].priority > candidates[j].priority
+						}
+						if candidates[i].risk != candidates[j].risk {
+							return candidates[i].risk > candidates[j].risk
+						}
+						return candidates[i].missionID < candidates[j].missionID
+					})
+					best := candidates[0]
+					second := candidates[0]
+					if len(candidates) > 1 {
+						second = candidates[1]
+					}
+					hasAuthoritySignal := best.priority > 0 || best.risk > 0
+					hasUniqueTopTuple := len(candidates) == 1 || best.priority != second.priority || best.risk != second.risk
+					if hasAuthoritySignal && hasUniqueTopTuple {
+						selectedWinnerID = best.missionID
+						if best.priority != second.priority {
+							authorityBasis = append(authorityBasis, "priority")
+						}
+						if best.risk != second.risk {
+							authorityBasis = append(authorityBasis, "risk_level")
+						}
+						if len(authorityBasis) == 0 {
+							authorityBasis = append(authorityBasis, "priority", "risk_level")
+						}
+					} else if len(candidates) > 0 {
+						tiedMissionIDs := []string{}
+						for _, candidate := range candidates {
+							if candidate.priority == best.priority && candidate.risk == best.risk {
+								tiedMissionIDs = append(tiedMissionIDs, candidate.missionID)
+							}
+						}
+						governanceNotes = append(governanceNotes, fmt.Sprintf("No unique priority/risk winner exists across the multi-mission bundle roots: %s.", strings.Join(dedupeStrings(tiedMissionIDs), ", ")))
+					}
+				}
+
+				if selectedWinnerID != "" {
+					state = "governed"
+					governingMissionID = selectedWinnerID
+					governedMissionIDs = append(governedMissionIDs, selectedWinnerID)
+					for _, id := range component {
+						if id != selectedWinnerID {
+							losingMissionIDs = append(losingMissionIDs, id)
+						}
+					}
+					resolutionKind = "bundle_governor_adjudicated"
+					requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s and serialize the other overlapping missions behind it unless a council overrides the current bundle governor.", selectedWinnerID)
+					governanceNotes = append(governanceNotes, fmt.Sprintf("No explicit governing dependency exists; %s currently governs the multi-mission bundle by %s.", selectedWinnerID, strings.Join(dedupeStrings(authorityBasis), "/")))
+					governedBundleCount++
+				} else {
+					state = "escalation-required"
+					resolutionKind = "bundle_governor_required"
+					requiredAction = "Open a council or add an explicit dependency/ownership transfer to establish a governing mission before parallel execution."
+					if len(bundleRoots) > 1 {
+						governanceNotes = append(governanceNotes, "Multiple root missions still claim overlapping bundle authority without a decisive governing dependency.")
+					}
+					escalatedBundleCount++
+				}
+			} else {
+				state = "conflicted"
+				resolutionKind = "bundle_conflict"
+				requiredAction = "Narrow selectors, serialize missions, or add a governing dependency/council before parallel execution."
+				if len(councilAnchorMissionIDs) == 1 {
+					requiredAction = fmt.Sprintf("Use the active council on %s to govern the remaining bundle conflict, or narrow selectors before widening execution.", councilAnchorMissionIDs[0])
+					governanceNotes = append(governanceNotes, fmt.Sprintf("Bundle already has one active council anchor on %s, but unresolved overlap remains outside that governed lane.", councilAnchorMissionIDs[0]))
+				}
+				if len(bundleRoots) > 1 {
+					governanceNotes = append(governanceNotes, "Multiple root missions still claim overlapping bundle authority.")
+				}
+				conflictedBundleCount++
 			}
-			conflictedBundleCount++
 		case adjudicationCount > 0:
 			state = "governed"
-			if len(bundleRoots) == 1 {
-				governingMissionID = bundleRoots[0]
+			switch {
+			case governingMissionID != "" && len(councilAnchorMissionIDs) == 1 && governingMissionID == councilAnchorMissionIDs[0]:
+				governedMissionIDs = append(governedMissionIDs, governingMissionID)
+				for _, id := range component {
+					if id != governingMissionID {
+						losingMissionIDs = append(losingMissionIDs, id)
+					}
+				}
+				resolutionKind = "council_governed_bundle"
+				requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s until its active council conclusions are adopted.", governingMissionID)
+			case governingMissionID != "" && len(bundleRoots) == 1 && governingMissionID == bundleRoots[0]:
+				governedMissionIDs = append(governedMissionIDs, bundleRoots[0])
+				for _, id := range component {
+					if id != bundleRoots[0] {
+						losingMissionIDs = append(losingMissionIDs, id)
+					}
+				}
 				resolutionKind = "single_root_governed_bundle"
 				requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s while dependent missions stay bounded.", governingMissionID)
-			} else {
+			case governingMissionID != "":
+				governedMissionIDs = append(governedMissionIDs, governingMissionID)
+				for _, id := range component {
+					if id != governingMissionID {
+						losingMissionIDs = append(losingMissionIDs, id)
+					}
+				}
+				resolutionKind = "single_winner_governed_bundle"
+				requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s, and narrow or transfer broader overlapping missions before widening execution.", governingMissionID)
+			default:
+				governedMissionIDs = append(governedMissionIDs, bundleRoots...)
 				resolutionKind = "multi_source_governed_bundle"
 				requiredAction = "Bundle has adjudications but no single governing root; inspect mission-level authority before widening execution."
 			}
 			governedBundleCount++
+		}
+		if len(councilAnchorMissionIDs) > 0 {
+			governanceNotes = append(governanceNotes, fmt.Sprintf("Active council anchor missions: %s", strings.Join(councilAnchorMissionIDs, ", ")))
 		}
 		if len(bundleSelectorRefs) > 0 {
 			governanceNotes = append(governanceNotes, fmt.Sprintf("Shared governed selectors: %s", strings.Join(dedupeStrings(bundleSelectorRefs), ", ")))
@@ -3091,9 +3394,12 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			"selector_refs":         stringListToAny(dedupeStrings(bundleSelectorRefs)),
 			"required_action":       requiredAction,
 			"governance_notes":      stringListToAny(governanceNotes),
+			"authority_basis":       stringListToAny(dedupeStrings(authorityBasis)),
 			"canonical_mission_id":  component[0],
 			"root_mission_ids":      stringListToAny(bundleRoots),
 			"dependent_mission_ids": stringListToAny(dependentMissionIDs),
+			"governed_mission_ids":  stringListToAny(dedupeStrings(governedMissionIDs)),
+			"losing_mission_ids":    stringListToAny(dedupeStrings(losingMissionIDs)),
 			"governing_mission_id":  governingMissionID,
 		})
 	}
@@ -3110,6 +3416,7 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		"bundle_count":                      len(bundles),
 		"conflicted_bundle_count":           conflictedBundleCount,
 		"governed_bundle_count":             governedBundleCount,
+		"escalated_bundle_count":            escalatedBundleCount,
 		"mission_authority_audits":          missionAudits,
 		"bundles":                           bundles,
 		"cross_mission_adjudications":       crossMissionAdjudications,
@@ -6883,6 +7190,7 @@ func cmdHome(args []string) error {
 		"mission_bundle_count":                    intValue(graphAuthorityAudit["bundle_count"]),
 		"mission_conflicted_bundle_count":         intValue(graphAuthorityAudit["conflicted_bundle_count"]),
 		"mission_governed_bundle_count":           intValue(graphAuthorityAudit["governed_bundle_count"]),
+		"mission_escalated_bundle_count":          intValue(graphAuthorityAudit["escalated_bundle_count"]),
 		"mission_graph_conflict_count":            intValue(graphAuthorityAudit["cross_mission_conflict_count"]),
 		"mission_dependency_adjudication_count":   intValue(graphAuthorityAudit["dependency_adjudication_count"]),
 		"active_run_count":                        len(activeRuns),

@@ -590,9 +590,14 @@ This graph supports:
 - bundle grouping
 - bundle governors
 - dependency-governed authority
+- selector-specificity authority
 - leader-facing required actions
 
 This is one of the ways `Harness` moved beyond a plain run registry.
+
+When two active missions overlap without a dependency edge, the graph does not have to fall straight to generic conflict.
+
+If one mission holds the more specific ownership boundary and no competing higher-authority evidence contradicts that shape, the control plane may adjudicate that narrower mission as the current bundle governor.
 
 ---
 
@@ -915,7 +920,7 @@ High-value future expansion areas are:
    deeper portfolio scheduling policy beyond the now-real baseline for execution-mode selection, mission classification, durable scheduler snapshots, and leader-facing rescheduling hints
 
 2. broader bundle adjudication
-   larger multi-mission conflicts when no obvious governing dependency, signal, or council outcome exists
+   larger multi-mission conflicts when no obvious governing dependency, selector-specific authority winner, signal, or council outcome exists
 
 3. deeper automated council execution
    fuller `arch-review`-style automation across more than the current wave/route/round/verdict-adoption baseline
