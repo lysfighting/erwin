@@ -3268,6 +3268,60 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			}
 		}
 		sort.Strings(councilAnchorMissionIDs)
+		candidateGovernorMissionIDs := dedupeStrings(bundleRoots)
+		if len(candidateGovernorMissionIDs) == 0 {
+			candidateGovernorMissionIDs = dedupeStrings(component)
+		}
+		candidateGovernorPackets := []any{}
+		for _, candidateMissionID := range candidateGovernorMissionIDs {
+			mission := missionByID[candidateMissionID]
+			releaseAdjacent := false
+			activeRunCount := 0
+			for _, run := range missionRuns(registry, candidateMissionID) {
+				if activeRun(run) {
+					activeRunCount++
+				}
+				if runReleaseAdjacent(run) {
+					releaseAdjacent = true
+				}
+			}
+			candidateGovernorPackets = append(candidateGovernorPackets, map[string]any{
+				"mission_id":           candidateMissionID,
+				"priority":             stringValue(mission["priority"]),
+				"risk_level":           stringValue(mission["risk_level"]),
+				"release_adjacent":     releaseAdjacent,
+				"active_meeting_count": activeMeetingCountByMission[candidateMissionID],
+				"open_meeting_actions": openMeetingActionCountByMission[candidateMissionID],
+				"active_run_count":     activeRunCount,
+				"is_root_candidate":    containsString(bundleRoots, candidateMissionID),
+			})
+		}
+		sort.Slice(candidateGovernorPackets, func(i, j int) bool {
+			left, _ := toMap(candidateGovernorPackets[i])
+			right, _ := toMap(candidateGovernorPackets[j])
+			leftPriority := schedulerPriorityRank(stringValue(left["priority"]))
+			rightPriority := schedulerPriorityRank(stringValue(right["priority"]))
+			if leftPriority != rightPriority {
+				return leftPriority > rightPriority
+			}
+			leftRisk := schedulerRiskRank(stringValue(left["risk_level"]))
+			rightRisk := schedulerRiskRank(stringValue(right["risk_level"]))
+			if leftRisk != rightRisk {
+				return leftRisk > rightRisk
+			}
+			if boolValue(left["release_adjacent"]) != boolValue(right["release_adjacent"]) {
+				return boolValue(left["release_adjacent"])
+			}
+			if boolValue(left["is_root_candidate"]) != boolValue(right["is_root_candidate"]) {
+				return boolValue(left["is_root_candidate"])
+			}
+			return stringValue(left["mission_id"]) < stringValue(right["mission_id"])
+		})
+		candidateGovernorMissionIDs = []string{}
+		for _, item := range candidateGovernorPackets {
+			packet, _ := toMap(item)
+			candidateGovernorMissionIDs = append(candidateGovernorMissionIDs, stringValue(packet["mission_id"]))
+		}
 		edgeKinds := []string{}
 		edgeCount := 0
 		bundleSelectorRefs := []string{}
@@ -3340,10 +3394,7 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		}
 		switch {
 		case conflictCount > 0:
-			candidateMissionIDs := dedupeStrings(bundleRoots)
-			if len(candidateMissionIDs) == 0 {
-				candidateMissionIDs = dedupeStrings(component)
-			}
+			candidateMissionIDs := candidateGovernorMissionIDs
 
 			selectedWinnerID := ""
 			hasBundleAuthoritySignal := false
@@ -3500,26 +3551,28 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			governanceNotes = append(governanceNotes, fmt.Sprintf("Shared governed selectors: %s", strings.Join(dedupeStrings(bundleSelectorRefs), ", ")))
 		}
 		bundles = append(bundles, map[string]any{
-			"bundle_id":             "bundle-" + slugify(strings.Join(component, "-")),
-			"mission_ids":           stringListToAny(component),
-			"mission_count":         len(component),
-			"edge_count":            edgeCount,
-			"edge_kinds":            stringListToAny(dedupeStrings(edgeKinds)),
-			"conflict_count":        conflictCount,
-			"adjudication_count":    adjudicationCount,
-			"bundle_state":          state,
-			"resolution_kind":       resolutionKind,
-			"resolution_kinds":      stringListToAny(dedupeStrings(resolutionKinds)),
-			"selector_refs":         stringListToAny(dedupeStrings(bundleSelectorRefs)),
-			"required_action":       requiredAction,
-			"governance_notes":      stringListToAny(governanceNotes),
-			"authority_basis":       stringListToAny(dedupeStrings(authorityBasis)),
-			"canonical_mission_id":  component[0],
-			"root_mission_ids":      stringListToAny(bundleRoots),
-			"dependent_mission_ids": stringListToAny(dependentMissionIDs),
-			"governed_mission_ids":  stringListToAny(dedupeStrings(governedMissionIDs)),
-			"losing_mission_ids":    stringListToAny(dedupeStrings(losingMissionIDs)),
-			"governing_mission_id":  governingMissionID,
+			"bundle_id":                  "bundle-" + slugify(strings.Join(component, "-")),
+			"mission_ids":                stringListToAny(component),
+			"mission_count":              len(component),
+			"edge_count":                 edgeCount,
+			"edge_kinds":                 stringListToAny(dedupeStrings(edgeKinds)),
+			"conflict_count":             conflictCount,
+			"adjudication_count":         adjudicationCount,
+			"bundle_state":               state,
+			"resolution_kind":            resolutionKind,
+			"resolution_kinds":           stringListToAny(dedupeStrings(resolutionKinds)),
+			"selector_refs":              stringListToAny(dedupeStrings(bundleSelectorRefs)),
+			"required_action":            requiredAction,
+			"governance_notes":           stringListToAny(governanceNotes),
+			"authority_basis":            stringListToAny(dedupeStrings(authorityBasis)),
+			"candidate_governor_ids":     stringListToAny(candidateGovernorMissionIDs),
+			"candidate_governor_packets": cloneValue(candidateGovernorPackets),
+			"canonical_mission_id":       component[0],
+			"root_mission_ids":           stringListToAny(bundleRoots),
+			"dependent_mission_ids":      stringListToAny(dependentMissionIDs),
+			"governed_mission_ids":       stringListToAny(dedupeStrings(governedMissionIDs)),
+			"losing_mission_ids":         stringListToAny(dedupeStrings(losingMissionIDs)),
+			"governing_mission_id":       governingMissionID,
 		})
 	}
 
@@ -7122,6 +7175,8 @@ func aggregateSchedulerHumanDecisions(decisions []any) []any {
 				"bundle_state":                  stringValue(decision["bundle_state"]),
 				"bundle_resolution_kind":        stringValue(decision["bundle_resolution_kind"]),
 				"bundle_governing_mission_id":   stringValue(decision["bundle_governing_mission_id"]),
+				"candidate_governor_ids":        cloneValue(getKey(decision, "candidate_governor_ids", []any{})),
+				"candidate_governor_packets":    cloneValue(getKey(decision, "candidate_governor_packets", []any{})),
 				"meeting_trigger_refs":          []any{},
 				"mission_ids":                   []any{},
 				"mission_count":                 0,
@@ -7377,18 +7432,20 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				role = "conflicted"
 			}
 			bundleInfoByMission[missionID] = map[string]any{
-				"bundle_id":            bundleID,
-				"bundle_state":         bundleState,
-				"bundle_role":          role,
-				"resolution_kind":      resolutionKind,
-				"governing_mission_id": governingMissionID,
-				"required_action":      requiredAction,
-				"bundle_mission_ids":   stringListToAny(missionIDs),
-				"governed_mission_ids": cloneValue(bundle["governed_mission_ids"]),
-				"losing_mission_ids":   cloneValue(bundle["losing_mission_ids"]),
-				"authority_basis":      cloneValue(bundle["authority_basis"]),
-				"selector_refs":        cloneValue(bundle["selector_refs"]),
-				"governance_notes":     cloneValue(bundle["governance_notes"]),
+				"bundle_id":                  bundleID,
+				"bundle_state":               bundleState,
+				"bundle_role":                role,
+				"resolution_kind":            resolutionKind,
+				"governing_mission_id":       governingMissionID,
+				"required_action":            requiredAction,
+				"bundle_mission_ids":         stringListToAny(missionIDs),
+				"candidate_governor_ids":     cloneValue(getKey(bundle, "candidate_governor_ids", []any{})),
+				"candidate_governor_packets": cloneValue(getKey(bundle, "candidate_governor_packets", []any{})),
+				"governed_mission_ids":       cloneValue(bundle["governed_mission_ids"]),
+				"losing_mission_ids":         cloneValue(bundle["losing_mission_ids"]),
+				"authority_basis":            cloneValue(bundle["authority_basis"]),
+				"selector_refs":              cloneValue(bundle["selector_refs"]),
+				"governance_notes":           cloneValue(bundle["governance_notes"]),
 			}
 			switch bundleState {
 			case "conflicted":
@@ -7572,6 +7629,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		bundleResolutionKind := stringValue(bundleInfo["resolution_kind"])
 		bundleGovernorID := stringValue(bundleInfo["governing_mission_id"])
 		bundleRequiredAction := stringValue(bundleInfo["required_action"])
+		bundleCandidateGovernorIDs := anyListToStrings(toList(bundleInfo["candidate_governor_ids"]))
+		bundleCandidateGovernorPackets := cloneValue(getKey(bundleInfo, "candidate_governor_packets", []any{}))
 		if authoritativeRun != nil {
 			authoritativeRunID = stringValue(authoritativeRun["run_id"])
 			authoritativeRunState = stringValue(authoritativeRun["state"])
@@ -7763,6 +7822,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				"bundle_governing_mission_id":   bundleGovernorID,
 				"bundle_required_action":        bundleRequiredAction,
 				"bundle_mission_ids":            cloneValue(getKey(bundleInfo, "bundle_mission_ids", []any{})),
+				"candidate_governor_ids":        stringListToAny(bundleCandidateGovernorIDs),
+				"candidate_governor_packets":    cloneValue(bundleCandidateGovernorPackets),
 				"decision_kind":                 decisionKind,
 				"recommended_action":            recommendedAction,
 				"recommended_decision_surface":  recommendedDecisionSurface,
@@ -7814,6 +7875,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"bundle_resolution_kind":           bundleResolutionKind,
 			"bundle_governing_mission_id":      bundleGovernorID,
 			"bundle_required_action":           bundleRequiredAction,
+			"candidate_governor_ids":           stringListToAny(bundleCandidateGovernorIDs),
+			"candidate_governor_packets":       cloneValue(bundleCandidateGovernorPackets),
 			"latest_summary":                   stringValue(mission["latest_summary"]),
 			"recommended_action":               recommendedAction,
 			"reasons":                          stringListToAny(dedupeStrings(reasons)),

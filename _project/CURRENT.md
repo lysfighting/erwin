@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.60.0 (in progress)
+- **Version**: 0.61.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness became decision-protocol-aware)
+- **Last Session**: 2026-03-30 (Harness exposed candidate governors for escalation bundles)
 
 ## Current Phase
 
@@ -28,6 +28,7 @@
 - **Explicit decision protocols added**: meetings now carry `decision_protocol` and `decision_protocol_reason`, making it explicit whether a governed decision should be treated as `evidence-review`, `incident-command`, or `decision-record` instead of silently inheriting one default council style
 - **Protocol-aware meeting defaults added**: materialized meetings now seed protocol-specific roles, role specs, and expected output so urgent release/incident decisions and slower decision-record workflows do not start from the same default packet
 - **Scheduler protocol guidance added**: human-decision packets now carry `recommended_decision_protocol`, so the leader can distinguish council-grade evidence review, incident-command decisions, and ordinary decision-record handling before materializing a meeting
+- **Candidate-governor bundle packets added**: escalation-required mission bundles now expose `candidate_governor_ids` and ranked `candidate_governor_packets` across graph authority, scheduler human-decision packets, and mission classifications, so the leader can see who should plausibly govern the bundle before opening a council
 - **Scheduler maintenance escalation added**: scheduler snapshots now emit `maintenance_actions`, `maintenance_action_count`, and `maintenance_action_tally`, turning stale runs, expired signals, and stale meetings into explicit leader-facing maintenance work instead of leaving them only to `doctor`
 - **Maintenance guidance prioritized**: when stale control-plane state coexists with runnable foreground work, scheduler `next_action` now tells the leader to keep the foreground batch bounded and clean stale state before widening execution
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves stale run plus stale signal maintenance escalation and verifies that refreshing the run and retiring the stale signal restores a clean control-plane path

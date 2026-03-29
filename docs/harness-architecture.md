@@ -612,6 +612,7 @@ That means:
 - the governing mission can remain foreground-runnable
 - governed losing missions can be deferred behind the current bundle governor
 - escalation-required bundles can surface as explicit human decisions instead of generic overlap noise
+- escalation-required bundles can now expose ranked candidate governors, so the leader sees likely control anchors before deciding whether to establish one directly or escalate into a council
 - the scheduler can now retain a sticky primary human-decision packet across otherwise-tied portfolio passes, preferring decision stability over freshness-only churn when the decision class still matches
 - parallel widening now requires explicit justification when execution policy says the control plane should reduce parallelism rather than guess
 - the scheduler can now retain a sticky foreground mission across otherwise-tied passes, preferring stability over timestamp churn when priority, effective risk, and release posture still match

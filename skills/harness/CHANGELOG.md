@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Candidate-governor packets for escalation-required mission bundles, exposed through graph authority, scheduler decision packets, and mission classifications.
 - Explicit decision-protocol support for meetings and scheduler human-decision packets, including `evidence-review`, `incident-command`, and `decision-record`.
 - Leader-facing scheduler baseline via `bash scripts/harness-missions.sh schedule`, including durable `.harness/scheduler/snapshots/`, mission classifications, execution-mode recommendation, required-human-decision reporting, and reschedule hints.
 - Direct synthesis for council lanes that are already aligned or already settled by higher-authority evidence, plus summary counters for `resolved_without_cross_examination_count` and `authority_resolved_route_count`.

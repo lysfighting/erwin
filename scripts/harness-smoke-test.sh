@@ -360,11 +360,15 @@ assert_json_field "$graph_authority_multi_escalation" '"resolution_kind": "bundl
 assert_json_field "$graph_authority_multi_escalation" '"bundle_state": "escalation-required"' "multi-mission bundle authority marks tied bundles as escalation-required"
 assert_json_field "$graph_authority_multi_escalation" '"escalated_bundle_count": 1' "mission graph authority counts escalation-required bundles separately"
 assert_json_field "$graph_authority_multi_escalation" '"required_action": "Open a council or add an explicit dependency/ownership transfer to establish a governing mission before parallel execution."' "escalation-required bundles get a leader-facing next action"
+assert_json_field "$graph_authority_multi_escalation" '"candidate_governor_ids":' "escalation-required bundles expose candidate governing mission ids"
+assert_json_field "$graph_authority_multi_escalation" '"candidate_governor_packets":' "escalation-required bundles expose candidate governing mission packets"
 schedule_multi_escalation_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_output" '"bundle_role": "escalation-required"' "scheduler marks tied bundles as escalation-required"
 assert_json_field "$schedule_multi_escalation_output" '"decision_kind": "establish_bundle_governor"' "scheduler escalates tied bundles into an explicit governing-mission decision"
 assert_json_field "$schedule_multi_escalation_output" '"decision_scope": "bundle"' "scheduler collapses tied bundle escalation into one bundle-scoped decision packet"
 assert_json_field "$schedule_multi_escalation_output" '"mission_count": 3' "scheduler records how many missions participate in the bundle-scoped decision"
+assert_json_field "$schedule_multi_escalation_output" '"candidate_governor_ids":' "scheduler keeps candidate governing mission ids on bundle decision packets"
+assert_json_field "$schedule_multi_escalation_output" '"candidate_governor_packets":' "scheduler keeps candidate governing mission packets on bundle decision packets"
 assert_json_field "$schedule_multi_escalation_output" '"recommended_decision_surface": "council"' "scheduler can recommend council handling when profile meeting triggers match the human decision"
 assert_json_field "$schedule_multi_escalation_output" '"recommended_decision_protocol": "evidence-review"' "scheduler recommends evidence-review for conflicted bundle governance"
 assert_json_field "$schedule_multi_escalation_output" '"meeting_trigger_refs":' "scheduler records which profile meeting triggers justify the council recommendation"
@@ -377,6 +381,7 @@ assert_json_field "$schedule_multi_escalation_output" '"primary_required_human_d
 assert_json_field "$schedule_multi_escalation_output" '"decision_scope": "bundle"' "scheduler marks the primary escalation packet as bundle-scoped"
 assert_json_field "$schedule_multi_escalation_output" '"human_decision_queue_position": 1' "scheduler annotates primary escalation missions with queue position 1"
 assert_json_field "$schedule_multi_escalation_output" '"primary_human_decision": true' "scheduler marks primary escalation missions explicitly"
+assert_json_field "$schedule_multi_escalation_output" '"candidate_governor_packets":' "scheduler also exposes candidate governors on mission classifications within escalation bundles"
 home_output_multi_escalation=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_multi_escalation" '"mission_escalated_bundle_count": 1' "home surfaces escalation-required mission bundles"
 assert_json_field "$home_output_multi_escalation" '"scheduler_council_decision_count": 1' "home surfaces bundle-scoped council decisions instead of per-mission duplicates"
