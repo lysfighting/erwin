@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.52.0 (in progress)
+- **Version**: 0.53.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Scheduler now escalates stale control-plane state into maintenance work)
+- **Last Session**: 2026-03-29 (Home now mirrors scheduler maintenance backlog)
 
 ## Current Phase
 
@@ -18,6 +18,7 @@
 
 **Session 2026-03-29** — Harness prototype line stayed complete while bundle authority started driving scheduler behavior directly
 
+- **Home/scheduler maintenance parity restored**: `home` now surfaces `scheduler_maintenance_action_count` and `scheduler_maintenance_action_tally`, so leader surfaces no longer hide stale-state maintenance work that scheduler snapshots already know about
 - **Scheduler maintenance escalation added**: scheduler snapshots now emit `maintenance_actions`, `maintenance_action_count`, and `maintenance_action_tally`, turning stale runs, expired signals, and stale meetings into explicit leader-facing maintenance work instead of leaving them only to `doctor`
 - **Maintenance guidance prioritized**: when stale control-plane state coexists with runnable foreground work, scheduler `next_action` now tells the leader to keep the foreground batch bounded and clean stale state before widening execution
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves stale run plus stale signal maintenance escalation and verifies that refreshing the run and retiring the stale signal restores a clean control-plane path

@@ -167,6 +167,9 @@ assert_json_field "$schedule_maintenance_output" '"maintenance_action_count": 2'
 assert_json_field "$schedule_maintenance_output" '"action_kind": "refresh_stale_run"' "scheduler emits maintenance action for stale runs"
 assert_json_field "$schedule_maintenance_output" '"action_kind": "resolve_stale_signal"' "scheduler emits maintenance action for expired signals"
 assert_json_field "$schedule_maintenance_output" '"next_action": "Keep the current foreground batch bounded and run maintenance on stale control-plane state before widening execution."' "scheduler prioritizes maintenance guidance when stale state coexists with runnable work"
+home_output_maintenance=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_output_maintenance" '"scheduler_maintenance_action_count": 2' "home surfaces scheduler maintenance work"
+assert_json_field "$home_output_maintenance" '"scheduler_maintenance_action_tally":' "home surfaces scheduler maintenance tally"
 run_refresh_output=$(run_in_repo bash scripts/harness-drive.sh report "$run_id" "Refresh stale run after maintenance escalation smoke.")
 assert_json_field "$run_refresh_output" '"latest_summary": "Refresh stale run after maintenance escalation smoke."' "leader can refresh stale run after maintenance coverage"
 resolved_stale_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-stale-follow-up resolved "Stale follow-up signal retired after maintenance escalation coverage.")
