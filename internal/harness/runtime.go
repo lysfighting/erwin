@@ -2306,6 +2306,36 @@ func missionDependenciesUnsatisfied(mission map[string]any, missionRegistry map[
 	return dedupeStrings(unsatisfied)
 }
 
+func missionDependsOnTarget(missionRegistry map[string]any, missionID, targetID string, visited map[string]bool) bool {
+	missionID = strings.TrimSpace(missionID)
+	targetID = strings.TrimSpace(targetID)
+	if missionID == "" || targetID == "" {
+		return false
+	}
+	if missionID == targetID {
+		return true
+	}
+	if visited[missionID] {
+		return false
+	}
+	visited[missionID] = true
+	index := findMissionIndex(missionRegistry, missionID)
+	if index < 0 {
+		return false
+	}
+	mission, _ := toMap(toList(missionRegistry["missions"])[index])
+	for _, dep := range toList(mission["depends_on"]) {
+		dependencyID := strings.TrimSpace(stringValue(dep))
+		if dependencyID == "" {
+			continue
+		}
+		if dependencyID == targetID || missionDependsOnTarget(missionRegistry, dependencyID, targetID, visited) {
+			return true
+		}
+	}
+	return false
+}
+
 func syncMissionsFromRegistry(registry map[string]any) error {
 	templateRoot, _ := toMap(loadData(missionTemplatePath(), map[string]any{}))
 	template, _ := toMap(templateRoot["mission"])
@@ -2649,6 +2679,7 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 	}
 
 	crossMissionConflicts := []any{}
+	crossMissionAdjudications := []any{}
 	for index, leftMission := range missions {
 		if !activeMission(leftMission) {
 			continue
@@ -2668,6 +2699,36 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 				}
 			}
 			if len(shared) == 0 {
+				continue
+			}
+			leftDependsOnRight := missionDependsOnTarget(missionRegistry, leftID, rightID, map[string]bool{})
+			rightDependsOnLeft := missionDependsOnTarget(missionRegistry, rightID, leftID, map[string]bool{})
+			switch {
+			case leftDependsOnRight && !rightDependsOnLeft:
+				crossMissionAdjudications = append(crossMissionAdjudications, map[string]any{
+					"claim_ref":       "mission_ownership_boundary",
+					"resolution_kind": "dependency_governed_mission_ownership",
+					"source_ref":      "mission:" + rightID,
+					"winning_source":  "mission:" + rightID,
+					"losing_source":   "mission:" + leftID,
+					"authority_level": "L2",
+					"mission_ids":     stringListToAny([]string{leftID, rightID}),
+					"selector_refs":   stringListToAny(dedupeStrings(shared)),
+					"note":            "Dependent mission may overlap the governing mission only as a bounded dependency; the dependency target keeps authority over the shared ownership boundary.",
+				})
+				continue
+			case rightDependsOnLeft && !leftDependsOnRight:
+				crossMissionAdjudications = append(crossMissionAdjudications, map[string]any{
+					"claim_ref":       "mission_ownership_boundary",
+					"resolution_kind": "dependency_governed_mission_ownership",
+					"source_ref":      "mission:" + leftID,
+					"winning_source":  "mission:" + leftID,
+					"losing_source":   "mission:" + rightID,
+					"authority_level": "L2",
+					"mission_ids":     stringListToAny([]string{leftID, rightID}),
+					"selector_refs":   stringListToAny(dedupeStrings(shared)),
+					"note":            "Dependent mission may overlap the governing mission only as a bounded dependency; the dependency target keeps authority over the shared ownership boundary.",
+				})
 				continue
 			}
 			crossMissionConflicts = append(crossMissionConflicts, map[string]any{
@@ -2712,8 +2773,10 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		"mission_adjudication_count":        missionAdjudicationCount,
 		"mission_unresolved_conflict_count": missionUnresolvedCount,
 		"cross_mission_conflict_count":      len(crossMissionConflicts),
+		"cross_mission_adjudication_count":  len(crossMissionAdjudications),
 		"dependency_adjudication_count":     len(dependencyAdjudications),
 		"mission_authority_audits":          missionAudits,
+		"cross_mission_adjudications":       crossMissionAdjudications,
 		"cross_mission_conflicts":           crossMissionConflicts,
 		"dependency_adjudications":          dependencyAdjudications,
 	}
@@ -4581,7 +4644,7 @@ func doctorReport() map[string]any {
 		} else if len(toList(mission["ownership_selectors"])) == 0 {
 			issues = append(issues, issueRecord("warning", "mission-missing-ownership-selectors", missionID, "Mission has legacy ownership claims but no normalized ownership_selectors.", "Regenerate mission state so selector-aware governance can work safely."))
 		}
-		if len(toList(mission["depends_on"])) > 0 && stringValue(mission["state"]) != "blocked" && stringValue(mission["state"]) != "claimed" && stringValue(mission["state"]) != "wip" && stringValue(mission["state"]) != "review" {
+		if activeMission(mission) && len(toList(mission["depends_on"])) > 0 && stringValue(mission["state"]) != "blocked" && stringValue(mission["state"]) != "claimed" && stringValue(mission["state"]) != "wip" && stringValue(mission["state"]) != "review" {
 			issues = append(issues, issueRecord("info", "mission-dependency-state-unusual", missionID, "Mission has dependencies but is not in an active dependency-aware state.", "Verify the mission control-plane state is still correct."))
 		}
 		if stringValue(mission["state"]) == "done" && len(recordedActive) > 0 {

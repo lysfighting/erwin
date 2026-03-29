@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector policy beyond the new normalized/shared-transfer baseline, higher-order authority adjudication beyond the new run/mission/mission-graph winner-loser baseline, deeper automated council orchestration beyond the new auto-synthesis plus bounded second-round debate baseline, clearer final product naming
+- **still incomplete**: richer selector policy beyond the new normalized/shared-transfer baseline, higher-order authority adjudication beyond the new run/mission/mission-graph plus dependency-governed ownership baseline, deeper automated council orchestration beyond the new auto-synthesis plus bounded second-round debate baseline, clearer final product naming
 
 ---
 
@@ -108,7 +108,7 @@ Authority levels are now validated and surfaced, and the system now adjudicates 
 What is still missing:
 
 - systematic high-vs-low authority conflict handling beyond the new run/contract/live artifact baseline and ship-gate winner/loser rules
-- broader leader-facing explanations when multiple mission graphs disagree across larger bundles without a governing signal or meeting
+- broader leader-facing explanations when larger mission bundles disagree without a governing dependency, signal, or meeting
 
 ### 4. Public product contract
 

@@ -104,6 +104,17 @@ assert_json_field "$resolved_second_run" '"state": "completed"' "second conflict
 graph_authority_cleared=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
 assert_json_field "$graph_authority_cleared" '"cross_mission_conflict_count": 0' "mission graph authority audit clears after conflicting mission closes"
 
+dependent_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20003 "Harness Dependent Mission" --owns="file:CHANGELOG.md" --depends-on="issue-20001" --allow-overlap)
+assert_json_field "$dependent_claim_output" '"mission_id": "issue-20003"' "dependent claim can materialize an explicitly governed overlap"
+dependent_run_id=$(printf '%s\n' "$dependent_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+graph_authority_dependency=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_dependency" '"cross_mission_conflict_count": 0' "dependency-governed overlap does not remain an unresolved cross-mission conflict"
+assert_json_field "$graph_authority_dependency" '"cross_mission_adjudication_count": 1' "mission graph authority audit records one dependency-governed ownership adjudication"
+assert_json_field "$graph_authority_dependency" '"resolution_kind": "dependency_governed_mission_ownership"' "mission graph authority audit explains dependency-governed ownership authority"
+assert_json_field "$graph_authority_dependency" "\"winning_source\": \"mission:issue-20001\"" "dependency-governed overlap keeps authority on the upstream mission"
+resolved_dependent_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$dependent_run_id" completed "Resolved dependency-governed overlap smoke path.")
+assert_json_field "$resolved_dependent_run" '"state": "completed"' "dependent overlapping mission can be closed after adjudication coverage"
+
 section "Contract authority"
 (
   cd "$TEST_REPO" &&

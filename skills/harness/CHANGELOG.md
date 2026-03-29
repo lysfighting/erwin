@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Dependency-governed mission ownership adjudication via `bash scripts/harness-missions.sh authority-audit --all`, so overlapping missions can produce a winner/loser verdict when one mission explicitly depends on the other.
 - Shared ownership transfer via `bash scripts/harness-runs.sh transfer-ownership ... --mode=copy`, allowing bounded selectors to be intentionally copied across runs that both declare shared overlap.
 - Multi-mission authority adjudication via `bash scripts/harness-missions.sh authority-audit --all`, including cross-mission ownership conflicts and dependency-governed mission blocking.
 - Mission-level authority adjudication via `bash scripts/harness-missions.sh authority-audit MISSION_ID`, including explicit `authoritative_run_id` handling so teammate activity cannot silently replace leader-governed mission control.
@@ -34,6 +35,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Ship-gate authority adjudication in `runs authority-audit`, so leader-facing run review can explain when verification/review/checks state overrides an overly optimistic delivery status.
 
 ### Changed
+- `scripts/harness-smoke-test.sh` now proves dependency-governed ownership overlap resolves as graph-level adjudication instead of unresolved cross-mission conflict, and `doctor` no longer reports dependency-state noise for inactive dependent missions.
 - `scripts/harness-teammate-smoke-test.sh` now validates shared-selector copy transfer, including source retention, target acquisition, and contract alignment for both runs.
 - `harness-home.sh` and `harness-doctor.sh` now surface graph-level mission authority conflicts so multi-mission control drift is visible above per-run overlap noise.
 - `scripts/harness-maintenance.sh normalize` now regenerates older mission state when `authoritative_run_id` is missing, so upgraded repos can reconcile into the new mission-control contract without manual surgery.
