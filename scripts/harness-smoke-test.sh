@@ -98,7 +98,10 @@ graph_authority_output=$(run_in_repo bash scripts/harness-missions.sh authority-
 assert_json_field "$graph_authority_output" '"cross_mission_conflict_count": 1' "mission graph authority audit reports one cross-mission control conflict"
 assert_json_field "$graph_authority_output" '"bundle_count": 1' "mission graph authority groups overlapping missions into one bundle"
 assert_json_field "$graph_authority_output" '"bundle_state": "conflicted"' "mission graph authority marks the overlapping mission bundle as conflicted"
+assert_json_field "$graph_authority_output" '"resolution_kind": "bundle_conflict"' "mission graph authority gives the conflicted bundle a bundle-level resolution kind"
 assert_json_field "$graph_authority_output" '"root_mission_ids":' "mission graph authority exposes root missions for the conflicted bundle"
+assert_json_field "$graph_authority_output" '"required_action": "Narrow selectors, serialize missions, or add a governing dependency/council before parallel execution."' "mission graph authority gives the conflicted bundle a leader-facing next action"
+assert_json_field "$graph_authority_output" '"selector_refs":' "mission graph authority surfaces shared selectors for the conflicted bundle"
 assert_json_field "$graph_authority_output" '"resolution_kind": "parallel_mission_ownership_conflict"' "mission graph authority audit explains the multi-mission ownership conflict"
 doctor_output_graph_conflict=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output_graph_conflict" '"kind": "mission-graph-authority-conflict"' "doctor surfaces cross-mission authority conflict"
@@ -115,7 +118,9 @@ assert_json_field "$graph_authority_dependency" '"cross_mission_conflict_count":
 assert_json_field "$graph_authority_dependency" '"cross_mission_adjudication_count": 1' "mission graph authority audit records one dependency-governed ownership adjudication"
 assert_json_field "$graph_authority_dependency" '"governed_bundle_count": 1' "mission graph authority reports one governed mission bundle"
 assert_json_field "$graph_authority_dependency" '"bundle_state": "governed"' "mission graph authority marks the dependency-governed mission bundle as governed"
+assert_json_field "$graph_authority_dependency" '"resolution_kind": "single_root_governed_bundle"' "mission graph authority gives the governed bundle a bundle-level resolution kind"
 assert_json_field "$graph_authority_dependency" "\"governing_mission_id\": \"issue-20001\"" "mission graph authority identifies the governing mission for the governed bundle"
+assert_json_field "$graph_authority_dependency" "\"required_action\": \"Keep bundle authority anchored to issue-20001 while dependent missions stay bounded.\"" "mission graph authority gives the governed bundle a leader-facing next action"
 assert_json_field "$graph_authority_dependency" '"resolution_kind": "dependency_governed_mission_ownership"' "mission graph authority audit explains dependency-governed ownership authority"
 assert_json_field "$graph_authority_dependency" "\"winning_source\": \"mission:issue-20001\"" "dependency-governed overlap keeps authority on the upstream mission"
 resolved_dependent_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$dependent_run_id" completed "Resolved dependency-governed overlap smoke path.")

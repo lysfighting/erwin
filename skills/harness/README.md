@@ -47,6 +47,7 @@ Use this when the model should act as the harness leader:
 - inspect clean-intent-vs-live-git conflicts through `runs authority-audit` when a run says it is ready or verified but the live worktree is still dirty
 - inspect mission-record drift and leader-over-teammate control adjudication through `missions authority-audit`
 - inspect cross-mission ownership collisions, dependency-governed mission blocking, dependency-governed ownership adjudication, bundle-aware mission-graph groupings, and explicit bundle governors through `missions authority-audit --all`
+- inspect bundle-level `required_action`, `selector_refs`, and bundle `resolution_kind` through `missions authority-audit --all` when the leader needs to know how to untangle or govern a connected mission bundle
 - adopt meeting outcomes
 - reprovision runs safely
 - verify ship readiness and record PR lifecycle state

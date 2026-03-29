@@ -2868,6 +2868,8 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		sort.Strings(dependentMissionIDs)
 		edgeKinds := []string{}
 		edgeCount := 0
+		bundleSelectorRefs := []string{}
+		resolutionKinds := []string{}
 		for pairKey, kinds := range bundlePairKinds {
 			pair := strings.Split(pairKey, "::")
 			if len(pair) != 2 || !componentSet[pair[0]] || !componentSet[pair[1]] {
@@ -2888,6 +2890,8 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			}
 			if inBundle {
 				conflictCount++
+				resolutionKinds = append(resolutionKinds, stringValue(conflict["resolution_kind"]))
+				bundleSelectorRefs = append(bundleSelectorRefs, anyListToStrings(toList(conflict["selector_refs"]))...)
 			}
 		}
 		adjudicationCount := 0
@@ -2902,6 +2906,8 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			}
 			if inBundle {
 				adjudicationCount++
+				resolutionKinds = append(resolutionKinds, stringValue(adjudication["resolution_kind"]))
+				bundleSelectorRefs = append(bundleSelectorRefs, anyListToStrings(toList(adjudication["selector_refs"]))...)
 			}
 		}
 		for _, item := range dependencyAdjudications {
@@ -2910,20 +2916,37 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			dependencyID := stringValue(adjudication["dependency_id"])
 			if componentSet[missionID] && componentSet[dependencyID] {
 				adjudicationCount++
+				resolutionKinds = append(resolutionKinds, stringValue(adjudication["resolution_kind"]))
 			}
 		}
 		state := "linked"
 		governingMissionID := ""
+		resolutionKind := "linked_bundle"
+		requiredAction := "Inspect linked missions before widening parallel execution."
+		governanceNotes := []string{}
 		switch {
 		case conflictCount > 0:
 			state = "conflicted"
+			resolutionKind = "bundle_conflict"
+			requiredAction = "Narrow selectors, serialize missions, or add a governing dependency/council before parallel execution."
+			if len(bundleRoots) > 1 {
+				governanceNotes = append(governanceNotes, "Multiple root missions still claim overlapping bundle authority.")
+			}
 			conflictedBundleCount++
 		case adjudicationCount > 0:
 			state = "governed"
 			if len(bundleRoots) == 1 {
 				governingMissionID = bundleRoots[0]
+				resolutionKind = "single_root_governed_bundle"
+				requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s while dependent missions stay bounded.", governingMissionID)
+			} else {
+				resolutionKind = "multi_source_governed_bundle"
+				requiredAction = "Bundle has adjudications but no single governing root; inspect mission-level authority before widening execution."
 			}
 			governedBundleCount++
+		}
+		if len(bundleSelectorRefs) > 0 {
+			governanceNotes = append(governanceNotes, fmt.Sprintf("Shared governed selectors: %s", strings.Join(dedupeStrings(bundleSelectorRefs), ", ")))
 		}
 		bundles = append(bundles, map[string]any{
 			"bundle_id":             "bundle-" + slugify(strings.Join(component, "-")),
@@ -2934,6 +2957,11 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			"conflict_count":        conflictCount,
 			"adjudication_count":    adjudicationCount,
 			"bundle_state":          state,
+			"resolution_kind":       resolutionKind,
+			"resolution_kinds":      stringListToAny(dedupeStrings(resolutionKinds)),
+			"selector_refs":         stringListToAny(dedupeStrings(bundleSelectorRefs)),
+			"required_action":       requiredAction,
+			"governance_notes":      stringListToAny(governanceNotes),
 			"canonical_mission_id":  component[0],
 			"root_mission_ids":      stringListToAny(bundleRoots),
 			"dependent_mission_ids": stringListToAny(dependentMissionIDs),

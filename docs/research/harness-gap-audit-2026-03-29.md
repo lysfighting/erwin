@@ -23,7 +23,7 @@ The current truth is:
 
 - **absorbed well**: protocol lifecycle, leader-centric control plane, teammate runtime, governed communication, runtime packaging direction
 - **absorbed partially**: cybernetic reconciliation, Kubernetes-style ownership discipline, harness-wide authority enforcement, automated council behavior
-- **still incomplete**: richer selector policy beyond the new normalized/shared-transfer baseline, higher-order authority adjudication beyond the new run/mission/mission-graph plus dependency-governed ownership and bundle-governor baseline, deeper automated council orchestration beyond the new auto-synthesis plus bounded multi-round debate baseline, clearer final product naming
+- **still incomplete**: richer selector policy beyond the new normalized/shared-transfer baseline, higher-order authority adjudication beyond the new run/mission/mission-graph plus dependency-governed ownership, bundle governors, and bundle-level required-action packets, deeper automated council orchestration beyond the new auto-synthesis plus bounded multi-round debate baseline, clearer final product naming
 
 ---
 
@@ -72,6 +72,7 @@ This audit was followed immediately by implementation work that materially close
 - meetings now materialize bounded multi-round debate obligations, letting the council continue through successive replies until a lane prevails on authority/freshness or the configured round cap is reached
 - run authority audit now records artifact-family winner/loser conflicts so stale contract snapshots and stale run records lose explicitly to stronger run/live evidence instead of only showing generic drift
 - `doctor` now treats unrouted conflicting claims as a governance problem once the meeting has advanced into cross-examination, synthesis, or output
+- mission graph authority now emits bundle-level `resolution_kind`, `selector_refs`, and `required_action`, so the leader gets a real packet for connected mission bundles instead of only pairwise edge records
 
 This pushes the council model much closer to the intended `arch-review` discipline instead of only “meeting exists.”
 
@@ -108,7 +109,7 @@ Authority levels are now validated and surfaced, and the system now adjudicates 
 What is still missing:
 
 - systematic high-vs-low authority conflict handling beyond the new run/contract/live artifact baseline and ship-gate winner/loser rules
-- broader leader-facing explanations when larger mission bundles disagree without a governing dependency, signal, or meeting beyond the new bundle-aware graph baseline
+- broader winner/loser adjudication when larger mission bundles disagree without a governing dependency, signal, or meeting beyond the new bundle-level explanation baseline
 
 ### 4. Public product contract
 

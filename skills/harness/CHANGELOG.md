@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Bundle-level authority packets in `missions authority-audit --all`, including `resolution_kind`, shared `selector_refs`, and leader-facing `required_action`.
 - Semantic selector-family overlap so same-boundary `scope:` and `interface:` claims now collide under exclusive governance instead of passing as unrelated labels.
 - Bounded multi-round council control via meeting `round_actions`, configurable debate-round caps, and debate-round gating in `meetings orchestrate`.
 - Explicit `governing_mission_id` in bundle-aware mission graph authority when a governed bundle has a single root mission.
@@ -38,6 +39,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Ship-gate authority adjudication in `runs authority-audit`, so leader-facing run review can explain when verification/review/checks state overrides an overly optimistic delivery status.
 
 ### Changed
+- `scripts/harness-smoke-test.sh` now proves conflicted and governed mission bundles expose bundle-level next actions in addition to pairwise mission-graph verdicts.
 - `scripts/harness-teammate-smoke-test.sh` now proves cross-kind semantic overlap between `scope:` and `interface:` selectors in addition to the existing path-family overlap checks.
 - `scripts/harness-teammate-smoke-test.sh` now proves a third-round council path before synthesis, and `meetings summary` surfaces the configured `max_debate_rounds` so leader views can see the controller cap directly.
 - `scripts/harness-smoke-test.sh` now proves bundle roots plus the governing mission for a dependency-governed bundle.
