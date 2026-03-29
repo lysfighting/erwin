@@ -25,6 +25,7 @@ Use this when the model should act as the harness leader:
 - inspect governed state
 - inspect mission graph and mission-level desired state
 - inspect mission-level authority through `missions authority-audit` when the freshest teammate activity and the leader-governed control run should differ
+- inspect graph-level mission conflicts through `missions authority-audit --all` when active missions may be colliding across ownership boundaries
 - draft or create executable issues
 - claim work into execution
 - convene and close councils
@@ -43,6 +44,7 @@ Use this when the model should act as the harness leader:
 - inspect artifact-family authority conflicts through `runs authority-audit` when contract snapshots, active run state, and live git state disagree
 - inspect clean-intent-vs-live-git conflicts through `runs authority-audit` when a run says it is ready or verified but the live worktree is still dirty
 - inspect mission-record drift and leader-over-teammate control adjudication through `missions authority-audit`
+- inspect cross-mission ownership collisions and dependency-governed mission blocking through `missions authority-audit --all`
 - adopt meeting outcomes
 - reprovision runs safely
 - verify ship readiness and record PR lifecycle state

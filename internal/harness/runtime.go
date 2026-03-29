@@ -2617,6 +2617,108 @@ func missionAuthorityAudit(mission map[string]any, registry map[string]any) map[
 	}
 }
 
+func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[string]any, includeInactive bool) map[string]any {
+	missions := []map[string]any{}
+	for _, item := range toList(missionRegistry["missions"]) {
+		mission, _ := toMap(item)
+		if len(mission) == 0 {
+			continue
+		}
+		if includeInactive || activeMission(mission) {
+			missions = append(missions, mission)
+		}
+	}
+	sort.Slice(missions, func(i, j int) bool {
+		left := stringValue(missions[i]["mission_id"])
+		right := stringValue(missions[j]["mission_id"])
+		return left < right
+	})
+
+	missionAudits := []any{}
+	missionIDs := []string{}
+	missionGapCount := 0
+	missionAdjudicationCount := 0
+	missionUnresolvedCount := 0
+	for _, mission := range missions {
+		audit, _ := toMap(missionAuthorityAudit(mission, registry))
+		missionAudits = append(missionAudits, audit)
+		missionIDs = append(missionIDs, stringValue(mission["mission_id"]))
+		missionGapCount += intValue(audit["mission_gap_count"])
+		missionAdjudicationCount += intValue(audit["adjudication_count"])
+		missionUnresolvedCount += intValue(audit["unresolved_conflict_count"])
+	}
+
+	crossMissionConflicts := []any{}
+	for index, leftMission := range missions {
+		if !activeMission(leftMission) {
+			continue
+		}
+		leftID := stringValue(leftMission["mission_id"])
+		for _, rightMission := range missions[index+1:] {
+			if !activeMission(rightMission) {
+				continue
+			}
+			rightID := stringValue(rightMission["mission_id"])
+			shared := []string{}
+			for _, leftClaim := range ownershipClaims(leftMission) {
+				for _, rightClaim := range ownershipClaims(rightMission) {
+					if ownershipSelectorsOverlap(leftClaim, rightClaim) {
+						shared = append(shared, leftClaim+"~"+rightClaim)
+					}
+				}
+			}
+			if len(shared) == 0 {
+				continue
+			}
+			crossMissionConflicts = append(crossMissionConflicts, map[string]any{
+				"claim_ref":       "mission_ownership_boundary",
+				"resolution_kind": "parallel_mission_ownership_conflict",
+				"source_ref":      "mission:" + leftID,
+				"winning_source":  "",
+				"losing_source":   "",
+				"authority_level": "L2",
+				"mission_ids":     stringListToAny([]string{leftID, rightID}),
+				"selector_refs":   stringListToAny(dedupeStrings(shared)),
+				"note":            "Active missions have overlapping bounded ownership selectors without a higher-level adjudication.",
+			})
+		}
+	}
+
+	dependencyAdjudications := []any{}
+	for _, mission := range missions {
+		if !activeMission(mission) {
+			continue
+		}
+		missionID := stringValue(mission["mission_id"])
+		for _, dependencyID := range missionDependenciesUnsatisfied(mission, missionRegistry) {
+			dependencyAdjudications = append(dependencyAdjudications, map[string]any{
+				"claim_ref":       "mission_dependency",
+				"resolution_kind": "dependency_mission_blocks_execution",
+				"source_ref":      "mission:" + dependencyID,
+				"winning_source":  "mission:" + dependencyID,
+				"losing_source":   "mission:" + missionID,
+				"authority_level": "L2",
+				"mission_id":      missionID,
+				"dependency_id":   dependencyID,
+				"note":            "Dependent mission cannot govern itself as ready-for-unconstrained execution until its dependency mission is done.",
+			})
+		}
+	}
+
+	return map[string]any{
+		"mission_count":                     len(missions),
+		"mission_ids":                       stringListToAny(missionIDs),
+		"mission_gap_count":                 missionGapCount,
+		"mission_adjudication_count":        missionAdjudicationCount,
+		"mission_unresolved_conflict_count": missionUnresolvedCount,
+		"cross_mission_conflict_count":      len(crossMissionConflicts),
+		"dependency_adjudication_count":     len(dependencyAdjudications),
+		"mission_authority_audits":          missionAudits,
+		"cross_mission_conflicts":           crossMissionConflicts,
+		"dependency_adjudications":          dependencyAdjudications,
+	}
+}
+
 func siblingLinked(run map[string]any, targetRunID string) bool {
 	for _, item := range append(toList(run["communication_peers"]), toList(run["siblings"])...) {
 		if stringValue(item) == targetRunID {
@@ -4504,6 +4606,22 @@ func doctorReport() map[string]any {
 			issues = append(issues, issueRecord("warning", "mission-authority-conflict", missionID, fmt.Sprintf("Mission has unresolved multi-run authority conflicts: %s", strings.Join(dedupeStrings(conflictRefs), ", ")), "Close or merge the competing root runs so the mission control plane has a single governing run."))
 		}
 	}
+	graphAuthorityAudit, _ := toMap(missionGraphAuthorityAudit(missionRegistry, registry, false))
+	if intValue(graphAuthorityAudit["cross_mission_conflict_count"]) > 0 {
+		for _, item := range toList(graphAuthorityAudit["cross_mission_conflicts"]) {
+			conflict, ok := toMap(item)
+			if !ok {
+				continue
+			}
+			issues = append(issues, issueRecord(
+				"warning",
+				"mission-graph-authority-conflict",
+				strings.Join(anyListToStrings(toList(conflict["mission_ids"])), "::"),
+				"Active missions overlap across bounded ownership selectors.",
+				"Run missions authority-audit --all, then narrow selectors, serialize the work, or transfer ownership boundaries explicitly.",
+			))
+		}
+	}
 
 	exclusiveRuns := []map[string]any{}
 	for _, run := range activeRuns {
@@ -4922,12 +5040,15 @@ func cmdMissions(args []string) error {
 			"missions":      graph,
 		})
 	case "authority-audit":
+		if len(args) >= 2 && args[1] == "--all" {
+			return printJSON(missionGraphAuthorityAudit(registry, readRegistry(), false))
+		}
 		if len(args) < 2 {
-			return errors.New("missions authority-audit requires MISSION_ID")
+			return errors.New("missions authority-audit requires MISSION_ID or --all")
 		}
 		missionID := strings.TrimSpace(args[1])
 		if missionID == "" {
-			return errors.New("missions authority-audit requires MISSION_ID")
+			return errors.New("missions authority-audit requires MISSION_ID or --all")
 		}
 		mission := readMission(missionID)
 		if mission == nil {
@@ -5622,10 +5743,13 @@ func cmdHome(args []string) error {
 		mission, _ := toMap(item)
 		missionGraphEdges += len(toList(mission["depends_on"]))
 	}
+	graphAuthorityAudit, _ := toMap(missionGraphAuthorityAudit(missionRegistry, registry, false))
 	nextAction := "Continue active execution and monitor signals."
 	switch {
 	case len(orphanSignals) > 0 || len(orphanMeetings) > 0:
 		nextAction = "Reconcile orphaned runtime objects before proceeding."
+	case intValue(graphAuthorityAudit["cross_mission_conflict_count"]) > 0:
+		nextAction = "Resolve cross-mission authority conflicts before widening execution."
 	case len(overlappingClaims) > 0:
 		nextAction = "Resolve ownership overlap before delegating or continuing parallel execution."
 	case len(blockedMissions) > 0:
@@ -5654,39 +5778,42 @@ func cmdHome(args []string) error {
 		nextAction = "Review waiting runs and dependency state."
 	}
 	return printJSON(map[string]any{
-		"profile_id":                  stringValue(getKey(profile, "profile.profile_id", "")),
-		"active_mission_count":        len(activeMissions),
-		"blocked_mission_count":       len(blockedMissions),
-		"review_mission_count":        len(reviewMissions),
-		"dependency_mission_count":    len(dependencyBlockedMissions),
-		"mission_graph_edge_count":    missionGraphEdges,
-		"active_run_count":            len(activeRuns),
-		"active_teammate_count":       len(activeTeammates),
-		"blocked_run_count":           len(blockedRuns),
-		"dependency_blocked_count":    len(dependencyBlockedRuns),
-		"review_blocked_count":        len(reviewBlockedRuns),
-		"checks_failed_count":         len(checksFailedRuns),
-		"merge_ready_count":           len(mergeReadyRuns),
-		"ownership_overlap_count":     len(overlappingClaims),
-		"active_signal_count":         len(activeSignals),
-		"coordination_signal_count":   len(coordinationSignals),
-		"active_meeting_count":        len(meetings),
-		"active_rc_count":             boolToInt(activeRCRecord != nil),
-		"open_meeting_action_count":   len(meetingActions),
-		"orphan_signal_count":         len(orphanSignals),
-		"orphan_meeting_count":        len(orphanMeetings),
-		"missions":                    activeMissions,
-		"dependency_blocked_missions": dependencyBlockedMissions,
-		"runs":                        activeRuns,
-		"dependency_blocked_runs":     dependencyBlockedRuns,
-		"signals":                     activeSignals,
-		"meetings":                    meetings,
-		"overlapping_claims":          overlappingClaims,
-		"active_rc":                   mapOrEmpty(activeRCRecord),
-		"meeting_actions":             meetingActions,
-		"orphan_signals":              orphanSignals,
-		"orphan_meetings":             orphanMeetings,
-		"next_action":                 nextAction,
+		"profile_id":                            stringValue(getKey(profile, "profile.profile_id", "")),
+		"active_mission_count":                  len(activeMissions),
+		"blocked_mission_count":                 len(blockedMissions),
+		"review_mission_count":                  len(reviewMissions),
+		"dependency_mission_count":              len(dependencyBlockedMissions),
+		"mission_graph_edge_count":              missionGraphEdges,
+		"mission_graph_conflict_count":          intValue(graphAuthorityAudit["cross_mission_conflict_count"]),
+		"mission_dependency_adjudication_count": intValue(graphAuthorityAudit["dependency_adjudication_count"]),
+		"active_run_count":                      len(activeRuns),
+		"active_teammate_count":                 len(activeTeammates),
+		"blocked_run_count":                     len(blockedRuns),
+		"dependency_blocked_count":              len(dependencyBlockedRuns),
+		"review_blocked_count":                  len(reviewBlockedRuns),
+		"checks_failed_count":                   len(checksFailedRuns),
+		"merge_ready_count":                     len(mergeReadyRuns),
+		"ownership_overlap_count":               len(overlappingClaims),
+		"active_signal_count":                   len(activeSignals),
+		"coordination_signal_count":             len(coordinationSignals),
+		"active_meeting_count":                  len(meetings),
+		"active_rc_count":                       boolToInt(activeRCRecord != nil),
+		"open_meeting_action_count":             len(meetingActions),
+		"orphan_signal_count":                   len(orphanSignals),
+		"orphan_meeting_count":                  len(orphanMeetings),
+		"missions":                              activeMissions,
+		"dependency_blocked_missions":           dependencyBlockedMissions,
+		"mission_authority_audit":               graphAuthorityAudit,
+		"runs":                                  activeRuns,
+		"dependency_blocked_runs":               dependencyBlockedRuns,
+		"signals":                               activeSignals,
+		"meetings":                              meetings,
+		"overlapping_claims":                    overlappingClaims,
+		"active_rc":                             mapOrEmpty(activeRCRecord),
+		"meeting_actions":                       meetingActions,
+		"orphan_signals":                        orphanSignals,
+		"orphan_meetings":                       orphanMeetings,
+		"next_action":                           nextAction,
 	})
 }
 

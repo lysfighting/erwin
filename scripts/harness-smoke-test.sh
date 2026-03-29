@@ -67,7 +67,7 @@ assert_json_field() {
 }
 
 section "Claim"
-claim_output=$(run_in_repo bash scripts/harness-claim.sh 20001 "Harness Smoke Mission")
+claim_output=$(run_in_repo bash scripts/harness-claim.sh 20001 "Harness Smoke Mission" --owns="file:CHANGELOG.md")
 assert_json_field "$claim_output" '"mission_id": "issue-20001"' "claim creates mission"
 assert_json_field "$claim_output" '"run_id": "run-' "claim returns run id"
 assert_json_field "$claim_output" 'issue-20001.yml' "claim materializes mission path"
@@ -89,6 +89,20 @@ assert_json_field "$mission_authority_baseline" '"mission_gap_count": 0' "missio
 assert_json_field "$mission_authority_baseline" '"adjudication_count": 0' "mission authority audit starts without cross-run adjudications"
 authority_baseline=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$authority_baseline" '"contract_gap_count": 0' "initial run authority audit starts without contract drift"
+
+section "Mission graph authority"
+second_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20002 "Harness Conflict Mission" --owns="file:CHANGELOG.md" --allow-overlap)
+assert_json_field "$second_claim_output" '"mission_id": "issue-20002"' "second claim can materialize a conflicting mission under explicit overlap allowance"
+second_run_id=$(printf '%s\n' "$second_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+graph_authority_output=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_output" '"cross_mission_conflict_count": 1' "mission graph authority audit reports one cross-mission control conflict"
+assert_json_field "$graph_authority_output" '"resolution_kind": "parallel_mission_ownership_conflict"' "mission graph authority audit explains the multi-mission ownership conflict"
+doctor_output_graph_conflict=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_json_field "$doctor_output_graph_conflict" '"kind": "mission-graph-authority-conflict"' "doctor surfaces cross-mission authority conflict"
+resolved_second_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$second_run_id" completed "Resolved cross-mission smoke overlap.")
+assert_json_field "$resolved_second_run" '"state": "completed"' "second conflicting mission can be closed to clear mission-graph conflict"
+graph_authority_cleared=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_cleared" '"cross_mission_conflict_count": 0' "mission graph authority audit clears after conflicting mission closes"
 
 section "Contract authority"
 (

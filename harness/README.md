@@ -111,6 +111,7 @@ RC surgical fix, RC cancellation, production hotfix prep, and dual-branch backpo
 - leader-facing `runs authority-audit` output for artifact-family winner/loser rules across contract snapshots, active run state, and live git state
 - leader-facing `runs authority-audit` output for clean-intent-vs-dirty-worktree conflicts when live git state contradicts governed verification or handoff intent
 - leader-facing `missions authority-audit` output for mission-record drift plus leader-over-teammate and parallel-root-run control adjudication
+- leader-facing `missions authority-audit --all` output for cross-mission ownership conflicts and dependency-governed mission-graph adjudication
 - authority-level validation for signals and meeting findings
 - machine-readable separation between protocol contract, adapter package, and profile contract
 

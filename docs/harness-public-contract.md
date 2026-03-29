@@ -150,6 +150,7 @@ The package currently guarantees:
 - council-grade meeting packets with authority-aware findings
 - authority audit across signals, meetings, runs, and live git state
 - mission-level authority audit across run aggregates, leader/teammate control boundaries, and multi-run mission conflicts
+- graph-level mission authority audit across cross-mission ownership conflicts and dependency-governed execution boundaries
 - deterministic ship and rc control-plane actions
 - bootstrapable reuse in another git repository
 - smoke-testable package integrity
