@@ -752,6 +752,7 @@ Current capabilities include:
 
 - phase orchestration
 - wave obligations
+- multi-lane debate wave batching
 - route obligations
 - multi-round debate planning
 - summary and readiness metrics

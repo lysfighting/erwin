@@ -4633,6 +4633,82 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		routes = append(routes, route)
 	}
 
+	type waveBatch struct {
+		Phase        string
+		RoundNumber  int
+		AssignedRole string
+		AssignedRun  string
+		ActionIDs    []string
+		ClaimRefs    []string
+	}
+	waveBatchByKey := map[string]*waveBatch{}
+	appendWaveBatch := func(action map[string]any) {
+		assignedRole := strings.TrimSpace(stringValue(action["assigned_role"]))
+		assignedRun := strings.TrimSpace(stringValue(action["assigned_run_id"]))
+		expectedPhase := firstNonBlank(strings.TrimSpace(stringValue(action["expected_phase"])), "cross_examination")
+		roundNumber := intValue(action["round_number"])
+		if roundNumber <= 0 {
+			roundNumber = 1
+		}
+		actorKey := firstNonBlank(assignedRun, assignedRole, "unassigned")
+		key := fmt.Sprintf("%s::%d::%s", expectedPhase, roundNumber, actorKey)
+		batch := waveBatchByKey[key]
+		if batch == nil {
+			batch = &waveBatch{
+				Phase:        expectedPhase,
+				RoundNumber:  roundNumber,
+				AssignedRole: assignedRole,
+				AssignedRun:  assignedRun,
+			}
+			waveBatchByKey[key] = batch
+		}
+		actionID := firstNonBlank(stringValue(action["round_id"]), stringValue(action["route_id"]))
+		if actionID != "" {
+			batch.ActionIDs = append(batch.ActionIDs, actionID)
+		}
+		if claimRef := strings.TrimSpace(stringValue(action["claim_ref"])); claimRef != "" {
+			batch.ClaimRefs = append(batch.ClaimRefs, claimRef)
+		}
+	}
+	for _, item := range routeActions {
+		action, _ := toMap(item)
+		appendWaveBatch(action)
+	}
+	for _, item := range roundActions {
+		action, _ := toMap(item)
+		appendWaveBatch(action)
+	}
+	waveBatchKeys := []string{}
+	for key := range waveBatchByKey {
+		waveBatchKeys = append(waveBatchKeys, key)
+	}
+	sort.Strings(waveBatchKeys)
+	waveBatches := []any{}
+	maxWaveLaneCount := 0
+	multiLaneBatchCount := 0
+	for _, key := range waveBatchKeys {
+		batch := waveBatchByKey[key]
+		laneCount := len(dedupeStrings(batch.ClaimRefs))
+		if laneCount > maxWaveLaneCount {
+			maxWaveLaneCount = laneCount
+		}
+		if laneCount > 1 {
+			multiLaneBatchCount++
+		}
+		waveBatches = append(waveBatches, map[string]any{
+			"batch_id":        "debate-batch-" + slugify(key),
+			"expected_phase":  batch.Phase,
+			"round_number":    batch.RoundNumber,
+			"assigned_role":   batch.AssignedRole,
+			"assigned_run_id": batch.AssignedRun,
+			"state":           "open",
+			"action_ids":      stringListToAny(dedupeStrings(batch.ActionIDs)),
+			"claim_refs":      stringListToAny(dedupeStrings(batch.ClaimRefs)),
+			"lane_count":      laneCount,
+			"summary":         fmt.Sprintf("%s should cover %d governed lane(s) in %s round %d.", firstNonBlank(batch.AssignedRole, batch.AssignedRun, "bounded participant"), laneCount, batch.Phase, batch.RoundNumber),
+		})
+	}
+
 	return map[string]any{
 		"max_debate_rounds":                        maxDebateRounds,
 		"conflict_claim_count":                     conflictClaimCount,
@@ -4645,9 +4721,14 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		"unrouted_claim_count":                     len(blockingGaps),
 		"open_route_action_count":                  len(routeActions),
 		"open_round_action_count":                  len(roundActions),
+		"wave_batch_count":                         len(waveBatches),
+		"open_wave_batch_count":                    len(waveBatches),
+		"multi_lane_batch_count":                   multiLaneBatchCount,
+		"max_wave_lane_count":                      maxWaveLaneCount,
 		"routes":                                   routes,
 		"route_actions":                            routeActions,
 		"round_actions":                            roundActions,
+		"wave_batches":                             waveBatches,
 		"blocking_gaps":                            stringListToAny(blockingGaps),
 		"coverage_notes":                           stringListToAny(coverageNotes),
 	}
@@ -9145,6 +9226,10 @@ func cmdMeetings(args []string) error {
 			"planned_round_count":                      intValue(debatePlan["planned_round_count"]),
 			"resolved_round_count":                     intValue(debatePlan["resolved_round_count"]),
 			"open_round_action_count":                  intValue(debatePlan["open_round_action_count"]),
+			"wave_batch_count":                         intValue(debatePlan["wave_batch_count"]),
+			"open_wave_batch_count":                    intValue(debatePlan["open_wave_batch_count"]),
+			"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),
+			"max_wave_lane_count":                      intValue(debatePlan["max_wave_lane_count"]),
 			"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),
 			"open_wave_action_count":                   intValue(wavePlan["open_wave_action_count"]),
 			"unrouted_claim_count":                     intValue(debatePlan["unrouted_claim_count"]),

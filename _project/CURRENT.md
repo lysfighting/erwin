@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.37.0 (in progress)
+- **Version**: 0.38.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Council-governed bundle authority added)
+- **Last Session**: 2026-03-29 (Multi-lane debate batching added)
 
 ## Current Phase
 
@@ -16,7 +16,11 @@
 
 ## What Was Just Completed
 
-**Session 2026-03-29** — Harness prototype line stayed complete while the leader control plane widened bundle authority beyond dependency-only governance
+**Session 2026-03-29** — Harness prototype line stayed complete while the council controller became more execution-aware across multiple lanes
+
+- **Multi-lane debate batching added**: `meetingDebatePlan` now groups open route/round obligations into `wave_batches`, so one participant can receive a visible batch of same-round work across multiple conflicting claim lanes instead of only a flat list of isolated obligations
+- **Meeting summary widened again**: `meetings summary` now surfaces `wave_batch_count`, `open_wave_batch_count`, `multi_lane_batch_count`, and `max_wave_lane_count`, making multi-lane debate execution visible to the leader
+- **Teammate smoke widened again**: `scripts/harness-teammate-smoke-test.sh` now proves a two-lane conflicting council produces one grouped debate batch for the same bounded challenger
 
 - **Council-governed bundle authority added**: `missions authority-audit --all` now treats a single active council anchor as a first-class ownership adjudication source, so overlapping missions can become a governed bundle even without an explicit dependency edge when one mission is already chairing the relevant council
 - **Bundle packets widened again**: governed mission bundles can now emit `council_governed_mission_ownership` and `council_governed_bundle`, with `governing_mission_id` and a leader-facing action that keeps authority on the council-host mission until adoption
@@ -161,7 +165,7 @@
 1. Read this file
 2. **Harness next work**:
    - A. Continue authority adjudication beyond the current run/mission/mission-graph plus dependency-governed ownership, selector-specificity winners, council-governed bundle authority, and bundle-governor rules into broader multi-mission bundle handling when no obvious governing dependency or single active council anchor exists
-   - B. Continue pushing council behavior from auto-synthesis, direct synthesis for aligned/authority-resolved lanes, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate across more than one conflicting lane
+   - B. Continue pushing council behavior from auto-synthesis, direct synthesis for aligned/authority-resolved lanes, wave obligations, multi-lane debate batching, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate execution across more than one conflicting lane
    - C. Decide whether deeper scheduler work should move beyond the new snapshot/reschedule/execution-mode baseline into larger-portfolio admission and rescheduling policy, or whether that should wait until bundle adjudication is stronger
    - D. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
    - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `docs/harness-documentation-map.md`, `docs/harness-architecture.md`, `docs/harness-operating-model.md`, `docs/harness-public-contract.md`, `docs/harness-session-handoff.md`, `harness/adapter-manifest.yml`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, recent `_project/sessions/2026-03-29-*.md` logs, and inspect recent commits on `codex/harness-release-lifecycle`

@@ -490,6 +490,38 @@ assert_json_field "$mission_graph" '"mission_count": 1' "mission graph reports t
 doctor_output=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output" '"issue_count": 0' "doctor stays healthy with governed teammate runtime"
 
+section "Multi-lane debate batching"
+batch_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can one bounded participant receive a multi-lane debate batch?")
+assert_json_field "$batch_meeting_output" '"state": "active"' "multi-lane batching meeting materializes"
+batch_meeting_id=$(printf '%s\n' "$batch_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+
+run_in_repo bash scripts/harness-meetings.sh add-role "$batch_meeting_id" implementation-verifier --mission="State the release and rollback note requirements." --allow="L1: live git state|L2: active runtime state" --forbid="L4+: stale notes" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-role "$batch_meeting_id" ops-simulator --mission="Challenge both operator-facing note requirements." --allow="L1: live git state|L2: active runtime state" --forbid="Unverified memory" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh lock-decision "$batch_meeting_id" "Keep this council bounded to two documentation claim lanes." --reason="Multi-lane batching coverage should stay inside explicit release and rollback note claims." --authority=L2 --evidence=harness/profiles/erwin.yml >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$batch_meeting_id" "$run_a" implementation-verifier >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$batch_meeting_id" "$run_b" ops-simulator >/dev/null
+
+batch_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$batch_meeting_id")
+assert_json_field "$batch_orchestrate_a" '"new_phase": "independent_review"' "multi-lane batching council advances into independent review"
+
+run_in_repo bash scripts/harness-meetings.sh add-position "$batch_meeting_id" "$run_a" independent_review support "Release notes need the scoped auth update." --claim=batch-release-note --dimension=factual --authority=L2 --evidence=CHANGELOG.md >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$batch_meeting_id" "$run_b" independent_review challenge "Release notes can stay narrower for this change." --claim=batch-release-note --dimension=factual --authority=L2 --evidence=CHANGELOG.md >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$batch_meeting_id" "$run_a" independent_review support "Rollback notes should mention the auth scope change." --claim=batch-rollback-note --dimension=factual --authority=L2 --evidence=docs/release.md >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$batch_meeting_id" "$run_b" independent_review challenge "Rollback notes can wait until a rollback path is concrete." --claim=batch-rollback-note --dimension=factual --authority=L2 --evidence=docs/release.md >/dev/null
+
+batch_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$batch_meeting_id")
+assert_json_field "$batch_orchestrate_b" '"new_phase": "cross_examination"' "multi-lane batching council advances into cross-examination for conflicting lanes"
+assert_json_field "$batch_orchestrate_b" '"open_route_action_count": 2' "multi-lane batching council opens two route obligations"
+assert_json_field "$batch_orchestrate_b" '"wave_batch_count": 1' "multi-lane batching controller groups the two open route obligations into one wave batch"
+assert_json_field "$batch_orchestrate_b" '"multi_lane_batch_count": 1' "multi-lane batching controller records one batch that spans multiple claim lanes"
+assert_json_field "$batch_orchestrate_b" '"max_wave_lane_count": 2' "multi-lane batching controller reports the largest lane bundle in one batch"
+
+batch_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$batch_meeting_id")
+assert_json_field "$batch_summary" '"open_route_action_count": 2' "multi-lane batching summary keeps both open route obligations visible"
+assert_json_field "$batch_summary" '"wave_batch_count": 1' "multi-lane batching summary surfaces one open debate batch"
+assert_json_field "$batch_summary" '"multi_lane_batch_count": 1' "multi-lane batching summary reports a multi-lane batch"
+assert_json_field "$batch_summary" '"max_wave_lane_count": 2' "multi-lane batching summary reports the lane count of the largest batch"
+
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"
 if [ "$FAIL" -ne 0 ]; then
