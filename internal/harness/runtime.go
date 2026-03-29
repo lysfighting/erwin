@@ -9466,7 +9466,7 @@ func cmdMeetingsRemainder(args []string) error {
 				autoSynthesis = meetingAutoSynthesize(meeting)
 			}
 			synthesis := meetingSynthesisAudit(meeting)
-			if currentPhase == "synthesis" && stringValue(synthesis["status"]) == "ready_for_output" && oldPhase == "synthesis" {
+			if currentPhase == "synthesis" && stringValue(synthesis["status"]) == "ready_for_output" {
 				setMeetingPhase(meeting, "output", "orchestrate advanced from synthesis")
 				currentPhase = "output"
 				nextRequirement = "Adopt or close the meeting outcome into run state."

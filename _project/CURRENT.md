@@ -8,7 +8,7 @@
 
 - **Version**: 0.38.0 (in progress)
 - **Last Updated**: 2026-03-29
-- **Last Session**: 2026-03-29 (Multi-lane debate batching added)
+- **Last Session**: 2026-03-29 (Council orchestration now closes straight to output)
 
 ## Current Phase
 
@@ -18,6 +18,8 @@
 
 **Session 2026-03-29** — Harness prototype line stayed complete while the council controller became more execution-aware across multiple lanes
 
+- **Direct output closure added**: `meetings orchestrate` now advances straight from a newly synthesized council record into `output` when no synthesis gaps remain, so multi-lane, authority-resolved, and aligned councils no longer need a second orchestration pass just to leave `synthesis`
+- **Teammate smoke widened again**: `scripts/harness-teammate-smoke-test.sh` now proves auto-synthesized, verdict-adopted, authority-resolved, and aligned councils all close to `output` in the same orchestration call that materializes their governed findings
 - **Multi-lane debate batching added**: `meetingDebatePlan` now groups open route/round obligations into `wave_batches`, so one participant can receive a visible batch of same-round work across multiple conflicting claim lanes instead of only a flat list of isolated obligations
 - **Meeting summary widened again**: `meetings summary` now surfaces `wave_batch_count`, `open_wave_batch_count`, `multi_lane_batch_count`, and `max_wave_lane_count`, making multi-lane debate execution visible to the leader
 - **Teammate smoke widened again**: `scripts/harness-teammate-smoke-test.sh` now proves a two-lane conflicting council produces one grouped debate batch for the same bounded challenger

@@ -278,10 +278,8 @@ action_output=$(run_in_repo bash scripts/harness-meetings.sh add-action "$meetin
 assert_json_field "$action_output" '"action_items"' "meeting records action items"
 
 orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
-assert_json_field "$orchestrate_c" '"new_phase": "synthesis"' "meeting orchestration advances to synthesis"
+assert_json_field "$orchestrate_c" '"new_phase": "output"' "meeting orchestration can close directly to output once synthesis is already ready"
 assert_json_field "$orchestrate_c" '"status": "ready_for_output"' "meeting orchestration materializes synthesis audit"
-orchestrate_d=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
-assert_json_field "$orchestrate_d" '"new_phase": "output"' "meeting orchestration advances to output once findings exist"
 summary_output=$(run_in_repo bash scripts/harness-meetings.sh summary "$meeting_id")
 assert_json_field "$summary_output" '"synthesis_status": "ready_for_output"' "meeting summary reports synthesis readiness"
 assert_json_field "$summary_output" '"phase_history_count":' "meeting summary reports phase history"
@@ -346,7 +344,7 @@ auto_cross_d=$(run_in_repo bash scripts/harness-meetings.sh add-position "$auto_
 assert_json_field "$auto_cross_d" '"cross_examination"' "auto-synthesis council records the third-round challenge reply"
 
 auto_orchestrate_e=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
-assert_json_field "$auto_orchestrate_e" '"new_phase": "synthesis"' "auto-synthesis council advances into synthesis after the bounded multi-round debate"
+assert_json_field "$auto_orchestrate_e" '"new_phase": "output"' "auto-synthesis council can close the multi-round debate into output in the same orchestration pass"
 assert_json_field "$auto_orchestrate_e" '"generated_finding_count": 2' "orchestrate auto-generates findings from council positions"
 assert_json_field "$auto_orchestrate_e" '"generated_action_count": 1' "orchestrate auto-generates action items for unresolved council claims"
 
@@ -363,9 +361,6 @@ assert_json_field "$auto_summary" '"planned_round_count": 2' "auto-synthesis sum
 assert_json_field "$auto_summary" '"resolved_round_count": 2' "auto-synthesis summary shows no remaining unresolved second-round planning"
 assert_json_field "$auto_summary" '"open_round_action_count": 0' "auto-synthesis summary shows no remaining follow-up round obligation"
 assert_json_field "$auto_summary" '"max_debate_rounds": 3' "auto-synthesis summary surfaces the bounded debate-round cap"
-
-auto_orchestrate_f=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$auto_meeting_id")
-assert_json_field "$auto_orchestrate_f" '"new_phase": "output"' "auto-synthesis council can advance from synthesis to output"
 
 section "Debate verdict adoption"
 verdict_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can a governed debate route materialize a final verdict after the latest reply wins?")
@@ -402,7 +397,7 @@ verdict_cross_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$ve
 assert_json_field "$verdict_cross_b" '"cross_examination"' "verdict-adoption council records the latest winning reply"
 
 verdict_orchestrate_d=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$verdict_meeting_id")
-assert_json_field "$verdict_orchestrate_d" '"new_phase": "synthesis"' "verdict-adoption council advances into synthesis"
+assert_json_field "$verdict_orchestrate_d" '"new_phase": "output"' "verdict-adoption council can land in output as soon as the governed verdict is synthesized"
 assert_json_field "$verdict_orchestrate_d" '"resolution_kind": "latest_response_prevails"' "verdict-adoption debate plan records the latest-response winner"
 assert_json_field "$verdict_orchestrate_d" '"prevailing_stance": "support"' "verdict-adoption debate plan records the prevailing stance"
 assert_json_field "$verdict_orchestrate_d" '"generated_finding_count": 1' "verdict-adoption council auto-generates a final finding"
@@ -412,9 +407,6 @@ verdict_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$verdict
 assert_json_field "$verdict_summary" '"accepted_count": 1' "verdict-adoption summary materializes an accepted finding"
 assert_json_field "$verdict_summary" '"unresolved_count": 0' "verdict-adoption summary avoids unresolved output when the latest reply wins"
 assert_json_field "$verdict_summary" '"auto_generated_action_count": 0' "verdict-adoption summary leaves no auto-generated action item"
-
-verdict_orchestrate_e=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$verdict_meeting_id")
-assert_json_field "$verdict_orchestrate_e" '"new_phase": "output"' "verdict-adoption council can advance from synthesis to output"
 
 section "Authority-resolved council lanes"
 authority_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can higher-authority review settle a claim lane without forced cross-examination?")
@@ -434,7 +426,7 @@ run_in_repo bash scripts/harness-meetings.sh add-position "$authority_meeting_id
 run_in_repo bash scripts/harness-meetings.sh add-position "$authority_meeting_id" "$run_b" independent_review challenge "Planning notes suggest release notes could stay optional." --claim=authority-release-note --dimension=factual --authority=L3 --evidence=docs/release.md >/dev/null
 
 authority_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$authority_meeting_id")
-assert_json_field "$authority_orchestrate_b" '"new_phase": "synthesis"' "authority-resolved council skips cross-examination when higher-authority evidence already wins"
+assert_json_field "$authority_orchestrate_b" '"new_phase": "output"' "authority-resolved council can skip straight to output when higher-authority evidence already wins"
 assert_json_field "$authority_orchestrate_b" '"resolution_kind": "higher_authority_prevails"' "authority-resolved council records an explicit higher-authority verdict"
 assert_json_field "$authority_orchestrate_b" '"resolved_without_cross_examination": true' "authority-resolved council marks the lane as settled without cross-examination"
 assert_json_field "$authority_orchestrate_b" '"generated_finding_count": 1' "authority-resolved council auto-generates a final finding"
@@ -443,9 +435,6 @@ authority_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$autho
 assert_json_field "$authority_summary" '"accepted_count": 1' "authority-resolved summary materializes the higher-authority support finding"
 assert_json_field "$authority_summary" '"resolved_without_cross_examination_count": 1' "authority-resolved summary surfaces the skipped cross-examination count"
 assert_json_field "$authority_summary" '"authority_resolved_route_count": 1' "authority-resolved summary surfaces the authority-resolved route count"
-
-authority_orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$authority_meeting_id")
-assert_json_field "$authority_orchestrate_c" '"new_phase": "output"' "authority-resolved council can advance from synthesis to output"
 
 section "Aligned review skips empty debate"
 aligned_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can aligned independent review go straight to synthesis when there is no conflict lane?")
@@ -465,16 +454,13 @@ run_in_repo bash scripts/harness-meetings.sh add-position "$aligned_meeting_id" 
 run_in_repo bash scripts/harness-meetings.sh add-position "$aligned_meeting_id" "$run_b" independent_review support "Independent review agrees the stable auth behavior needs release-note coverage." --claim=aligned-release-note --dimension=factual --authority=L2 --evidence=CHANGELOG.md >/dev/null
 
 aligned_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$aligned_meeting_id")
-assert_json_field "$aligned_orchestrate_b" '"new_phase": "synthesis"' "aligned-review council skips cross-examination when no conflicting claim lane exists"
+assert_json_field "$aligned_orchestrate_b" '"new_phase": "output"' "aligned-review council can skip straight to output when no conflicting claim lane exists"
 assert_json_field "$aligned_orchestrate_b" '"planned_route_count": 0' "aligned-review council records zero debate routes when no conflict exists"
 assert_json_field "$aligned_orchestrate_b" '"generated_finding_count": 1' "aligned-review council auto-generates the aligned finding"
 
 aligned_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$aligned_meeting_id")
 assert_json_field "$aligned_summary" '"accepted_count": 1' "aligned-review summary materializes the shared support finding"
 assert_json_field "$aligned_summary" '"planned_route_count": 0' "aligned-review summary stays free of debate-route planning"
-
-aligned_orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$aligned_meeting_id")
-assert_json_field "$aligned_orchestrate_c" '"new_phase": "output"' "aligned-review council can advance from synthesis to output"
 
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
