@@ -527,6 +527,7 @@ The following parts of the operating model are already concretely present:
 
 - leader-facing `home` and `doctor`
 - leader-facing scheduler baseline with durable snapshots, mission classification, execution-mode selection, bundle-aware deferral/escalation, bounded parallel admission from profile policy, profile-backed high-risk scope inference, and rescheduling hints
+- scheduler now enforces the control-plane rule that runnable `P0` missions do not widen into parallel foreground work
 - fresh follow-up signals can now trigger scheduler-driven reclassification and rescheduling instead of remaining display-only telemetry
 - scheduler can now distinguish generic leader decisions from council-worthy decisions by consuming profile `meeting_triggers`, surfacing `recommended_decision_surface`, `meeting_trigger_refs`, and `council_decision_count`
 - first-class mission objects

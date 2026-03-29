@@ -7283,33 +7283,54 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs[0])
 	} else if len(runnableMissionIDs) > 1 {
 		serialize := false
+		serializeReason := ""
 		for _, missionID := range runnableMissionIDs {
 			entry := entryByMission[missionID]
+			if schedulerPriorityRank(stringValue(entry["priority"])) >= schedulerPriorityRank("p0") {
+				serialize = true
+				serializeReason = "p0_priority"
+				break
+			}
 			if boolValue(entry["release_adjacent"]) || schedulerRiskRank(firstNonBlank(stringValue(entry["effective_risk_level"]), stringValue(entry["risk_level"]))) >= 4 {
 				serialize = true
+				serializeReason = "high_risk"
 				break
 			}
 		}
 		if serialize {
-			batchAdmissionPolicy = "serialize_high_risk"
+			if serializeReason == "p0_priority" {
+				batchAdmissionPolicy = "serialize_p0_priority"
+			} else {
+				batchAdmissionPolicy = "serialize_high_risk"
+			}
 			selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs[0])
 			serializedBehindMissionID = runnableMissionIDs[0]
 			for _, missionID := range runnableMissionIDs[1:] {
 				entry := entryByMission[missionID]
 				entry["classification"] = "deferred"
-				reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Serialized behind higher-risk or release-adjacent mission %s.", serializedBehindMissionID))
+				reasonText := fmt.Sprintf("Serialized behind higher-risk or release-adjacent mission %s.", serializedBehindMissionID)
+				actionKind := "defer_until_foreground_risk_clears"
+				actionReason := fmt.Sprintf("Scheduler is serializing this mission behind %s due to higher-risk foreground work.", serializedBehindMissionID)
+				recommendedAction := fmt.Sprintf("Defer this mission until %s clears its foreground risk.", serializedBehindMissionID)
+				if serializeReason == "p0_priority" {
+					reasonText = fmt.Sprintf("Serialized behind P0 mission %s.", serializedBehindMissionID)
+					actionKind = "defer_until_p0_clears"
+					actionReason = fmt.Sprintf("Scheduler is serializing this mission behind P0 mission %s.", serializedBehindMissionID)
+					recommendedAction = fmt.Sprintf("Defer this mission until P0 mission %s clears.", serializedBehindMissionID)
+				}
+				reasons := append(anyListToStrings(toList(entry["reasons"])), reasonText)
 				entry["reasons"] = stringListToAny(dedupeStrings(reasons))
-				entry["recommended_action"] = fmt.Sprintf("Defer this mission until %s clears its foreground risk.", serializedBehindMissionID)
+				entry["recommended_action"] = recommendedAction
 				if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
 					currentState := stringValue(entry["authoritative_run_state"])
 					if currentState == "ready" || currentState == "executing" {
 						rescheduleActions = append(rescheduleActions, map[string]any{
 							"mission_id":    missionID,
 							"run_id":        runID,
-							"action_kind":   "defer_until_foreground_risk_clears",
+							"action_kind":   actionKind,
 							"target_state":  "waiting",
 							"current_state": currentState,
-							"reason":        fmt.Sprintf("Scheduler is serializing this mission behind %s due to higher-risk foreground work.", serializedBehindMissionID),
+							"reason":        actionReason,
 						})
 					}
 				}

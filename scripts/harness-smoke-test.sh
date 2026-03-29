@@ -372,6 +372,32 @@ assert_json_field "$resolved_high_risk_run" '"state": "completed"' "profile-back
 resolved_low_risk_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$low_risk_run_id" completed "Resolved low-risk peer scheduling smoke path.")
 assert_json_field "$resolved_low_risk_run" '"state": "completed"' "low-risk peer mission can be closed after high-risk serialization coverage"
 
+section "P0 serialization"
+p0_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20019 "Harness P0 Mission" --owns="file:package.json")
+assert_json_field "$p0_claim_output" '"mission_id": "issue-20019"' "P0 mission can materialize"
+p0_run_id=$(printf '%s\n' "$p0_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+p0_update_output=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$p0_run_id"
+{
+  "priority": "P0"
+}
+EOF
+)
+assert_json_field "$p0_update_output" '"priority": "P0"' "run priority can be raised to P0"
+p0_peer_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20020 "Harness P0 Peer Mission" --owns="file:docs/README.md")
+assert_json_field "$p0_peer_claim_output" '"mission_id": "issue-20020"' "P0 peer mission can materialize"
+p0_peer_run_id=$(printf '%s\n' "$p0_peer_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+schedule_p0_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_p0_output" '"batch_admission_policy": "serialize_p0_priority"' "scheduler serializes the foreground batch when a P0 mission is runnable"
+assert_json_field "$schedule_p0_output" '"selected_mission_count": 1' "scheduler keeps the foreground batch singular when a P0 mission is active"
+assert_json_field "$schedule_p0_output" '"mission_id": "issue-20019"' "scheduler includes the P0 mission in the classification output"
+assert_json_field "$schedule_p0_output" '"action_kind": "defer_until_p0_clears"' "scheduler defers peer missions behind the active P0 mission"
+resolved_p0_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$p0_run_id" completed "Resolved P0 serialization smoke path.")
+assert_json_field "$resolved_p0_run" '"state": "completed"' "P0 mission can be closed after serialization coverage"
+resolved_p0_peer_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$p0_peer_run_id" completed "Resolved P0 peer serialization smoke path.")
+assert_json_field "$resolved_p0_peer_run" '"state": "completed"' "P0 peer mission can be closed after serialization coverage"
+
 section "Council-governed mission graph authority"
 council_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Resolve the overlapping release-note ownership boundary before widening execution.")
 assert_json_field "$council_meeting_output" '"state": "active"' "drive meeting materializes an active council on the root mission"
