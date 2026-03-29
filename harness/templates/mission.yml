@@ -27,6 +27,7 @@ mission:
   completed_run_ids: []
   teammate_run_ids: []
   latest_run_id: ""
+  authoritative_run_id: ""
   latest_summary: ""
   next_expected_action: ""
   run_count: 0

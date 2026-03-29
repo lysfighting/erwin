@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Harness Prototype
+- **Mission-level authority adjudication**: missions now track both `latest_run_id` and `authoritative_run_id`, and `missions authority-audit` explains when leader-facing mission control should stay anchored to a leader/root run even as fresher teammate activity lands.
 - **Runtime bundle packaging**: added `scripts/harness-package-runtime.sh` plus `scripts/harness-runtime-package-smoke-test.sh`, so `Harness` can now emit per-target runtime tarballs that carry the binary, adapter manifest, and public contract together.
 - **Harness prototype positioning ADR**: accepted ADR `0013-harness-prototype-positioning.md`, making `Harness` the public prototype name for the Codex-native adapter line while keeping protocol identity separate from package identity.
 - **Artifact-family authority adjudication**: `runs authority-audit` now emits explicit artifact winner/loser records across contract snapshots, active run state, and live git state, so stale planning artifacts lose explicitly instead of only surfacing as generic drift.
@@ -158,6 +159,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Cross-skill UX audit: 5 new help routes, 2 branch readiness checks, ~12 error→guidance fixes
 
 ### Changed — Skills Factory
+- **Mission migration path widened**: `maintenance normalize` now regenerates older mission state when the new authoritative control field is missing, so upgraded repositories do not stay noisy in `doctor`.
+- **Teammate smoke widened**: `scripts/harness-teammate-smoke-test.sh` now proves that the freshest teammate activity can differ from the authoritative mission-control run without silently handing mission truth away from the leader surface.
 - **Distribution strategy formalized**: `docs/harness-distribution-strategy.md` now defines source-bootstrap, packaged-binary, and portable runtime-bundle tiers for the `Harness` prototype line.
 - **Bootstrap/package coverage widened**: bootstrap smoke now checks the runtime bundle packaging surfaces in addition to build/dist/package identity surfaces.
 - **Manifest/product identity alignment**: `harness/adapter-manifest.yml` now carries public prototype identity metadata, and the public contract now references the accepted naming/positioning ADR instead of treating naming as unresolved.

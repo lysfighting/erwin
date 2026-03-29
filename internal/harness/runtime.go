@@ -2164,6 +2164,42 @@ func runSortTimestamp(run map[string]any) string {
 	)
 }
 
+func missionRuns(registry map[string]any, missionID string) []map[string]any {
+	runs := []map[string]any{}
+	for _, item := range toList(registry["runs"]) {
+		run, _ := toMap(item)
+		if stringValue(run["mission_id"]) == missionID {
+			runs = append(runs, run)
+		}
+	}
+	sort.Slice(runs, func(i, j int) bool {
+		left := runSortTimestamp(runs[i])
+		right := runSortTimestamp(runs[j])
+		if left != right {
+			return left > right
+		}
+		return stringValue(runs[i]["run_id"]) > stringValue(runs[j]["run_id"])
+	})
+	return runs
+}
+
+func authoritativeMissionRun(runs []map[string]any) map[string]any {
+	for _, run := range runs {
+		if stringValue(run["owner_type"]) != "teammate" && activeRun(run) {
+			return run
+		}
+	}
+	for _, run := range runs {
+		if stringValue(run["owner_type"]) != "teammate" {
+			return run
+		}
+	}
+	if len(runs) > 0 {
+		return runs[0]
+	}
+	return nil
+}
+
 func missionStateFromRuns(runs []map[string]any) string {
 	if len(runs) == 0 {
 		return "queued"
@@ -2323,25 +2359,15 @@ func syncMissionsFromRegistry(registry map[string]any) error {
 }
 
 func materializeMission(template map[string]any, registry map[string]any, missionID string) (map[string]any, error) {
-	runs := []map[string]any{}
-	for _, item := range toList(registry["runs"]) {
-		run, _ := toMap(item)
-		if stringValue(run["mission_id"]) == missionID {
-			runs = append(runs, run)
-		}
-	}
+	runs := missionRuns(registry, missionID)
 	if len(runs) == 0 {
 		return nil, nil
 	}
-	sort.Slice(runs, func(i, j int) bool {
-		left := runSortTimestamp(runs[i])
-		right := runSortTimestamp(runs[j])
-		if left != right {
-			return left > right
-		}
-		return stringValue(runs[i]["run_id"]) > stringValue(runs[j]["run_id"])
-	})
 	latestRun := runs[0]
+	authoritativeRun := authoritativeMissionRun(runs)
+	if authoritativeRun == nil {
+		authoritativeRun = latestRun
+	}
 	earliestRun := runs[len(runs)-1]
 	activeRunIDs := []string{}
 	completedRunIDs := []string{}
@@ -2383,22 +2409,27 @@ func materializeMission(template map[string]any, registry map[string]any, missio
 			contractRef = stringValue(run["contract_ref"])
 		}
 	}
+	controlSummary := firstNonBlank(stringValue(authoritativeRun["latest_summary"]), latestSummary)
+	controlNextAction := firstNonBlank(stringValue(authoritativeRun["next_expected_action"]), nextAction)
+	controlBranch := firstNonBlank(stringValue(authoritativeRun["branch"]), branch)
+	controlWorktreePath := firstNonBlank(stringValue(authoritativeRun["worktree_path"]), worktreePath)
+	controlContractRef := firstNonBlank(stringValue(authoritativeRun["contract_ref"]), contractRef)
 	contract := map[string]any{}
-	if contractRef != "" {
-		contractRoot, _ := toMap(loadData(contractRef, map[string]any{}))
+	if controlContractRef != "" {
+		contractRoot, _ := toMap(loadData(controlContractRef, map[string]any{}))
 		contract, _ = toMap(contractRoot["contract"])
 	}
 	mission, _ := toMap(mergeDicts(template, map[string]any{
 		"mission_id":            missionID,
-		"issue_number":          intValue(firstNonBlank(stringValue(latestRun["issue_number"]), stringValue(contract["issue_number"]))),
-		"title":                 firstNonBlank(stringValue(contract["title"]), stringValue(latestRun["objective"]), missionID),
-		"objective":             firstNonBlank(stringValue(contract["objective"]), stringValue(latestRun["objective"]), missionID),
+		"issue_number":          intValue(firstNonBlank(stringValue(authoritativeRun["issue_number"]), stringValue(latestRun["issue_number"]), stringValue(contract["issue_number"]))),
+		"title":                 firstNonBlank(stringValue(contract["title"]), stringValue(authoritativeRun["objective"]), stringValue(latestRun["objective"]), missionID),
+		"objective":             firstNonBlank(stringValue(contract["objective"]), stringValue(authoritativeRun["objective"]), stringValue(latestRun["objective"]), missionID),
 		"state":                 missionStateFromRuns(runs),
-		"priority":              stringValue(latestRun["priority"]),
-		"risk_level":            stringValue(latestRun["risk_level"]),
-		"branch":                firstNonBlank(stringValue(contract["branch"]), branch),
-		"worktree_path":         firstNonBlank(stringValue(contract["worktree_path"]), worktreePath),
-		"contract_ref":          contractRef,
+		"priority":              firstNonBlank(stringValue(authoritativeRun["priority"]), stringValue(latestRun["priority"])),
+		"risk_level":            firstNonBlank(stringValue(authoritativeRun["risk_level"]), stringValue(latestRun["risk_level"])),
+		"branch":                firstNonBlank(stringValue(contract["branch"]), controlBranch),
+		"worktree_path":         firstNonBlank(stringValue(contract["worktree_path"]), controlWorktreePath),
+		"contract_ref":          controlContractRef,
 		"success_criteria":      cloneValue(toList(contract["success_criteria"])),
 		"verification_commands": cloneValue(toList(contract["verification_commands"])),
 		"context_files":         cloneValue(toList(contract["context_files"])),
@@ -2410,8 +2441,9 @@ func materializeMission(template map[string]any, registry map[string]any, missio
 		"completed_run_ids":     stringListToAny(dedupeStrings(completedRunIDs)),
 		"teammate_run_ids":      stringListToAny(dedupeStrings(teammateRunIDs)),
 		"latest_run_id":         stringValue(latestRun["run_id"]),
-		"latest_summary":        latestSummary,
-		"next_expected_action":  nextAction,
+		"authoritative_run_id":  stringValue(authoritativeRun["run_id"]),
+		"latest_summary":        controlSummary,
+		"next_expected_action":  controlNextAction,
 		"created_at":            firstNonBlank(stringValue(getKey(contract, "freshness.created_at", "")), stringValue(earliestRun["created_at"]), stringValue(earliestRun["started_at"])),
 		"updated_at":            firstNonBlank(runSortTimestamp(latestRun), nowISO()),
 		"completed_at":          stringValue(latestRun["completed_at"]),
@@ -2430,6 +2462,159 @@ func materializeMission(template map[string]any, registry map[string]any, missio
 		mission["completed_at"] = firstNonBlank(stringValue(latestRun["completed_at"]), nowISO())
 	}
 	return mission, nil
+}
+
+func missionAuthorityAudit(mission map[string]any, registry map[string]any) map[string]any {
+	missionID := stringValue(mission["mission_id"])
+	runs := missionRuns(registry, missionID)
+	if len(runs) == 0 {
+		return map[string]any{
+			"mission_id":                missionID,
+			"canonical_source":          "mission:" + missionID,
+			"mission_gap_count":         0,
+			"adjudication_count":        0,
+			"unresolved_conflict_count": 0,
+			"mission_gaps":              []any{},
+			"adjudications":             []any{},
+			"unresolved_conflicts":      []any{},
+			"latest_run_id":             "",
+			"authoritative_run_id":      "",
+			"active_root_run_count":     0,
+			"active_teammate_run_count": 0,
+		}
+	}
+
+	templateRoot, _ := toMap(loadData(missionTemplatePath(), map[string]any{}))
+	template, _ := toMap(templateRoot["mission"])
+	canonicalMission, err := materializeMission(template, registry, missionID)
+	if err != nil || canonicalMission == nil {
+		canonicalMission = map[string]any{}
+	}
+
+	latestRun := runs[0]
+	authoritativeRun := authoritativeMissionRun(runs)
+	if authoritativeRun == nil {
+		authoritativeRun = latestRun
+	}
+
+	missionGaps := []any{}
+	appendStringGap := func(field string, recorded string, expected string, note string) {
+		if strings.TrimSpace(recorded) == strings.TrimSpace(expected) {
+			return
+		}
+		missionGaps = append(missionGaps, map[string]any{
+			"claim_ref":       field,
+			"resolution_kind": "run_aggregate_overrides_mission_record",
+			"source_ref":      "mission:" + missionID + "." + field,
+			"winning_source":  "mission-canonical:" + missionID,
+			"losing_source":   "mission:" + missionID + "." + field,
+			"authority_level": "L2",
+			"current_value":   recorded,
+			"expected_value":  expected,
+			"note":            note,
+		})
+	}
+	appendListGap := func(field string, recorded []string, expected []string, note string) {
+		left := normalizedStringSet(recorded)
+		right := normalizedStringSet(expected)
+		if strings.Join(left, "|") == strings.Join(right, "|") {
+			return
+		}
+		missionGaps = append(missionGaps, map[string]any{
+			"claim_ref":       field,
+			"resolution_kind": "run_aggregate_overrides_mission_record",
+			"source_ref":      "mission:" + missionID + "." + field,
+			"winning_source":  "mission-canonical:" + missionID,
+			"losing_source":   "mission:" + missionID + "." + field,
+			"authority_level": "L2",
+			"current_value":   strings.Join(left, "|"),
+			"expected_value":  strings.Join(right, "|"),
+			"note":            note,
+		})
+	}
+
+	appendStringGap("state", stringValue(mission["state"]), stringValue(canonicalMission["state"]), "Mission state no longer matches the run-derived control plane.")
+	appendStringGap("branch", stringValue(mission["branch"]), stringValue(canonicalMission["branch"]), "Mission branch no longer matches the authoritative mission run.")
+	appendStringGap("worktree_path", stringValue(mission["worktree_path"]), stringValue(canonicalMission["worktree_path"]), "Mission worktree path no longer matches the authoritative mission run.")
+	appendStringGap("latest_run_id", stringValue(mission["latest_run_id"]), stringValue(canonicalMission["latest_run_id"]), "Mission latest_run_id no longer matches the freshest mission run.")
+	appendStringGap("authoritative_run_id", stringValue(mission["authoritative_run_id"]), stringValue(canonicalMission["authoritative_run_id"]), "Mission authoritative_run_id no longer matches the control-plane governing run.")
+	appendStringGap("latest_summary", stringValue(mission["latest_summary"]), stringValue(canonicalMission["latest_summary"]), "Mission latest_summary no longer matches the authoritative run summary.")
+	appendStringGap("next_expected_action", stringValue(mission["next_expected_action"]), stringValue(canonicalMission["next_expected_action"]), "Mission next_expected_action no longer matches the authoritative run.")
+	appendListGap("active_run_ids", anyListToStrings(toList(mission["active_run_ids"])), anyListToStrings(toList(canonicalMission["active_run_ids"])), "Mission active_run_ids no longer match the active runs in registry.")
+	appendListGap("ownership_claims", ownershipClaims(mission), ownershipClaims(canonicalMission), "Mission ownership claims no longer match the aggregated run ownership boundary.")
+
+	missionDesired := normalizeMissionDesiredState(mission)
+	canonicalDesired, _ := toMap(canonicalMission["desired_state"])
+	for _, field := range []string{"goal_state", "verification_status", "review_status", "checks_status", "ship_status"} {
+		appendStringGap("desired_state."+field, stringValue(missionDesired[field]), stringValue(canonicalDesired[field]), fmt.Sprintf("Mission desired state for %s no longer matches the authoritative mission control plane.", field))
+	}
+
+	adjudications := []any{}
+	if stringValue(latestRun["run_id"]) != "" && stringValue(authoritativeRun["run_id"]) != "" && stringValue(latestRun["run_id"]) != stringValue(authoritativeRun["run_id"]) {
+		resolutionKind := "authoritative_run_controls_mission"
+		note := "A non-authoritative sibling run updated more recently, but mission control remains governed by the authoritative run."
+		if stringValue(latestRun["owner_type"]) == "teammate" && stringValue(authoritativeRun["owner_type"]) != "teammate" {
+			resolutionKind = "leader_run_controls_mission"
+			note = "A teammate run updated more recently, but mission control remains governed by the leader-facing run."
+		}
+		adjudications = append(adjudications, map[string]any{
+			"claim_ref":       "mission_control_run",
+			"resolution_kind": resolutionKind,
+			"source_ref":      "run:" + stringValue(authoritativeRun["run_id"]),
+			"winning_source":  "run:" + stringValue(authoritativeRun["run_id"]),
+			"losing_source":   "run:" + stringValue(latestRun["run_id"]),
+			"authority_level": "L2",
+			"current_value":   stringValue(latestRun["run_id"]),
+			"expected_value":  stringValue(authoritativeRun["run_id"]),
+			"note":            note,
+		})
+	}
+
+	activeRootRuns := []map[string]any{}
+	activeTeammateCount := 0
+	for _, run := range runs {
+		if activeRun(run) {
+			if stringValue(run["owner_type"]) == "teammate" {
+				activeTeammateCount++
+			} else {
+				activeRootRuns = append(activeRootRuns, run)
+			}
+		}
+	}
+	unresolvedConflicts := []any{}
+	if len(activeRootRuns) > 1 {
+		for _, run := range activeRootRuns {
+			if stringValue(run["run_id"]) == stringValue(authoritativeRun["run_id"]) {
+				continue
+			}
+			unresolvedConflicts = append(unresolvedConflicts, map[string]any{
+				"claim_ref":       "mission_control_run",
+				"resolution_kind": "parallel_root_runs_require_resolution",
+				"source_ref":      "run:" + stringValue(authoritativeRun["run_id"]),
+				"winning_source":  "run:" + stringValue(authoritativeRun["run_id"]),
+				"losing_source":   "run:" + stringValue(run["run_id"]),
+				"authority_level": "L2",
+				"current_value":   stringValue(run["run_id"]),
+				"expected_value":  stringValue(authoritativeRun["run_id"]),
+				"note":            "Multiple active non-teammate runs exist for the same mission; the leader must close or merge the competing root run.",
+			})
+		}
+	}
+
+	return map[string]any{
+		"mission_id":                missionID,
+		"canonical_source":          "mission:" + missionID,
+		"latest_run_id":             stringValue(latestRun["run_id"]),
+		"authoritative_run_id":      stringValue(authoritativeRun["run_id"]),
+		"mission_gap_count":         len(missionGaps),
+		"adjudication_count":        len(adjudications),
+		"unresolved_conflict_count": len(unresolvedConflicts),
+		"active_root_run_count":     len(activeRootRuns),
+		"active_teammate_run_count": activeTeammateCount,
+		"mission_gaps":              missionGaps,
+		"adjudications":             adjudications,
+		"unresolved_conflicts":      unresolvedConflicts,
+	}
 }
 
 func siblingLinked(run map[string]any, targetRunID string) bool {
@@ -4303,6 +4488,21 @@ func doctorReport() map[string]any {
 		if desired, ok := toMap(mission["desired_state"]); !ok || stringValue(desired["goal_state"]) == "" {
 			issues = append(issues, issueRecord("warning", "mission-missing-desired-state", missionID, "Mission is missing desired_state.goal_state.", "Record mission desired state explicitly for control-plane reconciliation."))
 		}
+		authorityAudit, _ := toMap(missionAuthorityAudit(mission, registry))
+		if intValue(authorityAudit["mission_gap_count"]) > 0 {
+			issues = append(issues, issueRecord("warning", "mission-control-plane-drift", missionID, "Mission record has drifted from the authoritative run-derived control plane.", "Run missions authority-audit and regenerate mission state before trusting leader surfaces."))
+		}
+		if intValue(authorityAudit["unresolved_conflict_count"]) > 0 {
+			conflictRefs := []string{}
+			for _, item := range toList(authorityAudit["unresolved_conflicts"]) {
+				conflict, ok := toMap(item)
+				if !ok {
+					continue
+				}
+				conflictRefs = append(conflictRefs, firstNonBlank(stringValue(conflict["claim_ref"]), stringValue(conflict["losing_source"])))
+			}
+			issues = append(issues, issueRecord("warning", "mission-authority-conflict", missionID, fmt.Sprintf("Mission has unresolved multi-run authority conflicts: %s", strings.Join(dedupeStrings(conflictRefs), ", ")), "Close or merge the competing root runs so the mission control plane has a single governing run."))
+		}
 	}
 
 	exclusiveRuns := []map[string]any{}
@@ -4713,6 +4913,7 @@ func cmdMissions(args []string) error {
 				"ownership_claims":     cloneValue(toList(mission["ownership_claims"])),
 				"active_run_ids":       cloneValue(toList(mission["active_run_ids"])),
 				"latest_run_id":        stringValue(mission["latest_run_id"]),
+				"authoritative_run_id": stringValue(mission["authoritative_run_id"]),
 				"next_expected_action": stringValue(mission["next_expected_action"]),
 			})
 		}
@@ -4720,6 +4921,23 @@ func cmdMissions(args []string) error {
 			"mission_count": len(graph),
 			"missions":      graph,
 		})
+	case "authority-audit":
+		if len(args) < 2 {
+			return errors.New("missions authority-audit requires MISSION_ID")
+		}
+		missionID := strings.TrimSpace(args[1])
+		if missionID == "" {
+			return errors.New("missions authority-audit requires MISSION_ID")
+		}
+		mission := readMission(missionID)
+		if mission == nil {
+			index := findMissionIndex(registry, missionID)
+			if index < 0 {
+				return fmt.Errorf("mission not found: %s", missionID)
+			}
+			mission, _ = toMap(toList(registry["missions"])[index])
+		}
+		return printJSON(missionAuthorityAudit(mission, readRegistry()))
 	case "show-template":
 		return printJSON(loadData(missionTemplatePath(), map[string]any{}))
 	default:
@@ -8628,6 +8846,15 @@ func cmdMaintenance(args []string) error {
 			}
 			log["signals"] = signals
 			needsMissionSync := len(toList(missionRegistry["missions"])) == 0 && len(runs) > 0
+			if !needsMissionSync {
+				for _, item := range toList(missionRegistry["missions"]) {
+					mission, _ := toMap(item)
+					if stringValue(mission["authoritative_run_id"]) == "" {
+						needsMissionSync = true
+						break
+					}
+				}
+			}
 			if len(normalizedRuns) > 0 || needsMissionSync {
 				if err := writeRegistry(registry); err != nil {
 					return err

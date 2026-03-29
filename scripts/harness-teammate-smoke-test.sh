@@ -142,6 +142,16 @@ message_output=$(run_in_repo bash scripts/harness-teammates.sh message "$run_a" 
 assert_json_field "$message_output" '"kind": "interface_change"' "teammate message emits sibling signal"
 assert_json_field "$message_output" "\"$run_b\"" "teammate message targets sibling run"
 
+section "Mission authority"
+mission_control_output=$(run_in_repo bash scripts/harness-missions.sh get issue-33001)
+assert_json_field "$mission_control_output" '"latest_run_id": "run-.*-teammate-' "mission latest_run_id can reflect the freshest teammate activity"
+assert_json_field "$mission_control_output" "\"authoritative_run_id\": \"$leader_run_id\"" "mission authoritative_run_id remains leader-governed even after teammate updates"
+mission_authority_output=$(run_in_repo bash scripts/harness-missions.sh authority-audit issue-33001)
+assert_json_field "$mission_authority_output" "\"authoritative_run_id\": \"$leader_run_id\"" "mission authority audit reports leader-governed mission control"
+assert_json_field "$mission_authority_output" '"adjudication_count": 1' "mission authority audit records a leader-over-teammate adjudication"
+assert_json_field "$mission_authority_output" '"resolution_kind": "leader_run_controls_mission"' "mission authority audit explains that the leader run controls mission state"
+assert_json_field "$mission_authority_output" '"unresolved_conflict_count": 0' "mission authority audit reports no unresolved root-run conflict in the delegated case"
+
 section "Meeting escalation"
 escalate_output=$(run_in_repo bash scripts/harness-teammates.sh escalate "$run_b" "Do we need a release-note update for auth scope?" --materialize)
 assert_json_field "$escalate_output" '"kind": "requires_meeting"' "teammate escalation emits meeting signal"

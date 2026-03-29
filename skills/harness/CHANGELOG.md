@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Mission-level authority adjudication via `bash scripts/harness-missions.sh authority-audit MISSION_ID`, including explicit `authoritative_run_id` handling so teammate activity cannot silently replace leader-governed mission control.
 - Runtime bundle packaging via `scripts/harness-package-runtime.sh` and `scripts/harness-runtime-package-smoke-test.sh`.
 - Accepted public prototype positioning via ADR `0013`, with `Harness` now treated as the package's public prototype name.
 - Artifact-family authority adjudication via `runs authority-audit`, covering stale contract snapshots versus active run/live state.
@@ -31,6 +32,7 @@ All notable changes to the `harness` skill will be documented in this file.
 - Ship-gate authority adjudication in `runs authority-audit`, so leader-facing run review can explain when verification/review/checks state overrides an overly optimistic delivery status.
 
 ### Changed
+- `scripts/harness-maintenance.sh normalize` now regenerates older mission state when `authoritative_run_id` is missing, so upgraded repos can reconcile into the new mission-control contract without manual surgery.
 - Bootstrap smoke now validates the runtime bundle packaging surfaces in addition to runtime build/dist surfaces.
 - The public contract and manifest now treat `Harness` as the public prototype name instead of leaving naming unresolved.
 - Core smoke now validates that a stale contract branch loses to active run state before live-state authority drift checks continue.

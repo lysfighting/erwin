@@ -82,6 +82,11 @@ assert_json_field "$missions_output" '"mission_id": "issue-20001"' "missions lis
 mission_get_output=$(run_in_repo bash scripts/harness-missions.sh get issue-20001)
 assert_json_field "$mission_get_output" '"state": "claimed"' "mission starts in claimed state"
 assert_json_field "$mission_get_output" '"active_run_ids":' "mission stores active run linkage"
+assert_json_field "$mission_get_output" "\"authoritative_run_id\": \"$run_id\"" "mission records the initial leader run as authoritative control run"
+mission_authority_baseline=$(run_in_repo bash scripts/harness-missions.sh authority-audit issue-20001)
+assert_json_field "$mission_authority_baseline" "\"authoritative_run_id\": \"$run_id\"" "mission authority audit reports the leader run as authoritative"
+assert_json_field "$mission_authority_baseline" '"mission_gap_count": 0' "mission authority audit starts without control-plane drift"
+assert_json_field "$mission_authority_baseline" '"adjudication_count": 0' "mission authority audit starts without cross-run adjudications"
 authority_baseline=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$authority_baseline" '"contract_gap_count": 0' "initial run authority audit starts without contract drift"
 

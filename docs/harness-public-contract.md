@@ -143,11 +143,13 @@ The package currently guarantees:
 - file-backed runtime state with locking
 - leader-facing diagnosis via `home` and `doctor`
 - first-class mission state above run attempts
+- first-class mission authority, including an authoritative mission-control run that can differ from the freshest teammate activity
 - explicit ownership selectors with overlap enforcement
 - desired-state tracking on contracts and runs
 - bounded teammate assignment and governed sibling communication
 - council-grade meeting packets with authority-aware findings
 - authority audit across signals, meetings, runs, and live git state
+- mission-level authority audit across run aggregates, leader/teammate control boundaries, and multi-run mission conflicts
 - deterministic ship and rc control-plane actions
 - bootstrapable reuse in another git repository
 - smoke-testable package integrity
