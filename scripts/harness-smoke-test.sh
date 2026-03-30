@@ -423,6 +423,9 @@ assert_json_field "$schedule_multi_escalation_conflict" '"Explicit bundle govern
 cleared_multi_escalation_governor=$(run_in_repo bash scripts/harness-missions.sh clear-governor "$multi_escalation_bundle_id" "Clear conflicting explicit governor after active bundle council coverage.")
 assert_json_field "$cleared_multi_escalation_governor" "\"bundle_id\": \"$multi_escalation_bundle_id\"" "conflicting explicit governor can be cleared after active bundle-council coverage"
 run_in_repo bash scripts/harness-meetings.sh orchestrate "$multi_escalation_meeting_id" >/dev/null
+schedule_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_phase": "independent_review"' "scheduler projects active bundle-council phase into the portfolio packet"
+assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_next_requirement": "Collect' "scheduler projects active bundle-council next requirement into the portfolio packet"
 run_in_repo bash scripts/harness-meetings.sh add-position "$multi_escalation_meeting_id" "$multi_escalation_run_a" independent_review support "Bundle governance should anchor to issue-20011 because it has the strongest release ownership evidence." --claim=bundle-governor-choice --dimension=factual --authority=L2 --evidence=harness/README.md >/dev/null
 run_in_repo bash scripts/harness-meetings.sh add-position "$multi_escalation_meeting_id" "$multi_escalation_run_b" independent_review support "Independent review agrees issue-20011 should govern the bundle rather than issue-20012 or issue-20013." --claim=bundle-governor-choice --dimension=factual --authority=L3 --evidence=docs/harness-public-contract.md >/dev/null
 auto_multi_escalation_governor=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$multi_escalation_meeting_id")

@@ -8255,17 +8255,7 @@ func schedulerDecisionByID(snapshot map[string]any, decisionID string) map[strin
 			decision = map[string]any{}
 		}
 		decision["decision_id"] = firstNonBlank(stringValue(decision["decision_id"]), decisionID)
-		decision["recommended_decision_surface"] = "active-council"
-		activeMeetingIDs := dedupeStrings(append(
-			anyListToStrings(toList(decision["active_meeting_ids"])),
-			stringValue(meeting["meeting_id"]),
-		))
-		decision["active_meeting_ids"] = stringListToAny(activeMeetingIDs)
-		decision["active_meeting_count"] = len(activeMeetingIDs)
-		decision["recommended_action"] = firstNonBlank(
-			stringValue(decision["recommended_action"]),
-			fmt.Sprintf("Review the active council(s) already materialized for this decision: %s.", strings.Join(activeMeetingIDs, ", ")),
-		)
+		decision = projectActiveMeetingProgressIntoDecision(decision, meeting)
 		return decision
 	}
 	return nil
@@ -8561,16 +8551,7 @@ func recoverActiveBundleDecisionPackets(decisions []any) []any {
 			activeEntry = packet
 			activeByDecisionID[decisionID] = activeEntry
 		}
-		activeMeetingIDs := dedupeStrings(append(
-			anyListToStrings(toList(activeEntry["active_meeting_ids"])),
-			stringValue(meeting["meeting_id"]),
-		))
-		activeEntry["active_meeting_ids"] = stringListToAny(activeMeetingIDs)
-		activeEntry["active_meeting_count"] = len(activeMeetingIDs)
-		activeEntry["recommended_action"] = firstNonBlank(
-			stringValue(activeEntry["recommended_action"]),
-			fmt.Sprintf("Review the active council(s) already materialized for this decision: %s.", strings.Join(activeMeetingIDs, ", ")),
-		)
+		activeEntry = projectActiveMeetingProgressIntoDecision(activeEntry, meeting)
 		activeEntry["updated_at"] = firstNonBlank(
 			stringValue(activeEntry["updated_at"]),
 			stringValue(meeting["updated_at"]),
@@ -8634,6 +8615,47 @@ func schedulerDecisionKey(decision map[string]any) string {
 	return ""
 }
 
+func projectActiveMeetingProgressIntoDecision(decision, meeting map[string]any) map[string]any {
+	if decision == nil || meeting == nil {
+		return decision
+	}
+	meetingID := strings.TrimSpace(stringValue(meeting["meeting_id"]))
+	activeMeetingIDs := dedupeStrings(append(
+		anyListToStrings(toList(decision["active_meeting_ids"])),
+		meetingID,
+	))
+	decision["active_meeting_ids"] = stringListToAny(activeMeetingIDs)
+	decision["active_meeting_count"] = len(activeMeetingIDs)
+	decision["recommended_decision_surface"] = "active-council"
+	decision["active_decision_phase"] = firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	decision["active_decision_protocol"] = normalizeDecisionProtocol(firstNonBlank(stringValue(meeting["decision_protocol"]), "evidence-review"))
+	orchestration, _ := toMap(meeting["orchestration"])
+	if orchestration != nil {
+		if nextRequirement := strings.TrimSpace(stringValue(orchestration["next_requirement"])); nextRequirement != "" {
+			decision["active_decision_next_requirement"] = nextRequirement
+			decision["recommended_action"] = nextRequirement
+		}
+		if wavePlan, _ := toMap(orchestration["wave_plan"]); wavePlan != nil {
+			decision["active_decision_open_wave_action_count"] = intValue(wavePlan["open_wave_action_count"])
+		}
+		if debatePlan, _ := toMap(orchestration["debate_plan"]); debatePlan != nil {
+			decision["active_decision_open_route_action_count"] = intValue(debatePlan["open_route_action_count"])
+			decision["active_decision_open_round_action_count"] = intValue(debatePlan["open_round_action_count"])
+			if summary := strings.TrimSpace(stringValue(debatePlan["current_wave_batch_summary"])); summary != "" {
+				decision["active_decision_current_wave_batch_summary"] = summary
+			}
+		}
+		if gaps := toList(orchestration["last_gap_report"]); len(gaps) > 0 {
+			decision["active_decision_gap_count"] = len(gaps)
+		}
+	}
+	decision["recommended_action"] = firstNonBlank(
+		stringValue(decision["recommended_action"]),
+		fmt.Sprintf("Review the active council(s) already materialized for this decision: %s.", strings.Join(activeMeetingIDs, ", ")),
+	)
+	return decision
+}
+
 func schedulerDecisionPacketID(decision map[string]any) string {
 	parts := []string{
 		firstNonBlank(stringValue(decision["decision_scope"]), "mission"),
@@ -8662,13 +8684,14 @@ func promoteMaterializedDecisionPackets(decisions []any, activeMeetingIDsByDecis
 			promoted[index] = decision
 			continue
 		}
-		decision["recommended_decision_surface"] = "active-council"
-		decision["active_meeting_ids"] = stringListToAny(activeMeetingIDs)
-		decision["active_meeting_count"] = len(activeMeetingIDs)
-		decision["recommended_action"] = firstNonBlank(
-			fmt.Sprintf("Review the active council(s) already materialized for this decision: %s.", strings.Join(activeMeetingIDs, ", ")),
-			stringValue(decision["recommended_action"]),
-		)
+		for _, item := range listMeetings(true) {
+			meeting, _ := toMap(item)
+			if !containsString(activeMeetingIDs, stringValue(meeting["meeting_id"])) {
+				continue
+			}
+			decision = projectActiveMeetingProgressIntoDecision(decision, meeting)
+			break
+		}
 		promoted[index] = decision
 	}
 	return promoted
