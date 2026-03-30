@@ -497,6 +497,69 @@ decision_hold_restore_schedule=$(run_in_repo bash scripts/harness-missions.sh sc
 assert_json_field "$decision_hold_restore_schedule" '"selected_mission_count": 1' "baseline foreground can be re-established after escalation backlog clears"
 assert_json_field "$decision_hold_restore_schedule" '"mission_id": "issue-20001"' "restored baseline foreground remains visible after escalation backlog clears"
 
+section "Explicit bundle governor adoption"
+explicit_governor_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20028 "Harness Explicit Governor A" --owns="file:docs/harness-operating-model.md" --allow-overlap)
+assert_json_field "$explicit_governor_claim_a" '"mission_id": "issue-20028"' "explicit-governor bundle mission A can materialize"
+explicit_governor_run_a=$(printf '%s\n' "$explicit_governor_claim_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+explicit_governor_claim_b=$(run_in_repo bash scripts/harness-claim.sh 20029 "Harness Explicit Governor B" --owns="file:docs/harness-operating-model.md" --allow-overlap)
+assert_json_field "$explicit_governor_claim_b" '"mission_id": "issue-20029"' "explicit-governor bundle mission B can materialize"
+explicit_governor_run_b=$(printf '%s\n' "$explicit_governor_claim_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+explicit_governor_claim_c=$(run_in_repo bash scripts/harness-claim.sh 20030 "Harness Explicit Governor C" --owns="file:docs/harness-operating-model.md" --allow-overlap)
+assert_json_field "$explicit_governor_claim_c" '"mission_id": "issue-20030"' "explicit-governor bundle mission C can materialize"
+explicit_governor_run_c=$(printf '%s\n' "$explicit_governor_claim_c" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+
+for explicit_run in "$explicit_governor_run_a" "$explicit_governor_run_b" "$explicit_governor_run_c"; do
+  explicit_update=$(
+    cd "$TEST_REPO" &&
+      cat <<EOF | bash scripts/harness-runs.sh update "$explicit_run"
+{
+  "priority": "P1",
+  "risk_level": "medium"
+}
+EOF
+  )
+  assert_json_field "$explicit_update" '"priority": "P1"' "explicit-governor bundle run can keep an equal authority tuple"
+done
+
+explicit_governor_bundle_id="bundle-issue-20028-issue-20029-issue-20030"
+graph_authority_explicit_before=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_explicit_before" "\"bundle_id\": \"$explicit_governor_bundle_id\"" "explicit-governor bundle is visible before manual adoption"
+assert_json_field "$graph_authority_explicit_before" '"resolution_kind": "bundle_governor_required"' "explicit-governor bundle starts as escalation-required"
+
+establish_governor_output=$(run_in_repo bash scripts/harness-missions.sh establish-governor "$explicit_governor_bundle_id" issue-20028 "Leader establishes an explicit bundle governor for the documentation boundary.")
+assert_json_field "$establish_governor_output" '"kind": "bundle_governor_established"' "missions establish-governor emits an explicit governor signal"
+assert_json_field "$establish_governor_output" "\"governing_mission_id\": \"issue-20028\"" "explicit governor signal records the chosen governing mission"
+
+graph_authority_explicit_after=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_explicit_after" '"resolution_kind": "explicit_bundle_governor"' "explicit governor signal upgrades the bundle into governed authority"
+assert_json_field "$graph_authority_explicit_after" "\"governing_mission_id\": \"issue-20028\"" "explicit governor signal anchors bundle authority to the chosen mission"
+assert_json_field "$graph_authority_explicit_after" '"explicit_governor_signal_id": "sig-' "explicit governor signal id is visible in the bundle packet"
+
+schedule_explicit_governor=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_explicit_governor" "\"bundle_governing_mission_id\": \"issue-20028\"" "scheduler follows the explicit bundle governor once it is established"
+assert_json_field "$schedule_explicit_governor" '"bundle_role": "governed"' "scheduler treats explicit-governor peers as governed instead of escalation-required"
+if grep -q "\"bundle_id\": \"$explicit_governor_bundle_id\"" <<<"$schedule_explicit_governor" && grep -q '"decision_kind": "establish_bundle_governor"' <<<"$schedule_explicit_governor"; then
+  fail "explicit-governor bundle no longer emits establish-governor decision packets"
+  echo "$schedule_explicit_governor"
+else
+  pass "explicit-governor bundle no longer emits establish-governor decision packets"
+fi
+
+clear_governor_output=$(run_in_repo bash scripts/harness-missions.sh clear-governor "$explicit_governor_bundle_id" "Explicit governor coverage completed.")
+assert_json_field "$clear_governor_output" "\"bundle_id\": \"$explicit_governor_bundle_id\"" "missions clear-governor can retire explicit governor signals"
+assert_json_field "$clear_governor_output" '"resolved_signal_ids":' "missions clear-governor reports the resolved signal ids"
+
+graph_authority_explicit_cleared=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_explicit_cleared" "\"bundle_id\": \"$explicit_governor_bundle_id\"" "explicit-governor bundle remains visible after governor clearance"
+assert_json_field "$graph_authority_explicit_cleared" '"resolution_kind": "bundle_governor_required"' "clearing the explicit governor returns the bundle to escalation-required"
+
+resolved_explicit_governor_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$explicit_governor_run_a" completed "Closed explicit-governor bundle mission A.")
+assert_json_field "$resolved_explicit_governor_a" '"state": "completed"' "explicit-governor bundle mission A can be closed"
+resolved_explicit_governor_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$explicit_governor_run_b" completed "Closed explicit-governor bundle mission B.")
+assert_json_field "$resolved_explicit_governor_b" '"state": "completed"' "explicit-governor bundle mission B can be closed"
+resolved_explicit_governor_c=$(run_in_repo bash scripts/harness-runs.sh set-state "$explicit_governor_run_c" completed "Closed explicit-governor bundle mission C.")
+assert_json_field "$resolved_explicit_governor_c" '"state": "completed"' "explicit-governor bundle mission C can be closed"
+
 section "Sticky decision portfolio"
 sticky_decision_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20026 "Harness Sticky Decision A" --owns="file:docs/README.md")
 assert_json_field "$sticky_decision_claim_a" '"mission_id": "issue-20026"' "sticky decision mission A can materialize"

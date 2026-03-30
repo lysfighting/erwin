@@ -2649,6 +2649,83 @@ func meetingActivityByMission(registry map[string]any) (map[string]int, map[stri
 	return activeMeetingCountByMission, openMeetingActionCountByMission
 }
 
+func explicitBundleGovernorSignals(signalLog map[string]any) map[string][]map[string]any {
+	byBundle := map[string][]map[string]any{}
+	for _, item := range toList(signalLog["signals"]) {
+		signal, ok := toMap(item)
+		if !ok || !activeSignal(signal) {
+			continue
+		}
+		if strings.TrimSpace(stringValue(signal["kind"])) != "bundle_governor_established" {
+			continue
+		}
+		bundleID := strings.TrimSpace(stringValue(signal["bundle_id"]))
+		governingMissionID := strings.TrimSpace(stringValue(signal["governing_mission_id"]))
+		if bundleID == "" || governingMissionID == "" {
+			continue
+		}
+		byBundle[bundleID] = append(byBundle[bundleID], signal)
+	}
+	return byBundle
+}
+
+func selectExplicitBundleGovernorSignal(signals []map[string]any, componentSet map[string]bool) (map[string]any, []string) {
+	candidates := []map[string]any{}
+	for _, signal := range signals {
+		governingMissionID := strings.TrimSpace(stringValue(signal["governing_mission_id"]))
+		if governingMissionID == "" || !componentSet[governingMissionID] {
+			continue
+		}
+		candidates = append(candidates, signal)
+	}
+	if len(candidates) == 0 {
+		return nil, nil
+	}
+	sort.SliceStable(candidates, func(i, j int) bool {
+		left := candidates[i]
+		right := candidates[j]
+		leftAuthority := authorityRank(firstNonBlank(stringValue(left["authority_level"]), "L4"))
+		rightAuthority := authorityRank(firstNonBlank(stringValue(right["authority_level"]), "L4"))
+		if leftAuthority != rightAuthority {
+			return leftAuthority > rightAuthority
+		}
+		leftEmitted := firstNonBlank(stringValue(left["emitted_at"]), stringValue(left["updated_at"]))
+		rightEmitted := firstNonBlank(stringValue(right["emitted_at"]), stringValue(right["updated_at"]))
+		if leftEmitted != rightEmitted {
+			return isoAfter(leftEmitted, rightEmitted)
+		}
+		return stringValue(left["signal_id"]) < stringValue(right["signal_id"])
+	})
+	selected := candidates[0]
+	selectedMissionID := strings.TrimSpace(stringValue(selected["governing_mission_id"]))
+	selectedAuthority := authorityRank(firstNonBlank(stringValue(selected["authority_level"]), "L4"))
+	selectedEmitted := firstNonBlank(stringValue(selected["emitted_at"]), stringValue(selected["updated_at"]))
+	notes := []string{}
+	supersededSignals := []string{}
+	conflictingSignals := []string{}
+	for _, signal := range candidates[1:] {
+		governingMissionID := strings.TrimSpace(stringValue(signal["governing_mission_id"]))
+		authority := authorityRank(firstNonBlank(stringValue(signal["authority_level"]), "L4"))
+		emittedAt := firstNonBlank(stringValue(signal["emitted_at"]), stringValue(signal["updated_at"]))
+		if governingMissionID == selectedMissionID {
+			supersededSignals = append(supersededSignals, stringValue(signal["signal_id"]))
+			continue
+		}
+		if authority < selectedAuthority || (authority == selectedAuthority && isoAfter(selectedEmitted, emittedAt)) {
+			supersededSignals = append(supersededSignals, stringValue(signal["signal_id"]))
+			continue
+		}
+		conflictingSignals = append(conflictingSignals, stringValue(signal["signal_id"]))
+	}
+	if len(supersededSignals) > 0 {
+		notes = append(notes, fmt.Sprintf("Explicit bundle governor decision %s supersedes older or lower-authority governor signals: %s.", stringValue(selected["signal_id"]), strings.Join(dedupeStrings(supersededSignals), ", ")))
+	}
+	if len(conflictingSignals) > 0 {
+		notes = append(notes, fmt.Sprintf("Conflicting explicit bundle governor signals remain active alongside %s: %s.", stringValue(selected["signal_id"]), strings.Join(dedupeStrings(conflictingSignals), ", ")))
+	}
+	return selected, notes
+}
+
 func syncMissionsFromRegistry(registry map[string]any) error {
 	templateRoot, _ := toMap(loadData(missionTemplatePath(), map[string]any{}))
 	template, _ := toMap(templateRoot["mission"])
@@ -2961,6 +3038,8 @@ func missionAuthorityAudit(mission map[string]any, registry map[string]any) map[
 }
 
 func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[string]any, includeInactive bool) map[string]any {
+	signalLog := readSignalLog()
+	explicitGovernorSignalsByBundle := explicitBundleGovernorSignals(signalLog)
 	missions := []map[string]any{}
 	missionByID := map[string]map[string]any{}
 	for _, item := range toList(missionRegistry["missions"]) {
@@ -3234,6 +3313,7 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			}
 		}
 		sort.Strings(component)
+		bundleID := "bundle-" + slugify(strings.Join(component, "-"))
 		componentSet := map[string]bool{}
 		for _, id := range component {
 			componentSet[id] = true
@@ -3387,6 +3467,7 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		resolutionKind := "linked_bundle"
 		requiredAction := "Inspect linked missions before widening parallel execution."
 		governanceNotes := []string{}
+		explicitGovernorSignalID := ""
 		if len(governingMissionVotes) == 1 {
 			for missionID := range governingMissionVotes {
 				governingMissionID = missionID
@@ -3398,23 +3479,33 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 
 			selectedWinnerID := ""
 			hasBundleAuthoritySignal := false
+			explicitGovernorSignal, explicitGovernorNotes := selectExplicitBundleGovernorSignal(explicitGovernorSignalsByBundle[bundleID], componentSet)
+			governanceNotes = append(governanceNotes, explicitGovernorNotes...)
+			if explicitGovernorSignal != nil {
+				selectedWinnerID = strings.TrimSpace(stringValue(explicitGovernorSignal["governing_mission_id"]))
+				explicitGovernorSignalID = stringValue(explicitGovernorSignal["signal_id"])
+				hasBundleAuthoritySignal = true
+				authorityBasis = append(authorityBasis, "explicit_bundle_governor")
+			}
 			maxVoteCount := 0
 			voteLeaders := []string{}
-			for _, candidateMissionID := range candidateMissionIDs {
-				votes := governingMissionVotes[candidateMissionID]
-				if votes > maxVoteCount {
-					maxVoteCount = votes
-					voteLeaders = []string{candidateMissionID}
-				} else if votes > 0 && votes == maxVoteCount {
-					voteLeaders = append(voteLeaders, candidateMissionID)
+			if selectedWinnerID == "" {
+				for _, candidateMissionID := range candidateMissionIDs {
+					votes := governingMissionVotes[candidateMissionID]
+					if votes > maxVoteCount {
+						maxVoteCount = votes
+						voteLeaders = []string{candidateMissionID}
+					} else if votes > 0 && votes == maxVoteCount {
+						voteLeaders = append(voteLeaders, candidateMissionID)
+					}
 				}
-			}
-			if maxVoteCount > 0 {
-				hasBundleAuthoritySignal = true
-			}
-			if maxVoteCount > 0 && len(dedupeStrings(voteLeaders)) == 1 {
-				selectedWinnerID = voteLeaders[0]
-				authorityBasis = append(authorityBasis, "bundle_adjudication_votes")
+				if maxVoteCount > 0 {
+					hasBundleAuthoritySignal = true
+				}
+				if maxVoteCount > 0 && len(dedupeStrings(voteLeaders)) == 1 {
+					selectedWinnerID = voteLeaders[0]
+					authorityBasis = append(authorityBasis, "bundle_adjudication_votes")
+				}
 			}
 
 			if selectedWinnerID == "" && len(candidateMissionIDs) >= 2 {
@@ -3482,9 +3573,15 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 						losingMissionIDs = append(losingMissionIDs, id)
 					}
 				}
-				resolutionKind = "bundle_governor_adjudicated"
-				requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s and serialize the other overlapping missions behind it unless a council overrides the current bundle governor.", selectedWinnerID)
-				governanceNotes = append(governanceNotes, fmt.Sprintf("No explicit governing dependency exists; %s currently governs the bundle by %s.", selectedWinnerID, strings.Join(dedupeStrings(authorityBasis), "/")))
+				if containsString(authorityBasis, "explicit_bundle_governor") {
+					resolutionKind = "explicit_bundle_governor"
+					requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s until the explicit bundle-governor decision is cleared or superseded.", selectedWinnerID)
+					governanceNotes = append(governanceNotes, fmt.Sprintf("Leader explicitly established %s as the bundle governor via signal %s.", selectedWinnerID, firstNonBlank(explicitGovernorSignalID, "bundle-governor signal")))
+				} else {
+					resolutionKind = "bundle_governor_adjudicated"
+					requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s and serialize the other overlapping missions behind it unless a council overrides the current bundle governor.", selectedWinnerID)
+					governanceNotes = append(governanceNotes, fmt.Sprintf("No explicit governing dependency exists; %s currently governs the bundle by %s.", selectedWinnerID, strings.Join(dedupeStrings(authorityBasis), "/")))
+				}
 				governedBundleCount++
 			} else if hasBundleAuthoritySignal {
 				state = "escalation-required"
@@ -3551,28 +3648,29 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			governanceNotes = append(governanceNotes, fmt.Sprintf("Shared governed selectors: %s", strings.Join(dedupeStrings(bundleSelectorRefs), ", ")))
 		}
 		bundles = append(bundles, map[string]any{
-			"bundle_id":                  "bundle-" + slugify(strings.Join(component, "-")),
-			"mission_ids":                stringListToAny(component),
-			"mission_count":              len(component),
-			"edge_count":                 edgeCount,
-			"edge_kinds":                 stringListToAny(dedupeStrings(edgeKinds)),
-			"conflict_count":             conflictCount,
-			"adjudication_count":         adjudicationCount,
-			"bundle_state":               state,
-			"resolution_kind":            resolutionKind,
-			"resolution_kinds":           stringListToAny(dedupeStrings(resolutionKinds)),
-			"selector_refs":              stringListToAny(dedupeStrings(bundleSelectorRefs)),
-			"required_action":            requiredAction,
-			"governance_notes":           stringListToAny(governanceNotes),
-			"authority_basis":            stringListToAny(dedupeStrings(authorityBasis)),
-			"candidate_governor_ids":     stringListToAny(candidateGovernorMissionIDs),
-			"candidate_governor_packets": cloneValue(candidateGovernorPackets),
-			"canonical_mission_id":       component[0],
-			"root_mission_ids":           stringListToAny(bundleRoots),
-			"dependent_mission_ids":      stringListToAny(dependentMissionIDs),
-			"governed_mission_ids":       stringListToAny(dedupeStrings(governedMissionIDs)),
-			"losing_mission_ids":         stringListToAny(dedupeStrings(losingMissionIDs)),
-			"governing_mission_id":       governingMissionID,
+			"bundle_id":                   bundleID,
+			"mission_ids":                 stringListToAny(component),
+			"mission_count":               len(component),
+			"edge_count":                  edgeCount,
+			"edge_kinds":                  stringListToAny(dedupeStrings(edgeKinds)),
+			"conflict_count":              conflictCount,
+			"adjudication_count":          adjudicationCount,
+			"bundle_state":                state,
+			"resolution_kind":             resolutionKind,
+			"resolution_kinds":            stringListToAny(dedupeStrings(resolutionKinds)),
+			"selector_refs":               stringListToAny(dedupeStrings(bundleSelectorRefs)),
+			"required_action":             requiredAction,
+			"governance_notes":            stringListToAny(governanceNotes),
+			"authority_basis":             stringListToAny(dedupeStrings(authorityBasis)),
+			"candidate_governor_ids":      stringListToAny(candidateGovernorMissionIDs),
+			"candidate_governor_packets":  cloneValue(candidateGovernorPackets),
+			"explicit_governor_signal_id": explicitGovernorSignalID,
+			"canonical_mission_id":        component[0],
+			"root_mission_ids":            stringListToAny(bundleRoots),
+			"dependent_mission_ids":       stringListToAny(dependentMissionIDs),
+			"governed_mission_ids":        stringListToAny(dedupeStrings(governedMissionIDs)),
+			"losing_mission_ids":          stringListToAny(dedupeStrings(losingMissionIDs)),
+			"governing_mission_id":        governingMissionID,
 		})
 	}
 
@@ -6547,6 +6645,107 @@ func cmdMissions(args []string) error {
 			mission, _ = toMap(toList(registry["missions"])[index])
 		}
 		return printJSON(missionAuthorityAudit(mission, readRegistry()))
+	case "establish-governor":
+		if len(args) < 3 {
+			return errors.New("missions establish-governor requires BUNDLE_ID GOVERNING_MISSION_ID [NOTE]")
+		}
+		bundleID := strings.TrimSpace(args[1])
+		governingMissionID := strings.TrimSpace(args[2])
+		note := strings.TrimSpace(strings.Join(args[3:], " "))
+		if bundleID == "" || governingMissionID == "" {
+			return errors.New("missions establish-governor requires BUNDLE_ID GOVERNING_MISSION_ID [NOTE]")
+		}
+		return withHarnessLock(func() error {
+			missionRegistry := readMissionRegistry()
+			runtimeRegistry := readRegistry()
+			graph, _ := toMap(missionGraphAuthorityAudit(missionRegistry, runtimeRegistry, false))
+			var bundle map[string]any
+			for _, item := range toList(graph["bundles"]) {
+				candidate, _ := toMap(item)
+				if stringValue(candidate["bundle_id"]) == bundleID {
+					bundle = candidate
+					break
+				}
+			}
+			if len(bundle) == 0 {
+				return fmt.Errorf("bundle not found: %s", bundleID)
+			}
+			if !containsString(anyListToStrings(toList(bundle["mission_ids"])), governingMissionID) {
+				return fmt.Errorf("mission %s does not belong to bundle %s", governingMissionID, bundleID)
+			}
+			log := readSignalLog()
+			signalTemplateRoot, _ := toMap(loadData(signalTemplatePath(), map[string]any{}))
+			signalTemplate, _ := toMap(signalTemplateRoot["signal"])
+			signalID := fmt.Sprintf("sig-%s-bundle-governor-%s", nowTime().UTC().Format("20060102150405"), slugify(bundleID))
+			appliesTo := append([]any{}, toList(bundle["mission_ids"])...)
+			appliesTo = append(appliesTo, bundleID)
+			signal, _ := toMap(mergeDicts(signalTemplate, map[string]any{
+				"signal_id":            signalID,
+				"kind":                 "bundle_governor_established",
+				"source_type":          "leader",
+				"source_id":            "leader-main",
+				"mission_id":           governingMissionID,
+				"applies_to":           appliesTo,
+				"scope_type":           "mission-graph",
+				"title":                "Bundle governor established",
+				"summary":              firstNonBlank(note, fmt.Sprintf("Leader established %s as the explicit governor for %s.", governingMissionID, bundleID)),
+				"authority_level":      "L2",
+				"confidence":           "high",
+				"bundle_id":            bundleID,
+				"bundle_mission_ids":   cloneValue(toList(bundle["mission_ids"])),
+				"governing_mission_id": governingMissionID,
+				"selector_refs":        cloneValue(toList(bundle["selector_refs"])),
+				"resolution_kind":      "explicit_bundle_governor",
+				"required_action":      fmt.Sprintf("Keep bundle authority anchored to %s until the explicit governor decision is cleared or superseded.", governingMissionID),
+			}))
+			fillIfBlank(signal, "emitted_at", nowISO())
+			fillIfBlank(signal, "state", "active")
+			log["signals"] = append(toList(log["signals"]), signal)
+			if err := writeSignalLog(log); err != nil {
+				return err
+			}
+			return printJSON(map[string]any{
+				"signal": signal,
+				"bundle": bundle,
+			})
+		})
+	case "clear-governor":
+		if len(args) < 2 {
+			return errors.New("missions clear-governor requires BUNDLE_ID [NOTE]")
+		}
+		bundleID := strings.TrimSpace(args[1])
+		note := strings.TrimSpace(strings.Join(args[2:], " "))
+		if bundleID == "" {
+			return errors.New("missions clear-governor requires BUNDLE_ID [NOTE]")
+		}
+		return withHarnessLock(func() error {
+			log := readSignalLog()
+			signals := toList(log["signals"])
+			resolvedIDs := []string{}
+			for index, item := range signals {
+				signal, _ := toMap(item)
+				if !activeSignal(signal) || stringValue(signal["kind"]) != "bundle_governor_established" || stringValue(signal["bundle_id"]) != bundleID {
+					continue
+				}
+				signal["state"] = "resolved"
+				signal["resolution_note"] = firstNonBlank(note, fmt.Sprintf("Leader cleared explicit governor for %s.", bundleID))
+				signal["updated_at"] = nowISO()
+				signals[index] = signal
+				resolvedIDs = append(resolvedIDs, stringValue(signal["signal_id"]))
+			}
+			if len(resolvedIDs) == 0 {
+				return fmt.Errorf("no active explicit bundle governor found for %s", bundleID)
+			}
+			log["signals"] = signals
+			if err := writeSignalLog(log); err != nil {
+				return err
+			}
+			return printJSON(map[string]any{
+				"bundle_id":           bundleID,
+				"resolved_signal_ids": stringListToAny(dedupeStrings(resolvedIDs)),
+				"resolution_note":     firstNonBlank(note, fmt.Sprintf("Leader cleared explicit governor for %s.", bundleID)),
+			})
+		})
 	case "show-template":
 		return printJSON(loadData(missionTemplatePath(), map[string]any{}))
 	default:
@@ -7540,20 +7739,21 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				role = "conflicted"
 			}
 			bundleInfoByMission[missionID] = map[string]any{
-				"bundle_id":                  bundleID,
-				"bundle_state":               bundleState,
-				"bundle_role":                role,
-				"resolution_kind":            resolutionKind,
-				"governing_mission_id":       governingMissionID,
-				"required_action":            requiredAction,
-				"bundle_mission_ids":         stringListToAny(missionIDs),
-				"candidate_governor_ids":     cloneValue(getKey(bundle, "candidate_governor_ids", []any{})),
-				"candidate_governor_packets": cloneValue(getKey(bundle, "candidate_governor_packets", []any{})),
-				"governed_mission_ids":       cloneValue(bundle["governed_mission_ids"]),
-				"losing_mission_ids":         cloneValue(bundle["losing_mission_ids"]),
-				"authority_basis":            cloneValue(bundle["authority_basis"]),
-				"selector_refs":              cloneValue(bundle["selector_refs"]),
-				"governance_notes":           cloneValue(bundle["governance_notes"]),
+				"bundle_id":                   bundleID,
+				"bundle_state":                bundleState,
+				"bundle_role":                 role,
+				"resolution_kind":             resolutionKind,
+				"governing_mission_id":        governingMissionID,
+				"required_action":             requiredAction,
+				"bundle_mission_ids":          stringListToAny(missionIDs),
+				"candidate_governor_ids":      cloneValue(getKey(bundle, "candidate_governor_ids", []any{})),
+				"candidate_governor_packets":  cloneValue(getKey(bundle, "candidate_governor_packets", []any{})),
+				"explicit_governor_signal_id": stringValue(bundle["explicit_governor_signal_id"]),
+				"governed_mission_ids":        cloneValue(bundle["governed_mission_ids"]),
+				"losing_mission_ids":          cloneValue(bundle["losing_mission_ids"]),
+				"authority_basis":             cloneValue(bundle["authority_basis"]),
+				"selector_refs":               cloneValue(bundle["selector_refs"]),
+				"governance_notes":            cloneValue(bundle["governance_notes"]),
 			}
 			switch bundleState {
 			case "conflicted":

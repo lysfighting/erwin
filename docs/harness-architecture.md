@@ -591,6 +591,7 @@ This graph supports:
 
 - bundle grouping
 - bundle governors
+- explicit bundle-governor adoption by leader decision
 - pairwise governor adjudication from clear authority tuples
 - dependency-governed authority
 - selector-specificity authority
@@ -613,6 +614,7 @@ That means:
 - governed losing missions can be deferred behind the current bundle governor
 - escalation-required bundles can surface as explicit human decisions instead of generic overlap noise
 - escalation-required bundles can now expose ranked candidate governors, so the leader sees likely control anchors before deciding whether to establish one directly or escalate into a council
+- the leader can now explicitly adopt a governor for an escalation-required bundle, converting that bundle into governed authority through a durable control-plane signal instead of leaving it as a perpetual decision packet
 - the scheduler can now retain a sticky primary human-decision packet across otherwise-tied portfolio passes, preferring decision stability over freshness-only churn when the decision class still matches
 - the scheduler can now hold back brand-new low-urgency foreground admission when unresolved human decisions already dominate the portfolio and no established foreground batch is being continued
 - parallel widening now requires explicit justification when execution policy says the control plane should reduce parallelism rather than guess

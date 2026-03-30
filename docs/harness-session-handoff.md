@@ -173,6 +173,7 @@ Do not underestimate the current control-plane maturity.
 - escalation-required mission bundles now collapse into one bundle-scoped scheduler decision packet, so the leader sees one governing-bundle decision instead of one duplicated decision per mission
 - scheduler now exposes a prioritized human-decision portfolio, including a `primary_required_human_decision`, deferred decision count, and scope/surface tallies, so leader-facing surfaces can reason about more than one pending governed decision at once
 - escalation-required bundle decisions now carry ranked `candidate_governor_ids` and `candidate_governor_packets`, so the leader sees plausible governors and their authority tuple before deciding whether to establish a governor directly or open a council
+- leaders can now explicitly establish and clear a bundle governor through mission surfaces, turning an escalation-required bundle into governed authority deliberately instead of leaving that decision as a perpetual open packet
 - scheduler can now emit `hold_for_primary_human_decision`, refusing to start new low-urgency foreground work when an unresolved primary human decision should be cleared first and no existing foreground batch is being continued
 - mission classifications now mirror that human-decision queue through `human_decision_queue_position` and `primary_human_decision`, so leader-facing mission surfaces can see which pending decision is currently first-class
 - lower-priority governed decisions now also emit explicit `defer_pending_primary_human_decision` reschedule actions, so the queue influences runtime behavior instead of remaining a read-only annotation
@@ -186,7 +187,7 @@ Do not underestimate the current control-plane maturity.
 - `home` now mirrors that maintenance backlog so leader-facing surfaces stay aligned with scheduler reality
 - first-class mission objects
 - separation between `latest_run_id` and `authoritative_run_id`
-- graph-level authority audit with bundle grouping, explicit bundle governors, and pairwise governor adjudication from clear authority tuples
+- graph-level authority audit with bundle grouping, explicit bundle governors, explicit-governor signal adoption, and pairwise governor adjudication from clear authority tuples
 - ownership selectors across `file` / `dir` / `module` / `glob` / `scope` / `interface`
 - path-family overlap plus same-boundary and hierarchical semantic overlap
 - ownership transfer modes:

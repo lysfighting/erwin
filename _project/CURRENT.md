@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.63.0 (in progress)
+- **Version**: 0.64.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness made council orchestration protocol-aware)
+- **Last Session**: 2026-03-30 (Harness adopted explicit bundle-governor control)
 
 ## Current Phase
 
@@ -34,6 +34,10 @@
 - **Protocol-deferred conflict visibility added**: debate plans and meeting summaries now expose `protocol_deferred_route_count` and `protocol_bound_route_count`, so leader-facing meeting surfaces can distinguish evidence-review debate lanes from lanes intentionally handed to synthesis under a different decision protocol
 - **Protocol-aware auto-synthesis added**: when a non-evidence protocol defers a conflict or stops after a bounded response, auto-synthesis now turns that lane into unresolved findings plus protocol-specific follow-up action items instead of pretending the lane should still generate more live debate
 - **Protocol-aware teammate smoke added**: teammate smoke now proves `incident-command` and `decision-record` can both advance from independent review directly to output for same-authority conflicts, without emitting cross-examination route obligations, while still producing bounded follow-up output
+- **Explicit bundle-governor adoption added**: `missions establish-governor` and `missions clear-governor` now let the leader convert an escalation-required mission bundle into governed authority deliberately, using durable `bundle_governor_established` signals instead of relying only on implicit candidate-governor heuristics
+- **Graph authority now consumes explicit governors**: mission-graph authority can now upgrade a conflicted bundle into `explicit_bundle_governor`, anchoring bundle governance to the leader-adopted mission until that explicit governor signal is cleared
+- **Scheduler now respects explicit governor adoption**: once a bundle governor is explicitly established, scheduler no longer keeps surfacing `establish_bundle_governor` for that bundle and instead treats it as governed authority until the governor is retired
+- **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves a bundle can move from `bundle_governor_required` to `explicit_bundle_governor`, stop emitting redundant establish-governor decisions, and then return cleanly to the unresolved state when the explicit governor is cleared
 - **Scheduler maintenance escalation added**: scheduler snapshots now emit `maintenance_actions`, `maintenance_action_count`, and `maintenance_action_tally`, turning stale runs, expired signals, and stale meetings into explicit leader-facing maintenance work instead of leaving them only to `doctor`
 - **Maintenance guidance prioritized**: when stale control-plane state coexists with runnable foreground work, scheduler `next_action` now tells the leader to keep the foreground batch bounded and clean stale state before widening execution
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves stale run plus stale signal maintenance escalation and verifies that refreshing the run and retiring the stale signal restores a clean control-plane path
