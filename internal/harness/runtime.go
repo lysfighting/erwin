@@ -4175,6 +4175,65 @@ func defaultMeetingRoleSpecs(protocol string) []any {
 	}
 }
 
+func protocolUsesStructuredDebate(protocol string) bool {
+	return normalizeDecisionProtocol(protocol) == "evidence-review"
+}
+
+func protocolDirectSynthesisCoverageNote(protocol, claimRef string) string {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return fmt.Sprintf("claim %q stays out of live cross-examination because incident-command prefers bounded stabilization and explicit owner/stop-go output over extended rebuttal rounds.", claimRef)
+	case "decision-record":
+		return fmt.Sprintf("claim %q stays out of live cross-examination because decision-record prefers bounded capture of tradeoffs and follow-up obligations over extended rebuttal rounds.", claimRef)
+	default:
+		return fmt.Sprintf("claim %q stays out of live cross-examination because this protocol defers unresolved conflict to synthesis.", claimRef)
+	}
+}
+
+func protocolBoundedRoundCoverageNote(protocol, claimRef string, roundNumber int) string {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return fmt.Sprintf("claim %q stops after round %d because incident-command keeps the council bounded and hands unresolved disagreement to synthesis/action ownership instead of further debate rounds.", claimRef, roundNumber)
+	case "decision-record":
+		return fmt.Sprintf("claim %q stops after round %d because decision-record records the bounded disagreement and consequences instead of escalating into more rebuttal rounds.", claimRef, roundNumber)
+	default:
+		return fmt.Sprintf("claim %q stops after round %d because the active protocol caps live debate and defers the unresolved lane to synthesis.", claimRef, roundNumber)
+	}
+}
+
+func protocolDeferredSynthesisRequirement(protocol string) string {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return "No additional live debate is required; synthesize the incident command record with chosen action, owner, and stop/go constraints."
+	case "decision-record":
+		return "No additional live debate is required; synthesize the bounded decision record with alternatives, consequences, and follow-up actions."
+	default:
+		return "No additional live debate is required; synthesize the bounded council record."
+	}
+}
+
+func protocolDeferredActionSummary(protocol, claimRef string) string {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return fmt.Sprintf("Incident commander judgment and bounded action record required for claim: %s", claimRef)
+	case "decision-record":
+		return fmt.Sprintf("Decision record must capture unresolved tradeoff and follow-up for claim: %s", claimRef)
+	default:
+		return fmt.Sprintf("Leader judgment or explicit synthesis note required for claim: %s", claimRef)
+	}
+}
+
+func routeDebateRound(route map[string]any) int {
+	round := intValue(route["latest_debate_round"])
+	if round > 0 {
+		return round
+	}
+	if intValue(route["linked_cross_examination_count"]) > 0 {
+		return intValue(route["linked_cross_examination_count"])
+	}
+	return 1
+}
+
 func runReleaseAdjacent(run map[string]any) bool {
 	shipStatus := stringValue(run["ship_status"])
 	reviewStatus := stringValue(run["review_status"])
@@ -4694,6 +4753,10 @@ func meetingHasRecordedFindingForClaim(meeting map[string]any, claimRef, dimensi
 
 func meetingDebatePlan(meeting map[string]any) map[string]any {
 	ensureMeetingGovernanceState(meeting)
+	protocol := normalizeDecisionProtocol(stringValue(meeting["decision_protocol"]))
+	if protocol == "" {
+		protocol = "evidence-review"
+	}
 	positions := toList(meeting["positions"])
 	participants := toList(meeting["participants"])
 	maxDebateRounds := meetingMaxDebateRounds()
@@ -4752,6 +4815,8 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 	resolvedRouteCount := 0
 	resolvedWithoutCrossExaminationCount := 0
 	authorityResolvedRouteCount := 0
+	protocolDeferredRouteCount := 0
+	protocolBoundedRouteCount := 0
 	plannedRoundCount := 0
 	resolvedRoundCount := 0
 
@@ -4851,25 +4916,34 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 			route["resolved_without_cross_examination"] = true
 			coverageNotes = append(coverageNotes, fmt.Sprintf("claim %q does not need cross-examination because %s authority from %s already outranks %s authority from %s.", claimLabels[key], firstNonBlank(stringValue(prevailingLead["authority_level"]), "L4"), firstNonBlank(prevailingRole, prevailingStance+" lane"), firstNonBlank(stringValue(overruledLead["authority_level"]), "L4"), firstNonBlank(stringValue(overruledLead["role"]), overruledStance+" lane")))
 		} else {
-			note := fmt.Sprintf("claim %q lacks linked cross-examination between supporting and challenging roles", claimLabels[key])
-			if assignedRole != "" {
-				note = fmt.Sprintf("%s; %s should challenge %s on this lane", note, assignedRole, firstNonBlank(targetRole, claimLabels[key]))
+			if protocolUsesStructuredDebate(protocol) {
+				note := fmt.Sprintf("claim %q lacks linked cross-examination between supporting and challenging roles", claimLabels[key])
+				if assignedRole != "" {
+					note = fmt.Sprintf("%s; %s should challenge %s on this lane", note, assignedRole, firstNonBlank(targetRole, claimLabels[key]))
+				}
+				blockingGaps = append(blockingGaps, note)
+				routeActions = append(routeActions, map[string]any{
+					"route_id":                routeID,
+					"claim_ref":               claimLabels[key],
+					"dimension":               dimensions[key],
+					"assigned_role":           assignedRole,
+					"assigned_run_id":         assignedRunID,
+					"expected_phase":          "cross_examination",
+					"expected_stance":         "challenge",
+					"responds_to_position_id": targetPositionID,
+					"responds_to_run_id":      targetRunID,
+					"responds_to_role":        targetRole,
+					"state":                   "open",
+					"summary":                 fmt.Sprintf("%s should challenge %s on claim %q", firstNonBlank(assignedRole, "bounded challenger"), firstNonBlank(targetRole, "the supporting lane"), claimLabels[key]),
+				})
+			} else {
+				protocolDeferredRouteCount++
+				route["status"] = "protocol_direct_synthesis"
+				route["resolution_kind"] = "protocol_prefers_direct_synthesis"
+				route["required_follow_up"] = "synthesis_must_record_tradeoff"
+				route["decision_protocol"] = protocol
+				coverageNotes = append(coverageNotes, protocolDirectSynthesisCoverageNote(protocol, claimLabels[key]))
 			}
-			blockingGaps = append(blockingGaps, note)
-			routeActions = append(routeActions, map[string]any{
-				"route_id":                routeID,
-				"claim_ref":               claimLabels[key],
-				"dimension":               dimensions[key],
-				"assigned_role":           assignedRole,
-				"assigned_run_id":         assignedRunID,
-				"expected_phase":          "cross_examination",
-				"expected_stance":         "challenge",
-				"responds_to_position_id": targetPositionID,
-				"responds_to_run_id":      targetRunID,
-				"responds_to_role":        targetRole,
-				"state":                   "open",
-				"summary":                 fmt.Sprintf("%s should challenge %s on claim %q", firstNonBlank(assignedRole, "bounded challenger"), firstNonBlank(targetRole, "the supporting lane"), claimLabels[key]),
-			})
 		}
 		if linkedCrossByClaim[key] > 0 && !hasRecordedFinding {
 			plannedRoundCount++
@@ -4924,6 +4998,13 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 					route["overruled_position_id"] = stringValue(opposingLead["position_id"])
 					route["required_follow_up"] = "synthesis_can_materialize_verdict"
 					coverageNotes = append(coverageNotes, fmt.Sprintf("claim %q debate resolves after round %d because the latest %s response now outranks the opposing lane.", claimLabels[key], linkedCrossByClaim[key], latestStance))
+				} else if !protocolUsesStructuredDebate(protocol) {
+					protocolBoundedRouteCount++
+					route["status"] = "protocol_bound_reached"
+					route["resolution_kind"] = "protocol_bound_reached"
+					route["required_follow_up"] = "synthesis_must_record_tradeoff"
+					route["decision_protocol"] = protocol
+					coverageNotes = append(coverageNotes, protocolBoundedRoundCoverageNote(protocol, claimLabels[key], linkedCrossByClaim[key]))
 				} else {
 					assignedRole := firstNonBlank(stringValue(opposingLead["role"]), firstNonBlank(opposingRoles...))
 					assignedRunID := firstNonBlank(stringValue(opposingLead["run_id"]), participantRunByRole[assignedRole])
@@ -5129,6 +5210,8 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		"resolved_route_count":                     resolvedRouteCount,
 		"resolved_without_cross_examination_count": resolvedWithoutCrossExaminationCount,
 		"authority_resolved_route_count":           authorityResolvedRouteCount,
+		"protocol_deferred_route_count":            protocolDeferredRouteCount,
+		"protocol_bound_route_count":               protocolBoundedRouteCount,
 		"planned_round_count":                      plannedRoundCount,
 		"resolved_round_count":                     resolvedRoundCount,
 		"unrouted_claim_count":                     len(blockingGaps),
@@ -5154,6 +5237,10 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 }
 
 func meetingAutoSynthesize(meeting map[string]any) map[string]any {
+	protocol := normalizeDecisionProtocol(stringValue(meeting["decision_protocol"]))
+	if protocol == "" {
+		protocol = "evidence-review"
+	}
 	debatePlan, _ := toMap(meetingDebatePlan(meeting))
 	routeByClaimKey := map[string]map[string]any{}
 	for _, item := range toList(debatePlan["routes"]) {
@@ -5340,6 +5427,25 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 		}
 
 		switch {
+		case routeResolution == "protocol_prefers_direct_synthesis" || routeResolution == "protocol_bound_reached":
+			baseFinding["authority_level"] = firstNonBlank(supportLevel, challengeLevel, "L4")
+			if routeResolution == "protocol_prefers_direct_synthesis" {
+				baseFinding["reason"] = fmt.Sprintf("Auto-synthesized unresolved conflict: %s", protocolDirectSynthesisCoverageNote(protocol, claimRef))
+			} else {
+				baseFinding["reason"] = protocolBoundedRoundCoverageNote(protocol, claimRef, routeDebateRound(route))
+			}
+			findings["unresolved"] = append(toList(findings["unresolved"]), baseFinding)
+			actionID := fmt.Sprintf("action-%s-%02d", nowTime().UTC().Format("20060102150405"), claimIndex)
+			actions = append(actions, map[string]any{
+				"action_id":           actionID,
+				"summary":             protocolDeferredActionSummary(protocol, claimRef),
+				"recorded_at":         nowISO(),
+				"state":               "open",
+				"generated_by":        "orchestrate_auto_synthesis",
+				"generated_claim_key": key,
+				"decision_protocol":   protocol,
+			})
+			generatedActionIDs = append(generatedActionIDs, actionID)
 		case len(supportingIDs) > 0 && len(challengingIDs) == 0:
 			baseFinding["reason"] = fmt.Sprintf("Auto-synthesized from %d supporting council position(s) with no recorded challenge.", len(supportingIDs))
 			findings["accepted"] = append(toList(findings["accepted"]), baseFinding)
@@ -5361,11 +5467,12 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 			actionID := fmt.Sprintf("action-%s-%02d", nowTime().UTC().Format("20060102150405"), claimIndex)
 			actions = append(actions, map[string]any{
 				"action_id":           actionID,
-				"summary":             fmt.Sprintf("Leader judgment or explicit synthesis note required for claim: %s", claimRef),
+				"summary":             protocolDeferredActionSummary(protocol, claimRef),
 				"recorded_at":         nowISO(),
 				"state":               "open",
 				"generated_by":        "orchestrate_auto_synthesis",
 				"generated_claim_key": key,
+				"decision_protocol":   protocol,
 			})
 			generatedActionIDs = append(generatedActionIDs, actionID)
 		}
@@ -10567,6 +10674,8 @@ func cmdMeetings(args []string) error {
 			"open_route_action_count":                  intValue(debatePlan["open_route_action_count"]),
 			"resolved_without_cross_examination_count": intValue(debatePlan["resolved_without_cross_examination_count"]),
 			"authority_resolved_route_count":           intValue(debatePlan["authority_resolved_route_count"]),
+			"protocol_deferred_route_count":            intValue(debatePlan["protocol_deferred_route_count"]),
+			"protocol_bound_route_count":               intValue(debatePlan["protocol_bound_route_count"]),
 			"planned_round_count":                      intValue(debatePlan["planned_round_count"]),
 			"resolved_round_count":                     intValue(debatePlan["resolved_round_count"]),
 			"open_round_action_count":                  intValue(debatePlan["open_round_action_count"]),
@@ -10706,6 +10815,10 @@ func cmdMeetingsRemainder(args []string) error {
 			}
 			meeting, _ := toMap(data["meeting"])
 			ensureMeetingGovernanceState(meeting)
+			protocol := normalizeDecisionProtocol(stringValue(meeting["decision_protocol"]))
+			if protocol == "" {
+				protocol = "evidence-review"
+			}
 			oldPhase := firstNonBlank(stringValue(meeting["phase"]), "setup")
 			packet, _ := toMap(meeting["packet"])
 			roleSpecs := toList(meeting["role_specs"])
@@ -10757,6 +10870,10 @@ func cmdMeetingsRemainder(args []string) error {
 				}
 				return message
 			}
+			protocolPrefersDirectSynthesis := func() bool {
+				return !protocolUsesStructuredDebate(protocol) &&
+					(intValue(debatePlan["protocol_deferred_route_count"]) > 0 || intValue(debatePlan["protocol_bound_route_count"]) > 0)
+			}
 			switch oldPhase {
 			case "", "setup":
 				gaps = append(gaps, governanceGaps...)
@@ -10783,6 +10900,8 @@ func cmdMeetingsRemainder(args []string) error {
 						newPhase = "synthesis"
 						if intValue(debatePlan["planned_route_count"]) == 0 {
 							nextRequirement = "No conflicting claim lanes remain; synthesize the independent-review record."
+						} else if protocolPrefersDirectSynthesis() {
+							nextRequirement = protocolDeferredSynthesisRequirement(protocol)
 						} else if intValue(debatePlan["resolved_without_cross_examination_count"]) > 0 {
 							nextRequirement = "No unresolved debate lanes remain; synthesize the authority-resolved council record."
 						} else {
@@ -10823,6 +10942,8 @@ func cmdMeetingsRemainder(args []string) error {
 					newPhase = "synthesis"
 					if intValue(debatePlan["resolved_without_cross_examination_count"]) > 0 {
 						nextRequirement = "No unresolved debate lanes remain; synthesize the authority-resolved council record."
+					} else if protocolPrefersDirectSynthesis() {
+						nextRequirement = protocolDeferredSynthesisRequirement(protocol)
 					} else {
 						nextRequirement = "Convert debated positions into accepted, rejected, unresolved findings, and action items."
 					}
@@ -10831,7 +10952,11 @@ func cmdMeetingsRemainder(args []string) error {
 						nextRequirement = fmt.Sprintf("Execute %d follow-up debate round(s) before synthesis.", intValue(debatePlan["open_round_action_count"]))
 					} else {
 						newPhase = "synthesis"
-						nextRequirement = "Convert debated positions into accepted, rejected, unresolved findings, and action items."
+						if protocolPrefersDirectSynthesis() {
+							nextRequirement = protocolDeferredSynthesisRequirement(protocol)
+						} else {
+							nextRequirement = "Convert debated positions into accepted, rejected, unresolved findings, and action items."
+						}
 					}
 				} else {
 					if intValue(debatePlan["open_route_action_count"]) > 0 {

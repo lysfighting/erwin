@@ -159,8 +159,10 @@ Use when:
 Current runtime note:
 
 - the meeting engine still shares one common phased execution baseline
-- protocol choice currently affects default role packets, expected output, and scheduler guidance first
-- deeper protocol-specific automation remains future expansion
+- protocol choice now affects default role packets, expected output, scheduler guidance, and whether same-authority conflict automatically becomes a live debate obligation
+- `evidence-review` retains the richest route/round automation
+- `incident-command` and `decision-record` now prefer bounded synthesis/record handling over auto-generated cross-examination when no authority winner already exists
+- deeper protocol-specific automation is still not complete, but protocol choice is now part of real council control flow rather than metadata only
 
 ---
 
@@ -595,6 +597,7 @@ The following parts of the operating model are already concretely present:
 - mission-bundle authority that can now let either a more specific ownership boundary or a single active council anchor govern a broader overlapping mission even without a dependency edge
 - meeting packets with role/authority discipline
 - wave/route/round council orchestration
+- protocol-aware council control, where `incident-command` and `decision-record` can defer same-authority disagreement directly into synthesis/record handling instead of auto-generating live debate obligations
 - governed verdict adoption in some resolved debate lanes
 - runtime-enforced governance gaps that block councils lacking authority hierarchy or rejected-finding reasons
 

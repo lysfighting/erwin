@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Protocol-aware council automation so `incident-command` and `decision-record` can defer same-authority disagreement into synthesis/record output instead of auto-generating live debate routes and rounds.
 - Decision-first foreground admission, allowing scheduler to emit `hold_for_primary_human_decision` when unresolved governed decisions should block new low-urgency foreground work.
 - Candidate-governor packets for escalation-required mission bundles, exposed through graph authority, scheduler decision packets, and mission classifications.
 - Explicit decision-protocol support for meetings and scheduler human-decision packets, including `evidence-review`, `incident-command`, and `decision-record`.

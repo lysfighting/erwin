@@ -831,6 +831,7 @@ Current capabilities include:
 - deterministic current/blocked debate-batch execution control
 - route obligations
 - multi-round debate planning
+- protocol-aware direct synthesis for `incident-command` and `decision-record` when same-authority conflict should be recorded rather than expanded into live route/round work
 - same-pass closure from synthesis to output when no synthesis gaps remain
 - summary and readiness metrics
 - same-claim authority audit

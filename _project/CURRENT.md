@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.62.0 (in progress)
+- **Version**: 0.63.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness enforced decision-first foreground admission)
+- **Last Session**: 2026-03-30 (Harness made council orchestration protocol-aware)
 
 ## Current Phase
 
@@ -30,6 +30,10 @@
 - **Scheduler protocol guidance added**: human-decision packets now carry `recommended_decision_protocol`, so the leader can distinguish council-grade evidence review, incident-command decisions, and ordinary decision-record handling before materializing a meeting
 - **Candidate-governor bundle packets added**: escalation-required mission bundles now expose `candidate_governor_ids` and ranked `candidate_governor_packets` across graph authority, scheduler human-decision packets, and mission classifications, so the leader can see who should plausibly govern the bundle before opening a council
 - **Decision-first admission gate added**: when a primary human decision is still unresolved and no established foreground batch is being continued, scheduler now withholds new low-urgency foreground admission under `hold_for_primary_human_decision` instead of quietly starting unrelated fresh work
+- **Protocol-aware council controller added**: `incident-command` and `decision-record` meetings no longer auto-expand every same-authority conflict into live route/round work; they now defer bounded disagreement into synthesis/record handling while `evidence-review` keeps the richest debate controller
+- **Protocol-deferred conflict visibility added**: debate plans and meeting summaries now expose `protocol_deferred_route_count` and `protocol_bound_route_count`, so leader-facing meeting surfaces can distinguish evidence-review debate lanes from lanes intentionally handed to synthesis under a different decision protocol
+- **Protocol-aware auto-synthesis added**: when a non-evidence protocol defers a conflict or stops after a bounded response, auto-synthesis now turns that lane into unresolved findings plus protocol-specific follow-up action items instead of pretending the lane should still generate more live debate
+- **Protocol-aware teammate smoke added**: teammate smoke now proves `incident-command` and `decision-record` can both advance from independent review directly to output for same-authority conflicts, without emitting cross-examination route obligations, while still producing bounded follow-up output
 - **Scheduler maintenance escalation added**: scheduler snapshots now emit `maintenance_actions`, `maintenance_action_count`, and `maintenance_action_tally`, turning stale runs, expired signals, and stale meetings into explicit leader-facing maintenance work instead of leaving them only to `doctor`
 - **Maintenance guidance prioritized**: when stale control-plane state coexists with runnable foreground work, scheduler `next_action` now tells the leader to keep the foreground batch bounded and clean stale state before widening execution
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves stale run plus stale signal maintenance escalation and verifies that refreshing the run and retiring the stale signal restores a clean control-plane path

@@ -34,6 +34,8 @@ meeting:
       conflict_claim_count: 0
       planned_route_count: 0
       resolved_route_count: 0
+      protocol_deferred_route_count: 0
+      protocol_bound_route_count: 0
       planned_round_count: 0
       resolved_round_count: 0
       unrouted_claim_count: 0
