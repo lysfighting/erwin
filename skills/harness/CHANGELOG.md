@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Structured bundle-governor decision locking in `meetings lock-decision`, plus automatic explicit-governor adoption when a bundle-scoped `establish_bundle_governor` council closes through `drive meeting-close`.
 - Conflict detection between explicit bundle governors and live bundle councils, escalating mismatched governance anchors into `clear_invalid_bundle_governor` maintenance.
 - Active bundle-council scheduler state, including `bundle_active_decision_meeting_*`, `bundle_control_state`, `active_council_bundle_count`, and `hold_for_active_bundle_council` once a bundle decision has already been materialized into a live meeting.
 - Active-council promotion for materialized scheduler decisions, including stable `decision_id` values across surface changes and projected `active_meeting_ids` on live decision packets.

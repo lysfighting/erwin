@@ -409,8 +409,17 @@ assert_json_field "$schedule_multi_escalation_conflict" '"action_kind": "clear_i
 assert_json_field "$schedule_multi_escalation_conflict" '"Explicit bundle governor points at issue-20012' "scheduler explains the conflicting explicit governor against the active bundle council anchor"
 cleared_multi_escalation_governor=$(run_in_repo bash scripts/harness-missions.sh clear-governor "$multi_escalation_bundle_id" "Clear conflicting explicit governor after active bundle council coverage.")
 assert_json_field "$cleared_multi_escalation_governor" "\"bundle_id\": \"$multi_escalation_bundle_id\"" "conflicting explicit governor can be cleared after active bundle-council coverage"
+locked_multi_escalation_governor=$(run_in_repo bash scripts/harness-meetings.sh lock-decision "$multi_escalation_meeting_id" "Anchor bundle governance to issue-20011 after council synthesis." --authority=L2 --governing-mission=issue-20011)
+assert_json_field "$locked_multi_escalation_governor" '"governing_mission_id": "issue-20011"' "bundle council can record a structured governing mission in locked decisions"
 closed_multi_escalation_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$multi_escalation_run_a" "$multi_escalation_meeting_id" "Bundle escalation council materialization covered.")
 assert_json_field "$closed_multi_escalation_meeting" '"state": "closed"' "bundle-scoped scheduler-materialized council can close cleanly"
+assert_json_field "$closed_multi_escalation_meeting" '"adoption_kind": "bundle_governor_established"' "closing a structured bundle council auto-adopts bundle-governor authority"
+assert_json_field "$closed_multi_escalation_meeting" '"governing_mission_id": "issue-20011"' "bundle council close records the adopted governing mission"
+schedule_multi_escalation_adopted=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_multi_escalation_adopted" '"bundle_state": "governed"' "closed bundle council adoption turns the escalated bundle into governed state"
+assert_json_field "$schedule_multi_escalation_adopted" "\"bundle_governing_mission_id\": \"issue-20011\"" "scheduler consumes the auto-adopted bundle governor after council close"
+cleared_multi_escalation_adopted_governor=$(run_in_repo bash scripts/harness-missions.sh clear-governor "$multi_escalation_bundle_id" "Clear adopted explicit governor after bundle-council adoption coverage.")
+assert_json_field "$cleared_multi_escalation_adopted_governor" "\"bundle_id\": \"$multi_escalation_bundle_id\"" "auto-adopted bundle governor can be cleared after coverage to keep later smoke isolated"
 
 multi_tuple_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20126 "Harness Bundle Tuple A" --owns="file:docs/harness-session-handoff.md" --allow-overlap)
 assert_json_field "$multi_tuple_claim_a" '"mission_id": "issue-20126"' "first tuple-governed bundle claim can materialize"

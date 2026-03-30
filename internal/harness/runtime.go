@@ -2742,6 +2742,176 @@ func activeBundleCouncilHosts() map[string]map[string][]string {
 	return byBundle
 }
 
+func resolveActiveBundleGovernorSignals(signalLog map[string]any, bundleID, resolutionNote string) []string {
+	signals := toList(signalLog["signals"])
+	resolvedIDs := []string{}
+	timestamp := nowISO()
+	for index, item := range signals {
+		signal, ok := toMap(item)
+		if !ok || !activeSignal(signal) {
+			continue
+		}
+		if strings.TrimSpace(stringValue(signal["kind"])) != "bundle_governor_established" || strings.TrimSpace(stringValue(signal["bundle_id"])) != bundleID {
+			continue
+		}
+		signal["state"] = "resolved"
+		signal["resolution_note"] = resolutionNote
+		signal["resolved_at"] = timestamp
+		signal["updated_at"] = timestamp
+		signals[index] = signal
+		resolvedIDs = append(resolvedIDs, stringValue(signal["signal_id"]))
+	}
+	signalLog["signals"] = signals
+	return dedupeStrings(resolvedIDs)
+}
+
+func meetingBundleGovernorAdoption(meeting map[string]any) map[string]any {
+	sourceScope := firstNonBlank(
+		strings.TrimSpace(stringValue(meeting["source_decision_scope"])),
+		strings.TrimSpace(stringValue(getKey(meeting, "source_decision_packet.decision_scope", ""))),
+	)
+	sourceKind := firstNonBlank(
+		strings.TrimSpace(stringValue(meeting["source_decision_kind"])),
+		strings.TrimSpace(stringValue(getKey(meeting, "source_decision_packet.decision_kind", ""))),
+	)
+	if sourceScope != "bundle" || sourceKind != "establish_bundle_governor" {
+		return nil
+	}
+	packet, _ := toMap(meeting["source_decision_packet"])
+	bundleID := firstNonBlank(
+		strings.TrimSpace(stringValue(packet["bundle_id"])),
+		strings.TrimSpace(stringValue(meeting["bundle_id"])),
+	)
+	if bundleID == "" {
+		return nil
+	}
+	candidateMissionIDs := []string{}
+	for _, item := range toList(packet["candidate_governor_packets"]) {
+		candidate, _ := toMap(item)
+		if missionID := strings.TrimSpace(stringValue(candidate["mission_id"])); missionID != "" {
+			candidateMissionIDs = append(candidateMissionIDs, missionID)
+		}
+	}
+	candidateMissionIDs = append(candidateMissionIDs, anyListToStrings(toList(packet["bundle_mission_ids"]))...)
+	candidateMissionIDs = append(candidateMissionIDs, anyListToStrings(toList(packet["mission_ids"]))...)
+	if governingMissionID := strings.TrimSpace(stringValue(packet["bundle_governing_mission_id"])); governingMissionID != "" {
+		candidateMissionIDs = append(candidateMissionIDs, governingMissionID)
+	}
+	candidateMissionIDs = dedupeStrings(candidateMissionIDs)
+
+	var selected map[string]any
+	selectedRank := -1
+	selectedAt := ""
+	for _, item := range toList(meeting["locked_decisions"]) {
+		decision, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		governingMissionID := firstNonBlank(
+			strings.TrimSpace(stringValue(decision["governing_mission_id"])),
+			strings.TrimSpace(stringValue(decision["mission_id"])),
+		)
+		if governingMissionID == "" {
+			continue
+		}
+		if len(candidateMissionIDs) > 0 && !containsString(candidateMissionIDs, governingMissionID) {
+			continue
+		}
+		rank := authorityRank(firstNonBlank(stringValue(decision["authority_level"]), "L4"))
+		lockedAt := firstNonBlank(stringValue(decision["locked_at"]), stringValue(decision["recorded_at"]))
+		if selected == nil || rank > selectedRank || (rank == selectedRank && isoAfter(lockedAt, selectedAt)) {
+			selected = decision
+			selectedRank = rank
+			selectedAt = lockedAt
+		}
+	}
+	if selected == nil {
+		governingMissionID := strings.TrimSpace(stringValue(packet["bundle_governing_mission_id"]))
+		if governingMissionID == "" {
+			return nil
+		}
+		selected = map[string]any{
+			"governing_mission_id": governingMissionID,
+			"authority_level":      "L2",
+			"summary":              fmt.Sprintf("Bundle governor remains anchored to %s.", governingMissionID),
+			"reason":               "Scheduler decision packet already names the bundle governor.",
+			"evidence_refs":        []any{},
+		}
+	}
+	governingMissionID := firstNonBlank(
+		strings.TrimSpace(stringValue(selected["governing_mission_id"])),
+		strings.TrimSpace(stringValue(selected["mission_id"])),
+	)
+	if governingMissionID == "" {
+		return nil
+	}
+	return map[string]any{
+		"adoption_kind":         "bundle_governor_established",
+		"bundle_id":             bundleID,
+		"governing_mission_id":  governingMissionID,
+		"authority_level":       firstNonBlank(stringValue(selected["authority_level"]), "L2"),
+		"summary":               firstNonBlank(strings.TrimSpace(stringValue(selected["summary"])), fmt.Sprintf("Bundle governance anchored to %s.", governingMissionID)),
+		"reason":                strings.TrimSpace(stringValue(selected["reason"])),
+		"evidence_refs":         cloneValue(toList(selected["evidence_refs"])),
+		"candidate_mission_ids": stringListToAny(candidateMissionIDs),
+	}
+}
+
+func adoptClosedMeetingAuthority(meeting map[string]any) (map[string]any, error) {
+	adoption := meetingBundleGovernorAdoption(meeting)
+	if len(adoption) == 0 {
+		return nil, nil
+	}
+	bundleID := stringValue(adoption["bundle_id"])
+	governingMissionID := stringValue(adoption["governing_mission_id"])
+	if bundleID == "" || governingMissionID == "" {
+		return nil, nil
+	}
+
+	log := readSignalLog()
+	meetingID := stringValue(meeting["meeting_id"])
+	resolutionNote := fmt.Sprintf("Superseded by closed council meeting %s adopting %s as bundle governor for %s.", meetingID, governingMissionID, bundleID)
+	resolvedSignalIDs := resolveActiveBundleGovernorSignals(log, bundleID, resolutionNote)
+
+	templateRoot, _ := toMap(loadData(signalTemplatePath(), map[string]any{}))
+	signalTemplate, _ := toMap(templateRoot["signal"])
+	signalID := fmt.Sprintf("sig-%s-bundle-governor-%s", nowTime().UTC().Format("20060102150405"), slugify(bundleID))
+	evidenceRefs := append([]string{meetingPath(meetingID, true)}, anyListToStrings(toList(adoption["evidence_refs"]))...)
+	signal, _ := toMap(mergeDicts(signalTemplate, map[string]any{
+		"signal_id":            signalID,
+		"kind":                 "bundle_governor_established",
+		"source_type":          "leader",
+		"source_id":            firstNonBlank(stringValue(meeting["leader_id"]), "leader-main"),
+		"mission_id":           governingMissionID,
+		"applies_to":           append(stringListToAny([]string{bundleID}), stringListToAny(anyListToStrings(toList(getKey(meeting, "source_decision_packet.bundle_mission_ids", []any{}))))...),
+		"scope_type":           "mission-graph",
+		"title":                "Bundle governor adopted from council",
+		"summary":              firstNonBlank(stringValue(adoption["summary"]), fmt.Sprintf("Closed council adopted %s as the bundle governor for %s.", governingMissionID, bundleID)),
+		"authority_level":      firstNonBlank(stringValue(adoption["authority_level"]), "L2"),
+		"confidence":           "high",
+		"bundle_id":            bundleID,
+		"bundle_mission_ids":   cloneValue(getKey(meeting, "source_decision_packet.bundle_mission_ids", []any{})),
+		"governing_mission_id": governingMissionID,
+		"selector_refs":        cloneValue(getKey(meeting, "source_decision_packet.selector_refs", []any{})),
+		"resolution_kind":      "explicit_bundle_governor",
+		"required_action":      fmt.Sprintf("Keep bundle authority anchored to %s until this adopted governor decision is cleared or superseded.", governingMissionID),
+		"evidence_refs":        stringListToAny(dedupeStrings(evidenceRefs)),
+		"adopted_from_meeting": meetingID,
+		"adoption_reason":      stringValue(adoption["reason"]),
+	}))
+	fillIfBlank(signal, "emitted_at", nowISO())
+	fillIfBlank(signal, "state", "active")
+	log["signals"] = append(toList(log["signals"]), signal)
+	if err := writeSignalLog(log); err != nil {
+		return nil, err
+	}
+
+	adoption["signal_id"] = stringValue(signal["signal_id"])
+	adoption["resolved_prior_signal_ids"] = stringListToAny(resolvedSignalIDs)
+	adoption["signal"] = signal
+	return adoption, nil
+}
+
 func selectExplicitBundleGovernorSignal(signals []map[string]any, componentSet map[string]bool) (map[string]any, []string) {
 	candidates := []map[string]any{}
 	for _, signal := range signals {
@@ -10506,6 +10676,22 @@ func cmdDrive(args []string) error {
 			}); err != nil {
 				return err
 			}
+			authorityAdoption, err := adoptClosedMeetingAuthority(meeting)
+			if err != nil {
+				return err
+			}
+			if len(authorityAdoption) > 0 {
+				meeting["authority_adoption"] = authorityAdoption
+				if err := dumpData(meetingPath(meetingID, true), map[string]any{"version": 1, "meeting": meeting}); err != nil {
+					return err
+				}
+				if _, err := updateBacklogMeeting(meetingID, map[string]any{
+					"authority_adoption": authorityAdoption,
+					"updated_at":         nowISO(),
+				}); err != nil {
+					return err
+				}
+			}
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
 			if err := validateRunTransition(run, "ready"); err != nil {
@@ -10523,7 +10709,11 @@ func cmdDrive(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
-			return printJSON(map[string]any{"meeting": meeting, "run": run})
+			return printJSON(map[string]any{
+				"meeting":            meeting,
+				"run":                run,
+				"authority_adoption": authorityAdoption,
+			})
 		})
 	default:
 		return fmt.Errorf("unknown drive subcommand: %s", subcommand)
@@ -12195,6 +12385,8 @@ func cmdMeetingsRemainder(args []string) error {
 		reason := ""
 		authorityLevel := "L2"
 		evidenceRefs := []string{}
+		governingMissionID := ""
+		bundleID := ""
 		for _, arg := range args[2:] {
 			switch {
 			case strings.HasPrefix(arg, "--reason="):
@@ -12203,6 +12395,10 @@ func cmdMeetingsRemainder(args []string) error {
 				authorityLevel = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--authority=")), authorityLevel)
 			case strings.HasPrefix(arg, "--evidence="):
 				evidenceRefs = append(evidenceRefs, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--evidence=")))...)
+			case strings.HasPrefix(arg, "--governing-mission="):
+				governingMissionID = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--governing-mission=")), governingMissionID)
+			case strings.HasPrefix(arg, "--bundle="):
+				bundleID = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--bundle=")), bundleID)
 			default:
 				textTokens = append(textTokens, arg)
 			}
@@ -12217,14 +12413,21 @@ func cmdMeetingsRemainder(args []string) error {
 				return fmt.Errorf("active meeting not found: %s", meetingID)
 			}
 			meeting, _ := toMap(data["meeting"])
-			locked := append(toList(meeting["locked_decisions"]), map[string]any{
+			lockedDecision := map[string]any{
 				"decision_id":     "decision-" + nowTime().UTC().Format("20060102150405"),
 				"summary":         summary,
 				"reason":          reason,
 				"authority_level": authorityLevel,
 				"evidence_refs":   stringListToAny(evidenceRefs),
 				"locked_at":       nowISO(),
-			})
+			}
+			if governingMissionID != "" {
+				lockedDecision["governing_mission_id"] = governingMissionID
+			}
+			if firstNonBlank(bundleID, strings.TrimSpace(stringValue(getKey(meeting, "source_decision_packet.bundle_id", "")))) != "" {
+				lockedDecision["bundle_id"] = firstNonBlank(bundleID, strings.TrimSpace(stringValue(getKey(meeting, "source_decision_packet.bundle_id", ""))))
+			}
+			locked := append(toList(meeting["locked_decisions"]), lockedDecision)
 			meeting["locked_decisions"] = locked
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
