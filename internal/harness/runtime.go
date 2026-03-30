@@ -2628,10 +2628,11 @@ func missionDependsOnTarget(missionRegistry map[string]any, missionID, targetID 
 	return false
 }
 
-func meetingActivityByMission(registry map[string]any) (map[string]int, map[string]int, map[string][]string) {
+func meetingActivityByMission(registry map[string]any) (map[string]int, map[string]int, map[string][]string, map[string][]string) {
 	activeMeetingCountByMission := map[string]int{}
 	openMeetingActionCountByMission := map[string]int{}
 	activeMeetingIDsByDecisionID := map[string][]string{}
+	activeMeetingIDsByBundleID := map[string][]string{}
 	runMissionByID := map[string]string{}
 	for _, item := range toList(registry["runs"]) {
 		run, _ := toMap(item)
@@ -2655,6 +2656,19 @@ func meetingActivityByMission(registry map[string]any) (map[string]int, map[stri
 			if decisionID := strings.TrimSpace(stringValue(meeting["source_decision_id"])); decisionID != "" {
 				activeMeetingIDsByDecisionID[decisionID] = dedupeStrings(append(activeMeetingIDsByDecisionID[decisionID], stringValue(meeting["meeting_id"])))
 			}
+			sourceScope := firstNonBlank(
+				strings.TrimSpace(stringValue(meeting["source_decision_scope"])),
+				strings.TrimSpace(stringValue(getKey(meeting, "source_decision_packet.decision_scope", ""))),
+			)
+			if sourceScope == "bundle" {
+				bundleID := firstNonBlank(
+					strings.TrimSpace(stringValue(getKey(meeting, "source_decision_packet.bundle_id", ""))),
+					strings.TrimSpace(stringValue(meeting["bundle_id"])),
+				)
+				if bundleID != "" {
+					activeMeetingIDsByBundleID[bundleID] = dedupeStrings(append(activeMeetingIDsByBundleID[bundleID], stringValue(meeting["meeting_id"])))
+				}
+			}
 		}
 		for _, actionItem := range toList(meeting["action_items"]) {
 			actionMap, ok := toMap(actionItem)
@@ -2668,7 +2682,7 @@ func meetingActivityByMission(registry map[string]any) (map[string]int, map[stri
 			openMeetingActionCountByMission[missionID]++
 		}
 	}
-	return activeMeetingCountByMission, openMeetingActionCountByMission, activeMeetingIDsByDecisionID
+	return activeMeetingCountByMission, openMeetingActionCountByMission, activeMeetingIDsByDecisionID, activeMeetingIDsByBundleID
 }
 
 func explicitBundleGovernorSignals(signalLog map[string]any) map[string][]map[string]any {
@@ -3136,7 +3150,7 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		right := stringValue(missions[j]["mission_id"])
 		return left < right
 	})
-	activeMeetingCountByMission, openMeetingActionCountByMission, _ := meetingActivityByMission(registry)
+	activeMeetingCountByMission, openMeetingActionCountByMission, _, _ := meetingActivityByMission(registry)
 
 	missionAudits := []any{}
 	missionIDs := []string{}
@@ -8340,7 +8354,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	maintenanceActions, maintenanceTally := schedulerMaintenanceActions(missionRegistry, registry, signalLog)
 	maintenanceActions = sortSchedulerMaintenanceActions(maintenanceActions, previousPrimaryMaintenanceKey)
 
-	activeMeetingCountByMission, openMeetingActionCountByMission, activeMeetingIDsByDecisionID := meetingActivityByMission(registry)
+	activeMeetingCountByMission, openMeetingActionCountByMission, activeMeetingIDsByDecisionID, activeMeetingIDsByBundleID := meetingActivityByMission(registry)
 
 	for _, item := range toList(graphAuthority["cross_mission_conflicts"]) {
 		conflict, _ := toMap(item)
@@ -8735,6 +8749,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	)
 	decisionQueuePositionByKey, primaryDecisionByKey := schedulerDecisionQueueMaps(requiredHumanDecisions)
 	decisionIDByKey := map[string]string{}
+	decisionPacketByKey := map[string]map[string]any{}
 	for _, item := range requiredHumanDecisions {
 		decision, ok := toMap(item)
 		if !ok {
@@ -8742,6 +8757,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		}
 		if key := schedulerDecisionKey(decision); key != "" {
 			decisionIDByKey[key] = stringValue(decision["decision_id"])
+			decisionPacketByKey[key] = decision
 		}
 	}
 
@@ -8755,6 +8771,40 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			entry["human_decision_queue_position"] = queuePosition
 			entry["primary_human_decision"] = primaryDecisionByKey[queueKey]
 			entry["human_decision_id"] = decisionIDByKey[queueKey]
+			if packet, ok := decisionPacketByKey[queueKey]; ok {
+				entry["active_decision_meeting_ids"] = cloneValue(getKey(packet, "active_meeting_ids", []any{}))
+				entry["active_decision_meeting_count"] = intValue(packet["active_meeting_count"])
+				if surface := strings.TrimSpace(stringValue(packet["recommended_decision_surface"])); surface != "" {
+					entry["recommended_decision_surface"] = surface
+				}
+			}
+			if bundleID := strings.TrimSpace(stringValue(entry["bundle_id"])); bundleID != "" {
+				activeBundleMeetingIDs := dedupeStrings(activeMeetingIDsByBundleID[bundleID])
+				entry["bundle_active_decision_meeting_ids"] = stringListToAny(activeBundleMeetingIDs)
+				entry["bundle_active_decision_meeting_count"] = len(activeBundleMeetingIDs)
+				if len(activeBundleMeetingIDs) > 0 {
+					reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Bundle %s already has active council coverage: %s.", bundleID, strings.Join(activeBundleMeetingIDs, ", ")))
+					entry["reasons"] = stringListToAny(dedupeStrings(reasons))
+					entry["recommended_action"] = fmt.Sprintf("Review the active bundle council(s) for %s before widening execution: %s.", bundleID, strings.Join(activeBundleMeetingIDs, ", "))
+					entry["recommended_decision_surface"] = "active-council"
+					entry["bundle_control_state"] = "active-council"
+					if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
+						currentState := stringValue(entry["authoritative_run_state"])
+						if currentState == "ready" || currentState == "executing" {
+							rescheduleActions = append(rescheduleActions, map[string]any{
+								"mission_id":                  missionID,
+								"run_id":                      runID,
+								"action_kind":                 "hold_for_active_bundle_council",
+								"target_state":                "waiting",
+								"current_state":               currentState,
+								"bundle_id":                   bundleID,
+								"active_decision_meeting_ids": stringListToAny(activeBundleMeetingIDs),
+								"reason":                      fmt.Sprintf("Scheduler is holding this mission behind the active bundle council for %s.", bundleID),
+							})
+						}
+					}
+				}
+			}
 			if queuePosition > 1 && stringValue(entry["classification"]) == "needs-human-decision" {
 				reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Another governed human decision currently outranks this mission in the scheduler portfolio (queue position %d).", queuePosition))
 				entry["reasons"] = stringListToAny(dedupeStrings(reasons))
@@ -8782,6 +8832,44 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			entry["human_decision_queue_position"] = 0
 			entry["primary_human_decision"] = false
 			entry["human_decision_id"] = ""
+			entry["active_decision_meeting_ids"] = []any{}
+			entry["active_decision_meeting_count"] = 0
+			if bundleID := strings.TrimSpace(stringValue(entry["bundle_id"])); bundleID != "" {
+				activeBundleMeetingIDs := dedupeStrings(activeMeetingIDsByBundleID[bundleID])
+				entry["bundle_active_decision_meeting_ids"] = stringListToAny(activeBundleMeetingIDs)
+				entry["bundle_active_decision_meeting_count"] = len(activeBundleMeetingIDs)
+				if len(activeBundleMeetingIDs) > 0 {
+					entry["bundle_control_state"] = "active-council"
+					reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Bundle %s already has active council coverage: %s.", bundleID, strings.Join(activeBundleMeetingIDs, ", ")))
+					entry["reasons"] = stringListToAny(dedupeStrings(reasons))
+					entry["recommended_action"] = fmt.Sprintf("Review the active bundle council(s) for %s before widening execution: %s.", bundleID, strings.Join(activeBundleMeetingIDs, ", "))
+					if surface := strings.TrimSpace(stringValue(entry["recommended_decision_surface"])); surface == "council" || surface == "leader-decision" || surface == "" {
+						entry["recommended_decision_surface"] = "active-council"
+					}
+					if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
+						currentState := stringValue(entry["authoritative_run_state"])
+						if currentState == "ready" || currentState == "executing" {
+							rescheduleActions = append(rescheduleActions, map[string]any{
+								"mission_id":                  missionID,
+								"run_id":                      runID,
+								"action_kind":                 "hold_for_active_bundle_council",
+								"target_state":                "waiting",
+								"current_state":               currentState,
+								"bundle_id":                   bundleID,
+								"active_decision_meeting_ids": stringListToAny(activeBundleMeetingIDs),
+								"reason":                      fmt.Sprintf("Scheduler is holding this mission behind the active bundle council for %s.", bundleID),
+							})
+						}
+					}
+				}
+			}
+		}
+		if strings.TrimSpace(stringValue(entry["bundle_control_state"])) == "" {
+			entry["bundle_control_state"] = firstNonBlank(stringValue(entry["bundle_state"]), "none")
+		}
+		if _, ok := entry["bundle_active_decision_meeting_ids"]; !ok {
+			entry["bundle_active_decision_meeting_ids"] = []any{}
+			entry["bundle_active_decision_meeting_count"] = 0
 		}
 		entryByMission[missionID] = entry
 	}
@@ -9131,6 +9219,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"conflicted":          0,
 		"member":              0,
 	}
+	activeCouncilBundleIDs := []string{}
 	for _, missionID := range missionOrder {
 		entry := entryByMission[missionID]
 		classification := stringValue(entry["classification"])
@@ -9140,6 +9229,11 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		bundleRole := firstNonBlank(stringValue(entry["bundle_role"]), "none")
 		if _, ok := bundleRoleTally[bundleRole]; ok {
 			bundleRoleTally[bundleRole]++
+		}
+		if intValue(entry["bundle_active_decision_meeting_count"]) > 0 {
+			if bundleID := strings.TrimSpace(stringValue(entry["bundle_id"])); bundleID != "" {
+				activeCouncilBundleIDs = append(activeCouncilBundleIDs, bundleID)
+			}
 		}
 		entry["selected"] = false
 		for _, selectedMissionID := range selectedMissionIDs {
@@ -9240,6 +9334,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"capacity_deferred_count":               len(batchCapacityDeferredMissionIDs),
 		"classification_tally":                  classificationTally,
 		"bundle_role_tally":                     bundleRoleTally,
+		"active_council_bundle_count":           len(dedupeStrings(activeCouncilBundleIDs)),
+		"active_council_bundle_ids":             stringListToAny(dedupeStrings(activeCouncilBundleIDs)),
 		"mission_classifications":               entries,
 		"required_human_decision_count":         len(requiredHumanDecisions),
 		"deferred_human_decision_count":         maxInt(len(requiredHumanDecisions)-1, 0),
@@ -9570,6 +9666,8 @@ func cmdHome(args []string) error {
 		"scheduler_reschedule_action_count":               intValue(scheduler["reschedule_action_count"]),
 		"scheduler_tally":                                 cloneValue(getKey(scheduler, "classification_tally", map[string]any{})),
 		"scheduler_bundle_role_tally":                     cloneValue(getKey(scheduler, "bundle_role_tally", map[string]any{})),
+		"scheduler_active_council_bundle_count":           intValue(scheduler["active_council_bundle_count"]),
+		"scheduler_active_council_bundle_ids":             cloneValue(getKey(scheduler, "active_council_bundle_ids", []any{})),
 		"scheduler_required_human_decision_scope_tally":   cloneValue(getKey(scheduler, "required_human_decision_scope_tally", map[string]any{})),
 		"scheduler_required_human_decision_surface_tally": cloneValue(getKey(scheduler, "required_human_decision_surface_tally", map[string]any{})),
 		"scheduler_decision_selection_policy":             stringValue(scheduler["decision_selection_policy"]),

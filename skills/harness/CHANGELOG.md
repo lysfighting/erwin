@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Active bundle-council scheduler state, including `bundle_active_decision_meeting_*`, `bundle_control_state`, `active_council_bundle_count`, and `hold_for_active_bundle_council` once a bundle decision has already been materialized into a live meeting.
 - Active-council promotion for materialized scheduler decisions, including stable `decision_id` values across surface changes and projected `active_meeting_ids` on live decision packets.
 - Scheduler decision materialization via `bash scripts/harness-meetings.sh materialize-primary-decision` and `materialize-decision DECISION_ID`, including durable `source_decision_*` linkage on the resulting meetings.
 - Stable scheduler `decision_id` values on human-decision packets, plus projection of those ids into mission classifications and defer actions so decision portfolios become durable control-plane objects.

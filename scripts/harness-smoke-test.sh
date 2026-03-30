@@ -388,6 +388,21 @@ assert_json_field "$home_output_multi_escalation" '"scheduler_council_decision_c
 assert_json_field "$home_output_multi_escalation" '"next_action": "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime."' "home keeps scheduler decision-first guidance when bundle governance should become a council"
 assert_json_field "$home_output_multi_escalation" '"scheduler_bundle_role_tally":' "home surfaces scheduler bundle-role tallies"
 assert_json_field "$home_output_multi_escalation" '"scheduler_primary_required_human_decision": {' "home surfaces the scheduler's primary decision packet"
+multi_escalation_materialized=$(run_in_repo bash scripts/harness-meetings.sh materialize-primary-decision --mission=issue-20011)
+assert_json_field "$multi_escalation_materialized" '"source_decision_scope": "bundle"' "bundle-scoped scheduler decision can materialize into a governing council"
+assert_json_field "$multi_escalation_materialized" '"source_decision_kind": "establish_bundle_governor"' "materialized bundle council keeps the scheduler decision kind"
+multi_escalation_meeting_id=$(printf '%s\n' "$multi_escalation_materialized" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+schedule_multi_escalation_active=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_multi_escalation_active" '"active_council_bundle_count": 1' "scheduler counts escalation bundles already governed by an active council"
+assert_json_field "$schedule_multi_escalation_active" '"recommended_decision_surface": "active-council"' "scheduler upgrades bundle-governor decisions into active-council once the council exists"
+assert_json_field "$schedule_multi_escalation_active" "\"$multi_escalation_meeting_id\"" "scheduler ties the escalation bundle decision back to the active meeting id"
+assert_json_field "$schedule_multi_escalation_active" '"bundle_active_decision_meeting_count": 1' "mission classifications inherit bundle-level active council coverage"
+assert_json_field "$schedule_multi_escalation_active" '"bundle_control_state": "active-council"' "mission classifications expose bundle control state once the bundle council is active"
+assert_json_field "$schedule_multi_escalation_active" '"action_kind": "hold_for_active_bundle_council"' "scheduler emits reschedule actions that hold execution behind an active bundle council"
+home_output_multi_escalation_active=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_output_multi_escalation_active" '"scheduler_active_council_bundle_count": 1' "home surfaces active bundle-council coverage from the scheduler"
+closed_multi_escalation_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$multi_escalation_run_a" "$multi_escalation_meeting_id" "Bundle escalation council materialization covered.")
+assert_json_field "$closed_multi_escalation_meeting" '"state": "closed"' "bundle-scoped scheduler-materialized council can close cleanly"
 
 multi_tuple_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20126 "Harness Bundle Tuple A" --owns="file:docs/harness-session-handoff.md" --allow-overlap)
 assert_json_field "$multi_tuple_claim_a" '"mission_id": "issue-20126"' "first tuple-governed bundle claim can materialize"
@@ -753,6 +768,7 @@ assert_json_field "$decision_materialization_active_schedule" "\"decision_id\": 
 assert_json_field "$decision_materialization_active_schedule" '"recommended_decision_surface": "active-council"' "scheduler upgrades materialized decisions into active-council surface"
 assert_json_field "$decision_materialization_active_schedule" "\"active_meeting_ids\": \\[" "scheduler projects active meeting ids back onto the materialized decision packet"
 assert_json_field "$decision_materialization_active_schedule" "\"$primary_materialized_meeting_id\"" "scheduler ties the materialized decision packet to the active meeting id"
+assert_json_field "$decision_materialization_active_schedule" '"active_decision_meeting_count": 1' "mission classifications inherit the active-council meeting count from the materialized decision packet"
 closed_primary_materialized_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$decision_materialization_run" "$primary_materialized_meeting_id" "Primary scheduler decision materialization covered.")
 assert_json_field "$closed_primary_materialized_meeting" '"state": "closed"' "primary scheduler-materialized meeting can close cleanly"
 decision_materialization_by_id=$(run_in_repo bash scripts/harness-meetings.sh materialize-decision "$primary_materialized_decision_id" --mission=issue-20032)
