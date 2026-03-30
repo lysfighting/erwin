@@ -7,10 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Harness Learning Loop
+- **Proposal-first Harness learning loop added**: introduced `docs/harness-learning-loop.md` as the canonical design for turning field signals, real usage cases, and internal harness gaps into reviewed proposals instead of direct runtime churn.
+- **Harness proposal ledger added**: introduced `docs/harness-proposal-ledger.md` as the durable control-plane surface for reviewed `Harness` evolution proposals.
+
 ### Added — Repo Repositioning
 - **AI/agent radar foundation added**: created `docs/radar/README.md`, `docs/radar/sources.md`, `docs/radar/themes.md`, and the kickoff weekly synthesis at `docs/radar/weekly/2026-03-30.md`, establishing a lightweight repo-native knowledge base for authoritative field signals.
 - **Archive boundary added**: created `archive/README.md`, `docs/archive/README.md`, and `_project/archive/README.md` so historical material can be demoted safely before any delete round.
 - **Radar automations activated**: the daily radar and weekly synthesis automations are now stored as active Codex automations for the `erwin` workspace, scheduled for weekday mornings and Friday evening in the local timezone.
+
+### Changed — Harness Evolution Discipline
+- **Harness evolution now has a documented proposal gate**: `docs/README.md`, `_project/CURRENT.md`, and `docs/harness-session-handoff.md` now point fresh sessions toward the learning loop and proposal ledger, making it explicit that external field intelligence and real usage should enter `Harness` through reviewed proposals rather than direct implementation.
+
 
 ### Changed — Repo Structure
 - **erwin repositioned around Radar + Harness + Skills**: added a new top-level `README.md`, rewrote `AGENTS.md` and `CLAUDE.md`, and updated `_project/GOALS.md` plus `_project/CURRENT.md` so the repository no longer presents itself as a showcase-first skill incubator.

@@ -23,6 +23,8 @@ and only then any surviving conversation context.
 
 This is intentional state persistence, not incidental documentation.
 
+External field intelligence and real usage feedback should enter `Harness` through the proposal-first learning loop and proposal ledger, not by directly rewriting runtime behavior from fresh observations alone.
+
 ---
 
 ## Current Identity
@@ -51,6 +53,8 @@ Authoritative references:
 - [`_project/CURRENT.md`](/Users/liyasong/Project/collov/erwin/_project/CURRENT.md)
 - [`docs/harness-documentation-map.md`](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md)
 - [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
+- [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
+- [`docs/harness-proposal-ledger.md`](/Users/liyasong/Project/collov/erwin/docs/harness-proposal-ledger.md)
 - [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
 - [`_project/decisions/0013-harness-prototype-positioning.md`](/Users/liyasong/Project/collov/erwin/_project/decisions/0013-harness-prototype-positioning.md)
 

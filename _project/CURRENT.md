@@ -8,13 +8,21 @@
 
 - **Version**: 0.91.0 (in progress)
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness scheduler now lets the strongest fresh follow-up signal govern mixed-signal urgency)
+- **Last Session**: 2026-03-31 (Harness learning loop was formalized as a proposal-first evolution surface)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness learning loop was formalized as a proposal-first evolution surface
+
+- **Learning-loop canon added**: `docs/harness-learning-loop.md` now defines how field signals, real usage cases, and internal harness gaps become reviewed proposals instead of direct runtime churn
+- **Proposal ledger added**: `docs/harness-proposal-ledger.md` now serves as the durable control-plane surface for reviewed evolution proposals, with status and target-layer tracking
+- **Automation intent was tightened**: the existing daily radar and weekly synthesis automations are now explicitly treated as intake/synthesis surfaces for proposal-first Harness evolution rather than direct implementation drivers
+- **Docs entrypoints now expose the loop**: `docs/README.md` and `docs/harness-session-handoff.md` now point fresh sessions to the learning loop and proposal ledger instead of leaving that evolution path implicit
+- **Current work was reclassified correctly**: the repository now treats this as `designing the learning loop`, not as a runtime/policy mutation path for Harness itself
 
 **Session 2026-03-31** — Harness scheduler now lets the strongest fresh follow-up signal govern mixed-signal missions
 
@@ -280,6 +288,12 @@
 | Phase 6 | ✅ | Split reusable adapter/bootstrap flow from repo-local proving ground |
 | Phase 7 | 🔄 | Future expansion beyond the first complete prototype line: broader authority/adaptation layers and optional Codex-native multi-agent integration |
 
+**Learning loop status**
+
+- `Harness` learning-loop design is now defined as a proposal-first evolution surface
+- daily and weekly automations should now be interpreted as intake/synthesis for reviewed proposals
+- the current phase is designing and hardening that learning loop, not automatically mutating runtime behavior from fresh external signals
+
 ## Next Session Should Start With
 
 1. Read this file
@@ -287,10 +301,13 @@
    - A. Review the first real daily radar runs against Tier 1 publishers and compare the signal/noise ratio with the kickoff baseline
    - B. Tighten `docs/radar/sources.md` only after observing a week of real output
    - C. Adjust theme weighting only if the daily and weekly outputs drift away from first-party signal
+   - D. Validate that daily output produces proposal candidates without recommending direct runtime changes
+   - E. Validate that weekly synthesis produces a durable `Harness Evolution Proposals` section before adding more automation complexity
 3. **Harness next work**:
    - A. Continue authority adjudication into broader multi-mission bundle handling when no obvious governing dependency or single active council anchor exists
    - B. Continue pushing council behavior from bounded orchestration toward fuller multi-lane automated debate execution
    - C. Continue scheduler beyond the current snapshot/execution-mode plus bundle-aware deferral baseline into larger-portfolio admission, rescheduling, and execution-portfolio policy
+   - D. Use the proposal ledger before promoting field intelligence or real-usage patterns into runtime/backlog changes
 4. If starting fresh, read `AGENTS.md`, `_project/CURRENT.md`, `docs/README.md`, `docs/radar/README.md`, `docs/harness-documentation-map.md`, and then the current harness docs or weekly radar synthesis depending on the task
 
 ## Implementation Roadmap

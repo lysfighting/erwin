@@ -4,6 +4,7 @@
 
 - [erwin-repositioning-2026-03-30.md](erwin-repositioning-2026-03-30.md) — proposed repo pivot from narrow skill incubator toward an AI/agent exploration lab, including slimming guidance and automation scope
 - [radar/README.md](radar/README.md) — AI/agent field radar entrypoint, source policy, and weekly synthesis model
+- [harness-learning-loop.md](harness-learning-loop.md) — proposal-first evolution model for turning field signal and real usage into reviewed Harness changes
 
 The current center of gravity in this repository is `Harness` plus broader AI/agent research.
 Older `teamwork` materials remain available, while showcase-era material has been reduced to selected historical docs only.
@@ -24,7 +25,9 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 | [harness-distribution-strategy.md](harness-distribution-strategy.md) | Distribution tiers and runtime bundle strategy for Harness |
 | [harness-documentation-map.md](harness-documentation-map.md) | Canonical document system and read paths for Harness |
 | [harness-architecture.md](harness-architecture.md) | Single authoritative architecture narrative for Harness |
+| [harness-learning-loop.md](harness-learning-loop.md) | Proposal-first learning loop for evolving Harness from field signal and real usage |
 | [harness-operating-model.md](harness-operating-model.md) | Leader/teammate/council operating model for Harness |
+| [harness-proposal-ledger.md](harness-proposal-ledger.md) | Durable ledger of reviewed Harness evolution proposals |
 | [harness-public-contract.md](harness-public-contract.md) | Durable public contract for the Codex-native orchestration harness package |
 | [harness-session-handoff.md](harness-session-handoff.md) | Durable fresh-session handoff and state-persistence entrypoint for Harness |
 | [erwin-skills-incubator-architecture.md](erwin-skills-incubator-architecture.md) | Historical but still useful background for the skills track |

@@ -99,7 +99,21 @@ Use this for:
 - preferred end-user path
 - current non-goals for distribution
 
-### 6. Machine-Readable Package Truth
+### 6. Learning Loop
+
+- [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
+- [`docs/harness-proposal-ledger.md`](/Users/liyasong/Project/collov/erwin/docs/harness-proposal-ledger.md)
+
+Use these for:
+
+- proposal-first Harness evolution
+- how field signals and real usage become structured proposals
+- disposition rules such as `watch`, `encode-as-eval`, `prototype`, and `adopt`
+- the durable ledger of reviewed Harness evolution proposals
+
+These documents define how `Harness` learns from external engineering signal and local operating experience without turning daily discovery into uncontrolled runtime churn.
+
+### 7. Machine-Readable Package Truth
 
 - [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
 
@@ -198,9 +212,11 @@ Use these when the question is about what was preserved, redesigned, or intentio
 4. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
 5. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
 6. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
-7. [`docs/harness-session-handoff.md`](/Users/liyasong/Project/collov/erwin/docs/harness-session-handoff.md)
-8. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
-9. targeted research and recent session logs as needed
+7. [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
+8. [`docs/harness-proposal-ledger.md`](/Users/liyasong/Project/collov/erwin/docs/harness-proposal-ledger.md)
+9. [`docs/harness-session-handoff.md`](/Users/liyasong/Project/collov/erwin/docs/harness-session-handoff.md)
+10. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
+11. targeted research and recent session logs as needed
 
 ### Path B: Review / Drift Check
 
@@ -215,9 +231,11 @@ Use these when the question is about what was preserved, redesigned, or intentio
 
 1. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
 2. [`docs/harness-distribution-strategy.md`](/Users/liyasong/Project/collov/erwin/docs/harness-distribution-strategy.md)
-3. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
-4. [`scripts/harness-runtime.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-runtime.sh)
-5. [`scripts/harness-build-runtime.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-build-runtime.sh)
+3. [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
+4. [`docs/harness-proposal-ledger.md`](/Users/liyasong/Project/collov/erwin/docs/harness-proposal-ledger.md)
+5. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
+6. [`scripts/harness-runtime.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-runtime.sh)
+7. [`scripts/harness-build-runtime.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-build-runtime.sh)
 6. [`scripts/harness-package-runtime.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-package-runtime.sh)
 
 ---
