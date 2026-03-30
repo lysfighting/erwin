@@ -1009,7 +1009,7 @@ That includes:
 - Go runtime
 - binary-preferred runtime path
 - leader control plane
-- signal-driven scheduler rescheduling across normalized meeting/review/rebase follow-up kinds
+- signal-driven scheduler rescheduling across normalized meeting/review/priority/risk/rebase follow-up kinds, including explicit urgency ranking for fresh follow-up portfolio work
 - teammate runtime
 - mission objects
 - mission graph and bundle authority

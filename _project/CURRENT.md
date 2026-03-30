@@ -6,15 +6,23 @@
 
 ## Project Status
 
-- **Version**: 0.89.0 (in progress)
+- **Version**: 0.90.0 (in progress)
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness scheduler matured fresh signal rescheduling and canonical docs were realigned with runtime truth)
+- **Last Session**: 2026-03-31 (Harness scheduler made urgent fresh follow-up decisions explicit in the human-decision portfolio)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness scheduler now prioritizes urgent fresh follow-up decisions explicitly
+
+- **Follow-up urgency is now first-class scheduler state**: mission classifications and required human-decision packets now project `fresh_follow_up_signal_kinds` plus `follow_up_signal_urgency_rank`, so fresh follow-up work no longer depends only on inherited mission priority once it enters the portfolio
+- **Fresh risk signals now raise effective scheduling risk before adoption**: when a mission has a fresh `risk_raised` follow-up signal, scheduler now lifts `effective_risk_level` to `high` before that signal is formally adopted into mission state, preventing elevated-risk follow-up work from hiding behind stale lower-risk metadata
+- **Human-decision ordering now respects fresh follow-up urgency**: the scheduler queue now lets urgent follow-up control-plane work, especially fresh `risk_raised`, outrank lower-urgency peers such as fresh `priority_change` when they coexist in the same portfolio class
+- **Portfolio smoke widened for follow-up urgency**: core smoke now proves `risk_raised` packets expose a higher urgency rank than `priority_change`, become the primary required human decision, and push lower-urgency follow-up work back to queue position 2
+- **Adapter line advanced again**: `harness/adapter-manifest.yml`, `_project/CURRENT.md`, `CHANGELOG.md`, and the canonical handoff/runtime docs now reflect `0.90.0-prototype` as the current prototype line
 
 **Session 2026-03-31** — Harness scheduler widened fresh-signal rescheduling into more realistic control-plane behavior
 

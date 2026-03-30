@@ -115,7 +115,8 @@ Current scheduler/council reality:
 
 - active bundle-governor councils now remain durable bundle-scoped decision objects in the portfolio
 - scheduler now normalizes fresh signal kinds before rescheduling, so aliases such as `meeting_required` land on the same control-plane path as `requires_meeting`
-- fresh `review_feedback` and `requires_rebase` signals now become real scheduler work instead of passive telemetry, pausing foreground execution or reclassifying the mission until the signal is adopted
+- fresh `review_feedback`, `priority_change`, `risk_raised`, and `requires_rebase` signals now become real scheduler work instead of passive telemetry, pausing foreground execution or reclassifying the mission until the signal is adopted
+- follow-up decision packets now project `fresh_follow_up_signal_kinds` and `follow_up_signal_urgency_rank`, and a fresh `risk_raised` signal lifts `effective_risk_level` to `high` before adoption so urgent follow-up work can outrank lower-urgency peers in the scheduler portfolio
 - scheduler and `home` follow an in-flight council's live `next_requirement` instead of generic review wording
 - stale active councils are now promoted into explicit “refresh or close the stale active council” guidance instead of remaining passive hold state
 - scheduler now also exposes one leader-facing `primary_control_plane_packet`, so critical maintenance can deliberately outrank lower-priority human decisions without hiding those deferred decisions from the portfolio
@@ -131,7 +132,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.89.0-prototype`
+- `adapter_version`: `0.90.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)

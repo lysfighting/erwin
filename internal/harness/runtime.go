@@ -8820,6 +8820,22 @@ func schedulerDecisionClass(decision map[string]any) string {
 	)
 }
 
+func schedulerFollowUpSignalUrgencyRank(kinds []string) int {
+	for _, kind := range dedupeStrings(kinds) {
+		switch normalizeSignalKind(kind) {
+		case "risk_raised":
+			return 4
+		case "review_feedback":
+			return 3
+		case "priority_change":
+			return 2
+		case "requires_meeting", "interface_change":
+			return 1
+		}
+	}
+	return 0
+}
+
 func schedulerMaintenanceKey(action map[string]any) string {
 	if bundleID := strings.TrimSpace(stringValue(action["bundle_id"])); bundleID != "" {
 		return "bundle:" + bundleID
@@ -8953,6 +8969,11 @@ func sortSchedulerHumanDecisions(decisions []any, previousPrimaryDecisionKey str
 		rightScope := decisionScopeRank(stringValue(right["decision_scope"]))
 		if leftScope != rightScope {
 			return leftScope > rightScope
+		}
+		leftFollowUpUrgency := intValue(left["follow_up_signal_urgency_rank"])
+		rightFollowUpUrgency := intValue(right["follow_up_signal_urgency_rank"])
+		if leftFollowUpUrgency != rightFollowUpUrgency {
+			return leftFollowUpUrgency > rightFollowUpUrgency
 		}
 		leftPriority := schedulerPriorityRank(stringValue(left["priority"]))
 		rightPriority := schedulerPriorityRank(stringValue(right["priority"]))
@@ -9325,6 +9346,11 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		if authoritativeRun != nil && schedulerRiskRank(effectiveRiskLevel) == 0 {
 			effectiveRiskLevel = firstNonBlank(effectiveRiskLevel, stringValue(authoritativeRun["risk_level"]))
 		}
+		freshFollowUpSignalKinds := dedupeStrings(freshFollowUpSignalKindsByMission[missionID])
+		followUpSignalUrgencyRank := schedulerFollowUpSignalUrgencyRank(freshFollowUpSignalKinds)
+		if containsString(freshFollowUpSignalKinds, "risk_raised") && schedulerRiskRank(effectiveRiskLevel) < schedulerRiskRank("high") {
+			effectiveRiskLevel = "high"
+		}
 		if len(profileHighRiskScopeRefs) > 0 && schedulerRiskRank(effectiveRiskLevel) < schedulerRiskRank("high") {
 			effectiveRiskLevel = "high"
 		}
@@ -9383,7 +9409,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				reasons = append(reasons, "Mission is in a live cross-mission ownership conflict bundle.")
 				recommendedAction = "Narrow selectors, serialize missions, or add a governing dependency/council before execution resumes."
 				decisionKind = "resolve_overlap_conflict"
-			case containsString(freshFollowUpSignalKindsByMission[missionID], "blocked"):
+			case containsString(freshFollowUpSignalKinds, "blocked"):
 				classification = "blocked-by-policy"
 				reasons = append(reasons, "Mission has a fresh blocked signal that has not yet been adopted into runtime state.")
 				recommendedAction = "Adopt or resolve the fresh blocker signal before continuing."
@@ -9397,7 +9423,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 						"reason":        "Scheduler detected a fresh blocker signal that has not yet been adopted into run state.",
 					})
 				}
-			case containsString(freshFollowUpSignalKindsByMission[missionID], "requires_rebase"):
+			case containsString(freshFollowUpSignalKinds, "requires_rebase"):
 				classification = "blocked-by-policy"
 				reasons = append(reasons, "Mission has a fresh requires-rebase signal that should be handled before execution continues.")
 				recommendedAction = "Rebase or refresh the governed run state before continuing this mission."
@@ -9411,7 +9437,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 						"reason":        "Scheduler detected a fresh requires-rebase signal that has not yet been adopted into runtime state.",
 					})
 				}
-			case containsString(freshFollowUpSignalKindsByMission[missionID], "dependency_discovered"):
+			case containsString(freshFollowUpSignalKinds, "dependency_discovered"):
 				classification = "blocked-by-dependency"
 				reasons = append(reasons, "Mission has a fresh dependency-discovered signal that has not yet been converted into dependency state.")
 				recommendedAction = "Adopt the fresh dependency signal before continuing this mission."
@@ -9425,19 +9451,19 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 						"reason":        "Scheduler detected a fresh dependency-discovered signal that has not yet been adopted into mission state.",
 					})
 				}
-			case containsString(freshFollowUpSignalKindsByMission[missionID], "requires_meeting") ||
-				containsString(freshFollowUpSignalKindsByMission[missionID], "interface_change") ||
-				containsString(freshFollowUpSignalKindsByMission[missionID], "review_feedback") ||
-				containsString(freshFollowUpSignalKindsByMission[missionID], "priority_change") ||
-				containsString(freshFollowUpSignalKindsByMission[missionID], "risk_raised"):
+			case containsString(freshFollowUpSignalKinds, "requires_meeting") ||
+				containsString(freshFollowUpSignalKinds, "interface_change") ||
+				containsString(freshFollowUpSignalKinds, "review_feedback") ||
+				containsString(freshFollowUpSignalKinds, "priority_change") ||
+				containsString(freshFollowUpSignalKinds, "risk_raised"):
 				classification = "needs-human-decision"
 				reasons = append(reasons, "Mission has fresh follow-up control-plane signals that should be reviewed before widening execution.")
 				switch {
-				case containsString(freshFollowUpSignalKindsByMission[missionID], "review_feedback"):
+				case containsString(freshFollowUpSignalKinds, "review_feedback"):
 					recommendedAction = "Review the fresh review feedback and adopt it into governed review state before widening execution."
-				case containsString(freshFollowUpSignalKindsByMission[missionID], "priority_change"):
+				case containsString(freshFollowUpSignalKinds, "priority_change"):
 					recommendedAction = "Review the fresh priority-change signal and adopt it into mission state before widening execution."
-				case containsString(freshFollowUpSignalKindsByMission[missionID], "risk_raised"):
+				case containsString(freshFollowUpSignalKinds, "risk_raised"):
 					recommendedAction = "Review the fresh risk-raised signal and either tighten policy or convene a governed decision before widening execution."
 				default:
 					recommendedAction = "Review the fresh coordination signals and either adopt them into state or materialize the required meeting."
@@ -9495,7 +9521,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			}
 		}
 		if decisionKind != "" {
-			meetingTriggerRefs = matchedMeetingTriggerRefs(profile, decisionKind, bundleState, intValue(missionAudit["unresolved_conflict_count"]), releaseAdjacent, profileHighRiskScopeRefs, freshFollowUpSignalKindsByMission[missionID])
+			meetingTriggerRefs = matchedMeetingTriggerRefs(profile, decisionKind, bundleState, intValue(missionAudit["unresolved_conflict_count"]), releaseAdjacent, profileHighRiskScopeRefs, freshFollowUpSignalKinds)
 			switch {
 			case activeMeetingCountByMission[missionID] > 0:
 				recommendedDecisionSurface = "active-council"
@@ -9510,7 +9536,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				releaseAdjacent,
 				effectiveRiskLevel,
 				meetingTriggerRefs,
-				freshFollowUpSignalKindsByMission[missionID],
+				freshFollowUpSignalKinds,
 			)
 		}
 		if len(profileHighRiskScopeRefs) > 0 {
@@ -9537,6 +9563,9 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				"recommended_decision_protocol":  recommendedDecisionProtocolValue,
 				"recommended_protocol_reason":    recommendedProtocolReason,
 				"meeting_trigger_refs":           stringListToAny(dedupeStrings(meetingTriggerRefs)),
+				"fresh_follow_up_signal_kinds":   stringListToAny(freshFollowUpSignalKinds),
+				"fresh_follow_up_signal_count":   len(followUpSignalsByMission[missionID]),
+				"follow_up_signal_urgency_rank":  followUpSignalUrgencyRank,
 				"note":                           firstNonBlank(strings.Join(dedupeStrings(reasons), " "), recommendedAction),
 				"priority":                       stringValue(mission["priority"]),
 				"effective_risk_level":           effectiveRiskLevel,
@@ -9574,6 +9603,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"open_meeting_action_count":        openMeetingActionCountByMission[missionID],
 			"follow_up_signal_count":           len(followUpSignalsByMission[missionID]),
 			"follow_up_signals":                cloneValue(followUpSignalsByMission[missionID]),
+			"fresh_follow_up_signal_kinds":     stringListToAny(freshFollowUpSignalKinds),
+			"follow_up_signal_urgency_rank":    followUpSignalUrgencyRank,
 			"stale_follow_up_signal_count":     len(staleFollowUpSignalsByMission[missionID]),
 			"stale_follow_up_signals":          cloneValue(staleFollowUpSignalsByMission[missionID]),
 			"bundle_id":                        bundleID,

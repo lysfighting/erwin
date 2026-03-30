@@ -280,6 +280,83 @@ assert_json_field "$schedule_rebase_signal_output" 'Rebase or refresh the govern
 resolved_rebase_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-rebase-required resolved "Fresh rebase requirement covered.")
 assert_json_field "$resolved_rebase_signal" '"state": "resolved"' "requires-rebase signal can be resolved after scheduler coverage"
 
+section "Fresh follow-up portfolio urgency"
+follow_up_priority_claim=$(run_in_repo bash scripts/harness-claim.sh 20035 "Harness Follow-Up Priority Signal" --owns="file:docs/follow-up-priority.md")
+assert_json_field "$follow_up_priority_claim" '"mission_id": "issue-20035"' "priority-signal mission can materialize"
+follow_up_priority_run=$(printf '%s\n' "$follow_up_priority_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+follow_up_risk_claim=$(run_in_repo bash scripts/harness-claim.sh 20036 "Harness Follow-Up Risk Signal" --owns="file:docs/follow-up-risk.md")
+assert_json_field "$follow_up_risk_claim" '"mission_id": "issue-20036"' "risk-signal mission can materialize"
+follow_up_risk_run=$(printf '%s\n' "$follow_up_risk_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+follow_up_priority_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-follow-up-priority",
+  "kind": "priority_change",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$follow_up_priority_run",
+  "mission_id": "issue-20035",
+  "applies_to": ["issue-20035"],
+  "scope_type": "mission",
+  "title": "Follow-up priority change",
+  "summary": "Priority should be re-evaluated before widening execution.",
+  "evidence_refs": ["$contract_path"],
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T00:12:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$follow_up_priority_signal" '"signal_id": "sig-smoke-follow-up-priority"' "priority-signal portfolio signal can be emitted"
+follow_up_risk_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-follow-up-risk",
+  "kind": "risk_raised",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$follow_up_risk_run",
+  "mission_id": "issue-20036",
+  "applies_to": ["issue-20036"],
+  "scope_type": "mission",
+  "title": "Follow-up risk raised",
+  "summary": "Risk increased and should outrank lower-urgency follow-up work.",
+  "evidence_refs": ["$contract_path"],
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T00:13:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$follow_up_risk_signal" '"signal_id": "sig-smoke-follow-up-risk"' "risk-signal portfolio signal can be emitted"
+follow_up_portfolio_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$follow_up_portfolio_schedule" '"follow_up_signal_urgency_rank": 4' "risk-raised follow-up packets expose the highest urgency rank"
+assert_json_field "$follow_up_portfolio_schedule" '"follow_up_signal_urgency_rank": 2' "priority-change follow-up packets expose a lower urgency rank"
+assert_json_field "$follow_up_portfolio_schedule" '"fresh_follow_up_signal_kinds":' "scheduler projects fresh follow-up signal kinds into the portfolio"
+assert_json_field "$follow_up_portfolio_schedule" '"effective_risk_level": "high"' "risk-raised follow-up packets escalate effective risk before adoption"
+primary_follow_up_mission=$(printf '%s\n' "$follow_up_portfolio_schedule" | perl -0ne 'print "$1\n" if /"primary_required_human_decision": \{[^{}]*"mission_id": "([^"]+)"/s' | head -n1)
+if [[ "$primary_follow_up_mission" == "issue-20036" ]]; then
+  pass "risk-raised follow-up outranks lower-urgency priority-change work in the portfolio"
+else
+  fail "risk-raised follow-up outranks lower-urgency priority-change work in the portfolio"
+  echo "$follow_up_portfolio_schedule"
+fi
+assert_json_field "$follow_up_portfolio_schedule" '"human_decision_queue_position": 2' "lower-urgency follow-up work stays deferred behind the risk-raised packet"
+resolved_follow_up_priority_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-follow-up-priority resolved "Priority follow-up covered.")
+assert_json_field "$resolved_follow_up_priority_signal" '"state": "resolved"' "priority-signal portfolio signal can be resolved"
+resolved_follow_up_risk_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-follow-up-risk resolved "Risk follow-up covered.")
+assert_json_field "$resolved_follow_up_risk_signal" '"state": "resolved"' "risk-signal portfolio signal can be resolved"
+resolved_follow_up_priority_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$follow_up_priority_run" completed "Closed priority-signal mission after follow-up portfolio coverage.")
+assert_json_field "$resolved_follow_up_priority_run" '"state": "completed"' "priority-signal mission can close after portfolio coverage"
+resolved_follow_up_risk_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$follow_up_risk_run" completed "Closed risk-signal mission after follow-up portfolio coverage.")
+assert_json_field "$resolved_follow_up_risk_run" '"state": "completed"' "risk-signal mission can close after portfolio coverage"
+
 section "Maintenance escalation"
 rewrite_json_in_file "$registry_path" 's/"last_reported_at": "[^"]*"/"last_reported_at": "2026-03-01T00:00:00Z"/'
 stale_signal_output=$(
