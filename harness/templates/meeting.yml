@@ -3,6 +3,13 @@ meeting:
   meeting_id: ""
   mission_id: ""
   run_id: ""
+  source_decision_id: ""
+  source_decision_scope: ""
+  source_decision_kind: ""
+  source_decision_surface: ""
+  source_decision_snapshot_id: ""
+  source_decision_snapshot_ref: ""
+  source_decision_packet: {}
   decision_protocol: "evidence-review"
   decision_protocol_reason: ""
   question: ""

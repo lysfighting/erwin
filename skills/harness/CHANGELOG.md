@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Scheduler decision materialization via `bash scripts/harness-meetings.sh materialize-primary-decision` and `materialize-decision DECISION_ID`, including durable `source_decision_*` linkage on the resulting meetings.
 - Stable scheduler `decision_id` values on human-decision packets, plus projection of those ids into mission classifications and defer actions so decision portfolios become durable control-plane objects.
 - Broader multi-mission bundle adjudication from the fuller candidate-governor tuple, so a unique release-adjacent or governance-active mission can govern an otherwise tied bundle without forcing unnecessary `bundle_governor_required` escalation.
 - Sticky current debate-batch retention, plus stable hashed debate-batch ids so automated councils keep one deterministic active batch even when a new same-phase lane is inserted later.

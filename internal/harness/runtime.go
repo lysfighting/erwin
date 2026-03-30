@@ -4528,6 +4528,197 @@ func materializeMeeting(meetingID string, run map[string]any, question, requeste
 	return meeting, nil
 }
 
+func schedulerDecisionMeetingHostMissionID(decision map[string]any, requestedMissionID string) (string, error) {
+	scope := firstNonBlank(stringValue(decision["decision_scope"]), "mission")
+	bundleMissionIDs := dedupeStrings(append(
+		anyListToStrings(toList(decision["bundle_mission_ids"])),
+		anyListToStrings(toList(decision["mission_ids"]))...,
+	))
+	if requestedMissionID != "" {
+		switch scope {
+		case "bundle":
+			if !containsString(bundleMissionIDs, requestedMissionID) {
+				return "", fmt.Errorf("mission %s does not belong to scheduler decision %s", requestedMissionID, stringValue(decision["decision_id"]))
+			}
+		default:
+			if requestedMissionID != stringValue(decision["mission_id"]) {
+				return "", fmt.Errorf("mission %s does not match mission-scoped decision %s", requestedMissionID, stringValue(decision["decision_id"]))
+			}
+		}
+		return requestedMissionID, nil
+	}
+	if scope != "bundle" {
+		if missionID := strings.TrimSpace(stringValue(decision["mission_id"])); missionID != "" {
+			return missionID, nil
+		}
+	}
+	if governingMissionID := strings.TrimSpace(stringValue(decision["bundle_governing_mission_id"])); governingMissionID != "" {
+		return governingMissionID, nil
+	}
+	for _, item := range toList(decision["candidate_governor_packets"]) {
+		packet, _ := toMap(item)
+		if missionID := strings.TrimSpace(stringValue(packet["mission_id"])); missionID != "" {
+			return missionID, nil
+		}
+	}
+	if len(bundleMissionIDs) > 0 {
+		return bundleMissionIDs[0], nil
+	}
+	if missionID := strings.TrimSpace(stringValue(decision["mission_id"])); missionID != "" {
+		return missionID, nil
+	}
+	return "", fmt.Errorf("scheduler decision %s does not resolve to a host mission", stringValue(decision["decision_id"]))
+}
+
+func schedulerDecisionMeetingHostRun(registry, missionRegistry map[string]any, missionID string) (map[string]any, error) {
+	mission := readMission(missionID)
+	if mission == nil {
+		if index := findMissionIndex(missionRegistry, missionID); index >= 0 {
+			mission, _ = toMap(toList(missionRegistry["missions"])[index])
+		}
+	}
+	if mission != nil {
+		if authoritativeRunID := strings.TrimSpace(stringValue(mission["authoritative_run_id"])); authoritativeRunID != "" {
+			if index := findRunIndex(registry, authoritativeRunID); index >= 0 {
+				run, _ := toMap(toList(registry["runs"])[index])
+				return run, nil
+			}
+		}
+	}
+	runs := missionRuns(registry, missionID)
+	run := authoritativeMissionRun(runs)
+	if run == nil {
+		return nil, fmt.Errorf("mission %s has no authoritative run for decision materialization", missionID)
+	}
+	return run, nil
+}
+
+func schedulerDecisionMeetingQuestion(decision map[string]any) string {
+	scope := firstNonBlank(stringValue(decision["decision_scope"]), "mission")
+	decisionKind := firstNonBlank(stringValue(decision["decision_kind"]), "decision")
+	recommendedAction := strings.TrimSpace(stringValue(decision["recommended_action"]))
+	note := strings.TrimSpace(stringValue(decision["note"]))
+	switch scope {
+	case "bundle":
+		bundleID := firstNonBlank(strings.TrimSpace(stringValue(decision["bundle_id"])), "the affected mission bundle")
+		if recommendedAction != "" {
+			return fmt.Sprintf("Resolve scheduler decision %s for %s. Recommended action: %s", decisionKind, bundleID, recommendedAction)
+		}
+		if note != "" {
+			return fmt.Sprintf("Resolve scheduler decision %s for %s. %s", decisionKind, bundleID, note)
+		}
+		return fmt.Sprintf("Resolve scheduler decision %s for %s.", decisionKind, bundleID)
+	default:
+		missionID := firstNonBlank(strings.TrimSpace(stringValue(decision["mission_id"])), "the affected mission")
+		if recommendedAction != "" {
+			return fmt.Sprintf("Resolve scheduler decision %s for %s. Recommended action: %s", decisionKind, missionID, recommendedAction)
+		}
+		if note != "" {
+			return fmt.Sprintf("Resolve scheduler decision %s for %s. %s", decisionKind, missionID, note)
+		}
+		return fmt.Sprintf("Resolve scheduler decision %s for %s.", decisionKind, missionID)
+	}
+}
+
+func attachSchedulerDecisionToMeeting(meeting, decision, snapshot map[string]any, hostMissionID string) map[string]any {
+	meeting["source_decision_id"] = stringValue(decision["decision_id"])
+	meeting["source_decision_scope"] = firstNonBlank(stringValue(decision["decision_scope"]), "mission")
+	meeting["source_decision_kind"] = stringValue(decision["decision_kind"])
+	meeting["source_decision_surface"] = stringValue(decision["recommended_decision_surface"])
+	meeting["source_decision_snapshot_id"] = stringValue(snapshot["snapshot_id"])
+	meeting["source_decision_snapshot_ref"] = firstNonBlank(stringValue(snapshot["latest_snapshot_path"]), schedulerLatestSnapshotPath())
+	meeting["source_decision_packet"] = cloneValue(decision)
+
+	packet, _ := toMap(meeting["packet"])
+	if packet == nil {
+		packet = map[string]any{}
+	}
+	contextRefs := toList(packet["context_refs"])
+	contextRefs = appendUniqueText(contextRefs, firstNonBlank(stringValue(snapshot["latest_snapshot_path"]), schedulerLatestSnapshotPath()))
+	if snapshotPath := strings.TrimSpace(stringValue(snapshot["snapshot_path"])); snapshotPath != "" {
+		contextRefs = appendUniqueText(contextRefs, snapshotPath)
+	}
+	if hostMissionID != "" {
+		contextRefs = appendUniqueText(contextRefs, missionPath(hostMissionID))
+	}
+	if scope := strings.TrimSpace(stringValue(decision["decision_scope"])); scope == "bundle" {
+		if bundleID := strings.TrimSpace(stringValue(decision["bundle_id"])); bundleID != "" {
+			contextRefs = appendUniqueText(contextRefs, bundleID)
+		}
+	}
+	packet["context_refs"] = contextRefs
+	knownContext := toList(packet["known_context"])
+	for _, item := range []string{
+		strings.TrimSpace(stringValue(decision["note"])),
+		strings.TrimSpace(stringValue(decision["recommended_action"])),
+		strings.TrimSpace(stringValue(decision["recommended_protocol_reason"])),
+	} {
+		if item != "" {
+			knownContext = appendUniqueText(knownContext, item)
+		}
+	}
+	packet["known_context"] = knownContext
+	meeting["packet"] = packet
+	meeting["updated_at"] = nowISO()
+	return meeting
+}
+
+func materializeMeetingFromSchedulerDecision(snapshot, decision, registry, missionRegistry map[string]any, requestedMissionID string) (map[string]any, map[string]any, map[string]any, error) {
+	hostMissionID, err := schedulerDecisionMeetingHostMissionID(decision, requestedMissionID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	run, err := schedulerDecisionMeetingHostRun(registry, missionRegistry, hostMissionID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	question := schedulerDecisionMeetingQuestion(decision)
+	meetingID := fmt.Sprintf("meeting-%s-%s", nowTime().UTC().Format("20060102150405"), stringValue(run["mission_id"]))
+	meeting, err := materializeMeeting(meetingID, run, question, "leader-main", stringValue(decision["recommended_decision_protocol"]))
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	meeting = attachSchedulerDecisionToMeeting(meeting, decision, snapshot, hostMissionID)
+	if err := writeActiveMeeting(meeting); err != nil {
+		return nil, nil, nil, err
+	}
+	backlog := readMaintenanceBacklog()
+	entry := map[string]any{
+		"meeting_id":                  meetingID,
+		"run_id":                      stringValue(run["run_id"]),
+		"mission_id":                  stringValue(run["mission_id"]),
+		"question":                    question,
+		"state":                       "active",
+		"meeting_ref":                 meetingPath(meetingID, false),
+		"created_at":                  firstNonBlank(stringValue(meeting["created_at"]), nowISO()),
+		"updated_at":                  firstNonBlank(stringValue(meeting["updated_at"]), nowISO()),
+		"source_decision_id":          stringValue(decision["decision_id"]),
+		"source_decision_scope":       firstNonBlank(stringValue(decision["decision_scope"]), "mission"),
+		"source_decision_kind":        stringValue(decision["decision_kind"]),
+		"source_decision_surface":     stringValue(decision["recommended_decision_surface"]),
+		"source_decision_snapshot_id": stringValue(snapshot["snapshot_id"]),
+	}
+	backlog["meetings"] = append(toList(backlog["meetings"]), entry)
+	if err := writeMaintenanceBacklog(backlog); err != nil {
+		return nil, nil, nil, err
+	}
+	index := findRunIndex(registry, stringValue(run["run_id"]))
+	if index >= 0 {
+		runs := toList(registry["runs"])
+		run["meeting_ref"] = meetingID
+		run["state"] = "waiting"
+		run["status_reason"] = "Scheduler decision materialized into meeting: " + stringValue(decision["decision_id"])
+		run["next_expected_action"] = "Chair the decision meeting and adopt its conclusions back into scheduler-governed state."
+		run["updated_at"] = nowISO()
+		runs[index] = run
+		registry["runs"] = runs
+		if err := writeRegistry(registry); err != nil {
+			return nil, nil, nil, err
+		}
+	}
+	return meeting, entry, run, nil
+}
+
 func firstNonBlank(values ...string) string {
 	for _, value := range values {
 		if strings.TrimSpace(value) != "" {
@@ -7474,6 +7665,16 @@ func latestSchedulerSnapshot() map[string]any {
 	payload, _ := toMap(loadData(schedulerLatestSnapshotPath(), map[string]any{}))
 	snapshot, _ := toMap(payload["snapshot"])
 	return snapshot
+}
+
+func schedulerDecisionByID(snapshot map[string]any, decisionID string) map[string]any {
+	for _, item := range toList(snapshot["required_human_decisions"]) {
+		decision, _ := toMap(item)
+		if stringValue(decision["decision_id"]) == decisionID {
+			return decision
+		}
+	}
+	return nil
 }
 
 func schedulerPriorityRank(value string) int {
@@ -11331,6 +11532,35 @@ func cmdMeetings(args []string) error {
 		}
 		meeting, _ := toMap(data["meeting"])
 		return printJSON(meetingAuthorityAudit(meeting))
+	case "materialize-primary-decision":
+		requestedMissionID := ""
+		for _, arg := range args[1:] {
+			if strings.HasPrefix(arg, "--mission=") {
+				requestedMissionID = strings.TrimSpace(strings.TrimPrefix(arg, "--mission="))
+			}
+		}
+		return withHarnessLock(func() error {
+			snapshot := latestSchedulerSnapshot()
+			if len(snapshot) == 0 {
+				return errors.New("no latest scheduler snapshot found; run missions schedule first")
+			}
+			decision, _ := toMap(snapshot["primary_required_human_decision"])
+			if len(decision) == 0 || stringValue(decision["decision_id"]) == "" {
+				return errors.New("latest scheduler snapshot has no primary human-decision packet to materialize")
+			}
+			registry := readRegistry()
+			missionRegistry := readMissionRegistry()
+			meeting, entry, run, err := materializeMeetingFromSchedulerDecision(snapshot, decision, registry, missionRegistry, requestedMissionID)
+			if err != nil {
+				return err
+			}
+			return printJSON(map[string]any{
+				"decision":      decision,
+				"meeting":       meeting,
+				"backlog_entry": entry,
+				"run":           run,
+			})
+		})
 	default:
 		return cmdMeetingsRemainder(args)
 	}
@@ -11339,6 +11569,39 @@ func cmdMeetings(args []string) error {
 func cmdMeetingsRemainder(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
+	case "materialize-decision":
+		if len(args) < 2 {
+			return errors.New("meetings materialize-decision requires DECISION_ID [--mission=MISSION_ID]")
+		}
+		decisionID := strings.TrimSpace(args[1])
+		requestedMissionID := ""
+		for _, arg := range args[2:] {
+			if strings.HasPrefix(arg, "--mission=") {
+				requestedMissionID = strings.TrimSpace(strings.TrimPrefix(arg, "--mission="))
+			}
+		}
+		return withHarnessLock(func() error {
+			snapshot := latestSchedulerSnapshot()
+			if len(snapshot) == 0 {
+				return errors.New("no latest scheduler snapshot found; run missions schedule first")
+			}
+			decision := schedulerDecisionByID(snapshot, decisionID)
+			if len(decision) == 0 {
+				return fmt.Errorf("scheduler decision not found: %s", decisionID)
+			}
+			registry := readRegistry()
+			missionRegistry := readMissionRegistry()
+			meeting, entry, run, err := materializeMeetingFromSchedulerDecision(snapshot, decision, registry, missionRegistry, requestedMissionID)
+			if err != nil {
+				return err
+			}
+			return printJSON(map[string]any{
+				"decision":      decision,
+				"meeting":       meeting,
+				"backlog_entry": entry,
+				"run":           run,
+			})
+		})
 	case "add-role":
 		if len(args) < 3 {
 			return errors.New("meetings add-role requires MEETING_ID ROLE")

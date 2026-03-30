@@ -707,6 +707,61 @@ assert_json_field "$resolved_sticky_decision_run_a" '"state": "completed"' "stic
 resolved_sticky_decision_run_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$sticky_decision_run_b" completed "Closed sticky decision mission B.")
 assert_json_field "$resolved_sticky_decision_run_b" '"state": "completed"' "sticky decision mission B can be closed after portfolio coverage"
 
+section "Scheduler decision materialization"
+decision_materialization_claim=$(run_in_repo bash scripts/harness-claim.sh 20032 "Harness Decision Materialization" --owns="file:docs/harness-session-handoff.md")
+assert_json_field "$decision_materialization_claim" '"mission_id": "issue-20032"' "decision materialization mission can materialize"
+decision_materialization_run=$(printf '%s\n' "$decision_materialization_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+decision_materialization_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-decision-materialization",
+  "kind": "requires_meeting",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$decision_materialization_run",
+  "mission_id": "issue-20032",
+  "applies_to": ["issue-20032"],
+  "scope_type": "mission",
+  "title": "Scheduler-backed council request",
+  "summary": "This mission now requires a materialized decision meeting from the scheduler portfolio.",
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-30T03:00:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$decision_materialization_signal" '"signal_id": "sig-smoke-decision-materialization"' "decision materialization signal can be emitted directly"
+decision_materialization_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$decision_materialization_schedule" "\"mission_id\": \"issue-20032\"" "scheduler surfaces the decision materialization mission"
+assert_json_field "$decision_materialization_schedule" '"recommended_decision_surface": "council"' "scheduler recommends a council surface for the materialized decision"
+decision_materialization_primary=$(run_in_repo bash scripts/harness-meetings.sh materialize-primary-decision --mission=issue-20032)
+assert_json_field "$decision_materialization_primary" '"meeting_id": "meeting-' "scheduler primary decision can materialize into a meeting"
+assert_json_field "$decision_materialization_primary" '"source_decision_id": "decision-' "materialized meeting records its source decision id"
+assert_json_field "$decision_materialization_primary" '"source_decision_scope": "mission"' "materialized meeting records its source decision scope"
+assert_json_field "$decision_materialization_primary" '"source_decision_kind": "review_follow_up_signals"' "materialized meeting records the scheduler decision kind"
+assert_json_field "$decision_materialization_primary" '"source_decision_snapshot_id": "schedule-' "materialized meeting records the source scheduler snapshot"
+assert_json_field "$decision_materialization_primary" '"source_decision_packet": {' "materialized meeting persists the source decision packet"
+assert_json_field "$decision_materialization_primary" '"decision_protocol": "incident-command"' "materialized meeting keeps the scheduler-recommended decision protocol"
+assert_json_field "$decision_materialization_primary" '"state": "waiting"' "host run moves to waiting when the scheduler decision is materialized"
+primary_materialized_meeting_id=$(printf '%s\n' "$decision_materialization_primary" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+primary_materialized_decision_id=$(printf '%s\n' "$decision_materialization_primary" | sed -n 's/^[[:space:]]*"decision_id": "\(decision-[^"]*\)",$/\1/p' | head -n1)
+closed_primary_materialized_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$decision_materialization_run" "$primary_materialized_meeting_id" "Primary scheduler decision materialization covered.")
+assert_json_field "$closed_primary_materialized_meeting" '"state": "closed"' "primary scheduler-materialized meeting can close cleanly"
+decision_materialization_by_id=$(run_in_repo bash scripts/harness-meetings.sh materialize-decision "$primary_materialized_decision_id" --mission=issue-20032)
+assert_json_field "$decision_materialization_by_id" "\"decision_id\": \"$primary_materialized_decision_id\"" "decision-specific meeting materialization resolves the stable decision id"
+assert_json_field "$decision_materialization_by_id" '"source_decision_surface": "council"' "decision-specific meeting carries the scheduler decision surface into the meeting"
+assert_json_field "$decision_materialization_by_id" '"source_decision_snapshot_ref":' "decision-specific meeting records the scheduler snapshot reference"
+secondary_materialized_meeting_id=$(printf '%s\n' "$decision_materialization_by_id" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+closed_secondary_materialized_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$decision_materialization_run" "$secondary_materialized_meeting_id" "Decision-id materialization covered.")
+assert_json_field "$closed_secondary_materialized_meeting" '"state": "closed"' "decision-id materialized meeting can close cleanly"
+resolved_decision_materialization_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-decision-materialization resolved "Decision materialization coverage completed.")
+assert_json_field "$resolved_decision_materialization_signal" '"state": "resolved"' "decision materialization signal can be resolved after council coverage"
+resolved_decision_materialization_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$decision_materialization_run" completed "Closed decision materialization mission.")
+assert_json_field "$resolved_decision_materialization_run" '"state": "completed"' "decision materialization mission can close cleanly after coverage"
+
 parallel_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20004 "Harness Parallel Mission" --owns="file:go.mod")
 assert_json_field "$parallel_claim_output" '"mission_id": "issue-20004"' "independent parallel claim can materialize"
 parallel_run_id=$(printf '%s\n' "$parallel_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)

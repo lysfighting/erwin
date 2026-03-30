@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.70.0 (in progress)
+- **Version**: 0.71.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness formalized scheduler decision packets with stable ids)
+- **Last Session**: 2026-03-30 (Harness bridged scheduler decisions into materialized councils)
 
 ## Current Phase
 
@@ -18,6 +18,9 @@
 
 **Session 2026-03-30** — Harness prototype line stayed complete while scheduler and bundle authority deepened into a more mature portfolio control plane
 
+- **Scheduler-decision materialization added**: `meetings materialize-primary-decision` and `meetings materialize-decision DECISION_ID` now turn durable scheduler human-decision packets into active meetings, so the leader can move directly from the decision portfolio into a governed council without reconstructing context by hand
+- **Meeting/source-decision linkage added**: materialized meetings now persist `source_decision_id`, scope/kind/surface metadata, snapshot refs, and the source decision packet itself, so later sessions can audit exactly which scheduler packet created a council
+- **Scheduler-to-council bridge hardened**: materialized scheduler meetings now carry scheduler snapshot refs plus recommended-action/protocol context into the meeting packet, and the host authoritative run is moved into explicit waiting state while the council governs the decision
 - **Home/scheduler maintenance parity restored**: `home` now surfaces `scheduler_maintenance_action_count` and `scheduler_maintenance_action_tally`, so leader surfaces no longer hide stale-state maintenance work that scheduler snapshots already know about
 - **Bundle-scoped scheduler decisions added**: escalation-required mission bundles no longer emit one repeated `establish_bundle_governor` decision per mission; scheduler now collapses them into one bundle-scoped human-decision packet with merged mission ids, trigger refs, and bundle-required action so the leader sees the actual decision surface instead of repeated mission noise
 - **Prioritized decision portfolio added**: scheduler now sorts required human decisions into a real portfolio queue, exposing `primary_required_human_decision`, deferred-decision count, scope/surface tallies, and bundle-vs-mission priority ordering so the leader can see which governed decision should be handled first when multiple human decisions coexist
