@@ -2628,9 +2628,10 @@ func missionDependsOnTarget(missionRegistry map[string]any, missionID, targetID 
 	return false
 }
 
-func meetingActivityByMission(registry map[string]any) (map[string]int, map[string]int) {
+func meetingActivityByMission(registry map[string]any) (map[string]int, map[string]int, map[string][]string) {
 	activeMeetingCountByMission := map[string]int{}
 	openMeetingActionCountByMission := map[string]int{}
+	activeMeetingIDsByDecisionID := map[string][]string{}
 	runMissionByID := map[string]string{}
 	for _, item := range toList(registry["runs"]) {
 		run, _ := toMap(item)
@@ -2651,6 +2652,9 @@ func meetingActivityByMission(registry map[string]any) (map[string]int, map[stri
 		}
 		if stringValue(meeting["state"]) == "active" {
 			activeMeetingCountByMission[missionID]++
+			if decisionID := strings.TrimSpace(stringValue(meeting["source_decision_id"])); decisionID != "" {
+				activeMeetingIDsByDecisionID[decisionID] = dedupeStrings(append(activeMeetingIDsByDecisionID[decisionID], stringValue(meeting["meeting_id"])))
+			}
 		}
 		for _, actionItem := range toList(meeting["action_items"]) {
 			actionMap, ok := toMap(actionItem)
@@ -2664,7 +2668,7 @@ func meetingActivityByMission(registry map[string]any) (map[string]int, map[stri
 			openMeetingActionCountByMission[missionID]++
 		}
 	}
-	return activeMeetingCountByMission, openMeetingActionCountByMission
+	return activeMeetingCountByMission, openMeetingActionCountByMission, activeMeetingIDsByDecisionID
 }
 
 func explicitBundleGovernorSignals(signalLog map[string]any) map[string][]map[string]any {
@@ -3132,7 +3136,7 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		right := stringValue(missions[j]["mission_id"])
 		return left < right
 	})
-	activeMeetingCountByMission, openMeetingActionCountByMission := meetingActivityByMission(registry)
+	activeMeetingCountByMission, openMeetingActionCountByMission, _ := meetingActivityByMission(registry)
 
 	missionAudits := []any{}
 	missionIDs := []string{}
@@ -7979,8 +7983,6 @@ func schedulerDecisionPacketID(decision map[string]any) string {
 	parts := []string{
 		firstNonBlank(stringValue(decision["decision_scope"]), "mission"),
 		firstNonBlank(stringValue(decision["decision_kind"]), "decision"),
-		firstNonBlank(stringValue(decision["recommended_decision_surface"]), "leader-decision"),
-		firstNonBlank(stringValue(decision["recommended_decision_protocol"]), "decision-record"),
 	}
 	if bundleID := strings.TrimSpace(stringValue(decision["bundle_id"])); bundleID != "" {
 		parts = append(parts, "bundle:"+bundleID)
@@ -7988,6 +7990,33 @@ func schedulerDecisionPacketID(decision map[string]any) string {
 		parts = append(parts, "mission:"+missionID)
 	}
 	return "decision-" + stableSlugID(strings.Join(parts, "::"))
+}
+
+func promoteMaterializedDecisionPackets(decisions []any, activeMeetingIDsByDecisionID map[string][]string) []any {
+	promoted := append([]any{}, decisions...)
+	for index, item := range promoted {
+		decision, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		decisionID := stringValue(decision["decision_id"])
+		activeMeetingIDs := dedupeStrings(activeMeetingIDsByDecisionID[decisionID])
+		if len(activeMeetingIDs) == 0 {
+			decision["active_meeting_ids"] = []any{}
+			decision["active_meeting_count"] = 0
+			promoted[index] = decision
+			continue
+		}
+		decision["recommended_decision_surface"] = "active-council"
+		decision["active_meeting_ids"] = stringListToAny(activeMeetingIDs)
+		decision["active_meeting_count"] = len(activeMeetingIDs)
+		decision["recommended_action"] = firstNonBlank(
+			fmt.Sprintf("Review the active council(s) already materialized for this decision: %s.", strings.Join(activeMeetingIDs, ", ")),
+			stringValue(decision["recommended_action"]),
+		)
+		promoted[index] = decision
+	}
+	return promoted
 }
 
 func schedulerDecisionClass(decision map[string]any) string {
@@ -8311,32 +8340,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	maintenanceActions, maintenanceTally := schedulerMaintenanceActions(missionRegistry, registry, signalLog)
 	maintenanceActions = sortSchedulerMaintenanceActions(maintenanceActions, previousPrimaryMaintenanceKey)
 
-	activeMeetingCountByMission := map[string]int{}
-	openMeetingActionCountByMission := map[string]int{}
-	for _, item := range listMeetings(true) {
-		meeting, _ := toMap(item)
-		missionID := strings.TrimSpace(stringValue(meeting["mission_id"]))
-		if missionID == "" {
-			missionID = runMissionByID[strings.TrimSpace(stringValue(meeting["run_id"]))]
-		}
-		if missionID == "" {
-			continue
-		}
-		if stringValue(meeting["state"]) == "active" {
-			activeMeetingCountByMission[missionID]++
-		}
-		for _, actionItem := range toList(meeting["action_items"]) {
-			actionMap, ok := toMap(actionItem)
-			if ok && stringValue(actionMap["state"]) != "" && stringValue(actionMap["state"]) != "open" {
-				continue
-			}
-			summary := textValue(actionItem)
-			if summary == "" || stringValue(meeting["state"]) != "active" {
-				continue
-			}
-			openMeetingActionCountByMission[missionID]++
-		}
-	}
+	activeMeetingCountByMission, openMeetingActionCountByMission, activeMeetingIDsByDecisionID := meetingActivityByMission(registry)
 
 	for _, item := range toList(graphAuthority["cross_mission_conflicts"]) {
 		conflict, _ := toMap(item)
@@ -8722,7 +8726,13 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		entryByMission[missionID] = entry
 		missionOrder = append(missionOrder, missionID)
 	}
-	requiredHumanDecisions := sortSchedulerHumanDecisions(aggregateSchedulerHumanDecisions(rawRequiredHumanDecisions), previousPrimaryDecisionKey)
+	requiredHumanDecisions := sortSchedulerHumanDecisions(
+		promoteMaterializedDecisionPackets(
+			aggregateSchedulerHumanDecisions(rawRequiredHumanDecisions),
+			activeMeetingIDsByDecisionID,
+		),
+		previousPrimaryDecisionKey,
+	)
 	decisionQueuePositionByKey, primaryDecisionByKey := schedulerDecisionQueueMaps(requiredHumanDecisions)
 	decisionIDByKey := map[string]string{}
 	for _, item := range requiredHumanDecisions {

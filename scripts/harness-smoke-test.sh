@@ -748,11 +748,16 @@ assert_json_field "$decision_materialization_primary" '"decision_protocol": "inc
 assert_json_field "$decision_materialization_primary" '"state": "waiting"' "host run moves to waiting when the scheduler decision is materialized"
 primary_materialized_meeting_id=$(printf '%s\n' "$decision_materialization_primary" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 primary_materialized_decision_id=$(printf '%s\n' "$decision_materialization_primary" | sed -n 's/^[[:space:]]*"decision_id": "\(decision-[^"]*\)",$/\1/p' | head -n1)
+decision_materialization_active_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$decision_materialization_active_schedule" "\"decision_id\": \"$primary_materialized_decision_id\"" "materialized scheduler decision keeps a stable decision id after council activation"
+assert_json_field "$decision_materialization_active_schedule" '"recommended_decision_surface": "active-council"' "scheduler upgrades materialized decisions into active-council surface"
+assert_json_field "$decision_materialization_active_schedule" "\"active_meeting_ids\": \\[" "scheduler projects active meeting ids back onto the materialized decision packet"
+assert_json_field "$decision_materialization_active_schedule" "\"$primary_materialized_meeting_id\"" "scheduler ties the materialized decision packet to the active meeting id"
 closed_primary_materialized_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$decision_materialization_run" "$primary_materialized_meeting_id" "Primary scheduler decision materialization covered.")
 assert_json_field "$closed_primary_materialized_meeting" '"state": "closed"' "primary scheduler-materialized meeting can close cleanly"
 decision_materialization_by_id=$(run_in_repo bash scripts/harness-meetings.sh materialize-decision "$primary_materialized_decision_id" --mission=issue-20032)
 assert_json_field "$decision_materialization_by_id" "\"decision_id\": \"$primary_materialized_decision_id\"" "decision-specific meeting materialization resolves the stable decision id"
-assert_json_field "$decision_materialization_by_id" '"source_decision_surface": "council"' "decision-specific meeting carries the scheduler decision surface into the meeting"
+assert_json_field "$decision_materialization_by_id" '"source_decision_surface": "active-council"' "decision-specific meeting carries the scheduler decision surface into the meeting"
 assert_json_field "$decision_materialization_by_id" '"source_decision_snapshot_ref":' "decision-specific meeting records the scheduler snapshot reference"
 secondary_materialized_meeting_id=$(printf '%s\n' "$decision_materialization_by_id" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 closed_secondary_materialized_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$decision_materialization_run" "$secondary_materialized_meeting_id" "Decision-id materialization covered.")
