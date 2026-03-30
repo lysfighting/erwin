@@ -357,6 +357,68 @@ assert_json_field "$resolved_follow_up_priority_run" '"state": "completed"' "pri
 resolved_follow_up_risk_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$follow_up_risk_run" completed "Closed risk-signal mission after follow-up portfolio coverage.")
 assert_json_field "$resolved_follow_up_risk_run" '"state": "completed"' "risk-signal mission can close after portfolio coverage"
 
+follow_up_mixed_claim=$(run_in_repo bash scripts/harness-claim.sh 20037 "Harness Mixed Follow-Up Signals" --owns="file:docs/follow-up-mixed.md")
+assert_json_field "$follow_up_mixed_claim" '"mission_id": "issue-20037"' "mixed follow-up mission can materialize"
+follow_up_mixed_run=$(printf '%s\n' "$follow_up_mixed_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+follow_up_mixed_priority_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-follow-up-mixed-priority",
+  "kind": "priority_change",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$follow_up_mixed_run",
+  "mission_id": "issue-20037",
+  "applies_to": ["issue-20037"],
+  "scope_type": "mission",
+  "title": "Mixed follow-up priority change",
+  "summary": "Priority changed before the stronger follow-up signal arrives.",
+  "evidence_refs": ["$contract_path"],
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T00:14:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$follow_up_mixed_priority_signal" '"signal_id": "sig-smoke-follow-up-mixed-priority"' "mixed follow-up mission accepts the first lower-urgency signal"
+follow_up_mixed_risk_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-follow-up-mixed-risk",
+  "kind": "risk_raised",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$follow_up_mixed_run",
+  "mission_id": "issue-20037",
+  "applies_to": ["issue-20037"],
+  "scope_type": "mission",
+  "title": "Mixed follow-up risk raised",
+  "summary": "Risk increases after the lower-urgency priority signal is already pending.",
+  "evidence_refs": ["$contract_path"],
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T00:15:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$follow_up_mixed_risk_signal" '"signal_id": "sig-smoke-follow-up-mixed-risk"' "mixed follow-up mission accepts the later higher-urgency signal"
+follow_up_mixed_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$follow_up_mixed_schedule" '"follow_up_signal_count": 2' "mixed follow-up mission keeps both fresh signals visible to the scheduler"
+assert_json_field "$follow_up_mixed_schedule" '"follow_up_signal_urgency_rank": 4' "mixed follow-up mission uses the strongest fresh signal urgency rank"
+assert_json_field "$follow_up_mixed_schedule" 'Review the fresh risk-raised signal and either tighten policy or convene a governed decision before widening execution.' "mixed follow-up mission uses the strongest-signal guidance instead of the first-arriving lower-urgency signal"
+resolved_follow_up_mixed_priority_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-follow-up-mixed-priority resolved "Mixed priority follow-up covered.")
+assert_json_field "$resolved_follow_up_mixed_priority_signal" '"state": "resolved"' "mixed follow-up mission can resolve the lower-urgency signal"
+resolved_follow_up_mixed_risk_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-follow-up-mixed-risk resolved "Mixed risk follow-up covered.")
+assert_json_field "$resolved_follow_up_mixed_risk_signal" '"state": "resolved"' "mixed follow-up mission can resolve the higher-urgency signal"
+resolved_follow_up_mixed_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$follow_up_mixed_run" completed "Closed mixed follow-up mission after strongest-signal coverage.")
+assert_json_field "$resolved_follow_up_mixed_run" '"state": "completed"' "mixed follow-up mission can close after strongest-signal coverage"
+
 section "Maintenance escalation"
 rewrite_json_in_file "$registry_path" 's/"last_reported_at": "[^"]*"/"last_reported_at": "2026-03-01T00:00:00Z"/'
 stale_signal_output=$(

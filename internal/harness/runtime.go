@@ -8820,20 +8820,41 @@ func schedulerDecisionClass(decision map[string]any) string {
 	)
 }
 
+func schedulerFollowUpSignalUrgency(kind string) int {
+	switch normalizeSignalKind(kind) {
+	case "risk_raised":
+		return 4
+	case "review_feedback":
+		return 3
+	case "priority_change":
+		return 2
+	case "requires_meeting", "interface_change":
+		return 1
+	default:
+		return 0
+	}
+}
+
 func schedulerFollowUpSignalUrgencyRank(kinds []string) int {
+	best := 0
 	for _, kind := range dedupeStrings(kinds) {
-		switch normalizeSignalKind(kind) {
-		case "risk_raised":
-			return 4
-		case "review_feedback":
-			return 3
-		case "priority_change":
-			return 2
-		case "requires_meeting", "interface_change":
-			return 1
+		if urgency := schedulerFollowUpSignalUrgency(kind); urgency > best {
+			best = urgency
 		}
 	}
-	return 0
+	return best
+}
+
+func schedulerPrimaryFollowUpSignalKind(kinds []string) string {
+	bestKind := ""
+	bestUrgency := 0
+	for _, kind := range dedupeStrings(kinds) {
+		if urgency := schedulerFollowUpSignalUrgency(kind); urgency > bestUrgency {
+			bestKind = normalizeSignalKind(kind)
+			bestUrgency = urgency
+		}
+	}
+	return bestKind
 }
 
 func schedulerMaintenanceKey(action map[string]any) string {
@@ -9348,6 +9369,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		}
 		freshFollowUpSignalKinds := dedupeStrings(freshFollowUpSignalKindsByMission[missionID])
 		followUpSignalUrgencyRank := schedulerFollowUpSignalUrgencyRank(freshFollowUpSignalKinds)
+		primaryFollowUpSignalKind := schedulerPrimaryFollowUpSignalKind(freshFollowUpSignalKinds)
 		if containsString(freshFollowUpSignalKinds, "risk_raised") && schedulerRiskRank(effectiveRiskLevel) < schedulerRiskRank("high") {
 			effectiveRiskLevel = "high"
 		}
@@ -9458,13 +9480,13 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				containsString(freshFollowUpSignalKinds, "risk_raised"):
 				classification = "needs-human-decision"
 				reasons = append(reasons, "Mission has fresh follow-up control-plane signals that should be reviewed before widening execution.")
-				switch {
-				case containsString(freshFollowUpSignalKinds, "review_feedback"):
-					recommendedAction = "Review the fresh review feedback and adopt it into governed review state before widening execution."
-				case containsString(freshFollowUpSignalKinds, "priority_change"):
-					recommendedAction = "Review the fresh priority-change signal and adopt it into mission state before widening execution."
-				case containsString(freshFollowUpSignalKinds, "risk_raised"):
+				switch primaryFollowUpSignalKind {
+				case "risk_raised":
 					recommendedAction = "Review the fresh risk-raised signal and either tighten policy or convene a governed decision before widening execution."
+				case "review_feedback":
+					recommendedAction = "Review the fresh review feedback and adopt it into governed review state before widening execution."
+				case "priority_change":
+					recommendedAction = "Review the fresh priority-change signal and adopt it into mission state before widening execution."
 				default:
 					recommendedAction = "Review the fresh coordination signals and either adopt them into state or materialize the required meeting."
 				}
