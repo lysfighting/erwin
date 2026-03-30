@@ -907,6 +907,92 @@ assert_json_field "$resolved_decision_materialization_signal" '"state": "resolve
 resolved_decision_materialization_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$decision_materialization_run" completed "Closed decision materialization mission.")
 assert_json_field "$resolved_decision_materialization_run" '"state": "completed"' "decision materialization mission can close cleanly after coverage"
 
+section "Active council progress priority"
+progress_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20033 "Harness Active Council Progress A" --owns="file:docs/harness-operating-model.md")
+assert_json_field "$progress_claim_a" '"mission_id": "issue-20033"' "active-council progress mission A can materialize"
+progress_run_a=$(printf '%s\n' "$progress_claim_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+progress_claim_b=$(run_in_repo bash scripts/harness-claim.sh 20034 "Harness Active Council Progress B" --owns="file:docs/harness-architecture.md")
+assert_json_field "$progress_claim_b" '"mission_id": "issue-20034"' "active-council progress mission B can materialize"
+progress_run_b=$(printf '%s\n' "$progress_claim_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+progress_signal_a=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-progress-a",
+  "kind": "requires_meeting",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$progress_run_a",
+  "mission_id": "issue-20033",
+  "applies_to": ["issue-20033"],
+  "scope_type": "mission",
+  "title": "Progress council A",
+  "summary": "Mission A needs a governed decision meeting.",
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-30T06:00:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$progress_signal_a" '"signal_id": "sig-smoke-progress-a"' "active-council progress signal A can be emitted"
+progress_signal_b=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-progress-b",
+  "kind": "requires_meeting",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$progress_run_b",
+  "mission_id": "issue-20034",
+  "applies_to": ["issue-20034"],
+  "scope_type": "mission",
+  "title": "Progress council B",
+  "summary": "Mission B needs a governed decision meeting.",
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-30T06:05:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$progress_signal_b" '"signal_id": "sig-smoke-progress-b"' "active-council progress signal B can be emitted"
+progress_schedule_initial=$(run_in_repo bash scripts/harness-missions.sh schedule)
+progress_decision_a_id=$(printf '%s\n' "$progress_schedule_initial" | perl -0ne 'print "$1\n" if /\{[^{}]*"decision_id": "([^"]+)"[^{}]*"mission_id": "issue-20033"[^{}]*\}/s' | head -n1)
+progress_decision_b_id=$(printf '%s\n' "$progress_schedule_initial" | perl -0ne 'print "$1\n" if /\{[^{}]*"decision_id": "([^"]+)"[^{}]*"mission_id": "issue-20034"[^{}]*\}/s' | head -n1)
+progress_meeting_a=$(run_in_repo bash scripts/harness-meetings.sh materialize-decision "$progress_decision_a_id" --mission=issue-20033)
+assert_json_field "$progress_meeting_a" '"meeting_id": "meeting-' "active-council progress meeting A can materialize"
+progress_meeting_a_id=$(printf '%s\n' "$progress_meeting_a" | sed -n 's/.*"meeting_id": "\(meeting-[^"]*\)".*/\1/p' | head -n1)
+progress_meeting_b=$(run_in_repo bash scripts/harness-meetings.sh materialize-decision "$progress_decision_b_id" --mission=issue-20034)
+assert_json_field "$progress_meeting_b" '"meeting_id": "meeting-' "active-council progress meeting B can materialize"
+progress_meeting_b_id=$(printf '%s\n' "$progress_meeting_b" | sed -n 's/.*"meeting_id": "\(meeting-[^"]*\)".*/\1/p' | head -n1)
+run_in_repo bash scripts/harness-meetings.sh add-participant "$progress_meeting_a_id" "$progress_run_b" "consequence-checker" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh orchestrate "$progress_meeting_a_id" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$progress_meeting_a_id" "$progress_run_a" independent_review support "Prefer bounded decision A." --claim=bounded-decision >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$progress_meeting_a_id" "$progress_run_b" independent_review support "Confirm bounded decision A." --claim=bounded-decision >/dev/null
+run_in_repo bash scripts/harness-meetings.sh orchestrate "$progress_meeting_a_id" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh orchestrate "$progress_meeting_a_id" >/dev/null
+progress_priority_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$progress_priority_schedule" "\"decision_id\": \"$progress_decision_a_id\"" "scheduler keeps the progressed active council as the primary human-decision packet"
+assert_json_field "$progress_priority_schedule" '"active_decision_phase": "synthesis"' "scheduler projects the more advanced active-council phase into the primary packet"
+assert_json_field "$progress_priority_schedule" '"active_decision_progress_rank": 4' "scheduler assigns a higher progress rank to synthesis-phase active councils than setup peers"
+assert_json_field "$progress_priority_schedule" "\"mission_id\": \"issue-20034\"" "slower active-council peers remain visible in the portfolio"
+resolved_progress_signal_a=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-progress-a resolved "Active council progress A covered.")
+assert_json_field "$resolved_progress_signal_a" '"state": "resolved"' "active-council progress signal A can be resolved"
+resolved_progress_signal_b=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-progress-b resolved "Active council progress B covered.")
+assert_json_field "$resolved_progress_signal_b" '"state": "resolved"' "active-council progress signal B can be resolved"
+closed_progress_meeting_a=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$progress_run_a" "$progress_meeting_a_id" "Closed progressed active council A.")
+assert_json_field "$closed_progress_meeting_a" '"state": "closed"' "progressed active council A can close cleanly"
+closed_progress_meeting_b=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$progress_run_b" "$progress_meeting_b_id" "Closed baseline active council B.")
+assert_json_field "$closed_progress_meeting_b" '"state": "closed"' "baseline active council B can close cleanly"
+resolved_progress_run_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$progress_run_a" completed "Closed active-council progress mission A.")
+assert_json_field "$resolved_progress_run_a" '"state": "completed"' "active-council progress mission A can close after scheduler coverage"
+resolved_progress_run_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$progress_run_b" completed "Closed active-council progress mission B.")
+assert_json_field "$resolved_progress_run_b" '"state": "completed"' "active-council progress mission B can close after scheduler coverage"
+
 parallel_claim_output=$(run_in_repo bash scripts/harness-claim.sh 20004 "Harness Parallel Mission" --owns="file:go.mod")
 assert_json_field "$parallel_claim_output" '"mission_id": "issue-20004"' "independent parallel claim can materialize"
 parallel_run_id=$(printf '%s\n' "$parallel_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)

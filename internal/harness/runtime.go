@@ -8644,6 +8644,33 @@ func decisionScopeRank(scope string) int {
 	}
 }
 
+func meetingPhaseProgressRank(phase string) int {
+	switch strings.TrimSpace(phase) {
+	case "output":
+		return 5
+	case "synthesis":
+		return 4
+	case "cross_examination":
+		return 3
+	case "independent_review":
+		return 2
+	case "setup":
+		return 1
+	default:
+		return 0
+	}
+}
+
+func schedulerDecisionProgressRank(decision map[string]any) int {
+	if decision == nil {
+		return 0
+	}
+	if strings.TrimSpace(stringValue(decision["recommended_decision_surface"])) != "active-council" {
+		return 0
+	}
+	return meetingPhaseProgressRank(stringValue(decision["active_decision_phase"]))
+}
+
 func schedulerDecisionKey(decision map[string]any) string {
 	scope := firstNonBlank(stringValue(decision["decision_scope"]), "mission")
 	if scope == "bundle" {
@@ -8670,6 +8697,7 @@ func projectActiveMeetingProgressIntoDecision(decision, meeting map[string]any) 
 	decision["active_meeting_count"] = len(activeMeetingIDs)
 	decision["recommended_decision_surface"] = "active-council"
 	decision["active_decision_phase"] = firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	decision["active_decision_progress_rank"] = schedulerDecisionProgressRank(decision)
 	decision["active_decision_protocol"] = normalizeDecisionProtocol(firstNonBlank(stringValue(meeting["decision_protocol"]), "evidence-review"))
 	orchestration, _ := toMap(meeting["orchestration"])
 	if orchestration != nil {
@@ -8888,6 +8916,11 @@ func sortSchedulerHumanDecisions(decisions []any, previousPrimaryDecisionKey str
 		rightSurface := decisionSurfaceRank(stringValue(right["recommended_decision_surface"]))
 		if leftSurface != rightSurface {
 			return leftSurface > rightSurface
+		}
+		leftProgress := schedulerDecisionProgressRank(left)
+		rightProgress := schedulerDecisionProgressRank(right)
+		if leftProgress != rightProgress {
+			return leftProgress > rightProgress
 		}
 		leftScope := decisionScopeRank(stringValue(left["decision_scope"]))
 		rightScope := decisionScopeRank(stringValue(right["decision_scope"]))
