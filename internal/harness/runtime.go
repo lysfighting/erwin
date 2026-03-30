@@ -4898,6 +4898,9 @@ func attachSchedulerDecisionToMeeting(meeting, decision, snapshot map[string]any
 		if bundleID := strings.TrimSpace(stringValue(decision["bundle_id"])); bundleID != "" {
 			contextRefs = appendUniqueText(contextRefs, bundleID)
 		}
+		for _, missionID := range dedupeStrings(anyListToStrings(toList(decision["bundle_mission_ids"]))) {
+			contextRefs = appendUniqueText(contextRefs, missionPath(missionID))
+		}
 	}
 	packet["context_refs"] = contextRefs
 	knownContext := toList(packet["known_context"])
@@ -4910,9 +4913,113 @@ func attachSchedulerDecisionToMeeting(meeting, decision, snapshot map[string]any
 			knownContext = appendUniqueText(knownContext, item)
 		}
 	}
+	if scope := strings.TrimSpace(stringValue(decision["decision_scope"])); scope == "bundle" &&
+		strings.TrimSpace(stringValue(decision["decision_kind"])) == "establish_bundle_governor" {
+		packet["candidate_governor_packets"] = cloneValue(getKey(decision, "candidate_governor_packets", []any{}))
+		for _, item := range toList(decision["candidate_governor_packets"]) {
+			candidate, ok := toMap(item)
+			if !ok {
+				continue
+			}
+			missionID := strings.TrimSpace(stringValue(candidate["mission_id"]))
+			if missionID == "" {
+				continue
+			}
+			note := fmt.Sprintf(
+				"Candidate governor %s: priority=%s, risk=%s, release_adjacent=%t, open_meeting_actions=%d, active_meetings=%d, root_candidate=%t.",
+				missionID,
+				firstNonBlank(strings.TrimSpace(stringValue(candidate["priority"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(candidate["risk_level"])), "unknown"),
+				boolValue(candidate["release_adjacent"]),
+				intValue(candidate["open_meeting_actions"]),
+				intValue(candidate["active_meeting_count"]),
+				boolValue(candidate["is_root_candidate"]),
+			)
+			knownContext = appendUniqueText(knownContext, note)
+		}
+	}
 	packet["known_context"] = knownContext
 	meeting["packet"] = packet
 	meeting["updated_at"] = nowISO()
+	return meeting
+}
+
+func seedMeetingParticipantsFromSchedulerDecision(meeting, decision, registry, missionRegistry map[string]any, hostMissionID string) map[string]any {
+	protocol := normalizeDecisionProtocol(stringValue(meeting["decision_protocol"]))
+	if protocol == "" {
+		protocol = "evidence-review"
+	}
+	roles := anyListToStrings(toList(meeting["roles"]))
+	if len(roles) == 0 {
+		roles = anyListToStrings(defaultMeetingRoles(protocol))
+	}
+	if len(roles) == 0 {
+		roles = []string{"participant"}
+	}
+
+	participants := toList(meeting["participants"])
+	existingRunIDs := map[string]bool{}
+	for _, item := range participants {
+		participant, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		runID := strings.TrimSpace(stringValue(participant["run_id"]))
+		if runID != "" {
+			existingRunIDs[runID] = true
+		}
+	}
+
+	seedRun := func(run map[string]any, role string) {
+		runID := strings.TrimSpace(stringValue(run["run_id"]))
+		if runID == "" || existingRunIDs[runID] {
+			return
+		}
+		participants = append(participants, map[string]any{
+			"run_id":     runID,
+			"owner_id":   stringValue(run["owner_id"]),
+			"owner_type": stringValue(run["owner_type"]),
+			"role":       firstNonBlank(strings.TrimSpace(role), stringValue(run["owner_id"]), "participant"),
+			"joined_at":  nowISO(),
+		})
+		existingRunIDs[runID] = true
+	}
+
+	hostRun, err := schedulerDecisionMeetingHostRun(registry, missionRegistry, hostMissionID)
+	if err == nil && hostRun != nil {
+		seedRun(hostRun, roles[0])
+	}
+
+	if firstNonBlank(stringValue(decision["decision_scope"]), "mission") == "bundle" &&
+		stringValue(decision["decision_kind"]) == "establish_bundle_governor" &&
+		len(participants) < len(roles) {
+		candidateMissionIDs := []string{}
+		for _, item := range toList(decision["candidate_governor_packets"]) {
+			packet, _ := toMap(item)
+			if missionID := strings.TrimSpace(stringValue(packet["mission_id"])); missionID != "" {
+				candidateMissionIDs = append(candidateMissionIDs, missionID)
+			}
+		}
+		candidateMissionIDs = append(candidateMissionIDs, anyListToStrings(toList(decision["bundle_mission_ids"]))...)
+		if governingMissionID := strings.TrimSpace(stringValue(decision["bundle_governing_mission_id"])); governingMissionID != "" {
+			candidateMissionIDs = append(candidateMissionIDs, governingMissionID)
+		}
+		candidateMissionIDs = dedupeStrings(candidateMissionIDs)
+		roleIndex := minInt(len(participants), len(roles)-1)
+		for _, missionID := range candidateMissionIDs {
+			if len(participants) >= len(roles) {
+				break
+			}
+			run, err := schedulerDecisionMeetingHostRun(registry, missionRegistry, missionID)
+			if err != nil || run == nil {
+				continue
+			}
+			seedRun(run, roles[roleIndex])
+			roleIndex = minInt(len(participants), len(roles)-1)
+		}
+	}
+
+	meeting["participants"] = participants
 	return meeting
 }
 
@@ -4932,6 +5039,7 @@ func materializeMeetingFromSchedulerDecision(snapshot, decision, registry, missi
 		return nil, nil, nil, err
 	}
 	meeting = attachSchedulerDecisionToMeeting(meeting, decision, snapshot, hostMissionID)
+	meeting = seedMeetingParticipantsFromSchedulerDecision(meeting, decision, registry, missionRegistry, hostMissionID)
 	if err := writeActiveMeeting(meeting); err != nil {
 		return nil, nil, nil, err
 	}

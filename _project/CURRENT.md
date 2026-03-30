@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.77.0 (in progress)
+- **Version**: 0.78.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness made bundle-governor councils auto-lock durable authority)
+- **Last Session**: 2026-03-30 (Harness made materialized bundle councils start from seeded participant and candidate context)
 
 ## Current Phase
 
@@ -18,6 +18,7 @@
 
 **Session 2026-03-30** — Harness prototype line stayed complete while scheduler and bundle authority deepened into a more mature portfolio control plane
 
+- **Materialized bundle-governor councils now start with seeded participant and candidate context**: when a bundle-scoped `establish_bundle_governor` scheduler decision materializes into a meeting, runtime now auto-seeds the host authoritative run plus bounded candidate-governor participant runs, carries sibling mission refs into packet context, and summarizes the ranked `candidate_governor_packets` inside `known_context` so the leader can start the governed council from scheduler evidence instead of rebuilding the obvious bundle roster by hand
 - **Bundle-governor councils now auto-lock durable authority**: auto-synthesis now preserves `source_run_id` on generated findings and can derive a structured `governing_mission_id` lock for bundle-scoped `establish_bundle_governor` councils when accepted evidence already favors one candidate, so `drive meeting-close` can adopt durable bundle authority without a separate manual `meetings lock-decision` in the common path
 - **Scheduler-decision materialization added**: `meetings materialize-primary-decision` and `meetings materialize-decision DECISION_ID` now turn durable scheduler human-decision packets into active meetings, so the leader can move directly from the decision portfolio into a governed council without reconstructing context by hand
 - **Meeting/source-decision linkage added**: materialized meetings now persist `source_decision_id`, scope/kind/surface metadata, snapshot refs, and the source decision packet itself, so later sessions can audit exactly which scheduler packet created a council
