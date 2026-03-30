@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.69.0-prototype`
+- `adapter_version`: `0.70.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -172,6 +172,7 @@ Do not underestimate the current control-plane maturity.
 - scheduler now consumes profile-backed meeting triggers, so some required human decisions become explicitly council-worthy with durable `recommended_decision_surface` and `meeting_trigger_refs` instead of only generic decision records
 - escalation-required mission bundles now collapse into one bundle-scoped scheduler decision packet, so the leader sees one governing-bundle decision instead of one duplicated decision per mission
 - scheduler now exposes a prioritized human-decision portfolio, including a `primary_required_human_decision`, deferred decision count, and scope/surface tallies, so leader-facing surfaces can reason about more than one pending governed decision at once
+- scheduler human-decision packets now carry stable `decision_id` values, and mission classifications plus defer actions now project those ids back into runtime state instead of leaving the portfolio as anonymous packet blobs
 - escalation-required bundle decisions now carry ranked `candidate_governor_ids` and `candidate_governor_packets`, so the leader sees plausible governors and their authority tuple before deciding whether to establish a governor directly or open a council
 - leaders can now explicitly establish and clear a bundle governor through mission surfaces, turning an escalation-required bundle into governed authority deliberately instead of leaving that decision as a perpetual open packet
 - stale explicit bundle-governor signals are now surfaced as scheduler maintenance and doctor warnings, so orphaned bundle governance is treated as cleanup work instead of a silently trusted control-plane fact

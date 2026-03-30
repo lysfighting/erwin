@@ -7636,6 +7636,7 @@ func aggregateSchedulerHumanDecisions(decisions []any) []any {
 			if stringValue(decision["decision_scope"]) == "" {
 				decision["decision_scope"] = "mission"
 			}
+			decision["decision_id"] = schedulerDecisionPacketID(decision)
 			aggregated = append(aggregated, decision)
 			continue
 		}
@@ -7713,9 +7714,11 @@ func aggregateSchedulerHumanDecisions(decisions []any) []any {
 			packet["mission_count"],
 			strings.Join(notes, " "),
 		)
+		packet["decision_id"] = schedulerDecisionPacketID(packet)
 	}
 	for _, packetKey := range bundleOrder {
 		packet := bundlePackets[packetKey]
+		packet["decision_id"] = schedulerDecisionPacketID(packet)
 		aggregated = append(aggregated, packet)
 	}
 	return aggregated
@@ -7769,6 +7772,21 @@ func schedulerDecisionKey(decision map[string]any) string {
 		return "mission:" + missionID
 	}
 	return ""
+}
+
+func schedulerDecisionPacketID(decision map[string]any) string {
+	parts := []string{
+		firstNonBlank(stringValue(decision["decision_scope"]), "mission"),
+		firstNonBlank(stringValue(decision["decision_kind"]), "decision"),
+		firstNonBlank(stringValue(decision["recommended_decision_surface"]), "leader-decision"),
+		firstNonBlank(stringValue(decision["recommended_decision_protocol"]), "decision-record"),
+	}
+	if bundleID := strings.TrimSpace(stringValue(decision["bundle_id"])); bundleID != "" {
+		parts = append(parts, "bundle:"+bundleID)
+	} else if missionID := strings.TrimSpace(stringValue(decision["mission_id"])); missionID != "" {
+		parts = append(parts, "mission:"+missionID)
+	}
+	return "decision-" + stableSlugID(strings.Join(parts, "::"))
 }
 
 func schedulerDecisionClass(decision map[string]any) string {
@@ -8505,6 +8523,16 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	}
 	requiredHumanDecisions := sortSchedulerHumanDecisions(aggregateSchedulerHumanDecisions(rawRequiredHumanDecisions), previousPrimaryDecisionKey)
 	decisionQueuePositionByKey, primaryDecisionByKey := schedulerDecisionQueueMaps(requiredHumanDecisions)
+	decisionIDByKey := map[string]string{}
+	for _, item := range requiredHumanDecisions {
+		decision, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		if key := schedulerDecisionKey(decision); key != "" {
+			decisionIDByKey[key] = stringValue(decision["decision_id"])
+		}
+	}
 
 	for _, missionID := range missionOrder {
 		entry := entryByMission[missionID]
@@ -8515,6 +8543,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		if queuePosition, ok := decisionQueuePositionByKey[queueKey]; ok {
 			entry["human_decision_queue_position"] = queuePosition
 			entry["primary_human_decision"] = primaryDecisionByKey[queueKey]
+			entry["human_decision_id"] = decisionIDByKey[queueKey]
 			if queuePosition > 1 && stringValue(entry["classification"]) == "needs-human-decision" {
 				reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Another governed human decision currently outranks this mission in the scheduler portfolio (queue position %d).", queuePosition))
 				entry["reasons"] = stringListToAny(dedupeStrings(reasons))
@@ -8532,6 +8561,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 							"target_state":            "waiting",
 							"current_state":           currentState,
 							"human_decision_position": queuePosition,
+							"decision_id":             decisionIDByKey[queueKey],
 							"reason":                  "Scheduler is deferring this mission behind a higher-priority human decision in the portfolio queue.",
 						})
 					}
@@ -8540,6 +8570,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		} else {
 			entry["human_decision_queue_position"] = 0
 			entry["primary_human_decision"] = false
+			entry["human_decision_id"] = ""
 		}
 		entryByMission[missionID] = entry
 	}

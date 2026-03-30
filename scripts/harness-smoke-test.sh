@@ -474,13 +474,16 @@ assert_json_field "$schedule_decision_portfolio_output" '"required_human_decisio
 assert_json_field "$schedule_decision_portfolio_output" '"council": 2' "scheduler counts both portfolio decisions as council-surface under the current profile triggers"
 assert_json_field "$schedule_decision_portfolio_output" '"primary_required_human_decision": {' "scheduler keeps a primary decision packet for the portfolio"
 assert_json_field "$schedule_decision_portfolio_output" '"recommended_decision_protocol": "evidence-review"' "scheduler carries decision protocol guidance in the human-decision portfolio"
+assert_json_field "$schedule_decision_portfolio_output" '"decision_id": "decision-' "scheduler now gives human-decision packets stable decision ids"
 assert_json_field "$schedule_decision_portfolio_output" '"bundle_id": "bundle-issue-20011-issue-20012-issue-20013"' "scheduler prioritizes the escalation bundle as the primary decision packet"
 assert_json_field "$schedule_decision_portfolio_output" '"mission_count": 3' "primary bundle decision packet keeps the grouped mission count"
 assert_json_field "$schedule_decision_portfolio_output" "\"mission_id\": \"issue-20023\"" "secondary mission decision remains visible in the decision portfolio"
 assert_json_field "$schedule_decision_portfolio_output" '"human_decision_queue_position": 2' "scheduler annotates the lower-priority mission decision with queue position 2"
 assert_json_field "$schedule_decision_portfolio_output" '"primary_human_decision": false' "scheduler marks non-primary human decisions explicitly"
+assert_json_field "$schedule_decision_portfolio_output" '"human_decision_id": "decision-' "scheduler projects stable decision ids back into mission classifications"
 assert_json_field "$schedule_decision_portfolio_output" '"action_kind": "defer_pending_primary_human_decision"' "scheduler emits an explicit defer action for lower-priority human decisions"
 assert_json_field "$schedule_decision_portfolio_output" '"human_decision_position": 2' "defer action records the lower-priority decision queue position"
+assert_json_field "$schedule_decision_portfolio_output" '"decision_id": "decision-' "defer action carries the stable decision id for the blocked packet"
 resolved_decision_portfolio_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-decision-portfolio resolved "Secondary decision packet covered.")
 assert_json_field "$resolved_decision_portfolio_signal" '"state": "resolved"' "secondary mission-level decision signal can be resolved after portfolio coverage"
 resolved_decision_portfolio_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$decision_portfolio_run" completed "Closed decision-portfolio mission.")
