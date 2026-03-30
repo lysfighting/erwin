@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.66.0 (in progress)
+- **Version**: 0.67.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness retained sticky bounded parallel batches)
+- **Last Session**: 2026-03-30 (Harness promoted maintenance into the scheduler portfolio)
 
 ## Current Phase
 
@@ -16,7 +16,7 @@
 
 ## What Was Just Completed
 
-**Session 2026-03-29** — Harness prototype line stayed complete while bundle authority started driving scheduler behavior directly
+**Session 2026-03-30** — Harness prototype line stayed complete while scheduler and bundle authority deepened into a more mature portfolio control plane
 
 - **Home/scheduler maintenance parity restored**: `home` now surfaces `scheduler_maintenance_action_count` and `scheduler_maintenance_action_tally`, so leader surfaces no longer hide stale-state maintenance work that scheduler snapshots already know about
 - **Bundle-scoped scheduler decisions added**: escalation-required mission bundles no longer emit one repeated `establish_bundle_governor` decision per mission; scheduler now collapses them into one bundle-scoped human-decision packet with merged mission ids, trigger refs, and bundle-required action so the leader sees the actual decision surface instead of repeated mission noise
@@ -44,6 +44,9 @@
 - **Sticky bounded parallel batches added**: scheduler now retains an already-admitted parallel batch when a same-class fresher peer appears, instead of churning the admitted portfolio just because a new equal-priority mission arrived later
 - **Parallel batch memory surfaced**: scheduler snapshots and `home` now expose `previous_selected_mission_ids`, so the leader can see when the control plane is intentionally preserving the admitted parallel set rather than recomputing it from freshness alone
 - **Capacity semantics preserved under sticky batches**: even when the scheduler keeps the existing bounded batch, overflow peers still become explicit capacity deferrals with `defer_due_parallel_capacity`, so stability does not erase admission pressure
+- **Primary maintenance portfolio added**: scheduler now sorts maintenance work into a real portfolio, exposing `primary_maintenance_action`, deferred-maintenance count, `maintenance_selection_policy`, and `previous_primary_maintenance_key` instead of treating maintenance as an unordered backlog
+- **Governance maintenance now gates foreground work**: critical maintenance such as `clear_invalid_bundle_governor` can now trigger `hold_for_primary_maintenance`, deferring low-urgency foreground execution until the primary maintenance action is repaired or explicitly deferred
+- **Home mirrors maintenance-first scheduling**: `home` now surfaces the scheduler's primary maintenance action and maintenance-selection metadata, so leader-facing status reflects when governance maintenance outranks fresh foreground execution
 - **Scheduler maintenance escalation added**: scheduler snapshots now emit `maintenance_actions`, `maintenance_action_count`, and `maintenance_action_tally`, turning stale runs, expired signals, and stale meetings into explicit leader-facing maintenance work instead of leaving them only to `doctor`
 - **Maintenance guidance prioritized**: when stale control-plane state coexists with runnable foreground work, scheduler `next_action` now tells the leader to keep the foreground batch bounded and clean stale state before widening execution
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves stale run plus stale signal maintenance escalation and verifies that refreshing the run and retiring the stale signal restores a clean control-plane path

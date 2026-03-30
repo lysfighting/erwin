@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Scheduler maintenance portfolios, including `primary_maintenance_action`, deferred-maintenance count, `maintenance_selection_policy`, and governance-first `hold_for_primary_maintenance` when stale explicit governance should block low-urgency foreground work.
 - Sticky bounded parallel-batch retention in scheduler snapshots, including `previous_selected_mission_ids` and explicit capacity deferrals that preserve admission pressure when the admitted batch stays stable.
 - Scheduler/doctor handling for stale explicit bundle-governor signals, emitting maintenance work and invalid-governance warnings when an adopted governor no longer matches the active mission bundle.
 - Explicit bundle-governor adoption via `bash scripts/harness-missions.sh establish-governor` and `clear-governor`, so leaders can convert escalation-required mission bundles into governed authority deliberately and later retire that governance cleanly.

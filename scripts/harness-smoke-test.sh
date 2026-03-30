@@ -551,6 +551,14 @@ assert_json_field "$resolved_explicit_governor_a" '"state": "completed"' "explic
 schedule_explicit_governor_stale=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_explicit_governor_stale" '"action_kind": "clear_invalid_bundle_governor"' "scheduler escalates stale explicit-governor signals into maintenance"
 assert_json_field "$schedule_explicit_governor_stale" "\"bundle_id\": \"$explicit_governor_bundle_id\"" "scheduler maintenance identifies the stale explicit-governor bundle"
+assert_json_field "$schedule_explicit_governor_stale" '"primary_maintenance_action": {' "scheduler exposes the primary maintenance action"
+assert_json_field "$schedule_explicit_governor_stale" '"maintenance_selection_policy": "maintenance_priority"' "scheduler starts stale-governor maintenance with the default maintenance-selection policy"
+assert_json_field "$schedule_explicit_governor_stale" '"batch_admission_policy": "hold_for_primary_maintenance"' "critical bundle-governor maintenance blocks new low-urgency foreground work"
+assert_json_field "$schedule_explicit_governor_stale" '"action_kind": "hold_for_primary_maintenance"' "scheduler emits explicit hold actions when critical maintenance outranks foreground work"
+
+home_output_explicit_governor_stale=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_output_explicit_governor_stale" '"scheduler_primary_maintenance_action": {' "home mirrors the scheduler's primary maintenance action"
+assert_json_field "$home_output_explicit_governor_stale" '"scheduler_maintenance_selection_policy": "maintenance_priority"' "home mirrors maintenance-selection policy"
 
 doctor_explicit_governor_stale=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_explicit_governor_stale" '"issue_count": 2' "doctor detects stale explicit-governor drift alongside the restored overlap conflict"
@@ -568,6 +576,9 @@ resolved_explicit_governor_b=$(run_in_repo bash scripts/harness-runs.sh set-stat
 assert_json_field "$resolved_explicit_governor_b" '"state": "completed"' "explicit-governor bundle mission B can be closed"
 resolved_explicit_governor_c=$(run_in_repo bash scripts/harness-runs.sh set-state "$explicit_governor_run_c" completed "Closed explicit-governor bundle mission C.")
 assert_json_field "$resolved_explicit_governor_c" '"state": "completed"' "explicit-governor bundle mission C can be closed"
+baseline_after_explicit_governor=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$baseline_after_explicit_governor" "\"mission_id\": \"issue-20001\"" "baseline foreground can be re-established after stale explicit governor coverage"
+assert_json_field "$baseline_after_explicit_governor" '"selected_mission_count": 1' "baseline foreground re-establishes a single selected mission after stale explicit governor coverage"
 
 section "Sticky decision portfolio"
 sticky_decision_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20026 "Harness Sticky Decision A" --owns="file:docs/README.md")

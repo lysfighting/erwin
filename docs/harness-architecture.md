@@ -618,6 +618,8 @@ That means:
 - stale explicit governors are not trusted indefinitely; when the adopted governor no longer belongs to the active bundle, the control plane escalates that signal into maintenance instead of silently carrying orphaned governance forward
 - the scheduler can now retain a sticky primary human-decision packet across otherwise-tied portfolio passes, preferring decision stability over freshness-only churn when the decision class still matches
 - the scheduler can now retain a sticky bounded parallel batch across otherwise-tied portfolio passes, preferring admitted-batch stability over freshness-only churn when the batch class still matches
+- the scheduler now treats maintenance as a first-class portfolio as well, surfacing `primary_maintenance_action`, deferred-maintenance count, and sticky maintenance-selection metadata instead of leaving stale governance cleanup as an unordered side list
+- governance-critical maintenance such as stale explicit bundle governors or stale active councils can now hold back low-urgency foreground execution through `hold_for_primary_maintenance`, so the control plane repairs broken governance before widening fresh work
 - the scheduler can now hold back brand-new low-urgency foreground admission when unresolved human decisions already dominate the portfolio and no established foreground batch is being continued
 - parallel widening now requires explicit justification when execution policy says the control plane should reduce parallelism rather than guess
 - the scheduler can now retain a sticky foreground mission across otherwise-tied passes, preferring stability over timestamp churn when priority, effective risk, and release posture still match

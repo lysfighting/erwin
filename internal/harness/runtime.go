@@ -7687,6 +7687,93 @@ func schedulerDecisionClass(decision map[string]any) string {
 	)
 }
 
+func schedulerMaintenanceKey(action map[string]any) string {
+	if bundleID := strings.TrimSpace(stringValue(action["bundle_id"])); bundleID != "" {
+		return "bundle:" + bundleID
+	}
+	targetKind := firstNonBlank(strings.TrimSpace(stringValue(action["target_kind"])), "unknown")
+	targetID := firstNonBlank(strings.TrimSpace(stringValue(action["target_id"])), strings.TrimSpace(stringValue(action["mission_id"])))
+	if targetID == "" {
+		return ""
+	}
+	return targetKind + ":" + targetID
+}
+
+func schedulerMaintenancePriority(action map[string]any) int {
+	switch strings.TrimSpace(stringValue(action["action_kind"])) {
+	case "clear_invalid_bundle_governor":
+		return 4
+	case "refresh_stale_meeting":
+		return 3
+	case "resolve_stale_signal":
+		return 2
+	case "refresh_stale_run":
+		return 1
+	default:
+		return 0
+	}
+}
+
+func schedulerMaintenanceClass(action map[string]any) string {
+	return fmt.Sprintf(
+		"%d|%t|%s",
+		schedulerMaintenancePriority(action),
+		strings.TrimSpace(stringValue(action["bundle_id"])) != "",
+		firstNonBlank(strings.TrimSpace(stringValue(action["target_kind"])), "unknown"),
+	)
+}
+
+func sortSchedulerMaintenanceActions(actions []any, previousPrimaryMaintenanceKey string) []any {
+	sorted := append([]any{}, actions...)
+	sort.Slice(sorted, func(i, j int) bool {
+		left, _ := toMap(sorted[i])
+		right, _ := toMap(sorted[j])
+		leftPriority := schedulerMaintenancePriority(left)
+		rightPriority := schedulerMaintenancePriority(right)
+		if leftPriority != rightPriority {
+			return leftPriority > rightPriority
+		}
+		leftBundle := strings.TrimSpace(stringValue(left["bundle_id"])) != ""
+		rightBundle := strings.TrimSpace(stringValue(right["bundle_id"])) != ""
+		if leftBundle != rightBundle {
+			return leftBundle
+		}
+		if previousPrimaryMaintenanceKey != "" {
+			leftKey := schedulerMaintenanceKey(left)
+			rightKey := schedulerMaintenanceKey(right)
+			if leftKey == previousPrimaryMaintenanceKey && rightKey != previousPrimaryMaintenanceKey {
+				return true
+			}
+			if rightKey == previousPrimaryMaintenanceKey && leftKey != previousPrimaryMaintenanceKey {
+				return false
+			}
+		}
+		leftMission := strings.TrimSpace(stringValue(left["mission_id"]))
+		rightMission := strings.TrimSpace(stringValue(right["mission_id"]))
+		if leftMission != rightMission {
+			return leftMission < rightMission
+		}
+		leftTargetKind := firstNonBlank(strings.TrimSpace(stringValue(left["target_kind"])), "unknown")
+		rightTargetKind := firstNonBlank(strings.TrimSpace(stringValue(right["target_kind"])), "unknown")
+		if leftTargetKind != rightTargetKind {
+			return leftTargetKind < rightTargetKind
+		}
+		leftTargetID := firstNonBlank(strings.TrimSpace(stringValue(left["target_id"])), strings.TrimSpace(stringValue(left["bundle_id"])))
+		rightTargetID := firstNonBlank(strings.TrimSpace(stringValue(right["target_id"])), strings.TrimSpace(stringValue(right["bundle_id"])))
+		return leftTargetID < rightTargetID
+	})
+	return sorted
+}
+
+func schedulerMaintenanceIsCritical(action map[string]any) bool {
+	switch strings.TrimSpace(stringValue(action["action_kind"])) {
+	case "clear_invalid_bundle_governor", "refresh_stale_meeting":
+		return true
+	default:
+		return false
+	}
+}
+
 func sortSchedulerHumanDecisions(decisions []any, previousPrimaryDecisionKey string) []any {
 	sorted := append([]any{}, decisions...)
 	sort.Slice(sorted, func(i, j int) bool {
@@ -7828,12 +7915,15 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	}
 	previousPrimaryDecision, _ := toMap(previousSchedulerSnapshot["primary_required_human_decision"])
 	previousPrimaryDecisionKey := schedulerDecisionKey(previousPrimaryDecision)
+	previousPrimaryMaintenance, _ := toMap(previousSchedulerSnapshot["primary_maintenance_action"])
+	previousPrimaryMaintenanceKey := schedulerMaintenanceKey(previousPrimaryMaintenance)
 	maxParallelRuns := intValue(getKey(profile, "profile.max_parallel_runs", 0))
 	if maxParallelRuns <= 0 {
 		maxParallelRuns = 1
 	}
 	requireExplicitParallelJustification := boolValue(policyValue("execution.require_explicit_parallel_justification", true))
 	requirePrimaryHumanDecisionBeforeNewForeground := boolValue(policyValue("execution.require_primary_human_decision_before_new_foreground", true))
+	requirePrimaryMaintenanceBeforeNewForeground := boolValue(policyValue("execution.require_primary_maintenance_before_new_foreground", true))
 
 	bundleInfoByMission := map[string]map[string]any{}
 	conflictMissionSet := map[string]bool{}
@@ -7905,6 +7995,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	}
 
 	maintenanceActions, maintenanceTally := schedulerMaintenanceActions(missionRegistry, registry, signalLog)
+	maintenanceActions = sortSchedulerMaintenanceActions(maintenanceActions, previousPrimaryMaintenanceKey)
 
 	activeMeetingCountByMission := map[string]int{}
 	openMeetingActionCountByMission := map[string]int{}
@@ -8610,6 +8701,64 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			}
 		}
 	}
+	primaryMaintenanceAction := map[string]any{}
+	maintenanceSelectionPolicy := "maintenance_priority"
+	if len(maintenanceActions) > 0 {
+		primaryMaintenanceAction, _ = toMap(maintenanceActions[0])
+		primaryKey := schedulerMaintenanceKey(primaryMaintenanceAction)
+		if previousPrimaryMaintenanceKey != "" && primaryKey == previousPrimaryMaintenanceKey && len(maintenanceActions) > 1 {
+			primaryClass := schedulerMaintenanceClass(primaryMaintenanceAction)
+			for _, item := range maintenanceActions[1:] {
+				peer, _ := toMap(item)
+				if schedulerMaintenanceClass(peer) == primaryClass {
+					maintenanceSelectionPolicy = "sticky_primary_maintenance"
+					break
+				}
+			}
+		}
+	}
+	if requirePrimaryMaintenanceBeforeNewForeground && len(maintenanceActions) > 0 && len(selectedMissionIDs) > 0 {
+		primarySelectedEntry := entryByMission[selectedMissionIDs[0]]
+		primarySelectedUrgent := schedulerPriorityRank(stringValue(primarySelectedEntry["priority"])) >= schedulerPriorityRank("p0") ||
+			boolValue(primarySelectedEntry["release_adjacent"]) ||
+			schedulerRiskRank(firstNonBlank(stringValue(primarySelectedEntry["effective_risk_level"]), stringValue(primarySelectedEntry["risk_level"]))) >= schedulerRiskRank("high")
+		if schedulerMaintenanceIsCritical(primaryMaintenanceAction) && !primarySelectedUrgent {
+			heldMissionIDs := append([]string{}, selectedMissionIDs...)
+			selectedMissionIDs = []string{}
+			batchAdmissionPolicy = "hold_for_primary_maintenance"
+			selectionPolicy = "maintenance_first_hold"
+			primaryMaintenanceNote := firstNonBlank(
+				stringValue(primaryMaintenanceAction["action_kind"]),
+				firstNonBlank(stringValue(primaryMaintenanceAction["bundle_id"]), stringValue(primaryMaintenanceAction["target_id"]), "the current primary maintenance action"),
+			)
+			for _, missionID := range heldMissionIDs {
+				entry := entryByMission[missionID]
+				if stringValue(entry["classification"]) == "runnable" {
+					entry["classification"] = "deferred"
+				}
+				reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Scheduler is holding new foreground admission until the current primary maintenance action (%s) is repaired or explicitly deferred.", primaryMaintenanceNote))
+				entry["reasons"] = stringListToAny(dedupeStrings(reasons))
+				entry["recommended_action"] = firstNonBlank(
+					stringValue(primaryMaintenanceAction["recommended_action"]),
+					"Repair the current primary maintenance action before starting new foreground execution.",
+				)
+				if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
+					currentState := stringValue(entry["authoritative_run_state"])
+					if currentState == "ready" || currentState == "executing" {
+						rescheduleActions = append(rescheduleActions, map[string]any{
+							"mission_id":    missionID,
+							"run_id":        runID,
+							"action_kind":   "hold_for_primary_maintenance",
+							"target_state":  "waiting",
+							"current_state": currentState,
+							"reason":        "Scheduler is not admitting new foreground work while a higher-priority maintenance action remains unresolved.",
+						})
+					}
+				}
+				entryByMission[missionID] = entry
+			}
+		}
+	}
 	for _, missionID := range selectedMissionIDs {
 		if runID := stringValue(entryByMission[missionID]["authoritative_run_id"]); runID != "" {
 			selectedRunIDs = append(selectedRunIDs, runID)
@@ -8714,6 +8863,10 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		nextAction = "Resolve required human decisions before widening execution; keep the current foreground batch bounded in the meantime."
 	case len(requiredHumanDecisions) > 0:
 		nextAction = "Resolve required human decisions before widening execution."
+	case len(maintenanceActions) > 0 && schedulerMaintenanceIsCritical(primaryMaintenanceAction) && len(selectedMissionIDs) > 0:
+		nextAction = "Keep the current foreground batch bounded and repair the primary governance maintenance action before widening execution."
+	case len(maintenanceActions) > 0 && schedulerMaintenanceIsCritical(primaryMaintenanceAction):
+		nextAction = "Repair the primary governance maintenance action before widening execution."
 	case len(maintenanceActions) > 0 && len(selectedMissionIDs) > 0:
 		nextAction = "Keep the current foreground batch bounded and run maintenance on stale control-plane state before widening execution."
 	case len(maintenanceActions) > 0:
@@ -8761,7 +8914,11 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"primary_required_human_decision":       primaryRequiredHumanDecision,
 		"required_human_decisions":              requiredHumanDecisions,
 		"maintenance_action_count":              len(maintenanceActions),
+		"deferred_maintenance_action_count":     maxInt(len(maintenanceActions)-1, 0),
 		"maintenance_action_tally":              maintenanceTally,
+		"maintenance_selection_policy":          maintenanceSelectionPolicy,
+		"previous_primary_maintenance_key":      previousPrimaryMaintenanceKey,
+		"primary_maintenance_action":            primaryMaintenanceAction,
 		"maintenance_actions":                   maintenanceActions,
 		"reschedule_action_count":               len(rescheduleActions),
 		"reschedule_actions":                    rescheduleActions,
@@ -9072,6 +9229,7 @@ func cmdHome(args []string) error {
 		"scheduler_deferred_human_decision_count":         intValue(scheduler["deferred_human_decision_count"]),
 		"scheduler_council_decision_count":                intValue(scheduler["council_decision_count"]),
 		"scheduler_maintenance_action_count":              intValue(scheduler["maintenance_action_count"]),
+		"scheduler_deferred_maintenance_action_count":     intValue(scheduler["deferred_maintenance_action_count"]),
 		"scheduler_reschedule_action_count":               intValue(scheduler["reschedule_action_count"]),
 		"scheduler_tally":                                 cloneValue(getKey(scheduler, "classification_tally", map[string]any{})),
 		"scheduler_bundle_role_tally":                     cloneValue(getKey(scheduler, "bundle_role_tally", map[string]any{})),
@@ -9080,6 +9238,9 @@ func cmdHome(args []string) error {
 		"scheduler_decision_selection_policy":             stringValue(scheduler["decision_selection_policy"]),
 		"scheduler_previous_primary_human_decision_key":   stringValue(scheduler["previous_primary_human_decision_key"]),
 		"scheduler_primary_required_human_decision":       cloneValue(getKey(scheduler, "primary_required_human_decision", map[string]any{})),
+		"scheduler_maintenance_selection_policy":          stringValue(scheduler["maintenance_selection_policy"]),
+		"scheduler_previous_primary_maintenance_key":      stringValue(scheduler["previous_primary_maintenance_key"]),
+		"scheduler_primary_maintenance_action":            cloneValue(getKey(scheduler, "primary_maintenance_action", map[string]any{})),
 		"scheduler_maintenance_action_tally":              cloneValue(getKey(scheduler, "maintenance_action_tally", map[string]any{})),
 		"scheduler_previous_selected_mission_ids":         cloneValue(toList(scheduler["previous_selected_mission_ids"])),
 		"scheduler_selected_mission_ids":                  cloneValue(toList(scheduler["selected_mission_ids"])),

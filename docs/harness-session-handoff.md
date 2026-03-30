@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.60.0-prototype`
+- `adapter_version`: `0.67.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -181,12 +181,14 @@ Do not underestimate the current control-plane maturity.
 - scheduler now retains a sticky primary human-decision packet across otherwise-tied portfolio passes, surfacing `decision_selection_policy` and `previous_primary_human_decision_key` so the leader can see when the control plane is intentionally holding decision focus steady
 - scheduler now retains a sticky foreground mission across otherwise-tied scheduling passes, surfacing `selection_policy` and `previous_foreground_mission_id` so the leader can see when the control plane is intentionally preferring stability over freshness-only churn
 - scheduler now retains a sticky bounded parallel batch across otherwise-tied portfolio passes, surfacing `previous_selected_mission_ids` so the leader can see when the admitted set is being preserved deliberately instead of recomputed from raw freshness
+- scheduler now sorts maintenance into a first-class portfolio, surfacing `primary_maintenance_action`, deferred-maintenance count, `maintenance_selection_policy`, and `previous_primary_maintenance_key` instead of leaving maintenance as an unordered side list
+- governance-critical maintenance such as stale explicit bundle governors can now emit `hold_for_primary_maintenance`, deferring low-urgency foreground work until the primary maintenance action is repaired or explicitly deferred
 - meeting objects now carry explicit `decision_protocol` and `decision_protocol_reason`, so the control plane no longer needs to pretend every council is implicitly one inherited `arch-review` debate
 - scheduler human-decision packets now carry `recommended_decision_protocol`, letting the leader distinguish evidence-review, incident-command, and decision-record handling before materializing a meeting
 - protocol-aware council automation is now partially real: `incident-command` and `decision-record` no longer auto-expand every same-authority conflict into route/round work, instead deferring bounded disagreement into synthesis/record output while `evidence-review` keeps the richest live debate controller
 - scheduler now treats fresh coordination/dependency/blocker signals as real rescheduling triggers instead of only including them in the snapshot payload
 - scheduler now escalates stale runs, expired signals, and stale meetings into explicit `maintenance_actions` instead of leaving them only to `doctor`
-- `home` now mirrors that maintenance backlog so leader-facing surfaces stay aligned with scheduler reality
+- `home` now mirrors that maintenance backlog and the current primary maintenance packet so leader-facing surfaces stay aligned with scheduler reality
 - first-class mission objects
 - separation between `latest_run_id` and `authoritative_run_id`
 - graph-level authority audit with bundle grouping, explicit bundle governors, explicit-governor signal adoption, and pairwise governor adjudication from clear authority tuples

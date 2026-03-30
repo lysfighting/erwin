@@ -591,6 +591,8 @@ The following parts of the operating model are already concretely present:
 - scheduler now retains a sticky foreground mission when a fresher runnable peer is otherwise tied on priority, effective risk, and release posture, reducing avoidable foreground thrash and exposing `selection_policy` plus `previous_foreground_mission_id` in durable snapshots
 - scheduler now retains a sticky bounded parallel batch when the admitted portfolio is still valid and a fresher same-class peer arrives, exposing `previous_selected_mission_ids` so the leader can see the control plane is preserving the admitted set intentionally
 - scheduler now escalates stale runs, expired signals, and stale meetings into explicit maintenance work instead of leaving them only to doctor output
+- scheduler now sorts maintenance into a first-class portfolio, exposing `primary_maintenance_action`, deferred-maintenance count, `maintenance_selection_policy`, and `previous_primary_maintenance_key` instead of leaving maintenance as an unordered backlog
+- governance-critical maintenance such as stale explicit bundle governors or stale active councils can now trigger `hold_for_primary_maintenance`, deferring low-urgency foreground execution until the primary maintenance action is repaired or explicitly deferred
 - first-class mission objects
 - mission authority separated from freshest run activity
 - bounded teammate runs
