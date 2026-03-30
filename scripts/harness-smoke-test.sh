@@ -735,6 +735,8 @@ assert_json_field "$schedule_explicit_governor_control_plane" '"primary_control_
 assert_json_field "$schedule_explicit_governor_control_plane" '"primary_control_plane_packet": {' "scheduler exposes the unified primary control-plane packet"
 assert_json_field "$schedule_explicit_governor_control_plane" '"action_kind": "clear_invalid_bundle_governor"' "stale explicit governor remains the primary control-plane packet"
 assert_json_field "$schedule_explicit_governor_control_plane" '"required_human_decision_count": 2' "human decisions remain visible even when critical maintenance wins the unified portfolio"
+assert_json_field "$schedule_explicit_governor_control_plane" '"deferred_by_primary_control_plane_kind": "maintenance"' "mission classifications record when governed human decisions are deferred behind maintenance"
+assert_json_field "$schedule_explicit_governor_control_plane" '"action_kind": "defer_pending_primary_maintenance"' "scheduler emits explicit defer actions when primary maintenance outranks governed human decisions"
 assert_json_field "$schedule_explicit_governor_control_plane" '"next_action": "Clear the stale explicit governor signal so the control plane stops carrying orphaned governance."' "next action follows the unified primary control-plane packet"
 
 home_output_explicit_governor_control_plane=$(run_in_repo bash scripts/harness-home.sh)

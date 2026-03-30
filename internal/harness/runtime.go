@@ -10062,6 +10062,41 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		}
 	}
 	primaryControlPlaneKind, primaryControlPlanePacket, primaryControlPlaneSelectionPolicy, deferredControlPlanePacketCount := schedulerPrimaryControlPlanePacket(requiredHumanDecisions, primaryRequiredHumanDecision, maintenanceActions, primaryMaintenanceAction)
+	if primaryControlPlaneKind == "maintenance" && schedulerMaintenanceIsCritical(primaryMaintenanceAction) && len(requiredHumanDecisions) > 0 {
+		primaryMaintenanceNote := firstNonBlank(
+			stringValue(primaryMaintenanceAction["action_kind"]),
+			firstNonBlank(stringValue(primaryMaintenanceAction["bundle_id"]), stringValue(primaryMaintenanceAction["target_id"]), "the current primary maintenance action"),
+		)
+		for _, missionID := range missionOrder {
+			entry := entryByMission[missionID]
+			if intValue(entry["human_decision_queue_position"]) <= 0 {
+				entryByMission[missionID] = entry
+				continue
+			}
+			entry["deferred_by_primary_control_plane_kind"] = "maintenance"
+			entry["deferred_by_primary_control_plane_action"] = firstNonBlank(stringValue(primaryMaintenanceAction["action_kind"]), "maintenance")
+			reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Scheduler is deferring this governed human-decision work behind the current primary maintenance action (%s).", primaryMaintenanceNote))
+			entry["reasons"] = stringListToAny(dedupeStrings(reasons))
+			if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
+				currentState := stringValue(entry["authoritative_run_state"])
+				if currentState == "ready" || currentState == "executing" {
+					rescheduleAction := map[string]any{
+						"mission_id":    missionID,
+						"run_id":        runID,
+						"action_kind":   "defer_pending_primary_maintenance",
+						"target_state":  "waiting",
+						"current_state": currentState,
+						"reason":        "Scheduler is deferring this governed human-decision work behind a higher-priority maintenance action.",
+					}
+					if decisionID := strings.TrimSpace(stringValue(entry["human_decision_id"])); decisionID != "" {
+						rescheduleAction["decision_id"] = decisionID
+					}
+					rescheduleActions = append(rescheduleActions, rescheduleAction)
+				}
+			}
+			entryByMission[missionID] = entry
+		}
+	}
 	primaryDecisionAction := strings.TrimSpace(stringValue(primaryRequiredHumanDecision["recommended_action"]))
 	primaryDecisionSurface := strings.TrimSpace(stringValue(primaryRequiredHumanDecision["recommended_decision_surface"]))
 	primaryMaintenanceActionText := strings.TrimSpace(stringValue(primaryMaintenanceAction["recommended_action"]))

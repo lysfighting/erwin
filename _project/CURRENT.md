@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.86.0 (in progress)
+- **Version**: 0.87.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness unified the leader-facing control-plane portfolio)
+- **Last Session**: 2026-03-30 (Harness made maintenance-first decision deferral explicit)
 
 ## Current Phase
 
@@ -21,6 +21,7 @@
 - **Unified control-plane portfolio added**: scheduler no longer leaves leader-facing priority split across separate human-decision and maintenance portfolios; it now emits one `primary_control_plane_kind`, one `primary_control_plane_packet`, one `primary_control_plane_selection_policy`, and a deferred control-plane count so the leader can see which control-plane object actually comes first
 - **Critical maintenance now explicitly outranks lower-priority human decisions**: when governance-critical maintenance such as `clear_invalid_bundle_governor` coexists with fresh but lower-priority human decisions, scheduler now keeps the human decisions visible while still making maintenance the primary control-plane packet and the leader-facing `next_action`
 - **Home mirrors unified control-plane priority**: `home` now exposes the same primary control-plane kind, packet, and selection-policy fields that scheduler uses, so leader-facing status no longer requires mentally reconciling separate decision and maintenance priority surfaces
+- **Maintenance-first decision deferral added**: when critical maintenance wins the unified control-plane portfolio, scheduler no longer only says maintenance is primary; it now marks governed decision-bearing missions with `deferred_by_primary_control_plane_kind: maintenance` and emits explicit `defer_pending_primary_maintenance` actions so runtime state records that those decisions are intentionally waiting behind governance repair
 - **Protocol-aware council execution deepened**: `incident-command` and `decision-record` no longer only differ in route planning; orchestration now gives them protocol-specific independent-review requirements and protocol-specific output guidance, so leader-facing council flow reflects the decision methodology instead of collapsing back into generic evidence-review wording
 - **Protocol-specific live guidance validated**: teammate smoke now proves `incident-command` councils ask for bounded incident assessments and close with action/owner/stop-go guidance, while `decision-record` councils ask for bounded decision-record assessments and close with explicit decision/alternatives/consequences/follow-up guidance
 - **Scheduler/home now follow live council requirements directly**: once a bundle-scoped decision is already materialized and in flight, scheduler `next_action`, `primary_required_human_decision.recommended_action`, `hold_for_active_bundle_council.reason`, and `home.next_action` now prefer the council's live `next_requirement` rather than falling back to generic “review the council” wording

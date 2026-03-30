@@ -117,6 +117,7 @@ Current scheduler/council reality:
 - scheduler and `home` follow an in-flight council's live `next_requirement` instead of generic review wording
 - stale active councils are now promoted into explicit “refresh or close the stale active council” guidance instead of remaining passive hold state
 - scheduler now also exposes one leader-facing `primary_control_plane_packet`, so critical maintenance can deliberately outrank lower-priority human decisions without hiding those deferred decisions from the portfolio
+- when that happens, affected governed decision missions now also carry explicit maintenance-first defer state instead of only silently staying visible in the queue
 
 ---
 
