@@ -4,6 +4,7 @@ policies:
     default_mode: "solo"
     max_parallel_runs_default: 2
     require_explicit_parallel_justification: true
+    require_primary_human_decision_before_new_foreground: true
 
   meetings:
     default_max_roles: 4

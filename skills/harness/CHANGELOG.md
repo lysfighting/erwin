@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Decision-first foreground admission, allowing scheduler to emit `hold_for_primary_human_decision` when unresolved governed decisions should block new low-urgency foreground work.
 - Candidate-governor packets for escalation-required mission bundles, exposed through graph authority, scheduler decision packets, and mission classifications.
 - Explicit decision-protocol support for meetings and scheduler human-decision packets, including `evidence-review`, `incident-command`, and `decision-record`.
 - Leader-facing scheduler baseline via `bash scripts/harness-missions.sh schedule`, including durable `.harness/scheduler/snapshots/`, mission classifications, execution-mode recommendation, required-human-decision reporting, and reschedule hints.

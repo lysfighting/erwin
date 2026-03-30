@@ -7403,6 +7403,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		maxParallelRuns = 1
 	}
 	requireExplicitParallelJustification := boolValue(policyValue("execution.require_explicit_parallel_justification", true))
+	requirePrimaryHumanDecisionBeforeNewForeground := boolValue(policyValue("execution.require_primary_human_decision_before_new_foreground", true))
 
 	bundleInfoByMission := map[string]map[string]any{}
 	conflictMissionSet := map[string]bool{}
@@ -8121,6 +8122,50 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	}
 
 	selectedRunIDs := []string{}
+	if requirePrimaryHumanDecisionBeforeNewForeground && len(requiredHumanDecisions) > 0 && len(selectedMissionIDs) > 0 {
+		currentPrimaryDecision, _ := toMap(requiredHumanDecisions[0])
+		keepExistingForeground := previousForegroundMissionID != "" && containsString(selectedMissionIDs, previousForegroundMissionID)
+		primarySelectedEntry := entryByMission[selectedMissionIDs[0]]
+		primarySelectedUrgent := schedulerPriorityRank(stringValue(primarySelectedEntry["priority"])) >= schedulerPriorityRank("p0") ||
+			boolValue(primarySelectedEntry["release_adjacent"]) ||
+			schedulerRiskRank(firstNonBlank(stringValue(primarySelectedEntry["effective_risk_level"]), stringValue(primarySelectedEntry["risk_level"]))) >= schedulerRiskRank("high")
+		if !keepExistingForeground && !primarySelectedUrgent {
+			heldMissionIDs := append([]string{}, selectedMissionIDs...)
+			selectedMissionIDs = []string{}
+			batchAdmissionPolicy = "hold_for_primary_human_decision"
+			selectionPolicy = "decision_first_hold"
+			primaryDecisionNote := firstNonBlank(
+				stringValue(currentPrimaryDecision["decision_kind"]),
+				firstNonBlank(stringValue(currentPrimaryDecision["bundle_id"]), stringValue(currentPrimaryDecision["mission_id"]), "the current primary human decision"),
+			)
+			for _, missionID := range heldMissionIDs {
+				entry := entryByMission[missionID]
+				if stringValue(entry["classification"]) == "runnable" {
+					entry["classification"] = "deferred"
+				}
+				reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Scheduler is holding new foreground admission until the current primary human decision (%s) is resolved or explicitly deferred.", primaryDecisionNote))
+				entry["reasons"] = stringListToAny(dedupeStrings(reasons))
+				entry["recommended_action"] = firstNonBlank(
+					stringValue(currentPrimaryDecision["recommended_action"]),
+					"Resolve the current primary human decision before starting new foreground execution.",
+				)
+				if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
+					currentState := stringValue(entry["authoritative_run_state"])
+					if currentState == "ready" || currentState == "executing" {
+						rescheduleActions = append(rescheduleActions, map[string]any{
+							"mission_id":    missionID,
+							"run_id":        runID,
+							"action_kind":   "hold_for_primary_human_decision",
+							"target_state":  "waiting",
+							"current_state": currentState,
+							"reason":        "Scheduler is not admitting new foreground work while a higher-priority human decision remains unresolved.",
+						})
+					}
+				}
+				entryByMission[missionID] = entry
+			}
+		}
+	}
 	for _, missionID := range selectedMissionIDs {
 		if runID := stringValue(entryByMission[missionID]["authoritative_run_id"]); runID != "" {
 			selectedRunIDs = append(selectedRunIDs, runID)

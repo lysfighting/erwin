@@ -437,12 +437,65 @@ assert_json_field "$resolved_decision_portfolio_signal" '"state": "resolved"' "s
 resolved_decision_portfolio_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$decision_portfolio_run" completed "Closed decision-portfolio mission.")
 assert_json_field "$resolved_decision_portfolio_run" '"state": "completed"' "secondary mission-level decision can be closed after portfolio coverage"
 
+decision_hold_claim=$(run_in_repo bash scripts/harness-claim.sh 20024 "Harness Decision Hold" --owns="file:docs/harness-public-contract.md")
+assert_json_field "$decision_hold_claim" '"mission_id": "issue-20024"' "primary decision-hold mission can materialize"
+decision_hold_run=$(printf '%s\n' "$decision_hold_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+decision_hold_seed_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$decision_hold_seed_schedule" '"selected_mission_count": 1' "decision-hold seed mission can establish one foreground mission first"
+assert_json_field "$decision_hold_seed_schedule" '"mission_id": "issue-20024"' "decision-hold seed mission remains visible in the scheduler output"
+decision_hold_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-decision-hold",
+  "kind": "requires_meeting",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$decision_hold_run",
+  "mission_id": "issue-20024",
+  "applies_to": ["issue-20024"],
+  "scope_type": "mission",
+  "title": "Primary decision packet",
+  "summary": "Foreground mission now requires a governed human decision before new work should start.",
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-30T00:00:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$decision_hold_signal" '"signal_id": "sig-smoke-decision-hold"' "primary decision-hold signal can be emitted directly"
+decision_hold_peer_claim=$(run_in_repo bash scripts/harness-claim.sh 20025 "Harness Decision Hold Peer" --owns="file:docs/harness-documentation-map.md")
+assert_json_field "$decision_hold_peer_claim" '"mission_id": "issue-20025"' "decision-hold peer mission can materialize"
+decision_hold_peer_run=$(printf '%s\n' "$decision_hold_peer_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+baseline_wait=$(run_in_repo bash scripts/harness-runs.sh set-state "$run_id" waiting "Pause the old foreground while decision-hold admission is tested.")
+assert_json_field "$baseline_wait" '"state": "waiting"' "old foreground can be paused for decision-hold coverage"
+decision_hold_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$decision_hold_schedule" '"required_human_decision_count": 2' "scheduler still sees the outstanding governed decisions"
+assert_json_field "$decision_hold_schedule" '"selected_mission_count": 0' "scheduler withholds new foreground admission while the primary human decision is unresolved"
+assert_json_field "$decision_hold_schedule" '"batch_admission_policy": "hold_for_primary_human_decision"' "scheduler records decision-first hold as the admission policy"
+assert_json_field "$decision_hold_schedule" '"action_kind": "hold_for_primary_human_decision"' "scheduler emits an explicit hold action for newly blocked foreground work"
+assert_json_field "$decision_hold_schedule" '"mission_id": "issue-20025"' "scheduler still keeps the deferred peer visible in the mission classifications"
+assert_json_field "$decision_hold_schedule" '"classification": "deferred"' "scheduler defers the new foreground peer while the primary decision stays open"
+resolved_decision_hold_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-decision-hold resolved "Primary decision packet covered.")
+assert_json_field "$resolved_decision_hold_signal" '"state": "resolved"' "primary decision-hold signal can be resolved after scheduler coverage"
+resolved_decision_hold_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$decision_hold_run" completed "Closed decision-hold mission.")
+assert_json_field "$resolved_decision_hold_run" '"state": "completed"' "primary decision-hold mission can be closed after scheduler coverage"
+resolved_decision_hold_peer_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$decision_hold_peer_run" completed "Closed decision-hold peer mission.")
+assert_json_field "$resolved_decision_hold_peer_run" '"state": "completed"' "decision-hold peer mission can be closed after scheduler coverage"
+baseline_resume=$(run_in_repo bash scripts/harness-runs.sh set-state "$run_id" ready "Restore the baseline foreground after decision-hold coverage.")
+assert_json_field "$baseline_resume" '"state": "ready"' "old foreground can be restored after decision-hold coverage"
+
 resolved_multi_escalation_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_a" completed "Closed escalated multi-mission bundle member.")
 assert_json_field "$resolved_multi_escalation_a" '"state": "completed"' "first escalation bundle member can be closed"
 resolved_multi_escalation_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_b" completed "Closed escalated multi-mission bundle member.")
 assert_json_field "$resolved_multi_escalation_b" '"state": "completed"' "second escalation bundle member can be closed"
 resolved_multi_escalation_c=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_c" completed "Closed escalated multi-mission bundle member.")
 assert_json_field "$resolved_multi_escalation_c" '"state": "completed"' "third escalation bundle member can be closed"
+decision_hold_restore_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$decision_hold_restore_schedule" '"selected_mission_count": 1' "baseline foreground can be re-established after escalation backlog clears"
+assert_json_field "$decision_hold_restore_schedule" '"mission_id": "issue-20001"' "restored baseline foreground remains visible after escalation backlog clears"
 
 section "Sticky decision portfolio"
 sticky_decision_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20026 "Harness Sticky Decision A" --owns="file:docs/README.md")
