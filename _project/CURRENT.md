@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.64.0 (in progress)
+- **Version**: 0.65.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness adopted explicit bundle-governor control)
+- **Last Session**: 2026-03-30 (Harness escalated stale explicit governors into maintenance)
 
 ## Current Phase
 
@@ -38,6 +38,9 @@
 - **Graph authority now consumes explicit governors**: mission-graph authority can now upgrade a conflicted bundle into `explicit_bundle_governor`, anchoring bundle governance to the leader-adopted mission until that explicit governor signal is cleared
 - **Scheduler now respects explicit governor adoption**: once a bundle governor is explicitly established, scheduler no longer keeps surfacing `establish_bundle_governor` for that bundle and instead treats it as governed authority until the governor is retired
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves a bundle can move from `bundle_governor_required` to `explicit_bundle_governor`, stop emitting redundant establish-governor decisions, and then return cleanly to the unresolved state when the explicit governor is cleared
+- **Stale explicit-governor maintenance added**: when a leader-adopted explicit bundle governor no longer points at a live active bundle or the nominated governing mission has fallen out of that bundle, scheduler now emits `clear_invalid_bundle_governor` maintenance work instead of silently trusting stale governance
+- **Doctor widened for stale bundle governance**: `doctor` now reports `invalid-explicit-bundle-governor` when an active explicit-governor signal no longer matches the active mission graph, so stale governance cannot hide behind otherwise-valid signals
+- **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves that closing the explicit governor mission turns the stale governor into scheduler maintenance, surfaces doctor warnings, and then clears cleanly back to a fresh escalation-required surviving bundle
 - **Scheduler maintenance escalation added**: scheduler snapshots now emit `maintenance_actions`, `maintenance_action_count`, and `maintenance_action_tally`, turning stale runs, expired signals, and stale meetings into explicit leader-facing maintenance work instead of leaving them only to `doctor`
 - **Maintenance guidance prioritized**: when stale control-plane state coexists with runnable foreground work, scheduler `next_action` now tells the leader to keep the foreground batch bounded and clean stale state before widening execution
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves stale run plus stale signal maintenance escalation and verifies that refreshing the run and retiring the stale signal restores a clean control-plane path

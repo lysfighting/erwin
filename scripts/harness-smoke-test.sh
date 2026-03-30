@@ -545,16 +545,25 @@ else
   pass "explicit-governor bundle no longer emits establish-governor decision packets"
 fi
 
+resolved_explicit_governor_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$explicit_governor_run_a" completed "Closed explicit governor leader mission to test stale-governor maintenance.")
+assert_json_field "$resolved_explicit_governor_a" '"state": "completed"' "explicit-governor leader mission can be closed to simulate stale bundle governance"
+
+schedule_explicit_governor_stale=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_explicit_governor_stale" '"action_kind": "clear_invalid_bundle_governor"' "scheduler escalates stale explicit-governor signals into maintenance"
+assert_json_field "$schedule_explicit_governor_stale" "\"bundle_id\": \"$explicit_governor_bundle_id\"" "scheduler maintenance identifies the stale explicit-governor bundle"
+
+doctor_explicit_governor_stale=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_json_field "$doctor_explicit_governor_stale" '"issue_count": 2' "doctor detects stale explicit-governor drift alongside the restored overlap conflict"
+assert_json_field "$doctor_explicit_governor_stale" '"invalid-explicit-bundle-governor"' "doctor names the stale explicit-governor issue explicitly"
+
 clear_governor_output=$(run_in_repo bash scripts/harness-missions.sh clear-governor "$explicit_governor_bundle_id" "Explicit governor coverage completed.")
 assert_json_field "$clear_governor_output" "\"bundle_id\": \"$explicit_governor_bundle_id\"" "missions clear-governor can retire explicit governor signals"
 assert_json_field "$clear_governor_output" '"resolved_signal_ids":' "missions clear-governor reports the resolved signal ids"
 
 graph_authority_explicit_cleared=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
-assert_json_field "$graph_authority_explicit_cleared" "\"bundle_id\": \"$explicit_governor_bundle_id\"" "explicit-governor bundle remains visible after governor clearance"
+assert_json_field "$graph_authority_explicit_cleared" '"bundle_id": "bundle-issue-20029-issue-20030"' "clearing a stale explicit governor returns authority to the surviving overlap bundle"
 assert_json_field "$graph_authority_explicit_cleared" '"resolution_kind": "bundle_governor_required"' "clearing the explicit governor returns the bundle to escalation-required"
 
-resolved_explicit_governor_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$explicit_governor_run_a" completed "Closed explicit-governor bundle mission A.")
-assert_json_field "$resolved_explicit_governor_a" '"state": "completed"' "explicit-governor bundle mission A can be closed"
 resolved_explicit_governor_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$explicit_governor_run_b" completed "Closed explicit-governor bundle mission B.")
 assert_json_field "$resolved_explicit_governor_b" '"state": "completed"' "explicit-governor bundle mission B can be closed"
 resolved_explicit_governor_c=$(run_in_repo bash scripts/harness-runs.sh set-state "$explicit_governor_run_c" completed "Closed explicit-governor bundle mission C.")

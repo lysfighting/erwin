@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Scheduler/doctor handling for stale explicit bundle-governor signals, emitting maintenance work and invalid-governance warnings when an adopted governor no longer matches the active mission bundle.
 - Explicit bundle-governor adoption via `bash scripts/harness-missions.sh establish-governor` and `clear-governor`, so leaders can convert escalation-required mission bundles into governed authority deliberately and later retire that governance cleanly.
 - Protocol-aware council automation so `incident-command` and `decision-record` can defer same-authority disagreement into synthesis/record output instead of auto-generating live debate routes and rounds.
 - Decision-first foreground admission, allowing scheduler to emit `hold_for_primary_human_decision` when unresolved governed decisions should block new low-urgency foreground work.

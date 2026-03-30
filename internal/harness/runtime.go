@@ -2726,6 +2726,60 @@ func selectExplicitBundleGovernorSignal(signals []map[string]any, componentSet m
 	return selected, notes
 }
 
+func invalidExplicitBundleGovernorSignals(missionRegistry, registry, signalLog map[string]any) []map[string]any {
+	graph, _ := toMap(missionGraphAuthorityAudit(missionRegistry, registry, false))
+	bundlesByID := map[string]map[string]any{}
+	for _, item := range toList(graph["bundles"]) {
+		bundle, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		bundleID := strings.TrimSpace(stringValue(bundle["bundle_id"]))
+		if bundleID == "" {
+			continue
+		}
+		bundlesByID[bundleID] = bundle
+	}
+	invalid := []map[string]any{}
+	for _, item := range toList(signalLog["signals"]) {
+		signal, ok := toMap(item)
+		if !ok || !activeSignal(signal) || strings.TrimSpace(stringValue(signal["kind"])) != "bundle_governor_established" {
+			continue
+		}
+		signalID := strings.TrimSpace(stringValue(signal["signal_id"]))
+		bundleID := strings.TrimSpace(stringValue(signal["bundle_id"]))
+		governingMissionID := strings.TrimSpace(stringValue(signal["governing_mission_id"]))
+		reason := ""
+		recommendedAction := ""
+		switch {
+		case bundleID == "" || governingMissionID == "":
+			reason = "Explicit bundle-governor signal is missing bundle or governing-mission metadata."
+			recommendedAction = "Clear or repair the invalid explicit governor signal before trusting bundle governance."
+		default:
+			bundle, exists := bundlesByID[bundleID]
+			if !exists {
+				reason = fmt.Sprintf("Explicit bundle governor still points at %s, but bundle %s no longer exists in the active mission graph.", governingMissionID, bundleID)
+				recommendedAction = "Clear the stale explicit governor signal so the control plane stops carrying orphaned governance."
+			} else if !containsString(anyListToStrings(toList(bundle["mission_ids"])), governingMissionID) {
+				reason = fmt.Sprintf("Explicit bundle governor still points at %s, but that mission no longer belongs to active bundle %s.", governingMissionID, bundleID)
+				recommendedAction = "Clear or replace the explicit governor so bundle governance matches the active mission graph."
+			}
+		}
+		if reason == "" {
+			continue
+		}
+		invalid = append(invalid, map[string]any{
+			"signal_id":            signalID,
+			"bundle_id":            bundleID,
+			"governing_mission_id": governingMissionID,
+			"mission_id":           strings.TrimSpace(stringValue(signal["mission_id"])),
+			"reason":               reason,
+			"recommended_action":   recommendedAction,
+		})
+	}
+	return invalid
+}
+
 func syncMissionsFromRegistry(registry map[string]any) error {
 	templateRoot, _ := toMap(loadData(missionTemplatePath(), map[string]any{}))
 	template, _ := toMap(templateRoot["mission"])
@@ -6160,6 +6214,16 @@ func doctorReport() map[string]any {
 		}
 	}
 	graphAuthorityAudit, _ := toMap(missionGraphAuthorityAudit(missionRegistry, registry, false))
+	for _, item := range invalidExplicitBundleGovernorSignals(missionRegistry, registry, signals) {
+		invalid, _ := toMap(item)
+		issues = append(issues, issueRecord(
+			"warning",
+			"invalid-explicit-bundle-governor",
+			stringValue(invalid["signal_id"]),
+			stringValue(invalid["reason"]),
+			firstNonBlank(stringValue(invalid["recommended_action"]), "Clear or repair the stale explicit governor signal before trusting bundle governance."),
+		))
+	}
 	if intValue(graphAuthorityAudit["cross_mission_conflict_count"]) > 0 {
 		for _, item := range toList(graphAuthorityAudit["cross_mission_conflicts"]) {
 			conflict, ok := toMap(item)
@@ -7349,7 +7413,7 @@ func schedulerRiskRank(value string) int {
 	}
 }
 
-func schedulerMaintenanceActions(registry, signalLog map[string]any) ([]any, map[string]int) {
+func schedulerMaintenanceActions(missionRegistry, registry, signalLog map[string]any) ([]any, map[string]int) {
 	actions := []any{}
 	tally := map[string]int{
 		"run":     0,
@@ -7422,6 +7486,20 @@ func schedulerMaintenanceActions(registry, signalLog map[string]any) ([]any, map
 			})
 			tally["signal"]++
 		}
+	}
+	for _, issue := range invalidExplicitBundleGovernorSignals(missionRegistry, registry, signalLog) {
+		invalid, _ := toMap(issue)
+		actions = append(actions, map[string]any{
+			"target_kind":          "signal",
+			"target_id":            stringValue(invalid["signal_id"]),
+			"mission_id":           stringValue(invalid["mission_id"]),
+			"bundle_id":            stringValue(invalid["bundle_id"]),
+			"governing_mission_id": stringValue(invalid["governing_mission_id"]),
+			"action_kind":          "clear_invalid_bundle_governor",
+			"reason":               stringValue(invalid["reason"]),
+			"recommended_action":   stringValue(invalid["recommended_action"]),
+		})
+		tally["signal"]++
 	}
 
 	for _, item := range listMeetings(true) {
@@ -7780,7 +7858,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		}
 	}
 
-	maintenanceActions, maintenanceTally := schedulerMaintenanceActions(registry, signalLog)
+	maintenanceActions, maintenanceTally := schedulerMaintenanceActions(missionRegistry, registry, signalLog)
 
 	activeMeetingCountByMission := map[string]int{}
 	openMeetingActionCountByMission := map[string]int{}
