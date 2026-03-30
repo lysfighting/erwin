@@ -3775,6 +3775,8 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 		requiredAction := "Inspect linked missions before widening parallel execution."
 		governanceNotes := []string{}
 		explicitGovernorSignalID := ""
+		governanceSourceKind := ""
+		adoptedFromMeetingID := ""
 		if len(governingMissionVotes) == 1 {
 			for missionID := range governingMissionVotes {
 				governingMissionID = missionID
@@ -3792,7 +3794,14 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 				selectedWinnerID = strings.TrimSpace(stringValue(explicitGovernorSignal["governing_mission_id"]))
 				explicitGovernorSignalID = stringValue(explicitGovernorSignal["signal_id"])
 				hasBundleAuthoritySignal = true
-				authorityBasis = append(authorityBasis, "explicit_bundle_governor")
+				adoptedFromMeetingID = strings.TrimSpace(stringValue(explicitGovernorSignal["adopted_from_meeting"]))
+				if adoptedFromMeetingID != "" {
+					governanceSourceKind = "council-adopted-governor"
+					authorityBasis = append(authorityBasis, "council_adopted_bundle_governor")
+				} else {
+					governanceSourceKind = "explicit-governor"
+					authorityBasis = append(authorityBasis, "explicit_bundle_governor")
+				}
 			}
 			maxVoteCount := 0
 			voteLeaders := []string{}
@@ -3928,10 +3937,17 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 					resolutionKind = "explicit_bundle_governor"
 					requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s until the explicit bundle-governor decision is cleared or superseded.", selectedWinnerID)
 					governanceNotes = append(governanceNotes, fmt.Sprintf("Leader explicitly established %s as the bundle governor via signal %s.", selectedWinnerID, firstNonBlank(explicitGovernorSignalID, "bundle-governor signal")))
+				}
+				if containsString(authorityBasis, "council_adopted_bundle_governor") {
+					resolutionKind = "council_adopted_bundle_governor"
+					requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s until a fresher bundle decision supersedes council adoption from %s.", selectedWinnerID, firstNonBlank(adoptedFromMeetingID, "the adopted council"))
+					governanceNotes = append(governanceNotes, fmt.Sprintf("Closed bundle council %s adopted %s as the durable governor via signal %s.", firstNonBlank(adoptedFromMeetingID, "the adopted council"), selectedWinnerID, firstNonBlank(explicitGovernorSignalID, "bundle-governor signal")))
 				} else {
-					resolutionKind = "bundle_governor_adjudicated"
-					requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s and serialize the other overlapping missions behind it unless a council overrides the current bundle governor.", selectedWinnerID)
-					governanceNotes = append(governanceNotes, fmt.Sprintf("No explicit governing dependency exists; %s currently governs the bundle by %s.", selectedWinnerID, strings.Join(dedupeStrings(authorityBasis), "/")))
+					if resolutionKind == "linked_bundle" {
+						resolutionKind = "bundle_governor_adjudicated"
+						requiredAction = fmt.Sprintf("Keep bundle authority anchored to %s and serialize the other overlapping missions behind it unless a council overrides the current bundle governor.", selectedWinnerID)
+						governanceNotes = append(governanceNotes, fmt.Sprintf("No explicit governing dependency exists; %s currently governs the bundle by %s.", selectedWinnerID, strings.Join(dedupeStrings(authorityBasis), "/")))
+					}
 				}
 				governedBundleCount++
 			} else if hasBundleAuthoritySignal {
@@ -4016,6 +4032,8 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 			"candidate_governor_ids":      stringListToAny(candidateGovernorMissionIDs),
 			"candidate_governor_packets":  cloneValue(candidateGovernorPackets),
 			"explicit_governor_signal_id": explicitGovernorSignalID,
+			"governance_source_kind":      governanceSourceKind,
+			"adopted_from_meeting_id":     adoptedFromMeetingID,
 			"canonical_mission_id":        component[0],
 			"root_mission_ids":            stringListToAny(bundleRoots),
 			"dependent_mission_ids":       stringListToAny(dependentMissionIDs),
@@ -8532,6 +8550,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				"bundle_role":                 role,
 				"resolution_kind":             resolutionKind,
 				"governing_mission_id":        governingMissionID,
+				"governance_source_kind":      stringValue(bundle["governance_source_kind"]),
+				"adopted_from_meeting_id":     stringValue(bundle["adopted_from_meeting_id"]),
 				"required_action":             requiredAction,
 				"bundle_mission_ids":          stringListToAny(missionIDs),
 				"candidate_governor_ids":      cloneValue(getKey(bundle, "candidate_governor_ids", []any{})),
@@ -8700,6 +8720,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		bundleRole := stringValue(bundleInfo["bundle_role"])
 		bundleResolutionKind := stringValue(bundleInfo["resolution_kind"])
 		bundleGovernorID := stringValue(bundleInfo["governing_mission_id"])
+		bundleGovernanceSourceKind := stringValue(bundleInfo["governance_source_kind"])
+		bundleAdoptedFromMeetingID := stringValue(bundleInfo["adopted_from_meeting_id"])
 		bundleRequiredAction := stringValue(bundleInfo["required_action"])
 		bundleCandidateGovernorIDs := anyListToStrings(toList(bundleInfo["candidate_governor_ids"]))
 		bundleCandidateGovernorPackets := cloneValue(getKey(bundleInfo, "candidate_governor_packets", []any{}))
@@ -8886,27 +8908,29 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 
 		if decisionKind != "" {
 			rawRequiredHumanDecisions = append(rawRequiredHumanDecisions, map[string]any{
-				"decision_scope":                "mission",
-				"mission_id":                    missionID,
-				"bundle_id":                     bundleID,
-				"bundle_state":                  bundleState,
-				"bundle_resolution_kind":        bundleResolutionKind,
-				"bundle_governing_mission_id":   bundleGovernorID,
-				"bundle_required_action":        bundleRequiredAction,
-				"bundle_mission_ids":            cloneValue(getKey(bundleInfo, "bundle_mission_ids", []any{})),
-				"candidate_governor_ids":        stringListToAny(bundleCandidateGovernorIDs),
-				"candidate_governor_packets":    cloneValue(bundleCandidateGovernorPackets),
-				"decision_kind":                 decisionKind,
-				"recommended_action":            recommendedAction,
-				"recommended_decision_surface":  recommendedDecisionSurface,
-				"recommended_decision_protocol": recommendedDecisionProtocolValue,
-				"recommended_protocol_reason":   recommendedProtocolReason,
-				"meeting_trigger_refs":          stringListToAny(dedupeStrings(meetingTriggerRefs)),
-				"note":                          firstNonBlank(strings.Join(dedupeStrings(reasons), " "), recommendedAction),
-				"priority":                      stringValue(mission["priority"]),
-				"effective_risk_level":          effectiveRiskLevel,
-				"release_adjacent":              releaseAdjacent,
-				"updated_at":                    updatedAt,
+				"decision_scope":                 "mission",
+				"mission_id":                     missionID,
+				"bundle_id":                      bundleID,
+				"bundle_state":                   bundleState,
+				"bundle_resolution_kind":         bundleResolutionKind,
+				"bundle_governing_mission_id":    bundleGovernorID,
+				"bundle_governance_source_kind":  bundleGovernanceSourceKind,
+				"bundle_adopted_from_meeting_id": bundleAdoptedFromMeetingID,
+				"bundle_required_action":         bundleRequiredAction,
+				"bundle_mission_ids":             cloneValue(getKey(bundleInfo, "bundle_mission_ids", []any{})),
+				"candidate_governor_ids":         stringListToAny(bundleCandidateGovernorIDs),
+				"candidate_governor_packets":     cloneValue(bundleCandidateGovernorPackets),
+				"decision_kind":                  decisionKind,
+				"recommended_action":             recommendedAction,
+				"recommended_decision_surface":   recommendedDecisionSurface,
+				"recommended_decision_protocol":  recommendedDecisionProtocolValue,
+				"recommended_protocol_reason":    recommendedProtocolReason,
+				"meeting_trigger_refs":           stringListToAny(dedupeStrings(meetingTriggerRefs)),
+				"note":                           firstNonBlank(strings.Join(dedupeStrings(reasons), " "), recommendedAction),
+				"priority":                       stringValue(mission["priority"]),
+				"effective_risk_level":           effectiveRiskLevel,
+				"release_adjacent":               releaseAdjacent,
+				"updated_at":                     updatedAt,
 			})
 		}
 
@@ -8946,6 +8970,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"bundle_role":                      bundleRole,
 			"bundle_resolution_kind":           bundleResolutionKind,
 			"bundle_governing_mission_id":      bundleGovernorID,
+			"bundle_governance_source_kind":    bundleGovernanceSourceKind,
+			"bundle_adopted_from_meeting_id":   bundleAdoptedFromMeetingID,
 			"bundle_required_action":           bundleRequiredAction,
 			"candidate_governor_ids":           stringListToAny(bundleCandidateGovernorIDs),
 			"candidate_governor_packets":       cloneValue(bundleCandidateGovernorPackets),

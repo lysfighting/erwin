@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.75.0 (in progress)
+- **Version**: 0.76.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness made closed bundle councils adopt durable authority)
+- **Last Session**: 2026-03-30 (Harness preserved council-adoption provenance on bundle authority)
 
 ## Current Phase
 
@@ -26,6 +26,7 @@
 - **Explicit-governor versus active-council conflicts now escalate**: if a leader-adopted `bundle_governor_established` signal points at a different mission than the active bundle council host, scheduler now treats that as invalid governance and escalates it into `clear_invalid_bundle_governor` maintenance instead of silently trusting both anchors at once
 - **Closed bundle councils now adopt durable authority**: bundle-scoped scheduler councils can now record a structured `governing_mission_id` in `locked_decisions`, and `drive meeting-close` will adopt that verdict into a durable `bundle_governor_established` signal instead of leaving the authority conclusion trapped inside archived meeting output
 - **Bundle-governor adoption now supersedes prior explicit anchors**: when a closed council adopts a governor for the same bundle, runtime resolves any earlier active `bundle_governor_established` signals for that bundle before writing the new durable anchor, so governance does not split across multiple active explicit signals after council close
+- **Council-adopted governors now keep provenance in graph/scheduler state**: mission-graph authority and scheduler mission classifications now preserve `governance_source_kind` and `adopted_from_meeting_id`, so a durable bundle governor adopted from a closed council is distinguishable from a direct leader-established explicit governor all the way up to leader-facing control surfaces
 - **Home/scheduler maintenance parity restored**: `home` now surfaces `scheduler_maintenance_action_count` and `scheduler_maintenance_action_tally`, so leader surfaces no longer hide stale-state maintenance work that scheduler snapshots already know about
 - **Bundle-scoped scheduler decisions added**: escalation-required mission bundles no longer emit one repeated `establish_bundle_governor` decision per mission; scheduler now collapses them into one bundle-scoped human-decision packet with merged mission ids, trigger refs, and bundle-required action so the leader sees the actual decision surface instead of repeated mission noise
 - **Prioritized decision portfolio added**: scheduler now sorts required human decisions into a real portfolio queue, exposing `primary_required_human_decision`, deferred-decision count, scope/surface tallies, and bundle-vs-mission priority ordering so the leader can see which governed decision should be handled first when multiple human decisions coexist

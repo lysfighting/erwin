@@ -595,6 +595,7 @@ This graph supports:
 - bundle governors
 - explicit bundle-governor adoption by leader decision
 - structured bundle-governor adoption from closed bundle councils
+- durable provenance for council-adopted bundle governors
 - pairwise governor adjudication from clear authority tuples
 - dependency-governed authority
 - selector-specificity authority
@@ -619,6 +620,7 @@ That means:
 - escalation-required bundles can now expose ranked candidate governors, so the leader sees likely control anchors before deciding whether to establish one directly or escalate into a council
 - the leader can now explicitly adopt a governor for an escalation-required bundle, converting that bundle into governed authority through a durable control-plane signal instead of leaving it as a perpetual decision packet
 - a bundle-scoped council can now also close with a structured governing-mission verdict, and `meeting-close` will adopt that verdict into the same durable explicit-governor signal path instead of leaving the outcome trapped in archived meeting notes
+- once that adoption happens, the resulting governed bundle now keeps provenance about how the governor was established, so graph authority and scheduler surfaces can distinguish `council-adopted-governor` from a direct leader-established explicit governor
 - stale explicit governors are not trusted indefinitely; when the adopted governor no longer belongs to the active bundle, the control plane escalates that signal into maintenance instead of silently carrying orphaned governance forward
 - the scheduler can now retain a sticky primary human-decision packet across otherwise-tied portfolio passes, preferring decision stability over freshness-only churn when the decision class still matches
 - the scheduler now gives governed human-decision packets stable `decision_id` values and projects them back into mission classifications and defer actions, creating a more durable bridge between scheduler output and future council materialization

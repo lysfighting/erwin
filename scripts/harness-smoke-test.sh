@@ -418,6 +418,8 @@ assert_json_field "$closed_multi_escalation_meeting" '"governing_mission_id": "i
 schedule_multi_escalation_adopted=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_adopted" '"bundle_state": "governed"' "closed bundle council adoption turns the escalated bundle into governed state"
 assert_json_field "$schedule_multi_escalation_adopted" "\"bundle_governing_mission_id\": \"issue-20011\"" "scheduler consumes the auto-adopted bundle governor after council close"
+assert_json_field "$schedule_multi_escalation_adopted" '"bundle_governance_source_kind": "council-adopted-governor"' "scheduler preserves that the bundle governor came from a closed council adoption"
+assert_json_field "$schedule_multi_escalation_adopted" "\"bundle_adopted_from_meeting_id\": \"$multi_escalation_meeting_id\"" "scheduler preserves the adopted council meeting id on governed bundle state"
 cleared_multi_escalation_adopted_governor=$(run_in_repo bash scripts/harness-missions.sh clear-governor "$multi_escalation_bundle_id" "Clear adopted explicit governor after bundle-council adoption coverage.")
 assert_json_field "$cleared_multi_escalation_adopted_governor" "\"bundle_id\": \"$multi_escalation_bundle_id\"" "auto-adopted bundle governor can be cleared after coverage to keep later smoke isolated"
 
