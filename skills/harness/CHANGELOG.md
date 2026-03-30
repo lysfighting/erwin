@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Bundle-scoped `establish_bundle_governor` councils can now auto-generate one structured `governing_mission_id` lock during auto-synthesis, so `drive meeting-close` can adopt bundle authority without requiring a separate manual `meetings lock-decision` in the common path.
 - Bundle-governor provenance on mission-graph and scheduler packets, including `governance_source_kind` and `adopted_from_meeting_id` for governors that were adopted from closed councils.
 - Structured bundle-governor decision locking in `meetings lock-decision`, plus automatic explicit-governor adoption when a bundle-scoped `establish_bundle_governor` council closes through `drive meeting-close`.
 - Conflict detection between explicit bundle governors and live bundle councils, escalating mismatched governance anchors into `clear_invalid_bundle_governor` maintenance.

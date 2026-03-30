@@ -5409,6 +5409,107 @@ func meetingHasRecordedFindingForClaim(meeting map[string]any, claimRef, dimensi
 	return false
 }
 
+func meetingAutoLockBundleGovernorDecision(meeting, registry map[string]any) map[string]any {
+	sourceScope := firstNonBlank(
+		strings.TrimSpace(stringValue(meeting["source_decision_scope"])),
+		strings.TrimSpace(stringValue(getKey(meeting, "source_decision_packet.decision_scope", ""))),
+	)
+	sourceKind := firstNonBlank(
+		strings.TrimSpace(stringValue(meeting["source_decision_kind"])),
+		strings.TrimSpace(stringValue(getKey(meeting, "source_decision_packet.decision_kind", ""))),
+	)
+	if sourceScope != "bundle" || sourceKind != "establish_bundle_governor" {
+		return nil
+	}
+	for _, item := range toList(meeting["locked_decisions"]) {
+		decision, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		if strings.TrimSpace(stringValue(decision["governing_mission_id"])) != "" {
+			return nil
+		}
+	}
+	packet, _ := toMap(meeting["source_decision_packet"])
+	bundleID := firstNonBlank(
+		strings.TrimSpace(stringValue(packet["bundle_id"])),
+		strings.TrimSpace(stringValue(meeting["bundle_id"])),
+	)
+	candidateMissionIDs := dedupeStrings(append(
+		anyListToStrings(toList(packet["bundle_mission_ids"])),
+		anyListToStrings(toList(packet["mission_ids"]))...,
+	))
+	if governingMissionID := strings.TrimSpace(stringValue(packet["bundle_governing_mission_id"])); governingMissionID != "" {
+		candidateMissionIDs = append(candidateMissionIDs, governingMissionID)
+	}
+	candidateMissionIDs = dedupeStrings(candidateMissionIDs)
+	if bundleID == "" || len(candidateMissionIDs) == 0 {
+		return nil
+	}
+	runMissionByID := map[string]string{}
+	for _, item := range toList(registry["runs"]) {
+		run, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		runID := strings.TrimSpace(stringValue(run["run_id"]))
+		missionID := strings.TrimSpace(stringValue(run["mission_id"]))
+		if runID != "" && missionID != "" {
+			runMissionByID[runID] = missionID
+		}
+	}
+	findings, _ := toMap(meeting["findings"])
+	type candidate struct {
+		missionID      string
+		authorityRank  int
+		authorityLevel string
+		recordedAt     string
+		summary        string
+		reason         string
+		evidenceRefs   []any
+	}
+	var selected *candidate
+	for _, item := range toList(findings["accepted"]) {
+		finding, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		governingMissionID := strings.TrimSpace(stringValue(finding["governing_mission_id"]))
+		if governingMissionID == "" {
+			governingMissionID = strings.TrimSpace(runMissionByID[stringValue(finding["source_run_id"])])
+		}
+		if governingMissionID == "" || !containsString(candidateMissionIDs, governingMissionID) {
+			continue
+		}
+		current := candidate{
+			missionID:      governingMissionID,
+			authorityRank:  authorityRank(firstNonBlank(stringValue(finding["authority_level"]), "L4")),
+			authorityLevel: firstNonBlank(stringValue(finding["authority_level"]), "L4"),
+			recordedAt:     firstNonBlank(stringValue(finding["recorded_at"]), nowISO()),
+			summary:        firstNonBlank(strings.TrimSpace(stringValue(finding["summary"])), fmt.Sprintf("Bundle governance anchored to %s.", governingMissionID)),
+			reason:         strings.TrimSpace(stringValue(finding["reason"])),
+			evidenceRefs:   toList(finding["evidence_refs"]),
+		}
+		if selected == nil || current.authorityRank > selected.authorityRank || (current.authorityRank == selected.authorityRank && isoAfter(current.recordedAt, selected.recordedAt)) {
+			selected = &current
+		}
+	}
+	if selected == nil {
+		return nil
+	}
+	return map[string]any{
+		"decision_id":          "decision-" + nowTime().UTC().Format("20060102150405"),
+		"summary":              firstNonBlank(selected.summary, fmt.Sprintf("Anchor bundle governance to %s.", selected.missionID)),
+		"reason":               firstNonBlank(selected.reason, fmt.Sprintf("Auto-locked from accepted council finding adopting %s as the bundle governor.", selected.missionID)),
+		"authority_level":      selected.authorityLevel,
+		"evidence_refs":        cloneValue(selected.evidenceRefs),
+		"locked_at":            nowISO(),
+		"governing_mission_id": selected.missionID,
+		"bundle_id":            bundleID,
+		"generated_by":         "orchestrate_auto_synthesis",
+	}
+}
+
 func meetingDebatePlan(meeting map[string]any) map[string]any {
 	ensureMeetingGovernanceState(meeting)
 	protocol := normalizeDecisionProtocol(stringValue(meeting["decision_protocol"]))
@@ -5932,6 +6033,7 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 	if protocol == "" {
 		protocol = "evidence-review"
 	}
+	registry := readRegistry()
 	debatePlan, _ := toMap(meetingDebatePlan(meeting))
 	routeByClaimKey := map[string]map[string]any{}
 	for _, item := range toList(debatePlan["routes"]) {
@@ -6037,6 +6139,8 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 		challengeRecordedAt := ""
 		supportRole := ""
 		challengeRole := ""
+		supportRunID := ""
+		challengeRunID := ""
 
 		for _, position := range positions {
 			rank := authorityRank(firstNonBlank(stringValue(position["authority_level"]), "L4"))
@@ -6050,6 +6154,7 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 					supportLevel = level
 					supportRecordedAt = stringValue(position["recorded_at"])
 					supportRole = stringValue(position["role"])
+					supportRunID = stringValue(position["run_id"])
 				}
 			case "challenge":
 				challengingIDs = append(challengingIDs, stringValue(position["position_id"]))
@@ -6058,6 +6163,7 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 					challengeLevel = level
 					challengeRecordedAt = stringValue(position["recorded_at"])
 					challengeRole = stringValue(position["role"])
+					challengeRunID = stringValue(position["run_id"])
 				}
 			}
 		}
@@ -6097,6 +6203,8 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 				"L4",
 			)
 			if routePrevailingStance == "support" {
+				baseFinding["source_run_id"] = stringValue(route["prevailing_run_id"])
+				baseFinding["source_role"] = firstNonBlank(stringValue(route["prevailing_role"]), supportRole, "supporting council participant")
 				if routeResolution == "higher_authority_prevails" {
 					baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: governed claim lane resolved in favor of support without cross-examination because higher-authority support from %s outranked challenge from %s.", firstNonBlank(stringValue(route["prevailing_role"]), supportRole, "supporting council participant"), firstNonBlank(stringValue(route["overruled_role"]), challengeRole, "challenging council participant"))
 				} else {
@@ -6104,6 +6212,8 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 				}
 				findings["accepted"] = append(toList(findings["accepted"]), baseFinding)
 			} else {
+				baseFinding["source_run_id"] = stringValue(route["prevailing_run_id"])
+				baseFinding["source_role"] = firstNonBlank(stringValue(route["prevailing_role"]), challengeRole, "challenging council participant")
 				if routeResolution == "higher_authority_prevails" {
 					baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: governed claim lane resolved in favor of challenge without cross-examination because higher-authority challenge from %s outranked support from %s.", firstNonBlank(stringValue(route["prevailing_role"]), challengeRole, "challenging council participant"), firstNonBlank(stringValue(route["overruled_role"]), supportRole, "supporting council participant"))
 				} else {
@@ -6138,17 +6248,25 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 			})
 			generatedActionIDs = append(generatedActionIDs, actionID)
 		case len(supportingIDs) > 0 && len(challengingIDs) == 0:
+			baseFinding["source_run_id"] = supportRunID
+			baseFinding["source_role"] = firstNonBlank(supportRole, "supporting council participant")
 			baseFinding["reason"] = fmt.Sprintf("Auto-synthesized from %d supporting council position(s) with no recorded challenge.", len(supportingIDs))
 			findings["accepted"] = append(toList(findings["accepted"]), baseFinding)
 		case len(challengingIDs) > 0 && len(supportingIDs) == 0:
+			baseFinding["source_run_id"] = challengeRunID
+			baseFinding["source_role"] = firstNonBlank(challengeRole, "challenging council participant")
 			baseFinding["reason"] = fmt.Sprintf("Auto-synthesized from %d challenging council position(s) with no recorded support.", len(challengingIDs))
 			findings["rejected"] = append(toList(findings["rejected"]), baseFinding)
 		case supportRank > challengeRank:
 			baseFinding["authority_level"] = firstNonBlank(supportLevel, stringValue(baseFinding["authority_level"]), "L4")
+			baseFinding["source_run_id"] = supportRunID
+			baseFinding["source_role"] = firstNonBlank(supportRole, "supporting council participant")
 			baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: higher-authority support from %s overrides challenge from %s.", firstNonBlank(supportRole, "supporting council participant"), firstNonBlank(challengeRole, "challenging council participant"))
 			findings["accepted"] = append(toList(findings["accepted"]), baseFinding)
 		case challengeRank > supportRank:
 			baseFinding["authority_level"] = firstNonBlank(challengeLevel, stringValue(baseFinding["authority_level"]), "L4")
+			baseFinding["source_run_id"] = challengeRunID
+			baseFinding["source_role"] = firstNonBlank(challengeRole, "challenging council participant")
 			baseFinding["reason"] = fmt.Sprintf("Auto-synthesized: higher-authority challenge from %s overrides support from %s.", firstNonBlank(challengeRole, "challenging council participant"), firstNonBlank(supportRole, "supporting council participant"))
 			findings["rejected"] = append(toList(findings["rejected"]), baseFinding)
 		default:
@@ -6176,6 +6294,23 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 	meeting["findings"] = findings
 	meeting["action_items"] = actions
 
+	filteredLockedDecisions := []any{}
+	for _, item := range toList(meeting["locked_decisions"]) {
+		decision, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		if stringValue(decision["generated_by"]) == "orchestrate_auto_synthesis" {
+			continue
+		}
+		filteredLockedDecisions = append(filteredLockedDecisions, decision)
+	}
+	meeting["locked_decisions"] = filteredLockedDecisions
+	autoLockedDecision := meetingAutoLockBundleGovernorDecision(meeting, registry)
+	if len(autoLockedDecision) > 0 {
+		meeting["locked_decisions"] = append(toList(meeting["locked_decisions"]), autoLockedDecision)
+	}
+
 	status := "noop"
 	if len(generatedFindingIDs) > 0 || len(generatedActionIDs) > 0 {
 		status = "generated"
@@ -6190,8 +6325,14 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 		"generated_finding_ids":   stringListToAny(generatedFindingIDs),
 		"generated_action_ids":    stringListToAny(generatedActionIDs),
 		"generated_summaries":     stringListToAny(generatedSummaries),
-		"skipped_claims":          stringListToAny(dedupeStrings(skippedClaims)),
-		"last_generated_at":       nowISO(),
+		"generated_locked_decision_count": func() int {
+			if len(autoLockedDecision) == 0 {
+				return 0
+			}
+			return 1
+		}(),
+		"skipped_claims":    stringListToAny(dedupeStrings(skippedClaims)),
+		"last_generated_at": nowISO(),
 	}
 }
 

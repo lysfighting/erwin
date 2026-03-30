@@ -409,8 +409,14 @@ assert_json_field "$schedule_multi_escalation_conflict" '"action_kind": "clear_i
 assert_json_field "$schedule_multi_escalation_conflict" '"Explicit bundle governor points at issue-20012' "scheduler explains the conflicting explicit governor against the active bundle council anchor"
 cleared_multi_escalation_governor=$(run_in_repo bash scripts/harness-missions.sh clear-governor "$multi_escalation_bundle_id" "Clear conflicting explicit governor after active bundle council coverage.")
 assert_json_field "$cleared_multi_escalation_governor" "\"bundle_id\": \"$multi_escalation_bundle_id\"" "conflicting explicit governor can be cleared after active bundle-council coverage"
-locked_multi_escalation_governor=$(run_in_repo bash scripts/harness-meetings.sh lock-decision "$multi_escalation_meeting_id" "Anchor bundle governance to issue-20011 after council synthesis." --authority=L2 --governing-mission=issue-20011)
-assert_json_field "$locked_multi_escalation_governor" '"governing_mission_id": "issue-20011"' "bundle council can record a structured governing mission in locked decisions"
+run_in_repo bash scripts/harness-meetings.sh add-participant "$multi_escalation_meeting_id" "$multi_escalation_run_a" chair >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-participant "$multi_escalation_meeting_id" "$multi_escalation_run_b" reviewer >/dev/null
+run_in_repo bash scripts/harness-meetings.sh orchestrate "$multi_escalation_meeting_id" >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$multi_escalation_meeting_id" "$multi_escalation_run_a" independent_review support "Bundle governance should anchor to issue-20011 because it has the strongest release ownership evidence." --claim=bundle-governor-choice --dimension=factual --authority=L2 --evidence=harness/README.md >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$multi_escalation_meeting_id" "$multi_escalation_run_b" independent_review support "Independent review agrees issue-20011 should govern the bundle rather than issue-20012 or issue-20013." --claim=bundle-governor-choice --dimension=factual --authority=L3 --evidence=docs/harness-public-contract.md >/dev/null
+auto_multi_escalation_governor=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$multi_escalation_meeting_id")
+assert_json_field "$auto_multi_escalation_governor" '"generated_locked_decision_count": 1' "bundle council auto-synthesis can generate one structured governing decision"
+assert_json_field "$auto_multi_escalation_governor" '"governing_mission_id": "issue-20011"' "bundle council auto-synthesis locks the strongest governing mission into the council record"
 closed_multi_escalation_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$multi_escalation_run_a" "$multi_escalation_meeting_id" "Bundle escalation council materialization covered.")
 assert_json_field "$closed_multi_escalation_meeting" '"state": "closed"' "bundle-scoped scheduler-materialized council can close cleanly"
 assert_json_field "$closed_multi_escalation_meeting" '"adoption_kind": "bundle_governor_established"' "closing a structured bundle council auto-adopts bundle-governor authority"
