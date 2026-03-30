@@ -393,8 +393,8 @@ assert_json_field "$multi_escalation_materialized" '"source_decision_scope": "bu
 assert_json_field "$multi_escalation_materialized" '"source_decision_kind": "establish_bundle_governor"' "materialized bundle council keeps the scheduler decision kind"
 assert_json_field "$multi_escalation_materialized" "\"run_id\": \"$multi_escalation_run_b\"" "materialized bundle council auto-seeds one candidate-governor participant"
 assert_json_field "$multi_escalation_materialized" "\"run_id\": \"$multi_escalation_run_c\"" "materialized bundle council auto-seeds another candidate-governor participant"
-assert_json_field "$multi_escalation_materialized" "\"mission-issue-20012.yml\"" "materialized bundle council includes sibling mission context refs"
-assert_json_field "$multi_escalation_materialized" '"candidate_governor_packets": [' "materialized bundle council carries candidate governor packets into the meeting packet"
+assert_json_field "$multi_escalation_materialized" '/.harness/missions/issue-20012.yml"' "materialized bundle council includes sibling mission context refs"
+assert_json_field "$multi_escalation_materialized" '"candidate_governor_packets":' "materialized bundle council carries candidate governor packets into the meeting packet"
 assert_json_field "$multi_escalation_materialized" '"Candidate governor issue-20012:' "materialized bundle council summarizes candidate-governor evidence in known context"
 multi_escalation_meeting_id=$(printf '%s\n' "$multi_escalation_materialized" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 multi_escalation_bundle_id="bundle-issue-20011-issue-20012-issue-20013"
@@ -797,6 +797,12 @@ assert_json_field "$decision_materialization_active_schedule" '"recommended_deci
 assert_json_field "$decision_materialization_active_schedule" "\"active_meeting_ids\": \\[" "scheduler projects active meeting ids back onto the materialized decision packet"
 assert_json_field "$decision_materialization_active_schedule" "\"$primary_materialized_meeting_id\"" "scheduler ties the materialized decision packet to the active meeting id"
 assert_json_field "$decision_materialization_active_schedule" '"active_decision_meeting_count": 1' "mission classifications inherit the active-council meeting count from the materialized decision packet"
+decision_materialization_reused=$(run_in_repo bash scripts/harness-meetings.sh materialize-primary-decision --mission=issue-20032)
+assert_json_field "$decision_materialization_reused" "\"meeting_id\": \"$primary_materialized_meeting_id\"" "materializing an already-active decision reuses the existing active meeting"
+assert_json_field "$decision_materialization_reused" '"reused_existing_meeting": true' "reused decision materialization reports active-meeting reuse"
+decision_materialization_reused_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$decision_materialization_reused_schedule" "\"$primary_materialized_meeting_id\"" "reused decision materialization keeps the same active meeting id in scheduler state"
+assert_json_field "$decision_materialization_reused_schedule" '"active_decision_meeting_count": 1' "reused decision materialization does not duplicate active-council meeting count"
 closed_primary_materialized_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$decision_materialization_run" "$primary_materialized_meeting_id" "Primary scheduler decision materialization covered.")
 assert_json_field "$closed_primary_materialized_meeting" '"state": "closed"' "primary scheduler-materialized meeting can close cleanly"
 decision_materialization_by_id=$(run_in_repo bash scripts/harness-meetings.sh materialize-decision "$primary_materialized_decision_id" --mission=issue-20032)

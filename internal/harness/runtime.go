@@ -4898,7 +4898,11 @@ func attachSchedulerDecisionToMeeting(meeting, decision, snapshot map[string]any
 		if bundleID := strings.TrimSpace(stringValue(decision["bundle_id"])); bundleID != "" {
 			contextRefs = appendUniqueText(contextRefs, bundleID)
 		}
-		for _, missionID := range dedupeStrings(anyListToStrings(toList(decision["bundle_mission_ids"]))) {
+		bundleMissionIDs := dedupeStrings(append(
+			anyListToStrings(toList(decision["bundle_mission_ids"])),
+			anyListToStrings(toList(decision["mission_ids"]))...,
+		))
+		for _, missionID := range bundleMissionIDs {
 			contextRefs = appendUniqueText(contextRefs, missionPath(missionID))
 		}
 	}
@@ -5028,6 +5032,59 @@ func materializeMeetingFromSchedulerDecision(snapshot, decision, registry, missi
 	if err != nil {
 		return nil, nil, nil, err
 	}
+	decisionID := strings.TrimSpace(stringValue(decision["decision_id"]))
+	if decisionID != "" {
+		for _, item := range listMeetings(true) {
+			activeMeeting, ok := toMap(item)
+			if !ok || stringValue(activeMeeting["state"]) != "active" {
+				continue
+			}
+			if strings.TrimSpace(stringValue(activeMeeting["source_decision_id"])) != decisionID {
+				continue
+			}
+			if requestedMissionID != "" {
+				meetingMissionID := firstNonBlank(
+					strings.TrimSpace(stringValue(activeMeeting["mission_id"])),
+					strings.TrimSpace(stringValue(getKey(activeMeeting, "source_decision_packet.mission_id", ""))),
+				)
+				if sourceScope := firstNonBlank(
+					strings.TrimSpace(stringValue(activeMeeting["source_decision_scope"])),
+					strings.TrimSpace(stringValue(getKey(activeMeeting, "source_decision_packet.decision_scope", ""))),
+				); sourceScope == "bundle" {
+					bundleMissionIDs := dedupeStrings(anyListToStrings(toList(getKey(activeMeeting, "source_decision_packet.bundle_mission_ids", []any{}))))
+					if !containsString(bundleMissionIDs, requestedMissionID) {
+						continue
+					}
+				} else if meetingMissionID != requestedMissionID {
+					continue
+				}
+			}
+			runID := strings.TrimSpace(stringValue(activeMeeting["run_id"]))
+			run := map[string]any(nil)
+			if runID != "" {
+				if index := findRunIndex(registry, runID); index >= 0 {
+					run, _ = toMap(toList(registry["runs"])[index])
+				}
+			}
+			entry := map[string]any{
+				"meeting_id":                  stringValue(activeMeeting["meeting_id"]),
+				"run_id":                      stringValue(activeMeeting["run_id"]),
+				"mission_id":                  stringValue(activeMeeting["mission_id"]),
+				"question":                    stringValue(activeMeeting["question"]),
+				"state":                       stringValue(activeMeeting["state"]),
+				"meeting_ref":                 meetingPath(stringValue(activeMeeting["meeting_id"]), false),
+				"created_at":                  firstNonBlank(stringValue(activeMeeting["created_at"]), nowISO()),
+				"updated_at":                  firstNonBlank(stringValue(activeMeeting["updated_at"]), nowISO()),
+				"source_decision_id":          decisionID,
+				"source_decision_scope":       firstNonBlank(stringValue(activeMeeting["source_decision_scope"]), stringValue(decision["decision_scope"])),
+				"source_decision_kind":        firstNonBlank(stringValue(activeMeeting["source_decision_kind"]), stringValue(decision["decision_kind"])),
+				"source_decision_surface":     firstNonBlank(stringValue(activeMeeting["source_decision_surface"]), stringValue(decision["recommended_decision_surface"])),
+				"source_decision_snapshot_id": firstNonBlank(stringValue(activeMeeting["source_decision_snapshot_id"]), stringValue(snapshot["snapshot_id"])),
+				"reused_existing_meeting":     true,
+			}
+			return activeMeeting, entry, run, nil
+		}
+	}
 	run, err := schedulerDecisionMeetingHostRun(registry, missionRegistry, hostMissionID)
 	if err != nil {
 		return nil, nil, nil, err
@@ -5058,6 +5115,7 @@ func materializeMeetingFromSchedulerDecision(snapshot, decision, registry, missi
 		"source_decision_kind":        stringValue(decision["decision_kind"]),
 		"source_decision_surface":     stringValue(decision["recommended_decision_surface"]),
 		"source_decision_snapshot_id": stringValue(snapshot["snapshot_id"]),
+		"reused_existing_meeting":     false,
 	}
 	backlog["meetings"] = append(toList(backlog["meetings"]), entry)
 	if err := writeMaintenanceBacklog(backlog); err != nil {
