@@ -5051,13 +5051,21 @@ func materializeMeetingFromSchedulerDecision(snapshot, decision, registry, missi
 					strings.TrimSpace(stringValue(activeMeeting["source_decision_scope"])),
 					strings.TrimSpace(stringValue(getKey(activeMeeting, "source_decision_packet.decision_scope", ""))),
 				); sourceScope == "bundle" {
-					bundleMissionIDs := dedupeStrings(anyListToStrings(toList(getKey(activeMeeting, "source_decision_packet.bundle_mission_ids", []any{}))))
+					bundleMissionIDs := dedupeStrings(append(
+						anyListToStrings(toList(getKey(activeMeeting, "source_decision_packet.bundle_mission_ids", []any{}))),
+						anyListToStrings(toList(getKey(activeMeeting, "source_decision_packet.mission_ids", []any{})))...,
+					))
 					if !containsString(bundleMissionIDs, requestedMissionID) {
 						continue
 					}
 				} else if meetingMissionID != requestedMissionID {
 					continue
 				}
+			}
+			activeMeeting = attachSchedulerDecisionToMeeting(activeMeeting, decision, snapshot, hostMissionID)
+			activeMeeting = seedMeetingParticipantsFromSchedulerDecision(activeMeeting, decision, registry, missionRegistry, hostMissionID)
+			if err := writeActiveMeeting(activeMeeting); err != nil {
+				return nil, nil, nil, err
 			}
 			runID := strings.TrimSpace(stringValue(activeMeeting["run_id"]))
 			run := map[string]any(nil)
@@ -8233,6 +8241,32 @@ func schedulerDecisionByID(snapshot map[string]any, decisionID string) map[strin
 		if stringValue(decision["decision_id"]) == decisionID {
 			return decision
 		}
+	}
+	for _, item := range listMeetings(true) {
+		meeting, _ := toMap(item)
+		if stringValue(meeting["state"]) != "active" {
+			continue
+		}
+		if stringValue(meeting["source_decision_id"]) != decisionID {
+			continue
+		}
+		decision, _ := toMap(cloneValue(meeting["source_decision_packet"]))
+		if len(decision) == 0 {
+			decision = map[string]any{}
+		}
+		decision["decision_id"] = firstNonBlank(stringValue(decision["decision_id"]), decisionID)
+		decision["recommended_decision_surface"] = "active-council"
+		activeMeetingIDs := dedupeStrings(append(
+			anyListToStrings(toList(decision["active_meeting_ids"])),
+			stringValue(meeting["meeting_id"]),
+		))
+		decision["active_meeting_ids"] = stringListToAny(activeMeetingIDs)
+		decision["active_meeting_count"] = len(activeMeetingIDs)
+		decision["recommended_action"] = firstNonBlank(
+			stringValue(decision["recommended_action"]),
+			fmt.Sprintf("Review the active council(s) already materialized for this decision: %s.", strings.Join(activeMeetingIDs, ", ")),
+		)
+		return decision
 	}
 	return nil
 }

@@ -397,6 +397,7 @@ assert_json_field "$multi_escalation_materialized" '/.harness/missions/issue-200
 assert_json_field "$multi_escalation_materialized" '"candidate_governor_packets":' "materialized bundle council carries candidate governor packets into the meeting packet"
 assert_json_field "$multi_escalation_materialized" '"Candidate governor issue-20012:' "materialized bundle council summarizes candidate-governor evidence in known context"
 multi_escalation_meeting_id=$(printf '%s\n' "$multi_escalation_materialized" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+multi_escalation_decision_id=$(printf '%s\n' "$multi_escalation_materialized" | sed -n 's/^[[:space:]]*"source_decision_id": "\(decision-[^"]*\)",$/\1/p' | head -n1)
 multi_escalation_bundle_id="bundle-issue-20011-issue-20012-issue-20013"
 schedule_multi_escalation_active=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_active" '"active_council_bundle_count": 1' "scheduler counts escalation bundles already governed by an active council"
@@ -405,6 +406,11 @@ assert_json_field "$schedule_multi_escalation_active" "\"$multi_escalation_meeti
 assert_json_field "$schedule_multi_escalation_active" '"bundle_active_decision_meeting_count": 1' "mission classifications inherit bundle-level active council coverage"
 assert_json_field "$schedule_multi_escalation_active" '"bundle_control_state": "active-council"' "mission classifications expose bundle control state once the bundle council is active"
 assert_json_field "$schedule_multi_escalation_active" '"action_kind": "hold_for_active_bundle_council"' "scheduler emits reschedule actions that hold execution behind an active bundle council"
+multi_escalation_reused=$(run_in_repo bash scripts/harness-meetings.sh materialize-decision "$multi_escalation_decision_id" --mission=issue-20011)
+assert_json_field "$multi_escalation_reused" "\"meeting_id\": \"$multi_escalation_meeting_id\"" "re-materializing an active bundle decision reuses the same meeting"
+assert_json_field "$multi_escalation_reused" '"reused_existing_meeting": true' "reused bundle decision materialization reports active-meeting reuse"
+assert_json_field "$multi_escalation_reused" '"candidate_governor_packets":' "reused bundle council keeps bundle candidate packets on the refreshed meeting packet"
+assert_json_field "$multi_escalation_reused" '"Candidate governor issue-20012:' "reused bundle council keeps candidate-governor context when re-materialized"
 home_output_multi_escalation_active=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_multi_escalation_active" '"scheduler_active_council_bundle_count": 1' "home surfaces active bundle-council coverage from the scheduler"
 multi_escalation_conflicting_governor=$(run_in_repo bash scripts/harness-missions.sh establish-governor "$multi_escalation_bundle_id" issue-20012 "Conflicting explicit governor during active bundle council coverage.")

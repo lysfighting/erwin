@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.79.0 (in progress)
+- **Version**: 0.80.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness made scheduler decision materialization reuse active councils)
+- **Last Session**: 2026-03-30 (Harness made scheduler decision materialization durably re-addressable)
 
 ## Current Phase
 
@@ -19,6 +19,7 @@
 **Session 2026-03-30** — Harness prototype line stayed complete while scheduler and bundle authority deepened into a more mature portfolio control plane
 
 - **Scheduler decision materialization now reuses active councils**: materializing a scheduler `decision_id` no longer spawns duplicate active meetings when the same governed decision is already under live council control; runtime now reuses the existing active meeting, reports `reused_existing_meeting`, and keeps scheduler `active-council` state stable instead of duplicating council anchors for one control-plane object
+- **Active scheduler decisions now remain durably re-addressable after council activation**: `meetings materialize-decision DECISION_ID` no longer fails once a bundle-scoped decision has already promoted into `active-council`; runtime now falls back to the active meeting's persisted `source_decision_packet`, refreshes that live meeting from the latest scheduler context, and still reuses the existing meeting instead of losing the decision object after snapshot rollover
 - **Materialized bundle-governor councils now start with seeded participant and candidate context**: when a bundle-scoped `establish_bundle_governor` scheduler decision materializes into a meeting, runtime now auto-seeds the host authoritative run plus bounded candidate-governor participant runs, carries sibling mission refs into packet context, and summarizes the ranked `candidate_governor_packets` inside `known_context` so the leader can start the governed council from scheduler evidence instead of rebuilding the obvious bundle roster by hand
 - **Bundle-governor councils now auto-lock durable authority**: auto-synthesis now preserves `source_run_id` on generated findings and can derive a structured `governing_mission_id` lock for bundle-scoped `establish_bundle_governor` councils when accepted evidence already favors one candidate, so `drive meeting-close` can adopt durable bundle authority without a separate manual `meetings lock-decision` in the common path
 - **Scheduler-decision materialization added**: `meetings materialize-primary-decision` and `meetings materialize-decision DECISION_ID` now turn durable scheduler human-decision packets into active meetings, so the leader can move directly from the decision portfolio into a governed council without reconstructing context by hand
