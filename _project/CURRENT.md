@@ -8,7 +8,7 @@
 
 - **Version**: 0.88.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (erwin repositioned around AI/agent radar + archive boundary while Harness stayed the active implementation track)
+- **Last Session**: 2026-03-30 (erwin repositioned around AI/agent radar + archive boundary, then deleted low-value legacy docs and `teamwork-demo/`)
 
 ## Current Phase
 
@@ -23,6 +23,7 @@
 - **Archive boundary was created**: `archive/`, `docs/archive/`, and `_project/archive/` now define what is historical versus active before any delete round
 - **Session history moved behind an archive boundary**: the real session log directory now lives at `_project/archive/sessions/`, while `_project/sessions` remains as a compatibility symlink so old links and skills continue to work
 - **Docs index now reflects the new center of gravity**: active documentation now foregrounds `Harness`, `Radar`, and current repo direction rather than `showcase` and legacy `teamwork`
+- **Low-value legacy material was deleted**: `teamwork-demo/` is gone, low-value session history was pruned aggressively, and five zero-value historical docs were deleted instead of preserved indefinitely
 
 **Session 2026-03-30** — Harness prototype line stayed complete while scheduler and bundle authority deepened into a more mature portfolio control plane
 
@@ -264,7 +265,7 @@
    - C. Continue scheduler beyond the current snapshot/execution-mode plus bundle-aware deferral baseline into larger-portfolio admission, rescheduling, and execution-portfolio policy
 4. **Archive next work**:
    - A. Decide whether `showcase/` should move physically into `archive/`, be extracted first, or be deleted
-   - B. Trim stale top-level docs once all important references have been extracted or redirected
+   - B. Decide whether `skills/teamwork/` should stay as a legacy package or be retired after extraction
 5. If starting fresh, read `AGENTS.md`, `_project/CURRENT.md`, `docs/README.md`, `docs/radar/README.md`, `docs/harness-documentation-map.md`, and then the current harness docs or weekly radar synthesis depending on the task
 
 ## Implementation Roadmap
@@ -286,13 +287,15 @@
 - [x] Move session history behind archive with compatibility preserved
 - [x] Reposition repo entrypoints around Radar + Harness + Skills
 - [x] Delete `teamwork-demo/` because it no longer provided active reference value
+- [x] Delete five historical docs that no longer carried practical reference value
 - [ ] Decide the physical fate of `showcase/`
-- [ ] Decide which historical docs can be moved physically into `docs/archive/`
+- [ ] Decide the physical fate of `skills/teamwork/`
 
 ## Known Issues / Blockers
 
 - Daily and weekly radar automations still need to be accepted in the app surface
 - `showcase/` is still present at the repo top level and remains an archive candidate rather than a confirmed active surface
+- `skills/teamwork/` still has live references, so it was not deleted in the slimming rounds
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
 - Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, and direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line

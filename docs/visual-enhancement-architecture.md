@@ -1,1 +1,0 @@
-archive/visual-enhancement-architecture.md

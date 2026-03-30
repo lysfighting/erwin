@@ -17,14 +17,19 @@ This manifest records the first safe slimming pass for `erwin`.
 - `docs/archive/teamwork-design-constitution.md`
 - `docs/archive/team-doctor-design.md`
 - `docs/archive/drive-showcase-v2-architecture.md`
+- `docs/archive/git-model-v0.1.0.md`
+
+Compatibility is preserved through symlinks at the original `docs/*.md` paths.
+
+### Historical Docs Deleted In Round 2
+
 - `docs/archive/teamwork-v2-architecture.md`
 - `docs/archive/teamwork-architecture.md`
 - `docs/archive/showcase-v3-architecture.md`
 - `docs/archive/visual-enhancement-architecture.md`
-- `docs/archive/git-model-v0.1.0.md`
 - `docs/archive/project-management-architecture.md`
 
-Compatibility is preserved through symlinks at the original `docs/*.md` paths.
+Reason: these files had no remaining practical reference value, or were only mentioned by historical changelog text.
 
 ### Curated Session Keep Set
 
@@ -79,3 +84,10 @@ Everything else from the previous session archive was deleted in round 2 because
 - do not delete archive candidates before extracting anything still useful
 - prefer moves with compatibility shims when cross-references remain high
 - delete only after one pass of human review over the manifest
+
+Round 2 review outcome:
+
+- low-value session history was deleted aggressively
+- `teamwork-demo/` was deleted
+- low-value historical docs were deleted instead of preserved indefinitely
+- `showcase/` and `skills/teamwork/` remain the main unresolved legacy surfaces

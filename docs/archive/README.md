@@ -5,7 +5,7 @@ This directory defines the documentation archive boundary for `erwin`.
 ## Purpose
 
 - lower the day-to-day cognitive weight of old docs
-- preserve historical design material without deleting it
+- preserve only the historical design material that still has practical reference value
 - make future physical moves safer by declaring the archive plan first
 
 ## Current Round
@@ -19,11 +19,14 @@ Current historical documents include:
 - `teamwork-design-constitution.md`
 - `team-doctor-design.md`
 - `drive-showcase-v2-architecture.md`
+- `git-model-v0.1.0.md`
+
+The following historical docs were deleted in the second slimming pass because they had no remaining practical reference value:
+
 - `teamwork-v2-architecture.md`
 - `teamwork-architecture.md`
 - `showcase-v3-architecture.md`
 - `visual-enhancement-architecture.md`
-- `git-model-v0.1.0.md`
 - `project-management-architecture.md`
 
 ## Move Rule

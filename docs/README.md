@@ -33,7 +33,7 @@ Older `teamwork` and `showcase` materials remain available, but many are now his
 
 ## Archived
 
-Status banners added. Kept for historical reference.
+Curated historical material only. Low-value archive docs were deleted once they stopped carrying practical reference value.
 
 Archive boundary is described in [archive/README.md](archive/README.md). Historical docs now live under `docs/archive/`, and the old `docs/*.md` paths remain as compatibility symlinks until references are cleaned up.
 
@@ -43,12 +43,7 @@ Archive boundary is described in [archive/README.md](archive/README.md). Histori
 | [teamwork-design-constitution.md](teamwork-design-constitution.md) | Historical teamwork design principles |
 | [team-doctor-design.md](team-doctor-design.md) | Historical `/team doctor` design spec |
 | [drive-showcase-v2-architecture.md](drive-showcase-v2-architecture.md) | Showcase-era product plan, no longer the repo center |
-| [teamwork-v2-architecture.md](teamwork-v2-architecture.md) | Superseded by teamwork-ai-manual.md |
-| [teamwork-architecture.md](teamwork-architecture.md) | v1, deprecated since v2 redesign |
-| [showcase-v3-architecture.md](showcase-v3-architecture.md) | Hub concept not implemented |
-| [visual-enhancement-architecture.md](visual-enhancement-architecture.md) | Partially implemented (message flow done) |
 | [git-model-v0.1.0.md](git-model-v0.1.0.md) | Superseded by teamwork v3 branch model |
-| [project-management-architecture.md](project-management-architecture.md) | Implemented as /erwin-init skill |
 
 ## Research
 
