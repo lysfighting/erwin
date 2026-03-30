@@ -1,6 +1,6 @@
 # erwin — Skills Incubator Architecture
 
-**Status**: Proposed — ADR-0007 (pending)
+**Status**: Historical background for the skills track
 **Date**: 2026-03-02
 **Replaces**: Informal skills placement (skills written directly to ~/.claude/commands/)
 
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-erwin has dual identity: (1) a React showcase explaining drive-skill, and (2) a skills factory producing new Claude Code commands. Currently the factory side is invisible — `erwin-init.md` and `visual-test.md` live in `~/.claude/commands/` with no version control, no update mechanism, and no documentation. This architecture formalizes erwin as a skills incubator: skills live in the git repo, are symlink-installed globally, and follow a clear idea-to-release pipeline.
+This document was written when `erwin` still had a dual identity: (1) a React showcase explaining drive-skill, and (2) a skills factory producing new Claude Code commands. The showcase has since been retired, but this document still captures useful background for how the skills track became repo-native and versioned.
 
 ---
 
@@ -102,7 +102,7 @@ erwin/
 │   └── decisions/
 │       └── 0007-skills-incubator-structure.md  ← NEW ADR
 │
-├── showcase/        ← Unchanged
+├── showcase/        ← Historical at the time; later removed
 ├── docs/                  ← Add this document
 └── reference/             ← Unchanged
 ```

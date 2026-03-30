@@ -14,7 +14,7 @@ The active lanes are:
 2. **Harness** — Codex-native orchestration operating model and implementation
 3. **Skills** — reusable skills that still support the current agent-systems direction
 
-Historical showcase and teamwork artifacts still exist, but they are no longer the repo center.
+Historical teamwork artifacts still exist, but they are no longer the repo center.
 
 Install all erwin skills:
 
@@ -64,7 +64,6 @@ erwin/
 │   └── sessions -> archive/sessions
 │
 ├── archive/                ← Top-level archive boundary
-├── showcase/               ← Archive candidate
 └── reference/              ← Source material (READ-ONLY)
 ```
 
@@ -115,5 +114,5 @@ erwin/
 
 - Don't edit `reference/`
 - Don't rely on session memory
-- Don't treat historical showcase/teamwork material as the default source of truth
+- Don't treat historical teamwork material or showcase-era plans as the default source of truth
 - Don't let tooling-watch noise outrank first-party AI/agent sources

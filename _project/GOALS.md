@@ -26,7 +26,7 @@
 
 - **KR1**: Repo entrypoints describe `erwin` as an AI/agent frontier exploration lab → `100%`
 - **KR2**: `Harness` is framed as a major track, not the whole identity → `100%`
-- **KR3**: `showcase` and `teamwork-demo` are demoted from the default narrative center → `100%`
+- **KR3**: `showcase` has been removed as an active surface and `teamwork-demo` has been deleted from the default narrative center → `100%`
 - **KR4**: Archive boundary created before destructive cleanup → `100%`
 
 ### O3: Slim the repo without losing useful history
@@ -55,7 +55,7 @@
 ### Skills
 
 - keep only the skills that still support the active mission
-- treat legacy teamwork/showcase material as historical unless it still drives present work
+- treat legacy teamwork material and leftover showcase-era docs as historical unless they still drive present work
 
 ---
 

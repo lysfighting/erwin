@@ -54,9 +54,8 @@ Everything else from the previous session archive was deleted in round 2 because
 ### Demo / Product Surfaces
 
 - `showcase/`
-  - current state: still present at repo top level
-  - blocker: live harness surfaces still depend on it through `harness/profiles/erwin.yml` and `scripts/harness-smoke-test.sh`
-  - suggested next step: replace those active harness references first, then delete or move physically into `archive/`
+  - current state: deleted in round 3
+  - reason: live harness references were removed and the remaining code no longer provided active implementation value
 - `teamwork-demo/`
   - current state: deleted in round 2
   - reason: no active references beyond repo narrative and no current implementation value
@@ -64,8 +63,8 @@ Everything else from the previous session archive was deleted in round 2 because
 ### Legacy Skill Surfaces
 
 - `skills/teamwork/`
-  - current state: legacy but still referenced
-  - suggested next step: keep in place until the remaining useful ideas are extracted or retired
+  - current state: retained intentionally
+  - reason: still useful as a legacy skill surface and reference artifact; not part of the delete rounds
 
 ## Keep Active
 
@@ -91,4 +90,4 @@ Round 2 review outcome:
 - low-value session history was deleted aggressively
 - `teamwork-demo/` was deleted
 - low-value historical docs were deleted instead of preserved indefinitely
-- `showcase/` and `skills/teamwork/` remain the main unresolved legacy surfaces
+- no unresolved delete candidate remains under `skills/`; legacy skill surfaces are intentionally retained

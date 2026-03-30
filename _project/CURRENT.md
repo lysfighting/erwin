@@ -23,6 +23,7 @@
 - **Archive boundary was created**: `archive/`, `docs/archive/`, and `_project/archive/` now define what is historical versus active before any delete round
 - **Session history moved behind an archive boundary**: the real session log directory now lives at `_project/archive/sessions/`, while `_project/sessions` remains as a compatibility symlink so old links and skills continue to work
 - **Docs index now reflects the new center of gravity**: active documentation now foregrounds `Harness`, `Radar`, and current repo direction rather than `showcase` and legacy `teamwork`
+- **Showcase was physically removed**: after removing the last live harness profile and smoke-test references, `showcase/` was deleted instead of being kept as an archive candidate
 - **Low-value legacy material was deleted**: `teamwork-demo/` is gone, low-value session history was pruned aggressively, and five zero-value historical docs were deleted instead of preserved indefinitely
 
 **Session 2026-03-30** — Harness prototype line stayed complete while scheduler and bundle authority deepened into a more mature portfolio control plane
@@ -256,17 +257,14 @@
 
 1. Read this file
 2. **Radar next work**:
-   - A. Create and accept the daily and weekly automations in the app surface
-   - B. Run the first real daily radar against Tier 1 publishers and compare the signal/noise ratio with the kickoff baseline
-   - C. Tighten `docs/radar/sources.md` only after observing a week of real output
+   - A. Review the first real daily radar runs against Tier 1 publishers and compare the signal/noise ratio with the kickoff baseline
+   - B. Tighten `docs/radar/sources.md` only after observing a week of real output
+   - C. Adjust theme weighting only if the daily and weekly outputs drift away from first-party signal
 3. **Harness next work**:
    - A. Continue authority adjudication into broader multi-mission bundle handling when no obvious governing dependency or single active council anchor exists
    - B. Continue pushing council behavior from bounded orchestration toward fuller multi-lane automated debate execution
    - C. Continue scheduler beyond the current snapshot/execution-mode plus bundle-aware deferral baseline into larger-portfolio admission, rescheduling, and execution-portfolio policy
-4. **Archive next work**:
-   - A. Remove the active harness dependencies on `showcase/` in `harness/profiles/erwin.yml` and `scripts/harness-smoke-test.sh`, then decide whether `showcase/` should move physically into `archive/`, be extracted first, or be deleted
-   - B. Decide whether `skills/teamwork/` should stay as a legacy package or be retired after extraction
-5. If starting fresh, read `AGENTS.md`, `_project/CURRENT.md`, `docs/README.md`, `docs/radar/README.md`, `docs/harness-documentation-map.md`, and then the current harness docs or weekly radar synthesis depending on the task
+4. If starting fresh, read `AGENTS.md`, `_project/CURRENT.md`, `docs/README.md`, `docs/radar/README.md`, `docs/harness-documentation-map.md`, and then the current harness docs or weekly radar synthesis depending on the task
 
 ## Implementation Roadmap
 
@@ -274,7 +272,7 @@
 - [x] Create `docs/radar/` knowledge base
 - [x] Define source priority and theme taxonomy
 - [x] Seed first weekly synthesis
-- [ ] Accept and run the app automations
+- [x] Create and activate the daily and weekly app automations
 - [ ] Observe one week of live signal and tune publisher/theme balance
 
 ### Harness
@@ -288,14 +286,11 @@
 - [x] Reposition repo entrypoints around Radar + Harness + Skills
 - [x] Delete `teamwork-demo/` because it no longer provided active reference value
 - [x] Delete five historical docs that no longer carried practical reference value
-- [ ] Remove active harness dependencies on `showcase/` and then decide its physical fate
-- [ ] Decide the physical fate of `skills/teamwork/`
+- [x] Remove active harness dependencies on `showcase/` and delete it
+- [x] Keep `skills/` surfaces, including `skills/teamwork/`, as intentionally retained repo assets
 
 ## Known Issues / Blockers
 
-- Daily and weekly radar automations still need to be accepted in the app surface
-- `showcase/` is still present at the repo top level and remains an archive candidate rather than a confirmed active surface because live harness surfaces still reference it through `harness/profiles/erwin.yml` and `scripts/harness-smoke-test.sh`
-- `skills/teamwork/` still has live references, so it was not deleted in the slimming rounds
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
 - Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, and direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
@@ -315,4 +310,3 @@
 | Teamwork skills (legacy) | `skills/teamwork/` |
 | Docs index | `docs/README.md` |
 | Historical boundary | `archive/README.md` |
-| App root (archive candidate) | `showcase/src/App.tsx` |

@@ -8,7 +8,7 @@ The repository now centers on three active lanes:
 - `Harness` — a Codex-native orchestration operating model and implementation proving ground
 - `Skills` — reusable skills that still matter to the current agent-systems direction
 
-Historical product and process experiments still exist, but they no longer define the repo.
+Historical teamwork/process material still exists, but it no longer defines the repo.
 
 ## Start Here
 
@@ -45,8 +45,8 @@ Historical product and process experiments still exist, but they no longer defin
 - [docs/archive/README.md](/Users/liyasong/Project/collov/erwin/docs/archive/README.md)
 - [_project/archive/README.md](/Users/liyasong/Project/collov/erwin/_project/archive/README.md)
 
-`showcase/` remains in place as an archive candidate.
-`teamwork-demo/` has been removed because it no longer provided active reference value.
+`showcase/` has been removed because it no longer provided active implementation value.
+`teamwork-demo/` has also been removed for the same reason.
 
 ## Working Rules
 

@@ -6,7 +6,7 @@
 - [radar/README.md](radar/README.md) — AI/agent field radar entrypoint, source policy, and weekly synthesis model
 
 The current center of gravity in this repository is `Harness` plus broader AI/agent research.
-Older `teamwork` and `showcase` materials remain available, but many are now historical rather than strategic.
+Older `teamwork` materials remain available, while showcase-era material has been reduced to selected historical docs only.
 
 ## Radar
 
@@ -42,7 +42,7 @@ Archive boundary is described in [archive/README.md](archive/README.md). Histori
 | [teamwork-ai-manual.md](teamwork-ai-manual.md) | Historical manual from the teamwork era |
 | [teamwork-design-constitution.md](teamwork-design-constitution.md) | Historical teamwork design principles |
 | [team-doctor-design.md](team-doctor-design.md) | Historical `/team doctor` design spec |
-| [drive-showcase-v2-architecture.md](drive-showcase-v2-architecture.md) | Showcase-era product plan, no longer the repo center |
+| [drive-showcase-v2-architecture.md](drive-showcase-v2-architecture.md) | Showcase-era product plan kept only as historical context |
 | [git-model-v0.1.0.md](git-model-v0.1.0.md) | Superseded by teamwork v3 branch model |
 
 ## Research

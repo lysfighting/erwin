@@ -990,14 +990,14 @@ resolved_parallel_gate_run_b=$(run_in_repo bash scripts/harness-runs.sh set-stat
 assert_json_field "$resolved_parallel_gate_run_b" '"state": "completed"' "unguarded parallel mission B can be closed after justification-gate coverage"
 
 section "Sticky foreground scheduling"
-sticky_primary_claim=$(run_in_repo bash scripts/harness-claim.sh 20024 "Harness Sticky Foreground A" --owns="file:showcase/CHANGELOG.md")
+sticky_primary_claim=$(run_in_repo bash scripts/harness-claim.sh 20024 "Harness Sticky Foreground A" --owns="file:archive/README.md")
 assert_json_field "$sticky_primary_claim" '"mission_id": "issue-20024"' "sticky foreground mission A can materialize"
 sticky_primary_run=$(printf '%s\n' "$sticky_primary_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 sticky_first_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$sticky_first_schedule" '"selection_policy": "sticky_foreground"' "scheduler retains the established foreground mission when a tied peer appears"
 assert_json_field "$sticky_first_schedule" '"previous_foreground_mission_id": "issue-20001"' "sticky foreground scheduling records the established foreground mission"
 assert_json_field "$sticky_first_schedule" '"selected_mission_count": 1' "sticky foreground schedule emits a foreground batch"
-sticky_secondary_claim=$(run_in_repo bash scripts/harness-claim.sh 20025 "Harness Sticky Foreground B" --owns="file:showcase/src/App.tsx")
+sticky_secondary_claim=$(run_in_repo bash scripts/harness-claim.sh 20025 "Harness Sticky Foreground B" --owns="file:docs/radar/themes.md")
 assert_json_field "$sticky_secondary_claim" '"mission_id": "issue-20025"' "sticky foreground mission B can materialize after the first scheduler pass"
 sticky_secondary_run=$(printf '%s\n' "$sticky_secondary_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 sticky_second_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)

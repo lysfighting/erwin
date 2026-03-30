@@ -106,13 +106,12 @@ Why this version exists, what problem it solves.
 - `x.MINOR.x` — New features (new sections, new components, new capabilities)
 - `x.x.PATCH` — Bug fixes, copy edits, minor UI tweaks
 
-**Two CHANGELOG files**:
-- `/erwin/CHANGELOG.md` — project-level (monorepo root)
-- `/erwin/drive-showcase/CHANGELOG.md` — app-level (fine-grained)
+**Current policy**:
+- `/erwin/CHANGELOG.md` — the durable project-level changelog
 
-Both must be updated when drive-showcase changes.
+Historical note: `erwin` used to keep a separate showcase-level changelog, but that app has been retired and removed from the active repository surface.
 
-### 3. `docs/CURRENT_STATE.md` — Living Status
+### 3. `_project/CURRENT.md` — Living Status
 
 **Purpose**: The "what's happening right now" document. Read at session start, updated at session end.
 
@@ -174,8 +173,8 @@ Both must be updated when drive-showcase changes.
 ### Starting a Session
 
 ```
-1. CLAUDE.md auto-loads (project overview)
-2. Read docs/CURRENT_STATE.md (current status, in-progress work)
+1. AGENTS.md / CLAUDE.md provide the project bootstrap
+2. Read `_project/CURRENT.md` (current status, in-progress work)
 3. If working on a specific feature, read the relevant ADRs
 4. Begin work
 ```
@@ -189,18 +188,18 @@ Both must be updated when drive-showcase changes.
 ### Ending a Session
 
 ```
-1. Update docs/CURRENT_STATE.md:
+1. Update `_project/CURRENT.md`:
    - Move completed tasks to "What Was Just Completed"
    - Update "Active Task / What's In Progress"
    - Update "Next Session Should Start With"
 
-2. Write/update docs/sessions/YYYY-MM-DD.md
+2. Write/update `_project/sessions/YYYY-MM-DD*.md`
 
 3. Update CHANGELOG.md if features were completed
 
 4. git add + git commit
    Format: "type(scope): description"
-   Example: "feat(showcase): add ExecutionSimulator component"
+   Example: "feat(harness): add scheduler admission policy"
 ```
 
 ---
@@ -216,14 +215,14 @@ chore(scope): maintenance (deps, gitignore, etc.)
 style(scope): formatting only
 ```
 
-**Scopes**: `showcase`, `decisions`, `docs`, `reference-skills`, `root`
+**Scopes**: `harness`, `radar`, `docs`, `skills`, `archive`, `root`
 
 **Examples**:
 ```
-feat(showcase): add ExecutionSimulator MVP with 3 scenarios
+feat(harness): add scheduler admission policy
 docs(decisions): add ADR-0006 for simulation engine design
 chore(root): initialize git repository and version management
-fix(showcase): fix Framer Motion animation in SwarmTopology mobile
+docs(radar): tighten source-priority policy after a live run
 ```
 
 ---
@@ -232,10 +231,10 @@ fix(showcase): fix Framer Motion animation in SwarmTopology mobile
 
 | Before | After |
 |--------|-------|
-| Relying on Claude's session memory | CURRENT_STATE.md + git history |
+| Relying on Claude's session memory | `_project/CURRENT.md` + git history |
 | "We discussed this last time" | ADR with full context |
 | Forgetting why something was built | Rationale in CHANGELOG + ADRs |
-| Starting each session from scratch | CLAUDE.md bootstrap + CURRENT_STATE.md |
+| Starting each session from scratch | AGENTS/CLAUDE bootstrap + `_project/CURRENT.md` |
 | No record of rejected alternatives | ADR "Alternatives Considered" sections |
 
 ---

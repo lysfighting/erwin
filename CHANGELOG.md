@@ -10,13 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added — Repo Repositioning
 - **AI/agent radar foundation added**: created `docs/radar/README.md`, `docs/radar/sources.md`, `docs/radar/themes.md`, and the kickoff weekly synthesis at `docs/radar/weekly/2026-03-30.md`, establishing a lightweight repo-native knowledge base for authoritative field signals.
 - **Archive boundary added**: created `archive/README.md`, `docs/archive/README.md`, and `_project/archive/README.md` so historical material can be demoted safely before any delete round.
+- **Radar automations activated**: the daily radar and weekly synthesis automations are now stored as active Codex automations for the `erwin` workspace, scheduled for weekday mornings and Friday evening in the local timezone.
 
 ### Changed — Repo Structure
 - **erwin repositioned around Radar + Harness + Skills**: added a new top-level `README.md`, rewrote `AGENTS.md` and `CLAUDE.md`, and updated `_project/GOALS.md` plus `_project/CURRENT.md` so the repository no longer presents itself as a showcase-first skill incubator.
 - **Session history moved behind an archive boundary**: `_project/sessions` now resolves to `_project/archive/sessions` through a compatibility symlink, reducing default surface noise while preserving older links and skill behavior.
 - **Low-value historical material was cut aggressively**: archive now keeps only the small set of session logs still referenced by the active repo surface, and `teamwork-demo/` has been removed entirely because it no longer provided implementation or reference value.
 - **Low-value historical docs were deleted instead of preserved indefinitely**: removed `showcase-v3-architecture.md`, `teamwork-architecture.md`, `teamwork-v2-architecture.md`, `visual-enhancement-architecture.md`, and `project-management-architecture.md` after confirming they had no remaining practical reference value beyond legacy changelog text.
-- **Remaining legacy risk is now explicit**: `showcase/` remains only as an archive candidate because active harness profile and smoke-test surfaces still reference it; the next slimming round should remove those live dependencies before deletion.
+- **Showcase was fully retired**: removed the last live harness profile and smoke-test references to `showcase/`, then deleted the directory because it no longer provided active implementation value.
 
 ### Added — Harness Prototype
 - **Harness v0.87.0-prototype — Maintenance-first decision deferral is now explicit**: when governance-critical maintenance wins the unified control-plane portfolio, scheduler now marks affected decision-bearing missions with `deferred_by_primary_control_plane_kind: maintenance`, records the winning maintenance action, and emits explicit `defer_pending_primary_maintenance` reschedule actions instead of only leaving those decisions visible behind the primary packet. Core smoke now proves maintenance-first packet selection and maintenance-first decision deferral together.
