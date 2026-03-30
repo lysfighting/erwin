@@ -6,7 +6,7 @@
 
 ## Project Status
 
-- **Version**: 0.73.0 (in progress)
+- **Version**: 0.74.0 (in progress)
 - **Last Updated**: 2026-03-30
 - **Last Session**: 2026-03-30 (Harness turned active bundle councils into first-class scheduler state)
 
@@ -23,6 +23,7 @@
 - **Scheduler-to-council bridge hardened**: materialized scheduler meetings now carry scheduler snapshot refs plus recommended-action/protocol context into the meeting packet, and the host authoritative run is moved into explicit waiting state while the council governs the decision
 - **Active-council promotion added**: once a scheduler decision has been materialized into an active meeting, scheduler now keeps the same stable `decision_id`, upgrades the decision packet to `active-council`, and projects active meeting ids back onto the packet instead of treating the council as unrelated runtime noise
 - **Bundle active-council state added**: when a bundle-scoped decision has already materialized into a live council, scheduler now projects that council back into every affected mission through `bundle_active_decision_meeting_*` and `bundle_control_state`, counts `active_council_bundle_count` at the portfolio level, and emits explicit `hold_for_active_bundle_council` reschedule actions so the bundle is treated as live governed decision work instead of generic overlap noise
+- **Explicit-governor versus active-council conflicts now escalate**: if a leader-adopted `bundle_governor_established` signal points at a different mission than the active bundle council host, scheduler now treats that as invalid governance and escalates it into `clear_invalid_bundle_governor` maintenance instead of silently trusting both anchors at once
 - **Home/scheduler maintenance parity restored**: `home` now surfaces `scheduler_maintenance_action_count` and `scheduler_maintenance_action_tally`, so leader surfaces no longer hide stale-state maintenance work that scheduler snapshots already know about
 - **Bundle-scoped scheduler decisions added**: escalation-required mission bundles no longer emit one repeated `establish_bundle_governor` decision per mission; scheduler now collapses them into one bundle-scoped human-decision packet with merged mission ids, trigger refs, and bundle-required action so the leader sees the actual decision surface instead of repeated mission noise
 - **Prioritized decision portfolio added**: scheduler now sorts required human decisions into a real portfolio queue, exposing `primary_required_human_decision`, deferred-decision count, scope/surface tallies, and bundle-vs-mission priority ordering so the leader can see which governed decision should be handled first when multiple human decisions coexist

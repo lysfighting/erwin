@@ -2705,6 +2705,43 @@ func explicitBundleGovernorSignals(signalLog map[string]any) map[string][]map[st
 	return byBundle
 }
 
+func activeBundleCouncilHosts() map[string]map[string][]string {
+	byBundle := map[string]map[string][]string{}
+	for _, item := range listMeetings(true) {
+		meeting, ok := toMap(item)
+		if !ok || stringValue(meeting["state"]) != "active" {
+			continue
+		}
+		sourceScope := firstNonBlank(
+			strings.TrimSpace(stringValue(meeting["source_decision_scope"])),
+			strings.TrimSpace(stringValue(getKey(meeting, "source_decision_packet.decision_scope", ""))),
+		)
+		if sourceScope != "bundle" {
+			continue
+		}
+		bundleID := firstNonBlank(
+			strings.TrimSpace(stringValue(getKey(meeting, "source_decision_packet.bundle_id", ""))),
+			strings.TrimSpace(stringValue(meeting["bundle_id"])),
+		)
+		hostMissionID := strings.TrimSpace(stringValue(meeting["mission_id"]))
+		meetingID := strings.TrimSpace(stringValue(meeting["meeting_id"]))
+		if bundleID == "" || hostMissionID == "" || meetingID == "" {
+			continue
+		}
+		packet := byBundle[bundleID]
+		if len(packet) == 0 {
+			packet = map[string][]string{
+				"meeting_ids":      {},
+				"host_mission_ids": {},
+			}
+		}
+		packet["meeting_ids"] = dedupeStrings(append(packet["meeting_ids"], meetingID))
+		packet["host_mission_ids"] = dedupeStrings(append(packet["host_mission_ids"], hostMissionID))
+		byBundle[bundleID] = packet
+	}
+	return byBundle
+}
+
 func selectExplicitBundleGovernorSignal(signals []map[string]any, componentSet map[string]bool) (map[string]any, []string) {
 	candidates := []map[string]any{}
 	for _, signal := range signals {
@@ -2764,6 +2801,7 @@ func selectExplicitBundleGovernorSignal(signals []map[string]any, componentSet m
 
 func invalidExplicitBundleGovernorSignals(missionRegistry, registry, signalLog map[string]any) []map[string]any {
 	graph, _ := toMap(missionGraphAuthorityAudit(missionRegistry, registry, false))
+	activeBundleCouncils := activeBundleCouncilHosts()
 	bundlesByID := map[string]map[string]any{}
 	for _, item := range toList(graph["bundles"]) {
 		bundle, ok := toMap(item)
@@ -2799,6 +2837,15 @@ func invalidExplicitBundleGovernorSignals(missionRegistry, registry, signalLog m
 			} else if !containsString(anyListToStrings(toList(bundle["mission_ids"])), governingMissionID) {
 				reason = fmt.Sprintf("Explicit bundle governor still points at %s, but that mission no longer belongs to active bundle %s.", governingMissionID, bundleID)
 				recommendedAction = "Clear or replace the explicit governor so bundle governance matches the active mission graph."
+			} else if councilPacket := activeBundleCouncils[bundleID]; len(councilPacket) > 0 && !containsString(councilPacket["host_mission_ids"], governingMissionID) {
+				reason = fmt.Sprintf(
+					"Explicit bundle governor points at %s, but active bundle council(s) %s are currently anchored on %s for %s.",
+					governingMissionID,
+					strings.Join(councilPacket["meeting_ids"], ", "),
+					strings.Join(councilPacket["host_mission_ids"], ", "),
+					bundleID,
+				)
+				recommendedAction = "Clear or replace the explicit governor, or re-materialize the bundle council so governance has one consistent anchor."
 			}
 		}
 		if reason == "" {

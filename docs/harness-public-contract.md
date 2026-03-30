@@ -147,6 +147,7 @@ The package currently guarantees:
 - decision-aware meeting materialization through `meetings materialize-primary-decision` and `meetings materialize-decision DECISION_ID`, including durable `source_decision_*` metadata, scheduler snapshot refs, and persisted source decision packets on the resulting meeting object
 - scheduler recognition of materialized decision packets as `active-council`, including stable `decision_id` values across surface changes and `active_meeting_ids` projected back into the portfolio packet
 - bundle-aware recognition of materialized decision packets as live governance, including `bundle_active_decision_meeting_ids`, `bundle_active_decision_meeting_count`, `bundle_control_state`, `active_council_bundle_count`, and explicit `hold_for_active_bundle_council` reschedule actions when a bundle is already under active council control
+- conflict detection between explicit bundle governors and active bundle councils, escalating mismatched anchors into `clear_invalid_bundle_governor` maintenance instead of silently trusting both governance sources at once
 - leader-facing scheduler maintenance escalation, so stale runs, expired signals, and stale meetings become explicit `maintenance_actions` instead of remaining doctor-only observations
 - stale explicit bundle-governor signals also become explicit `maintenance_actions`, so bundle governance that no longer matches the active mission graph is surfaced as cleanup work instead of lingering silently
 - first-class mission state above run attempts

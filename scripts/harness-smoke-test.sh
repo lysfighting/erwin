@@ -392,6 +392,7 @@ multi_escalation_materialized=$(run_in_repo bash scripts/harness-meetings.sh mat
 assert_json_field "$multi_escalation_materialized" '"source_decision_scope": "bundle"' "bundle-scoped scheduler decision can materialize into a governing council"
 assert_json_field "$multi_escalation_materialized" '"source_decision_kind": "establish_bundle_governor"' "materialized bundle council keeps the scheduler decision kind"
 multi_escalation_meeting_id=$(printf '%s\n' "$multi_escalation_materialized" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+multi_escalation_bundle_id="bundle-issue-20011-issue-20012-issue-20013"
 schedule_multi_escalation_active=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_active" '"active_council_bundle_count": 1' "scheduler counts escalation bundles already governed by an active council"
 assert_json_field "$schedule_multi_escalation_active" '"recommended_decision_surface": "active-council"' "scheduler upgrades bundle-governor decisions into active-council once the council exists"
@@ -401,6 +402,13 @@ assert_json_field "$schedule_multi_escalation_active" '"bundle_control_state": "
 assert_json_field "$schedule_multi_escalation_active" '"action_kind": "hold_for_active_bundle_council"' "scheduler emits reschedule actions that hold execution behind an active bundle council"
 home_output_multi_escalation_active=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_multi_escalation_active" '"scheduler_active_council_bundle_count": 1' "home surfaces active bundle-council coverage from the scheduler"
+multi_escalation_conflicting_governor=$(run_in_repo bash scripts/harness-missions.sh establish-governor "$multi_escalation_bundle_id" issue-20012 "Conflicting explicit governor during active bundle council coverage.")
+assert_json_field "$multi_escalation_conflicting_governor" "\"bundle_id\": \"$multi_escalation_bundle_id\"" "leader can emit an explicit governor that conflicts with a live bundle council host"
+schedule_multi_escalation_conflict=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_multi_escalation_conflict" '"action_kind": "clear_invalid_bundle_governor"' "scheduler escalates explicit-governor versus active-council conflicts into maintenance"
+assert_json_field "$schedule_multi_escalation_conflict" '"Explicit bundle governor points at issue-20012' "scheduler explains the conflicting explicit governor against the active bundle council anchor"
+cleared_multi_escalation_governor=$(run_in_repo bash scripts/harness-missions.sh clear-governor "$multi_escalation_bundle_id" "Clear conflicting explicit governor after active bundle council coverage.")
+assert_json_field "$cleared_multi_escalation_governor" "\"bundle_id\": \"$multi_escalation_bundle_id\"" "conflicting explicit governor can be cleared after active bundle-council coverage"
 closed_multi_escalation_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$multi_escalation_run_a" "$multi_escalation_meeting_id" "Bundle escalation council materialization covered.")
 assert_json_field "$closed_multi_escalation_meeting" '"state": "closed"' "bundle-scoped scheduler-materialized council can close cleanly"
 
@@ -503,6 +511,12 @@ resolved_decision_portfolio_signal=$(run_in_repo bash scripts/harness-signals.sh
 assert_json_field "$resolved_decision_portfolio_signal" '"state": "resolved"' "secondary mission-level decision signal can be resolved after portfolio coverage"
 resolved_decision_portfolio_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$decision_portfolio_run" completed "Closed decision-portfolio mission.")
 assert_json_field "$resolved_decision_portfolio_run" '"state": "completed"' "secondary mission-level decision can be closed after portfolio coverage"
+resolved_multi_escalation_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_a" completed "Closed escalated multi-mission bundle member.")
+assert_json_field "$resolved_multi_escalation_a" '"state": "completed"' "first escalation bundle member can be closed"
+resolved_multi_escalation_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_b" completed "Closed escalated multi-mission bundle member.")
+assert_json_field "$resolved_multi_escalation_b" '"state": "completed"' "second escalation bundle member can be closed"
+resolved_multi_escalation_c=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_c" completed "Closed escalated multi-mission bundle member.")
+assert_json_field "$resolved_multi_escalation_c" '"state": "completed"' "third escalation bundle member can be closed after bundle-governor conflict coverage"
 
 decision_hold_claim=$(run_in_repo bash scripts/harness-claim.sh 20024 "Harness Decision Hold" --owns="file:docs/harness-public-contract.md")
 assert_json_field "$decision_hold_claim" '"mission_id": "issue-20024"' "primary decision-hold mission can materialize"
@@ -539,7 +553,7 @@ decision_hold_peer_run=$(printf '%s\n' "$decision_hold_peer_claim" | sed -n 's/^
 baseline_wait=$(run_in_repo bash scripts/harness-runs.sh set-state "$run_id" waiting "Pause the old foreground while decision-hold admission is tested.")
 assert_json_field "$baseline_wait" '"state": "waiting"' "old foreground can be paused for decision-hold coverage"
 decision_hold_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
-assert_json_field "$decision_hold_schedule" '"required_human_decision_count": 2' "scheduler still sees the outstanding governed decisions"
+assert_json_field "$decision_hold_schedule" '"required_human_decision_count": 1' "scheduler still sees the outstanding governed decision"
 assert_json_field "$decision_hold_schedule" '"selected_mission_count": 0' "scheduler withholds new foreground admission while the primary human decision is unresolved"
 assert_json_field "$decision_hold_schedule" '"batch_admission_policy": "hold_for_primary_human_decision"' "scheduler records decision-first hold as the admission policy"
 assert_json_field "$decision_hold_schedule" '"action_kind": "hold_for_primary_human_decision"' "scheduler emits an explicit hold action for newly blocked foreground work"
@@ -554,12 +568,6 @@ assert_json_field "$resolved_decision_hold_peer_run" '"state": "completed"' "dec
 baseline_resume=$(run_in_repo bash scripts/harness-runs.sh set-state "$run_id" ready "Restore the baseline foreground after decision-hold coverage.")
 assert_json_field "$baseline_resume" '"state": "ready"' "old foreground can be restored after decision-hold coverage"
 
-resolved_multi_escalation_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_a" completed "Closed escalated multi-mission bundle member.")
-assert_json_field "$resolved_multi_escalation_a" '"state": "completed"' "first escalation bundle member can be closed"
-resolved_multi_escalation_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_b" completed "Closed escalated multi-mission bundle member.")
-assert_json_field "$resolved_multi_escalation_b" '"state": "completed"' "second escalation bundle member can be closed"
-resolved_multi_escalation_c=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_escalation_run_c" completed "Closed escalated multi-mission bundle member.")
-assert_json_field "$resolved_multi_escalation_c" '"state": "completed"' "third escalation bundle member can be closed"
 decision_hold_restore_schedule=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$decision_hold_restore_schedule" '"selected_mission_count": 1' "baseline foreground can be re-established after escalation backlog clears"
 assert_json_field "$decision_hold_restore_schedule" '"mission_id": "issue-20001"' "restored baseline foreground remains visible after escalation backlog clears"
