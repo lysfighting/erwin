@@ -11,6 +11,7 @@ See [MANIFEST.md](/Users/liyasong/Project/collov/erwin/archive/MANIFEST.md) for 
 - `showcase/`
   - status: archive candidate
   - reason: important historically, but no longer the repo's primary story
+  - blocker: still referenced by active harness profile and smoke coverage, so it is not safe to delete yet
 - `teamwork-demo/`
   - status: deleted in round 2
   - reason: legacy product/demo surface with high cognitive weight and no active reference value

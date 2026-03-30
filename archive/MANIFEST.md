@@ -55,7 +55,8 @@ Everything else from the previous session archive was deleted in round 2 because
 
 - `showcase/`
   - current state: still present at repo top level
-  - suggested next step: extract anything still useful, then delete or move physically into `archive/`
+  - blocker: live harness surfaces still depend on it through `harness/profiles/erwin.yml` and `scripts/harness-smoke-test.sh`
+  - suggested next step: replace those active harness references first, then delete or move physically into `archive/`
 - `teamwork-demo/`
   - current state: deleted in round 2
   - reason: no active references beyond repo narrative and no current implementation value

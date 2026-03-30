@@ -264,7 +264,7 @@
    - B. Continue pushing council behavior from bounded orchestration toward fuller multi-lane automated debate execution
    - C. Continue scheduler beyond the current snapshot/execution-mode plus bundle-aware deferral baseline into larger-portfolio admission, rescheduling, and execution-portfolio policy
 4. **Archive next work**:
-   - A. Decide whether `showcase/` should move physically into `archive/`, be extracted first, or be deleted
+   - A. Remove the active harness dependencies on `showcase/` in `harness/profiles/erwin.yml` and `scripts/harness-smoke-test.sh`, then decide whether `showcase/` should move physically into `archive/`, be extracted first, or be deleted
    - B. Decide whether `skills/teamwork/` should stay as a legacy package or be retired after extraction
 5. If starting fresh, read `AGENTS.md`, `_project/CURRENT.md`, `docs/README.md`, `docs/radar/README.md`, `docs/harness-documentation-map.md`, and then the current harness docs or weekly radar synthesis depending on the task
 
@@ -288,13 +288,13 @@
 - [x] Reposition repo entrypoints around Radar + Harness + Skills
 - [x] Delete `teamwork-demo/` because it no longer provided active reference value
 - [x] Delete five historical docs that no longer carried practical reference value
-- [ ] Decide the physical fate of `showcase/`
+- [ ] Remove active harness dependencies on `showcase/` and then decide its physical fate
 - [ ] Decide the physical fate of `skills/teamwork/`
 
 ## Known Issues / Blockers
 
 - Daily and weekly radar automations still need to be accepted in the app surface
-- `showcase/` is still present at the repo top level and remains an archive candidate rather than a confirmed active surface
+- `showcase/` is still present at the repo top level and remains an archive candidate rather than a confirmed active surface because live harness surfaces still reference it through `harness/profiles/erwin.yml` and `scripts/harness-smoke-test.sh`
 - `skills/teamwork/` still has live references, so it was not deleted in the slimming rounds
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
