@@ -187,6 +187,68 @@ assert_json_field "$schedule_review_feedback_output" 'Review the fresh review fe
 resolved_review_feedback_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-review-feedback resolved "Fresh review feedback covered.")
 assert_json_field "$resolved_review_feedback_signal" '"state": "resolved"' "review-feedback signal can be resolved after scheduler coverage"
 
+priority_change_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-priority-change",
+  "kind": "priority_change",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$run_id",
+  "mission_id": "issue-20001",
+  "applies_to": ["issue-20001"],
+  "scope_type": "mission",
+  "title": "Fresh priority change",
+  "summary": "Mission priority changed and should be adopted before widening execution.",
+  "evidence_refs": ["$contract_path"],
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T00:07:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$priority_change_signal" '"kind": "priority_change"' "priority-change signal can be emitted directly"
+schedule_priority_change_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_priority_change_output" '"decision_kind": "review_follow_up_signals"' "scheduler treats fresh priority-change signals as governed follow-up decision work"
+assert_json_field "$schedule_priority_change_output" '"action_kind": "pause_for_fresh_follow_up_signal"' "scheduler pauses foreground execution for fresh priority-change signals"
+assert_json_field "$schedule_priority_change_output" 'Review the fresh priority-change signal and adopt it into mission state before widening execution.' "scheduler surfaces priority-change-specific guidance"
+resolved_priority_change_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-priority-change resolved "Fresh priority change covered.")
+assert_json_field "$resolved_priority_change_signal" '"state": "resolved"' "priority-change signal can be resolved after scheduler coverage"
+
+risk_raised_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-risk-raised",
+  "kind": "risk_raised",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$run_id",
+  "mission_id": "issue-20001",
+  "applies_to": ["issue-20001"],
+  "scope_type": "mission",
+  "title": "Fresh risk raised",
+  "summary": "New execution risk should be reviewed before widening execution.",
+  "evidence_refs": ["$contract_path"],
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T00:08:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$risk_raised_signal" '"kind": "risk_raised"' "risk-raised signal can be emitted directly"
+schedule_risk_raised_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_risk_raised_output" '"decision_kind": "review_follow_up_signals"' "scheduler treats fresh risk-raised signals as governed follow-up decision work"
+assert_json_field "$schedule_risk_raised_output" '"action_kind": "pause_for_fresh_follow_up_signal"' "scheduler pauses foreground execution for fresh risk-raised signals"
+assert_json_field "$schedule_risk_raised_output" 'Review the fresh risk-raised signal and either tighten policy or convene a governed decision before widening execution.' "scheduler surfaces risk-raised-specific guidance"
+resolved_risk_raised_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-risk-raised resolved "Fresh risk signal covered.")
+assert_json_field "$resolved_risk_raised_signal" '"state": "resolved"' "risk-raised signal can be resolved after scheduler coverage"
+
 rebase_signal=$(
   cd "$TEST_REPO" &&
     cat <<EOF | bash scripts/harness-signals.sh emit

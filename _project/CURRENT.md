@@ -20,6 +20,7 @@
 
 - **Signal-kind normalization added**: runtime now canonicalizes signal aliases such as `meeting_required -> requires_meeting`, so scheduler, `home`, authority audit, and maintenance normalize all reason over one stable signal taxonomy instead of depending on spelling drift
 - **Fresh review feedback now becomes governed scheduler work**: fresh `review_feedback` signals now reclassify a mission into explicit human-decision follow-up, pause foreground execution when needed, and surface review-specific leader guidance instead of remaining passive telemetry
+- **Priority/risk follow-up coverage is now explicit**: core smoke now also proves fresh `priority_change` and `risk_raised` signals go through the governed follow-up decision path with signal-specific guidance, instead of relying on shared-path implicit coverage
 - **Fresh rebase requirements now become blocking scheduler work**: fresh `requires_rebase` signals now classify missions as `blocked-by-policy`, emit dedicated `pause_for_fresh_rebase_signal` reschedule actions, and tell the leader to refresh governed run state before continuing
 - **Release-trigger council routing widened slightly**: fresh review feedback now participates in release-oriented meeting-trigger/protocol guidance, so release-adjacent follow-up decisions can route toward `incident-command` rather than being flattened into generic coordination
 - **Fresh-signal smoke coverage widened**: core smoke now proves alias normalization, review-feedback rescheduling, and requires-rebase blocking end to end before the signal is resolved
