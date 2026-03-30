@@ -589,6 +589,7 @@ The following parts of the operating model are already concretely present:
 - stale explicit bundle-governor signals now become explicit maintenance work, and `doctor` reports them as invalid control-plane governance instead of letting them drift silently behind the active mission graph
 - scheduler now retains a sticky primary human-decision packet when a fresher same-class peer arrives, exposing `decision_selection_policy` and `previous_primary_human_decision_key` so the leader can distinguish deliberate decision stability from raw freshness sorting
 - scheduler now retains a sticky foreground mission when a fresher runnable peer is otherwise tied on priority, effective risk, and release posture, reducing avoidable foreground thrash and exposing `selection_policy` plus `previous_foreground_mission_id` in durable snapshots
+- scheduler now retains a sticky bounded parallel batch when the admitted portfolio is still valid and a fresher same-class peer arrives, exposing `previous_selected_mission_ids` so the leader can see the control plane is preserving the admitted set intentionally
 - scheduler now escalates stale runs, expired signals, and stale meetings into explicit maintenance work instead of leaving them only to doctor output
 - first-class mission objects
 - mission authority separated from freshest run activity

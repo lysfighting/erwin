@@ -686,10 +686,30 @@ assert_json_field "$scheduler_parallel_output" "\"mission_id\": \"issue-20004\""
 assert_json_field "$scheduler_parallel_output" '"batch_admission_policy": "bounded_parallel_capacity"' "scheduler marks bounded parallel capacity as the admission policy"
 assert_json_field "$scheduler_parallel_output" '"capacity_deferred_count": 1' "scheduler defers overflow missions behind the configured parallel capacity"
 assert_json_field "$scheduler_parallel_output" '"action_kind": "defer_due_parallel_capacity"' "scheduler emits a reschedule action when runnable missions exceed parallel capacity"
+parallel_claim_output_fresher=$(run_in_repo bash scripts/harness-claim.sh 20031 "Harness Parallel Mission Fresher" --owns="file:skills/README.md")
+assert_json_field "$parallel_claim_output_fresher" '"mission_id": "issue-20031"' "fresher parallel peer can materialize"
+parallel_run_id_fresher=$(printf '%s\n' "$parallel_claim_output_fresher" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+parallel_justification_fresher=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$parallel_run_id_fresher"
+{
+  "parallel_justification": "Independent changelog update with isolated ownership boundary."
+}
+EOF
+)
+assert_json_field "$parallel_justification_fresher" '"parallel_justification": "Independent changelog update with isolated ownership boundary."' "fresher parallel peer can record explicit parallel justification"
+sticky_parallel_batch_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$sticky_parallel_batch_output" '"selection_policy": "sticky_parallel_batch"' "scheduler retains the admitted parallel batch when a same-class fresher peer appears"
+assert_json_field "$sticky_parallel_batch_output" '"previous_selected_mission_ids":' "scheduler records the previous admitted batch"
+assert_json_field "$sticky_parallel_batch_output" "\"issue-20016\"" "sticky parallel batch keeps the earlier admitted peer selected"
+assert_json_field "$sticky_parallel_batch_output" '"capacity_deferred_count": 2' "sticky parallel batch still defers peers behind bounded parallel capacity"
+assert_json_field "$sticky_parallel_batch_output" '"defer_due_parallel_capacity"' "sticky parallel batch still emits bounded-capacity defer actions"
 resolved_parallel_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$parallel_run_id" completed "Resolved parallel scheduling smoke path.")
 assert_json_field "$resolved_parallel_run" '"state": "completed"' "independent parallel mission can be closed after scheduling coverage"
 resolved_parallel_run_extra=$(run_in_repo bash scripts/harness-runs.sh set-state "$parallel_run_id_extra" completed "Resolved overflow parallel scheduling smoke path.")
 assert_json_field "$resolved_parallel_run_extra" '"state": "completed"' "overflow independent parallel mission can be closed after capacity coverage"
+resolved_parallel_run_fresher=$(run_in_repo bash scripts/harness-runs.sh set-state "$parallel_run_id_fresher" completed "Resolved fresher overflow parallel scheduling smoke path.")
+assert_json_field "$resolved_parallel_run_fresher" '"state": "completed"' "fresher overflow parallel mission can be closed after sticky-batch coverage"
 
 section "Parallel justification gate"
 parallel_gate_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20021 "Harness Ungrounded Parallel A" --owns="file:docs/README.md")

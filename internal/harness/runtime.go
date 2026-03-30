@@ -7770,6 +7770,52 @@ func schedulerDecisionQueueMaps(decisions []any) (map[string]int, map[string]boo
 	return queuePositionByKey, primaryByKey
 }
 
+func schedulerBatchClass(entry map[string]any) string {
+	return fmt.Sprintf(
+		"%d|%d|%t",
+		schedulerPriorityRank(stringValue(entry["priority"])),
+		schedulerRiskRank(firstNonBlank(stringValue(entry["effective_risk_level"]), stringValue(entry["risk_level"]))),
+		boolValue(entry["release_adjacent"]),
+	)
+}
+
+func stickyParallelBatchSelection(runnableMissionIDs []string, entryByMission map[string]map[string]any, previousSelectedMissionIDs []string, maxParallelRuns int) ([]string, bool) {
+	if len(runnableMissionIDs) < 2 || len(previousSelectedMissionIDs) < 2 || maxParallelRuns < 2 {
+		return nil, false
+	}
+	topClass := schedulerBatchClass(entryByMission[runnableMissionIDs[0]])
+	selected := []string{}
+	for _, missionID := range previousSelectedMissionIDs {
+		if !containsString(runnableMissionIDs, missionID) {
+			return nil, false
+		}
+		if schedulerBatchClass(entryByMission[missionID]) != topClass {
+			return nil, false
+		}
+		if len(selected) < maxParallelRuns {
+			selected = append(selected, missionID)
+		}
+	}
+	if len(selected) < 2 {
+		return nil, false
+	}
+	for _, missionID := range runnableMissionIDs {
+		if len(selected) >= maxParallelRuns {
+			break
+		}
+		if schedulerBatchClass(entryByMission[missionID]) != topClass {
+			break
+		}
+		if !containsString(selected, missionID) {
+			selected = append(selected, missionID)
+		}
+	}
+	if len(selected) < 2 {
+		return nil, false
+	}
+	return selected, true
+}
+
 func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]any, includeInactive bool) map[string]any {
 	now := nowTime().UTC().Format("20060102150405")
 	generatedAt := nowISO()
@@ -8471,16 +8517,29 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			}
 			if len(selectedMissionIDs) == 0 {
 				batchAdmissionPolicy = "bounded_parallel_capacity"
-				selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs...)
-				if len(selectedMissionIDs) > 0 && selectedMissionIDs[0] == previousForegroundMissionID {
-					selectionPolicy = "sticky_foreground"
+				if stickySelection, ok := stickyParallelBatchSelection(runnableMissionIDs, entryByMission, previousSelectedMissionIDs, maxParallelRuns); ok {
+					selectedMissionIDs = append(selectedMissionIDs, stickySelection...)
+					selectionPolicy = "sticky_parallel_batch"
+					for _, missionID := range runnableMissionIDs {
+						if !containsString(selectedMissionIDs, missionID) {
+							batchCapacityDeferredMissionIDs = append(batchCapacityDeferredMissionIDs, missionID)
+						}
+					}
 				} else {
-					selectionPolicy = "parallel_priority_risk"
+					selectedMissionIDs = append(selectedMissionIDs, runnableMissionIDs...)
+					if len(selectedMissionIDs) > 0 && selectedMissionIDs[0] == previousForegroundMissionID {
+						selectionPolicy = "sticky_foreground"
+					} else {
+						selectionPolicy = "parallel_priority_risk"
+					}
 				}
 			}
 			if len(selectedMissionIDs) > maxParallelRuns {
 				batchCapacityDeferredMissionIDs = append(batchCapacityDeferredMissionIDs, selectedMissionIDs[maxParallelRuns:]...)
 				selectedMissionIDs = selectedMissionIDs[:maxParallelRuns]
+			}
+			if len(batchCapacityDeferredMissionIDs) > 0 {
+				batchCapacityDeferredMissionIDs = dedupeStrings(batchCapacityDeferredMissionIDs)
 				for _, missionID := range batchCapacityDeferredMissionIDs {
 					entry := entryByMission[missionID]
 					entry["classification"] = "deferred"
@@ -8679,6 +8738,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"execution_mode":                        executionMode,
 		"selection_policy":                      selectionPolicy,
 		"previous_foreground_mission_id":        previousForegroundMissionID,
+		"previous_selected_mission_ids":         stringListToAny(previousSelectedMissionIDs),
 		"mission_count":                         len(entries),
 		"selected_mission_count":                len(selectedMissionIDs),
 		"selected_run_count":                    len(selectedRunIDs),
@@ -9021,6 +9081,7 @@ func cmdHome(args []string) error {
 		"scheduler_previous_primary_human_decision_key":   stringValue(scheduler["previous_primary_human_decision_key"]),
 		"scheduler_primary_required_human_decision":       cloneValue(getKey(scheduler, "primary_required_human_decision", map[string]any{})),
 		"scheduler_maintenance_action_tally":              cloneValue(getKey(scheduler, "maintenance_action_tally", map[string]any{})),
+		"scheduler_previous_selected_mission_ids":         cloneValue(toList(scheduler["previous_selected_mission_ids"])),
 		"scheduler_selected_mission_ids":                  cloneValue(toList(scheduler["selected_mission_ids"])),
 		"scheduler_next_action":                           stringValue(scheduler["next_action"]),
 		"next_action":                                     nextAction,

@@ -617,6 +617,7 @@ That means:
 - the leader can now explicitly adopt a governor for an escalation-required bundle, converting that bundle into governed authority through a durable control-plane signal instead of leaving it as a perpetual decision packet
 - stale explicit governors are not trusted indefinitely; when the adopted governor no longer belongs to the active bundle, the control plane escalates that signal into maintenance instead of silently carrying orphaned governance forward
 - the scheduler can now retain a sticky primary human-decision packet across otherwise-tied portfolio passes, preferring decision stability over freshness-only churn when the decision class still matches
+- the scheduler can now retain a sticky bounded parallel batch across otherwise-tied portfolio passes, preferring admitted-batch stability over freshness-only churn when the batch class still matches
 - the scheduler can now hold back brand-new low-urgency foreground admission when unresolved human decisions already dominate the portfolio and no established foreground batch is being continued
 - parallel widening now requires explicit justification when execution policy says the control plane should reduce parallelism rather than guess
 - the scheduler can now retain a sticky foreground mission across otherwise-tied passes, preferring stability over timestamp churn when priority, effective risk, and release posture still match

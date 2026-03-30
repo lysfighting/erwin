@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.65.0 (in progress)
+- **Version**: 0.66.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness escalated stale explicit governors into maintenance)
+- **Last Session**: 2026-03-30 (Harness retained sticky bounded parallel batches)
 
 ## Current Phase
 
@@ -41,6 +41,9 @@
 - **Stale explicit-governor maintenance added**: when a leader-adopted explicit bundle governor no longer points at a live active bundle or the nominated governing mission has fallen out of that bundle, scheduler now emits `clear_invalid_bundle_governor` maintenance work instead of silently trusting stale governance
 - **Doctor widened for stale bundle governance**: `doctor` now reports `invalid-explicit-bundle-governor` when an active explicit-governor signal no longer matches the active mission graph, so stale governance cannot hide behind otherwise-valid signals
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves that closing the explicit governor mission turns the stale governor into scheduler maintenance, surfaces doctor warnings, and then clears cleanly back to a fresh escalation-required surviving bundle
+- **Sticky bounded parallel batches added**: scheduler now retains an already-admitted parallel batch when a same-class fresher peer appears, instead of churning the admitted portfolio just because a new equal-priority mission arrived later
+- **Parallel batch memory surfaced**: scheduler snapshots and `home` now expose `previous_selected_mission_ids`, so the leader can see when the control plane is intentionally preserving the admitted parallel set rather than recomputing it from freshness alone
+- **Capacity semantics preserved under sticky batches**: even when the scheduler keeps the existing bounded batch, overflow peers still become explicit capacity deferrals with `defer_due_parallel_capacity`, so stability does not erase admission pressure
 - **Scheduler maintenance escalation added**: scheduler snapshots now emit `maintenance_actions`, `maintenance_action_count`, and `maintenance_action_tally`, turning stale runs, expired signals, and stale meetings into explicit leader-facing maintenance work instead of leaving them only to `doctor`
 - **Maintenance guidance prioritized**: when stale control-plane state coexists with runnable foreground work, scheduler `next_action` now tells the leader to keep the foreground batch bounded and clean stale state before widening execution
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves stale run plus stale signal maintenance escalation and verifies that refreshing the run and retiring the stale signal restores a clean control-plane path
