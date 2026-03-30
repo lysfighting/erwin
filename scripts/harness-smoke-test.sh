@@ -403,6 +403,8 @@ schedule_multi_escalation_active=$(run_in_repo bash scripts/harness-missions.sh 
 assert_json_field "$schedule_multi_escalation_active" '"active_council_bundle_count": 1' "scheduler counts escalation bundles already governed by an active council"
 assert_json_field "$schedule_multi_escalation_active" '"recommended_decision_surface": "active-council"' "scheduler upgrades bundle-governor decisions into active-council once the council exists"
 assert_json_field "$schedule_multi_escalation_active" "\"$multi_escalation_meeting_id\"" "scheduler ties the escalation bundle decision back to the active meeting id"
+assert_json_field "$schedule_multi_escalation_active" "\"decision_id\": \"$multi_escalation_decision_id\"" "scheduler keeps the bundle-scoped active-council decision in the portfolio after materialization"
+assert_json_field "$schedule_multi_escalation_active" '"decision_scope": "bundle"' "scheduler keeps bundle-scoped authority packets visible while the bundle council stays active"
 assert_json_field "$schedule_multi_escalation_active" '"bundle_active_decision_meeting_count": 1' "mission classifications inherit bundle-level active council coverage"
 assert_json_field "$schedule_multi_escalation_active" '"bundle_control_state": "active-council"' "mission classifications expose bundle control state once the bundle council is active"
 assert_json_field "$schedule_multi_escalation_active" '"action_kind": "hold_for_active_bundle_council"' "scheduler emits reschedule actions that hold execution behind an active bundle council"

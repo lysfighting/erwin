@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.80.0-prototype`
+- `adapter_version`: `0.81.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -176,6 +176,7 @@ Do not underestimate the current control-plane maturity.
 - those stable decision packets can now be materialized directly into active meetings through `meetings materialize-primary-decision` or `meetings materialize-decision DECISION_ID`, and the resulting meeting persists `source_decision_*` metadata plus scheduler snapshot linkage for later audit
 - re-materializing a still-active `decision_id` now reuses the existing governed meeting rather than silently creating a duplicate active council for the same scheduler object
 - once a decision has already promoted into `active-council`, that same `decision_id` still remains re-addressable because runtime can recover the durable source packet from the active meeting itself instead of depending on the latest scheduler snapshot to keep the original packet shape alive forever
+- when that active decision is bundle-scoped, scheduler now keeps it visible as the same bundle-scoped portfolio packet instead of letting it degrade into only per-mission `review_active_council` noise after materialization
 - materialized bundle-governor councils now auto-seed the host plus candidate-governor participants, sibling mission refs, and candidate tuple summaries into the meeting packet, so the leader starts from bounded scheduler evidence instead of a blank participant roster
 - once materialized, the same decision id now survives the shift from `council` to `active-council`, and scheduler projects `active_meeting_ids` back into the packet so the portfolio can see that the decision is already being governed live
 - once a bundle-scoped decision is materialized, scheduler now also projects that live council back into every affected mission through `bundle_active_decision_meeting_*` plus `bundle_control_state`, counts `active_council_bundle_count`, and can emit `hold_for_active_bundle_council` instead of treating the bundle as generic unresolved governance

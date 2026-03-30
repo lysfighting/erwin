@@ -8519,6 +8519,71 @@ func aggregateSchedulerHumanDecisions(decisions []any) []any {
 	return aggregated
 }
 
+func recoverActiveBundleDecisionPackets(decisions []any) []any {
+	seenDecisionIDs := map[string]bool{}
+	for _, item := range decisions {
+		decision, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		if decisionID := strings.TrimSpace(stringValue(decision["decision_id"])); decisionID != "" {
+			seenDecisionIDs[decisionID] = true
+		}
+	}
+
+	activeByDecisionID := map[string]map[string]any{}
+	for _, item := range listMeetings(true) {
+		meeting, ok := toMap(item)
+		if !ok || stringValue(meeting["state"]) != "active" {
+			continue
+		}
+		decisionID := strings.TrimSpace(stringValue(meeting["source_decision_id"]))
+		if decisionID == "" || seenDecisionIDs[decisionID] {
+			continue
+		}
+		sourceScope := firstNonBlank(
+			strings.TrimSpace(stringValue(meeting["source_decision_scope"])),
+			strings.TrimSpace(stringValue(getKey(meeting, "source_decision_packet.decision_scope", ""))),
+		)
+		if sourceScope != "bundle" {
+			continue
+		}
+		packet, _ := toMap(cloneValue(meeting["source_decision_packet"]))
+		if len(packet) == 0 {
+			continue
+		}
+		activeEntry, exists := activeByDecisionID[decisionID]
+		if !exists {
+			packet["decision_id"] = firstNonBlank(stringValue(packet["decision_id"]), decisionID)
+			packet["recommended_decision_surface"] = "active-council"
+			packet["active_meeting_ids"] = []any{}
+			packet["active_meeting_count"] = 0
+			activeEntry = packet
+			activeByDecisionID[decisionID] = activeEntry
+		}
+		activeMeetingIDs := dedupeStrings(append(
+			anyListToStrings(toList(activeEntry["active_meeting_ids"])),
+			stringValue(meeting["meeting_id"]),
+		))
+		activeEntry["active_meeting_ids"] = stringListToAny(activeMeetingIDs)
+		activeEntry["active_meeting_count"] = len(activeMeetingIDs)
+		activeEntry["recommended_action"] = firstNonBlank(
+			stringValue(activeEntry["recommended_action"]),
+			fmt.Sprintf("Review the active council(s) already materialized for this decision: %s.", strings.Join(activeMeetingIDs, ", ")),
+		)
+		activeEntry["updated_at"] = firstNonBlank(
+			stringValue(activeEntry["updated_at"]),
+			stringValue(meeting["updated_at"]),
+			stringValue(meeting["created_at"]),
+		)
+	}
+
+	for _, packet := range activeByDecisionID {
+		decisions = append(decisions, packet)
+	}
+	return decisions
+}
+
 func decisionSurfaceRank(surface string) int {
 	switch strings.TrimSpace(surface) {
 	case "active-council":
@@ -9192,11 +9257,15 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				reasons = append(reasons, "Mission has unresolved competing root-run authority.")
 				recommendedAction = "Close, merge, or explicitly govern the competing root run before continuing."
 				decisionKind = "resolve_parallel_root_runs"
-			case openMeetingActionCountByMission[missionID] > 0:
+		case openMeetingActionCountByMission[missionID] > 0:
 				classification = "needs-human-decision"
 				reasons = append(reasons, fmt.Sprintf("Mission has %d open meeting action(s).", openMeetingActionCountByMission[missionID]))
 				recommendedAction = "Review open meeting actions and translate them into accepted execution state."
 				decisionKind = "adopt_meeting_actions"
+			case bundleID != "" && len(activeMeetingIDsByBundleID[bundleID]) > 0:
+				classification = "needs-human-decision"
+				reasons = append(reasons, fmt.Sprintf("Bundle %s already has active council coverage: %s.", bundleID, strings.Join(dedupeStrings(activeMeetingIDsByBundleID[bundleID]), ", ")))
+				recommendedAction = fmt.Sprintf("Review the active bundle council(s) for %s before widening execution: %s.", bundleID, strings.Join(dedupeStrings(activeMeetingIDsByBundleID[bundleID]), ", "))
 			case activeMeetingCountByMission[missionID] > 0:
 				classification = "needs-human-decision"
 				reasons = append(reasons, fmt.Sprintf("Mission has %d active meeting(s).", activeMeetingCountByMission[missionID]))
@@ -9326,7 +9395,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	}
 	requiredHumanDecisions := sortSchedulerHumanDecisions(
 		promoteMaterializedDecisionPackets(
-			aggregateSchedulerHumanDecisions(rawRequiredHumanDecisions),
+			recoverActiveBundleDecisionPackets(aggregateSchedulerHumanDecisions(rawRequiredHumanDecisions)),
 			activeMeetingIDsByDecisionID,
 		),
 		previousPrimaryDecisionKey,
