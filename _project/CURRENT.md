@@ -6,15 +6,23 @@
 
 ## Project Status
 
-- **Version**: 0.87.0 (in progress)
+- **Version**: 0.88.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness made maintenance-first decision deferral explicit)
+- **Last Session**: 2026-03-30 (erwin repositioned around AI/agent radar + archive boundary while Harness stayed the active implementation track)
 
 ## Current Phase
 
-**Phase**: Codex-native orchestration harness prototype
+**Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-30** — erwin was repositioned around Radar + Harness + Skills while preserving historical assets safely
+
+- **Repo positioning was updated**: top-level entrypoints now describe `erwin` as an AI/agent frontier exploration lab instead of a showcase-first skill incubator
+- **Radar knowledge base was added**: `docs/radar/` now defines authoritative source policy, active themes, and a kickoff weekly synthesis
+- **Archive boundary was created**: `archive/`, `docs/archive/`, and `_project/archive/` now define what is historical versus active before any delete round
+- **Session history moved behind an archive boundary**: the real session log directory now lives at `_project/archive/sessions/`, while `_project/sessions` remains as a compatibility symlink so old links and skills continue to work
+- **Docs index now reflects the new center of gravity**: active documentation now foregrounds `Harness`, `Radar`, and current repo direction rather than `showcase` and legacy `teamwork`
 
 **Session 2026-03-30** — Harness prototype line stayed complete while scheduler and bundle authority deepened into a more mature portfolio control plane
 
@@ -246,41 +254,45 @@
 ## Next Session Should Start With
 
 1. Read this file
-2. **Harness next work**:
-   - A. Continue authority adjudication beyond the current run/mission/mission-graph plus dependency-governed ownership, selector-specificity winners, council-governed bundle authority, and bundle-governor rules into broader multi-mission bundle handling when no obvious governing dependency or single active council anchor exists
-   - B. Continue pushing council behavior from auto-synthesis, direct synthesis for aligned/authority-resolved lanes, stateful current/blocked debate batching, wave obligations, route obligations, and bounded multi-round challenge planning toward fuller `arch-review`-style automated debate execution across more than one conflicting lane
+2. **Radar next work**:
+   - A. Create and accept the daily and weekly automations in the app surface
+   - B. Run the first real daily radar against Tier 1 publishers and compare the signal/noise ratio with the kickoff baseline
+   - C. Tighten `docs/radar/sources.md` only after observing a week of real output
+3. **Harness next work**:
+   - A. Continue authority adjudication into broader multi-mission bundle handling when no obvious governing dependency or single active council anchor exists
+   - B. Continue pushing council behavior from bounded orchestration toward fuller multi-lane automated debate execution
    - C. Continue scheduler beyond the current snapshot/execution-mode plus bundle-aware deferral baseline into larger-portfolio admission, rescheduling, and execution-portfolio policy
-   - D. Decide whether future Codex-native subagent integration should map onto the teammate runtime directly or remain an optional adapter layer
-   - H. If starting a fresh session, read `AGENTS.md`, `_project/CURRENT.md`, `docs/harness-documentation-map.md`, `docs/harness-architecture.md`, `docs/harness-operating-model.md`, `docs/harness-public-contract.md`, `docs/harness-session-handoff.md`, `harness/adapter-manifest.yml`, `docs/research/harness-gap-audit-2026-03-29.md`, `docs/research/harness-research-drift-audit-2026-03-29.md`, recent `_project/sessions/2026-03-29-*.md` logs, and inspect recent commits on `codex/harness-release-lifecycle`
-3. **Showcase tasks still pending**: DesignPatternLibrary, CaseStudies — blocking v1.0.0
+4. **Archive next work**:
+   - A. Decide whether `showcase/` should move physically into `archive/`, be extracted first, or be deleted
+   - B. Trim stale top-level docs once all important references have been extracted or redirected
+5. If starting fresh, read `AGENTS.md`, `_project/CURRENT.md`, `docs/README.md`, `docs/radar/README.md`, `docs/harness-documentation-map.md`, and then the current harness docs or weekly radar synthesis depending on the task
 
 ## Implementation Roadmap
 
-### v0.5.0 — V2 Phase 2: Deep Interaction (in progress)
-- [x] OriginTrace (d3-force philosophy graph, ACT II)
-- [x] Bundle code splitting (627KB → 221KB, React.lazy + vendor chunks)
-- [x] Code health sweep (ESLint clean, dead code removal)
-- [x] ExecutionSimulator: message flow animation enhancement
-- [x] SwarmTopologySection: add interactive message flow
+### Radar
+- [x] Create `docs/radar/` knowledge base
+- [x] Define source priority and theme taxonomy
+- [x] Seed first weekly synthesis
+- [ ] Accept and run the app automations
+- [ ] Observe one week of live signal and tune publisher/theme balance
 
-### v1.0.0 — V2 Phase 3: Creation Path
-- [x] SkillBuilder (form → skill.md download, ACT IV)
-- [ ] DesignPatternLibrary (3-5 reusable pattern cards)
-- [ ] CaseStudies (2-3 skill variant examples)
+### Harness
+- [x] Establish a mature Codex-native orchestration prototype line
+- [ ] Continue authority, council, and scheduler depth beyond the first complete prototype line
+- [ ] Decide how future subagent integration maps onto the teammate runtime
 
-### Skills Factory
-- [x] Teamwork v2.0–v3.11.2 — 40+ versions, 6 skills, 10 scripts, 48 unit tests
-- [x] Wing v0.1.0 — Anthropic skill architecture rewrite (6 SKILL.md, 10 operations, 8 scripts)
-- [x] skill-lint.sh — Layer 1 static analysis (12 checks)
-- [x] arch-review v0.1.0 — Multi-role debate review (8 mechanisms, 27 bugs fixed in 5 rounds)
-- [x] Harness prototype — Codex-native repository-local orchestration harness (leader control plane + runtime substrate)
-- [ ] Wing Phase 4: vi_agent migration
-- [ ] Wing Phase 5: teamwork deprecation
-- [ ] Skill-tester Layer 2: smoke tests
+### Repo Slimming
+- [x] Create archive boundary before deletion
+- [x] Move session history behind archive with compatibility preserved
+- [x] Reposition repo entrypoints around Radar + Harness + Skills
+- [x] Delete `teamwork-demo/` because it no longer provided active reference value
+- [ ] Decide the physical fate of `showcase/`
+- [ ] Decide which historical docs can be moved physically into `docs/archive/`
 
 ## Known Issues / Blockers
 
-- OriginTrace ResizeObserver fires 400 force ticks per resize — needs debounce
+- Daily and weekly radar automations still need to be accepted in the app surface
+- `showcase/` is still present at the repo top level and remains an archive candidate rather than a confirmed active surface
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
 - Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, and direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
@@ -290,12 +302,14 @@
 | What | Where |
 |------|-------|
 | Project goals | `_project/GOALS.md` |
+| Repo entrypoint | `README.md` |
+| Radar | `docs/radar/` |
 | Idea garden | `_project/ideas/` |
 | ADRs | `_project/decisions/` |
-| V2 architecture | `docs/drive-showcase-v2-architecture.md` |
-| Wing skills | `skills/wing/` |
 | Harness prototype | `harness/`, `scripts/harness_*`, `skills/harness/` |
+| Wing skills | `skills/wing/` |
 | Wing architecture | `_project/ideas/skills/tw2-architecture.md` |
 | Teamwork skills (legacy) | `skills/teamwork/` |
 | Docs index | `docs/README.md` |
-| App root | `showcase/src/App.tsx` |
+| Historical boundary | `archive/README.md` |
+| App root (archive candidate) | `showcase/src/App.tsx` |

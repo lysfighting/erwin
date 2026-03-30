@@ -5,76 +5,81 @@
 
 ---
 
-## North Star (永不变)
+## North Star
 
-**Vision**: Create the world's most accessible platform for understanding and creating
-AI agent orchestration skills — so anyone who encounters drive-skill can not only
-understand it in 15 minutes, but walk away with a tailored version of their own.
+**Vision**: Make `erwin` a durable working lab for advanced AI/agent systems — one that helps us notice frontier shifts early, test them against real implementation work, and turn the best ideas into reusable operating patterns.
 
-**The final product**: An interactive educational platform + a library of community-created
-skill variants, driven by a meta-skill that teaches how to design AI agent orchestration.
+**The final product**: A repository where field intelligence, live harness experimentation, and reusable skills reinforce each other instead of drifting apart.
 
 ---
 
-## 2026 Q1 OKRs
+## 2026 Q2 OKRs
 
-### O1: Make drive-skill understand-able by anyone (showcase V2)
+### O1: Establish a high-signal AI/agent radar
 
-- **KR1**: V2 four-act structure shipped with ExecutionSimulator → `0%`
-- **KR2**: OriginTrace maps 30+ philosophical/historical sources interactively → `0%`
-- **KR3**: SkillBuilder generates downloadable, functional skill.md → `0%`
-- **KR4**: User can complete "15-second shock → 5-minute understanding → create" journey → `0%`
+- **KR1**: Two recurring automations defined: daily radar + weekly synthesis → `100%`
+- **KR2**: `docs/radar/` knowledge base created with sources, themes, and first synthesis → `100%`
+- **KR3**: Radar favors first-party engineering / developer surfaces over tool-market noise → `100%`
+- **KR4**: Weekly syntheses become the durable repo artifact, not daily markdown exhaust → `100%`
 
-### O2: Establish erwin as a meta-skill factory
+### O2: Reposition erwin around its real center of gravity
 
-- **KR1**: One skill idea at Plant 🌱 stage (defined + ADR written) → `0%`
-- **KR2**: Project management template extractable for other projects → `0%`
-- **KR3**: erwin itself demonstrates drive-skill methodology in its dev process → `25%`
+- **KR1**: Repo entrypoints describe `erwin` as an AI/agent frontier exploration lab → `100%`
+- **KR2**: `Harness` is framed as a major track, not the whole identity → `100%`
+- **KR3**: `showcase` and `teamwork-demo` are demoted from the default narrative center → `100%`
+- **KR4**: Archive boundary created before destructive cleanup → `100%`
+
+### O3: Slim the repo without losing useful history
+
+- **KR1**: `_project/sessions` moved behind an archive boundary with compatibility preserved → `100%`
+- **KR2**: historical docs are clearly indexed as archived or historical → `100%`
+- **KR3**: archive candidates are listed explicitly before any deletion round → `100%`
+- **KR4**: phase-two delete/extract decisions are deferred until after the new structure settles → `100%`
 
 ---
 
-## Project Phases
+## Active Lanes
 
-```
-Phase 1: Showcase (NOW)
-  ↳ Make drive-skill fully understandable
-  ↳ V1 showcase → V2 interactive showcase
-  ↳ Success: someone reads it and builds their own skill
+### Radar
 
-Phase 2: New Skill (NEXT)
-  ↳ Create the first erwin-original skill
-  ↳ Based on ideas incubating in _project/ideas/skills/
-  ↳ Uses erwin showcase to explain the new skill
+- track authoritative AI/agent developments
+- maintain durable weekly syntheses
+- keep current themes under active review
 
-Phase 3: Skill Library (FUTURE)
-  ↳ Multiple skills, each with its own showcase section
-  ↳ Community can contribute skill ideas via Issues
-  ↳ erwin becomes a pattern library, not just a showcase
-```
+### Harness
+
+- continue deepening the Codex-native orchestration runtime
+- test ideas from the broader field against real repo-native execution
+- keep documentation and runtime aligned
+
+### Skills
+
+- keep only the skills that still support the active mission
+- treat legacy teamwork/showcase material as historical unless it still drives present work
 
 ---
 
 ## What erwin IS
 
-- An educational platform for AI agent orchestration thinking
-- A meta-skill factory (creates skills that create skills)
-- A living demonstration of drive-skill methodology
+- An AI/agent frontier exploration lab
+- A proving ground for repository-native agent operating models
+- A place where field intelligence, harness work, and reusable skills inform each other
 
 ## What erwin IS NOT
 
-- A SaaS product (no auth, no database, no paying users)
-- A comprehensive AI framework (focused on skill design patterns only)
-- A drive-skill clone (we create NEW patterns, not copies)
-- Perfection on first release (MVP mentality throughout)
+- A showcase-first product repo
+- A generic AI news dump
+- A framework-shaped vanity project detached from real usage
+- A mandate to preserve every historical experiment in the default surface
 
 ---
 
-## The North Star Question
+## North Star Question
 
-> "If someone spends 30 minutes with erwin, what should they be able to DO that they couldn't do before?"
+> "If someone spends 30 minutes with erwin, what should they be able to do that they couldn't do before?"
 
-**Answer**: Build and install their own Claude Code skill that changes how they use AI.
+**Answer**: Understand which AI/agent ideas matter now, see how they map onto a real working harness, and reuse the strongest patterns instead of starting from hype or scratch.
 
 ---
 
-*Last updated: 2026-03-02 | Next OKR review: 2026-04-01*
+*Last updated: 2026-03-30 | Next OKR review: 2026-06-30*

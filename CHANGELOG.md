@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Repo Repositioning
+- **AI/agent radar foundation added**: created `docs/radar/README.md`, `docs/radar/sources.md`, `docs/radar/themes.md`, and the kickoff weekly synthesis at `docs/radar/weekly/2026-03-30.md`, establishing a lightweight repo-native knowledge base for authoritative field signals.
+- **Archive boundary added**: created `archive/README.md`, `docs/archive/README.md`, and `_project/archive/README.md` so historical material can be demoted safely before any delete round.
+
+### Changed — Repo Structure
+- **erwin repositioned around Radar + Harness + Skills**: added a new top-level `README.md`, rewrote `AGENTS.md` and `CLAUDE.md`, and updated `_project/GOALS.md` plus `_project/CURRENT.md` so the repository no longer presents itself as a showcase-first skill incubator.
+- **Session history moved behind an archive boundary**: `_project/sessions` now resolves to `_project/archive/sessions` through a compatibility symlink, reducing default surface noise while preserving older links and skill behavior.
+- **Low-value historical material was cut aggressively**: archive now keeps only the small set of session logs still referenced by the active repo surface, and `teamwork-demo/` has been removed entirely because it no longer provided implementation or reference value.
+
 ### Added — Harness Prototype
 - **Harness v0.87.0-prototype — Maintenance-first decision deferral is now explicit**: when governance-critical maintenance wins the unified control-plane portfolio, scheduler now marks affected decision-bearing missions with `deferred_by_primary_control_plane_kind: maintenance`, records the winning maintenance action, and emits explicit `defer_pending_primary_maintenance` reschedule actions instead of only leaving those decisions visible behind the primary packet. Core smoke now proves maintenance-first packet selection and maintenance-first decision deferral together.
 - **Harness v0.86.0-prototype — Unified leader-facing control-plane priority**: scheduler no longer leaves the leader to merge separate human-decision and maintenance queues by hand. It now exposes `primary_control_plane_kind`, `primary_control_plane_packet`, `primary_control_plane_selection_policy`, and deferred control-plane count, and it lets governance-critical maintenance such as `clear_invalid_bundle_governor` outrank lower-priority human decisions without hiding those deferred decisions from the portfolio. Core smoke now proves the unified priority surface and `home` mirrors it directly.
