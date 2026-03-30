@@ -1281,7 +1281,7 @@ func matchedMeetingTriggerRefs(profile map[string]any, decisionKind string, bund
 				matches = append(matches, trigger)
 			}
 		case strings.Contains(lower, "release"):
-			if releaseAdjacent || containsString(profileHighRiskScopeRefs, "release and RC flows") || containsString(freshSignalKinds, "interface_change") || containsString(freshSignalKinds, "requires_meeting") {
+			if releaseAdjacent || containsString(profileHighRiskScopeRefs, "release and RC flows") || containsString(freshSignalKinds, "interface_change") || containsString(freshSignalKinds, "requires_meeting") || containsString(freshSignalKinds, "review_feedback") {
 				matches = append(matches, trigger)
 			}
 		}
@@ -1309,7 +1309,8 @@ func recommendedDecisionProtocol(decisionKind, decisionSurface string, releaseAd
 			(decisionKind == "review_follow_up_signals" ||
 				decisionKind == "establish_bundle_governor" ||
 				containsString(freshSignalKinds, "interface_change") ||
-				containsString(freshSignalKinds, "requires_meeting"))) {
+				containsString(freshSignalKinds, "requires_meeting") ||
+				containsString(freshSignalKinds, "review_feedback"))) {
 		return "incident-command", "Decision is release-adjacent or urgent enough that the council should optimize for bounded command, action ownership, and checkpointed stabilization."
 	}
 	return "evidence-review", "Decision benefits from bounded evidence review and challenge/synthesis rather than incident command."
@@ -1922,6 +1923,31 @@ func runByID(registry map[string]any, runID string) map[string]any {
 	return run
 }
 
+func normalizeSignalKind(kind string) string {
+	switch strings.TrimSpace(strings.ToLower(kind)) {
+	case "requires_meeting", "meeting_required", "meeting-required":
+		return "requires_meeting"
+	case "requires_rebase", "requires-rebase":
+		return "requires_rebase"
+	case "review_feedback", "review-feedback":
+		return "review_feedback"
+	case "priority_change", "priority-change":
+		return "priority_change"
+	case "risk_raised", "risk-raised":
+		return "risk_raised"
+	case "dependency_discovered", "dependency-discovered":
+		return "dependency_discovered"
+	case "dependency_cleared", "dependency-cleared":
+		return "dependency_cleared"
+	case "interface_change", "interface-change":
+		return "interface_change"
+	case "release_ready", "release-ready":
+		return "release_ready"
+	default:
+		return strings.TrimSpace(kind)
+	}
+}
+
 func signalSupersession(signal map[string]any, registry map[string]any) (bool, map[string]any) {
 	runID := stringValue(signal["run_id"])
 	if runID == "" {
@@ -1938,7 +1964,7 @@ func signalSupersession(signal map[string]any, registry map[string]any) (bool, m
 	}
 	runLevel := authorityRank("L2")
 	runUpdated := firstNonBlank(stringValue(run["updated_at"]), stringValue(run["last_reported_at"]), stringValue(run["started_at"]))
-	switch stringValue(signal["kind"]) {
+	switch normalizeSignalKind(stringValue(signal["kind"])) {
 	case "blocked":
 		if stringValue(run["state"]) != "blocked" && stringValue(run["state"]) != "waiting" && runLevel >= signalLevel && isoAfter(runUpdated, emittedAt) {
 			return true, map[string]any{
@@ -2293,7 +2319,7 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 		signalRank := authorityRank(signalLevel)
 		signalSources = append(signalSources, map[string]any{
 			"source_ref":       "signal:" + signalID,
-			"kind":             stringValue(signal["kind"]),
+			"kind":             normalizeSignalKind(stringValue(signal["kind"])),
 			"summary":          stringValue(signal["summary"]),
 			"authority_level":  signalLevel,
 			"authority_rank":   signalRank,
@@ -2303,7 +2329,7 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 		})
 		if superseded, resolution := signalSupersession(signal, registry); superseded {
 			resolution["signal_id"] = signalID
-			resolution["signal_kind"] = stringValue(signal["kind"])
+			resolution["signal_kind"] = normalizeSignalKind(stringValue(signal["kind"]))
 			resolution["authority_level"] = signalLevel
 			resolution["emitted_at"] = emittedAt
 			supersededSignals = append(supersededSignals, resolution)
@@ -2311,14 +2337,14 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 		}
 
 		conflict := map[string]any(nil)
-		switch stringValue(signal["kind"]) {
+		switch normalizeSignalKind(stringValue(signal["kind"])) {
 		case "blocked":
 			if stringValue(run["state"]) != "blocked" && stringValue(run["state"]) != "waiting" {
 				if signalRank > authorityRank(runLevel) || (signalRank == authorityRank(runLevel) && isoAfter(emittedAt, runUpdatedAt)) {
 					conflict = map[string]any{
 						"claim_ref":       "execution_state",
 						"signal_id":       signalID,
-						"signal_kind":     stringValue(signal["kind"]),
+						"signal_kind":     normalizeSignalKind(stringValue(signal["kind"])),
 						"source_ref":      "signal:" + signalID,
 						"winning_source":  "signal:" + signalID,
 						"losing_source":   "run:" + runID,
@@ -2344,7 +2370,7 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 					conflict = map[string]any{
 						"claim_ref":       "meeting_required",
 						"signal_id":       signalID,
-						"signal_kind":     stringValue(signal["kind"]),
+						"signal_kind":     normalizeSignalKind(stringValue(signal["kind"])),
 						"source_ref":      "signal:" + signalID,
 						"winning_source":  "signal:" + signalID,
 						"losing_source":   "run:" + runID,
@@ -8131,6 +8157,7 @@ func cmdSignals(args []string) error {
 			if findSignalIndex(log, stringValue(merged["signal_id"])) >= 0 {
 				return fmt.Errorf("signal already exists: %s", stringValue(merged["signal_id"]))
 			}
+			merged["kind"] = normalizeSignalKind(stringValue(merged["kind"]))
 			fillIfBlank(merged, "emitted_at", nowISO())
 			fillIfBlank(merged, "state", "active")
 			log["signals"] = append(toList(log["signals"]), merged)
@@ -8887,7 +8914,7 @@ func schedulerPrimaryControlPlanePacket(requiredHumanDecisions []any, primaryReq
 			policy = "critical_maintenance_over_decision"
 		}
 		packet, _ := toMap(cloneValue(primaryMaintenanceAction))
-		return "maintenance", packet, policy, maxInt(len(maintenanceActions)-1, 0)+len(requiredHumanDecisions)
+		return "maintenance", packet, policy, maxInt(len(maintenanceActions)-1, 0) + len(requiredHumanDecisions)
 	}
 	if len(requiredHumanDecisions) > 0 {
 		policy := "human_decision_only"
@@ -8895,7 +8922,7 @@ func schedulerPrimaryControlPlanePacket(requiredHumanDecisions []any, primaryReq
 			policy = "human_decision_over_noncritical_maintenance"
 		}
 		packet, _ := toMap(cloneValue(primaryRequiredHumanDecision))
-		return "human-decision", packet, policy, maxInt(len(requiredHumanDecisions)-1, 0)+len(maintenanceActions)
+		return "human-decision", packet, policy, maxInt(len(requiredHumanDecisions)-1, 0) + len(maintenanceActions)
 	}
 	if len(maintenanceActions) > 0 {
 		packet, _ := toMap(cloneValue(primaryMaintenanceAction))
@@ -9156,8 +9183,15 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		if !activeSignal(signal) {
 			continue
 		}
-		kind := strings.TrimSpace(stringValue(signal["kind"]))
-		if kind != "requires_meeting" && kind != "interface_change" && kind != "dependency_discovered" && kind != "blocked" {
+		kind := normalizeSignalKind(stringValue(signal["kind"]))
+		if kind != "requires_meeting" &&
+			kind != "interface_change" &&
+			kind != "dependency_discovered" &&
+			kind != "blocked" &&
+			kind != "review_feedback" &&
+			kind != "priority_change" &&
+			kind != "risk_raised" &&
+			kind != "requires_rebase" {
 			continue
 		}
 		missionIDs := []string{}
@@ -9363,6 +9397,20 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 						"reason":        "Scheduler detected a fresh blocker signal that has not yet been adopted into run state.",
 					})
 				}
+			case containsString(freshFollowUpSignalKindsByMission[missionID], "requires_rebase"):
+				classification = "blocked-by-policy"
+				reasons = append(reasons, "Mission has a fresh requires-rebase signal that should be handled before execution continues.")
+				recommendedAction = "Rebase or refresh the governed run state before continuing this mission."
+				if authoritativeRunID != "" && (authoritativeRunState == "ready" || authoritativeRunState == "executing") {
+					rescheduleActions = append(rescheduleActions, map[string]any{
+						"mission_id":    missionID,
+						"run_id":        authoritativeRunID,
+						"action_kind":   "pause_for_fresh_rebase_signal",
+						"target_state":  "waiting",
+						"current_state": authoritativeRunState,
+						"reason":        "Scheduler detected a fresh requires-rebase signal that has not yet been adopted into runtime state.",
+					})
+				}
 			case containsString(freshFollowUpSignalKindsByMission[missionID], "dependency_discovered"):
 				classification = "blocked-by-dependency"
 				reasons = append(reasons, "Mission has a fresh dependency-discovered signal that has not yet been converted into dependency state.")
@@ -9377,10 +9425,23 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 						"reason":        "Scheduler detected a fresh dependency-discovered signal that has not yet been adopted into mission state.",
 					})
 				}
-			case containsString(freshFollowUpSignalKindsByMission[missionID], "requires_meeting") || containsString(freshFollowUpSignalKindsByMission[missionID], "interface_change"):
+			case containsString(freshFollowUpSignalKindsByMission[missionID], "requires_meeting") ||
+				containsString(freshFollowUpSignalKindsByMission[missionID], "interface_change") ||
+				containsString(freshFollowUpSignalKindsByMission[missionID], "review_feedback") ||
+				containsString(freshFollowUpSignalKindsByMission[missionID], "priority_change") ||
+				containsString(freshFollowUpSignalKindsByMission[missionID], "risk_raised"):
 				classification = "needs-human-decision"
-				reasons = append(reasons, "Mission has fresh follow-up coordination signals that should be reviewed before widening execution.")
-				recommendedAction = "Review the fresh coordination signals and either adopt them into state or materialize the required meeting."
+				reasons = append(reasons, "Mission has fresh follow-up control-plane signals that should be reviewed before widening execution.")
+				switch {
+				case containsString(freshFollowUpSignalKindsByMission[missionID], "review_feedback"):
+					recommendedAction = "Review the fresh review feedback and adopt it into governed review state before widening execution."
+				case containsString(freshFollowUpSignalKindsByMission[missionID], "priority_change"):
+					recommendedAction = "Review the fresh priority-change signal and adopt it into mission state before widening execution."
+				case containsString(freshFollowUpSignalKindsByMission[missionID], "risk_raised"):
+					recommendedAction = "Review the fresh risk-raised signal and either tighten policy or convene a governed decision before widening execution."
+				default:
+					recommendedAction = "Review the fresh coordination signals and either adopt them into state or materialize the required meeting."
+				}
 				decisionKind = "review_follow_up_signals"
 				if authoritativeRunID != "" && (authoritativeRunState == "ready" || authoritativeRunState == "executing") {
 					rescheduleActions = append(rescheduleActions, map[string]any{
@@ -9397,7 +9458,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				reasons = append(reasons, "Mission has unresolved competing root-run authority.")
 				recommendedAction = "Close, merge, or explicitly govern the competing root run before continuing."
 				decisionKind = "resolve_parallel_root_runs"
-		case openMeetingActionCountByMission[missionID] > 0:
+			case openMeetingActionCountByMission[missionID] > 0:
 				classification = "needs-human-decision"
 				reasons = append(reasons, fmt.Sprintf("Mission has %d open meeting action(s).", openMeetingActionCountByMission[missionID]))
 				recommendedAction = "Review open meeting actions and translate them into accepted execution state."
@@ -10189,48 +10250,48 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 	}
 
 	snapshot := map[string]any{
-		"generated_at":                          generatedAt,
-		"profile_id":                            stringValue(getKey(profile, "profile.profile_id", "")),
-		"execution_mode":                        executionMode,
-		"selection_policy":                      selectionPolicy,
-		"previous_foreground_mission_id":        previousForegroundMissionID,
-		"previous_selected_mission_ids":         stringListToAny(previousSelectedMissionIDs),
-		"mission_count":                         len(entries),
-		"selected_mission_count":                len(selectedMissionIDs),
-		"selected_run_count":                    len(selectedRunIDs),
-		"selected_mission_ids":                  stringListToAny(selectedMissionIDs),
-		"selected_run_ids":                      stringListToAny(selectedRunIDs),
-		"max_parallel_runs":                     maxParallelRuns,
-		"batch_admission_policy":                batchAdmissionPolicy,
-		"capacity_deferred_mission_ids":         stringListToAny(batchCapacityDeferredMissionIDs),
-		"capacity_deferred_count":               len(batchCapacityDeferredMissionIDs),
-		"classification_tally":                  classificationTally,
-		"bundle_role_tally":                     bundleRoleTally,
-		"active_council_bundle_count":           len(dedupeStrings(activeCouncilBundleIDs)),
-		"active_council_bundle_ids":             stringListToAny(dedupeStrings(activeCouncilBundleIDs)),
-		"mission_classifications":               entries,
-		"required_human_decision_count":         len(requiredHumanDecisions),
-		"deferred_human_decision_count":         maxInt(len(requiredHumanDecisions)-1, 0),
-		"council_decision_count":                councilDecisionCount,
-		"required_human_decision_scope_tally":   decisionScopeTally,
-		"required_human_decision_surface_tally": decisionSurfaceTally,
-		"decision_selection_policy":             decisionSelectionPolicy,
-		"previous_primary_human_decision_key":   previousPrimaryDecisionKey,
-		"primary_required_human_decision":       primaryRequiredHumanDecision,
-		"required_human_decisions":              requiredHumanDecisions,
-		"maintenance_action_count":              len(maintenanceActions),
-		"deferred_maintenance_action_count":     maxInt(len(maintenanceActions)-1, 0),
-		"maintenance_action_tally":              maintenanceTally,
-		"maintenance_selection_policy":          maintenanceSelectionPolicy,
-		"previous_primary_maintenance_key":      previousPrimaryMaintenanceKey,
-		"primary_maintenance_action":            primaryMaintenanceAction,
-		"maintenance_actions":                   maintenanceActions,
-		"primary_control_plane_kind":            primaryControlPlaneKind,
+		"generated_at":                           generatedAt,
+		"profile_id":                             stringValue(getKey(profile, "profile.profile_id", "")),
+		"execution_mode":                         executionMode,
+		"selection_policy":                       selectionPolicy,
+		"previous_foreground_mission_id":         previousForegroundMissionID,
+		"previous_selected_mission_ids":          stringListToAny(previousSelectedMissionIDs),
+		"mission_count":                          len(entries),
+		"selected_mission_count":                 len(selectedMissionIDs),
+		"selected_run_count":                     len(selectedRunIDs),
+		"selected_mission_ids":                   stringListToAny(selectedMissionIDs),
+		"selected_run_ids":                       stringListToAny(selectedRunIDs),
+		"max_parallel_runs":                      maxParallelRuns,
+		"batch_admission_policy":                 batchAdmissionPolicy,
+		"capacity_deferred_mission_ids":          stringListToAny(batchCapacityDeferredMissionIDs),
+		"capacity_deferred_count":                len(batchCapacityDeferredMissionIDs),
+		"classification_tally":                   classificationTally,
+		"bundle_role_tally":                      bundleRoleTally,
+		"active_council_bundle_count":            len(dedupeStrings(activeCouncilBundleIDs)),
+		"active_council_bundle_ids":              stringListToAny(dedupeStrings(activeCouncilBundleIDs)),
+		"mission_classifications":                entries,
+		"required_human_decision_count":          len(requiredHumanDecisions),
+		"deferred_human_decision_count":          maxInt(len(requiredHumanDecisions)-1, 0),
+		"council_decision_count":                 councilDecisionCount,
+		"required_human_decision_scope_tally":    decisionScopeTally,
+		"required_human_decision_surface_tally":  decisionSurfaceTally,
+		"decision_selection_policy":              decisionSelectionPolicy,
+		"previous_primary_human_decision_key":    previousPrimaryDecisionKey,
+		"primary_required_human_decision":        primaryRequiredHumanDecision,
+		"required_human_decisions":               requiredHumanDecisions,
+		"maintenance_action_count":               len(maintenanceActions),
+		"deferred_maintenance_action_count":      maxInt(len(maintenanceActions)-1, 0),
+		"maintenance_action_tally":               maintenanceTally,
+		"maintenance_selection_policy":           maintenanceSelectionPolicy,
+		"previous_primary_maintenance_key":       previousPrimaryMaintenanceKey,
+		"primary_maintenance_action":             primaryMaintenanceAction,
+		"maintenance_actions":                    maintenanceActions,
+		"primary_control_plane_kind":             primaryControlPlaneKind,
 		"primary_control_plane_selection_policy": primaryControlPlaneSelectionPolicy,
-		"primary_control_plane_packet":          primaryControlPlanePacket,
-		"deferred_control_plane_packet_count":   deferredControlPlanePacketCount,
-		"reschedule_action_count":               len(rescheduleActions),
-		"reschedule_actions":                    rescheduleActions,
+		"primary_control_plane_packet":           primaryControlPlanePacket,
+		"deferred_control_plane_packet_count":    deferredControlPlanePacketCount,
+		"reschedule_action_count":                len(rescheduleActions),
+		"reschedule_actions":                     rescheduleActions,
 		"follow_up_signal_count": len(dedupeStrings(func() []string {
 			ids := []string{}
 			for _, entry := range entries {
@@ -10420,8 +10481,8 @@ func cmdHome(args []string) error {
 			coordinationSignals = append(coordinationSignals, signal)
 			continue
 		}
-		switch stringValue(signal["kind"]) {
-		case "requires_meeting", "interface_change", "dependency_discovered":
+		switch normalizeSignalKind(stringValue(signal["kind"])) {
+		case "requires_meeting", "interface_change", "dependency_discovered", "review_feedback", "priority_change", "risk_raised", "requires_rebase":
 			coordinationSignals = append(coordinationSignals, signal)
 		}
 	}
@@ -10493,74 +10554,74 @@ func cmdHome(args []string) error {
 		nextAction = "Review waiting runs and dependency state."
 	}
 	return printJSON(map[string]any{
-		"profile_id":                                      stringValue(getKey(profile, "profile.profile_id", "")),
-		"active_mission_count":                            len(activeMissions),
-		"blocked_mission_count":                           len(blockedMissions),
-		"review_mission_count":                            len(reviewMissions),
-		"dependency_mission_count":                        len(dependencyBlockedMissions),
-		"mission_graph_edge_count":                        missionGraphEdges,
-		"mission_bundle_count":                            intValue(graphAuthorityAudit["bundle_count"]),
-		"mission_conflicted_bundle_count":                 intValue(graphAuthorityAudit["conflicted_bundle_count"]),
-		"mission_governed_bundle_count":                   intValue(graphAuthorityAudit["governed_bundle_count"]),
-		"mission_escalated_bundle_count":                  intValue(graphAuthorityAudit["escalated_bundle_count"]),
-		"mission_graph_conflict_count":                    intValue(graphAuthorityAudit["cross_mission_conflict_count"]),
-		"mission_dependency_adjudication_count":           intValue(graphAuthorityAudit["dependency_adjudication_count"]),
-		"active_run_count":                                len(activeRuns),
-		"active_teammate_count":                           len(activeTeammates),
-		"blocked_run_count":                               len(blockedRuns),
-		"dependency_blocked_count":                        len(dependencyBlockedRuns),
-		"review_blocked_count":                            len(reviewBlockedRuns),
-		"checks_failed_count":                             len(checksFailedRuns),
-		"merge_ready_count":                               len(mergeReadyRuns),
-		"ownership_overlap_count":                         len(overlappingClaims),
-		"active_signal_count":                             len(activeSignals),
-		"coordination_signal_count":                       len(coordinationSignals),
-		"active_meeting_count":                            len(meetings),
-		"active_rc_count":                                 boolToInt(activeRCRecord != nil),
-		"open_meeting_action_count":                       len(meetingActions),
-		"orphan_signal_count":                             len(orphanSignals),
-		"orphan_meeting_count":                            len(orphanMeetings),
-		"missions":                                        activeMissions,
-		"dependency_blocked_missions":                     dependencyBlockedMissions,
-		"mission_authority_audit":                         graphAuthorityAudit,
-		"runs":                                            activeRuns,
-		"dependency_blocked_runs":                         dependencyBlockedRuns,
-		"signals":                                         activeSignals,
-		"meetings":                                        meetings,
-		"overlapping_claims":                              overlappingClaims,
-		"active_rc":                                       mapOrEmpty(activeRCRecord),
-		"meeting_actions":                                 meetingActions,
-		"orphan_signals":                                  orphanSignals,
-		"orphan_meetings":                                 orphanMeetings,
-		"scheduler_execution_mode":                        stringValue(scheduler["execution_mode"]),
-		"scheduler_selected_mission_count":                intValue(scheduler["selected_mission_count"]),
-		"scheduler_required_human_decision_count":         intValue(scheduler["required_human_decision_count"]),
-		"scheduler_deferred_human_decision_count":         intValue(scheduler["deferred_human_decision_count"]),
-		"scheduler_council_decision_count":                intValue(scheduler["council_decision_count"]),
-		"scheduler_maintenance_action_count":              intValue(scheduler["maintenance_action_count"]),
-		"scheduler_deferred_maintenance_action_count":     intValue(scheduler["deferred_maintenance_action_count"]),
-		"scheduler_reschedule_action_count":               intValue(scheduler["reschedule_action_count"]),
-		"scheduler_tally":                                 cloneValue(getKey(scheduler, "classification_tally", map[string]any{})),
-		"scheduler_bundle_role_tally":                     cloneValue(getKey(scheduler, "bundle_role_tally", map[string]any{})),
-		"scheduler_active_council_bundle_count":           intValue(scheduler["active_council_bundle_count"]),
-		"scheduler_active_council_bundle_ids":             cloneValue(getKey(scheduler, "active_council_bundle_ids", []any{})),
-		"scheduler_required_human_decision_scope_tally":   cloneValue(getKey(scheduler, "required_human_decision_scope_tally", map[string]any{})),
-		"scheduler_required_human_decision_surface_tally": cloneValue(getKey(scheduler, "required_human_decision_surface_tally", map[string]any{})),
-		"scheduler_decision_selection_policy":             stringValue(scheduler["decision_selection_policy"]),
-		"scheduler_previous_primary_human_decision_key":   stringValue(scheduler["previous_primary_human_decision_key"]),
-		"scheduler_primary_required_human_decision":       cloneValue(getKey(scheduler, "primary_required_human_decision", map[string]any{})),
-		"scheduler_maintenance_selection_policy":          stringValue(scheduler["maintenance_selection_policy"]),
-		"scheduler_previous_primary_maintenance_key":      stringValue(scheduler["previous_primary_maintenance_key"]),
-		"scheduler_primary_maintenance_action":            cloneValue(getKey(scheduler, "primary_maintenance_action", map[string]any{})),
-		"scheduler_primary_control_plane_kind":            stringValue(scheduler["primary_control_plane_kind"]),
+		"profile_id":                                       stringValue(getKey(profile, "profile.profile_id", "")),
+		"active_mission_count":                             len(activeMissions),
+		"blocked_mission_count":                            len(blockedMissions),
+		"review_mission_count":                             len(reviewMissions),
+		"dependency_mission_count":                         len(dependencyBlockedMissions),
+		"mission_graph_edge_count":                         missionGraphEdges,
+		"mission_bundle_count":                             intValue(graphAuthorityAudit["bundle_count"]),
+		"mission_conflicted_bundle_count":                  intValue(graphAuthorityAudit["conflicted_bundle_count"]),
+		"mission_governed_bundle_count":                    intValue(graphAuthorityAudit["governed_bundle_count"]),
+		"mission_escalated_bundle_count":                   intValue(graphAuthorityAudit["escalated_bundle_count"]),
+		"mission_graph_conflict_count":                     intValue(graphAuthorityAudit["cross_mission_conflict_count"]),
+		"mission_dependency_adjudication_count":            intValue(graphAuthorityAudit["dependency_adjudication_count"]),
+		"active_run_count":                                 len(activeRuns),
+		"active_teammate_count":                            len(activeTeammates),
+		"blocked_run_count":                                len(blockedRuns),
+		"dependency_blocked_count":                         len(dependencyBlockedRuns),
+		"review_blocked_count":                             len(reviewBlockedRuns),
+		"checks_failed_count":                              len(checksFailedRuns),
+		"merge_ready_count":                                len(mergeReadyRuns),
+		"ownership_overlap_count":                          len(overlappingClaims),
+		"active_signal_count":                              len(activeSignals),
+		"coordination_signal_count":                        len(coordinationSignals),
+		"active_meeting_count":                             len(meetings),
+		"active_rc_count":                                  boolToInt(activeRCRecord != nil),
+		"open_meeting_action_count":                        len(meetingActions),
+		"orphan_signal_count":                              len(orphanSignals),
+		"orphan_meeting_count":                             len(orphanMeetings),
+		"missions":                                         activeMissions,
+		"dependency_blocked_missions":                      dependencyBlockedMissions,
+		"mission_authority_audit":                          graphAuthorityAudit,
+		"runs":                                             activeRuns,
+		"dependency_blocked_runs":                          dependencyBlockedRuns,
+		"signals":                                          activeSignals,
+		"meetings":                                         meetings,
+		"overlapping_claims":                               overlappingClaims,
+		"active_rc":                                        mapOrEmpty(activeRCRecord),
+		"meeting_actions":                                  meetingActions,
+		"orphan_signals":                                   orphanSignals,
+		"orphan_meetings":                                  orphanMeetings,
+		"scheduler_execution_mode":                         stringValue(scheduler["execution_mode"]),
+		"scheduler_selected_mission_count":                 intValue(scheduler["selected_mission_count"]),
+		"scheduler_required_human_decision_count":          intValue(scheduler["required_human_decision_count"]),
+		"scheduler_deferred_human_decision_count":          intValue(scheduler["deferred_human_decision_count"]),
+		"scheduler_council_decision_count":                 intValue(scheduler["council_decision_count"]),
+		"scheduler_maintenance_action_count":               intValue(scheduler["maintenance_action_count"]),
+		"scheduler_deferred_maintenance_action_count":      intValue(scheduler["deferred_maintenance_action_count"]),
+		"scheduler_reschedule_action_count":                intValue(scheduler["reschedule_action_count"]),
+		"scheduler_tally":                                  cloneValue(getKey(scheduler, "classification_tally", map[string]any{})),
+		"scheduler_bundle_role_tally":                      cloneValue(getKey(scheduler, "bundle_role_tally", map[string]any{})),
+		"scheduler_active_council_bundle_count":            intValue(scheduler["active_council_bundle_count"]),
+		"scheduler_active_council_bundle_ids":              cloneValue(getKey(scheduler, "active_council_bundle_ids", []any{})),
+		"scheduler_required_human_decision_scope_tally":    cloneValue(getKey(scheduler, "required_human_decision_scope_tally", map[string]any{})),
+		"scheduler_required_human_decision_surface_tally":  cloneValue(getKey(scheduler, "required_human_decision_surface_tally", map[string]any{})),
+		"scheduler_decision_selection_policy":              stringValue(scheduler["decision_selection_policy"]),
+		"scheduler_previous_primary_human_decision_key":    stringValue(scheduler["previous_primary_human_decision_key"]),
+		"scheduler_primary_required_human_decision":        cloneValue(getKey(scheduler, "primary_required_human_decision", map[string]any{})),
+		"scheduler_maintenance_selection_policy":           stringValue(scheduler["maintenance_selection_policy"]),
+		"scheduler_previous_primary_maintenance_key":       stringValue(scheduler["previous_primary_maintenance_key"]),
+		"scheduler_primary_maintenance_action":             cloneValue(getKey(scheduler, "primary_maintenance_action", map[string]any{})),
+		"scheduler_primary_control_plane_kind":             stringValue(scheduler["primary_control_plane_kind"]),
 		"scheduler_primary_control_plane_selection_policy": stringValue(scheduler["primary_control_plane_selection_policy"]),
-		"scheduler_primary_control_plane_packet":          cloneValue(getKey(scheduler, "primary_control_plane_packet", map[string]any{})),
-		"scheduler_deferred_control_plane_packet_count":   intValue(scheduler["deferred_control_plane_packet_count"]),
-		"scheduler_maintenance_action_tally":              cloneValue(getKey(scheduler, "maintenance_action_tally", map[string]any{})),
-		"scheduler_previous_selected_mission_ids":         cloneValue(toList(scheduler["previous_selected_mission_ids"])),
-		"scheduler_selected_mission_ids":                  cloneValue(toList(scheduler["selected_mission_ids"])),
-		"scheduler_next_action":                           stringValue(scheduler["next_action"]),
-		"next_action":                                     nextAction,
+		"scheduler_primary_control_plane_packet":           cloneValue(getKey(scheduler, "primary_control_plane_packet", map[string]any{})),
+		"scheduler_deferred_control_plane_packet_count":    intValue(scheduler["deferred_control_plane_packet_count"]),
+		"scheduler_maintenance_action_tally":               cloneValue(getKey(scheduler, "maintenance_action_tally", map[string]any{})),
+		"scheduler_previous_selected_mission_ids":          cloneValue(toList(scheduler["previous_selected_mission_ids"])),
+		"scheduler_selected_mission_ids":                   cloneValue(toList(scheduler["selected_mission_ids"])),
+		"scheduler_next_action":                            stringValue(scheduler["next_action"]),
+		"next_action":                                      nextAction,
 	})
 }
 
@@ -13941,11 +14002,16 @@ func cmdMaintenance(args []string) error {
 			signals := toList(log["signals"])
 			for index, item := range signals {
 				signal, _ := toMap(item)
+				normalizedKind := normalizeSignalKind(stringValue(signal["kind"]))
+				if normalizedKind != stringValue(signal["kind"]) {
+					signal["kind"] = normalizedKind
+					normalizedSignals = append(normalizedSignals, stringValue(signal["signal_id"]))
+				}
 				if stringValue(signal["emitted_at"]) == "" {
 					signal["emitted_at"] = firstNonBlank(stringValue(signal["fresh_until"]), nowISO())
 					normalizedSignals = append(normalizedSignals, stringValue(signal["signal_id"]))
-					signals[index] = signal
 				}
+				signals[index] = signal
 			}
 			log["signals"] = signals
 			needsMissionSync := len(toList(missionRegistry["missions"])) == 0 && len(runs) > 0

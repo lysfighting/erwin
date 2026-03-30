@@ -6,15 +6,24 @@
 
 ## Project Status
 
-- **Version**: 0.88.0 (in progress)
-- **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (erwin repositioned around AI/agent radar + archive boundary, then deleted low-value legacy docs and `teamwork-demo/`)
+- **Version**: 0.89.0 (in progress)
+- **Last Updated**: 2026-03-31
+- **Last Session**: 2026-03-31 (Harness scheduler matured fresh signal rescheduling and canonical docs were realigned with runtime truth)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness scheduler widened fresh-signal rescheduling into more realistic control-plane behavior
+
+- **Signal-kind normalization added**: runtime now canonicalizes signal aliases such as `meeting_required -> requires_meeting`, so scheduler, `home`, authority audit, and maintenance normalize all reason over one stable signal taxonomy instead of depending on spelling drift
+- **Fresh review feedback now becomes governed scheduler work**: fresh `review_feedback` signals now reclassify a mission into explicit human-decision follow-up, pause foreground execution when needed, and surface review-specific leader guidance instead of remaining passive telemetry
+- **Fresh rebase requirements now become blocking scheduler work**: fresh `requires_rebase` signals now classify missions as `blocked-by-policy`, emit dedicated `pause_for_fresh_rebase_signal` reschedule actions, and tell the leader to refresh governed run state before continuing
+- **Release-trigger council routing widened slightly**: fresh review feedback now participates in release-oriented meeting-trigger/protocol guidance, so release-adjacent follow-up decisions can route toward `incident-command` rather than being flattened into generic coordination
+- **Fresh-signal smoke coverage widened**: core smoke now proves alias normalization, review-feedback rescheduling, and requires-rebase blocking end to end before the signal is resolved
+- **Canonical docs realigned with runtime truth**: `_project/CURRENT.md`, `CHANGELOG.md`, `docs/harness-architecture.md`, `docs/harness-operating-model.md`, `docs/harness-public-contract.md`, and `docs/harness-session-handoff.md` now all reflect the widened fresh-signal control-plane contract, and the stale `0.82.0-prototype` handoff version note was corrected
 
 **Session 2026-03-30** — erwin was repositioned around Radar + Harness + Skills while preserving historical assets safely
 

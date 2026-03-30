@@ -114,6 +114,8 @@ Meaning:
 Current scheduler/council reality:
 
 - active bundle-governor councils now remain durable bundle-scoped decision objects in the portfolio
+- scheduler now normalizes fresh signal kinds before rescheduling, so aliases such as `meeting_required` land on the same control-plane path as `requires_meeting`
+- fresh `review_feedback` and `requires_rebase` signals now become real scheduler work instead of passive telemetry, pausing foreground execution or reclassifying the mission until the signal is adopted
 - scheduler and `home` follow an in-flight council's live `next_requirement` instead of generic review wording
 - stale active councils are now promoted into explicit “refresh or close the stale active council” guidance instead of remaining passive hold state
 - scheduler now also exposes one leader-facing `primary_control_plane_packet`, so critical maintenance can deliberately outrank lower-priority human decisions without hiding those deferred decisions from the portfolio
@@ -129,7 +131,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.82.0-prototype`
+- `adapter_version`: `0.89.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -212,7 +214,7 @@ Do not underestimate the current control-plane maturity.
 - protocol-aware live council guidance is also now real: once those meetings are in flight, `incident-command` and `decision-record` surface protocol-specific independent-review and output requirements instead of collapsing back to generic council wording
 - debate-batch control is now stateful: when multiple open batches exist, the controller exposes one deterministic current batch, keeps the rest blocked, and now retains that current batch when a new same-phase lane appears instead of reordering on freshness alone
 - debate-batch identity is now stable and hashed, so distinct batches cannot collide through truncated slugs and accidentally present multiple current batches
-- scheduler now treats fresh coordination/dependency/blocker signals as real rescheduling triggers instead of only including them in the snapshot payload
+- scheduler now treats fresh coordination/dependency/blocker/review/rebase signals as real rescheduling triggers instead of only including them in the snapshot payload
 - scheduler now escalates stale runs, expired signals, and stale meetings into explicit `maintenance_actions` instead of leaving them only to `doctor`
 - `home` now mirrors that maintenance backlog and the current primary maintenance packet so leader-facing surfaces stay aligned with scheduler reality
 - first-class mission objects

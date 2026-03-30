@@ -130,7 +130,7 @@ fresh_signal_output=$(
     cat <<EOF | bash scripts/harness-signals.sh emit
 {
   "signal_id": "sig-smoke-fresh-follow-up",
-  "kind": "requires_meeting",
+  "kind": "meeting_required",
   "source_type": "leader",
   "source_id": "leader-main",
   "run_id": "$run_id",
@@ -155,6 +155,68 @@ assert_json_field "$schedule_fresh_signal_output" '"action_kind": "pause_for_fre
 assert_json_field "$schedule_fresh_signal_output" '"follow_up_signal_count": 1' "scheduler counts fresh follow-up signals in mission classification"
 resolved_fresh_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-fresh-follow-up resolved "Fresh coordination signal reviewed.")
 assert_json_field "$resolved_fresh_signal" '"state": "resolved"' "fresh follow-up signal can be resolved after scheduler coverage"
+
+review_feedback_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-review-feedback",
+  "kind": "review_feedback",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$run_id",
+  "mission_id": "issue-20001",
+  "applies_to": ["issue-20001"],
+  "scope_type": "mission",
+  "title": "Fresh review feedback",
+  "summary": "Address the fresh review feedback before widening execution.",
+  "evidence_refs": ["$contract_path"],
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T00:05:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$review_feedback_signal" '"kind": "review_feedback"' "review-feedback signal can be emitted directly"
+schedule_review_feedback_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_review_feedback_output" '"decision_kind": "review_follow_up_signals"' "scheduler treats fresh review feedback as governed follow-up decision work"
+assert_json_field "$schedule_review_feedback_output" '"action_kind": "pause_for_fresh_follow_up_signal"' "scheduler pauses foreground execution for fresh review feedback"
+assert_json_field "$schedule_review_feedback_output" 'Review the fresh review feedback and adopt it into governed review state before widening execution.' "scheduler surfaces review-feedback-specific guidance"
+resolved_review_feedback_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-review-feedback resolved "Fresh review feedback covered.")
+assert_json_field "$resolved_review_feedback_signal" '"state": "resolved"' "review-feedback signal can be resolved after scheduler coverage"
+
+rebase_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-rebase-required",
+  "kind": "requires_rebase",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$run_id",
+  "mission_id": "issue-20001",
+  "applies_to": ["issue-20001"],
+  "scope_type": "mission",
+  "title": "Fresh rebase required",
+  "summary": "Rebase before continuing this run.",
+  "evidence_refs": ["$contract_path"],
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-29T00:10:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$rebase_signal" '"kind": "requires_rebase"' "requires-rebase signal can be emitted directly"
+schedule_rebase_signal_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_rebase_signal_output" '"classification": "blocked-by-policy"' "scheduler blocks mission execution behind a fresh requires-rebase signal"
+assert_json_field "$schedule_rebase_signal_output" '"action_kind": "pause_for_fresh_rebase_signal"' "scheduler emits a dedicated reschedule action for fresh requires-rebase signals"
+assert_json_field "$schedule_rebase_signal_output" 'Rebase or refresh the governed run state before continuing this mission.' "scheduler surfaces rebase-specific guidance"
+resolved_rebase_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-rebase-required resolved "Fresh rebase requirement covered.")
+assert_json_field "$resolved_rebase_signal" '"state": "resolved"' "requires-rebase signal can be resolved after scheduler coverage"
 
 section "Maintenance escalation"
 rewrite_json_in_file "$registry_path" 's/"last_reported_at": "[^"]*"/"last_reported_at": "2026-03-01T00:00:00Z"/'
