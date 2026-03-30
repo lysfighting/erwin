@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.68.0 (in progress)
+- **Version**: 0.69.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness retained sticky current debate batches under automated council control)
+- **Last Session**: 2026-03-30 (Harness broadened multi-mission bundle adjudication beyond priority/risk-only winners)
 
 ## Current Phase
 
@@ -49,6 +49,8 @@
 - **Home mirrors maintenance-first scheduling**: `home` now surfaces the scheduler's primary maintenance action and maintenance-selection metadata, so leader-facing status reflects when governance maintenance outranks fresh foreground execution
 - **Sticky current debate-batch control added**: `meetingDebatePlan` now preserves the previous open `current_wave_batch_id` when a new same-phase lane appears, exposing `batch_selection_policy` and `previous_current_wave_batch_id` so the council controller keeps one deterministic active batch instead of thrashing across newly inserted lanes
 - **Stable debate-batch identity added**: debate-batch ids now use stable hashed identities rather than truncated slugs, preventing distinct same-phase batches from colliding and accidentally presenting multiple "current" batches at once
+- **Broader candidate-governor adjudication added**: larger mission bundles no longer stop at `priority/risk`-only winner selection; graph authority now consumes the fuller candidate-governor tuple, including release-adjacent and governance-activity signals, so a uniquely stronger bundle candidate can be adjudicated even when raw priority/risk still tie
+- **Broader bundle smoke added**: core smoke now proves a three-mission escalation bundle can stay unresolved under equal tuples, then become governed once one candidate becomes uniquely release-adjacent, without polluting later runtime health or home/doctor baselines
 - **Scheduler maintenance escalation added**: scheduler snapshots now emit `maintenance_actions`, `maintenance_action_count`, and `maintenance_action_tally`, turning stale runs, expired signals, and stale meetings into explicit leader-facing maintenance work instead of leaving them only to `doctor`
 - **Maintenance guidance prioritized**: when stale control-plane state coexists with runnable foreground work, scheduler `next_action` now tells the leader to keep the foreground batch bounded and clean stale state before widening execution
 - **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves stale run plus stale signal maintenance escalation and verifies that refreshing the run and retiring the stale signal restores a clean control-plane path

@@ -389,6 +389,55 @@ assert_json_field "$home_output_multi_escalation" '"next_action": "Open or revie
 assert_json_field "$home_output_multi_escalation" '"scheduler_bundle_role_tally":' "home surfaces scheduler bundle-role tallies"
 assert_json_field "$home_output_multi_escalation" '"scheduler_primary_required_human_decision": {' "home surfaces the scheduler's primary decision packet"
 
+multi_tuple_claim_a=$(run_in_repo bash scripts/harness-claim.sh 20126 "Harness Bundle Tuple A" --owns="file:docs/harness-session-handoff.md" --allow-overlap)
+assert_json_field "$multi_tuple_claim_a" '"mission_id": "issue-20126"' "first tuple-governed bundle claim can materialize"
+multi_tuple_run_a=$(printf '%s\n' "$multi_tuple_claim_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+multi_tuple_claim_b=$(run_in_repo bash scripts/harness-claim.sh 20127 "Harness Bundle Tuple B" --owns="file:docs/harness-session-handoff.md" --allow-overlap)
+assert_json_field "$multi_tuple_claim_b" '"mission_id": "issue-20127"' "second tuple-governed bundle claim can materialize"
+multi_tuple_run_b=$(printf '%s\n' "$multi_tuple_claim_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+multi_tuple_claim_c=$(run_in_repo bash scripts/harness-claim.sh 20128 "Harness Bundle Tuple C" --owns="file:docs/harness-session-handoff.md" --allow-overlap)
+assert_json_field "$multi_tuple_claim_c" '"mission_id": "issue-20128"' "third tuple-governed bundle claim can materialize"
+multi_tuple_run_c=$(printf '%s\n' "$multi_tuple_claim_c" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+
+for tuple_run in "$multi_tuple_run_a" "$multi_tuple_run_b" "$multi_tuple_run_c"; do
+  tuple_update=$(
+    cd "$TEST_REPO" &&
+      cat <<EOF | bash scripts/harness-runs.sh update "$tuple_run"
+{
+  "priority": "P1",
+  "risk_level": "medium"
+}
+EOF
+  )
+  assert_json_field "$tuple_update" '"priority": "P1"' "tuple-governed bundle run can keep an equal priority baseline"
+done
+
+multi_tuple_release_update=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-runs.sh update "$multi_tuple_run_b"
+{
+  "ship_status": "pushed"
+}
+EOF
+)
+assert_json_field "$multi_tuple_release_update" '"ship_status": "pushed"' "tuple-governed bundle can add a unique release-adjacent candidate"
+
+graph_authority_multi_tuple=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_multi_tuple" '"resolution_kind": "bundle_governor_adjudicated"' "multi-mission bundle authority can adjudicate from the full candidate-governor tuple"
+assert_json_field "$graph_authority_multi_tuple" "\"governing_mission_id\": \"issue-20127\"" "multi-mission bundle authority anchors governance to the strongest tuple candidate"
+assert_json_field "$graph_authority_multi_tuple" '"authority_basis":' "tuple-governed bundle exposes the authority basis behind the winner"
+assert_json_field "$graph_authority_multi_tuple" '"release_adjacent"' "tuple-governed bundle records the release-adjacent basis when it breaks an otherwise tied bundle"
+schedule_multi_tuple_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_multi_tuple_output" "\"bundle_governing_mission_id\": \"issue-20127\"" "scheduler consumes the adjudicated tuple-governed bundle"
+assert_json_field "$schedule_multi_tuple_output" '"bundle_state": "governed"' "scheduler marks the tuple-governed bundle as governed instead of escalation-required"
+
+resolved_multi_tuple_a=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_tuple_run_a" completed "Closed tuple-governed bundle peer.")
+assert_json_field "$resolved_multi_tuple_a" '"state": "completed"' "tuple-governed bundle peer can be closed"
+resolved_multi_tuple_b=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_tuple_run_b" completed "Closed tuple-governed bundle winner.")
+assert_json_field "$resolved_multi_tuple_b" '"state": "completed"' "tuple-governed bundle winner can be closed"
+resolved_multi_tuple_c=$(run_in_repo bash scripts/harness-runs.sh set-state "$multi_tuple_run_c" completed "Closed tuple-governed bundle peer.")
+assert_json_field "$resolved_multi_tuple_c" '"state": "completed"' "third tuple-governed bundle peer can be closed"
+
 decision_portfolio_claim=$(run_in_repo bash scripts/harness-claim.sh 20023 "Harness Decision Portfolio" --owns="file:docs/README.md")
 assert_json_field "$decision_portfolio_claim" '"mission_id": "issue-20023"' "independent human-decision mission can materialize"
 decision_portfolio_run=$(printf '%s\n' "$decision_portfolio_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)

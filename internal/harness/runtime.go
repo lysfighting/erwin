@@ -3582,17 +3582,25 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 
 			if selectedWinnerID == "" && len(candidateMissionIDs) >= 2 {
 				type bundleAuthorityCandidate struct {
-					missionID string
-					priority  int
-					risk      int
+					missionID          string
+					priority           int
+					risk               int
+					releaseAdjacent    bool
+					openMeetingActions int
+					activeMeetingCount int
+					isRootCandidate    bool
 				}
 				candidates := []bundleAuthorityCandidate{}
-				for _, candidateMissionID := range candidateMissionIDs {
-					mission := missionByID[candidateMissionID]
+				for _, item := range candidateGovernorPackets {
+					packet, _ := toMap(item)
 					candidates = append(candidates, bundleAuthorityCandidate{
-						missionID: candidateMissionID,
-						priority:  schedulerPriorityRank(stringValue(mission["priority"])),
-						risk:      schedulerRiskRank(stringValue(mission["risk_level"])),
+						missionID:          stringValue(packet["mission_id"]),
+						priority:           schedulerPriorityRank(stringValue(packet["priority"])),
+						risk:               schedulerRiskRank(stringValue(packet["risk_level"])),
+						releaseAdjacent:    boolValue(packet["release_adjacent"]),
+						openMeetingActions: intValue(packet["open_meeting_actions"]),
+						activeMeetingCount: intValue(packet["active_meeting_count"]),
+						isRootCandidate:    boolValue(packet["is_root_candidate"]),
 					})
 				}
 				sort.Slice(candidates, func(i, j int) bool {
@@ -3602,6 +3610,18 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 					if candidates[i].risk != candidates[j].risk {
 						return candidates[i].risk > candidates[j].risk
 					}
+					if candidates[i].releaseAdjacent != candidates[j].releaseAdjacent {
+						return candidates[i].releaseAdjacent
+					}
+					if candidates[i].openMeetingActions != candidates[j].openMeetingActions {
+						return candidates[i].openMeetingActions > candidates[j].openMeetingActions
+					}
+					if candidates[i].activeMeetingCount != candidates[j].activeMeetingCount {
+						return candidates[i].activeMeetingCount > candidates[j].activeMeetingCount
+					}
+					if candidates[i].isRootCandidate != candidates[j].isRootCandidate {
+						return candidates[i].isRootCandidate
+					}
 					return candidates[i].missionID < candidates[j].missionID
 				})
 				best := candidates[0]
@@ -3609,8 +3629,18 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 				if len(candidates) > 1 {
 					second = candidates[1]
 				}
-				hasAuthoritySignal := best.priority > 0 || best.risk > 0
-				hasUniqueTopTuple := len(candidates) == 1 || best.priority != second.priority || best.risk != second.risk
+				hasAuthoritySignal := best.priority > 0 ||
+					best.risk > 0 ||
+					best.releaseAdjacent ||
+					best.openMeetingActions > 0 ||
+					best.activeMeetingCount > 0
+				hasUniqueTopTuple := len(candidates) == 1 ||
+					best.priority != second.priority ||
+					best.risk != second.risk ||
+					best.releaseAdjacent != second.releaseAdjacent ||
+					best.openMeetingActions != second.openMeetingActions ||
+					best.activeMeetingCount != second.activeMeetingCount ||
+					best.isRootCandidate != second.isRootCandidate
 				if hasAuthoritySignal {
 					hasBundleAuthoritySignal = true
 				}
@@ -3622,17 +3652,31 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 					if best.risk != second.risk {
 						authorityBasis = append(authorityBasis, "risk_level")
 					}
+					if best.releaseAdjacent != second.releaseAdjacent {
+						authorityBasis = append(authorityBasis, "release_adjacent")
+					}
+					if best.openMeetingActions != second.openMeetingActions || best.activeMeetingCount != second.activeMeetingCount {
+						authorityBasis = append(authorityBasis, "governance_activity")
+					}
+					if best.isRootCandidate != second.isRootCandidate {
+						authorityBasis = append(authorityBasis, "root_candidate")
+					}
 					if len(authorityBasis) == 0 {
-						authorityBasis = append(authorityBasis, "priority", "risk_level")
+						authorityBasis = append(authorityBasis, "candidate_governor_tuple")
 					}
 				} else if hasAuthoritySignal {
 					tiedMissionIDs := []string{}
 					for _, candidate := range candidates {
-						if candidate.priority == best.priority && candidate.risk == best.risk {
+						if candidate.priority == best.priority &&
+							candidate.risk == best.risk &&
+							candidate.releaseAdjacent == best.releaseAdjacent &&
+							candidate.openMeetingActions == best.openMeetingActions &&
+							candidate.activeMeetingCount == best.activeMeetingCount &&
+							candidate.isRootCandidate == best.isRootCandidate {
 							tiedMissionIDs = append(tiedMissionIDs, candidate.missionID)
 						}
 					}
-					governanceNotes = append(governanceNotes, fmt.Sprintf("No unique priority/risk winner exists across candidate bundle governors: %s.", strings.Join(dedupeStrings(tiedMissionIDs), ", ")))
+					governanceNotes = append(governanceNotes, fmt.Sprintf("No unique full candidate-governor tuple exists across bundle candidates: %s.", strings.Join(dedupeStrings(tiedMissionIDs), ", ")))
 				}
 			}
 

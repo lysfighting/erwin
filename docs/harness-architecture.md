@@ -625,6 +625,7 @@ That means:
 - the scheduler can now hold back brand-new low-urgency foreground admission when unresolved human decisions already dominate the portfolio and no established foreground batch is being continued
 - parallel widening now requires explicit justification when execution policy says the control plane should reduce parallelism rather than guess
 - the scheduler can now retain a sticky foreground mission across otherwise-tied passes, preferring stability over timestamp churn when priority, effective risk, and release posture still match
+- larger mission bundles can now adjudicate from a fuller candidate-governor tuple rather than only raw priority/risk, letting a uniquely release-adjacent or governance-active mission govern even when the simpler tuple still ties
 - a runnable `P0` mission now serializes the foreground batch even when other runnable missions are otherwise isolated
 - profile policy can now also escalate a foreground mission into high-risk serialization when its governed ownership boundary matches configured high-risk scopes, even if no one manually set `risk_level`
 - profile meeting-trigger policy can now mark some human decisions as explicitly council-worthy, so the leader-facing scheduler does not flatten all escalations into the same generic decision surface

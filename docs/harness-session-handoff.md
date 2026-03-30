@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.68.0-prototype`
+- `adapter_version`: `0.69.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -175,6 +175,7 @@ Do not underestimate the current control-plane maturity.
 - escalation-required bundle decisions now carry ranked `candidate_governor_ids` and `candidate_governor_packets`, so the leader sees plausible governors and their authority tuple before deciding whether to establish a governor directly or open a council
 - leaders can now explicitly establish and clear a bundle governor through mission surfaces, turning an escalation-required bundle into governed authority deliberately instead of leaving that decision as a perpetual open packet
 - stale explicit bundle-governor signals are now surfaced as scheduler maintenance and doctor warnings, so orphaned bundle governance is treated as cleanup work instead of a silently trusted control-plane fact
+- larger conflict bundles can now adjudicate from the fuller candidate-governor tuple rather than only raw priority/risk, so a unique release-adjacent or governance-active candidate can govern even when the simpler tuple still ties
 - scheduler can now emit `hold_for_primary_human_decision`, refusing to start new low-urgency foreground work when an unresolved primary human decision should be cleared first and no existing foreground batch is being continued
 - mission classifications now mirror that human-decision queue through `human_decision_queue_position` and `primary_human_decision`, so leader-facing mission surfaces can see which pending decision is currently first-class
 - lower-priority governed decisions now also emit explicit `defer_pending_primary_human_decision` reschedule actions, so the queue influences runtime behavior instead of remaining a read-only annotation

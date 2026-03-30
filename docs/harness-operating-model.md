@@ -595,6 +595,7 @@ The following parts of the operating model are already concretely present:
 - scheduler now escalates stale runs, expired signals, and stale meetings into explicit maintenance work instead of leaving them only to doctor output
 - scheduler now sorts maintenance into a first-class portfolio, exposing `primary_maintenance_action`, deferred-maintenance count, `maintenance_selection_policy`, and `previous_primary_maintenance_key` instead of leaving maintenance as an unordered backlog
 - governance-critical maintenance such as stale explicit bundle governors or stale active councils can now trigger `hold_for_primary_maintenance`, deferring low-urgency foreground execution until the primary maintenance action is repaired or explicitly deferred
+- mission-bundle governor selection is no longer limited to raw `priority` / `risk_level`; larger bundles can now adjudicate from the fuller candidate-governor tuple, including release-adjacent and governance-activity signals when those create a unique winner
 - first-class mission objects
 - mission authority separated from freshest run activity
 - bounded teammate runs
