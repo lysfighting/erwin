@@ -4679,6 +4679,48 @@ func protocolDeferredSynthesisRequirement(protocol string) string {
 	}
 }
 
+func protocolIndependentReviewRequirement(protocol string, openWaveActionCount int) string {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		if openWaveActionCount > 0 {
+			return fmt.Sprintf("Collect %d bounded incident assessment(s) covering current state, immediate action, owner, and stop/go constraints.", openWaveActionCount)
+		}
+		return "Collect bounded incident assessments covering current state, immediate action, owner, and stop/go constraints."
+	case "decision-record":
+		if openWaveActionCount > 0 {
+			return fmt.Sprintf("Collect %d bounded decision-record assessment(s) covering context, alternatives, consequences, and follow-up obligations.", openWaveActionCount)
+		}
+		return "Collect bounded decision-record assessments covering context, alternatives, consequences, and follow-up obligations."
+	default:
+		if openWaveActionCount > 0 {
+			return fmt.Sprintf("Collect %d independent-review position(s) from bounded participants.", openWaveActionCount)
+		}
+		return "Collect independent-review positions from bounded participants."
+	}
+}
+
+func protocolOutputRequirement(protocol string) string {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return "Adopt or close the meeting outcome after recording chosen action, owner, stop/go constraints, and the next checkpoint."
+	case "decision-record":
+		return "Adopt or close the meeting outcome after recording the decision, alternatives, consequences, unresolved questions, and follow-up actions."
+	default:
+		return "Adopt or close the meeting outcome into run state."
+	}
+}
+
+func protocolAutoSynthesisReviewRequirement(protocol string) string {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return "Review the auto-synthesized incident command output or orchestrate again to confirm owner, stop/go constraints, and next checkpoint."
+	case "decision-record":
+		return "Review the auto-synthesized decision record or orchestrate again to confirm alternatives, consequences, and follow-up actions."
+	default:
+		return "Review auto-synthesized council output or orchestrate again to advance toward output."
+	}
+}
+
 func protocolDeferredActionSummary(protocol, claimRef string) string {
 	switch normalizeDecisionProtocol(protocol) {
 	case "incident-command":
@@ -12616,11 +12658,7 @@ func cmdMeetingsRemainder(args []string) error {
 				gaps = append(gaps, governanceGaps...)
 				if len(gaps) == 0 {
 					newPhase = "independent_review"
-					if intValue(wavePlan["open_wave_action_count"]) > 0 {
-						nextRequirement = fmt.Sprintf("Collect %d independent-review position(s) from bounded participants.", intValue(wavePlan["open_wave_action_count"]))
-					} else {
-						nextRequirement = "Collect independent-review positions from bounded participants."
-					}
+					nextRequirement = protocolIndependentReviewRequirement(protocol, intValue(wavePlan["open_wave_action_count"]))
 				} else {
 					nextRequirement = "Add packet/participant prerequisites before independent review."
 				}
@@ -12713,12 +12751,12 @@ func cmdMeetingsRemainder(args []string) error {
 					nextRequirement = currentDebateBatchRequirement("Complete current debate batch before output.", "Complete outstanding debate batches before output.")
 				} else if stringValue(synthesis["status"]) == "ready_for_output" {
 					newPhase = "output"
-					nextRequirement = "Adopt or close the meeting outcome into run state."
+					nextRequirement = protocolOutputRequirement(protocol)
 				} else {
 					nextRequirement = "Supplement synthesis gaps before output."
 				}
 			case "output":
-				nextRequirement = "Close the meeting or adopt its outcome."
+				nextRequirement = protocolOutputRequirement(protocol)
 			default:
 				nextRequirement = "Unknown phase; repair the meeting phase explicitly."
 			}
@@ -12744,9 +12782,9 @@ func cmdMeetingsRemainder(args []string) error {
 			} else if currentPhase == "synthesis" && stringValue(synthesis["status"]) == "ready_for_output" {
 				setMeetingPhase(meeting, "output", "orchestrate advanced from synthesis")
 				currentPhase = "output"
-				nextRequirement = "Adopt or close the meeting outcome into run state."
+				nextRequirement = protocolOutputRequirement(protocol)
 			} else if currentPhase == "synthesis" && stringValue(autoSynthesis["status"]) == "generated" {
-				nextRequirement = "Review auto-synthesized council output or orchestrate again to advance toward output."
+				nextRequirement = protocolAutoSynthesisReviewRequirement(protocol)
 			}
 			orchestration["last_gap_report"] = stringListToAny(gaps)
 			orchestration["next_requirement"] = nextRequirement

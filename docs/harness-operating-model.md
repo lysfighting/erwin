@@ -162,6 +162,8 @@ Current runtime note:
 - protocol choice now affects default role packets, expected output, scheduler guidance, and whether same-authority conflict automatically becomes a live debate obligation
 - `evidence-review` retains the richest route/round automation
 - `incident-command` and `decision-record` now prefer bounded synthesis/record handling over auto-generated cross-examination when no authority winner already exists
+- `incident-command` now also drives protocol-specific live requirements such as bounded incident assessments in independent review and explicit action/owner/stop-go output guidance at close
+- `decision-record` now also drives protocol-specific live requirements such as bounded decision-record assessments in independent review and explicit decision/alternatives/consequences/follow-up output guidance at close
 - deeper protocol-specific automation is still not complete, but protocol choice is now part of real council control flow rather than metadata only
 
 ---

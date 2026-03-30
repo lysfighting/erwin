@@ -460,6 +460,7 @@ run_in_repo bash scripts/harness-meetings.sh add-participant "$incident_meeting_
 
 incident_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$incident_meeting_id")
 assert_json_field "$incident_orchestrate_a" '"new_phase": "independent_review"' "incident-command meeting advances into independent review"
+assert_json_field "$incident_orchestrate_a" '"next_requirement": "Collect 2 bounded incident assessment(s)' "incident-command meeting uses protocol-specific independent-review guidance"
 
 run_in_repo bash scripts/harness-meetings.sh add-position "$incident_meeting_id" "$run_a" independent_review support "We should roll back immediately to reduce release blast radius." --claim=incident-rollback --dimension=operational --authority=L2 --evidence=CHANGELOG.md >/dev/null
 run_in_repo bash scripts/harness-meetings.sh add-position "$incident_meeting_id" "$run_b" independent_review challenge "We can hold the release if the operator note lands first." --claim=incident-rollback --dimension=operational --authority=L2 --evidence=docs/release.md >/dev/null
@@ -469,6 +470,7 @@ assert_json_field "$incident_orchestrate_b" '"new_phase": "output"' "incident-co
 assert_json_field "$incident_orchestrate_b" '"protocol_deferred_route_count": 1' "incident-command meeting records protocol-deferred conflict handling"
 assert_json_field "$incident_orchestrate_b" '"open_route_action_count": 0' "incident-command meeting does not emit cross-examination route obligations for same-authority conflict"
 assert_json_field "$incident_orchestrate_b" '"generated_action_count": 1' "incident-command meeting turns unresolved conflict into bounded action ownership"
+assert_json_field "$incident_orchestrate_b" '"next_requirement": "Adopt or close the meeting outcome after recording chosen action, owner, stop/go constraints, and the next checkpoint."' "incident-command meeting uses protocol-specific output guidance"
 
 run_in_repo bash scripts/harness-meetings.sh set-protocol "$incident_meeting_id" decision-record >/dev/null
 decision_record_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$incident_meeting_id")
@@ -483,6 +485,7 @@ run_in_repo bash scripts/harness-meetings.sh add-participant "$decision_record_m
 
 decision_record_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$decision_record_meeting_id")
 assert_json_field "$decision_record_orchestrate_a" '"new_phase": "independent_review"' "decision-record meeting advances into independent review"
+assert_json_field "$decision_record_orchestrate_a" '"next_requirement": "Collect 2 bounded decision-record assessment(s)' "decision-record meeting uses protocol-specific independent-review guidance"
 
 run_in_repo bash scripts/harness-meetings.sh add-position "$decision_record_meeting_id" "$run_a" independent_review support "Record the broader rollout note so future operators see the auth scope change." --claim=decision-note-variant --dimension=tradeoff --authority=L2 --evidence=CHANGELOG.md >/dev/null
 run_in_repo bash scripts/harness-meetings.sh add-position "$decision_record_meeting_id" "$run_b" independent_review challenge "Record the narrower rollout note to avoid overstating the blast radius." --claim=decision-note-variant --dimension=tradeoff --authority=L2 --evidence=docs/release.md >/dev/null
@@ -492,6 +495,7 @@ assert_json_field "$decision_record_orchestrate_b" '"new_phase": "output"' "deci
 assert_json_field "$decision_record_orchestrate_b" '"protocol_deferred_route_count": 1' "decision-record meeting records protocol-deferred conflict handling"
 assert_json_field "$decision_record_orchestrate_b" '"open_route_action_count": 0' "decision-record meeting does not emit cross-examination route obligations for same-authority conflict"
 assert_json_field "$decision_record_orchestrate_b" '"generated_action_count": 1' "decision-record meeting records unresolved tradeoff follow-up instead of debate rounds"
+assert_json_field "$decision_record_orchestrate_b" '"next_requirement": "Adopt or close the meeting outcome after recording the decision, alternatives, consequences, unresolved questions, and follow-up actions."' "decision-record meeting uses protocol-specific output guidance"
 
 section "Aligned review skips empty debate"
 aligned_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can aligned independent review go straight to synthesis when there is no conflict lane?")

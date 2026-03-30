@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.84.0 (in progress)
+- **Version**: 0.85.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness aligned scheduler/home with live and stale bundle-council requirements)
+- **Last Session**: 2026-03-30 (Harness deepened protocol-aware council execution)
 
 ## Current Phase
 
@@ -18,6 +18,8 @@
 
 **Session 2026-03-30** — Harness prototype line stayed complete while scheduler and bundle authority deepened into a more mature portfolio control plane
 
+- **Protocol-aware council execution deepened**: `incident-command` and `decision-record` no longer only differ in route planning; orchestration now gives them protocol-specific independent-review requirements and protocol-specific output guidance, so leader-facing council flow reflects the decision methodology instead of collapsing back into generic evidence-review wording
+- **Protocol-specific live guidance validated**: teammate smoke now proves `incident-command` councils ask for bounded incident assessments and close with action/owner/stop-go guidance, while `decision-record` councils ask for bounded decision-record assessments and close with explicit decision/alternatives/consequences/follow-up guidance
 - **Scheduler/home now follow live council requirements directly**: once a bundle-scoped decision is already materialized and in flight, scheduler `next_action`, `primary_required_human_decision.recommended_action`, `hold_for_active_bundle_council.reason`, and `home.next_action` now prefer the council's live `next_requirement` rather than falling back to generic “review the council” wording
 - **Stale active bundle councils now become explicit primary governance work**: active-council packets now project `active_decision_last_updated_at`, `active_decision_age_hours`, and `active_decision_stale`; when an active council has gone stale under cleanup policy, scheduler promotes “refresh or close the stale active council” into the leader-facing next action and into the bundle hold reason instead of silently preserving stale in-flight governance
 - **Core smoke harness was hardened**: `assert_json_field` no longer trips over shell broken-pipe behavior, and the stale-council smoke path now mutates the real active meeting packet structurally instead of relying on brittle text replacement
