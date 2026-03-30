@@ -23,6 +23,7 @@ This document exists to provide one durable architectural source that explains:
 - what is already implemented
 - what remains future expansion rather than core incompleteness
 - why stale control-plane state must become explicit maintenance work
+- why debate-batch identity and stickiness matter for trustworthy automated council control
 
 This document is descriptive and architectural.
 It does not replace:
@@ -112,6 +113,7 @@ This implies:
 - authority-aware reconciliation
 - deterministic mechanisms outside freeform reasoning
 - packaging and distribution discipline
+- stable controller identity for active debate work, so councils do not thrash or alias two distinct open batches into one apparent control slot
 
 Key source documents:
 

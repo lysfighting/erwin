@@ -121,7 +121,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.67.0-prototype`
+- `adapter_version`: `0.68.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
@@ -186,6 +186,8 @@ Do not underestimate the current control-plane maturity.
 - meeting objects now carry explicit `decision_protocol` and `decision_protocol_reason`, so the control plane no longer needs to pretend every council is implicitly one inherited `arch-review` debate
 - scheduler human-decision packets now carry `recommended_decision_protocol`, letting the leader distinguish evidence-review, incident-command, and decision-record handling before materializing a meeting
 - protocol-aware council automation is now partially real: `incident-command` and `decision-record` no longer auto-expand every same-authority conflict into route/round work, instead deferring bounded disagreement into synthesis/record output while `evidence-review` keeps the richest live debate controller
+- debate-batch control is now stateful: when multiple open batches exist, the controller exposes one deterministic current batch, keeps the rest blocked, and now retains that current batch when a new same-phase lane appears instead of reordering on freshness alone
+- debate-batch identity is now stable and hashed, so distinct batches cannot collide through truncated slugs and accidentally present multiple current batches
 - scheduler now treats fresh coordination/dependency/blocker signals as real rescheduling triggers instead of only including them in the snapshot payload
 - scheduler now escalates stale runs, expired signals, and stale meetings into explicit `maintenance_actions` instead of leaving them only to `doctor`
 - `home` now mirrors that maintenance backlog and the current primary maintenance packet so leader-facing surfaces stay aligned with scheduler reality

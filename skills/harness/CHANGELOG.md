@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Sticky current debate-batch retention, plus stable hashed debate-batch ids so automated councils keep one deterministic active batch even when a new same-phase lane is inserted later.
 - Scheduler maintenance portfolios, including `primary_maintenance_action`, deferred-maintenance count, `maintenance_selection_policy`, and governance-first `hold_for_primary_maintenance` when stale explicit governance should block low-urgency foreground work.
 - Sticky bounded parallel-batch retention in scheduler snapshots, including `previous_selected_mission_ids` and explicit capacity deferrals that preserve admission pressure when the admitted batch stays stable.
 - Scheduler/doctor handling for stale explicit bundle-governor signals, emitting maintenance work and invalid-governance warnings when an adopted governor no longer matches the active mission bundle.

@@ -591,12 +591,26 @@ assert_json_field "$sequenced_orchestrate_a" '"ready_wave_batch_count": 1' "stat
 assert_json_field "$sequenced_orchestrate_a" '"blocked_wave_batch_count": 1' "stateful-batch council leaves the second batch blocked behind the current one"
 assert_json_field "$sequenced_orchestrate_a" '"current_wave_batch_id": "debate-batch-' "stateful-batch council exposes a current batch id"
 assert_json_field "$sequenced_orchestrate_a" '"current_wave_batch_lane_count": 1' "stateful-batch council shows the current batch covers one lane"
+sequenced_current_batch_id=$(printf '%s\n' "$sequenced_orchestrate_a" | sed -n 's/^[[:space:]]*"current_wave_batch_id": "\(debate-batch-[^"]*\)",$/\1/p' | head -n1)
+
+assign_c=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-alpha alpha-reviewer "Bound new council lane" --scope="alpha council lane" --owns="scope:alpha-council-lane")
+assert_json_field "$assign_c" '"owner_id": "worker-alpha"' "stateful-batch council can add a third bounded participant"
+run_c=$(printf '%s\n' "$assign_c" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+run_in_repo bash scripts/harness-meetings.sh add-position "$sequenced_meeting_id" "$leader_run_id" independent_review support "Scope 0 also requires explicit coverage." --claim=batch-lane-0 --dimension=factual --authority=L2 --evidence=docs/0.md >/dev/null
+run_in_repo bash scripts/harness-meetings.sh add-position "$sequenced_meeting_id" "$run_c" independent_review challenge "Scope 0 may be narrower than described." --claim=batch-lane-0 --dimension=factual --authority=L2 --evidence=docs/0-review.md >/dev/null
+
+sequenced_orchestrate_sticky=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$sequenced_meeting_id")
+assert_json_field "$sequenced_orchestrate_sticky" '"batch_selection_policy": "sticky_current_wave_batch"' "stateful-batch council keeps the current debate batch when a new same-phase lane appears"
+assert_json_field "$sequenced_orchestrate_sticky" "\"previous_current_wave_batch_id\": \"$sequenced_current_batch_id\"" "stateful-batch council records the previous current batch id"
+assert_json_field "$sequenced_orchestrate_sticky" "\"current_wave_batch_id\": \"$sequenced_current_batch_id\"" "stateful-batch council retains the previous current batch instead of reordering on the new lane"
+assert_json_field "$sequenced_orchestrate_sticky" '"wave_batch_count": 3' "stateful-batch council tracks the newly inserted debate batch"
+assert_json_field "$sequenced_orchestrate_sticky" '"blocked_wave_batch_count": 2' "stateful-batch council leaves the new lane blocked behind the retained current batch"
 
 run_in_repo bash scripts/harness-meetings.sh set-phase "$sequenced_meeting_id" synthesis >/dev/null
 sequenced_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$sequenced_meeting_id")
 assert_json_field "$sequenced_orchestrate_b" '"new_phase": "synthesis"' "stateful-batch council refuses to jump from synthesis to output while debate batches remain open"
 assert_json_field "$sequenced_orchestrate_b" '"ready_wave_batch_count": 1' "stateful-batch council keeps one ready batch after the blocked synthesis attempt"
-assert_json_field "$sequenced_orchestrate_b" '"blocked_wave_batch_count": 1' "stateful-batch council keeps one blocked batch after the blocked synthesis attempt"
+assert_json_field "$sequenced_orchestrate_b" '"blocked_wave_batch_count": 2' "stateful-batch council keeps the remaining batches blocked after the blocked synthesis attempt"
 assert_json_field "$sequenced_orchestrate_b" 'Complete current debate batch before output.' "stateful-batch council tells the leader to finish the current batch before output"
 run_in_repo bash scripts/harness-drive.sh meeting-close "$leader_run_id" "$sequenced_meeting_id" "Stateful batch execution smoke complete." >/dev/null
 

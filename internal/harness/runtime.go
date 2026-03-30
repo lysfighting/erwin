@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"os"
 	"os/exec"
@@ -315,6 +316,23 @@ func slugify(value string) string {
 		return "mission"
 	}
 	return slug
+}
+
+func stableSlugID(value string) string {
+	slug := strings.TrimSpace(strings.ToLower(value))
+	slug = slugPattern.ReplaceAllString(slug, "-")
+	slug = multiDashPattern.ReplaceAllString(slug, "-")
+	slug = strings.Trim(slug, "-")
+	if slug == "" {
+		slug = "item"
+	}
+	hasher := fnv.New32a()
+	_, _ = hasher.Write([]byte(value))
+	sum := fmt.Sprintf("%08x", hasher.Sum32())
+	if len(slug) > 40 {
+		slug = strings.Trim(slug[:40], "-")
+	}
+	return slug + "-" + sum
 }
 
 func branchFromPattern(pattern, issueNumber, slug string) string {
@@ -4909,6 +4927,9 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 	if protocol == "" {
 		protocol = "evidence-review"
 	}
+	orchestration, _ := toMap(meeting["orchestration"])
+	previousDebatePlan, _ := toMap(orchestration["debate_plan"])
+	previousCurrentWaveBatchID := strings.TrimSpace(stringValue(previousDebatePlan["current_wave_batch_id"]))
 	positions := toList(meeting["positions"])
 	participants := toList(meeting["participants"])
 	maxDebateRounds := meetingMaxDebateRounds()
@@ -5293,6 +5314,24 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 	currentWaveBatchID := ""
 	currentWaveBatchLaneCount := 0
 	currentWaveBatchSummary := ""
+	batchSelectionPolicy := "debate_batch_priority"
+	previousCurrentWaveBatchStillOpen := false
+	if previousCurrentWaveBatchID != "" {
+		for _, batch := range waveBatchList {
+			if batch == nil {
+				continue
+			}
+			actionIDs := dedupeStrings(batch.ActionIDs)
+			if len(actionIDs) == 0 {
+				continue
+			}
+			batchID := "debate-batch-" + stableSlugID(batch.Key)
+			if batchID == previousCurrentWaveBatchID {
+				previousCurrentWaveBatchStillOpen = true
+				break
+			}
+		}
+	}
 	for _, batch := range waveBatchList {
 		if batch == nil {
 			continue
@@ -5307,9 +5346,20 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		actionIDs := dedupeStrings(batch.ActionIDs)
 		state := "resolved"
 		current := false
+		batchID := "debate-batch-" + stableSlugID(batch.Key)
 		if len(actionIDs) > 0 {
 			openWaveBatchCount++
-			if currentWaveBatchID == "" {
+			if previousCurrentWaveBatchStillOpen {
+				if batchID == previousCurrentWaveBatchID {
+					state = "ready"
+					current = true
+					readyWaveBatchCount++
+					batchSelectionPolicy = "sticky_current_wave_batch"
+				} else {
+					state = "blocked"
+					blockedWaveBatchCount++
+				}
+			} else if currentWaveBatchID == "" {
 				state = "ready"
 				current = true
 				readyWaveBatchCount++
@@ -5320,7 +5370,6 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		} else {
 			resolvedWaveBatchCount++
 		}
-		batchID := "debate-batch-" + slugify(batch.Key)
 		summary := fmt.Sprintf("%s should cover %d governed lane(s) in %s round %d.", firstNonBlank(batch.AssignedRole, batch.AssignedRun, "bounded participant"), laneCount, batch.Phase, batch.RoundNumber)
 		if current {
 			currentWaveBatchID = batchID
@@ -5374,6 +5423,8 @@ func meetingDebatePlan(meeting map[string]any) map[string]any {
 		"ready_wave_batch_count":                   readyWaveBatchCount,
 		"blocked_wave_batch_count":                 blockedWaveBatchCount,
 		"resolved_wave_batch_count":                resolvedWaveBatchCount,
+		"batch_selection_policy":                   batchSelectionPolicy,
+		"previous_current_wave_batch_id":           previousCurrentWaveBatchID,
 		"current_wave_batch_id":                    currentWaveBatchID,
 		"current_wave_batch_lane_count":            currentWaveBatchLaneCount,
 		"current_wave_batch_summary":               currentWaveBatchSummary,
@@ -11184,6 +11235,8 @@ func cmdMeetings(args []string) error {
 			"ready_wave_batch_count":                   intValue(debatePlan["ready_wave_batch_count"]),
 			"blocked_wave_batch_count":                 intValue(debatePlan["blocked_wave_batch_count"]),
 			"resolved_wave_batch_count":                intValue(debatePlan["resolved_wave_batch_count"]),
+			"batch_selection_policy":                   stringValue(debatePlan["batch_selection_policy"]),
+			"previous_current_wave_batch_id":           stringValue(debatePlan["previous_current_wave_batch_id"]),
 			"current_wave_batch_id":                    stringValue(debatePlan["current_wave_batch_id"]),
 			"current_wave_batch_lane_count":            intValue(debatePlan["current_wave_batch_lane_count"]),
 			"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),

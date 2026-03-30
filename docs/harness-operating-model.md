@@ -483,6 +483,8 @@ In those cases, the leader may move directly into synthesis with an explicit aut
 If that synthesis record is already ready for output, the same orchestration pass may close the council directly into `output` instead of requiring a second ceremonial pass just to advance the phase marker.
 When more than one debate batch is open, the controller should expose one deterministic current batch and keep the others explicitly blocked behind it instead of pretending every open lane is equally active at once.
 
+When a new same-phase lane appears while the current batch is still open, the controller should normally retain that current batch instead of thrashing to the newly inserted lane. `Harness` now makes this explicit through `batch_selection_policy` and `previous_current_wave_batch_id`.
+
 ### `arch-review` Influence
 
 The specific lessons absorbed from [`arch-review`](/Users/liyasong/Project/collov/erwin/skills/arch-review/arch-review/SKILL.md) are:
