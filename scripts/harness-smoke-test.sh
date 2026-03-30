@@ -186,7 +186,7 @@ schedule_maintenance_output=$(run_in_repo bash scripts/harness-missions.sh sched
 assert_json_field "$schedule_maintenance_output" '"maintenance_action_count": 2' "scheduler surfaces stale-state maintenance work"
 assert_json_field "$schedule_maintenance_output" '"action_kind": "refresh_stale_run"' "scheduler emits maintenance action for stale runs"
 assert_json_field "$schedule_maintenance_output" '"action_kind": "resolve_stale_signal"' "scheduler emits maintenance action for expired signals"
-assert_json_field "$schedule_maintenance_output" '"next_action": "Keep the current foreground batch bounded and run maintenance on stale control-plane state before widening execution."' "scheduler prioritizes maintenance guidance when stale state coexists with runnable work"
+assert_json_field "$schedule_maintenance_output" '"next_action": "Resolve or refresh the stale signal before letting it influence future scheduling."' "scheduler prioritizes maintenance guidance when stale state coexists with runnable work"
 home_output_maintenance=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_maintenance" '"scheduler_maintenance_action_count": 2' "home surfaces scheduler maintenance work"
 assert_json_field "$home_output_maintenance" '"scheduler_maintenance_action_tally":' "home surfaces scheduler maintenance tally"
@@ -454,10 +454,10 @@ assert_json_field "$home_output_multi_escalation_orchestrated" '"next_action": "
 set_json_field_in_file "$TEST_REPO/.harness/meetings/active/$multi_escalation_meeting_id.yml" "meeting.updated_at" "2026-03-01T00:00:00Z"
 schedule_multi_escalation_stale=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_stale" '"active_decision_stale": true' "scheduler flags stale active bundle councils in the portfolio packet"
-assert_json_field "$schedule_multi_escalation_stale" '"next_action": "Refresh or close the stale active council' "scheduler prioritizes stale active bundle councils as the current next action"
-assert_json_field "$schedule_multi_escalation_stale" '"reason": "Refresh or close the stale active council' "active bundle-council hold actions inherit the stale-council requirement"
+assert_json_field "$schedule_multi_escalation_stale" '"next_action": "Refresh or close the stale meeting before trusting it as current governance state."' "scheduler prioritizes stale active bundle councils as the current next action"
+assert_json_field "$schedule_multi_escalation_stale" '"reason": "Refresh or close the stale active council(s) for this decision before trusting them as current governance state:' "active bundle-council hold actions inherit the stale-council requirement"
 home_output_multi_escalation_stale=$(run_in_repo bash scripts/harness-home.sh)
-assert_json_field "$home_output_multi_escalation_stale" '"next_action": "Refresh or close the stale active council' "home mirrors stale active bundle-council guidance from scheduler state"
+assert_json_field "$home_output_multi_escalation_stale" '"next_action": "Refresh or close the stale meeting before trusting it as current governance state."' "home mirrors stale active bundle-council guidance from scheduler state"
 run_in_repo bash scripts/harness-meetings.sh add-position "$multi_escalation_meeting_id" "$multi_escalation_run_a" independent_review support "Bundle governance should anchor to issue-20011 because it has the strongest release ownership evidence." --claim=bundle-governor-choice --dimension=factual --authority=L2 --evidence=harness/README.md >/dev/null
 run_in_repo bash scripts/harness-meetings.sh add-position "$multi_escalation_meeting_id" "$multi_escalation_run_b" independent_review support "Independent review agrees issue-20011 should govern the bundle rather than issue-20012 or issue-20013." --claim=bundle-governor-choice --dimension=factual --authority=L3 --evidence=docs/harness-public-contract.md >/dev/null
 auto_multi_escalation_governor=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$multi_escalation_meeting_id")
@@ -702,9 +702,54 @@ doctor_explicit_governor_stale=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_explicit_governor_stale" '"issue_count": 2' "doctor detects stale explicit-governor drift alongside the restored overlap conflict"
 assert_json_field "$doctor_explicit_governor_stale" '"invalid-explicit-bundle-governor"' "doctor names the stale explicit-governor issue explicitly"
 
+maintenance_vs_decision_claim=$(run_in_repo bash scripts/harness-claim.sh 20031 "Harness Maintenance Versus Decision" --owns="file:docs/harness-session-handoff.md")
+assert_json_field "$maintenance_vs_decision_claim" '"mission_id": "issue-20031"' "maintenance-versus-decision mission can materialize"
+maintenance_vs_decision_run=$(printf '%s\n' "$maintenance_vs_decision_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+maintenance_vs_decision_signal=$(
+  cd "$TEST_REPO" &&
+    cat <<EOF | bash scripts/harness-signals.sh emit
+{
+  "signal_id": "sig-smoke-maintenance-vs-decision",
+  "kind": "requires_meeting",
+  "source_type": "leader",
+  "source_id": "leader-main",
+  "run_id": "$maintenance_vs_decision_run",
+  "mission_id": "issue-20031",
+  "applies_to": ["issue-20031"],
+  "scope_type": "mission",
+  "title": "Lower-priority human decision",
+  "summary": "A separate mission also wants governed human attention while stale bundle maintenance is still open.",
+  "authority_level": "L2",
+  "confidence": "high",
+  "emitted_at": "2026-03-30T02:00:00Z",
+  "fresh_until": "2099-01-01T00:00:00Z",
+  "state": "active"
+}
+EOF
+)
+assert_json_field "$maintenance_vs_decision_signal" '"signal_id": "sig-smoke-maintenance-vs-decision"' "secondary human decision can be emitted while maintenance is still open"
+
+schedule_explicit_governor_control_plane=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_explicit_governor_control_plane" '"primary_control_plane_kind": "maintenance"' "critical maintenance outranks lower-priority human decisions in the unified control-plane portfolio"
+assert_json_field "$schedule_explicit_governor_control_plane" '"primary_control_plane_selection_policy": "critical_maintenance_over_decision"' "scheduler records when maintenance wins over human decisions"
+assert_json_field "$schedule_explicit_governor_control_plane" '"primary_control_plane_packet": {' "scheduler exposes the unified primary control-plane packet"
+assert_json_field "$schedule_explicit_governor_control_plane" '"action_kind": "clear_invalid_bundle_governor"' "stale explicit governor remains the primary control-plane packet"
+assert_json_field "$schedule_explicit_governor_control_plane" '"required_human_decision_count": 2' "human decisions remain visible even when critical maintenance wins the unified portfolio"
+assert_json_field "$schedule_explicit_governor_control_plane" '"next_action": "Clear the stale explicit governor signal so the control plane stops carrying orphaned governance."' "next action follows the unified primary control-plane packet"
+
+home_output_explicit_governor_control_plane=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_output_explicit_governor_control_plane" '"scheduler_primary_control_plane_kind": "maintenance"' "home mirrors the scheduler's unified primary control-plane kind"
+assert_json_field "$home_output_explicit_governor_control_plane" '"scheduler_primary_control_plane_selection_policy": "critical_maintenance_over_decision"' "home mirrors the unified control-plane selection policy"
+assert_json_field "$home_output_explicit_governor_control_plane" '"scheduler_primary_control_plane_packet": {' "home mirrors the unified primary control-plane packet"
+
 clear_governor_output=$(run_in_repo bash scripts/harness-missions.sh clear-governor "$explicit_governor_bundle_id" "Explicit governor coverage completed.")
 assert_json_field "$clear_governor_output" "\"bundle_id\": \"$explicit_governor_bundle_id\"" "missions clear-governor can retire explicit governor signals"
 assert_json_field "$clear_governor_output" '"resolved_signal_ids":' "missions clear-governor reports the resolved signal ids"
+
+resolved_maintenance_vs_decision_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-maintenance-vs-decision resolved "Maintenance-vs-decision coverage completed.")
+assert_json_field "$resolved_maintenance_vs_decision_signal" '"state": "resolved"' "secondary human-decision signal can be resolved after unified control-plane coverage"
+resolved_maintenance_vs_decision_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$maintenance_vs_decision_run" completed "Closed maintenance-vs-decision mission.")
+assert_json_field "$resolved_maintenance_vs_decision_run" '"state": "completed"' "maintenance-versus-decision mission can be closed after unified control-plane coverage"
 
 graph_authority_explicit_cleared=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
 assert_json_field "$graph_authority_explicit_cleared" '"bundle_id": "bundle-issue-20029-issue-20030"' "clearing a stale explicit governor returns authority to the surviving overlap bundle"

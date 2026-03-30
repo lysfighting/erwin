@@ -8852,6 +8852,30 @@ func schedulerMaintenanceIsCritical(action map[string]any) bool {
 	}
 }
 
+func schedulerPrimaryControlPlanePacket(requiredHumanDecisions []any, primaryRequiredHumanDecision map[string]any, maintenanceActions []any, primaryMaintenanceAction map[string]any) (string, map[string]any, string, int) {
+	if len(maintenanceActions) > 0 && schedulerMaintenanceIsCritical(primaryMaintenanceAction) {
+		policy := "critical_maintenance_only"
+		if len(requiredHumanDecisions) > 0 {
+			policy = "critical_maintenance_over_decision"
+		}
+		packet, _ := toMap(cloneValue(primaryMaintenanceAction))
+		return "maintenance", packet, policy, maxInt(len(maintenanceActions)-1, 0)+len(requiredHumanDecisions)
+	}
+	if len(requiredHumanDecisions) > 0 {
+		policy := "human_decision_only"
+		if len(maintenanceActions) > 0 {
+			policy = "human_decision_over_noncritical_maintenance"
+		}
+		packet, _ := toMap(cloneValue(primaryRequiredHumanDecision))
+		return "human-decision", packet, policy, maxInt(len(requiredHumanDecisions)-1, 0)+len(maintenanceActions)
+	}
+	if len(maintenanceActions) > 0 {
+		packet, _ := toMap(cloneValue(primaryMaintenanceAction))
+		return "maintenance", packet, "maintenance_only", maxInt(len(maintenanceActions)-1, 0)
+	}
+	return "", map[string]any{}, "none", 0
+}
+
 func sortSchedulerHumanDecisions(decisions []any, previousPrimaryDecisionKey string) []any {
 	sorted := append([]any{}, decisions...)
 	sort.Slice(sorted, func(i, j int) bool {
@@ -10037,9 +10061,29 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			}
 		}
 	}
+	primaryControlPlaneKind, primaryControlPlanePacket, primaryControlPlaneSelectionPolicy, deferredControlPlanePacketCount := schedulerPrimaryControlPlanePacket(requiredHumanDecisions, primaryRequiredHumanDecision, maintenanceActions, primaryMaintenanceAction)
 	primaryDecisionAction := strings.TrimSpace(stringValue(primaryRequiredHumanDecision["recommended_action"]))
 	primaryDecisionSurface := strings.TrimSpace(stringValue(primaryRequiredHumanDecision["recommended_decision_surface"]))
+	primaryMaintenanceActionText := strings.TrimSpace(stringValue(primaryMaintenanceAction["recommended_action"]))
 	switch {
+	case primaryControlPlaneKind == "maintenance" && len(selectedMissionIDs) > 0:
+		nextAction = firstNonBlank(primaryMaintenanceActionText, "Keep the current foreground batch bounded and repair the primary governance maintenance action before widening execution.")
+	case primaryControlPlaneKind == "maintenance":
+		nextAction = firstNonBlank(primaryMaintenanceActionText, "Repair the primary governance maintenance action before widening execution.")
+	case primaryControlPlaneKind == "human-decision" && councilDecisionCount > 0 && len(selectedMissionIDs) > 0:
+		nextAction = firstNonBlank(primaryDecisionAction, "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime.")
+		if nextAction == primaryDecisionAction && len(selectedMissionIDs) > 0 && primaryDecisionSurface == "active-council" {
+			nextAction = nextAction + " Keep the current foreground batch bounded in the meantime."
+		}
+	case primaryControlPlaneKind == "human-decision" && councilDecisionCount > 0:
+		nextAction = firstNonBlank(primaryDecisionAction, "Open or review councils for the required human decisions before widening execution.")
+	case primaryControlPlaneKind == "human-decision" && len(selectedMissionIDs) > 0:
+		nextAction = firstNonBlank(primaryDecisionAction, "Resolve required human decisions before widening execution; keep the current foreground batch bounded in the meantime.")
+		if nextAction == primaryDecisionAction && len(selectedMissionIDs) > 0 && primaryDecisionSurface == "active-council" {
+			nextAction = nextAction + " Keep the current foreground batch bounded in the meantime."
+		}
+	case primaryControlPlaneKind == "human-decision":
+		nextAction = firstNonBlank(primaryDecisionAction, "Resolve required human decisions before widening execution.")
 	case councilDecisionCount > 0 && len(selectedMissionIDs) > 0:
 		nextAction = firstNonBlank(primaryDecisionAction, "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime.")
 		if nextAction == primaryDecisionAction && len(selectedMissionIDs) > 0 && primaryDecisionSurface == "active-council" {
@@ -10113,6 +10157,10 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		"previous_primary_maintenance_key":      previousPrimaryMaintenanceKey,
 		"primary_maintenance_action":            primaryMaintenanceAction,
 		"maintenance_actions":                   maintenanceActions,
+		"primary_control_plane_kind":            primaryControlPlaneKind,
+		"primary_control_plane_selection_policy": primaryControlPlaneSelectionPolicy,
+		"primary_control_plane_packet":          primaryControlPlanePacket,
+		"deferred_control_plane_packet_count":   deferredControlPlanePacketCount,
 		"reschedule_action_count":               len(rescheduleActions),
 		"reschedule_actions":                    rescheduleActions,
 		"follow_up_signal_count": len(dedupeStrings(func() []string {
@@ -10436,6 +10484,10 @@ func cmdHome(args []string) error {
 		"scheduler_maintenance_selection_policy":          stringValue(scheduler["maintenance_selection_policy"]),
 		"scheduler_previous_primary_maintenance_key":      stringValue(scheduler["previous_primary_maintenance_key"]),
 		"scheduler_primary_maintenance_action":            cloneValue(getKey(scheduler, "primary_maintenance_action", map[string]any{})),
+		"scheduler_primary_control_plane_kind":            stringValue(scheduler["primary_control_plane_kind"]),
+		"scheduler_primary_control_plane_selection_policy": stringValue(scheduler["primary_control_plane_selection_policy"]),
+		"scheduler_primary_control_plane_packet":          cloneValue(getKey(scheduler, "primary_control_plane_packet", map[string]any{})),
+		"scheduler_deferred_control_plane_packet_count":   intValue(scheduler["deferred_control_plane_packet_count"]),
 		"scheduler_maintenance_action_tally":              cloneValue(getKey(scheduler, "maintenance_action_tally", map[string]any{})),
 		"scheduler_previous_selected_mission_ids":         cloneValue(toList(scheduler["previous_selected_mission_ids"])),
 		"scheduler_selected_mission_ids":                  cloneValue(toList(scheduler["selected_mission_ids"])),
