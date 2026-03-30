@@ -111,6 +111,12 @@ Meaning:
 - packaged binary is the preferred end-user path
 - local Go toolchain is a fallback, not the desired steady state
 
+Current scheduler/council reality:
+
+- active bundle-governor councils now remain durable bundle-scoped decision objects in the portfolio
+- scheduler and `home` follow an in-flight council's live `next_requirement` instead of generic review wording
+- stale active councils are now promoted into explicit “refresh or close the stale active council” guidance instead of remaining passive hold state
+
 ---
 
 ## Machine-Readable Truth

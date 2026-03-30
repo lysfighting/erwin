@@ -8649,6 +8649,21 @@ func projectActiveMeetingProgressIntoDecision(decision, meeting map[string]any) 
 			decision["active_decision_gap_count"] = len(gaps)
 		}
 	}
+	meetingUpdatedAt := firstNonBlank(strings.TrimSpace(stringValue(meeting["updated_at"])), strings.TrimSpace(stringValue(meeting["created_at"])))
+	if meetingUpdatedAt != "" {
+		decision["active_decision_last_updated_at"] = meetingUpdatedAt
+		if meetingAge := ageHours(meetingUpdatedAt); meetingAge != nil {
+			decision["active_decision_age_hours"] = fmt.Sprintf("%.2f", *meetingAge)
+			meetingStaleAfter := floatValue(policyValue("cleanup.stale_meeting_after_hours", 6))
+			if *meetingAge > meetingStaleAfter {
+				decision["active_decision_stale"] = true
+				decision["recommended_action"] = fmt.Sprintf(
+					"Refresh or close the stale active council(s) for this decision before trusting them as current governance state: %s.",
+					strings.Join(activeMeetingIDs, ", "),
+				)
+			}
+		}
+	}
 	decision["recommended_action"] = firstNonBlank(
 		stringValue(decision["recommended_action"]),
 		fmt.Sprintf("Review the active council(s) already materialized for this decision: %s.", strings.Join(activeMeetingIDs, ", ")),
@@ -8800,6 +8815,9 @@ func sortSchedulerHumanDecisions(decisions []any, previousPrimaryDecisionKey str
 	sort.Slice(sorted, func(i, j int) bool {
 		left, _ := toMap(sorted[i])
 		right, _ := toMap(sorted[j])
+		if boolValue(left["active_decision_stale"]) != boolValue(right["active_decision_stale"]) {
+			return boolValue(left["active_decision_stale"])
+		}
 		leftSurface := decisionSurfaceRank(stringValue(left["recommended_decision_surface"]))
 		rightSurface := decisionSurfaceRank(stringValue(right["recommended_decision_surface"]))
 		if leftSurface != rightSurface {
@@ -9461,12 +9479,20 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				if len(activeBundleMeetingIDs) > 0 {
 					reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Bundle %s already has active council coverage: %s.", bundleID, strings.Join(activeBundleMeetingIDs, ", ")))
 					entry["reasons"] = stringListToAny(dedupeStrings(reasons))
-					entry["recommended_action"] = fmt.Sprintf("Review the active bundle council(s) for %s before widening execution: %s.", bundleID, strings.Join(activeBundleMeetingIDs, ", "))
+					entry["recommended_action"] = firstNonBlank(
+						stringValue(getKey(decisionPacketByKey[queueKey], "recommended_action", "")),
+						fmt.Sprintf("Review the active bundle council(s) for %s before widening execution: %s.", bundleID, strings.Join(activeBundleMeetingIDs, ", ")),
+					)
 					entry["recommended_decision_surface"] = "active-council"
 					entry["bundle_control_state"] = "active-council"
 					if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
 						currentState := stringValue(entry["authoritative_run_state"])
 						if currentState == "ready" || currentState == "executing" {
+							holdReason := firstNonBlank(
+								stringValue(getKey(decisionPacketByKey[queueKey], "recommended_action", "")),
+								stringValue(getKey(decisionPacketByKey[queueKey], "active_decision_next_requirement", "")),
+								fmt.Sprintf("Scheduler is holding this mission behind the active bundle council for %s.", bundleID),
+							)
 							rescheduleActions = append(rescheduleActions, map[string]any{
 								"mission_id":                  missionID,
 								"run_id":                      runID,
@@ -9475,7 +9501,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 								"current_state":               currentState,
 								"bundle_id":                   bundleID,
 								"active_decision_meeting_ids": stringListToAny(activeBundleMeetingIDs),
-								"reason":                      fmt.Sprintf("Scheduler is holding this mission behind the active bundle council for %s.", bundleID),
+								"reason":                      holdReason,
 							})
 						}
 					}
@@ -9518,13 +9544,21 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 					entry["bundle_control_state"] = "active-council"
 					reasons := append(anyListToStrings(toList(entry["reasons"])), fmt.Sprintf("Bundle %s already has active council coverage: %s.", bundleID, strings.Join(activeBundleMeetingIDs, ", ")))
 					entry["reasons"] = stringListToAny(dedupeStrings(reasons))
-					entry["recommended_action"] = fmt.Sprintf("Review the active bundle council(s) for %s before widening execution: %s.", bundleID, strings.Join(activeBundleMeetingIDs, ", "))
+					entry["recommended_action"] = firstNonBlank(
+						stringValue(getKey(decisionPacketByKey["bundle:"+bundleID], "recommended_action", "")),
+						fmt.Sprintf("Review the active bundle council(s) for %s before widening execution: %s.", bundleID, strings.Join(activeBundleMeetingIDs, ", ")),
+					)
 					if surface := strings.TrimSpace(stringValue(entry["recommended_decision_surface"])); surface == "council" || surface == "leader-decision" || surface == "" {
 						entry["recommended_decision_surface"] = "active-council"
 					}
 					if runID := stringValue(entry["authoritative_run_id"]); runID != "" {
 						currentState := stringValue(entry["authoritative_run_state"])
 						if currentState == "ready" || currentState == "executing" {
+							holdReason := firstNonBlank(
+								stringValue(getKey(decisionPacketByKey["bundle:"+bundleID], "recommended_action", "")),
+								stringValue(getKey(decisionPacketByKey["bundle:"+bundleID], "active_decision_next_requirement", "")),
+								fmt.Sprintf("Scheduler is holding this mission behind the active bundle council for %s.", bundleID),
+							)
 							rescheduleActions = append(rescheduleActions, map[string]any{
 								"mission_id":                  missionID,
 								"run_id":                      runID,
@@ -9533,7 +9567,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 								"current_state":               currentState,
 								"bundle_id":                   bundleID,
 								"active_decision_meeting_ids": stringListToAny(activeBundleMeetingIDs),
-								"reason":                      fmt.Sprintf("Scheduler is holding this mission behind the active bundle council for %s.", bundleID),
+								"reason":                      holdReason,
 							})
 						}
 					}
@@ -9961,15 +9995,23 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			}
 		}
 	}
+	primaryDecisionAction := strings.TrimSpace(stringValue(primaryRequiredHumanDecision["recommended_action"]))
+	primaryDecisionSurface := strings.TrimSpace(stringValue(primaryRequiredHumanDecision["recommended_decision_surface"]))
 	switch {
 	case councilDecisionCount > 0 && len(selectedMissionIDs) > 0:
-		nextAction = "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime."
+		nextAction = firstNonBlank(primaryDecisionAction, "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime.")
+		if nextAction == primaryDecisionAction && len(selectedMissionIDs) > 0 && primaryDecisionSurface == "active-council" {
+			nextAction = nextAction + " Keep the current foreground batch bounded in the meantime."
+		}
 	case councilDecisionCount > 0:
-		nextAction = "Open or review councils for the required human decisions before widening execution."
+		nextAction = firstNonBlank(primaryDecisionAction, "Open or review councils for the required human decisions before widening execution.")
 	case len(requiredHumanDecisions) > 0 && len(selectedMissionIDs) > 0:
-		nextAction = "Resolve required human decisions before widening execution; keep the current foreground batch bounded in the meantime."
+		nextAction = firstNonBlank(primaryDecisionAction, "Resolve required human decisions before widening execution; keep the current foreground batch bounded in the meantime.")
+		if nextAction == primaryDecisionAction && len(selectedMissionIDs) > 0 && primaryDecisionSurface == "active-council" {
+			nextAction = nextAction + " Keep the current foreground batch bounded in the meantime."
+		}
 	case len(requiredHumanDecisions) > 0:
-		nextAction = "Resolve required human decisions before widening execution."
+		nextAction = firstNonBlank(primaryDecisionAction, "Resolve required human decisions before widening execution.")
 	case len(maintenanceActions) > 0 && schedulerMaintenanceIsCritical(primaryMaintenanceAction) && len(selectedMissionIDs) > 0:
 		nextAction = "Keep the current foreground batch bounded and repair the primary governance maintenance action before widening execution."
 	case len(maintenanceActions) > 0 && schedulerMaintenanceIsCritical(primaryMaintenanceAction):

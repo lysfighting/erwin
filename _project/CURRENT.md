@@ -6,9 +6,9 @@
 
 ## Project Status
 
-- **Version**: 0.82.0 (in progress)
+- **Version**: 0.84.0 (in progress)
 - **Last Updated**: 2026-03-30
-- **Last Session**: 2026-03-30 (Harness projected live council progress into scheduler decisions)
+- **Last Session**: 2026-03-30 (Harness aligned scheduler/home with live and stale bundle-council requirements)
 
 ## Current Phase
 
@@ -18,6 +18,9 @@
 
 **Session 2026-03-30** — Harness prototype line stayed complete while scheduler and bundle authority deepened into a more mature portfolio control plane
 
+- **Scheduler/home now follow live council requirements directly**: once a bundle-scoped decision is already materialized and in flight, scheduler `next_action`, `primary_required_human_decision.recommended_action`, `hold_for_active_bundle_council.reason`, and `home.next_action` now prefer the council's live `next_requirement` rather than falling back to generic “review the council” wording
+- **Stale active bundle councils now become explicit primary governance work**: active-council packets now project `active_decision_last_updated_at`, `active_decision_age_hours`, and `active_decision_stale`; when an active council has gone stale under cleanup policy, scheduler promotes “refresh or close the stale active council” into the leader-facing next action and into the bundle hold reason instead of silently preserving stale in-flight governance
+- **Core smoke harness was hardened**: `assert_json_field` no longer trips over shell broken-pipe behavior, and the stale-council smoke path now mutates the real active meeting packet structurally instead of relying on brittle text replacement
 - **Scheduler decision materialization now reuses active councils**: materializing a scheduler `decision_id` no longer spawns duplicate active meetings when the same governed decision is already under live council control; runtime now reuses the existing active meeting, reports `reused_existing_meeting`, and keeps scheduler `active-council` state stable instead of duplicating council anchors for one control-plane object
 - **Active scheduler decisions now remain durably re-addressable after council activation**: `meetings materialize-decision DECISION_ID` no longer fails once a bundle-scoped decision has already promoted into `active-council`; runtime now falls back to the active meeting's persisted `source_decision_packet`, refreshes that live meeting from the latest scheduler context, and still reuses the existing meeting instead of losing the decision object after snapshot rollover
 - **Active bundle councils now stay bundle-scoped in the scheduler portfolio**: once a bundle-scoped `establish_bundle_governor` decision has materialized into an active council, scheduler no longer falls back to only per-mission `review_active_council` noise; it now recovers the active bundle decision packet itself, keeps the same bundle-scoped `decision_id` visible in `required_human_decisions`, and continues to treat that active council as one durable control-plane object across scheduling passes

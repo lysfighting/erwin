@@ -60,11 +60,31 @@ rewrite_json_in_file() {
   perl -0pi -e "$perl_expr" "$file"
 }
 
+set_json_field_in_file() {
+  local file="$1"
+  local path="$2"
+  local value="$3"
+  python3 - "$file" "$path" "$value" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+file_path, path, value = sys.argv[1:]
+data = json.loads(Path(file_path).read_text())
+target = data
+parts = path.split(".")
+for key in parts[:-1]:
+    target = target[key]
+target[parts[-1]] = value
+Path(file_path).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+PY
+}
+
 assert_json_field() {
   local json="$1"
   local needle="$2"
   local label="$3"
-  if echo "$json" | grep -q "$needle"; then
+  if grep -q "$needle" <<<"$json"; then
     pass "$label"
   else
     fail "$label"
@@ -373,7 +393,7 @@ assert_json_field "$schedule_multi_escalation_output" '"recommended_decision_sur
 assert_json_field "$schedule_multi_escalation_output" '"recommended_decision_protocol": "evidence-review"' "scheduler recommends evidence-review for conflicted bundle governance"
 assert_json_field "$schedule_multi_escalation_output" '"meeting_trigger_refs":' "scheduler records which profile meeting triggers justify the council recommendation"
 assert_json_field "$schedule_multi_escalation_output" '"council_decision_count": 1' "scheduler counts one bundle-scoped council decision instead of one per mission"
-assert_json_field "$schedule_multi_escalation_output" '"next_action": "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime."' "scheduler prioritizes council-backed bundle-governor decisions over foreground selection messaging"
+assert_json_field "$schedule_multi_escalation_output" '"next_action": "Open a council or add an explicit dependency/ownership transfer to establish a governing mission before parallel execution."' "scheduler prioritizes council-backed bundle-governor decisions over foreground selection messaging"
 assert_json_field "$schedule_multi_escalation_output" '"bundle_role_tally":' "scheduler reports bundle-role tallies in the portfolio snapshot"
 assert_json_field "$schedule_multi_escalation_output" '"required_human_decision_scope_tally":' "scheduler reports human-decision scope tallies"
 assert_json_field "$schedule_multi_escalation_output" '"required_human_decision_surface_tally":' "scheduler reports human-decision surface tallies"
@@ -385,7 +405,7 @@ assert_json_field "$schedule_multi_escalation_output" '"candidate_governor_packe
 home_output_multi_escalation=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_multi_escalation" '"mission_escalated_bundle_count": 1' "home surfaces escalation-required mission bundles"
 assert_json_field "$home_output_multi_escalation" '"scheduler_council_decision_count": 1' "home surfaces bundle-scoped council decisions instead of per-mission duplicates"
-assert_json_field "$home_output_multi_escalation" '"next_action": "Open or review councils for the required human decisions before widening execution; keep the current foreground batch bounded in the meantime."' "home keeps scheduler decision-first guidance when bundle governance should become a council"
+assert_json_field "$home_output_multi_escalation" '"next_action": "Open a council or add an explicit dependency/ownership transfer to establish a governing mission before parallel execution."' "home keeps scheduler decision-first guidance when bundle governance should become a council"
 assert_json_field "$home_output_multi_escalation" '"scheduler_bundle_role_tally":' "home surfaces scheduler bundle-role tallies"
 assert_json_field "$home_output_multi_escalation" '"scheduler_primary_required_human_decision": {' "home surfaces the scheduler's primary decision packet"
 multi_escalation_materialized=$(run_in_repo bash scripts/harness-meetings.sh materialize-primary-decision --mission=issue-20011)
@@ -426,6 +446,18 @@ run_in_repo bash scripts/harness-meetings.sh orchestrate "$multi_escalation_meet
 schedule_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_phase": "independent_review"' "scheduler projects active bundle-council phase into the portfolio packet"
 assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_next_requirement": "Collect' "scheduler projects active bundle-council next requirement into the portfolio packet"
+assert_json_field "$schedule_multi_escalation_orchestrated" '"next_action": "Collect' "scheduler next action follows the live active bundle-council requirement"
+assert_json_field "$schedule_multi_escalation_orchestrated" '"action_kind": "hold_for_active_bundle_council"' "scheduler still emits active bundle-council hold actions after progress projection"
+assert_json_field "$schedule_multi_escalation_orchestrated" '"reason": "Collect' "active bundle-council hold actions inherit the live next requirement"
+home_output_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_output_multi_escalation_orchestrated" '"next_action": "Collect' "home mirrors the live active bundle-council requirement from scheduler state"
+set_json_field_in_file "$TEST_REPO/.harness/meetings/active/$multi_escalation_meeting_id.yml" "meeting.updated_at" "2026-03-01T00:00:00Z"
+schedule_multi_escalation_stale=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_multi_escalation_stale" '"active_decision_stale": true' "scheduler flags stale active bundle councils in the portfolio packet"
+assert_json_field "$schedule_multi_escalation_stale" '"next_action": "Refresh or close the stale active council' "scheduler prioritizes stale active bundle councils as the current next action"
+assert_json_field "$schedule_multi_escalation_stale" '"reason": "Refresh or close the stale active council' "active bundle-council hold actions inherit the stale-council requirement"
+home_output_multi_escalation_stale=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_output_multi_escalation_stale" '"next_action": "Refresh or close the stale active council' "home mirrors stale active bundle-council guidance from scheduler state"
 run_in_repo bash scripts/harness-meetings.sh add-position "$multi_escalation_meeting_id" "$multi_escalation_run_a" independent_review support "Bundle governance should anchor to issue-20011 because it has the strongest release ownership evidence." --claim=bundle-governor-choice --dimension=factual --authority=L2 --evidence=harness/README.md >/dev/null
 run_in_repo bash scripts/harness-meetings.sh add-position "$multi_escalation_meeting_id" "$multi_escalation_run_b" independent_review support "Independent review agrees issue-20011 should govern the bundle rather than issue-20012 or issue-20013." --claim=bundle-governor-choice --dimension=factual --authority=L3 --evidence=docs/harness-public-contract.md >/dev/null
 auto_multi_escalation_governor=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$multi_escalation_meeting_id")
