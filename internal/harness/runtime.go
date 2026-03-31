@@ -10565,6 +10565,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		adoptedPrimaryFollowUpAction := ""
 		adoptedPrimaryFollowUpDelegatedRunID := ""
 		adoptedPrimaryFollowUpDelegatedOwnerID := ""
+		adoptedPrimaryFollowUpDelegatedState := ""
 		adoptedPrimaryFollowUpDelegatedAction := ""
 		updatedAt := firstNonBlank(stringValue(mission["updated_at"]), stringValue(mission["created_at"]))
 		bundleInfo, _ := toMap(bundleInfoByMission[missionID])
@@ -10592,6 +10593,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				if delegatedRun := activeDelegatedFollowUpRunForParent(registry, authoritativeRunID, stringValue(packet["follow_up_packet_id"])); delegatedRun != nil {
 					adoptedPrimaryFollowUpDelegatedRunID = stringValue(delegatedRun["run_id"])
 					adoptedPrimaryFollowUpDelegatedOwnerID = firstNonBlank(stringValue(delegatedRun["owner_id"]), adoptedPrimaryFollowUpDelegatedRunID)
+					adoptedPrimaryFollowUpDelegatedState = firstNonBlank(strings.TrimSpace(stringValue(delegatedRun["delegated_follow_up_state"])), "open")
 					adoptedPrimaryFollowUpDelegatedAction = fmt.Sprintf(
 						"Monitor delegated adopted follow-up on %s (%s) and keep the governing run bounded until it reports back.",
 						adoptedPrimaryFollowUpDelegatedRunID,
@@ -10878,6 +10880,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"adopted_primary_follow_up_action":           adoptedPrimaryFollowUpAction,
 			"adopted_primary_follow_up_delegated_run_id": adoptedPrimaryFollowUpDelegatedRunID,
 			"adopted_primary_follow_up_delegated_owner":  adoptedPrimaryFollowUpDelegatedOwnerID,
+			"adopted_primary_follow_up_delegated_state":  adoptedPrimaryFollowUpDelegatedState,
 			"adopted_primary_follow_up_delegated_action": adoptedPrimaryFollowUpDelegatedAction,
 			"active_run_ids":                             stringListToAny(dedupeStrings(activeRunIDs)),
 			"active_run_count":                           len(dedupeStrings(activeRunIDs)),
@@ -11846,6 +11849,7 @@ func cmdHome(args []string) error {
 	primaryAdoptedFollowUpPacket := map[string]any{}
 	primaryAdoptedFollowUpDelegatedRunID := ""
 	primaryAdoptedFollowUpDelegatedOwnerID := ""
+	primaryAdoptedFollowUpDelegatedState := ""
 	primaryAdoptedFollowUpDelegatedAction := ""
 	primaryAdoptedRunSelected := false
 	primaryAdoptedUpdatedAt := ""
@@ -11878,6 +11882,7 @@ func cmdHome(args []string) error {
 				if delegatedRun := activeDelegatedFollowUpRunForParent(registry, runID, stringValue(packet["follow_up_packet_id"])); delegatedRun != nil {
 					primaryAdoptedFollowUpDelegatedRunID = stringValue(delegatedRun["run_id"])
 					primaryAdoptedFollowUpDelegatedOwnerID = firstNonBlank(stringValue(delegatedRun["owner_id"]), primaryAdoptedFollowUpDelegatedRunID)
+					primaryAdoptedFollowUpDelegatedState = firstNonBlank(strings.TrimSpace(stringValue(delegatedRun["delegated_follow_up_state"])), "open")
 					primaryAdoptedFollowUpDelegatedAction = fmt.Sprintf(
 						"Monitor delegated adopted follow-up on %s (%s) and keep the governing run bounded until it reports back.",
 						primaryAdoptedFollowUpDelegatedRunID,
@@ -11886,12 +11891,14 @@ func cmdHome(args []string) error {
 				} else {
 					primaryAdoptedFollowUpDelegatedRunID = ""
 					primaryAdoptedFollowUpDelegatedOwnerID = ""
+					primaryAdoptedFollowUpDelegatedState = ""
 					primaryAdoptedFollowUpDelegatedAction = ""
 				}
 			} else {
 				primaryAdoptedFollowUpPacket = map[string]any{}
 				primaryAdoptedFollowUpDelegatedRunID = ""
 				primaryAdoptedFollowUpDelegatedOwnerID = ""
+				primaryAdoptedFollowUpDelegatedState = ""
 				primaryAdoptedFollowUpDelegatedAction = ""
 			}
 			primaryAdoptedRunSelected = runSelected
@@ -12018,6 +12025,7 @@ func cmdHome(args []string) error {
 		"primary_adopted_follow_up_packet":                 cloneValue(primaryAdoptedFollowUpPacket),
 		"primary_adopted_follow_up_delegated_run_id":       primaryAdoptedFollowUpDelegatedRunID,
 		"primary_adopted_follow_up_delegated_owner":        primaryAdoptedFollowUpDelegatedOwnerID,
+		"primary_adopted_follow_up_delegated_state":        primaryAdoptedFollowUpDelegatedState,
 		"primary_adopted_follow_up_delegated_action":       primaryAdoptedFollowUpDelegatedAction,
 		"next_action":                                      nextAction,
 	})

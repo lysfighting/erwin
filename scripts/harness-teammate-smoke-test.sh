@@ -762,10 +762,12 @@ assert_json_field "$follow_up_assignment" "\"next_expected_action\": \"$decision
 schedule_after_follow_up_handoff=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_after_follow_up_handoff" "\"adopted_primary_follow_up_delegated_run_id\": \"$follow_up_run_id\"" "scheduler surfaces the delegated teammate run for the adopted follow-up"
 assert_json_field "$schedule_after_follow_up_handoff" "\"adopted_primary_follow_up_delegated_owner\": \"worker-follow-up\"" "scheduler surfaces the delegated teammate owner for the adopted follow-up"
+assert_json_field "$schedule_after_follow_up_handoff" '"adopted_primary_follow_up_delegated_state": "open"' "scheduler surfaces the delegated adopted follow-up state"
 assert_json_field "$schedule_after_follow_up_handoff" "\"adopted_primary_follow_up_delegated_action\": \"Monitor delegated adopted follow-up on $follow_up_run_id (worker-follow-up) and keep the governing run bounded until it reports back.\"" "scheduler promotes monitor guidance once the adopted follow-up is delegated"
 home_after_follow_up_handoff=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_delegated_run_id\": \"$follow_up_run_id\"" "home surfaces the delegated teammate run for the primary adopted follow-up"
 assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_delegated_owner\": \"worker-follow-up\"" "home surfaces the delegated teammate owner for the primary adopted follow-up"
+assert_json_field "$home_after_follow_up_handoff" '"primary_adopted_follow_up_delegated_state": "open"' "home surfaces the delegated adopted follow-up state"
 assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_delegated_action\": \"Monitor delegated adopted follow-up on $follow_up_run_id (worker-follow-up) and keep the governing run bounded until it reports back.\"" "home preserves delegated adopted follow-up monitoring guidance even when higher-priority control-plane work still owns next_action"
 leader_refresh_follow_up=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
 assert_json_field "$leader_refresh_follow_up" '"follow_up_packet_id": "'"$decision_record_follow_up_packet_id"'"' "governing run can still address the delegated adopted follow-up packet directly"

@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now reopens delegated follow-up from governing truth)
+- **Last Session**: 2026-03-31 (Harness now projects delegated follow-up state to leader surfaces)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now projects delegated follow-up state to leader surfaces
+
+- **Scheduler and home now expose delegated follow-up state directly**: leader-facing control-plane packets now project whether the delegated adopted follow-up is currently `open` instead of only exposing who owns it
+- **Delegated ownership is now more monitorable without opening teammate state**: once a bounded follow-up is handed off, the leader can see run id, owner, state, and monitor guidance from scheduler/home alone
+- **Teammate smoke widened again**: teammate smoke now proves both scheduler and `home` surface the delegated adopted follow-up state during the handoff path
 
 **Session 2026-03-31** — Harness now reopens delegated follow-up from governing truth
 
