@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now lets delegated teammates resolve adopted follow-up directly)
+- **Last Session**: 2026-03-31 (Harness now projects delegated adopted follow-up into leader-facing control plane)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now projects delegated adopted follow-up into leader-facing control plane
+
+- **Scheduler now knows when adopted follow-up has already been handed off**: mission packets now surface `adopted_primary_follow_up_delegated_run_id`, delegated owner, and delegated monitor guidance instead of only carrying the raw adopted follow-up packet
+- **Leader-facing follow-up guidance is now more truthful**: when a selected mission's adopted follow-up is already bound to a teammate run, scheduler next-action guidance now tells the leader to monitor that delegated execution unit instead of repeating the original task wording as if the leader still owned it directly
+- **Home now preserves the same delegated execution projection**: `home` now surfaces the delegated teammate run/owner plus delegated monitor guidance for the primary adopted follow-up object, while still letting higher-priority councils or maintenance own the top-level `next_action` when appropriate
 
 **Session 2026-03-31** — Harness now lets delegated teammates resolve adopted follow-up directly
 

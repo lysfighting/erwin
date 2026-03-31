@@ -759,6 +759,14 @@ assert_json_field "$follow_up_assignment" "\"delegated_from_meeting_id\": \"$dec
 assert_json_field "$follow_up_assignment" "\"delegated_from_follow_up_execution_kind\": \"decision_record_follow_up\"" "teammate follow-up assignment preserves protocol-aware execution kind"
 assert_json_field "$follow_up_assignment" "\"objective\": \"$decision_record_follow_up_action\"" "teammate follow-up assignment derives its objective from adopted follow-up guidance"
 assert_json_field "$follow_up_assignment" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "teammate follow-up assignment starts from the adopted follow-up action text"
+schedule_after_follow_up_handoff=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_after_follow_up_handoff" "\"adopted_primary_follow_up_delegated_run_id\": \"$follow_up_run_id\"" "scheduler surfaces the delegated teammate run for the adopted follow-up"
+assert_json_field "$schedule_after_follow_up_handoff" "\"adopted_primary_follow_up_delegated_owner\": \"worker-follow-up\"" "scheduler surfaces the delegated teammate owner for the adopted follow-up"
+assert_json_field "$schedule_after_follow_up_handoff" "\"adopted_primary_follow_up_delegated_action\": \"Monitor delegated adopted follow-up on $follow_up_run_id (worker-follow-up) and keep the governing run bounded until it reports back.\"" "scheduler promotes monitor guidance once the adopted follow-up is delegated"
+home_after_follow_up_handoff=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_delegated_run_id\": \"$follow_up_run_id\"" "home surfaces the delegated teammate run for the primary adopted follow-up"
+assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_delegated_owner\": \"worker-follow-up\"" "home surfaces the delegated teammate owner for the primary adopted follow-up"
+assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_delegated_action\": \"Monitor delegated adopted follow-up on $follow_up_run_id (worker-follow-up) and keep the governing run bounded until it reports back.\"" "home preserves delegated adopted follow-up monitoring guidance even when higher-priority control-plane work still owns next_action"
 set +e
 duplicate_follow_up_assignment_output=$(cd "$TEST_REPO" && bash scripts/harness-teammates.sh assign "$leader_run_id" worker-follow-up-2 follow-up-runner --adopted-follow-up 2>&1)
 duplicate_follow_up_assignment_rc=$?

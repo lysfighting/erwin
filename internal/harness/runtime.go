@@ -2554,6 +2554,28 @@ func childRunsForParent(registry map[string]any, parentRunID string) []map[strin
 	return runs
 }
 
+func activeDelegatedFollowUpRunForParent(registry map[string]any, parentRunID string, followUpPacketID string) map[string]any {
+	parentRunID = strings.TrimSpace(parentRunID)
+	followUpPacketID = strings.TrimSpace(followUpPacketID)
+	if parentRunID == "" || followUpPacketID == "" {
+		return nil
+	}
+	for _, item := range toList(registry["runs"]) {
+		run, _ := toMap(item)
+		if !activeTeammateRun(run) {
+			continue
+		}
+		if strings.TrimSpace(stringValue(run["parent_run_id"])) != parentRunID {
+			continue
+		}
+		if strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])) != followUpPacketID {
+			continue
+		}
+		return run
+	}
+	return nil
+}
+
 func defaultDesiredStateForMission() map[string]any {
 	return map[string]any{
 		"goal_state":          "done",
@@ -10475,6 +10497,9 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		adoptedOutputOpenFollowUpPacketCount := 0
 		adoptedPrimaryFollowUpPacket := map[string]any{}
 		adoptedPrimaryFollowUpAction := ""
+		adoptedPrimaryFollowUpDelegatedRunID := ""
+		adoptedPrimaryFollowUpDelegatedOwnerID := ""
+		adoptedPrimaryFollowUpDelegatedAction := ""
 		updatedAt := firstNonBlank(stringValue(mission["updated_at"]), stringValue(mission["created_at"]))
 		bundleInfo, _ := toMap(bundleInfoByMission[missionID])
 		bundleID := stringValue(bundleInfo["bundle_id"])
@@ -10498,6 +10523,15 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			if packet := runPrimaryAdoptedFollowUpPacket(authoritativeRun); packet != nil {
 				adoptedPrimaryFollowUpPacket, _ = toMap(cloneValue(packet))
 				adoptedPrimaryFollowUpAction = adoptedFollowUpActionText(packet)
+				if delegatedRun := activeDelegatedFollowUpRunForParent(registry, authoritativeRunID, stringValue(packet["follow_up_packet_id"])); delegatedRun != nil {
+					adoptedPrimaryFollowUpDelegatedRunID = stringValue(delegatedRun["run_id"])
+					adoptedPrimaryFollowUpDelegatedOwnerID = firstNonBlank(stringValue(delegatedRun["owner_id"]), adoptedPrimaryFollowUpDelegatedRunID)
+					adoptedPrimaryFollowUpDelegatedAction = fmt.Sprintf(
+						"Monitor delegated adopted follow-up on %s (%s) and keep the governing run bounded until it reports back.",
+						adoptedPrimaryFollowUpDelegatedRunID,
+						adoptedPrimaryFollowUpDelegatedOwnerID,
+					)
+				}
 			}
 			updatedAt = firstNonBlank(runSortTimestamp(authoritativeRun), updatedAt)
 			unsatisfiedRunDeps = unsatisfiedDependencies(authoritativeRun, registry)
@@ -10692,6 +10726,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		if classification == "runnable" && adoptedOutputOpenFollowUpPacketCount > 0 {
 			reasons = append(reasons, fmt.Sprintf("Mission carries %d adopted council follow-up packet(s) in run state.", adoptedOutputOpenFollowUpPacketCount))
 			recommendedAction = firstNonBlank(
+				adoptedPrimaryFollowUpDelegatedAction,
 				adoptedPrimaryFollowUpAction,
 				recommendedAction,
 			)
@@ -10775,6 +10810,9 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"adopted_output_open_follow_up_packet_count": adoptedOutputOpenFollowUpPacketCount,
 			"adopted_primary_follow_up_packet":           cloneValue(adoptedPrimaryFollowUpPacket),
 			"adopted_primary_follow_up_action":           adoptedPrimaryFollowUpAction,
+			"adopted_primary_follow_up_delegated_run_id": adoptedPrimaryFollowUpDelegatedRunID,
+			"adopted_primary_follow_up_delegated_owner":  adoptedPrimaryFollowUpDelegatedOwnerID,
+			"adopted_primary_follow_up_delegated_action": adoptedPrimaryFollowUpDelegatedAction,
 			"active_run_ids":                             stringListToAny(dedupeStrings(activeRunIDs)),
 			"active_run_count":                           len(dedupeStrings(activeRunIDs)),
 			"teammate_run_count":                         activeTeammateCount,
@@ -11740,6 +11778,9 @@ func cmdHome(args []string) error {
 	primaryAdoptedOutputRunID := ""
 	primaryAdoptedOutputPacketKind := ""
 	primaryAdoptedFollowUpPacket := map[string]any{}
+	primaryAdoptedFollowUpDelegatedRunID := ""
+	primaryAdoptedFollowUpDelegatedOwnerID := ""
+	primaryAdoptedFollowUpDelegatedAction := ""
 	primaryAdoptedRunSelected := false
 	primaryAdoptedUpdatedAt := ""
 	for _, item := range activeRuns {
@@ -11768,8 +11809,24 @@ func cmdHome(args []string) error {
 			primaryAdoptedOutputPacketKind = firstNonBlank(strings.TrimSpace(stringValue(run["adopted_output_packet_kind"])), strings.TrimSpace(stringValue(outputPacket["output_packet_kind"])))
 			if packet := runPrimaryAdoptedFollowUpPacket(run); packet != nil {
 				primaryAdoptedFollowUpPacket, _ = toMap(cloneValue(packet))
+				if delegatedRun := activeDelegatedFollowUpRunForParent(registry, runID, stringValue(packet["follow_up_packet_id"])); delegatedRun != nil {
+					primaryAdoptedFollowUpDelegatedRunID = stringValue(delegatedRun["run_id"])
+					primaryAdoptedFollowUpDelegatedOwnerID = firstNonBlank(stringValue(delegatedRun["owner_id"]), primaryAdoptedFollowUpDelegatedRunID)
+					primaryAdoptedFollowUpDelegatedAction = fmt.Sprintf(
+						"Monitor delegated adopted follow-up on %s (%s) and keep the governing run bounded until it reports back.",
+						primaryAdoptedFollowUpDelegatedRunID,
+						primaryAdoptedFollowUpDelegatedOwnerID,
+					)
+				} else {
+					primaryAdoptedFollowUpDelegatedRunID = ""
+					primaryAdoptedFollowUpDelegatedOwnerID = ""
+					primaryAdoptedFollowUpDelegatedAction = ""
+				}
 			} else {
 				primaryAdoptedFollowUpPacket = map[string]any{}
+				primaryAdoptedFollowUpDelegatedRunID = ""
+				primaryAdoptedFollowUpDelegatedOwnerID = ""
+				primaryAdoptedFollowUpDelegatedAction = ""
 			}
 			primaryAdoptedRunSelected = runSelected
 			primaryAdoptedUpdatedAt = runUpdatedAt
@@ -11808,8 +11865,8 @@ func cmdHome(args []string) error {
 	case intValue(scheduler["required_human_decision_count"]) == 0 &&
 		intValue(scheduler["maintenance_action_count"]) == 0 &&
 		intValue(scheduler["selected_mission_count"]) == 1 &&
-		adoptedFollowUpActionText(primaryAdoptedFollowUpPacket) != "":
-		nextAction = adoptedFollowUpActionText(primaryAdoptedFollowUpPacket)
+		firstNonBlank(primaryAdoptedFollowUpDelegatedAction, adoptedFollowUpActionText(primaryAdoptedFollowUpPacket)) != "":
+		nextAction = firstNonBlank(primaryAdoptedFollowUpDelegatedAction, adoptedFollowUpActionText(primaryAdoptedFollowUpPacket))
 	case activeRCRecord != nil:
 		nextAction = "Review the active RC and decide whether to promote, fix, or close it."
 	case intValue(scheduler["selected_mission_count"]) > 1:
@@ -11893,6 +11950,9 @@ func cmdHome(args []string) error {
 		"primary_adopted_output_run_id":                    primaryAdoptedOutputRunID,
 		"primary_adopted_output_packet_kind":               primaryAdoptedOutputPacketKind,
 		"primary_adopted_follow_up_packet":                 cloneValue(primaryAdoptedFollowUpPacket),
+		"primary_adopted_follow_up_delegated_run_id":       primaryAdoptedFollowUpDelegatedRunID,
+		"primary_adopted_follow_up_delegated_owner":        primaryAdoptedFollowUpDelegatedOwnerID,
+		"primary_adopted_follow_up_delegated_action":       primaryAdoptedFollowUpDelegatedAction,
 		"next_action":                                      nextAction,
 	})
 }
