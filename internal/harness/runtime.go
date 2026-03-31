@@ -6057,7 +6057,11 @@ func meetingOutcome(meeting map[string]any) map[string]any {
 func meetingPrimaryFollowUpPacket(meeting map[string]any) map[string]any {
 	orchestration, _ := toMap(meeting["orchestration"])
 	outputPacket, _ := toMap(orchestration["output_packet"])
-	for _, item := range toList(outputPacket["follow_up_packets"]) {
+	return primaryFollowUpPacketFromList(toList(outputPacket["follow_up_packets"]))
+}
+
+func primaryFollowUpPacketFromList(packets []any) map[string]any {
+	for _, item := range packets {
 		packet, ok := toMap(item)
 		if !ok {
 			continue
@@ -6067,13 +6071,104 @@ func meetingPrimaryFollowUpPacket(meeting map[string]any) map[string]any {
 			return packet
 		}
 	}
-	for _, item := range toList(outputPacket["follow_up_packets"]) {
+	for _, item := range packets {
 		packet, ok := toMap(item)
 		if ok {
 			return packet
 		}
 	}
 	return nil
+}
+
+func followUpPacketOpenCount(packets []any) int {
+	openCount := 0
+	for _, item := range packets {
+		packet, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		state := firstNonBlank(strings.TrimSpace(stringValue(packet["state"])), "open")
+		if state == "open" {
+			openCount++
+		}
+	}
+	return openCount
+}
+
+func meetingCurrentFollowUpPackets(meeting map[string]any) []any {
+	protocol := normalizeDecisionProtocol(stringValue(meeting["decision_protocol"]))
+	if protocol == "" {
+		protocol = "evidence-review"
+	}
+	debateLaneOutput, _ := toMap(meetingDebateLaneOutput(meeting))
+	followUpPacketOutput, _ := toMap(meetingOutputFollowUpPackets(meeting, protocol, debateLaneOutput))
+	return toList(followUpPacketOutput["follow_up_packets"])
+}
+
+func refreshMeetingOutputPacket(meeting map[string]any) map[string]any {
+	orchestration, _ := toMap(meeting["orchestration"])
+	if len(orchestration) == 0 {
+		return meeting
+	}
+	outputPacket, _ := toMap(orchestration["output_packet"])
+	if len(outputPacket) == 0 {
+		return meeting
+	}
+	protocol := normalizeDecisionProtocol(stringValue(meeting["decision_protocol"]))
+	if protocol == "" {
+		protocol = "evidence-review"
+	}
+	orchestration["output_packet"] = meetingAutoOutputPacket(meeting, protocol)
+	meeting["orchestration"] = orchestration
+	return meeting
+}
+
+func syncAdoptedFollowUpLifecycleForMeeting(registry map[string]any, meeting map[string]any) map[string]any {
+	meetingID := strings.TrimSpace(stringValue(meeting["meeting_id"]))
+	if meetingID == "" {
+		return registry
+	}
+	packets := meetingCurrentFollowUpPackets(meeting)
+	packetCount := len(packets)
+	openPacketCount := followUpPacketOpenCount(packets)
+	currentPrimary := primaryFollowUpPacketFromList(packets)
+	currentPrimaryAction := adoptedFollowUpActionText(currentPrimary)
+	runs := toList(registry["runs"])
+	updated := false
+	for index, item := range runs {
+		run, _ := toMap(item)
+		if strings.TrimSpace(stringValue(run["adopted_from_meeting_id"])) != meetingID {
+			continue
+		}
+		previousPrimary := runPrimaryAdoptedFollowUpPacket(run)
+		previousPrimaryAction := adoptedFollowUpActionText(previousPrimary)
+		run["adopted_output_follow_up_packet_count"] = packetCount
+		run["adopted_output_follow_up_packets"] = cloneValue(packets)
+		if outputPacket := runAdoptedOutputPacket(run); len(outputPacket) > 0 {
+			outputPacket["follow_up_packet_count"] = packetCount
+			outputPacket["open_follow_up_packet_count"] = openPacketCount
+			outputPacket["follow_up_packets"] = cloneValue(packets)
+			run["adopted_output_packet"] = outputPacket
+		}
+		if currentPrimary != nil {
+			run["adopted_primary_follow_up_packet"] = cloneValue(currentPrimary)
+		} else {
+			delete(run, "adopted_primary_follow_up_packet")
+		}
+		switch {
+		case currentPrimaryAction != "" && strings.TrimSpace(stringValue(run["next_expected_action"])) == previousPrimaryAction && currentPrimaryAction != previousPrimaryAction:
+			run["next_expected_action"] = currentPrimaryAction
+		case currentPrimary == nil && previousPrimaryAction != "" && strings.TrimSpace(stringValue(run["next_expected_action"])) == previousPrimaryAction:
+			run["next_expected_action"] = "Continue governed execution after the adopted follow-up is complete."
+		}
+		run["updated_at"] = nowISO()
+		runs[index] = run
+		updated = true
+	}
+	if updated {
+		registry["runs"] = runs
+	}
+	return registry
 }
 
 func meetingAdoptedNextAction(meeting map[string]any) string {
@@ -14516,6 +14611,7 @@ func cmdMeetingsRemainder(args []string) error {
 				return fmt.Errorf("action not found: %s", actionID)
 			}
 			meeting["action_items"] = actions
+			meeting = refreshMeetingOutputPacket(meeting)
 			if exists(meetingPath(meetingID, false)) {
 				if err := writeActiveMeeting(meeting); err != nil {
 					return err
@@ -14525,6 +14621,11 @@ func cmdMeetingsRemainder(args []string) error {
 				if err := dumpData(meetingPath(meetingID, true), map[string]any{"version": 1, "meeting": meeting}); err != nil {
 					return err
 				}
+			}
+			registry := readRegistry()
+			registry = syncAdoptedFollowUpLifecycleForMeeting(registry, meeting)
+			if err := writeRegistry(registry); err != nil {
+				return err
 			}
 			return printJSON(meeting)
 		})

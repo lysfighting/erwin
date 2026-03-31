@@ -1566,6 +1566,7 @@ assert_json_field "$resolve_output" '"state": "done"' "meeting action can be res
 
 home_output_after=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_after" '"open_meeting_action_count": 0' "home clears resolved meeting action"
+assert_json_field "$home_output_after" '"adopted_output_open_follow_up_packet_count": 0' "home clears adopted open follow-up packet count after action resolution"
 
 section "Authority adjudication"
 block_output=$(run_in_repo bash scripts/harness-drive.sh block "$run_id" "Temporary blocker for authority reconcile")

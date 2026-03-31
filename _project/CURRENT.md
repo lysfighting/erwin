@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now anchors adoption audit to the governing closed meeting)
+- **Last Session**: 2026-03-31 (Harness now syncs adopted follow-up lifecycle after action resolution)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now syncs adopted follow-up lifecycle after action resolution
+
+- **Adopted follow-up packets now move with resolved action state**: when `meetings resolve-action` updates a closed meeting that has already been adopted into run state, the governing run now refreshes its adopted follow-up packets, primary adopted packet, and packet counts instead of keeping the `meeting-close` snapshot forever
+- **Leader-facing execution surfaces now see follow-up completion**: scheduler and `home` now reduce adopted open-follow-up counts after the underlying meeting action is resolved, so the adopted execution object advances with real completion rather than staying artificially open
+- **Smoke widened again**: teammate smoke now proves a decision-record council's adopted open follow-up packet count drops to zero in both scheduler and `home` after `resolve-action`, and core smoke now guards the same lifecycle reduction on the simpler close/resolve path
 
 **Session 2026-03-31** — Harness now anchors adoption audit to the governing closed meeting
 
