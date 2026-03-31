@@ -4253,6 +4253,10 @@ func allowedRunTransitions() map[string]map[string]bool {
 	}
 }
 
+func runHasOpenAdoptedFollowUp(run map[string]any) bool {
+	return runOpenAdoptedFollowUpPacketCount(run) > 0
+}
+
 func validateRunTransition(run map[string]any, newState string) error {
 	current := stringValue(run["state"])
 	if current == "" {
@@ -4264,6 +4268,9 @@ func validateRunTransition(run map[string]any, newState string) error {
 	allowed := allowedRunTransitions()[current]
 	if !allowed[newState] {
 		return fmt.Errorf("invalid run state transition: %s -> %s", current, newState)
+	}
+	if newState == "completed" && runHasOpenAdoptedFollowUp(run) {
+		return errors.New("run cannot transition to completed while adopted follow-up packets remain open")
 	}
 	return nil
 }

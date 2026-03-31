@@ -751,12 +751,22 @@ doctor_after_adoption=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_not_json_field "$doctor_after_adoption" '"kind": "run-missing-meeting-next-action"' "doctor no longer misreads adopted follow-up guidance as missing next_expected_action"
 assert_not_json_field "$doctor_after_adoption" '"kind": "run-missing-meeting-summary"' "doctor no longer compares run summary against a non-governing closed meeting"
 
+blocked_completion_output=$(run_in_repo bash scripts/harness-drive.sh complete "$leader_run_id" "Should not close while adopted follow-up is still open." 2>&1 || true)
+if grep -q 'run cannot transition to completed while adopted follow-up packets remain open' <<<"$blocked_completion_output"; then
+  pass "drive complete is blocked while adopted follow-up packets remain open"
+else
+  fail "drive complete is blocked while adopted follow-up packets remain open"
+  echo "$blocked_completion_output"
+fi
+
 decision_record_resolve=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id")
 assert_json_field "$decision_record_resolve" '"next_expected_action": "Continue governed execution after the adopted follow-up is complete."' "drive resolve-follow-up advances run guidance after the adopted follow-up completes"
 schedule_after_follow_up_resolution=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_after_follow_up_resolution" '"adopted_output_open_follow_up_packet_count": 0' "scheduler clears adopted open follow-up packet counts after action resolution"
 home_after_follow_up_resolution=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_after_follow_up_resolution" '"adopted_output_open_follow_up_packet_count": 0' "home clears adopted open follow-up packet counts after action resolution"
+completed_after_follow_up=$(run_in_repo bash scripts/harness-drive.sh complete "$leader_run_id" "Decision-record follow-up completed and run can now close.")
+assert_json_field "$completed_after_follow_up" '"state": "completed"' "drive complete succeeds after adopted follow-up is resolved"
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"

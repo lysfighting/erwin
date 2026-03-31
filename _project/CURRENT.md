@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now resolves adopted follow-up from drive)
+- **Last Session**: 2026-03-31 (Harness now blocks completion while adopted follow-up remains open)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now blocks completion while adopted follow-up remains open
+
+- **Completion now respects adopted follow-up obligations**: a run can no longer transition to `completed` while adopted follow-up packets remain open, so post-council execution work cannot be silently bypassed by an early close
+- **Run-native follow-up completion and run completion now compose cleanly**: after `drive resolve-follow-up` clears the last open adopted packet, the same run can complete normally, which keeps `completed` aligned with real bounded execution closure
+- **Teammate smoke widened again**: teammate smoke now proves `drive complete` is rejected while adopted follow-up remains open, then succeeds immediately after the adopted follow-up is resolved
 
 **Session 2026-03-31** — Harness now resolves adopted follow-up from drive
 
