@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness council output packets gained lane-level synthesis and scheduler projection)
+- **Last Session**: 2026-03-31 (Harness bundle authority now escalates multi-council overlap explicitly)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness bundle authority now escalates multi-council overlap explicitly
+
+- **Multi-council bundle escalation is now first-class**: when the same overlapping mission bundle accumulates multiple active council anchors without a single durable governor, mission-graph authority now promotes that state into explicit bundle-governor escalation instead of flattening it into generic overlap conflict
+- **Leader guidance is sharper**: multi-council overlap bundles now emit the distinct `multi_council_bundle_governor_required` resolution kind plus a leader-facing action that says to consolidate the competing council anchors or establish one governing mission before widening execution
+- **Core smoke widened again**: `scripts/harness-smoke-test.sh` now proves a once-council-governed overlap bundle becomes escalation-required as soon as a second active council anchor appears on the same shared boundary
 
 **Session 2026-03-31** — Harness council output packets now carry lane-level synthesis
 

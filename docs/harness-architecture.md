@@ -610,6 +610,8 @@ If one mission holds the more specific ownership boundary and no competing highe
 
 If one mission is already chairing the relevant active council, the control plane may also keep bundle authority anchored to that council-host mission until the governed meeting outcome is adopted.
 
+If more than one overlapping mission is simultaneously carrying an active council anchor on the same bundle and no single durable governor already exists, the control plane now escalates that state explicitly instead of pretending it is an ordinary overlap conflict.
+
 The scheduler now consumes these bundle packets directly rather than leaving them as audit-only output.
 
 That means:
@@ -618,6 +620,7 @@ That means:
 - governed losing missions can be deferred behind the current bundle governor
 - escalation-required bundles can surface as explicit human decisions instead of generic overlap noise
 - escalation-required bundles can now expose ranked candidate governors, so the leader sees likely control anchors before deciding whether to establish one directly or escalate into a council
+- overlap bundles with multiple active council anchors now get their own escalation shape as well, surfacing `multi_council_bundle_governor_required` plus guidance to consolidate the competing councils or establish one governing mission before widening execution
 - the leader can now explicitly adopt a governor for an escalation-required bundle, converting that bundle into governed authority through a durable control-plane signal instead of leaving it as a perpetual decision packet
 - a bundle-scoped council can now also close with a structured governing-mission verdict, and `meeting-close` will adopt that verdict into the same durable explicit-governor signal path instead of leaving the outcome trapped in archived meeting notes
 - when auto-synthesis already produces a clear accepted winner for a bundle-scoped `establish_bundle_governor` council, the controller can now auto-generate that structured governing-mission verdict instead of forcing the leader to insert a manual lock step before close

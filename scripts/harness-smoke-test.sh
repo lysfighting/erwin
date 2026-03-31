@@ -1432,6 +1432,17 @@ assert_json_field "$graph_authority_council" '"resolution_kind": "council_govern
 assert_json_field "$graph_authority_council" '"resolution_kind": "council_governed_mission_ownership"' "mission graph authority explains the council-governed ownership verdict"
 assert_json_field "$graph_authority_council" "\"governing_mission_id\": \"issue-20001\"" "mission graph authority keeps bundle control on the council-host mission"
 assert_json_field "$graph_authority_council" "\"required_action\": \"Keep bundle authority anchored to issue-20001 until its active council conclusions are adopted.\"" "mission graph authority tells the leader to keep authority on the active council host until adoption"
+multi_council_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$council_run_id" "Resolve the overlapping release-note ownership boundary from the second mission before widening execution.")
+assert_json_field "$multi_council_meeting_output" '"state": "active"' "second overlapping mission can also materialize an active council on the same bundle"
+multi_council_meeting_id=$(printf '%s\n' "$multi_council_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+graph_authority_multi_council=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all)
+assert_json_field "$graph_authority_multi_council" '"escalated_bundle_count": 1' "mission graph authority escalates when multiple active council anchors exist on the same bundle"
+assert_json_field "$graph_authority_multi_council" '"bundle_state": "escalation-required"' "multi-council overlap bundle becomes escalation-required instead of generic conflict"
+assert_json_field "$graph_authority_multi_council" '"resolution_kind": "multi_council_bundle_governor_required"' "multi-council overlap bundle gets a distinct escalation resolution kind"
+assert_json_field "$graph_authority_multi_council" 'Consolidate overlapping active councils on issue-20001, issue-20007 or establish one governing mission before parallel execution.' "multi-council overlap bundle tells the leader to consolidate active council anchors first"
+assert_json_field "$graph_authority_multi_council" 'Multiple active council anchors currently govern the same overlap bundle without a single durable governor: issue-20001, issue-20007.' "multi-council overlap bundle records an explicit governance note about competing council anchors"
+closed_multi_council_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$council_run_id" "$multi_council_meeting_id" "Closed duplicate overlapping council anchor.")
+assert_json_field "$closed_multi_council_meeting" '"state": "closed"' "duplicate overlapping council anchor can close cleanly after escalation coverage"
 resolved_council_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$council_run_id" completed "Resolved council-governed overlap smoke path.")
 assert_json_field "$resolved_council_run" '"state": "completed"' "council-governed overlapping mission can be closed after authority coverage"
 closed_council_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$run_id" "$council_meeting_id" "Council-governed overlap resolved.")

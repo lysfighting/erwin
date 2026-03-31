@@ -3992,16 +3992,30 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 				governedBundleCount++
 			} else if hasBundleAuthoritySignal {
 				state = "escalation-required"
-				resolutionKind = "bundle_governor_required"
-				requiredAction = "Open a council or add an explicit dependency/ownership transfer to establish a governing mission before parallel execution."
+				if len(councilAnchorMissionIDs) > 1 {
+					resolutionKind = "multi_council_bundle_governor_required"
+					requiredAction = fmt.Sprintf("Consolidate overlapping active councils on %s or establish one governing mission before parallel execution.", strings.Join(councilAnchorMissionIDs, ", "))
+					governanceNotes = append(governanceNotes, fmt.Sprintf("Multiple active council anchors currently govern the same overlap bundle without a single durable governor: %s.", strings.Join(councilAnchorMissionIDs, ", ")))
+				} else {
+					resolutionKind = "bundle_governor_required"
+					requiredAction = "Open a council or add an explicit dependency/ownership transfer to establish a governing mission before parallel execution."
+				}
 				if len(bundleRoots) > 1 {
 					governanceNotes = append(governanceNotes, "Multiple root missions still claim overlapping bundle authority without a decisive governing dependency.")
 				}
 				escalatedBundleCount++
 			} else {
-				state = "conflicted"
-				resolutionKind = "bundle_conflict"
-				requiredAction = "Narrow selectors, serialize missions, or add a governing dependency/council before parallel execution."
+				if len(councilAnchorMissionIDs) > 1 {
+					state = "escalation-required"
+					resolutionKind = "multi_council_bundle_governor_required"
+					requiredAction = fmt.Sprintf("Consolidate overlapping active councils on %s or establish one governing mission before parallel execution.", strings.Join(councilAnchorMissionIDs, ", "))
+					governanceNotes = append(governanceNotes, fmt.Sprintf("Multiple active council anchors currently govern the same overlap bundle without a single durable governor: %s.", strings.Join(councilAnchorMissionIDs, ", ")))
+					escalatedBundleCount++
+				} else {
+					state = "conflicted"
+					resolutionKind = "bundle_conflict"
+					requiredAction = "Narrow selectors, serialize missions, or add a governing dependency/council before parallel execution."
+				}
 				if len(councilAnchorMissionIDs) == 1 {
 					requiredAction = fmt.Sprintf("Use the active council on %s to govern the remaining bundle conflict, or narrow selectors before widening execution.", councilAnchorMissionIDs[0])
 					governanceNotes = append(governanceNotes, fmt.Sprintf("Bundle already has one active council anchor on %s, but unresolved overlap remains outside that governed lane.", councilAnchorMissionIDs[0]))
@@ -4009,7 +4023,9 @@ func missionGraphAuthorityAudit(missionRegistry map[string]any, registry map[str
 				if len(bundleRoots) > 1 {
 					governanceNotes = append(governanceNotes, "Multiple root missions still claim overlapping bundle authority.")
 				}
-				conflictedBundleCount++
+				if state == "conflicted" {
+					conflictedBundleCount++
+				}
 			}
 		case adjudicationCount > 0:
 			state = "governed"
