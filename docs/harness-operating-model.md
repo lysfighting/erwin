@@ -165,6 +165,7 @@ Current runtime note:
 - `incident-command` now also drives protocol-specific live requirements such as bounded incident assessments in independent review and explicit action/owner/stop-go output guidance at close
 - `decision-record` now also drives protocol-specific live requirements such as bounded decision-record assessments in independent review and explicit decision/alternatives/consequences/follow-up output guidance at close
 - once those councils reach synthesis/output, orchestration now also auto-synthesizes protocol-aware output packets with lane-level synthesis plus structured `follow_up_packets`, and `meeting-close` / `adopt-meeting` now write that bounded output back into run state so the leader can carry forward both the provisional output and the primary follow-up packet instead of reconstructing them from raw findings and actions
+- that adopted follow-up state now also projects back into scheduler mission packets and `home`, so once a council is closed the control plane can keep speaking in bounded follow-up packets instead of collapsing the next step back into generic selected-mission wording
 - deeper protocol-specific automation is still not complete, but protocol choice is now part of real council control flow rather than metadata only
 
 ---

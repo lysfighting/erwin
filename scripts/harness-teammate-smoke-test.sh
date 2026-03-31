@@ -707,6 +707,18 @@ assert_json_field "$decision_record_close" '"adopted_output_follow_up_packet_cou
 assert_json_field "$decision_record_close" '"adopted_primary_follow_up_packet": {' "meeting-close keeps the primary adopted follow-up packet in run state"
 assert_json_field "$decision_record_close" '"execution_kind": "decision_record_follow_up"' "meeting-close preserves protocol-specific follow-up execution semantics in adopted run state"
 
+schedule_after_adoption=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_after_adoption" '"adopted_output_packet_kind": "decision_record_output"' "scheduler mission packets surface the adopted structured output kind after meeting-close"
+assert_json_field "$schedule_after_adoption" '"adopted_output_open_follow_up_packet_count": 1' "scheduler mission packets surface open adopted follow-up packet counts"
+assert_json_field "$schedule_after_adoption" '"adopted_primary_follow_up_packet": {' "scheduler mission packets surface the primary adopted follow-up packet"
+assert_json_field "$schedule_after_adoption" '"execution_kind": "decision_record_follow_up"' "scheduler mission packets preserve protocol-aware adopted follow-up execution semantics"
+
+home_after_adoption=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_after_adoption" '"adopted_output_run_count": 1' "home surfaces active runs carrying adopted structured output"
+assert_json_field "$home_after_adoption" '"primary_adopted_output_packet_kind": "decision_record_output"' "home surfaces the primary adopted output packet kind"
+assert_json_field "$home_after_adoption" '"primary_adopted_follow_up_packet": {' "home surfaces the primary adopted follow-up packet"
+assert_json_field "$home_after_adoption" '"execution_kind": "decision_record_follow_up"' "home preserves protocol-aware adopted follow-up execution semantics"
+
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"
 if [ "$FAIL" -ne 0 ]; then

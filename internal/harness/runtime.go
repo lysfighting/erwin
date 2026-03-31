@@ -6072,6 +6072,69 @@ func applyMeetingAdoptionToRun(run map[string]any, meeting map[string]any) map[s
 	return run
 }
 
+func runAdoptedOutputPacket(run map[string]any) map[string]any {
+	outputPacket, _ := toMap(run["adopted_output_packet"])
+	return outputPacket
+}
+
+func runAdoptedFollowUpPackets(run map[string]any) []any {
+	packets := toList(run["adopted_output_follow_up_packets"])
+	if len(packets) > 0 {
+		return packets
+	}
+	outputPacket := runAdoptedOutputPacket(run)
+	return toList(outputPacket["follow_up_packets"])
+}
+
+func runOpenAdoptedFollowUpPacketCount(run map[string]any) int {
+	openCount := 0
+	for _, item := range runAdoptedFollowUpPackets(run) {
+		packet, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		state := firstNonBlank(strings.TrimSpace(stringValue(packet["state"])), "open")
+		if state == "open" {
+			openCount++
+		}
+	}
+	return openCount
+}
+
+func runPrimaryAdoptedFollowUpPacket(run map[string]any) map[string]any {
+	packet, _ := toMap(run["adopted_primary_follow_up_packet"])
+	if len(packet) > 0 {
+		return packet
+	}
+	for _, item := range runAdoptedFollowUpPackets(run) {
+		packet, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		state := firstNonBlank(strings.TrimSpace(stringValue(packet["state"])), "open")
+		if state == "open" {
+			return packet
+		}
+	}
+	for _, item := range runAdoptedFollowUpPackets(run) {
+		packet, ok := toMap(item)
+		if ok {
+			return packet
+		}
+	}
+	return nil
+}
+
+func adoptedFollowUpActionText(packet map[string]any) string {
+	if len(packet) == 0 {
+		return ""
+	}
+	return firstNonBlank(
+		strings.TrimSpace(stringValue(packet["required_follow_up"])),
+		strings.TrimSpace(stringValue(packet["summary"])),
+	)
+}
+
 func minInt(a, b int) int {
 	if a < b {
 		return a
@@ -10166,6 +10229,11 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		authoritativeRunState := ""
 		authoritativeRunMode := ""
 		authoritativeRunSurface := ""
+		adoptedOutputPacketKind := ""
+		adoptedOutputFollowUpPacketCount := 0
+		adoptedOutputOpenFollowUpPacketCount := 0
+		adoptedPrimaryFollowUpPacket := map[string]any{}
+		adoptedPrimaryFollowUpAction := ""
 		updatedAt := firstNonBlank(stringValue(mission["updated_at"]), stringValue(mission["created_at"]))
 		bundleInfo, _ := toMap(bundleInfoByMission[missionID])
 		bundleID := stringValue(bundleInfo["bundle_id"])
@@ -10183,6 +10251,13 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			authoritativeRunState = stringValue(authoritativeRun["state"])
 			authoritativeRunMode = stringValue(authoritativeRun["mode"])
 			authoritativeRunSurface = stringValue(authoritativeRun["execution_surface"])
+			adoptedOutputPacketKind = strings.TrimSpace(stringValue(authoritativeRun["adopted_output_packet_kind"]))
+			adoptedOutputFollowUpPacketCount = len(runAdoptedFollowUpPackets(authoritativeRun))
+			adoptedOutputOpenFollowUpPacketCount = runOpenAdoptedFollowUpPacketCount(authoritativeRun)
+			if packet := runPrimaryAdoptedFollowUpPacket(authoritativeRun); packet != nil {
+				adoptedPrimaryFollowUpPacket, _ = toMap(cloneValue(packet))
+				adoptedPrimaryFollowUpAction = adoptedFollowUpActionText(packet)
+			}
 			updatedAt = firstNonBlank(runSortTimestamp(authoritativeRun), updatedAt)
 			unsatisfiedRunDeps = unsatisfiedDependencies(authoritativeRun, registry)
 		}
@@ -10373,6 +10448,13 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				}
 			}
 		}
+		if classification == "runnable" && adoptedOutputOpenFollowUpPacketCount > 0 {
+			reasons = append(reasons, fmt.Sprintf("Mission carries %d adopted council follow-up packet(s) in run state.", adoptedOutputOpenFollowUpPacketCount))
+			recommendedAction = firstNonBlank(
+				adoptedPrimaryFollowUpAction,
+				recommendedAction,
+			)
+		}
 		if decisionKind != "" {
 			meetingTriggerRefs = matchedMeetingTriggerRefs(profile, decisionKind, bundleState, intValue(missionAudit["unresolved_conflict_count"]), releaseAdjacent, profileHighRiskScopeRefs, freshFollowUpSignalKinds)
 			switch {
@@ -10428,52 +10510,57 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		}
 
 		entry := map[string]any{
-			"mission_id":                       missionID,
-			"mission_state":                    stringValue(mission["state"]),
-			"classification":                   classification,
-			"priority":                         stringValue(mission["priority"]),
-			"risk_level":                       stringValue(mission["risk_level"]),
-			"parallel_justified":               parallelJustified,
-			"parallel_justification":           parallelJustification,
-			"effective_risk_level":             effectiveRiskLevel,
-			"profile_high_risk":                len(profileHighRiskScopeRefs) > 0,
-			"profile_high_risk_scope_refs":     stringListToAny(profileHighRiskScopeRefs),
-			"recommended_decision_surface":     recommendedDecisionSurface,
-			"recommended_decision_protocol":    recommendedDecisionProtocolValue,
-			"recommended_protocol_reason":      recommendedProtocolReason,
-			"meeting_trigger_refs":             stringListToAny(meetingTriggerRefs),
-			"release_adjacent":                 releaseAdjacent,
-			"authoritative_run_id":             authoritativeRunID,
-			"authoritative_run_state":          authoritativeRunState,
-			"authoritative_run_mode":           authoritativeRunMode,
-			"authoritative_execution_surface":  authoritativeRunSurface,
-			"active_run_ids":                   stringListToAny(dedupeStrings(activeRunIDs)),
-			"active_run_count":                 len(dedupeStrings(activeRunIDs)),
-			"teammate_run_count":               activeTeammateCount,
-			"unsatisfied_mission_dependencies": stringListToAny(unsatisfiedMissionDeps),
-			"unsatisfied_run_dependencies":     stringListToAny(unsatisfiedRunDeps),
-			"meeting_count":                    activeMeetingCountByMission[missionID],
-			"open_meeting_action_count":        openMeetingActionCountByMission[missionID],
-			"follow_up_signal_count":           len(followUpSignalsByMission[missionID]),
-			"follow_up_signals":                cloneValue(followUpSignalsByMission[missionID]),
-			"fresh_follow_up_signal_kinds":     stringListToAny(freshFollowUpSignalKinds),
-			"follow_up_signal_urgency_rank":    followUpSignalUrgencyRank,
-			"stale_follow_up_signal_count":     len(staleFollowUpSignalsByMission[missionID]),
-			"stale_follow_up_signals":          cloneValue(staleFollowUpSignalsByMission[missionID]),
-			"bundle_id":                        bundleID,
-			"bundle_state":                     bundleState,
-			"bundle_role":                      bundleRole,
-			"bundle_resolution_kind":           bundleResolutionKind,
-			"bundle_governing_mission_id":      bundleGovernorID,
-			"bundle_governance_source_kind":    bundleGovernanceSourceKind,
-			"bundle_adopted_from_meeting_id":   bundleAdoptedFromMeetingID,
-			"bundle_required_action":           bundleRequiredAction,
-			"candidate_governor_ids":           stringListToAny(bundleCandidateGovernorIDs),
-			"candidate_governor_packets":       cloneValue(bundleCandidateGovernorPackets),
-			"latest_summary":                   stringValue(mission["latest_summary"]),
-			"recommended_action":               recommendedAction,
-			"reasons":                          stringListToAny(dedupeStrings(reasons)),
-			"updated_at":                       updatedAt,
+			"mission_id":                                 missionID,
+			"mission_state":                              stringValue(mission["state"]),
+			"classification":                             classification,
+			"priority":                                   stringValue(mission["priority"]),
+			"risk_level":                                 stringValue(mission["risk_level"]),
+			"parallel_justified":                         parallelJustified,
+			"parallel_justification":                     parallelJustification,
+			"effective_risk_level":                       effectiveRiskLevel,
+			"profile_high_risk":                          len(profileHighRiskScopeRefs) > 0,
+			"profile_high_risk_scope_refs":               stringListToAny(profileHighRiskScopeRefs),
+			"recommended_decision_surface":               recommendedDecisionSurface,
+			"recommended_decision_protocol":              recommendedDecisionProtocolValue,
+			"recommended_protocol_reason":                recommendedProtocolReason,
+			"meeting_trigger_refs":                       stringListToAny(meetingTriggerRefs),
+			"release_adjacent":                           releaseAdjacent,
+			"authoritative_run_id":                       authoritativeRunID,
+			"authoritative_run_state":                    authoritativeRunState,
+			"authoritative_run_mode":                     authoritativeRunMode,
+			"authoritative_execution_surface":            authoritativeRunSurface,
+			"adopted_output_packet_kind":                 adoptedOutputPacketKind,
+			"adopted_output_follow_up_packet_count":      adoptedOutputFollowUpPacketCount,
+			"adopted_output_open_follow_up_packet_count": adoptedOutputOpenFollowUpPacketCount,
+			"adopted_primary_follow_up_packet":           cloneValue(adoptedPrimaryFollowUpPacket),
+			"adopted_primary_follow_up_action":           adoptedPrimaryFollowUpAction,
+			"active_run_ids":                             stringListToAny(dedupeStrings(activeRunIDs)),
+			"active_run_count":                           len(dedupeStrings(activeRunIDs)),
+			"teammate_run_count":                         activeTeammateCount,
+			"unsatisfied_mission_dependencies":           stringListToAny(unsatisfiedMissionDeps),
+			"unsatisfied_run_dependencies":               stringListToAny(unsatisfiedRunDeps),
+			"meeting_count":                              activeMeetingCountByMission[missionID],
+			"open_meeting_action_count":                  openMeetingActionCountByMission[missionID],
+			"follow_up_signal_count":                     len(followUpSignalsByMission[missionID]),
+			"follow_up_signals":                          cloneValue(followUpSignalsByMission[missionID]),
+			"fresh_follow_up_signal_kinds":               stringListToAny(freshFollowUpSignalKinds),
+			"follow_up_signal_urgency_rank":              followUpSignalUrgencyRank,
+			"stale_follow_up_signal_count":               len(staleFollowUpSignalsByMission[missionID]),
+			"stale_follow_up_signals":                    cloneValue(staleFollowUpSignalsByMission[missionID]),
+			"bundle_id":                                  bundleID,
+			"bundle_state":                               bundleState,
+			"bundle_role":                                bundleRole,
+			"bundle_resolution_kind":                     bundleResolutionKind,
+			"bundle_governing_mission_id":                bundleGovernorID,
+			"bundle_governance_source_kind":              bundleGovernanceSourceKind,
+			"bundle_adopted_from_meeting_id":             bundleAdoptedFromMeetingID,
+			"bundle_required_action":                     bundleRequiredAction,
+			"candidate_governor_ids":                     stringListToAny(bundleCandidateGovernorIDs),
+			"candidate_governor_packets":                 cloneValue(bundleCandidateGovernorPackets),
+			"latest_summary":                             stringValue(mission["latest_summary"]),
+			"recommended_action":                         recommendedAction,
+			"reasons":                                    stringListToAny(dedupeStrings(reasons)),
+			"updated_at":                                 updatedAt,
 		}
 		entryByMission[missionID] = entry
 		missionOrder = append(missionOrder, missionID)
@@ -11119,6 +11206,8 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		nextAction = "Keep the current foreground batch bounded and run maintenance on stale control-plane state before widening execution."
 	case len(maintenanceActions) > 0:
 		nextAction = "Run maintenance on stale control-plane state before widening execution."
+	case len(selectedMissionIDs) == 1 && strings.TrimSpace(stringValue(entryByMission[selectedMissionIDs[0]]["adopted_primary_follow_up_action"])) != "":
+		nextAction = stringValue(entryByMission[selectedMissionIDs[0]]["adopted_primary_follow_up_action"])
 	case len(selectedMissionIDs) > 1:
 		if len(batchCapacityDeferredMissionIDs) > 0 {
 			nextAction = fmt.Sprintf("Scheduler admitted %d missions into the bounded parallel batch and deferred %d behind the current parallel capacity.", len(selectedMissionIDs), len(batchCapacityDeferredMissionIDs))
@@ -11398,6 +11487,53 @@ func cmdHome(args []string) error {
 	}
 	graphAuthorityAudit, _ := toMap(missionGraphAuthorityAudit(missionRegistry, registry, false))
 	scheduler := schedulerSummary(profile, missionRegistry, registry, signals, false)
+	selectedRunIDs := map[string]bool{}
+	for _, item := range toList(scheduler["selected_run_ids"]) {
+		if runID := strings.TrimSpace(stringValue(item)); runID != "" {
+			selectedRunIDs[runID] = true
+		}
+	}
+	adoptedOutputRunCount := 0
+	adoptedOutputFollowUpPacketCount := 0
+	adoptedOutputOpenFollowUpPacketCount := 0
+	primaryAdoptedOutputRunID := ""
+	primaryAdoptedOutputPacketKind := ""
+	primaryAdoptedFollowUpPacket := map[string]any{}
+	primaryAdoptedRunSelected := false
+	primaryAdoptedUpdatedAt := ""
+	for _, item := range activeRuns {
+		run, _ := toMap(item)
+		outputPacket := runAdoptedOutputPacket(run)
+		if len(outputPacket) == 0 && strings.TrimSpace(stringValue(run["adopted_output_packet_kind"])) == "" {
+			continue
+		}
+		adoptedOutputRunCount++
+		adoptedOutputFollowUpPacketCount += len(runAdoptedFollowUpPackets(run))
+		adoptedOutputOpenFollowUpPacketCount += runOpenAdoptedFollowUpPacketCount(run)
+		runID := stringValue(run["run_id"])
+		runSelected := selectedRunIDs[runID]
+		runUpdatedAt := firstNonBlank(runSortTimestamp(run), stringValue(run["updated_at"]))
+		shouldPromote := false
+		switch {
+		case primaryAdoptedOutputRunID == "":
+			shouldPromote = true
+		case runSelected && !primaryAdoptedRunSelected:
+			shouldPromote = true
+		case runSelected == primaryAdoptedRunSelected && runUpdatedAt > primaryAdoptedUpdatedAt:
+			shouldPromote = true
+		}
+		if shouldPromote {
+			primaryAdoptedOutputRunID = runID
+			primaryAdoptedOutputPacketKind = firstNonBlank(strings.TrimSpace(stringValue(run["adopted_output_packet_kind"])), strings.TrimSpace(stringValue(outputPacket["output_packet_kind"])))
+			if packet := runPrimaryAdoptedFollowUpPacket(run); packet != nil {
+				primaryAdoptedFollowUpPacket, _ = toMap(cloneValue(packet))
+			} else {
+				primaryAdoptedFollowUpPacket = map[string]any{}
+			}
+			primaryAdoptedRunSelected = runSelected
+			primaryAdoptedUpdatedAt = runUpdatedAt
+		}
+	}
 	nextAction := "Continue active execution and monitor signals."
 	switch {
 	case len(orphanSignals) > 0 || len(orphanMeetings) > 0:
@@ -11428,6 +11564,11 @@ func cmdHome(args []string) error {
 		nextAction = "Review blockers or convene a meeting."
 	case len(meetings) > 0:
 		nextAction = "Review active meetings and convert conclusions into run updates."
+	case intValue(scheduler["required_human_decision_count"]) == 0 &&
+		intValue(scheduler["maintenance_action_count"]) == 0 &&
+		intValue(scheduler["selected_mission_count"]) == 1 &&
+		adoptedFollowUpActionText(primaryAdoptedFollowUpPacket) != "":
+		nextAction = adoptedFollowUpActionText(primaryAdoptedFollowUpPacket)
 	case activeRCRecord != nil:
 		nextAction = "Review the active RC and decide whether to promote, fix, or close it."
 	case intValue(scheduler["selected_mission_count"]) > 1:
@@ -11505,6 +11646,12 @@ func cmdHome(args []string) error {
 		"scheduler_previous_selected_mission_ids":          cloneValue(toList(scheduler["previous_selected_mission_ids"])),
 		"scheduler_selected_mission_ids":                   cloneValue(toList(scheduler["selected_mission_ids"])),
 		"scheduler_next_action":                            stringValue(scheduler["next_action"]),
+		"adopted_output_run_count":                         adoptedOutputRunCount,
+		"adopted_output_follow_up_packet_count":            adoptedOutputFollowUpPacketCount,
+		"adopted_output_open_follow_up_packet_count":       adoptedOutputOpenFollowUpPacketCount,
+		"primary_adopted_output_run_id":                    primaryAdoptedOutputRunID,
+		"primary_adopted_output_packet_kind":               primaryAdoptedOutputPacketKind,
+		"primary_adopted_follow_up_packet":                 cloneValue(primaryAdoptedFollowUpPacket),
 		"next_action":                                      nextAction,
 	})
 }

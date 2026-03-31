@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now adopts structured council output into run state)
+- **Last Session**: 2026-03-31 (Harness now projects adopted council output follow-up into leader-facing execution surfaces)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now projects adopted council output follow-up into leader-facing execution surfaces
+
+- **Adopted council output is now leader-visible**: scheduler mission packets and `home` now surface adopted output packet kinds, adopted/open follow-up packet counts, and the primary adopted follow-up packet instead of leaving that structure discoverable only through raw run inspection
+- **Selected execution now follows adopted follow-up packets directly**: when no higher-priority decision or maintenance work outranks the foreground mission, scheduler and `home` now let the primary adopted follow-up packet drive the next action instead of collapsing back to generic “selected mission” wording
+- **Smoke widened again**: teammate smoke now proves `missions schedule` plus `home` both preserve protocol-aware adopted follow-up packet execution semantics after `meeting-close`
 
 **Session 2026-03-31** — Harness now adopts structured council output into run state
 
