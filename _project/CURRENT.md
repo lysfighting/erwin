@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now syncs adopted follow-up lifecycle after action resolution)
+- **Last Session**: 2026-03-31 (Harness now resolves adopted follow-up from drive)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now resolves adopted follow-up from drive
+
+- **Adopted follow-up now has a run-native completion surface**: `drive resolve-follow-up` can now complete the primary or named adopted follow-up packet directly from the governing run instead of forcing the leader back through a closed meeting surface
+- **Run guidance now advances when the adopted follow-up closes**: once the last open adopted follow-up packet is completed, the governing run clears the primary adopted packet and advances `next_expected_action` out of the stale follow-up text into generic post-follow-up execution guidance
+- **Teammate smoke widened again**: teammate smoke now proves `drive resolve-follow-up` clears adopted open-follow-up counts in scheduler and `home`, while also advancing run guidance after the adopted follow-up completes
 
 **Session 2026-03-31** — Harness now syncs adopted follow-up lifecycle after action resolution
 
