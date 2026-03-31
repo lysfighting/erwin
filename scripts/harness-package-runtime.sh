@@ -134,6 +134,7 @@ for target in "${TARGETS[@]}"; do
   cp "$BUILD_ROOT/$target/harness-state" "$package_root/harness-state"
   cp "$REPO_ROOT/harness/adapter-manifest.yml" "$package_root/harness/adapter-manifest.yml"
   cp "$REPO_ROOT/docs/harness-public-contract.md" "$package_root/docs/harness-public-contract.md"
+  cp "$REPO_ROOT/docs/harness-release-criteria.md" "$package_root/docs/harness-release-criteria.md"
   cp "$REPO_ROOT/harness/bin/README.md" "$package_root/README.md"
   (
     cd "$OUTPUT_ROOT"

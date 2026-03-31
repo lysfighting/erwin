@@ -57,6 +57,7 @@ Each runtime bundle currently contains:
 - `harness-state`
 - `harness/adapter-manifest.yml`
 - `docs/harness-public-contract.md`
+- `docs/harness-release-criteria.md`
 - `README.md`
 
 This keeps the distributed artifact tied to:

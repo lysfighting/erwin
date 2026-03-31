@@ -113,7 +113,20 @@ Use these for:
 
 These documents define how `Harness` learns from external engineering signal and local operating experience without turning daily discovery into uncontrolled runtime churn.
 
-### 7. Machine-Readable Package Truth
+### 7. Release Criteria
+
+- [`docs/harness-release-criteria.md`](/Users/liyasong/Project/collov/erwin/docs/harness-release-criteria.md)
+
+Use this for:
+
+- the explicit `1.0.0` promotion bar
+- contract freeze scope
+- required packaging state
+- required verification matrix
+
+This document is the durable release/freeze anchor for the current adapter line.
+
+### 8. Machine-Readable Package Truth
 
 - [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
 
@@ -212,11 +225,12 @@ Use these when the question is about what was preserved, redesigned, or intentio
 4. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
 5. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
 6. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
-7. [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
-8. [`docs/harness-proposal-ledger.md`](/Users/liyasong/Project/collov/erwin/docs/harness-proposal-ledger.md)
-9. [`docs/harness-session-handoff.md`](/Users/liyasong/Project/collov/erwin/docs/harness-session-handoff.md)
-10. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
-11. targeted research and recent session logs as needed
+7. [`docs/harness-release-criteria.md`](/Users/liyasong/Project/collov/erwin/docs/harness-release-criteria.md)
+8. [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
+9. [`docs/harness-proposal-ledger.md`](/Users/liyasong/Project/collov/erwin/docs/harness-proposal-ledger.md)
+10. [`docs/harness-session-handoff.md`](/Users/liyasong/Project/collov/erwin/docs/harness-session-handoff.md)
+11. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
+12. targeted research and recent session logs as needed
 
 ### Path B: Review / Drift Check
 

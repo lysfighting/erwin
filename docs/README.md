@@ -29,6 +29,7 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 | [harness-operating-model.md](harness-operating-model.md) | Leader/teammate/council operating model for Harness |
 | [harness-proposal-ledger.md](harness-proposal-ledger.md) | Durable ledger of reviewed Harness evolution proposals |
 | [harness-public-contract.md](harness-public-contract.md) | Durable public contract for the Codex-native orchestration harness package |
+| [harness-release-criteria.md](harness-release-criteria.md) | Explicit `1.0.0` promotion bar, contract freeze, and verification matrix for Harness |
 | [harness-session-handoff.md](harness-session-handoff.md) | Durable fresh-session handoff and state-persistence entrypoint for Harness |
 | [erwin-skills-incubator-architecture.md](erwin-skills-incubator-architecture.md) | Historical but still useful background for the skills track |
 | [visual-encoding-standard.md](visual-encoding-standard.md) | Reusable visual output language reference |

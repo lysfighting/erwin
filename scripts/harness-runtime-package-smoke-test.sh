@@ -61,6 +61,7 @@ archive_list="$(tar -tzf "$archive_path")"
 assert_contains "$archive_list" "$target/harness-state" "archive contains harness-state binary"
 assert_contains "$archive_list" "$target/harness/adapter-manifest.yml" "archive contains adapter manifest"
 assert_contains "$archive_list" "$target/docs/harness-public-contract.md" "archive contains public contract"
+assert_contains "$archive_list" "$target/docs/harness-release-criteria.md" "archive contains release criteria"
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"

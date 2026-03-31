@@ -263,6 +263,10 @@ The public compatibility anchor is the adapter identity plus adapter version in:
 
 - [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
 
+The explicit release/freeze anchor for the first stable line is:
+
+- [`docs/harness-release-criteria.md`](/Users/liyasong/Project/collov/erwin/docs/harness-release-criteria.md)
+
 Compatibility expectations:
 
 - patch/minor prototype evolution may extend the manifest or runtime behavior

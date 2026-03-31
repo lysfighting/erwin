@@ -55,6 +55,7 @@ Authoritative references:
 - [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
 - [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
 - [`docs/harness-proposal-ledger.md`](/Users/liyasong/Project/collov/erwin/docs/harness-proposal-ledger.md)
+- [`docs/harness-release-criteria.md`](/Users/liyasong/Project/collov/erwin/docs/harness-release-criteria.md)
 - [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
 - [`_project/decisions/0013-harness-prototype-positioning.md`](/Users/liyasong/Project/collov/erwin/_project/decisions/0013-harness-prototype-positioning.md)
 
@@ -114,6 +115,7 @@ Meaning:
 - normal harness usage no longer depends on `python3`
 - packaged binary is the preferred end-user path
 - local Go toolchain is a fallback, not the desired steady state
+- adapter validation now also treats `public_contract_path` as a required machine-readable package anchor and recognizes `release_criteria_path` as the machine-addressable `1.0.0` freeze bar
 
 Current scheduler/council reality:
 
@@ -139,7 +141,8 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.93.0-prototype`
+- `adapter_version`: `0.94.0-prototype`
+- `release_criteria_path`: `docs/harness-release-criteria.md`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)

@@ -733,6 +733,18 @@ func adapterValidate() map[string]any {
 			issues = append(issues, issueRecord("critical", "adapter-smoke-missing", relPath, fmt.Sprintf("Manifest-declared smoke script is missing: %s", relPath), "Restore the script or update adapter.smoke_scripts."))
 		}
 	}
+	publicContractPath := strings.TrimSpace(stringValue(adapter["public_contract_path"]))
+	if publicContractPath == "" {
+		issues = append(issues, issueRecord("critical", "adapter-public-contract-missing", repoRelativeString(manifestPath), "Adapter manifest does not declare public_contract_path.", "Set adapter.public_contract_path so the package boundary remains machine-addressable."))
+	} else if !exists(filepath.Join(repoRoot(), publicContractPath)) {
+		issues = append(issues, issueRecord("critical", "adapter-public-contract-file-missing", publicContractPath, fmt.Sprintf("Public contract file is missing: %s", publicContractPath), "Restore the file or update adapter.public_contract_path."))
+	}
+	releaseCriteriaPath := strings.TrimSpace(stringValue(adapter["release_criteria_path"]))
+	if releaseCriteriaPath == "" {
+		issues = append(issues, issueRecord("warning", "adapter-release-criteria-missing", repoRelativeString(manifestPath), "Adapter manifest does not declare release_criteria_path.", "Set adapter.release_criteria_path so the 1.0.0 freeze bar remains machine-addressable."))
+	} else if !exists(filepath.Join(repoRoot(), releaseCriteriaPath)) {
+		issues = append(issues, issueRecord("warning", "adapter-release-criteria-file-missing", releaseCriteriaPath, fmt.Sprintf("Release criteria file is missing: %s", releaseCriteriaPath), "Restore the file or update adapter.release_criteria_path."))
+	}
 
 	profileTemplate := strings.TrimSpace(stringValue(bootstrap["profile_template"]))
 	generatedProfilePath := strings.TrimSpace(stringValue(bootstrap["generated_profile_path"]))
@@ -778,6 +790,8 @@ func adapterValidate() map[string]any {
 		"adapter_id":                  stringValue(adapter["adapter_id"]),
 		"adapter_version":             stringValue(adapter["adapter_version"]),
 		"runtime":                     stringValue(adapter["runtime"]),
+		"public_contract_path":        publicContractPath,
+		"release_criteria_path":       releaseCriteriaPath,
 		"protocol_id":                 stringValue(protocol["protocol_id"]),
 		"protocol_version":            stringValue(protocol["protocol_version"]),
 		"package_file_count":          len(packageFiles),
@@ -7525,6 +7539,10 @@ func cmdAdapter(args []string) error {
 		fmt.Println(stringValue(adapterBootstrapConfig()["generated_profile_path"]))
 	case "metadata-path":
 		fmt.Println(stringValue(adapterBootstrapConfig()["metadata_path"]))
+	case "public-contract-path":
+		fmt.Println(stringValue(adapterConfig()["public_contract_path"]))
+	case "release-criteria-path":
+		fmt.Println(stringValue(adapterConfig()["release_criteria_path"]))
 	case "validate":
 		return printJSON(adapterValidate())
 	default:

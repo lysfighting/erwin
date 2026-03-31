@@ -6,15 +6,22 @@
 
 ## Project Status
 
-- **Version**: 0.93.0 (in progress)
+- **Version**: 0.94.0 (in progress)
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness active councils now project live action packets and blocked batches into leader-facing surfaces)
+- **Last Session**: 2026-03-31 (Harness now carries explicit 1.0.0 release criteria and package freeze anchors)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now carries explicit 1.0.0 release criteria and package freeze anchors
+
+- **1.0.0 release bar is now canonical**: `docs/harness-release-criteria.md` now defines the stable first-line promotion bar, including non-negotiable freeze constraints, required runtime maturity, required packaging state, and the minimum verification matrix for `1.0.0`
+- **Package freeze is now machine-addressable**: `harness/adapter-manifest.yml` now points at both `public_contract_path` and `release_criteria_path`, and `adapter validate` now checks those anchors instead of treating release/freeze expectations as chat-only context
+- **Runtime bundle contract widened**: packaged runtime archives now include `docs/harness-release-criteria.md`, and package smoke now proves the release criteria ship with the binary, manifest, public contract, and README
+- **Adapter line advanced again**: `harness/adapter-manifest.yml`, `_project/CURRENT.md`, `CHANGELOG.md`, session log, documentation map, distribution docs, and handoff/contract docs now reflect `0.94.0-prototype`
 
 **Session 2026-03-31** — Harness active councils now project live action packets and blocked batches into leader-facing surfaces
 

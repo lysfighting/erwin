@@ -10,13 +10,15 @@ protocol:
     - "rc"
 adapter:
   adapter_id: "codex-native-harness"
-  adapter_version: "0.93.0-prototype"
+  adapter_version: "0.94.0-prototype"
   public_name: "Harness"
   release_stage: "prototype"
   positioning_adr: "_project/decisions/0013-harness-prototype-positioning.md"
   runtime: "codex"
   public_contract_path: "docs/harness-public-contract.md"
+  release_criteria_path: "docs/harness-release-criteria.md"
   package_files:
+    - "docs/harness-release-criteria.md"
     - "docs/harness-public-contract.md"
     - "install-codex.sh"
     - "go.mod"
