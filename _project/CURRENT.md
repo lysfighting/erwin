@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now excludes adopted council actions from meeting backlog)
+- **Last Session**: 2026-03-31 (Harness now anchors adoption audit to the governing closed meeting)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now anchors adoption audit to the governing closed meeting
+
+- **Adoption checks now follow the adopted council anchor**: run-level adoption audit and doctor now prefer `adopted_from_meeting_id` as the governing closed-meeting reference instead of blindly comparing against whichever closed meeting happened to be newest
+- **Adopted follow-up guidance no longer triggers doctor false positives**: once a closed council has been adopted back into run state, doctor now validates `latest_summary` and `next_expected_action` against that governing meeting's summary and adopted follow-up guidance rather than against unrelated later closed councils on the same run
+- **Teammate smoke widened again**: teammate smoke now proves doctor stays free of `run-missing-meeting-next-action` and `run-missing-meeting-summary` noise when the run is already aligned with its governing adopted council
 
 **Session 2026-03-31** — Harness now excludes adopted council actions from meeting backlog
 

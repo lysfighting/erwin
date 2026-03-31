@@ -1141,6 +1141,19 @@ func latestClosedMeetingForRun(runID string) map[string]any {
 	return nil
 }
 
+func governingClosedMeetingForRun(run map[string]any) map[string]any {
+	runID := strings.TrimSpace(stringValue(run["run_id"]))
+	if adoptedMeetingID := strings.TrimSpace(stringValue(run["adopted_from_meeting_id"])); adoptedMeetingID != "" {
+		if data := readMeeting(adoptedMeetingID); data != nil {
+			meeting, _ := toMap(data["meeting"])
+			if len(meeting) > 0 && stringValue(meeting["run_id"]) == runID && stringValue(meeting["state"]) == "closed" {
+				return meeting
+			}
+		}
+	}
+	return latestClosedMeetingForRun(runID)
+}
+
 func meetingActionCountsAsBacklog(meeting, registry map[string]any) bool {
 	if stringValue(meeting["state"]) == "active" {
 		return true
@@ -2165,7 +2178,7 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 	}
 
 	adoptionGaps := []any{}
-	if meeting := latestClosedMeetingForRun(runID); meeting != nil && meetingHasOutput(meeting) {
+	if meeting := governingClosedMeetingForRun(run); meeting != nil && meetingHasOutput(meeting) {
 		outcome := meetingOutcome(meeting)
 		if summary := stringValue(outcome["summary"]); summary != "" && strings.TrimSpace(stringValue(run["latest_summary"])) != summary {
 			adoptionGaps = append(adoptionGaps, map[string]any{
@@ -7790,14 +7803,14 @@ func doctorReport() map[string]any {
 		if stringValue(run["pr_ref"]) != "" && stringValue(run["checks_status"]) == "failed" {
 			issues = append(issues, issueRecord("warning", "pr-checks-failed", runID, "PR checks are failing.", "Fix the failing checks before merging."))
 		}
-		latestClosedMeeting := latestClosedMeetingForRun(runID)
+		latestClosedMeeting := governingClosedMeetingForRun(run)
 		if latestClosedMeeting != nil && meetingHasOutput(latestClosedMeeting) {
 			outcome := meetingOutcome(latestClosedMeeting)
 			if stringValue(outcome["summary"]) != "" && strings.TrimSpace(stringValue(run["latest_summary"])) != stringValue(outcome["summary"]) {
 				issues = append(issues, issueRecord("warning", "run-missing-meeting-summary", runID, "Run has a closed meeting with accepted output that is not reflected in latest_summary.", "Adopt the meeting outcome into the run state."))
 			}
-			if stringValue(outcome["next_action"]) != "" && strings.TrimSpace(stringValue(run["next_expected_action"])) != stringValue(outcome["next_action"]) {
-				issues = append(issues, issueRecord("warning", "run-missing-meeting-next-action", runID, "Run has a closed meeting with action items that are not reflected in next_expected_action.", "Adopt the meeting outcome into the run state."))
+			if expectedNextAction := meetingAdoptedNextAction(latestClosedMeeting); expectedNextAction != "" && strings.TrimSpace(stringValue(run["next_expected_action"])) != expectedNextAction {
+				issues = append(issues, issueRecord("warning", "run-missing-meeting-next-action", runID, "Run has a closed meeting with adopted follow-up guidance that is not reflected in next_expected_action.", "Adopt the meeting outcome into the run state."))
 			}
 		}
 		worktreePath := stringValue(run["worktree_path"])

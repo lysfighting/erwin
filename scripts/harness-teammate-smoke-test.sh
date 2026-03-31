@@ -71,6 +71,18 @@ assert_json_field() {
   fi
 }
 
+assert_not_json_field() {
+  local json="$1"
+  local needle="$2"
+  local label="$3"
+  if grep -q "$needle" <<<"$json"; then
+    fail "$label"
+    echo "$json"
+  else
+    pass "$label"
+  fi
+}
+
 section "Leader claim"
 claim_output=$(run_in_repo bash scripts/harness-claim.sh 33001 "Teammate Smoke Mission")
 assert_json_field "$claim_output" '"mission_id": "issue-33001"' "claim creates teammate smoke mission"
@@ -734,6 +746,10 @@ assert_json_field "$home_after_adoption" '"primary_adopted_output_packet_kind": 
 assert_json_field "$home_after_adoption" '"primary_adopted_follow_up_packet": {' "home surfaces the primary adopted follow-up packet"
 assert_json_field "$home_after_adoption" '"execution_kind": "decision_record_follow_up"' "home preserves protocol-aware adopted follow-up execution semantics"
 assert_json_field "$home_after_adoption" 'Decision record must capture unresolved tradeoff and follow-up for claim: decision-note-variant' "home keeps human-readable adopted follow-up guidance visible after earlier signals are cleared"
+
+doctor_after_adoption=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_not_json_field "$doctor_after_adoption" '"kind": "run-missing-meeting-next-action"' "doctor no longer misreads adopted follow-up guidance as missing next_expected_action"
+assert_not_json_field "$doctor_after_adoption" '"kind": "run-missing-meeting-summary"' "doctor no longer compares run summary against a non-governing closed meeting"
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"
