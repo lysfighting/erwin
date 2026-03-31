@@ -803,6 +803,13 @@ assert_json_field "$decision_record_resolve" '"delegated_resolution": true' "dri
 assert_json_field "$decision_record_resolve" '"delegated_follow_up_state": "done"' "delegated teammate run records follow-up completion state"
 assert_json_field "$decision_record_resolve" '"next_expected_action": "Report completion back to the leader or continue any remaining bounded execution."' "delegated teammate run advances into post-follow-up reporting guidance"
 assert_json_field "$decision_record_resolve" '"next_expected_action": "Continue governed execution after the adopted follow-up is complete."' "governing run guidance still advances after delegated follow-up resolution"
+leader_reopen_after_delegated_resolution=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
+assert_json_field "$leader_reopen_after_delegated_resolution" '"follow_up_packet_id": "'"$decision_record_follow_up_packet_id"'"' "governing run can reopen a delegated adopted follow-up after teammate-side resolution"
+follow_up_run_after_leader_reopen=$(run_in_repo bash scripts/harness-teammates.sh get "$follow_up_run_id")
+assert_json_field "$follow_up_run_after_leader_reopen" '"delegated_follow_up_state": "open"' "delegated teammate run reopens when the governing run reopens the adopted follow-up packet"
+assert_json_field "$follow_up_run_after_leader_reopen" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "delegated teammate run restores follow-up guidance when the governing packet reopens"
+decision_record_reresolve=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$follow_up_run_id")
+assert_json_field "$decision_record_reresolve" '"delegated_follow_up_state": "done"' "delegated teammate run can resolve the reopened adopted follow-up again"
 schedule_after_follow_up_resolution=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_after_follow_up_resolution" '"adopted_output_open_follow_up_packet_count": 0' "scheduler clears adopted open follow-up packet counts after action resolution"
 home_after_follow_up_resolution=$(run_in_repo bash scripts/harness-home.sh)

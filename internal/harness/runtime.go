@@ -6222,9 +6222,8 @@ func syncDelegatedFollowUpRunsForParent(registry map[string]any, parentRunID str
 		case "done", "cancelled":
 			run = applyDelegatedFollowUpResolutionToRun(run, packet, packetState)
 		default:
-			if strings.TrimSpace(stringValue(run["delegated_follow_up_state"])) == "" {
-				run["delegated_follow_up_state"] = "open"
-				run["updated_at"] = nowISO()
+			if strings.TrimSpace(stringValue(run["delegated_follow_up_state"])) != "open" {
+				run = applyDelegatedFollowUpResolutionToRun(run, packet, "open")
 			}
 		}
 		runs[index] = run

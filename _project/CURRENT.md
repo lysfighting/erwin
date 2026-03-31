@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now syncs delegated follow-up state from the governing run)
+- **Last Session**: 2026-03-31 (Harness now reopens delegated follow-up from governing truth)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now reopens delegated follow-up from governing truth
+
+- **Delegated follow-up can now reopen cleanly from the parent side too**: if a delegated teammate already resolved an adopted follow-up packet and the governing run later reopens that packet, runtime now reopens the delegated teammate's bounded follow-up state instead of leaving it stuck on `done`
+- **Reopen restores bounded execution guidance**: when the governing packet returns to `open`, the delegated teammate run also regains the follow-up action text in `next_expected_action`, so post-council execution can resume without hand-editing teammate state
+- **Teammate smoke widened again**: teammate smoke now proves the delegated run resolves the packet, the governing run reopens it, the delegated run reopens too, and the full lifecycle can still resolve and complete cleanly afterward
 
 **Session 2026-03-31** — Harness now syncs delegated follow-up state from the governing run
 
