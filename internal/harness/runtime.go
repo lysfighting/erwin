@@ -12105,6 +12105,8 @@ func cmdHome(args []string) error {
 	case intValue(scheduler["required_human_decision_count"]) == 0 &&
 		intValue(scheduler["maintenance_action_count"]) == 0 &&
 		intValue(scheduler["selected_mission_count"]) == 1 &&
+		len(primaryAdoptedFollowUpPacket) > 0 &&
+		firstNonBlank(strings.TrimSpace(stringValue(primaryAdoptedFollowUpPacket["state"])), "open") == "open" &&
 		firstNonBlank(primaryAdoptedFollowUpDelegatedAction, adoptedFollowUpActionText(primaryAdoptedFollowUpPacket)) != "":
 		nextAction = firstNonBlank(primaryAdoptedFollowUpDelegatedAction, adoptedFollowUpActionText(primaryAdoptedFollowUpPacket))
 	case activeRCRecord != nil:

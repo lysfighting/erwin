@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-01
-- **Last Session**: 2026-04-01 (Harness now names stale delegated follow-up in authority-audit too)
+- **Last Session**: 2026-04-01 (Harness now stops closed delegated follow-up from owning home next_action)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-01** — Harness now keeps closed delegated follow-up out of `home.next_action`
+
+- **Home guidance now follows only open adopted follow-up packets**: once a delegated adopted follow-up has been resolved and its governing packet is no longer open, `home` stops letting the old delegated follow-up wording own top-level `next_action`
+- **Closed follow-up remains visible without hijacking control**: delegated adopted follow-up metadata can still remain inspectable on leader-facing surfaces after resolution, but it no longer outranks generic post-follow-up execution guidance just because the historical packet is still present
+- **Teammate smoke widened again**: teammate smoke now proves `home.next_action` returns to generic active execution guidance as soon as the delegated adopted follow-up closes
 
 **Session 2026-04-01** — Harness now names stale delegated follow-up in authority-audit too
 

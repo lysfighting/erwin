@@ -836,6 +836,7 @@ schedule_after_follow_up_resolution=$(run_in_repo bash scripts/harness-missions.
 assert_json_field "$schedule_after_follow_up_resolution" '"adopted_output_open_follow_up_packet_count": 0' "scheduler clears adopted open follow-up packet counts after action resolution"
 home_after_follow_up_resolution=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_after_follow_up_resolution" '"adopted_output_open_follow_up_packet_count": 0' "home clears adopted open follow-up packet counts after action resolution"
+assert_not_json_field "$home_after_follow_up_resolution" "\"next_action\": \"Collect completion report from delegated adopted follow-up on $follow_up_run_id (worker-follow-up) before closing the governing run.\"" "home next action stops following closed delegated adopted follow-up guidance after resolution"
 completed_delegated_follow_up_run=$(run_in_repo bash scripts/harness-drive.sh complete "$follow_up_run_id" "Delegated adopted follow-up completed and reported back.")
 assert_json_field "$completed_delegated_follow_up_run" '"state": "completed"' "drive complete succeeds on the delegated teammate run after its adopted follow-up is resolved"
 completed_after_follow_up=$(run_in_repo bash scripts/harness-drive.sh complete "$leader_run_id" "Decision-record follow-up completed and run can now close.")
