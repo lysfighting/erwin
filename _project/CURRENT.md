@@ -6,15 +6,22 @@
 
 ## Project Status
 
-- **Version**: 0.94.0 (in progress)
+- **Version**: 0.95.0 (in progress)
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now carries explicit 1.0.0 release criteria and package freeze anchors)
+- **Last Session**: 2026-03-31 (Harness councils now auto-synthesize protocol-aware output packets)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness councils now auto-synthesize protocol-aware output packets
+
+- **Council automation now reaches durable output artifacts**: orchestration now auto-synthesizes protocol-aware `output_packet` records instead of stopping at findings and action items, so active councils can surface a structured provisional output artifact before close
+- **Protocol-specific output is now leader-visible**: `meetings summary`, scheduler active-council packets, and meeting outcome adoption now all see the generated output packet, letting `incident-command` expose chosen action/owner/stop-go shape while `decision-record` exposes proposed decision/alternatives/consequences/follow-up shape
+- **Council smoke widened again**: teammate smoke now proves both `incident-command` and `decision-record` output packets, and core smoke now proves scheduler projects the active bundle-council output packet once the meeting reaches output
+- **Adapter line advanced again**: `harness/adapter-manifest.yml`, `_project/CURRENT.md`, `CHANGELOG.md`, session log, and canonical runtime docs now reflect `0.95.0-prototype`
 
 **Session 2026-03-31** — Harness now carries explicit 1.0.0 release criteria and package freeze anchors
 

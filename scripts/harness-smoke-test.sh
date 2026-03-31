@@ -731,6 +731,9 @@ run_in_repo bash scripts/harness-meetings.sh add-position "$multi_escalation_mee
 auto_multi_escalation_governor=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$multi_escalation_meeting_id")
 assert_json_field "$auto_multi_escalation_governor" '"generated_locked_decision_count": 1' "bundle council auto-synthesis can generate one structured governing decision"
 assert_json_field "$auto_multi_escalation_governor" '"governing_mission_id": "issue-20011"' "bundle council auto-synthesis locks the strongest governing mission into the council record"
+schedule_multi_escalation_output_phase=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_multi_escalation_output_phase" '"active_decision_output_packet_kind": "evidence_review_output"' "scheduler projects the active bundle-council output packet once the meeting reaches output"
+assert_json_field "$schedule_multi_escalation_output_phase" '"active_decision_output_packet":' "scheduler keeps the active bundle-council output packet visible in the portfolio packet"
 closed_multi_escalation_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$multi_escalation_run_a" "$multi_escalation_meeting_id" "Bundle escalation council materialization covered.")
 assert_json_field "$closed_multi_escalation_meeting" '"state": "closed"' "bundle-scoped scheduler-materialized council can close cleanly"
 assert_json_field "$closed_multi_escalation_meeting" '"adoption_kind": "bundle_governor_established"' "closing a structured bundle council auto-adopts bundle-governor authority"

@@ -471,6 +471,10 @@ assert_json_field "$incident_orchestrate_b" '"protocol_deferred_route_count": 1'
 assert_json_field "$incident_orchestrate_b" '"open_route_action_count": 0' "incident-command meeting does not emit cross-examination route obligations for same-authority conflict"
 assert_json_field "$incident_orchestrate_b" '"generated_action_count": 1' "incident-command meeting turns unresolved conflict into bounded action ownership"
 assert_json_field "$incident_orchestrate_b" '"next_requirement": "Adopt or close the meeting outcome after recording chosen action, owner, stop/go constraints, and the next checkpoint."' "incident-command meeting uses protocol-specific output guidance"
+incident_output_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$incident_meeting_id")
+assert_json_field "$incident_output_summary" '"output_packet_kind": "incident_command_output"' "incident-command summary surfaces a protocol-aware output packet"
+assert_json_field "$incident_output_summary" '"chosen_action": "We should roll back immediately to reduce release blast radius."' "incident-command output packet captures the chosen action"
+assert_json_field "$incident_output_summary" '"owner": "incident-commander"' "incident-command output packet captures the default owner"
 
 run_in_repo bash scripts/harness-meetings.sh set-protocol "$incident_meeting_id" decision-record >/dev/null
 decision_record_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$incident_meeting_id")
@@ -496,6 +500,10 @@ assert_json_field "$decision_record_orchestrate_b" '"protocol_deferred_route_cou
 assert_json_field "$decision_record_orchestrate_b" '"open_route_action_count": 0' "decision-record meeting does not emit cross-examination route obligations for same-authority conflict"
 assert_json_field "$decision_record_orchestrate_b" '"generated_action_count": 1' "decision-record meeting records unresolved tradeoff follow-up instead of debate rounds"
 assert_json_field "$decision_record_orchestrate_b" '"next_requirement": "Adopt or close the meeting outcome after recording the decision, alternatives, consequences, unresolved questions, and follow-up actions."' "decision-record meeting uses protocol-specific output guidance"
+decision_record_output_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$decision_record_meeting_id")
+assert_json_field "$decision_record_output_summary" '"output_packet_kind": "decision_record_output"' "decision-record summary surfaces a protocol-aware output packet"
+assert_json_field "$decision_record_output_summary" '"decision": "Record the broader rollout note so future operators see the auth scope change."' "decision-record output packet captures the proposed decision"
+assert_json_field "$decision_record_output_summary" '"alternatives":' "decision-record output packet captures alternatives explicitly"
 
 section "Aligned review skips empty debate"
 aligned_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can aligned independent review go straight to synthesis when there is no conflict lane?")

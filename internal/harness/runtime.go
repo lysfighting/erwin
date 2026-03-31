@@ -4772,6 +4772,163 @@ func protocolDeferredActionSummary(protocol, claimRef string) string {
 	}
 }
 
+func protocolOutputPacketKind(protocol string) string {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return "incident_command_output"
+	case "decision-record":
+		return "decision_record_output"
+	default:
+		return "evidence_review_output"
+	}
+}
+
+func summaryStrings(items []any) []string {
+	result := []string{}
+	for _, item := range items {
+		text := strings.TrimSpace(textValue(item))
+		if text != "" {
+			result = append(result, text)
+		}
+	}
+	return dedupeStrings(result)
+}
+
+func meetingOpenActionSummaries(meeting map[string]any) []string {
+	summaries := []string{}
+	for _, item := range toList(meeting["action_items"]) {
+		action, ok := toMap(item)
+		if ok {
+			state := strings.TrimSpace(stringValue(action["state"]))
+			if state != "" && state != "open" {
+				continue
+			}
+		}
+		if text := strings.TrimSpace(textValue(item)); text != "" {
+			summaries = append(summaries, text)
+		}
+	}
+	return dedupeStrings(summaries)
+}
+
+func meetingPositionSummariesByStance(meeting map[string]any, stance string) []string {
+	summaries := []string{}
+	for _, item := range toList(meeting["positions"]) {
+		position, ok := toMap(item)
+		if !ok || strings.TrimSpace(stringValue(position["stance"])) != stance {
+			continue
+		}
+		if text := strings.TrimSpace(stringValue(position["summary"])); text != "" {
+			summaries = append(summaries, text)
+		}
+	}
+	return dedupeStrings(summaries)
+}
+
+func meetingLockedDecisionSummaries(meeting map[string]any) []string {
+	summaries := []string{}
+	for _, item := range toList(meeting["locked_decisions"]) {
+		if text := strings.TrimSpace(textValue(item)); text != "" {
+			summaries = append(summaries, text)
+		}
+	}
+	return dedupeStrings(summaries)
+}
+
+func meetingParticipantRoles(meeting map[string]any) []string {
+	roles := []string{}
+	for _, item := range toList(meeting["participants"]) {
+		participant, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		role := firstNonBlank(stringValue(participant["role"]), stringValue(participant["owner_id"]), stringValue(participant["run_id"]))
+		if strings.TrimSpace(role) != "" {
+			roles = append(roles, role)
+		}
+	}
+	return dedupeStrings(roles)
+}
+
+func meetingAutoOutputPacket(meeting map[string]any, protocol string) map[string]any {
+	findings, _ := toMap(meeting["findings"])
+	accepted := summaryStrings(toList(findings["accepted"]))
+	rejected := summaryStrings(toList(findings["rejected"]))
+	unresolved := summaryStrings(toList(findings["unresolved"]))
+	openActions := meetingOpenActionSummaries(meeting)
+	supportSummaries := meetingPositionSummariesByStance(meeting, "support")
+	challengeSummaries := meetingPositionSummariesByStance(meeting, "challenge")
+	lockedDecisions := meetingLockedDecisionSummaries(meeting)
+	participantRoles := meetingParticipantRoles(meeting)
+	summary := firstNonBlank(
+		firstNonBlank(accepted...),
+		firstNonBlank(supportSummaries...),
+		firstNonBlank(lockedDecisions...),
+		strings.TrimSpace(stringValue(meeting["question"])),
+	)
+	nextAction := firstNonBlank(firstNonBlank(openActions...), protocolOutputRequirement(protocol))
+	completionGaps := []string{}
+	packet := map[string]any{
+		"output_packet_kind":   protocolOutputPacketKind(protocol),
+		"decision_protocol":    normalizeDecisionProtocol(firstNonBlank(protocol, "evidence-review")),
+		"generated_by":         "orchestrate_auto_synthesis",
+		"status":               "provisional",
+		"generated_at":         nowISO(),
+		"summary":              summary,
+		"next_action":          nextAction,
+		"accepted_findings":    stringListToAny(accepted),
+		"rejected_findings":    stringListToAny(rejected),
+		"unresolved_findings":  stringListToAny(unresolved),
+		"follow_up_actions":    stringListToAny(openActions),
+		"locked_decisions":     stringListToAny(lockedDecisions),
+		"participant_roles":    stringListToAny(participantRoles),
+	}
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		chosenAction := firstNonBlank(firstNonBlank(supportSummaries...), firstNonBlank(openActions...), summary)
+		owner := firstNonBlank(firstNonBlank(participantRoles...), "leader")
+		stopGo := firstNonBlank(firstNonBlank(challengeSummaries...), firstNonBlank(lockedDecisions...), "Record explicit stop/go constraints before adopting the incident outcome.")
+		nextCheckpoint := firstNonBlank(firstNonBlank(openActions...), "Close or adopt the incident outcome after recording owner and stop/go constraints.")
+		if len(supportSummaries) == 0 {
+			completionGaps = append(completionGaps, "incident output lacks a synthesized chosen action from support evidence")
+		}
+		if len(challengeSummaries) == 0 {
+			completionGaps = append(completionGaps, "incident output lacks a synthesized stop/go constraint from challenging evidence")
+		}
+		packet["summary"] = chosenAction
+		packet["chosen_action"] = chosenAction
+		packet["owner"] = owner
+		packet["stop_go_constraints"] = stopGo
+		packet["next_checkpoint"] = nextCheckpoint
+		packet["unresolved_questions"] = stringListToAny(unresolved)
+	case "decision-record":
+		decision := firstNonBlank(firstNonBlank(accepted...), firstNonBlank(supportSummaries...), summary)
+		alternatives := dedupeStrings(append(append([]string{}, challengeSummaries...), rejected...))
+		consequences := dedupeStrings(append(append([]string{}, openActions...), unresolved...))
+		if len(alternatives) == 0 {
+			completionGaps = append(completionGaps, "decision record output lacks explicit alternative capture")
+		}
+		if len(consequences) == 0 {
+			completionGaps = append(completionGaps, "decision record output lacks explicit consequence or follow-up capture")
+		}
+		packet["summary"] = decision
+		packet["decision"] = decision
+		packet["alternatives"] = stringListToAny(alternatives)
+		packet["consequences"] = stringListToAny(consequences)
+		packet["unresolved_questions"] = stringListToAny(unresolved)
+	default:
+		verdict := firstNonBlank(firstNonBlank(accepted...), firstNonBlank(rejected...), summary)
+		if len(accepted)+len(rejected)+len(unresolved) == 0 {
+			completionGaps = append(completionGaps, "evidence-review output lacks synthesized findings")
+		}
+		packet["summary"] = verdict
+		packet["verdict"] = verdict
+	}
+	packet["completion_gaps"] = stringListToAny(completionGaps)
+	packet["completion_gap_count"] = len(completionGaps)
+	return packet
+}
+
 func routeDebateRound(route map[string]any) int {
 	round := intValue(route["latest_debate_round"])
 	if round > 0 {
@@ -5368,6 +5525,8 @@ func textValue(item any) string {
 }
 
 func meetingOutcome(meeting map[string]any) map[string]any {
+	orchestration, _ := toMap(meeting["orchestration"])
+	outputPacket, _ := toMap(orchestration["output_packet"])
 	findings, _ := toMap(meeting["findings"])
 	accepted := []string{}
 	for _, item := range toList(findings["accepted"]) {
@@ -5392,10 +5551,12 @@ func meetingOutcome(meeting map[string]any) map[string]any {
 	} else {
 		summary = firstNonBlank(strings.TrimSpace(stringValue(meeting["resolution_note"])), strings.TrimSpace(stringValue(meeting["question"])))
 	}
+	summary = firstNonBlank(strings.TrimSpace(stringValue(outputPacket["summary"])), summary)
 	nextAction := "Resume execution with the meeting outcome applied."
 	if len(actions) > 0 {
 		nextAction = actions[0]
 	}
+	nextAction = firstNonBlank(strings.TrimSpace(stringValue(outputPacket["next_action"])), nextAction)
 	return map[string]any{
 		"summary":     summary,
 		"next_action": nextAction,
@@ -6566,9 +6727,10 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 	if len(autoLockedDecision) > 0 {
 		meeting["locked_decisions"] = append(toList(meeting["locked_decisions"]), autoLockedDecision)
 	}
+	outputPacket := meetingAutoOutputPacket(meeting, protocol)
 
 	status := "noop"
-	if len(generatedFindingIDs) > 0 || len(generatedActionIDs) > 0 {
+	if len(generatedFindingIDs) > 0 || len(generatedActionIDs) > 0 || len(outputPacket) > 0 {
 		status = "generated"
 	}
 
@@ -6587,8 +6749,10 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 			}
 			return 1
 		}(),
-		"skipped_claims":    stringListToAny(dedupeStrings(skippedClaims)),
-		"last_generated_at": nowISO(),
+		"output_packet":         outputPacket,
+		"output_packet_kind":    stringValue(outputPacket["output_packet_kind"]),
+		"skipped_claims":        stringListToAny(dedupeStrings(skippedClaims)),
+		"last_generated_at":     nowISO(),
 	}
 }
 
@@ -8891,6 +9055,10 @@ func projectActiveMeetingProgressIntoDecision(decision, meeting map[string]any) 
 		}
 		if gaps := toList(orchestration["last_gap_report"]); len(gaps) > 0 {
 			decision["active_decision_gap_count"] = len(gaps)
+		}
+		if outputPacket, _ := toMap(orchestration["output_packet"]); outputPacket != nil {
+			decision["active_decision_output_packet_kind"] = stringValue(outputPacket["output_packet_kind"])
+			decision["active_decision_output_packet"] = cloneValue(outputPacket)
 		}
 	}
 	meetingUpdatedAt := firstNonBlank(strings.TrimSpace(stringValue(meeting["updated_at"])), strings.TrimSpace(stringValue(meeting["created_at"])))
@@ -12736,6 +12904,7 @@ func cmdMeetings(args []string) error {
 		autoSynthesis, _ := toMap(orchestration["auto_synthesis"])
 		debatePlan, _ := toMap(orchestration["debate_plan"])
 		wavePlan, _ := toMap(orchestration["wave_plan"])
+		outputPacket, _ := toMap(orchestration["output_packet"])
 		currentWaveBatch := meetingCurrentWaveBatch(wavePlan, debatePlan)
 		currentWaveActions := meetingCurrentWaveActions(wavePlan, debatePlan)
 		blockedWaveBatches := meetingBlockedWaveBatchSummaries(debatePlan)
@@ -12796,6 +12965,9 @@ func cmdMeetings(args []string) error {
 			"current_wave_batch_claim_refs":            cloneValue(getKey(currentWaveBatch, "claim_refs", []any{})),
 			"current_wave_actions":                     currentWaveActions,
 			"blocked_wave_batches":                     blockedWaveBatches,
+			"output_packet_kind":                       stringValue(getKey(outputPacket, "output_packet_kind", "")),
+			"output_packet_completion_gap_count":       intValue(getKey(outputPacket, "completion_gap_count", 0)),
+			"output_packet":                            cloneValue(outputPacket),
 			"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),
 			"max_wave_lane_count":                      intValue(debatePlan["max_wave_lane_count"]),
 			"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),
@@ -13187,6 +13359,7 @@ func cmdMeetingsRemainder(args []string) error {
 			orchestration["debate_plan"] = debatePlan
 			orchestration["auto_synthesis"] = autoSynthesis
 			orchestration["synthesis"] = synthesis
+			orchestration["output_packet"] = cloneValue(getKey(autoSynthesis, "output_packet", map[string]any{}))
 			orchestration["debate_round"] = maxInt(intValue(orchestration["debate_round"]), intValue(coverageAudit["linked_cross_examination_count"]))
 			meeting["orchestration"] = orchestration
 			if len(governanceGaps) > 0 {
