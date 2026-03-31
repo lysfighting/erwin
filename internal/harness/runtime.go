@@ -5102,6 +5102,132 @@ func meetingDebateLaneOutput(meeting map[string]any) map[string]any {
 	}
 }
 
+func meetingOutputFollowUpExecutionKind(protocol string, lane map[string]any, action map[string]any) string {
+	switch normalizeDecisionProtocol(protocol) {
+	case "incident-command":
+		return "incident_checkpoint"
+	case "decision-record":
+		return "decision_record_follow_up"
+	default:
+		if lane != nil {
+			disposition := strings.TrimSpace(stringValue(lane["output_disposition"]))
+			if disposition == "unresolved" || disposition == "open" {
+				return "resolve_governed_lane"
+			}
+		}
+		if action != nil && strings.TrimSpace(stringValue(action["summary"])) != "" {
+			return "complete_output_follow_up"
+		}
+		return "adopt_or_close_output"
+	}
+}
+
+func meetingOutputFollowUpPackets(meeting map[string]any, protocol string, debateLaneOutput map[string]any) map[string]any {
+	laneByClaimKey := map[string]map[string]any{}
+	seenLaneKeys := []string{}
+	for _, item := range toList(debateLaneOutput["debate_lane_packets"]) {
+		lane, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		claimRef := strings.TrimSpace(stringValue(lane["claim_ref"]))
+		dimension := firstNonBlank(stringValue(lane["dimension"]), "factual")
+		if claimRef == "" {
+			continue
+		}
+		claimKey := meetingClaimGroupKey(claimRef, dimension, claimRef)
+		laneByClaimKey[claimKey] = lane
+		seenLaneKeys = append(seenLaneKeys, claimKey)
+	}
+
+	packets := []any{}
+	openCount := 0
+	coveredClaimKeys := map[string]bool{}
+
+	for _, item := range toList(meeting["action_items"]) {
+		action, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		state := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+		claimKey := strings.TrimSpace(stringValue(action["generated_claim_key"]))
+		lane, _ := toMap(laneByClaimKey[claimKey])
+		summary := firstNonBlank(
+			textValue(action),
+			stringValue(lane["required_follow_up"]),
+			stringValue(lane["summary"]),
+		)
+		packet := map[string]any{
+			"follow_up_packet_id": firstNonBlank(
+				strings.TrimSpace(stringValue(action["action_id"])),
+				"follow-up-"+stableSlugID(strings.Join([]string{claimKey, summary}, "::")),
+			),
+			"source_kind":        "action_item",
+			"execution_kind":     meetingOutputFollowUpExecutionKind(protocol, lane, action),
+			"decision_protocol":  normalizeDecisionProtocol(firstNonBlank(protocol, "evidence-review")),
+			"state":              state,
+			"summary":            summary,
+			"action_id":          strings.TrimSpace(stringValue(action["action_id"])),
+			"claim_key":          claimKey,
+			"claim_ref":          strings.TrimSpace(stringValue(lane["claim_ref"])),
+			"dimension":          firstNonBlank(stringValue(lane["dimension"]), "factual"),
+			"lane_status":        strings.TrimSpace(stringValue(lane["lane_status"])),
+			"output_disposition": strings.TrimSpace(stringValue(lane["output_disposition"])),
+			"required_follow_up": firstNonBlank(strings.TrimSpace(stringValue(lane["required_follow_up"])), summary),
+			"assigned_role":      strings.TrimSpace(stringValue(lane["assigned_role"])),
+			"assigned_run_id":    strings.TrimSpace(stringValue(lane["assigned_run_id"])),
+		}
+		if state == "open" {
+			openCount++
+		}
+		if claimKey != "" {
+			coveredClaimKeys[claimKey] = true
+		}
+		packets = append(packets, packet)
+	}
+
+	for _, claimKey := range dedupeStrings(seenLaneKeys) {
+		if claimKey == "" || coveredClaimKeys[claimKey] {
+			continue
+		}
+		lane, _ := toMap(laneByClaimKey[claimKey])
+		disposition := strings.TrimSpace(stringValue(lane["output_disposition"]))
+		if disposition != "unresolved" && disposition != "open" {
+			continue
+		}
+		summary := firstNonBlank(
+			strings.TrimSpace(stringValue(lane["required_follow_up"])),
+			strings.TrimSpace(stringValue(lane["summary"])),
+			strings.TrimSpace(stringValue(lane["claim_ref"])),
+		)
+		packet := map[string]any{
+			"follow_up_packet_id": "follow-up-" + stableSlugID(strings.Join([]string{claimKey, summary}, "::")),
+			"source_kind":         "debate_lane",
+			"execution_kind":      meetingOutputFollowUpExecutionKind(protocol, lane, nil),
+			"decision_protocol":   normalizeDecisionProtocol(firstNonBlank(protocol, "evidence-review")),
+			"state":               "open",
+			"summary":             summary,
+			"action_id":           "",
+			"claim_key":           claimKey,
+			"claim_ref":           strings.TrimSpace(stringValue(lane["claim_ref"])),
+			"dimension":           firstNonBlank(stringValue(lane["dimension"]), "factual"),
+			"lane_status":         strings.TrimSpace(stringValue(lane["lane_status"])),
+			"output_disposition":  disposition,
+			"required_follow_up":  firstNonBlank(strings.TrimSpace(stringValue(lane["required_follow_up"])), summary),
+			"assigned_role":       strings.TrimSpace(stringValue(lane["assigned_role"])),
+			"assigned_run_id":     strings.TrimSpace(stringValue(lane["assigned_run_id"])),
+		}
+		openCount++
+		packets = append(packets, packet)
+	}
+
+	return map[string]any{
+		"follow_up_packet_count":      len(packets),
+		"open_follow_up_packet_count": openCount,
+		"follow_up_packets":           packets,
+	}
+}
+
 func meetingAutoOutputPacket(meeting map[string]any, protocol string) map[string]any {
 	findings, _ := toMap(meeting["findings"])
 	accepted := summaryStrings(toList(findings["accepted"]))
@@ -5113,6 +5239,7 @@ func meetingAutoOutputPacket(meeting map[string]any, protocol string) map[string
 	lockedDecisions := meetingLockedDecisionSummaries(meeting)
 	participantRoles := meetingParticipantRoles(meeting)
 	debateLaneOutput, _ := toMap(meetingDebateLaneOutput(meeting))
+	followUpPacketOutput, _ := toMap(meetingOutputFollowUpPackets(meeting, protocol, debateLaneOutput))
 	summary := firstNonBlank(
 		firstNonBlank(accepted...),
 		firstNonBlank(supportSummaries...),
@@ -5141,6 +5268,9 @@ func meetingAutoOutputPacket(meeting map[string]any, protocol string) map[string
 		"unresolved_debate_lane_count": intValue(debateLaneOutput["unresolved_debate_lane_count"]),
 		"open_debate_lane_count":       intValue(debateLaneOutput["open_debate_lane_count"]),
 		"debate_lane_packets":          cloneValue(getKey(debateLaneOutput, "debate_lane_packets", []any{})),
+		"follow_up_packet_count":       intValue(followUpPacketOutput["follow_up_packet_count"]),
+		"open_follow_up_packet_count":  intValue(followUpPacketOutput["open_follow_up_packet_count"]),
+		"follow_up_packets":            cloneValue(getKey(followUpPacketOutput, "follow_up_packets", []any{})),
 	}
 	if intValue(debateLaneOutput["open_debate_lane_count"]) > 0 {
 		completionGaps = append(completionGaps, "output packet still has live debate lanes open")
@@ -9325,6 +9455,9 @@ func projectActiveMeetingProgressIntoDecision(decision, meeting map[string]any) 
 			decision["active_decision_output_open_debate_lane_count"] = intValue(outputPacket["open_debate_lane_count"])
 			decision["active_decision_output_unresolved_debate_lane_count"] = intValue(outputPacket["unresolved_debate_lane_count"])
 			decision["active_decision_output_debate_lane_packets"] = cloneValue(getKey(outputPacket, "debate_lane_packets", []any{}))
+			decision["active_decision_output_follow_up_packet_count"] = intValue(outputPacket["follow_up_packet_count"])
+			decision["active_decision_output_open_follow_up_packet_count"] = intValue(outputPacket["open_follow_up_packet_count"])
+			decision["active_decision_output_follow_up_packets"] = cloneValue(getKey(outputPacket, "follow_up_packets", []any{}))
 		}
 	}
 	meetingUpdatedAt := firstNonBlank(strings.TrimSpace(stringValue(meeting["updated_at"])), strings.TrimSpace(stringValue(meeting["created_at"])))
@@ -13240,6 +13373,9 @@ func cmdMeetings(args []string) error {
 			"output_unresolved_debate_lane_count":      intValue(getKey(outputPacket, "unresolved_debate_lane_count", 0)),
 			"output_open_debate_lane_count":            intValue(getKey(outputPacket, "open_debate_lane_count", 0)),
 			"output_debate_lane_packets":               cloneValue(getKey(outputPacket, "debate_lane_packets", []any{})),
+			"output_follow_up_packet_count":            intValue(getKey(outputPacket, "follow_up_packet_count", 0)),
+			"output_open_follow_up_packet_count":       intValue(getKey(outputPacket, "open_follow_up_packet_count", 0)),
+			"output_follow_up_packets":                 cloneValue(getKey(outputPacket, "follow_up_packets", []any{})),
 			"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),
 			"max_wave_lane_count":                      intValue(debatePlan["max_wave_lane_count"]),
 			"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),

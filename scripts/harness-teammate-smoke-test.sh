@@ -484,6 +484,9 @@ incident_output_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "
 assert_json_field "$incident_output_summary" '"output_packet_kind": "incident_command_output"' "incident-command summary surfaces a protocol-aware output packet"
 assert_json_field "$incident_output_summary" '"chosen_action": "We should roll back immediately to reduce release blast radius."' "incident-command output packet captures the chosen action"
 assert_json_field "$incident_output_summary" '"owner": "incident-commander"' "incident-command output packet captures the default owner"
+assert_json_field "$incident_output_summary" '"output_follow_up_packet_count": 1' "incident-command output packet synthesizes one structured follow-up packet"
+assert_json_field "$incident_output_summary" '"execution_kind": "incident_checkpoint"' "incident-command follow-up packet keeps protocol-specific execution semantics visible"
+assert_json_field "$incident_output_summary" '"claim_ref": "incident-rollback"' "incident-command follow-up packet keeps the governed claim lane visible"
 
 run_in_repo bash scripts/harness-meetings.sh set-protocol "$incident_meeting_id" decision-record >/dev/null
 decision_record_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$incident_meeting_id")
@@ -513,6 +516,9 @@ decision_record_output_summary=$(run_in_repo bash scripts/harness-meetings.sh su
 assert_json_field "$decision_record_output_summary" '"output_packet_kind": "decision_record_output"' "decision-record summary surfaces a protocol-aware output packet"
 assert_json_field "$decision_record_output_summary" '"decision": "Record the broader rollout note so future operators see the auth scope change."' "decision-record output packet captures the proposed decision"
 assert_json_field "$decision_record_output_summary" '"alternatives":' "decision-record output packet captures alternatives explicitly"
+assert_json_field "$decision_record_output_summary" '"output_follow_up_packet_count": 1' "decision-record output packet synthesizes one structured follow-up packet"
+assert_json_field "$decision_record_output_summary" '"execution_kind": "decision_record_follow_up"' "decision-record follow-up packet keeps protocol-specific execution semantics visible"
+assert_json_field "$decision_record_output_summary" '"claim_ref": "decision-note-variant"' "decision-record follow-up packet keeps the governed tradeoff lane visible"
 
 section "Aligned review skips empty debate"
 aligned_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can aligned independent review go straight to synthesis when there is no conflict lane?")

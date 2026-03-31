@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness bundle authority now escalates multi-council overlap explicitly)
+- **Last Session**: 2026-03-31 (Harness output packets now synthesize structured follow-up packets)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness output packets now synthesize structured follow-up packets
+
+- **Council output is now more executable**: provisional `output_packet` artifacts now synthesize structured `follow_up_packets` from open council action items and unresolved/open lane state instead of leaving follow-up only as freeform summary text
+- **Leader-facing output projection widened again**: `meetings summary` and scheduler active-council packets now project follow-up packet counts plus packet payloads alongside lane-level synthesis, so unresolved council output keeps a bounded execution/control-plane shape
+- **Protocol-specific execution semantics now survive output synthesis**: `incident-command` output follow-up packets surface `incident_checkpoint`, while `decision-record` output follow-up packets surface `decision_record_follow_up`, keeping protocol intent visible after the council reaches `output`
 
 **Session 2026-03-31** — Harness bundle authority now escalates multi-council overlap explicitly
 
