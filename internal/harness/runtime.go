@@ -6081,6 +6081,23 @@ func primaryFollowUpPacketFromList(packets []any) map[string]any {
 	return nil
 }
 
+func followUpPacketByID(packets []any, packetID string) map[string]any {
+	packetID = strings.TrimSpace(packetID)
+	if packetID == "" {
+		return nil
+	}
+	for _, item := range packets {
+		packet, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		if strings.TrimSpace(stringValue(packet["follow_up_packet_id"])) == packetID {
+			return packet
+		}
+	}
+	return nil
+}
+
 func followUpPacketOpenCount(packets []any) int {
 	openCount := 0
 	for _, item := range packets {
@@ -6175,10 +6192,13 @@ func applyAdoptedFollowUpPacketsToRun(run map[string]any, packets []any) map[str
 	} else {
 		delete(run, "adopted_primary_follow_up_packet")
 	}
+	currentNextAction := strings.TrimSpace(stringValue(run["next_expected_action"]))
 	switch {
-	case currentPrimaryAction != "" && strings.TrimSpace(stringValue(run["next_expected_action"])) == previousPrimaryAction && currentPrimaryAction != previousPrimaryAction:
+	case currentPrimaryAction != "" && currentNextAction == previousPrimaryAction && currentPrimaryAction != previousPrimaryAction:
 		run["next_expected_action"] = currentPrimaryAction
-	case currentPrimary == nil && previousPrimaryAction != "" && strings.TrimSpace(stringValue(run["next_expected_action"])) == previousPrimaryAction:
+	case currentPrimary == nil &&
+		previousPrimaryAction != "" &&
+		(currentNextAction == previousPrimaryAction || currentNextAction == "Monitor teammate reports, coordination signals, and adopted follow-up resolution."):
 		run["next_expected_action"] = "Continue governed execution after the adopted follow-up is complete."
 	}
 	run["updated_at"] = nowISO()
@@ -14821,8 +14841,8 @@ func cmdTeammatesRemainder(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
 	case "assign":
-		if len(args) < 5 {
-			return errors.New("teammates assign requires PARENT_RUN_ID TEAMMATE_ID ROLE OBJECTIVE")
+		if len(args) < 4 {
+			return errors.New("teammates assign requires PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE]")
 		}
 		parentRunID := args[1]
 		teammateID := args[2]
@@ -14838,6 +14858,8 @@ func cmdTeammatesRemainder(args []string) error {
 		authorityRefs := []string{}
 		forbiddenSources := []string{}
 		reportingExpectations := []string{}
+		delegateAdoptedFollowUp := false
+		adoptedFollowUpPacketID := ""
 		for _, arg := range args[4:] {
 			switch {
 			case strings.HasPrefix(arg, "--scope="):
@@ -14860,14 +14882,16 @@ func cmdTeammatesRemainder(args []string) error {
 				forbiddenSources = append(forbiddenSources, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--forbid=")))...)
 			case strings.HasPrefix(arg, "--report="):
 				reportingExpectations = append(reportingExpectations, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--report=")))...)
+			case arg == "--adopted-follow-up":
+				delegateAdoptedFollowUp = true
+			case strings.HasPrefix(arg, "--adopted-follow-up="):
+				delegateAdoptedFollowUp = true
+				adoptedFollowUpPacketID = strings.TrimSpace(strings.TrimPrefix(arg, "--adopted-follow-up="))
 			default:
 				positionals = append(positionals, arg)
 			}
 		}
 		objective := strings.TrimSpace(strings.Join(positionals, " "))
-		if objective == "" {
-			return errors.New("teammates assign requires OBJECTIVE")
-		}
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			parentIndex := findRunIndex(registry, parentRunID)
@@ -14879,10 +14903,64 @@ func cmdTeammatesRemainder(args []string) error {
 			if !activeRun(parentRun) {
 				return errors.New("parent run is not active")
 			}
+			delegatedFollowUp := map[string]any{}
+			if delegateAdoptedFollowUp {
+				packets := runAdoptedFollowUpPackets(parentRun)
+				if len(packets) == 0 {
+					return errors.New("parent run has no adopted follow-up packets to delegate")
+				}
+				if strings.TrimSpace(adoptedFollowUpPacketID) != "" {
+					delegatedFollowUp = followUpPacketByID(packets, adoptedFollowUpPacketID)
+				} else if primaryPacket := primaryFollowUpPacketFromList(packets); primaryPacket != nil {
+					delegatedFollowUp = primaryPacket
+				}
+				if len(delegatedFollowUp) == 0 {
+					if strings.TrimSpace(adoptedFollowUpPacketID) == "" {
+						return errors.New("parent run has no open adopted follow-up packet to delegate")
+					}
+					return fmt.Errorf("adopted follow-up packet not found on parent run: %s", adoptedFollowUpPacketID)
+				}
+				adoptedFollowUpPacketID = strings.TrimSpace(stringValue(delegatedFollowUp["follow_up_packet_id"]))
+				if objective == "" {
+					objective = firstNonBlank(
+						adoptedFollowUpActionText(delegatedFollowUp),
+						strings.TrimSpace(stringValue(delegatedFollowUp["required_follow_up"])),
+						strings.TrimSpace(stringValue(delegatedFollowUp["summary"])),
+					)
+				}
+				if assignedScope == "" {
+					assignedScope = firstNonBlank("adopted follow-up "+adoptedFollowUpPacketID, objective)
+				}
+				if len(authorityRefs) == 0 {
+					if contractRef := strings.TrimSpace(stringValue(parentRun["contract_ref"])); contractRef != "" {
+						authorityRefs = append(authorityRefs, contractRef)
+					}
+					if meetingID := strings.TrimSpace(stringValue(parentRun["adopted_from_meeting_id"])); meetingID != "" {
+						switch {
+						case exists(meetingPath(meetingID, false)):
+							authorityRefs = append(authorityRefs, meetingPath(meetingID, false))
+						case exists(meetingPath(meetingID, true)):
+							authorityRefs = append(authorityRefs, meetingPath(meetingID, true))
+						}
+					}
+				}
+				if len(reportingExpectations) == 0 {
+					reportingExpectations = []string{"Report progress, blockers, verification outcomes, and whether the delegated follow-up is ready to resolve."}
+				}
+			}
+			if objective == "" {
+				return errors.New("teammates assign requires OBJECTIVE")
+			}
 			for _, item := range runs {
 				run, _ := toMap(item)
 				if activeTeammateRun(run) && stringValue(run["parent_run_id"]) == parentRunID && stringValue(run["owner_id"]) == teammateID {
 					return fmt.Errorf("active teammate assignment already exists for %s", teammateID)
+				}
+				if activeTeammateRun(run) &&
+					strings.TrimSpace(stringValue(run["parent_run_id"])) == parentRunID &&
+					adoptedFollowUpPacketID != "" &&
+					strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])) == adoptedFollowUpPacketID {
+					return fmt.Errorf("active teammate assignment already exists for adopted follow-up packet %s", adoptedFollowUpPacketID)
 				}
 			}
 			teammateRunID := fmt.Sprintf("run-%s-teammate-%s", nowTime().UTC().Format("20060102150405"), slugify(teammateID))
@@ -14892,6 +14970,24 @@ func cmdTeammatesRemainder(args []string) error {
 			successCriteria := reportingExpectations
 			if len(successCriteria) == 0 {
 				successCriteria = []string{"Report progress, blockers, and verification outcomes."}
+			}
+			assignmentNotes := map[string]any{
+				"delegated_from":    parentRunID,
+				"teammate_id":       teammateID,
+				"role":              role,
+				"assigned_scope":    firstNonBlank(assignedScope, objective),
+				"forbidden_sources": stringListToAny(forbiddenSources),
+			}
+			if len(delegatedFollowUp) > 0 {
+				assignmentNotes["delegated_from_follow_up_packet_id"] = adoptedFollowUpPacketID
+				assignmentNotes["delegated_from_follow_up_summary"] = strings.TrimSpace(stringValue(delegatedFollowUp["summary"]))
+				assignmentNotes["delegated_from_follow_up_execution_kind"] = strings.TrimSpace(stringValue(delegatedFollowUp["execution_kind"]))
+				assignmentNotes["delegated_from_follow_up_required_action"] = firstNonBlank(
+					strings.TrimSpace(stringValue(delegatedFollowUp["required_follow_up"])),
+					adoptedFollowUpActionText(delegatedFollowUp),
+				)
+				assignmentNotes["delegated_from_action_id"] = strings.TrimSpace(stringValue(delegatedFollowUp["action_id"]))
+				assignmentNotes["delegated_from_meeting_id"] = strings.TrimSpace(stringValue(parentRun["adopted_from_meeting_id"]))
 			}
 			contractPayload, _ := toMap(mergeDicts(contractTemplate, map[string]any{
 				"mission_id":            stringValue(parentRun["mission_id"]),
@@ -14904,15 +15000,9 @@ func cmdTeammatesRemainder(args []string) error {
 				"desired_state":         defaultDesiredStateForRun("teammate"),
 				"branch":                stringValue(parentRun["branch"]),
 				"worktree_path":         stringValue(parentRun["worktree_path"]),
-				"context_files":         stringListToAny(authorityRefs),
+				"context_files":         stringListToAny(dedupeStrings(authorityRefs)),
 				"verification_commands": []any{},
-				"notes": map[string]any{
-					"delegated_from":    parentRunID,
-					"teammate_id":       teammateID,
-					"role":              role,
-					"assigned_scope":    firstNonBlank(assignedScope, objective),
-					"forbidden_sources": stringListToAny(forbiddenSources),
-				},
+				"notes":                assignmentNotes,
 			}))
 			setOwnershipSelectors(contractPayload, dedupeStrings(append([]string{"scope:" + slugify(firstNonBlank(assignedScope, objective))}, ownershipClaimsInput...)))
 			freshness, _ := toMap(contractPayload["freshness"])
@@ -14935,7 +15025,7 @@ func cmdTeammatesRemainder(args []string) error {
 				siblingRunIDs = append(siblingRunIDs, runID)
 				communicationPeers = append(communicationPeers, runID)
 			}
-			authorityRefList := authorityRefs
+			authorityRefList := dedupeStrings(authorityRefs)
 			if len(authorityRefList) == 0 {
 				authorityRefList = []string{stringValue(parentRun["contract_ref"])}
 			}
@@ -14943,6 +15033,15 @@ func cmdTeammatesRemainder(args []string) error {
 			reportingList := reportingExpectations
 			if len(reportingList) == 0 {
 				reportingList = []string{"Report progress, blockers, and verification outcomes."}
+			}
+			nextExpectedAction := "Acknowledge the assignment, gather local evidence, and report back."
+			latestSummary := "Delegated and ready for bounded execution"
+			if len(delegatedFollowUp) > 0 {
+				nextExpectedAction = firstNonBlank(
+					adoptedFollowUpActionText(delegatedFollowUp),
+					"Start the delegated adopted follow-up, gather local evidence, and report back.",
+				)
+				latestSummary = "Delegated and ready for adopted follow-up execution"
 			}
 			teammateRun, _ := toMap(mergeDicts(runTemplate, map[string]any{
 				"run_id":                 teammateRunID,
@@ -14971,13 +15070,24 @@ func cmdTeammatesRemainder(args []string) error {
 				"desired_state":          defaultDesiredStateForRun("teammate"),
 				"siblings":               stringListToAny(siblingRunIDs),
 				"communication_peers":    stringListToAny(communicationPeers),
-				"latest_summary":         "Delegated and ready for bounded execution",
-				"next_expected_action":   "Acknowledge the assignment, gather local evidence, and report back.",
+				"latest_summary":         latestSummary,
+				"next_expected_action":   nextExpectedAction,
 				"created_at":             timestamp,
 				"started_at":             timestamp,
 				"last_reported_at":       timestamp,
 				"updated_at":             timestamp,
 			}))
+			if len(delegatedFollowUp) > 0 {
+				teammateRun["delegated_from_follow_up_packet_id"] = adoptedFollowUpPacketID
+				teammateRun["delegated_from_follow_up_summary"] = strings.TrimSpace(stringValue(delegatedFollowUp["summary"]))
+				teammateRun["delegated_from_follow_up_execution_kind"] = strings.TrimSpace(stringValue(delegatedFollowUp["execution_kind"]))
+				teammateRun["delegated_from_follow_up_required_action"] = firstNonBlank(
+					strings.TrimSpace(stringValue(delegatedFollowUp["required_follow_up"])),
+					adoptedFollowUpActionText(delegatedFollowUp),
+				)
+				teammateRun["delegated_from_action_id"] = strings.TrimSpace(stringValue(delegatedFollowUp["action_id"]))
+				teammateRun["delegated_from_meeting_id"] = strings.TrimSpace(stringValue(parentRun["adopted_from_meeting_id"]))
+			}
 			setOwnershipSelectors(teammateRun, ownershipClaims)
 			if conflicts := overlappingOwnershipRuns(registry, ownershipClaims, overlapPolicyValue, []string{parentRunID}); len(conflicts) > 0 {
 				return fmt.Errorf("ownership overlap detected for teammate assignment; retry with --allow-overlap or change --owns selectors: %v", conflicts)
@@ -14989,8 +15099,13 @@ func cmdTeammatesRemainder(args []string) error {
 				sibling["updated_at"] = nowISO()
 			}
 			parentRun["mode"] = "parallel"
-			parentRun["latest_summary"] = "Delegated bounded task to " + teammateID
-			parentRun["next_expected_action"] = "Monitor teammate reports, coordination signals, and meeting triggers."
+			if len(delegatedFollowUp) > 0 {
+				parentRun["latest_summary"] = "Delegated adopted follow-up to " + teammateID
+				parentRun["next_expected_action"] = "Monitor teammate reports, coordination signals, and adopted follow-up resolution."
+			} else {
+				parentRun["latest_summary"] = "Delegated bounded task to " + teammateID
+				parentRun["next_expected_action"] = "Monitor teammate reports, coordination signals, and meeting triggers."
+			}
 			parentRun["updated_at"] = nowISO()
 			runs[parentIndex] = parentRun
 			registry["runs"] = runs

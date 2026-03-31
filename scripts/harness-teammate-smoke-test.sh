@@ -720,6 +720,7 @@ assert_json_field "$decision_record_close" '"adopted_output_packet_kind": "decis
 assert_json_field "$decision_record_close" '"adopted_output_follow_up_packet_count": 1' "meeting-close adopts the structured output follow-up packet count into run state"
 assert_json_field "$decision_record_close" '"adopted_primary_follow_up_packet": {' "meeting-close keeps the primary adopted follow-up packet in run state"
 assert_json_field "$decision_record_close" '"execution_kind": "decision_record_follow_up"' "meeting-close preserves protocol-specific follow-up execution semantics in adopted run state"
+decision_record_follow_up_packet_id=$(printf '%s\n' "$decision_record_close" | perl -0ne 'print "$1\n" if /"adopted_primary_follow_up_packet": \{.*?"follow_up_packet_id": "([^"]+)"/s')
 decision_record_next_action=$(printf '%s\n' "$decision_record_close" | perl -0ne 'print "$1\n" if /"next_expected_action": "([^"]+)"/s')
 decision_record_follow_up_action=$(printf '%s\n' "$decision_record_close" | perl -0ne 'print "$1\n" if /"adopted_primary_follow_up_packet": \{.*?"summary": "([^"]+)"/s')
 if [[ -n "$decision_record_next_action" && "$decision_record_next_action" == "$decision_record_follow_up_action" ]]; then
@@ -750,6 +751,23 @@ assert_json_field "$home_after_adoption" 'Decision record must capture unresolve
 doctor_after_adoption=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_not_json_field "$doctor_after_adoption" '"kind": "run-missing-meeting-next-action"' "doctor no longer misreads adopted follow-up guidance as missing next_expected_action"
 assert_not_json_field "$doctor_after_adoption" '"kind": "run-missing-meeting-summary"' "doctor no longer compares run summary against a non-governing closed meeting"
+
+follow_up_assignment=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-follow-up follow-up-runner --adopted-follow-up)
+assert_json_field "$follow_up_assignment" "\"delegated_from_follow_up_packet_id\": \"$decision_record_follow_up_packet_id\"" "teammates assign can bind the primary adopted follow-up packet directly"
+assert_json_field "$follow_up_assignment" "\"delegated_from_meeting_id\": \"$decision_record_meeting_id\"" "teammate follow-up assignment records the governing meeting"
+assert_json_field "$follow_up_assignment" "\"delegated_from_follow_up_execution_kind\": \"decision_record_follow_up\"" "teammate follow-up assignment preserves protocol-aware execution kind"
+assert_json_field "$follow_up_assignment" "\"objective\": \"$decision_record_follow_up_action\"" "teammate follow-up assignment derives its objective from adopted follow-up guidance"
+assert_json_field "$follow_up_assignment" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "teammate follow-up assignment starts from the adopted follow-up action text"
+set +e
+duplicate_follow_up_assignment_output=$(cd "$TEST_REPO" && bash scripts/harness-teammates.sh assign "$leader_run_id" worker-follow-up-2 follow-up-runner --adopted-follow-up 2>&1)
+duplicate_follow_up_assignment_rc=$?
+set -e
+if [ "$duplicate_follow_up_assignment_rc" -ne 0 ] && grep -q "active teammate assignment already exists for adopted follow-up packet $decision_record_follow_up_packet_id" <<<"$duplicate_follow_up_assignment_output"; then
+  pass "adopted follow-up handoff refuses duplicate active teammate assignments for the same packet"
+else
+  fail "adopted follow-up handoff refuses duplicate active teammate assignments for the same packet"
+  echo "$duplicate_follow_up_assignment_output"
+fi
 
 blocked_completion_output=$(run_in_repo bash scripts/harness-drive.sh complete "$leader_run_id" "Should not close while adopted follow-up is still open." 2>&1 || true)
 if grep -q 'run cannot transition to completed while adopted follow-up packets remain open' <<<"$blocked_completion_output"; then

@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now blocks completion while adopted follow-up remains open)
+- **Last Session**: 2026-03-31 (Harness now hands adopted follow-up directly to teammate runtime)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now hands adopted follow-up directly to teammate runtime
+
+- **Adopted follow-up can now become a bounded teammate assignment directly**: `teammates assign --adopted-follow-up` can bind the primary or named adopted follow-up packet from the governing run, derive the delegated objective from that packet, and carry governing meeting / execution-kind provenance into the teammate run and contract
+- **Duplicate handoff is now guarded**: the runtime now refuses a second active teammate assignment for the same adopted follow-up packet, so one bounded post-council work object cannot silently fan out into two concurrent owners
+- **Delegated follow-up still composes with run lifecycle closure**: if the parent run temporarily shifts into teammate-monitoring guidance while the delegated adopted follow-up is open, resolving that follow-up still advances the parent run out of stale adopted-follow-up handling and back into generic post-follow-up guidance
 
 **Session 2026-03-31** — Harness now blocks completion while adopted follow-up remains open
 
