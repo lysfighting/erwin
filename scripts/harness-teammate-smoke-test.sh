@@ -223,6 +223,7 @@ assert_json_field "$report_output" '"latest_summary": "Auth caller patch is read
 message_output=$(run_in_repo bash scripts/harness-teammates.sh message "$run_a" "$run_b" interface_change "Caller signature now requires scope" --evidence=src/auth.ts)
 assert_json_field "$message_output" '"kind": "interface_change"' "teammate message emits sibling signal"
 assert_json_field "$message_output" "\"$run_b\"" "teammate message targets sibling run"
+message_signal_id=$(printf '%s\n' "$message_output" | sed -n 's/^[[:space:]]*"signal_id": "\(sig-[^"]*\)",$/\1/p' | head -n1)
 
 section "Mission authority"
 mission_control_output=$(run_in_repo bash scripts/harness-missions.sh get issue-33001)
@@ -238,6 +239,7 @@ section "Meeting escalation"
 escalate_output=$(run_in_repo bash scripts/harness-teammates.sh escalate "$run_b" "Do we need a release-note update for auth scope?" --materialize)
 assert_json_field "$escalate_output" '"kind": "requires_meeting"' "teammate escalation emits meeting signal"
 assert_json_field "$escalate_output" '"state": "active"' "teammate escalation materializes active meeting"
+meeting_signal_id=$(printf '%s\n' "$escalate_output" | sed -n 's/^[[:space:]]*"signal_id": "\(sig-[^"]*\)",$/\1/p' | head -n1)
 meeting_id=$(printf '%s\n' "$escalate_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 
 role_a=$(run_in_repo bash scripts/harness-meetings.sh add-role "$meeting_id" implementation-verifier --mission="Verify the scoped auth change against code and release notes." --allow="L1: live git state|L2: active runtime state|L3: committed harness definitions" --forbid="L4+: stale summaries")
@@ -706,18 +708,32 @@ assert_json_field "$decision_record_close" '"adopted_output_packet_kind": "decis
 assert_json_field "$decision_record_close" '"adopted_output_follow_up_packet_count": 1' "meeting-close adopts the structured output follow-up packet count into run state"
 assert_json_field "$decision_record_close" '"adopted_primary_follow_up_packet": {' "meeting-close keeps the primary adopted follow-up packet in run state"
 assert_json_field "$decision_record_close" '"execution_kind": "decision_record_follow_up"' "meeting-close preserves protocol-specific follow-up execution semantics in adopted run state"
+decision_record_next_action=$(printf '%s\n' "$decision_record_close" | perl -0ne 'print "$1\n" if /"next_expected_action": "([^"]+)"/s')
+decision_record_follow_up_action=$(printf '%s\n' "$decision_record_close" | perl -0ne 'print "$1\n" if /"adopted_primary_follow_up_packet": \{.*?"required_follow_up": "([^"]+)"/s')
+if [[ -n "$decision_record_next_action" && "$decision_record_next_action" == "$decision_record_follow_up_action" ]]; then
+  pass "meeting-close promotes the primary adopted follow-up packet into next_expected_action"
+else
+  fail "meeting-close promotes the primary adopted follow-up packet into next_expected_action"
+  echo "$decision_record_close"
+fi
 
 schedule_after_adoption=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_after_adoption" '"adopted_output_packet_kind": "decision_record_output"' "scheduler mission packets surface the adopted structured output kind after meeting-close"
 assert_json_field "$schedule_after_adoption" '"adopted_output_open_follow_up_packet_count": 1' "scheduler mission packets surface open adopted follow-up packet counts"
 assert_json_field "$schedule_after_adoption" '"adopted_primary_follow_up_packet": {' "scheduler mission packets surface the primary adopted follow-up packet"
 assert_json_field "$schedule_after_adoption" '"execution_kind": "decision_record_follow_up"' "scheduler mission packets preserve protocol-aware adopted follow-up execution semantics"
+run_in_repo bash scripts/harness-signals.sh set-state "$message_signal_id" resolved "Decision-record adoption superseded the earlier interface-change review signal." >/dev/null
+run_in_repo bash scripts/harness-signals.sh set-state "$meeting_signal_id" resolved "Decision-record adoption superseded the earlier meeting request." >/dev/null
+
+schedule_after_signal_clear=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_after_signal_clear" '"adopted_primary_follow_up_action": "synthesis_must_record_tradeoff"' "scheduler keeps the adopted primary follow-up action visible after earlier signals are cleared"
 
 home_after_adoption=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_after_adoption" '"adopted_output_run_count": 1' "home surfaces active runs carrying adopted structured output"
 assert_json_field "$home_after_adoption" '"primary_adopted_output_packet_kind": "decision_record_output"' "home surfaces the primary adopted output packet kind"
 assert_json_field "$home_after_adoption" '"primary_adopted_follow_up_packet": {' "home surfaces the primary adopted follow-up packet"
 assert_json_field "$home_after_adoption" '"execution_kind": "decision_record_follow_up"' "home preserves protocol-aware adopted follow-up execution semantics"
+assert_json_field "$home_after_adoption" '"required_follow_up": "synthesis_must_record_tradeoff"' "home keeps the adopted primary follow-up action visible after earlier signals are cleared"
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"

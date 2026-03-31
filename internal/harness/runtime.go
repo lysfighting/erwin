@@ -2156,7 +2156,7 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 				"note":            "Closed meeting summary has not been adopted into the run state.",
 			})
 		}
-		if nextAction := stringValue(outcome["next_action"]); nextAction != "" && strings.TrimSpace(stringValue(run["next_expected_action"])) != nextAction {
+		if nextAction := meetingAdoptedNextAction(meeting); nextAction != "" && strings.TrimSpace(stringValue(run["next_expected_action"])) != nextAction {
 			adoptionGaps = append(adoptionGaps, map[string]any{
 				"claim_ref":       "next_expected_action",
 				"resolution_kind": "adoption_pending",
@@ -2165,7 +2165,7 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 				"winning_source":  "meeting:" + stringValue(meeting["meeting_id"]),
 				"current_value":   stringValue(run["next_expected_action"]),
 				"expected_value":  nextAction,
-				"note":            "Closed meeting next action has not been adopted into the run state.",
+				"note":            "Closed meeting next action or primary adopted follow-up has not been adopted into the run state.",
 			})
 		}
 		if strings.TrimSpace(stringValue(run["adopted_from_meeting_id"])) != stringValue(meeting["meeting_id"]) {
@@ -6040,13 +6040,23 @@ func meetingPrimaryFollowUpPacket(meeting map[string]any) map[string]any {
 	return nil
 }
 
+func meetingAdoptedNextAction(meeting map[string]any) string {
+	outcome := meetingOutcome(meeting)
+	if primaryFollowUp := meetingPrimaryFollowUpPacket(meeting); primaryFollowUp != nil {
+		if nextAction := adoptedFollowUpActionText(primaryFollowUp); nextAction != "" {
+			return nextAction
+		}
+	}
+	return stringValue(outcome["next_action"])
+}
+
 func applyMeetingAdoptionToRun(run map[string]any, meeting map[string]any) map[string]any {
 	outcome := meetingOutcome(meeting)
 	if stringValue(outcome["summary"]) != "" {
 		run["latest_summary"] = outcome["summary"]
 	}
-	if stringValue(outcome["next_action"]) != "" {
-		run["next_expected_action"] = outcome["next_action"]
+	if nextAction := meetingAdoptedNextAction(meeting); nextAction != "" {
+		run["next_expected_action"] = nextAction
 	}
 	run["adopted_from_meeting_id"] = stringValue(meeting["meeting_id"])
 

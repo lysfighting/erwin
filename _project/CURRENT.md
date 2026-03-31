@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now projects adopted council output follow-up into leader-facing execution surfaces)
+- **Last Session**: 2026-03-31 (Harness now promotes adopted council follow-up into durable run guidance)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now promotes adopted council follow-up into durable run guidance
+
+- **Adopted follow-up now becomes run guidance**: when a closed council already produced an open primary follow-up packet, `meeting-close` and `adopt-meeting` now write that packet's bounded `required_follow_up` back into `next_expected_action` instead of leaving the run on generic council-close wording
+- **Adoption audit now expects the durable follow-up action**: `runs authority-audit` now treats a run as `adoption_pending` if its `next_expected_action` still misses the adopted primary follow-up action after council close
+- **Teammate smoke widened again**: teammate smoke now proves `meeting-close` promotes the primary adopted follow-up packet into `next_expected_action`, while scheduler/home continue to keep the adopted action visible even after earlier fresh signals are cleared
 
 **Session 2026-03-31** — Harness now projects adopted council output follow-up into leader-facing execution surfaces
 

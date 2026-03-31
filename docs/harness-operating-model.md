@@ -166,6 +166,7 @@ Current runtime note:
 - `decision-record` now also drives protocol-specific live requirements such as bounded decision-record assessments in independent review and explicit decision/alternatives/consequences/follow-up output guidance at close
 - once those councils reach synthesis/output, orchestration now also auto-synthesizes protocol-aware output packets with lane-level synthesis plus structured `follow_up_packets`, and `meeting-close` / `adopt-meeting` now write that bounded output back into run state so the leader can carry forward both the provisional output and the primary follow-up packet instead of reconstructing them from raw findings and actions
 - that adopted follow-up state now also projects back into scheduler mission packets and `home`, so once a council is closed the control plane can keep speaking in bounded follow-up packets instead of collapsing the next step back into generic selected-mission wording
+- when a closed council already has an open primary follow-up packet, run state now also promotes that packet's bounded `required_follow_up` into `next_expected_action`, so durable execution guidance advances from “close/adopt the council” into the actual post-council task
 - deeper protocol-specific automation is still not complete, but protocol choice is now part of real council control flow rather than metadata only
 
 ---
