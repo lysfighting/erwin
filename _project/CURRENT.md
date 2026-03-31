@@ -6,15 +6,22 @@
 
 ## Project Status
 
-- **Version**: 0.91.0 (in progress)
+- **Version**: 0.92.0 (in progress)
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness learning loop was formalized as a proposal-first evolution surface)
+- **Last Session**: 2026-03-31 (Harness active councils now project their current live work packet into leader-facing surfaces)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness active councils now project their current live work packet into leader-facing surfaces
+
+- **Live council execution is now more explicit**: scheduler active-council packets and `meetings summary` now project the current live work packet instead of only exposing a generic `next_requirement`, so leader-facing surfaces can see the current packet id, phase, action count, and batch context while a council is in progress
+- **Current work packet now spans both review and debate phases**: runtime now derives the current live work packet from either pending independent-review wave obligations or the current debate batch, so the control plane stays informative before and after the council enters cross-examination
+- **Council execution smoke widened**: core smoke now proves scheduler projects the current active bundle-council work packet during independent review, and teammate smoke now proves `meetings summary` surfaces current batch summary, assignee, and action count for a multi-lane debate batch
+- **Adapter line advanced again**: `harness/adapter-manifest.yml`, `_project/CURRENT.md`, `CHANGELOG.md`, session log, and canonical handoff/contract docs now reflect `0.92.0-prototype`
 
 **Session 2026-03-31** — Harness learning loop was formalized as a proposal-first evolution surface
 

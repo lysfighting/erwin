@@ -709,6 +709,9 @@ run_in_repo bash scripts/harness-meetings.sh orchestrate "$multi_escalation_meet
 schedule_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_phase": "independent_review"' "scheduler projects active bundle-council phase into the portfolio packet"
 assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_next_requirement": "Collect' "scheduler projects active bundle-council next requirement into the portfolio packet"
+assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_current_wave_batch_id": "wave-batch-independent-review"' "scheduler projects the current active bundle-council work packet id into the portfolio packet"
+assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_current_wave_batch_phase": "independent_review"' "scheduler projects the current active bundle-council work packet phase into the portfolio packet"
+assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_current_wave_batch_action_count": 3' "scheduler projects the current active bundle-council work packet action count into the portfolio packet"
 assert_json_field "$schedule_multi_escalation_orchestrated" '"next_action": "Collect' "scheduler next action follows the live active bundle-council requirement"
 assert_json_field "$schedule_multi_escalation_orchestrated" '"action_kind": "hold_for_active_bundle_council"' "scheduler still emits active bundle-council hold actions after progress projection"
 assert_json_field "$schedule_multi_escalation_orchestrated" '"reason": "Collect' "active bundle-council hold actions inherit the live next requirement"

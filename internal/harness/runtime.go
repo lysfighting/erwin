@@ -8711,6 +8711,47 @@ func schedulerDecisionKey(decision map[string]any) string {
 	return ""
 }
 
+func meetingCurrentWaveBatch(wavePlan, debatePlan map[string]any) map[string]any {
+	if debatePlan != nil {
+		currentBatchID := strings.TrimSpace(stringValue(debatePlan["current_wave_batch_id"]))
+		if currentBatchID != "" {
+			for _, item := range toList(debatePlan["wave_batches"]) {
+				batch, ok := toMap(item)
+				if !ok {
+					continue
+				}
+				if strings.TrimSpace(stringValue(batch["batch_id"])) == currentBatchID {
+					return batch
+				}
+			}
+		}
+	}
+	if wavePlan == nil || intValue(wavePlan["open_wave_action_count"]) == 0 {
+		return nil
+	}
+	waveActions := toList(wavePlan["wave_actions"])
+	summary := "Complete the current independent-review wave obligations before debate can advance."
+	if len(waveActions) == 1 {
+		summary = firstNonBlank(strings.TrimSpace(stringValue(getKey(waveActions[0], "summary", ""))), summary)
+	}
+	assignedRole := ""
+	assignedRunID := ""
+	if len(waveActions) == 1 {
+		assignedRole = stringValue(getKey(waveActions[0], "assigned_role", ""))
+		assignedRunID = stringValue(getKey(waveActions[0], "assigned_run_id", ""))
+	}
+	return map[string]any{
+		"batch_id":        "wave-batch-independent-review",
+		"expected_phase":  "independent_review",
+		"round_number":    0,
+		"assigned_role":   assignedRole,
+		"assigned_run_id": assignedRunID,
+		"action_count":    intValue(wavePlan["open_wave_action_count"]),
+		"claim_refs":      []any{},
+		"summary":         summary,
+	}
+}
+
 func projectActiveMeetingProgressIntoDecision(decision, meeting map[string]any) map[string]any {
 	if decision == nil || meeting == nil {
 		return decision
@@ -8738,6 +8779,19 @@ func projectActiveMeetingProgressIntoDecision(decision, meeting map[string]any) 
 		if debatePlan, _ := toMap(orchestration["debate_plan"]); debatePlan != nil {
 			decision["active_decision_open_route_action_count"] = intValue(debatePlan["open_route_action_count"])
 			decision["active_decision_open_round_action_count"] = intValue(debatePlan["open_round_action_count"])
+			wavePlan, _ := toMap(orchestration["wave_plan"])
+			if currentBatch := meetingCurrentWaveBatch(wavePlan, debatePlan); currentBatch != nil {
+				decision["active_decision_current_wave_batch_id"] = stringValue(currentBatch["batch_id"])
+				decision["active_decision_current_wave_batch_phase"] = stringValue(currentBatch["expected_phase"])
+				decision["active_decision_current_wave_batch_round_number"] = intValue(currentBatch["round_number"])
+				decision["active_decision_current_wave_batch_assigned_role"] = stringValue(currentBatch["assigned_role"])
+				decision["active_decision_current_wave_batch_assigned_run_id"] = stringValue(currentBatch["assigned_run_id"])
+				decision["active_decision_current_wave_batch_action_count"] = intValue(currentBatch["action_count"])
+				decision["active_decision_current_wave_batch_claim_refs"] = cloneValue(getKey(currentBatch, "claim_refs", []any{}))
+				if summary := strings.TrimSpace(stringValue(currentBatch["summary"])); summary != "" {
+					decision["active_decision_current_wave_batch_summary"] = summary
+				}
+			}
 			if summary := strings.TrimSpace(stringValue(debatePlan["current_wave_batch_summary"])); summary != "" {
 				decision["active_decision_current_wave_batch_summary"] = summary
 			}
@@ -12589,6 +12643,7 @@ func cmdMeetings(args []string) error {
 		autoSynthesis, _ := toMap(orchestration["auto_synthesis"])
 		debatePlan, _ := toMap(orchestration["debate_plan"])
 		wavePlan, _ := toMap(orchestration["wave_plan"])
+		currentWaveBatch := meetingCurrentWaveBatch(wavePlan, debatePlan)
 		authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
 		governanceGaps := meetingGovernancePolicyGaps(meeting)
 		return printJSON(map[string]any{
@@ -12636,7 +12691,14 @@ func cmdMeetings(args []string) error {
 			"batch_selection_policy":                   stringValue(debatePlan["batch_selection_policy"]),
 			"previous_current_wave_batch_id":           stringValue(debatePlan["previous_current_wave_batch_id"]),
 			"current_wave_batch_id":                    stringValue(debatePlan["current_wave_batch_id"]),
+			"current_wave_batch_summary":               stringValue(debatePlan["current_wave_batch_summary"]),
 			"current_wave_batch_lane_count":            intValue(debatePlan["current_wave_batch_lane_count"]),
+			"current_wave_batch_assigned_role":         stringValue(getKey(currentWaveBatch, "assigned_role", "")),
+			"current_wave_batch_assigned_run_id":       stringValue(getKey(currentWaveBatch, "assigned_run_id", "")),
+			"current_wave_batch_phase":                 stringValue(getKey(currentWaveBatch, "expected_phase", "")),
+			"current_wave_batch_round_number":          intValue(getKey(currentWaveBatch, "round_number", 0)),
+			"current_wave_batch_action_count":          intValue(getKey(currentWaveBatch, "action_count", 0)),
+			"current_wave_batch_claim_refs":            cloneValue(getKey(currentWaveBatch, "claim_refs", []any{})),
 			"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),
 			"max_wave_lane_count":                      intValue(debatePlan["max_wave_lane_count"]),
 			"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),

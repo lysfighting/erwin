@@ -123,6 +123,7 @@ Current scheduler/council reality:
 - follow-up decision packets now project `fresh_follow_up_signal_kinds` and `follow_up_signal_urgency_rank`, and a fresh `risk_raised` signal lifts `effective_risk_level` to `high` before adoption so urgent follow-up work can outrank lower-urgency peers in the scheduler portfolio
 - when one mission carries multiple fresh follow-up signals at once, scheduler now lets the strongest pending signal govern both urgency ranking and leader guidance instead of following the first lower-urgency kind that happened to arrive
 - scheduler and `home` follow an in-flight council's live `next_requirement` instead of generic review wording
+- scheduler active-council packets and `meetings summary` now also project the current live council work packet, deriving it from either pending independent-review wave obligations or the current debate batch so leader-facing surfaces can see the current in-flight ask more concretely
 - stale active councils are now promoted into explicit “refresh or close the stale active council” guidance instead of remaining passive hold state
 - scheduler now also exposes one leader-facing `primary_control_plane_packet`, so critical maintenance can deliberately outrank lower-priority human decisions without hiding those deferred decisions from the portfolio
 - when that happens, affected governed decision missions now also carry explicit maintenance-first defer state instead of only silently staying visible in the queue
@@ -137,7 +138,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.91.0-prototype`
+- `adapter_version`: `0.92.0-prototype`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
 - `public_contract_path`: [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
