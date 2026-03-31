@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now blocks delegated teammate completion until follow-up closes)
+- **Last Session**: 2026-03-31 (Harness now syncs delegated follow-up state from the governing run)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now syncs delegated follow-up state from the governing run
+
+- **Delegated teammate state now tracks parent-side follow-up refresh too**: when the governing run updates an adopted follow-up packet directly through `drive resolve-follow-up`, runtime now also refreshes any active delegated teammate run bound to that packet instead of leaving teammate-local delegated state stale
+- **Governing truth stays central without hiding delegated lifecycle**: delegated teammate runs still derive their durable packet truth from the governing run, but now that parent-owned truth also reprojects `open` state back into the delegated execution unit before final closure
+- **Teammate smoke widened again**: teammate smoke now proves the leader can still address a delegated adopted follow-up packet directly and that the delegated teammate run immediately reflects the refreshed open packet state
 
 **Session 2026-03-31** — Harness now blocks delegated teammate completion until follow-up closes
 

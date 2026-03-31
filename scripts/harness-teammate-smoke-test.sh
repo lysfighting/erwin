@@ -767,6 +767,10 @@ home_after_follow_up_handoff=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_delegated_run_id\": \"$follow_up_run_id\"" "home surfaces the delegated teammate run for the primary adopted follow-up"
 assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_delegated_owner\": \"worker-follow-up\"" "home surfaces the delegated teammate owner for the primary adopted follow-up"
 assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_delegated_action\": \"Monitor delegated adopted follow-up on $follow_up_run_id (worker-follow-up) and keep the governing run bounded until it reports back.\"" "home preserves delegated adopted follow-up monitoring guidance even when higher-priority control-plane work still owns next_action"
+leader_refresh_follow_up=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
+assert_json_field "$leader_refresh_follow_up" '"follow_up_packet_id": "'"$decision_record_follow_up_packet_id"'"' "governing run can still address the delegated adopted follow-up packet directly"
+follow_up_run_after_leader_refresh=$(run_in_repo bash scripts/harness-teammates.sh get "$follow_up_run_id")
+assert_json_field "$follow_up_run_after_leader_refresh" '"delegated_follow_up_state": "open"' "delegated teammate run syncs open follow-up state when the governing run refreshes the packet"
 set +e
 duplicate_follow_up_assignment_output=$(cd "$TEST_REPO" && bash scripts/harness-teammates.sh assign "$leader_run_id" worker-follow-up-2 follow-up-runner --adopted-follow-up 2>&1)
 duplicate_follow_up_assignment_rc=$?

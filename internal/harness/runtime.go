@@ -6197,6 +6197,45 @@ func syncAdoptedFollowUpLifecycleForMeeting(registry map[string]any, meeting map
 	return syncAdoptedFollowUpPacketsForMeeting(registry, meetingID, packets)
 }
 
+func syncDelegatedFollowUpRunsForParent(registry map[string]any, parentRunID string, packets []any) map[string]any {
+	parentRunID = strings.TrimSpace(parentRunID)
+	if parentRunID == "" {
+		return registry
+	}
+	runs := toList(registry["runs"])
+	updated := false
+	for index, item := range runs {
+		run, _ := toMap(item)
+		if !activeTeammateRun(run) || strings.TrimSpace(stringValue(run["parent_run_id"])) != parentRunID {
+			continue
+		}
+		packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"]))
+		if packetID == "" {
+			continue
+		}
+		packet := followUpPacketByID(packets, packetID)
+		if len(packet) == 0 {
+			continue
+		}
+		packetState := firstNonBlank(strings.TrimSpace(stringValue(packet["state"])), "open")
+		switch packetState {
+		case "done", "cancelled":
+			run = applyDelegatedFollowUpResolutionToRun(run, packet, packetState)
+		default:
+			if strings.TrimSpace(stringValue(run["delegated_follow_up_state"])) == "" {
+				run["delegated_follow_up_state"] = "open"
+				run["updated_at"] = nowISO()
+			}
+		}
+		runs[index] = run
+		updated = true
+	}
+	if updated {
+		registry["runs"] = runs
+	}
+	return registry
+}
+
 func syncAdoptedFollowUpPacketsForMeeting(registry map[string]any, meetingID string, packets []any) map[string]any {
 	meetingID = strings.TrimSpace(meetingID)
 	if meetingID == "" {
@@ -6211,6 +6250,9 @@ func syncAdoptedFollowUpPacketsForMeeting(registry map[string]any, meetingID str
 		}
 		run = applyAdoptedFollowUpPacketsToRun(run, packets)
 		runs[index] = run
+		registry["runs"] = runs
+		registry = syncDelegatedFollowUpRunsForParent(registry, stringValue(run["run_id"]), packets)
+		runs = toList(registry["runs"])
 		updated = true
 	}
 	if updated {
@@ -12611,6 +12653,7 @@ func cmdDrive(args []string) error {
 				governingRun = applyAdoptedFollowUpPacketsToRun(governingRun, updatedPackets)
 				runs[governingRunIndex] = governingRun
 				registry["runs"] = runs
+				registry = syncDelegatedFollowUpRunsForParent(registry, stringValue(governingRun["run_id"]), updatedPackets)
 			}
 			if delegatedResolve {
 				runs = toList(registry["runs"])
