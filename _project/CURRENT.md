@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness 1.0.0 stable line was frozen and fully verified)
+- **Last Session**: 2026-03-31 (Harness council output packets gained lane-level synthesis and scheduler projection)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness council output packets now carry lane-level synthesis
+
+- **Council output is now lane-aware**: provisional `output_packet` artifacts now carry synthesized lane packets instead of only one top-level summary, so debated and directly synthesized claim lanes preserve their per-lane disposition, follow-up, and bounded status inside the durable council artifact
+- **Leader-facing projection widened again**: `meetings summary` and scheduler active-council packets now project those synthesized lane counts and lane packets alongside the existing `output_packet`, making post-synthesis multi-lane council state more legible without reopening raw findings
+- **Smoke widened again**: teammate smoke now proves a multi-lane evidence-review council surfaces accepted and unresolved output lanes explicitly, and core smoke now proves scheduler projects lane-level output state for an active bundle council once it reaches output
 
 **Session 2026-03-31** — Harness 1.0.0 stable line was frozen and fully verified
 

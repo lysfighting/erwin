@@ -734,6 +734,9 @@ assert_json_field "$auto_multi_escalation_governor" '"governing_mission_id": "is
 schedule_multi_escalation_output_phase=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_output_phase" '"active_decision_output_packet_kind": "evidence_review_output"' "scheduler projects the active bundle-council output packet once the meeting reaches output"
 assert_json_field "$schedule_multi_escalation_output_phase" '"active_decision_output_packet":' "scheduler keeps the active bundle-council output packet visible in the portfolio packet"
+assert_json_field "$schedule_multi_escalation_output_phase" '"active_decision_output_debate_lane_count": 1' "scheduler projects synthesized debate-lane counts alongside the active council output packet"
+assert_json_field "$schedule_multi_escalation_output_phase" '"active_decision_output_open_debate_lane_count": 0' "scheduler projects that the active council output packet has no live debate lanes left open"
+assert_json_field "$schedule_multi_escalation_output_phase" '"claim_ref": "bundle-governor-choice"' "scheduler keeps the active council debate-lane packet visible inside the projected output artifact"
 closed_multi_escalation_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$multi_escalation_run_a" "$multi_escalation_meeting_id" "Bundle escalation council materialization covered.")
 assert_json_field "$closed_multi_escalation_meeting" '"state": "closed"' "bundle-scoped scheduler-materialized council can close cleanly"
 assert_json_field "$closed_multi_escalation_meeting" '"adoption_kind": "bundle_governor_established"' "closing a structured bundle council auto-adopts bundle-governor authority"

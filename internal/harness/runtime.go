@@ -4850,6 +4850,242 @@ func meetingParticipantRoles(meeting map[string]any) []string {
 	return dedupeStrings(roles)
 }
 
+func meetingDebateLaneDisposition(route map[string]any) string {
+	switch strings.TrimSpace(stringValue(route["resolution_kind"])) {
+	case "higher_authority_prevails", "latest_response_prevails":
+		switch strings.TrimSpace(stringValue(route["prevailing_stance"])) {
+		case "support":
+			return "accepted"
+		case "challenge":
+			return "rejected"
+		}
+	case "protocol_prefers_direct_synthesis", "protocol_bound_reached", "max_rounds_reached":
+		return "unresolved"
+	}
+	status := strings.TrimSpace(stringValue(route["status"]))
+	if status == "" {
+		return "unresolved"
+	}
+	if strings.HasPrefix(status, "awaiting_") {
+		return "open"
+	}
+	return "unresolved"
+}
+
+func meetingDebateLaneLiveDebateOpen(route map[string]any) bool {
+	status := strings.TrimSpace(stringValue(route["status"]))
+	return status == "awaiting_cross_examination" || strings.HasPrefix(status, "awaiting_round_")
+}
+
+func meetingDebateLaneSummary(route map[string]any) string {
+	claimRef := firstNonBlank(strings.TrimSpace(stringValue(route["claim_ref"])), strings.TrimSpace(stringValue(route["claim_key"])), "unspecified claim")
+	resolutionKind := strings.TrimSpace(stringValue(route["resolution_kind"]))
+	prevailingRole := firstNonBlank(strings.TrimSpace(stringValue(route["prevailing_role"])), strings.TrimSpace(stringValue(route["prevailing_stance"])), "the prevailing lane")
+	overruledRole := firstNonBlank(strings.TrimSpace(stringValue(route["overruled_role"])), strings.TrimSpace(stringValue(route["overruled_stance"])), "the opposing lane")
+	switch resolutionKind {
+	case "higher_authority_prevails":
+		return fmt.Sprintf("claim %q resolved for %s because higher-authority evidence outranked %s without requiring live cross-examination.", claimRef, prevailingRole, overruledRole)
+	case "latest_response_prevails":
+		return fmt.Sprintf("claim %q resolved for %s after the latest governed response prevailed over %s.", claimRef, prevailingRole, overruledRole)
+	case "protocol_prefers_direct_synthesis":
+		return fmt.Sprintf("claim %q stays unresolved in live debate because the active protocol defers this lane into bounded synthesis.", claimRef)
+	case "protocol_bound_reached":
+		return fmt.Sprintf("claim %q stays unresolved after bounded live debate and now requires synthesis to record the remaining tradeoff.", claimRef)
+	case "max_rounds_reached":
+		return fmt.Sprintf("claim %q reached the live debate round cap and now requires synthesis or leader judgment to close the lane.", claimRef)
+	}
+	status := strings.TrimSpace(stringValue(route["status"]))
+	if status == "awaiting_cross_examination" {
+		return fmt.Sprintf("claim %q still awaits governed cross-examination before synthesis can close the lane.", claimRef)
+	}
+	if strings.HasPrefix(status, "awaiting_round_") {
+		return fmt.Sprintf("claim %q still awaits a governed follow-up response before synthesis can close the lane.", claimRef)
+	}
+	return fmt.Sprintf("claim %q remains an active governed debate lane.", claimRef)
+}
+
+func meetingDebateLaneOutput(meeting map[string]any) map[string]any {
+	debatePlan, _ := toMap(meetingDebatePlan(meeting))
+	findings, _ := toMap(meeting["findings"])
+	type claimFinding struct {
+		bucket  string
+		finding map[string]any
+	}
+	findingsByClaimKey := map[string]claimFinding{}
+	for _, bucket := range []string{"accepted", "rejected", "unresolved"} {
+		for _, item := range toList(findings[bucket]) {
+			finding, ok := toMap(item)
+			if !ok {
+				continue
+			}
+			claimKey := firstNonBlank(
+				strings.TrimSpace(stringValue(finding["generated_claim_key"])),
+				meetingClaimGroupKey(stringValue(finding["claim_ref"]), stringValue(finding["dimension"]), firstNonBlank(stringValue(finding["summary"]), stringValue(finding["finding_id"]))),
+			)
+			if claimKey == "" {
+				continue
+			}
+			if _, exists := findingsByClaimKey[claimKey]; !exists {
+				findingsByClaimKey[claimKey] = claimFinding{bucket: bucket, finding: finding}
+			}
+		}
+	}
+	actionSummaryByClaimKey := map[string]string{}
+	for _, item := range toList(meeting["action_items"]) {
+		action, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		claimKey := strings.TrimSpace(stringValue(action["generated_claim_key"]))
+		summary := strings.TrimSpace(stringValue(action["summary"]))
+		if claimKey != "" && summary != "" && actionSummaryByClaimKey[claimKey] == "" {
+			actionSummaryByClaimKey[claimKey] = summary
+		}
+	}
+	packets := []any{}
+	acceptedCount := 0
+	rejectedCount := 0
+	unresolvedCount := 0
+	openCount := 0
+	seenClaimKeys := map[string]bool{}
+	for _, item := range toList(debatePlan["routes"]) {
+		route, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		claimKey := firstNonBlank(
+			strings.TrimSpace(stringValue(route["claim_key"])),
+			meetingClaimGroupKey(stringValue(route["claim_ref"]), stringValue(route["dimension"]), stringValue(route["route_id"])),
+		)
+		seenClaimKeys[claimKey] = true
+		laneStatus := stringValue(route["status"])
+		resolutionKind := stringValue(route["resolution_kind"])
+		requiredFollowUp := stringValue(route["required_follow_up"])
+		summary := meetingDebateLaneSummary(route)
+		disposition := meetingDebateLaneDisposition(route)
+		if claimFinding, ok := findingsByClaimKey[claimKey]; ok {
+			disposition = claimFinding.bucket
+			if reason := strings.TrimSpace(stringValue(claimFinding.finding["reason"])); reason != "" {
+				summary = reason
+			} else if findingSummary := strings.TrimSpace(stringValue(claimFinding.finding["summary"])); findingSummary != "" {
+				summary = findingSummary
+			}
+			if requiredFollowUp == "" {
+				requiredFollowUp = actionSummaryByClaimKey[claimKey]
+			}
+			if resolutionKind == "" {
+				switch claimFinding.bucket {
+				case "accepted", "rejected":
+					resolutionKind = "synthesized_" + claimFinding.bucket + "_finding"
+					if laneStatus == "" || laneStatus == "routed" {
+						laneStatus = "finding_recorded"
+					}
+				case "unresolved":
+					if routeDebateRound(route) >= intValue(route["max_debate_rounds"]) {
+						resolutionKind = "max_rounds_reached"
+						if laneStatus == "" || laneStatus == "routed" {
+							laneStatus = "max_rounds_reached"
+						}
+					} else {
+						resolutionKind = "synthesized_unresolved_finding"
+						if laneStatus == "" || laneStatus == "routed" {
+							laneStatus = "finding_recorded"
+						}
+					}
+				}
+			}
+		}
+		liveDebateOpen := laneStatus == "awaiting_cross_examination" || strings.HasPrefix(laneStatus, "awaiting_round_")
+		if liveDebateOpen {
+			openCount++
+		}
+		switch disposition {
+		case "accepted":
+			acceptedCount++
+		case "rejected":
+			rejectedCount++
+		case "open", "unresolved":
+			unresolvedCount++
+		}
+		packets = append(packets, map[string]any{
+			"route_id":                       stringValue(route["route_id"]),
+			"claim_ref":                      stringValue(route["claim_ref"]),
+			"dimension":                      firstNonBlank(stringValue(route["dimension"]), "factual"),
+			"lane_status":                    laneStatus,
+			"resolution_kind":                resolutionKind,
+			"output_disposition":             disposition,
+			"live_debate_open":               liveDebateOpen,
+			"required_follow_up":             requiredFollowUp,
+			"linked_cross_examination_count": intValue(route["linked_cross_examination_count"]),
+			"current_round":                  routeDebateRound(route),
+			"max_debate_rounds":              intValue(route["max_debate_rounds"]),
+			"assigned_role":                  stringValue(route["assigned_role"]),
+			"assigned_run_id":                stringValue(route["assigned_run_id"]),
+			"support_roles":                  cloneValue(getKey(route, "support_roles", []any{})),
+			"challenge_roles":                cloneValue(getKey(route, "challenge_roles", []any{})),
+			"prevailing_stance":              stringValue(route["prevailing_stance"]),
+			"prevailing_role":                stringValue(route["prevailing_role"]),
+			"prevailing_run_id":              stringValue(route["prevailing_run_id"]),
+			"overruled_stance":               stringValue(route["overruled_stance"]),
+			"overruled_role":                 stringValue(route["overruled_role"]),
+			"overruled_run_id":               stringValue(route["overruled_run_id"]),
+			"summary":                        summary,
+		})
+	}
+	for claimKey, claimFinding := range findingsByClaimKey {
+		if seenClaimKeys[claimKey] {
+			continue
+		}
+		disposition := claimFinding.bucket
+		summary := firstNonBlank(
+			strings.TrimSpace(stringValue(claimFinding.finding["reason"])),
+			strings.TrimSpace(stringValue(claimFinding.finding["summary"])),
+			strings.TrimSpace(stringValue(claimFinding.finding["claim_ref"])),
+			claimKey,
+		)
+		switch disposition {
+		case "accepted":
+			acceptedCount++
+		case "rejected":
+			rejectedCount++
+		case "open", "unresolved":
+			unresolvedCount++
+		}
+		packets = append(packets, map[string]any{
+			"route_id":                       "",
+			"claim_ref":                      stringValue(claimFinding.finding["claim_ref"]),
+			"dimension":                      firstNonBlank(stringValue(claimFinding.finding["dimension"]), "factual"),
+			"lane_status":                    "finding_recorded",
+			"resolution_kind":                "synthesized_" + disposition + "_finding",
+			"output_disposition":             disposition,
+			"live_debate_open":               false,
+			"required_follow_up":             actionSummaryByClaimKey[claimKey],
+			"linked_cross_examination_count": 0,
+			"current_round":                  0,
+			"max_debate_rounds":              meetingMaxDebateRounds(),
+			"assigned_role":                  stringValue(claimFinding.finding["source_role"]),
+			"assigned_run_id":                stringValue(claimFinding.finding["source_run_id"]),
+			"support_roles":                  []any{},
+			"challenge_roles":                []any{},
+			"prevailing_stance":              "",
+			"prevailing_role":                "",
+			"prevailing_run_id":              "",
+			"overruled_stance":               "",
+			"overruled_role":                 "",
+			"overruled_run_id":               "",
+			"summary":                        summary,
+		})
+	}
+	return map[string]any{
+		"debate_lane_count":            len(packets),
+		"accepted_debate_lane_count":   acceptedCount,
+		"rejected_debate_lane_count":   rejectedCount,
+		"unresolved_debate_lane_count": unresolvedCount,
+		"open_debate_lane_count":       openCount,
+		"debate_lane_packets":          packets,
+	}
+}
+
 func meetingAutoOutputPacket(meeting map[string]any, protocol string) map[string]any {
 	findings, _ := toMap(meeting["findings"])
 	accepted := summaryStrings(toList(findings["accepted"]))
@@ -4860,6 +5096,7 @@ func meetingAutoOutputPacket(meeting map[string]any, protocol string) map[string
 	challengeSummaries := meetingPositionSummariesByStance(meeting, "challenge")
 	lockedDecisions := meetingLockedDecisionSummaries(meeting)
 	participantRoles := meetingParticipantRoles(meeting)
+	debateLaneOutput, _ := toMap(meetingDebateLaneOutput(meeting))
 	summary := firstNonBlank(
 		firstNonBlank(accepted...),
 		firstNonBlank(supportSummaries...),
@@ -4869,19 +5106,28 @@ func meetingAutoOutputPacket(meeting map[string]any, protocol string) map[string
 	nextAction := firstNonBlank(firstNonBlank(openActions...), protocolOutputRequirement(protocol))
 	completionGaps := []string{}
 	packet := map[string]any{
-		"output_packet_kind":   protocolOutputPacketKind(protocol),
-		"decision_protocol":    normalizeDecisionProtocol(firstNonBlank(protocol, "evidence-review")),
-		"generated_by":         "orchestrate_auto_synthesis",
-		"status":               "provisional",
-		"generated_at":         nowISO(),
-		"summary":              summary,
-		"next_action":          nextAction,
-		"accepted_findings":    stringListToAny(accepted),
-		"rejected_findings":    stringListToAny(rejected),
-		"unresolved_findings":  stringListToAny(unresolved),
-		"follow_up_actions":    stringListToAny(openActions),
-		"locked_decisions":     stringListToAny(lockedDecisions),
-		"participant_roles":    stringListToAny(participantRoles),
+		"output_packet_kind":           protocolOutputPacketKind(protocol),
+		"decision_protocol":            normalizeDecisionProtocol(firstNonBlank(protocol, "evidence-review")),
+		"generated_by":                 "orchestrate_auto_synthesis",
+		"status":                       "provisional",
+		"generated_at":                 nowISO(),
+		"summary":                      summary,
+		"next_action":                  nextAction,
+		"accepted_findings":            stringListToAny(accepted),
+		"rejected_findings":            stringListToAny(rejected),
+		"unresolved_findings":          stringListToAny(unresolved),
+		"follow_up_actions":            stringListToAny(openActions),
+		"locked_decisions":             stringListToAny(lockedDecisions),
+		"participant_roles":            stringListToAny(participantRoles),
+		"debate_lane_count":            intValue(debateLaneOutput["debate_lane_count"]),
+		"accepted_debate_lane_count":   intValue(debateLaneOutput["accepted_debate_lane_count"]),
+		"rejected_debate_lane_count":   intValue(debateLaneOutput["rejected_debate_lane_count"]),
+		"unresolved_debate_lane_count": intValue(debateLaneOutput["unresolved_debate_lane_count"]),
+		"open_debate_lane_count":       intValue(debateLaneOutput["open_debate_lane_count"]),
+		"debate_lane_packets":          cloneValue(getKey(debateLaneOutput, "debate_lane_packets", []any{})),
+	}
+	if intValue(debateLaneOutput["open_debate_lane_count"]) > 0 {
+		completionGaps = append(completionGaps, "output packet still has live debate lanes open")
 	}
 	switch normalizeDecisionProtocol(protocol) {
 	case "incident-command":
@@ -6749,10 +6995,10 @@ func meetingAutoSynthesize(meeting map[string]any) map[string]any {
 			}
 			return 1
 		}(),
-		"output_packet":         outputPacket,
-		"output_packet_kind":    stringValue(outputPacket["output_packet_kind"]),
-		"skipped_claims":        stringListToAny(dedupeStrings(skippedClaims)),
-		"last_generated_at":     nowISO(),
+		"output_packet":      outputPacket,
+		"output_packet_kind": stringValue(outputPacket["output_packet_kind"]),
+		"skipped_claims":     stringListToAny(dedupeStrings(skippedClaims)),
+		"last_generated_at":  nowISO(),
 	}
 }
 
@@ -9059,6 +9305,10 @@ func projectActiveMeetingProgressIntoDecision(decision, meeting map[string]any) 
 		if outputPacket, _ := toMap(orchestration["output_packet"]); outputPacket != nil {
 			decision["active_decision_output_packet_kind"] = stringValue(outputPacket["output_packet_kind"])
 			decision["active_decision_output_packet"] = cloneValue(outputPacket)
+			decision["active_decision_output_debate_lane_count"] = intValue(outputPacket["debate_lane_count"])
+			decision["active_decision_output_open_debate_lane_count"] = intValue(outputPacket["open_debate_lane_count"])
+			decision["active_decision_output_unresolved_debate_lane_count"] = intValue(outputPacket["unresolved_debate_lane_count"])
+			decision["active_decision_output_debate_lane_packets"] = cloneValue(getKey(outputPacket, "debate_lane_packets", []any{}))
 		}
 	}
 	meetingUpdatedAt := firstNonBlank(strings.TrimSpace(stringValue(meeting["updated_at"])), strings.TrimSpace(stringValue(meeting["created_at"])))
@@ -12968,6 +13218,12 @@ func cmdMeetings(args []string) error {
 			"output_packet_kind":                       stringValue(getKey(outputPacket, "output_packet_kind", "")),
 			"output_packet_completion_gap_count":       intValue(getKey(outputPacket, "completion_gap_count", 0)),
 			"output_packet":                            cloneValue(outputPacket),
+			"output_debate_lane_count":                 intValue(getKey(outputPacket, "debate_lane_count", 0)),
+			"output_accepted_debate_lane_count":        intValue(getKey(outputPacket, "accepted_debate_lane_count", 0)),
+			"output_rejected_debate_lane_count":        intValue(getKey(outputPacket, "rejected_debate_lane_count", 0)),
+			"output_unresolved_debate_lane_count":      intValue(getKey(outputPacket, "unresolved_debate_lane_count", 0)),
+			"output_open_debate_lane_count":            intValue(getKey(outputPacket, "open_debate_lane_count", 0)),
+			"output_debate_lane_packets":               cloneValue(getKey(outputPacket, "debate_lane_packets", []any{})),
 			"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),
 			"max_wave_lane_count":                      intValue(debatePlan["max_wave_lane_count"]),
 			"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),

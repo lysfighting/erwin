@@ -164,7 +164,7 @@ Current runtime note:
 - `incident-command` and `decision-record` now prefer bounded synthesis/record handling over auto-generated cross-examination when no authority winner already exists
 - `incident-command` now also drives protocol-specific live requirements such as bounded incident assessments in independent review and explicit action/owner/stop-go output guidance at close
 - `decision-record` now also drives protocol-specific live requirements such as bounded decision-record assessments in independent review and explicit decision/alternatives/consequences/follow-up output guidance at close
-- once those councils reach synthesis/output, orchestration now also auto-synthesizes protocol-aware output packets so the leader can review a structured provisional output artifact before adoption/close instead of reconstructing it from raw findings and actions
+- once those councils reach synthesis/output, orchestration now also auto-synthesizes protocol-aware output packets with lane-level synthesis, so the leader can review both the top-level provisional output and the per-lane dispositions/follow-up before adoption/close instead of reconstructing them from raw findings and actions
 - deeper protocol-specific automation is still not complete, but protocol choice is now part of real council control flow rather than metadata only
 
 ---

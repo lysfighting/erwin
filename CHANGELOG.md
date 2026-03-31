@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added — Harness Stable Line
 - **Harness v1.0.0 — First stable line frozen and fully verified**: promoted the adapter line from the prototype series to `1.0.0`, set `release_stage: stable`, and completed the full committed verification matrix (`go test`, adapter validate, issue/core/release/teammate/runtime-dist/runtime-package/bootstrap smoke, and doctor) against the stable package boundary. Remaining deeper scheduler, bundle, and council work is now treated as post-1.0 expansion rather than a blocker for the stable line.
+- **Harness v1.0.0 — Council output packets now preserve lane-level synthesis**: provisional council `output_packet` artifacts now carry synthesized lane packets for debated and directly synthesized claim lanes, while `meetings summary` and active-council scheduler packets project those lane counts and packets back into leader-facing surfaces. Teammate smoke now proves accepted versus unresolved multi-lane output explicitly, and core smoke proves scheduler projection of the lane-aware active-council output artifact.
 
 ### Added — Harness Learning Loop
 - **Proposal-first Harness learning loop added**: introduced `docs/harness-learning-loop.md` as the canonical design for turning field signals, real usage cases, and internal harness gaps into reviewed proposals instead of direct runtime churn.

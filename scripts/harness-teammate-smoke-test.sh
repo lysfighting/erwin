@@ -373,6 +373,15 @@ assert_json_field "$auto_summary" '"planned_round_count": 2' "auto-synthesis sum
 assert_json_field "$auto_summary" '"resolved_round_count": 2' "auto-synthesis summary shows no remaining unresolved second-round planning"
 assert_json_field "$auto_summary" '"open_round_action_count": 0' "auto-synthesis summary shows no remaining follow-up round obligation"
 assert_json_field "$auto_summary" '"max_debate_rounds": 3' "auto-synthesis summary surfaces the bounded debate-round cap"
+assert_json_field "$auto_summary" '"output_debate_lane_count": 2' "auto-synthesis summary surfaces both synthesized debate lanes inside the output packet"
+assert_json_field "$auto_summary" '"output_accepted_debate_lane_count": 1' "auto-synthesis summary counts the accepted debate lane inside the output packet"
+assert_json_field "$auto_summary" '"output_unresolved_debate_lane_count": 1' "auto-synthesis summary counts the unresolved debate lane inside the output packet"
+assert_json_field "$auto_summary" '"output_open_debate_lane_count": 0' "auto-synthesis output packet does not leave live debate lanes open"
+assert_json_field "$auto_summary" '"claim_ref": "release-note-scope"' "auto-synthesis output packet keeps the resolved release-note lane visible"
+assert_json_field "$auto_summary" '"output_disposition": "accepted"' "auto-synthesis output packet records the accepted lane disposition"
+assert_json_field "$auto_summary" '"claim_ref": "rollback-plan-note"' "auto-synthesis output packet keeps the unresolved rollback lane visible"
+assert_json_field "$auto_summary" '"lane_status": "max_rounds_reached"' "auto-synthesis output packet records the bounded unresolved lane status"
+assert_json_field "$auto_summary" '"output_disposition": "unresolved"' "auto-synthesis output packet records the unresolved lane disposition"
 
 section "Debate verdict adoption"
 verdict_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "Can a governed debate route materialize a final verdict after the latest reply wins?")
