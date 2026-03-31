@@ -8,7 +8,7 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now promotes adopted council follow-up into durable run guidance)
+- **Last Session**: 2026-03-31 (Harness now promotes human-readable adopted follow-up guidance)
 
 ## Current Phase
 
@@ -16,11 +16,11 @@
 
 ## What Was Just Completed
 
-**Session 2026-03-31** — Harness now promotes adopted council follow-up into durable run guidance
+**Session 2026-03-31** — Harness now promotes human-readable adopted follow-up guidance
 
-- **Adopted follow-up now becomes run guidance**: when a closed council already produced an open primary follow-up packet, `meeting-close` and `adopt-meeting` now write that packet's bounded `required_follow_up` back into `next_expected_action` instead of leaving the run on generic council-close wording
-- **Adoption audit now expects the durable follow-up action**: `runs authority-audit` now treats a run as `adoption_pending` if its `next_expected_action` still misses the adopted primary follow-up action after council close
-- **Teammate smoke widened again**: teammate smoke now proves `meeting-close` promotes the primary adopted follow-up packet into `next_expected_action`, while scheduler/home continue to keep the adopted action visible even after earlier fresh signals are cleared
+- **Adopted follow-up guidance is now leader-readable**: when a closed council already produced an open primary follow-up packet, `meeting-close` and `adopt-meeting` now promote that packet's human-readable summary into `next_expected_action` instead of surfacing an internal follow-up code
+- **Adoption audit still stays strict**: `runs authority-audit` now expects the promoted adopted follow-up guidance in `next_expected_action`, so readable execution guidance is part of adoption completeness rather than a cosmetic overlay
+- **Teammate smoke widened again**: teammate smoke now proves `meeting-close` promotes human-readable adopted follow-up guidance into `next_expected_action`, while scheduler/home continue to keep that readable adopted guidance visible even after earlier fresh signals are cleared
 
 **Session 2026-03-31** — Harness now projects adopted council output follow-up into leader-facing execution surfaces
 

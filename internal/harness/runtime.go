@@ -6140,8 +6140,8 @@ func adoptedFollowUpActionText(packet map[string]any) string {
 		return ""
 	}
 	return firstNonBlank(
-		strings.TrimSpace(stringValue(packet["required_follow_up"])),
 		strings.TrimSpace(stringValue(packet["summary"])),
+		strings.TrimSpace(stringValue(packet["required_follow_up"])),
 	)
 }
 

@@ -709,11 +709,11 @@ assert_json_field "$decision_record_close" '"adopted_output_follow_up_packet_cou
 assert_json_field "$decision_record_close" '"adopted_primary_follow_up_packet": {' "meeting-close keeps the primary adopted follow-up packet in run state"
 assert_json_field "$decision_record_close" '"execution_kind": "decision_record_follow_up"' "meeting-close preserves protocol-specific follow-up execution semantics in adopted run state"
 decision_record_next_action=$(printf '%s\n' "$decision_record_close" | perl -0ne 'print "$1\n" if /"next_expected_action": "([^"]+)"/s')
-decision_record_follow_up_action=$(printf '%s\n' "$decision_record_close" | perl -0ne 'print "$1\n" if /"adopted_primary_follow_up_packet": \{.*?"required_follow_up": "([^"]+)"/s')
+decision_record_follow_up_action=$(printf '%s\n' "$decision_record_close" | perl -0ne 'print "$1\n" if /"adopted_primary_follow_up_packet": \{.*?"summary": "([^"]+)"/s')
 if [[ -n "$decision_record_next_action" && "$decision_record_next_action" == "$decision_record_follow_up_action" ]]; then
-  pass "meeting-close promotes the primary adopted follow-up packet into next_expected_action"
+  pass "meeting-close promotes human-readable adopted follow-up guidance into next_expected_action"
 else
-  fail "meeting-close promotes the primary adopted follow-up packet into next_expected_action"
+  fail "meeting-close promotes human-readable adopted follow-up guidance into next_expected_action"
   echo "$decision_record_close"
 fi
 
@@ -726,14 +726,14 @@ run_in_repo bash scripts/harness-signals.sh set-state "$message_signal_id" resol
 run_in_repo bash scripts/harness-signals.sh set-state "$meeting_signal_id" resolved "Decision-record adoption superseded the earlier meeting request." >/dev/null
 
 schedule_after_signal_clear=$(run_in_repo bash scripts/harness-missions.sh schedule)
-assert_json_field "$schedule_after_signal_clear" '"adopted_primary_follow_up_action": "synthesis_must_record_tradeoff"' "scheduler keeps the adopted primary follow-up action visible after earlier signals are cleared"
+assert_json_field "$schedule_after_signal_clear" 'Decision record must capture unresolved tradeoff and follow-up for claim: decision-note-variant' "scheduler keeps human-readable adopted follow-up guidance visible after earlier signals are cleared"
 
 home_after_adoption=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_after_adoption" '"adopted_output_run_count": 1' "home surfaces active runs carrying adopted structured output"
 assert_json_field "$home_after_adoption" '"primary_adopted_output_packet_kind": "decision_record_output"' "home surfaces the primary adopted output packet kind"
 assert_json_field "$home_after_adoption" '"primary_adopted_follow_up_packet": {' "home surfaces the primary adopted follow-up packet"
 assert_json_field "$home_after_adoption" '"execution_kind": "decision_record_follow_up"' "home preserves protocol-aware adopted follow-up execution semantics"
-assert_json_field "$home_after_adoption" '"required_follow_up": "synthesis_must_record_tradeoff"' "home keeps the adopted primary follow-up action visible after earlier signals are cleared"
+assert_json_field "$home_after_adoption" 'Decision record must capture unresolved tradeoff and follow-up for claim: decision-note-variant' "home keeps human-readable adopted follow-up guidance visible after earlier signals are cleared"
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"
