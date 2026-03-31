@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Harness Stable Line
+- **Harness v1.0.0 — First stable line frozen and fully verified**: promoted the adapter line from the prototype series to `1.0.0`, set `release_stage: stable`, and completed the full committed verification matrix (`go test`, adapter validate, issue/core/release/teammate/runtime-dist/runtime-package/bootstrap smoke, and doctor) against the stable package boundary. Remaining deeper scheduler, bundle, and council work is now treated as post-1.0 expansion rather than a blocker for the stable line.
+
 ### Added — Harness Learning Loop
 - **Proposal-first Harness learning loop added**: introduced `docs/harness-learning-loop.md` as the canonical design for turning field signals, real usage cases, and internal harness gaps into reviewed proposals instead of direct runtime churn.
 - **Harness proposal ledger added**: introduced `docs/harness-proposal-ledger.md` as the durable control-plane surface for reviewed `Harness` evolution proposals.

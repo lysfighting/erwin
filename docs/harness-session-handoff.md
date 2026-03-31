@@ -31,7 +31,7 @@ External field intelligence and real usage feedback should enter `Harness` throu
 
 `Harness` is:
 
-- the public prototype/package name
+- the public package name
 - a Codex-native adapter for the Autonomous Development Lifecycle Protocol
 - a leader-led orchestration harness
 
@@ -142,7 +142,7 @@ The main machine-readable package boundary is:
 
 Current important facts:
 
-- `adapter_version`: `0.95.0-prototype`
+- `adapter_version`: `1.0.0`
 - `release_criteria_path`: `docs/harness-release-criteria.md`
 - `public_name`: `Harness`
 - `adapter_id`: `codex-native-harness`
@@ -262,7 +262,7 @@ Important interpretation rule:
 
 Two statements are both true:
 
-1. `Harness` already delivers the first complete prototype line.
+1. `Harness` already delivers the first stable line.
 2. The ultimate control-plane end state is still not fully complete.
 
 These do not conflict.
@@ -344,7 +344,7 @@ A fresh session should avoid these mistakes:
 - do not reframe `Harness` as a `teamwork`/`wing` rename
 - do not flatten `protocol / adapter / profile`
 - do not treat shell wrappers as the real implementation layer
-- do not confuse “first complete prototype line” with “control-plane end state fully solved”
+- do not confuse “first stable line” with “control-plane end state fully solved”
 - do not trust stale chat summaries over committed files
 
 The repository should be treated as the persistent memory substrate.

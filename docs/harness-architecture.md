@@ -44,7 +44,7 @@ The system has three distinct identities that must not be collapsed:
 1. `Protocol`
    `Autonomous Development Lifecycle Protocol`
 
-2. `Adapter / public prototype line`
+2. `Adapter / public package line`
    `Harness`
 
 3. `Machine-readable adapter id`
@@ -1001,7 +1001,7 @@ This is part of the architecture because harness engineering requires the enviro
 
 ## Current Implemented Maturity
 
-`Harness` already delivers the first complete prototype line.
+`Harness` already delivers the first stable line.
 
 That includes:
 
@@ -1021,7 +1021,7 @@ That includes:
 - reusable bootstrap/sync/distribution path
 - smoke-testable package integrity
 
-This is important because the remaining gaps should be understood as expansion above a working prototype line, not evidence that the core architecture is still missing.
+This is important because the remaining gaps should be understood as expansion above a working stable line, not evidence that the core architecture is still missing.
 
 ---
 

@@ -5,6 +5,7 @@ All notable changes to the `harness` skill will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- `Harness` is now treated as the stable `1.0.0` line rather than only a prototype package surface, and the skill README now points at the stable package name plus the full verification matrix including runtime-package smoke.
 - Re-materializing an already-active scheduler `decision_id` now reuses the live meeting instead of spawning duplicate active councils for the same governed decision.
 - Materialized bundle-governor councils now auto-seed the host plus candidate-governor participants, sibling mission refs, and scheduler-derived candidate governor summaries so the council starts from bounded bundle evidence instead of a blank roster.
 - Bundle-scoped `establish_bundle_governor` councils can now auto-generate one structured `governing_mission_id` lock during auto-synthesis, so `drive meeting-close` can adopt bundle authority without requiring a separate manual `meetings lock-decision` in the common path.

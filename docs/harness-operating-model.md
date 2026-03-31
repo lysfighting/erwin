@@ -634,7 +634,7 @@ The following parts of the operating model are already concretely present:
 - governed verdict adoption in some resolved debate lanes
 - runtime-enforced governance gaps that block councils lacking authority hierarchy or rejected-finding reasons
 
-This is enough to call the current system a true prototype line, not just a research stub.
+This is enough to call the current system a real stable first line, not just a research stub.
 
 ---
 

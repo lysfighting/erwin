@@ -10,9 +10,9 @@ protocol:
     - "rc"
 adapter:
   adapter_id: "codex-native-harness"
-  adapter_version: "0.95.0-prototype"
+  adapter_version: "1.0.0"
   public_name: "Harness"
-  release_stage: "prototype"
+  release_stage: "stable"
   positioning_adr: "_project/decisions/0013-harness-prototype-positioning.md"
   runtime: "codex"
   public_contract_path: "docs/harness-public-contract.md"

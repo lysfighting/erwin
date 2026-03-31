@@ -4,7 +4,7 @@
 >
 > Date: 2026-03-31
 >
-> Purpose: define the explicit bar for promoting `Harness` from the current prototype adapter line to `1.0.0`.
+> Purpose: define the explicit bar that promoted `Harness` to `1.0.0` and now anchors the stable line.
 
 ---
 

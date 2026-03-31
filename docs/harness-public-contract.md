@@ -10,9 +10,9 @@
 
 ## Position
 
-This package is the current public contract for the emerging Codex-native orchestration harness.
+This package is the current public contract for the Codex-native orchestration harness stable line.
 
-Its public prototype name is:
+Its public package name is:
 
 - `Harness`
 
@@ -98,7 +98,7 @@ The current machine-readable source of truth is:
 
 - [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
 
-That manifest may evolve, but the public prototype line should continue to present itself as `Harness` unless a later ADR explicitly supersedes that positioning.
+That manifest may evolve, but the stable package line should continue to present itself as `Harness` unless a later ADR explicitly supersedes that positioning.
 
 The manifest is allowed to evolve, but these categories are part of the durable contract:
 
@@ -270,13 +270,13 @@ The explicit release/freeze anchor for the first stable line is:
 
 Compatibility expectations:
 
-- patch/minor prototype evolution may extend the manifest or runtime behavior
+- patch/minor stable-line evolution may extend the manifest or runtime behavior compatibly
 - lifecycle surfaces should remain stable even if implementation details are replaced
 - bootstrap/sync should remain manifest-driven
 - old runtime state may require normalization; maintenance tooling is allowed to upgrade it forward
 
-The package is still in `prototype` maturity.
-That means stronger guarantees are attached to protocol shape and package boundaries than to final naming or frozen file layout.
+The package is now in its first stable-line maturity.
+That means protocol shape, package boundaries, and the committed release criteria are the compatibility anchor for subsequent evolution.
 
 ---
 

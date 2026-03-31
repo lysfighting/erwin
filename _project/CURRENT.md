@@ -6,15 +6,22 @@
 
 ## Project Status
 
-- **Version**: 0.95.0 (in progress)
+- **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness councils now auto-synthesize protocol-aware output packets)
+- **Last Session**: 2026-03-31 (Harness 1.0.0 stable line was frozen and fully verified)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness 1.0.0 stable line was frozen and fully verified
+
+- **Stable line promotion completed**: the adapter line is now `1.0.0`, `release_stage` is now `stable`, and the current package boundary is no longer described as a prototype-only line
+- **Release criteria were satisfied end to end**: the committed `1.0.0` release criteria, package freeze anchors, and full verification matrix were all met in the same round before the version flip
+- **Remaining gaps are now explicitly post-1.0 expansion**: deeper scheduler policy, broader bundle adjudication, richer multi-lane debate automation, and future subagent mapping remain worthwhile, but no longer block the first stable Harness line
+- **Canonical surfaces and skill entrypoint synchronized**: `_project/CURRENT.md`, `CHANGELOG.md`, session log, canonical Harness docs, manifest metadata, and `skills/harness/README.md` now all describe the stable `1.0.0` line consistently
 
 **Session 2026-03-31** — Harness councils now auto-synthesize protocol-aware output packets
 
@@ -304,7 +311,7 @@
 
 ## Active Task / What's In Progress
 
-**The first complete `Harness` prototype line is now delivered: runtime, control plane, public contract, authority model, council model, naming, distribution strategy, and a first real leader-facing scheduler baseline are all formalized. Remaining work is future expansion, not core prototype completion:**
+**The first stable `Harness` line is now delivered: runtime, control plane, public contract, authority model, council model, naming, distribution strategy, release criteria, and a full verified release matrix are all formalized. Remaining work is post-1.0 expansion, not a blocker for the stable line:**
 
 | Phase | Status | Description |
 |-------|--------|-------------|
@@ -314,7 +321,7 @@
 | Phase 4 | ✅ | Validate `home` / `doctor` / `claim` / `drive` / `meetings` / `maintenance` |
 | Phase 5 | ✅ | Package the harness formally as a reusable Codex-native adapter/system |
 | Phase 6 | ✅ | Split reusable adapter/bootstrap flow from repo-local proving ground |
-| Phase 7 | 🔄 | Future expansion beyond the first complete prototype line: broader authority/adaptation layers and optional Codex-native multi-agent integration |
+| Phase 7 | 🔄 | Post-1.0 expansion: broader authority/adaptation layers and optional Codex-native multi-agent integration |
 
 **Learning loop status**
 
@@ -348,8 +355,8 @@
 - [ ] Observe one week of live signal and tune publisher/theme balance
 
 ### Harness
-- [x] Establish a mature Codex-native orchestration prototype line
-- [ ] Continue authority, council, and scheduler depth beyond the first complete prototype line
+- [x] Establish the first stable Codex-native Harness line (`1.0.0`)
+- [ ] Continue authority, council, and scheduler depth beyond the stable line
 - [ ] Decide how future subagent integration maps onto the teammate runtime
 
 ### Repo Slimming
@@ -365,7 +372,7 @@
 
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, and direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, and a formalized runtime distribution strategy; remaining work is expansion beyond the first complete prototype line
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, and direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, a formalized runtime distribution strategy, and committed `1.0.0` release criteria; remaining work is post-1.0 expansion
 
 ## File Locations
 
@@ -376,7 +383,7 @@
 | Radar | `docs/radar/` |
 | Idea garden | `_project/ideas/` |
 | ADRs | `_project/decisions/` |
-| Harness prototype | `harness/`, `scripts/harness_*`, `skills/harness/` |
+| Harness stable line | `harness/`, `scripts/harness_*`, `skills/harness/` |
 | Wing skills | `skills/wing/` |
 | Wing architecture | `_project/ideas/skills/tw2-architecture.md` |
 | Teamwork skills (legacy) | `skills/teamwork/` |

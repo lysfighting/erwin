@@ -6,7 +6,7 @@
 
 ## Position
 
-`Harness` is now a named public prototype line.
+`Harness` is now a named public stable package line.
 That means distribution cannot stay implicit.
 
 The current distribution strategy is:
@@ -82,4 +82,4 @@ This strategy does not yet include:
 - signed binaries
 - cross-runtime installer UX beyond the current Codex/source-bootstrap shape
 
-Those are later productization steps, not prerequisites for the current prototype line.
+Those are later productization steps, not prerequisites for the current stable line.

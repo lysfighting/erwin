@@ -1,6 +1,6 @@
 # Harness Skill
 
-Codex-native leader surface for the repository-local orchestration harness prototype.
+Codex-native leader surface for the repository-local orchestration harness stable line.
 
 ## What it wraps
 
@@ -61,8 +61,8 @@ Use this when the model should act as the harness leader:
 
 ## Status
 
-Prototype, but working.
-Public prototype name: `Harness`.
+Stable first line.
+Public package name: `Harness`.
 
 The current durable package boundary is documented in:
 
@@ -78,6 +78,7 @@ The current durable package boundary is documented in:
 ./scripts/harness-release-smoke-test.sh
 ./scripts/harness-teammate-smoke-test.sh
 ./scripts/harness-runtime-dist-smoke-test.sh
+./scripts/harness-runtime-package-smoke-test.sh
 ./scripts/harness-all-smoke-test.sh
 ```
 
