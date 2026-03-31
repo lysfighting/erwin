@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now escalates stale delegated follow-up monitoring)
+- **Last Session**: 2026-03-31 (Harness now promotes stale delegated follow-up into maintenance)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now promotes stale delegated follow-up into maintenance
+
+- **Stale delegated follow-up is now a real maintenance object**: when a teammate run owning an open adopted follow-up packet goes stale, scheduler now emits `refresh_stale_delegated_follow_up` instead of folding it into generic `refresh_stale_run`
+- **Top-level control-plane guidance now follows that specialized maintenance**: scheduler and `home` now let the stale delegated follow-up maintenance action drive `next_action`, so the leader is told to refresh or close that bounded delegated follow-up before widening execution
+- **Teammate smoke widened again**: teammate smoke now proves stale delegated adopted follow-up becomes the primary maintenance action, that both scheduler and `home` follow it in `next_action`, and that a fresh teammate report clears the stale-monitor path
 
 **Session 2026-03-31** — Harness now escalates stale delegated follow-up monitoring
 

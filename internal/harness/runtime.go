@@ -9497,6 +9497,31 @@ func schedulerRiskRank(value string) int {
 	}
 }
 
+func staleDelegatedFollowUpMaintenanceAction(run map[string]any, missionID string, reportAge *float64) map[string]any {
+	runID := stringValue(run["run_id"])
+	ownerID := firstNonBlank(stringValue(run["owner_id"]), runID)
+	packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"]))
+	reason := "Delegated adopted follow-up owner is missing last_reported_at, so the governing run cannot trust the bounded follow-up lifecycle."
+	if reportAge != nil {
+		reason = fmt.Sprintf("Delegated adopted follow-up owner has not reported for %.2f hours while the governing run remains bounded on that packet.", *reportAge)
+	}
+	return map[string]any{
+		"target_kind":         "run",
+		"target_id":           runID,
+		"mission_id":          missionID,
+		"parent_run_id":       stringValue(run["parent_run_id"]),
+		"owner_id":            ownerID,
+		"follow_up_packet_id": packetID,
+		"action_kind":         "refresh_stale_delegated_follow_up",
+		"reason":              reason,
+		"recommended_action": fmt.Sprintf(
+			"Request a fresh report or close stale delegated adopted follow-up on %s (%s) before widening execution.",
+			runID,
+			ownerID,
+		),
+	}
+}
+
 func schedulerMaintenanceActions(missionRegistry, registry, signalLog map[string]any) ([]any, map[string]int) {
 	actions := []any{}
 	tally := map[string]int{
@@ -9516,8 +9541,16 @@ func schedulerMaintenanceActions(missionRegistry, registry, signalLog map[string
 		runID := stringValue(run["run_id"])
 		missionID := stringValue(run["mission_id"])
 		reportAge := ageHours(stringValue(run["last_reported_at"]))
+		hasDelegatedFollowUp := activeTeammateRun(run) &&
+			strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])) != "" &&
+			firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open") == "open"
 		switch {
 		case reportAge == nil:
+			if hasDelegatedFollowUp {
+				actions = append(actions, staleDelegatedFollowUpMaintenanceAction(run, missionID, reportAge))
+				tally["run"]++
+				continue
+			}
 			actions = append(actions, map[string]any{
 				"target_kind":        "run",
 				"target_id":          runID,
@@ -9528,6 +9561,11 @@ func schedulerMaintenanceActions(missionRegistry, registry, signalLog map[string
 			})
 			tally["run"]++
 		case *reportAge > runStaleAfter:
+			if hasDelegatedFollowUp {
+				actions = append(actions, staleDelegatedFollowUpMaintenanceAction(run, missionID, reportAge))
+				tally["run"]++
+				continue
+			}
 			actions = append(actions, map[string]any{
 				"target_kind":        "run",
 				"target_id":          runID,
@@ -10148,7 +10186,7 @@ func schedulerMaintenancePriority(action map[string]any) int {
 	switch strings.TrimSpace(stringValue(action["action_kind"])) {
 	case "clear_invalid_bundle_governor":
 		return 4
-	case "refresh_stale_meeting":
+	case "refresh_stale_meeting", "refresh_stale_delegated_follow_up":
 		return 3
 	case "resolve_stale_signal":
 		return 2
@@ -10212,7 +10250,7 @@ func sortSchedulerMaintenanceActions(actions []any, previousPrimaryMaintenanceKe
 
 func schedulerMaintenanceIsCritical(action map[string]any) bool {
 	switch strings.TrimSpace(stringValue(action["action_kind"])) {
-	case "clear_invalid_bundle_governor", "refresh_stale_meeting":
+	case "clear_invalid_bundle_governor", "refresh_stale_meeting", "refresh_stale_delegated_follow_up":
 		return true
 	default:
 		return false
