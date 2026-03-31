@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now promotes stale delegated follow-up into maintenance)
+- **Last Session**: 2026-04-01 (Harness now names stale delegated follow-up in doctor)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-01** — Harness now names stale delegated follow-up in doctor
+
+- **Doctor now matches scheduler maintenance semantics**: a stale teammate run that still owns an open adopted follow-up packet now raises `stale-delegated-follow-up` instead of a generic `run-stale` warning
+- **Diagnosis is now aligned across control-plane layers**: scheduler, `home`, and `doctor` now all agree that this is bounded delegated-follow-up drift, not just generic teammate staleness
+- **Teammate smoke widened again**: teammate smoke now proves `doctor` names stale delegated adopted follow-up explicitly in the same staged scenario that drives scheduler/home maintenance escalation
 
 **Session 2026-03-31** — Harness now promotes stale delegated follow-up into maintenance
 

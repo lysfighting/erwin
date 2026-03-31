@@ -8127,7 +8127,19 @@ func doctorReport() map[string]any {
 		if reportAge == nil {
 			issues = append(issues, issueRecord("warning", "run-missing-last-reported-at", runID, "Run is active but missing last_reported_at.", "Have the owner emit a report or repair the run state."))
 		} else if *reportAge > runStaleAfter {
-			issues = append(issues, issueRecord("warning", "run-stale", runID, fmt.Sprintf("Run has not reported for %.2f hours.", *reportAge), "Review whether the run is still active, blocked, or abandoned."))
+			if activeTeammateRun(run) &&
+				strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])) != "" &&
+				firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open") == "open" {
+				issues = append(issues, issueRecord(
+					"warning",
+					"stale-delegated-follow-up",
+					runID,
+					fmt.Sprintf("Delegated adopted follow-up owner has not reported for %.2f hours while the governing run is still bounded on that packet.", *reportAge),
+					"Request a fresh report or close the stale delegated adopted follow-up before widening execution.",
+				))
+			} else {
+				issues = append(issues, issueRecord("warning", "run-stale", runID, fmt.Sprintf("Run has not reported for %.2f hours.", *reportAge), "Review whether the run is still active, blocked, or abandoned."))
+			}
 		}
 		if stringValue(run["state"]) == "blocked" {
 			issues = append(issues, issueRecord("warning", "run-blocked", runID, firstNonBlank(stringValue(run["status_reason"]), "Run is blocked."), "Resolve the blocker or convene a meeting."))

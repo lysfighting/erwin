@@ -781,6 +781,8 @@ assert_json_field "$home_after_stale_follow_up_handoff" '"action_kind": "refresh
 assert_json_field "$home_after_stale_follow_up_handoff" '"primary_adopted_follow_up_delegated_stale": true' "home flags stale delegated adopted follow-up ownership"
 assert_json_field "$home_after_stale_follow_up_handoff" "\"primary_adopted_follow_up_delegated_action\": \"Request a fresh report or close stale delegated adopted follow-up on $follow_up_run_id (worker-follow-up) before widening execution.\"" "home upgrades delegated follow-up monitor guidance when the teammate goes stale"
 assert_json_field "$home_after_stale_follow_up_handoff" "\"next_action\": \"Request a fresh report or close stale delegated adopted follow-up on $follow_up_run_id (worker-follow-up) before widening execution.\"" "home next action follows stale delegated adopted follow-up maintenance"
+doctor_after_stale_follow_up_handoff=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_json_field "$doctor_after_stale_follow_up_handoff" '"kind": "stale-delegated-follow-up"' "doctor names stale delegated adopted follow-up explicitly"
 refreshed_follow_up_run=$(run_in_repo bash scripts/harness-drive.sh report "$follow_up_run_id" "Refresh stale delegated adopted follow-up after stale-monitor coverage.")
 assert_json_field "$refreshed_follow_up_run" '"latest_summary": "Refresh stale delegated adopted follow-up after stale-monitor coverage."' "delegated teammate can refresh stale follow-up state after stale-monitor coverage"
 leader_refresh_follow_up=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
