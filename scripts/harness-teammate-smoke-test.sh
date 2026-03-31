@@ -827,11 +827,22 @@ assert_json_field "$decision_record_resolve" '"next_expected_action": "Report co
 assert_json_field "$decision_record_resolve" '"next_expected_action": "Continue governed execution after the adopted follow-up is complete."' "governing run guidance still advances after delegated follow-up resolution"
 leader_reopen_after_delegated_resolution=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
 assert_json_field "$leader_reopen_after_delegated_resolution" '"follow_up_packet_id": "'"$decision_record_follow_up_packet_id"'"' "governing run can reopen a delegated adopted follow-up after teammate-side resolution"
+assert_json_field "$leader_reopen_after_delegated_resolution" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "governing run restores follow-up guidance when the adopted follow-up reopens"
 follow_up_run_after_leader_reopen=$(run_in_repo bash scripts/harness-teammates.sh get "$follow_up_run_id")
 assert_json_field "$follow_up_run_after_leader_reopen" '"delegated_follow_up_state": "open"' "delegated teammate run reopens when the governing run reopens the adopted follow-up packet"
 assert_json_field "$follow_up_run_after_leader_reopen" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "delegated teammate run restores follow-up guidance when the governing packet reopens"
+decision_record_cancel=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$follow_up_run_id" "$decision_record_follow_up_packet_id" cancelled)
+assert_json_field "$decision_record_cancel" '"delegated_follow_up_state": "cancelled"' "delegated teammate run can cancel the reopened adopted follow-up"
+assert_json_field "$decision_record_cancel" '"next_expected_action": "Report the cancelled delegated follow-up back to the leader and realign the bounded execution plan."' "delegated teammate run advances into cancelled follow-up reporting guidance"
+assert_json_field "$decision_record_cancel" '"next_expected_action": "Realign the cancelled adopted follow-up before widening execution."' "governing run keeps cancelled adopted follow-up on explicit realignment guidance"
+leader_reopen_after_cancelled_follow_up=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
+assert_json_field "$leader_reopen_after_cancelled_follow_up" '"follow_up_packet_id": "'"$decision_record_follow_up_packet_id"'"' "governing run can reopen a cancelled delegated adopted follow-up"
+assert_json_field "$leader_reopen_after_cancelled_follow_up" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "governing run restores follow-up guidance after cancelled realignment"
+follow_up_run_after_cancelled_reopen=$(run_in_repo bash scripts/harness-teammates.sh get "$follow_up_run_id")
+assert_json_field "$follow_up_run_after_cancelled_reopen" '"delegated_follow_up_state": "open"' "delegated teammate run reopens after cancelled follow-up realignment"
+assert_json_field "$follow_up_run_after_cancelled_reopen" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "delegated teammate run restores follow-up guidance after cancelled realignment"
 decision_record_reresolve=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$follow_up_run_id")
-assert_json_field "$decision_record_reresolve" '"delegated_follow_up_state": "done"' "delegated teammate run can resolve the reopened adopted follow-up again"
+assert_json_field "$decision_record_reresolve" '"delegated_follow_up_state": "done"' "delegated teammate run can resolve the reopened adopted follow-up again after cancellation"
 schedule_after_follow_up_resolution=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_after_follow_up_resolution" '"adopted_output_open_follow_up_packet_count": 0' "scheduler clears adopted open follow-up packet counts after action resolution"
 home_after_follow_up_resolution=$(run_in_repo bash scripts/harness-home.sh)

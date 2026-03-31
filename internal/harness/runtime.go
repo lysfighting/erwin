@@ -6260,6 +6260,23 @@ func followUpPacketOpenCount(packets []any) int {
 	return openCount
 }
 
+func followUpPacketListHasState(packets []any, targetState string) bool {
+	targetState = strings.TrimSpace(targetState)
+	if targetState == "" {
+		return false
+	}
+	for _, item := range packets {
+		packet, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		if firstNonBlank(strings.TrimSpace(stringValue(packet["state"])), "open") == targetState {
+			return true
+		}
+	}
+	return false
+}
+
 func meetingCurrentFollowUpPackets(meeting map[string]any) []any {
 	protocol := normalizeDecisionProtocol(stringValue(meeting["decision_protocol"]))
 	if protocol == "" {
@@ -6382,12 +6399,20 @@ func applyAdoptedFollowUpPacketsToRun(run map[string]any, packets []any) map[str
 	}
 	currentNextAction := strings.TrimSpace(stringValue(run["next_expected_action"]))
 	switch {
-	case currentPrimaryAction != "" && currentNextAction == previousPrimaryAction && currentPrimaryAction != previousPrimaryAction:
+	case currentPrimaryAction != "" &&
+		(currentNextAction == previousPrimaryAction ||
+			currentNextAction == "Continue governed execution after the adopted follow-up is complete." ||
+			currentNextAction == "Realign the cancelled adopted follow-up before widening execution.") &&
+		currentPrimaryAction != currentNextAction:
 		run["next_expected_action"] = currentPrimaryAction
 	case currentPrimary == nil &&
 		previousPrimaryAction != "" &&
 		(currentNextAction == previousPrimaryAction || currentNextAction == "Monitor teammate reports, coordination signals, and adopted follow-up resolution."):
-		run["next_expected_action"] = "Continue governed execution after the adopted follow-up is complete."
+		if followUpPacketListHasState(packets, "cancelled") {
+			run["next_expected_action"] = "Realign the cancelled adopted follow-up before widening execution."
+		} else {
+			run["next_expected_action"] = "Continue governed execution after the adopted follow-up is complete."
+		}
 	}
 	run["updated_at"] = nowISO()
 	return run

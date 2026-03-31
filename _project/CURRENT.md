@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-01
-- **Last Session**: 2026-04-01 (Harness now stops closed delegated follow-up from owning home next_action)
+- **Last Session**: 2026-04-01 (Harness now keeps cancelled follow-up on realignment guidance)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-01** — Harness now keeps cancelled adopted follow-up on realignment guidance
+
+- **Cancelled follow-up no longer masquerades as completed**: when the last open adopted follow-up packet closes as `cancelled`, the governing run now moves to explicit realignment guidance instead of falling back to generic “follow-up is complete” wording
+- **Delegated cancel path now composes cleanly with reopen**: a delegated teammate can cancel a reopened adopted follow-up, the governing run will hold realignment guidance, and the leader can still reopen that packet into bounded execution before final resolution
+- **Teammate smoke widened again**: teammate smoke now proves the delegated `cancelled -> reopen -> done` lifecycle and the governing run's cancelled-follow-up realignment guidance
 
 **Session 2026-04-01** — Harness now keeps closed delegated follow-up out of `home.next_action`
 
