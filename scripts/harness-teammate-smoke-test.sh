@@ -778,6 +778,14 @@ else
   echo "$duplicate_follow_up_assignment_output"
 fi
 
+blocked_teammate_completion_output=$(run_in_repo bash scripts/harness-drive.sh complete "$follow_up_run_id" "Should not close teammate run while delegated adopted follow-up is still open." 2>&1 || true)
+if grep -q 'run cannot transition to completed while delegated adopted follow-up remains open' <<<"$blocked_teammate_completion_output"; then
+  pass "drive complete is blocked on the delegated teammate run while its adopted follow-up remains open"
+else
+  fail "drive complete is blocked on the delegated teammate run while its adopted follow-up remains open"
+  echo "$blocked_teammate_completion_output"
+fi
+
 blocked_completion_output=$(run_in_repo bash scripts/harness-drive.sh complete "$leader_run_id" "Should not close while adopted follow-up is still open." 2>&1 || true)
 if grep -q 'run cannot transition to completed while adopted follow-up packets remain open' <<<"$blocked_completion_output"; then
   pass "drive complete is blocked while adopted follow-up packets remain open"
@@ -795,6 +803,8 @@ schedule_after_follow_up_resolution=$(run_in_repo bash scripts/harness-missions.
 assert_json_field "$schedule_after_follow_up_resolution" '"adopted_output_open_follow_up_packet_count": 0' "scheduler clears adopted open follow-up packet counts after action resolution"
 home_after_follow_up_resolution=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_after_follow_up_resolution" '"adopted_output_open_follow_up_packet_count": 0' "home clears adopted open follow-up packet counts after action resolution"
+completed_delegated_follow_up_run=$(run_in_repo bash scripts/harness-drive.sh complete "$follow_up_run_id" "Delegated adopted follow-up completed and reported back.")
+assert_json_field "$completed_delegated_follow_up_run" '"state": "completed"' "drive complete succeeds on the delegated teammate run after its adopted follow-up is resolved"
 completed_after_follow_up=$(run_in_repo bash scripts/harness-drive.sh complete "$leader_run_id" "Decision-record follow-up completed and run can now close.")
 assert_json_field "$completed_after_follow_up" '"state": "completed"' "drive complete succeeds after adopted follow-up is resolved"
 

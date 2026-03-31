@@ -4279,6 +4279,28 @@ func runHasOpenAdoptedFollowUp(run map[string]any) bool {
 	return runOpenAdoptedFollowUpPacketCount(run) > 0
 }
 
+func runHasOpenDelegatedAdoptedFollowUp(run map[string]any) bool {
+	if stringValue(run["owner_type"]) != "teammate" {
+		return false
+	}
+	packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"]))
+	parentRunID := strings.TrimSpace(stringValue(run["parent_run_id"]))
+	if packetID == "" || parentRunID == "" {
+		return false
+	}
+	registry := readRegistry()
+	index := findRunIndex(registry, parentRunID)
+	if index < 0 {
+		return false
+	}
+	parentRun, _ := toMap(toList(registry["runs"])[index])
+	packet := followUpPacketByID(runAdoptedFollowUpPackets(parentRun), packetID)
+	if len(packet) == 0 {
+		return false
+	}
+	return firstNonBlank(strings.TrimSpace(stringValue(packet["state"])), "open") == "open"
+}
+
 func validateRunTransition(run map[string]any, newState string) error {
 	current := stringValue(run["state"])
 	if current == "" {
@@ -4293,6 +4315,9 @@ func validateRunTransition(run map[string]any, newState string) error {
 	}
 	if newState == "completed" && runHasOpenAdoptedFollowUp(run) {
 		return errors.New("run cannot transition to completed while adopted follow-up packets remain open")
+	}
+	if newState == "completed" && runHasOpenDelegatedAdoptedFollowUp(run) {
+		return errors.New("run cannot transition to completed while delegated adopted follow-up remains open")
 	}
 	return nil
 }

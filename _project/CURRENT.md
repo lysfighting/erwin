@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now projects delegated adopted follow-up into leader-facing control plane)
+- **Last Session**: 2026-03-31 (Harness now blocks delegated teammate completion until follow-up closes)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now blocks delegated teammate completion until follow-up closes
+
+- **Delegated follow-up ownership now gates teammate completion too**: a teammate run that was bound through `teammates assign --adopted-follow-up` can no longer transition to `completed` while its delegated adopted follow-up packet is still open on the governing run
+- **Completion semantics are now symmetric across leader and delegated execution**: once the delegated follow-up is resolved, both the teammate run and the governing leader run can complete normally, so bounded execution closure no longer has a loophole on the delegated side
+- **Teammate smoke widened again**: teammate smoke now proves the delegated teammate run is blocked from early completion, then succeeds after `drive resolve-follow-up` closes the governed packet
 
 **Session 2026-03-31** — Harness now projects delegated adopted follow-up into leader-facing control plane
 
