@@ -1549,7 +1549,7 @@ section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_mission_count": 1' "home shows one active mission"
 assert_json_field "$home_output" '"active_run_count": 1' "home shows one active run"
-assert_json_field "$home_output" '"open_meeting_action_count": 1' "home surfaces open meeting action"
+assert_json_field "$home_output" '"open_meeting_action_count": 0' "home no longer treats adopted closed-meeting actions as open meeting backlog"
 assert_json_field "$home_output" '"scheduler_execution_mode": "solo"' "home surfaces the scheduler execution mode"
 assert_json_field "$home_output" '"scheduler_selected_mission_count": 1' "home surfaces the scheduler batch size"
 

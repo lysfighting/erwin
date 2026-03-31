@@ -167,6 +167,7 @@ Current runtime note:
 - once those councils reach synthesis/output, orchestration now also auto-synthesizes protocol-aware output packets with lane-level synthesis plus structured `follow_up_packets`, and `meeting-close` / `adopt-meeting` now write that bounded output back into run state so the leader can carry forward both the provisional output and the primary follow-up packet instead of reconstructing them from raw findings and actions
 - that adopted follow-up state now also projects back into scheduler mission packets and `home`, so once a council is closed the control plane can keep speaking in bounded follow-up packets instead of collapsing the next step back into generic selected-mission wording
 - when a closed council already has an open primary follow-up packet, run state now also promotes that packet's human-readable follow-up summary into `next_expected_action`, so durable execution guidance advances from “close/adopt the council” into the actual post-council task without surfacing an internal follow-up code
+- once that structured output has been adopted, the closed meeting's own open action items stop counting as generic meeting backlog, so `home` and scheduler can let the adopted follow-up lifecycle own the remaining work instead of double-counting it as both council residue and post-council execution
 - deeper protocol-specific automation is still not complete, but protocol choice is now part of real council control flow rather than metadata only
 
 ---

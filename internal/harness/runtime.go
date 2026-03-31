@@ -1141,10 +1141,33 @@ func latestClosedMeetingForRun(runID string) map[string]any {
 	return nil
 }
 
+func meetingActionCountsAsBacklog(meeting, registry map[string]any) bool {
+	if stringValue(meeting["state"]) == "active" {
+		return true
+	}
+	if stringValue(meeting["state"]) != "closed" || !meetingHasOutput(meeting) {
+		return true
+	}
+	runID := strings.TrimSpace(stringValue(meeting["run_id"]))
+	if runID == "" {
+		return true
+	}
+	index := findRunIndex(registry, runID)
+	if index < 0 {
+		return true
+	}
+	run, _ := toMap(toList(registry["runs"])[index])
+	return strings.TrimSpace(stringValue(run["adopted_from_meeting_id"])) != stringValue(meeting["meeting_id"])
+}
+
 func openMeetingActions() []any {
 	actions := []any{}
+	registry := readRegistry()
 	for _, item := range listMeetings(true) {
 		meeting, _ := toMap(item)
+		if !meetingActionCountsAsBacklog(meeting, registry) {
+			continue
+		}
 		for _, actionItem := range toList(meeting["action_items"]) {
 			actionMap, isMap := toMap(actionItem)
 			if isMap && stringValue(actionMap["state"]) != "" && stringValue(actionMap["state"]) != "open" {
@@ -2779,7 +2802,7 @@ func meetingActivityByMission(registry map[string]any) (map[string]int, map[stri
 				continue
 			}
 			summary := textValue(actionItem)
-			if summary == "" || stringValue(meeting["state"]) != "active" {
+			if summary == "" || !meetingActionCountsAsBacklog(meeting, registry) {
 				continue
 			}
 			openMeetingActionCountByMission[missionID]++

@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now promotes human-readable adopted follow-up guidance)
+- **Last Session**: 2026-03-31 (Harness now excludes adopted council actions from meeting backlog)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now excludes adopted council actions from meeting backlog
+
+- **Adopted council actions now leave meeting backlog cleanly**: once a closed council already has structured output and that output has been adopted back into the governing run, the meeting's remaining open action items no longer count as generic open meeting backlog
+- **Leader-facing surfaces now respect the lifecycle handoff**: scheduler mission packets and `home` stop counting those adopted closed-meeting action items inside `open_meeting_action_count`, so the control plane can treat the work as adopted follow-up execution instead of stale meeting residue
+- **Core smoke widened again**: home smoke now proves a closed adopted council clears `open_meeting_action_count` immediately at `meeting-close` rather than waiting for every adopted follow-up task to be completed
 
 **Session 2026-03-31** — Harness now promotes human-readable adopted follow-up guidance
 
