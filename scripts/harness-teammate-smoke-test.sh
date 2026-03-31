@@ -21,6 +21,7 @@ section() { echo ""; echo "=== $1 ==="; }
 
 TEST_REPO="$TMPDIR_ROOT/repo"
 mkdir -p "$TEST_REPO/scripts" "$TEST_REPO/harness/profiles" "$TEST_REPO/harness/templates" "$TEST_REPO/harness/policies"
+registry_path="$TEST_REPO/.harness/runs/registry.yml"
 
 while IFS= read -r rel_path; do
   [[ -n "$rel_path" ]] || continue
@@ -769,6 +770,15 @@ assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_d
 assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_delegated_owner\": \"worker-follow-up\"" "home surfaces the delegated teammate owner for the primary adopted follow-up"
 assert_json_field "$home_after_follow_up_handoff" '"primary_adopted_follow_up_delegated_state": "open"' "home surfaces the delegated adopted follow-up state"
 assert_json_field "$home_after_follow_up_handoff" "\"primary_adopted_follow_up_delegated_action\": \"Monitor delegated adopted follow-up on $follow_up_run_id (worker-follow-up) and keep the governing run bounded until it reports back.\"" "home preserves delegated adopted follow-up monitoring guidance even when higher-priority control-plane work still owns next_action"
+rewrite_json_in_file "$registry_path" 's/"last_reported_at": "[^"]*"/"last_reported_at": "2026-03-01T00:00:00Z"/g'
+schedule_after_stale_follow_up_handoff=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$schedule_after_stale_follow_up_handoff" '"adopted_primary_follow_up_delegated_stale": true' "scheduler flags stale delegated adopted follow-up ownership"
+assert_json_field "$schedule_after_stale_follow_up_handoff" "\"adopted_primary_follow_up_delegated_action\": \"Request a fresh report or close stale delegated adopted follow-up on $follow_up_run_id (worker-follow-up) before widening execution.\"" "scheduler upgrades delegated follow-up monitor guidance when the teammate goes stale"
+home_after_stale_follow_up_handoff=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$home_after_stale_follow_up_handoff" '"primary_adopted_follow_up_delegated_stale": true' "home flags stale delegated adopted follow-up ownership"
+assert_json_field "$home_after_stale_follow_up_handoff" "\"primary_adopted_follow_up_delegated_action\": \"Request a fresh report or close stale delegated adopted follow-up on $follow_up_run_id (worker-follow-up) before widening execution.\"" "home upgrades delegated follow-up monitor guidance when the teammate goes stale"
+refreshed_follow_up_run=$(run_in_repo bash scripts/harness-drive.sh report "$follow_up_run_id" "Refresh stale delegated adopted follow-up after stale-monitor coverage.")
+assert_json_field "$refreshed_follow_up_run" '"latest_summary": "Refresh stale delegated adopted follow-up after stale-monitor coverage."' "delegated teammate can refresh stale follow-up state after stale-monitor coverage"
 leader_refresh_follow_up=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
 assert_json_field "$leader_refresh_follow_up" '"follow_up_packet_id": "'"$decision_record_follow_up_packet_id"'"' "governing run can still address the delegated adopted follow-up packet directly"
 follow_up_run_after_leader_refresh=$(run_in_repo bash scripts/harness-teammates.sh get "$follow_up_run_id")

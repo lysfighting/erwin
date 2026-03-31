@@ -2576,6 +2576,58 @@ func activeDelegatedFollowUpRunForParent(registry map[string]any, parentRunID st
 	return nil
 }
 
+func delegatedFollowUpMonitorPacket(run map[string]any) map[string]any {
+	if len(run) == 0 {
+		return nil
+	}
+	runID := strings.TrimSpace(stringValue(run["run_id"]))
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open")
+	lastReportedAt := strings.TrimSpace(stringValue(run["last_reported_at"]))
+	packet := map[string]any{
+		"run_id":  runID,
+		"owner_id": ownerID,
+		"state":   state,
+	}
+	if lastReportedAt != "" {
+		packet["last_reported_at"] = lastReportedAt
+	}
+	reportAge := ageHours(lastReportedAt)
+	if reportAge != nil {
+		packet["age_hours"] = *reportAge
+	}
+	staleAfter := floatValue(policyValue("cleanup.stale_run_after_hours", 24))
+	stale := reportAge == nil || *reportAge > staleAfter
+	packet["stale"] = stale
+	switch {
+	case stale:
+		packet["action"] = fmt.Sprintf(
+			"Request a fresh report or close stale delegated adopted follow-up on %s (%s) before widening execution.",
+			runID,
+			ownerID,
+		)
+	case state == "done":
+		packet["action"] = fmt.Sprintf(
+			"Collect completion report from delegated adopted follow-up on %s (%s) before closing the governing run.",
+			runID,
+			ownerID,
+		)
+	case state == "cancelled":
+		packet["action"] = fmt.Sprintf(
+			"Realign the cancelled delegated adopted follow-up on %s (%s) before widening execution.",
+			runID,
+			ownerID,
+		)
+	default:
+		packet["action"] = fmt.Sprintf(
+			"Monitor delegated adopted follow-up on %s (%s) and keep the governing run bounded until it reports back.",
+			runID,
+			ownerID,
+		)
+	}
+	return packet
+}
+
 func defaultDesiredStateForMission() map[string]any {
 	return map[string]any{
 		"goal_state":          "done",
@@ -10566,6 +10618,9 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		adoptedPrimaryFollowUpDelegatedRunID := ""
 		adoptedPrimaryFollowUpDelegatedOwnerID := ""
 		adoptedPrimaryFollowUpDelegatedState := ""
+		adoptedPrimaryFollowUpDelegatedLastReportedAt := ""
+		var adoptedPrimaryFollowUpDelegatedAgeHours any
+		adoptedPrimaryFollowUpDelegatedStale := false
 		adoptedPrimaryFollowUpDelegatedAction := ""
 		updatedAt := firstNonBlank(stringValue(mission["updated_at"]), stringValue(mission["created_at"]))
 		bundleInfo, _ := toMap(bundleInfoByMission[missionID])
@@ -10591,14 +10646,15 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				adoptedPrimaryFollowUpPacket, _ = toMap(cloneValue(packet))
 				adoptedPrimaryFollowUpAction = adoptedFollowUpActionText(packet)
 				if delegatedRun := activeDelegatedFollowUpRunForParent(registry, authoritativeRunID, stringValue(packet["follow_up_packet_id"])); delegatedRun != nil {
-					adoptedPrimaryFollowUpDelegatedRunID = stringValue(delegatedRun["run_id"])
-					adoptedPrimaryFollowUpDelegatedOwnerID = firstNonBlank(stringValue(delegatedRun["owner_id"]), adoptedPrimaryFollowUpDelegatedRunID)
-					adoptedPrimaryFollowUpDelegatedState = firstNonBlank(strings.TrimSpace(stringValue(delegatedRun["delegated_follow_up_state"])), "open")
-					adoptedPrimaryFollowUpDelegatedAction = fmt.Sprintf(
-						"Monitor delegated adopted follow-up on %s (%s) and keep the governing run bounded until it reports back.",
-						adoptedPrimaryFollowUpDelegatedRunID,
-						adoptedPrimaryFollowUpDelegatedOwnerID,
-					)
+					if monitor := delegatedFollowUpMonitorPacket(delegatedRun); len(monitor) > 0 {
+						adoptedPrimaryFollowUpDelegatedRunID = stringValue(monitor["run_id"])
+						adoptedPrimaryFollowUpDelegatedOwnerID = stringValue(monitor["owner_id"])
+						adoptedPrimaryFollowUpDelegatedState = stringValue(monitor["state"])
+						adoptedPrimaryFollowUpDelegatedLastReportedAt = stringValue(monitor["last_reported_at"])
+						adoptedPrimaryFollowUpDelegatedAgeHours = monitor["age_hours"]
+						adoptedPrimaryFollowUpDelegatedStale = boolValue(monitor["stale"])
+						adoptedPrimaryFollowUpDelegatedAction = stringValue(monitor["action"])
+					}
 				}
 			}
 			updatedAt = firstNonBlank(runSortTimestamp(authoritativeRun), updatedAt)
@@ -10881,6 +10937,9 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 			"adopted_primary_follow_up_delegated_run_id": adoptedPrimaryFollowUpDelegatedRunID,
 			"adopted_primary_follow_up_delegated_owner":  adoptedPrimaryFollowUpDelegatedOwnerID,
 			"adopted_primary_follow_up_delegated_state":  adoptedPrimaryFollowUpDelegatedState,
+			"adopted_primary_follow_up_delegated_last_reported_at": adoptedPrimaryFollowUpDelegatedLastReportedAt,
+			"adopted_primary_follow_up_delegated_age_hours":        adoptedPrimaryFollowUpDelegatedAgeHours,
+			"adopted_primary_follow_up_delegated_stale":            adoptedPrimaryFollowUpDelegatedStale,
 			"adopted_primary_follow_up_delegated_action": adoptedPrimaryFollowUpDelegatedAction,
 			"active_run_ids":                             stringListToAny(dedupeStrings(activeRunIDs)),
 			"active_run_count":                           len(dedupeStrings(activeRunIDs)),
@@ -11850,6 +11909,9 @@ func cmdHome(args []string) error {
 	primaryAdoptedFollowUpDelegatedRunID := ""
 	primaryAdoptedFollowUpDelegatedOwnerID := ""
 	primaryAdoptedFollowUpDelegatedState := ""
+	primaryAdoptedFollowUpDelegatedLastReportedAt := ""
+	var primaryAdoptedFollowUpDelegatedAgeHours any
+	primaryAdoptedFollowUpDelegatedStale := false
 	primaryAdoptedFollowUpDelegatedAction := ""
 	primaryAdoptedRunSelected := false
 	primaryAdoptedUpdatedAt := ""
@@ -11880,18 +11942,22 @@ func cmdHome(args []string) error {
 			if packet := runPrimaryAdoptedFollowUpPacket(run); packet != nil {
 				primaryAdoptedFollowUpPacket, _ = toMap(cloneValue(packet))
 				if delegatedRun := activeDelegatedFollowUpRunForParent(registry, runID, stringValue(packet["follow_up_packet_id"])); delegatedRun != nil {
-					primaryAdoptedFollowUpDelegatedRunID = stringValue(delegatedRun["run_id"])
-					primaryAdoptedFollowUpDelegatedOwnerID = firstNonBlank(stringValue(delegatedRun["owner_id"]), primaryAdoptedFollowUpDelegatedRunID)
-					primaryAdoptedFollowUpDelegatedState = firstNonBlank(strings.TrimSpace(stringValue(delegatedRun["delegated_follow_up_state"])), "open")
-					primaryAdoptedFollowUpDelegatedAction = fmt.Sprintf(
-						"Monitor delegated adopted follow-up on %s (%s) and keep the governing run bounded until it reports back.",
-						primaryAdoptedFollowUpDelegatedRunID,
-						primaryAdoptedFollowUpDelegatedOwnerID,
-					)
+					if monitor := delegatedFollowUpMonitorPacket(delegatedRun); len(monitor) > 0 {
+						primaryAdoptedFollowUpDelegatedRunID = stringValue(monitor["run_id"])
+						primaryAdoptedFollowUpDelegatedOwnerID = stringValue(monitor["owner_id"])
+						primaryAdoptedFollowUpDelegatedState = stringValue(monitor["state"])
+						primaryAdoptedFollowUpDelegatedLastReportedAt = stringValue(monitor["last_reported_at"])
+						primaryAdoptedFollowUpDelegatedAgeHours = monitor["age_hours"]
+						primaryAdoptedFollowUpDelegatedStale = boolValue(monitor["stale"])
+						primaryAdoptedFollowUpDelegatedAction = stringValue(monitor["action"])
+					}
 				} else {
 					primaryAdoptedFollowUpDelegatedRunID = ""
 					primaryAdoptedFollowUpDelegatedOwnerID = ""
 					primaryAdoptedFollowUpDelegatedState = ""
+					primaryAdoptedFollowUpDelegatedLastReportedAt = ""
+					primaryAdoptedFollowUpDelegatedAgeHours = nil
+					primaryAdoptedFollowUpDelegatedStale = false
 					primaryAdoptedFollowUpDelegatedAction = ""
 				}
 			} else {
@@ -11899,6 +11965,9 @@ func cmdHome(args []string) error {
 				primaryAdoptedFollowUpDelegatedRunID = ""
 				primaryAdoptedFollowUpDelegatedOwnerID = ""
 				primaryAdoptedFollowUpDelegatedState = ""
+				primaryAdoptedFollowUpDelegatedLastReportedAt = ""
+				primaryAdoptedFollowUpDelegatedAgeHours = nil
+				primaryAdoptedFollowUpDelegatedStale = false
 				primaryAdoptedFollowUpDelegatedAction = ""
 			}
 			primaryAdoptedRunSelected = runSelected
@@ -12026,6 +12095,9 @@ func cmdHome(args []string) error {
 		"primary_adopted_follow_up_delegated_run_id":       primaryAdoptedFollowUpDelegatedRunID,
 		"primary_adopted_follow_up_delegated_owner":        primaryAdoptedFollowUpDelegatedOwnerID,
 		"primary_adopted_follow_up_delegated_state":        primaryAdoptedFollowUpDelegatedState,
+		"primary_adopted_follow_up_delegated_last_reported_at": primaryAdoptedFollowUpDelegatedLastReportedAt,
+		"primary_adopted_follow_up_delegated_age_hours":        primaryAdoptedFollowUpDelegatedAgeHours,
+		"primary_adopted_follow_up_delegated_stale":            primaryAdoptedFollowUpDelegatedStale,
 		"primary_adopted_follow_up_delegated_action":       primaryAdoptedFollowUpDelegatedAction,
 		"next_action":                                      nextAction,
 	})

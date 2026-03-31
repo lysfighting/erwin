@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now projects delegated follow-up state to leader surfaces)
+- **Last Session**: 2026-03-31 (Harness now escalates stale delegated follow-up monitoring)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now escalates stale delegated follow-up monitoring
+
+- **Delegated follow-up monitoring now carries freshness too**: scheduler mission packets and `home` now project delegated follow-up freshness fields such as delegated `last_reported_at`, age, and stale status instead of only owner/state
+- **Leader guidance now hardens when a delegated follow-up goes stale**: once the delegated teammate stops reporting past the stale-run threshold, scheduler and `home` stop saying to merely monitor it and instead emit explicit stale follow-up recovery guidance
+- **Teammate smoke widened again**: teammate smoke now proves a delegated adopted follow-up can be made stale in runtime state, that scheduler and `home` both escalate the monitor guidance, and that a teammate `drive report` refresh returns the lifecycle to normal
 
 **Session 2026-03-31** — Harness now projects delegated follow-up state to leader surfaces
 
