@@ -2260,6 +2260,11 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 						"note":            "Closed meeting primary follow-up packet has not been adopted into the run state.",
 					})
 				}
+				if delegatedRun := activeDelegatedFollowUpRunForParent(registry, runID, stringValue(expectedPrimaryFollowUp["follow_up_packet_id"])); delegatedRun != nil {
+					if delegatedGap := staleDelegatedFollowUpAdoptionGap(delegatedRun, expectedPrimaryFollowUp); delegatedGap != nil {
+						adoptionGaps = append(adoptionGaps, delegatedGap)
+					}
+				}
 			}
 		}
 	}
@@ -2626,6 +2631,49 @@ func delegatedFollowUpMonitorPacket(run map[string]any) map[string]any {
 		)
 	}
 	return packet
+}
+
+func staleDelegatedFollowUpAdoptionGap(delegatedRun, packet map[string]any) map[string]any {
+	if len(delegatedRun) == 0 || len(packet) == 0 {
+		return nil
+	}
+	if firstNonBlank(strings.TrimSpace(stringValue(delegatedRun["delegated_follow_up_state"])), "open") != "open" {
+		return nil
+	}
+	monitor := delegatedFollowUpMonitorPacket(delegatedRun)
+	if len(monitor) == 0 || !boolValue(monitor["stale"]) {
+		return nil
+	}
+	delegatedRunID := strings.TrimSpace(stringValue(monitor["run_id"]))
+	packetID := strings.TrimSpace(stringValue(packet["follow_up_packet_id"]))
+	currentValue := firstNonBlank(strings.TrimSpace(stringValue(monitor["last_reported_at"])), "missing_last_reported_at")
+	note := fmt.Sprintf(
+		"Delegated adopted follow-up %s remains open on %s, but the delegated owner has gone stale and the governing run is still bounded on that packet.",
+		packetID,
+		delegatedRunID,
+	)
+	if ageHoursValue, ok := monitor["age_hours"].(float64); ok {
+		note = fmt.Sprintf(
+			"Delegated adopted follow-up %s remains open on %s, but the delegated owner has not reported for %.2f hours while the governing run is still bounded on that packet.",
+			packetID,
+			delegatedRunID,
+			ageHoursValue,
+		)
+	}
+	return map[string]any{
+		"claim_ref":           "adopted_primary_follow_up_delegated_last_reported_at",
+		"resolution_kind":     "delegated_follow_up_stale",
+		"authority_level":     "L3",
+		"source_ref":          "run:" + delegatedRunID,
+		"winning_source":      "run:" + delegatedRunID,
+		"current_value":       currentValue,
+		"expected_value":      "fresh_report_or_packet_closure",
+		"follow_up_packet_id": packetID,
+		"delegated_run_id":    delegatedRunID,
+		"delegated_owner_id":  strings.TrimSpace(stringValue(monitor["owner_id"])),
+		"note":                note,
+		"recommended_action":  strings.TrimSpace(stringValue(monitor["action"])),
+	}
 }
 
 func defaultDesiredStateForMission() map[string]any {

@@ -783,6 +783,10 @@ assert_json_field "$home_after_stale_follow_up_handoff" "\"primary_adopted_follo
 assert_json_field "$home_after_stale_follow_up_handoff" "\"next_action\": \"Request a fresh report or close stale delegated adopted follow-up on $follow_up_run_id (worker-follow-up) before widening execution.\"" "home next action follows stale delegated adopted follow-up maintenance"
 doctor_after_stale_follow_up_handoff=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_after_stale_follow_up_handoff" '"kind": "stale-delegated-follow-up"' "doctor names stale delegated adopted follow-up explicitly"
+authority_audit_after_stale_follow_up_handoff=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$leader_run_id")
+assert_json_field "$authority_audit_after_stale_follow_up_handoff" '"resolution_kind": "delegated_follow_up_stale"' "authority-audit names stale delegated adopted follow-up explicitly"
+assert_json_field "$authority_audit_after_stale_follow_up_handoff" "\"delegated_run_id\": \"$follow_up_run_id\"" "authority-audit keeps the delegated run id on stale adopted follow-up drift"
+assert_json_field "$authority_audit_after_stale_follow_up_handoff" "\"follow_up_packet_id\": \"$decision_record_follow_up_packet_id\"" "authority-audit keeps the governing follow-up packet id on stale delegated adopted follow-up drift"
 refreshed_follow_up_run=$(run_in_repo bash scripts/harness-drive.sh report "$follow_up_run_id" "Refresh stale delegated adopted follow-up after stale-monitor coverage.")
 assert_json_field "$refreshed_follow_up_run" '"latest_summary": "Refresh stale delegated adopted follow-up after stale-monitor coverage."' "delegated teammate can refresh stale follow-up state after stale-monitor coverage"
 leader_refresh_follow_up=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)

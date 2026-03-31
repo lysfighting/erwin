@@ -7,14 +7,20 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-03-31
-- **Last Session**: 2026-04-01 (Harness now names stale delegated follow-up in doctor)
+- **Last Updated**: 2026-04-01
+- **Last Session**: 2026-04-01 (Harness now names stale delegated follow-up in authority-audit too)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-01** — Harness now names stale delegated follow-up in authority-audit too
+
+- **Authority-audit now matches scheduler, home, and doctor**: when a teammate run still owns an open adopted follow-up packet but has gone stale, `runs authority-audit` now emits an explicit `delegated_follow_up_stale` adoption gap instead of staying silent about that bounded drift
+- **Governing audit now keeps the delegated packet context attached**: the new adoption gap carries the delegated run id, owner, and governing follow-up packet id so the leader can see exactly which bounded adopted follow-up is blocking trustworthy execution
+- **Teammate smoke widened again**: teammate smoke now proves run-level authority audit names the stale delegated adopted follow-up gap in the same staged scenario that already drives scheduler/home maintenance escalation and `doctor`
 
 **Session 2026-04-01** — Harness now names stale delegated follow-up in doctor
 
