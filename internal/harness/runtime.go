@@ -8752,6 +8752,79 @@ func meetingCurrentWaveBatch(wavePlan, debatePlan map[string]any) map[string]any
 	}
 }
 
+func meetingCurrentWaveActions(wavePlan, debatePlan map[string]any) []any {
+	currentBatch := meetingCurrentWaveBatch(wavePlan, debatePlan)
+	if currentBatch == nil {
+		return []any{}
+	}
+	currentBatchID := strings.TrimSpace(stringValue(currentBatch["batch_id"]))
+	if currentBatchID == "wave-batch-independent-review" {
+		actions := []any{}
+		for _, item := range toList(wavePlan["wave_actions"]) {
+			action, ok := toMap(item)
+			if !ok {
+				continue
+			}
+			state := strings.TrimSpace(stringValue(action["state"]))
+			if state != "" && state != "open" {
+				continue
+			}
+			actions = append(actions, cloneValue(action))
+		}
+		return actions
+	}
+	actionByID := map[string]map[string]any{}
+	for _, bucket := range [][]any{toList(debatePlan["route_actions"]), toList(debatePlan["round_actions"])} {
+		for _, item := range bucket {
+			action, ok := toMap(item)
+			if !ok {
+				continue
+			}
+			actionID := firstNonBlank(strings.TrimSpace(stringValue(action["round_id"])), strings.TrimSpace(stringValue(action["route_id"])))
+			if actionID == "" {
+				continue
+			}
+			actionByID[actionID] = action
+		}
+	}
+	actions := []any{}
+	for _, item := range toList(currentBatch["action_ids"]) {
+		actionID := strings.TrimSpace(stringValue(item))
+		if actionID == "" {
+			continue
+		}
+		if action, ok := actionByID[actionID]; ok {
+			actions = append(actions, cloneValue(action))
+		}
+	}
+	return actions
+}
+
+func meetingBlockedWaveBatchSummaries(debatePlan map[string]any) []any {
+	if debatePlan == nil {
+		return []any{}
+	}
+	blocked := []any{}
+	for _, item := range toList(debatePlan["wave_batches"]) {
+		batch, ok := toMap(item)
+		if !ok || strings.TrimSpace(stringValue(batch["state"])) != "blocked" {
+			continue
+		}
+		blocked = append(blocked, map[string]any{
+			"batch_id":        stringValue(batch["batch_id"]),
+			"expected_phase":  stringValue(batch["expected_phase"]),
+			"round_number":    intValue(batch["round_number"]),
+			"assigned_role":   stringValue(batch["assigned_role"]),
+			"assigned_run_id": stringValue(batch["assigned_run_id"]),
+			"action_count":    intValue(batch["action_count"]),
+			"lane_count":      intValue(batch["lane_count"]),
+			"claim_refs":      cloneValue(getKey(batch, "claim_refs", []any{})),
+			"summary":         stringValue(batch["summary"]),
+		})
+	}
+	return blocked
+}
+
 func projectActiveMeetingProgressIntoDecision(decision, meeting map[string]any) map[string]any {
 	if decision == nil || meeting == nil {
 		return decision
@@ -8792,6 +8865,8 @@ func projectActiveMeetingProgressIntoDecision(decision, meeting map[string]any) 
 					decision["active_decision_current_wave_batch_summary"] = summary
 				}
 			}
+			decision["active_decision_current_wave_actions"] = meetingCurrentWaveActions(wavePlan, debatePlan)
+			decision["active_decision_blocked_wave_batches"] = meetingBlockedWaveBatchSummaries(debatePlan)
 			if summary := strings.TrimSpace(stringValue(debatePlan["current_wave_batch_summary"])); summary != "" {
 				decision["active_decision_current_wave_batch_summary"] = summary
 			}
@@ -12644,6 +12719,8 @@ func cmdMeetings(args []string) error {
 		debatePlan, _ := toMap(orchestration["debate_plan"])
 		wavePlan, _ := toMap(orchestration["wave_plan"])
 		currentWaveBatch := meetingCurrentWaveBatch(wavePlan, debatePlan)
+		currentWaveActions := meetingCurrentWaveActions(wavePlan, debatePlan)
+		blockedWaveBatches := meetingBlockedWaveBatchSummaries(debatePlan)
 		authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
 		governanceGaps := meetingGovernancePolicyGaps(meeting)
 		return printJSON(map[string]any{
@@ -12699,6 +12776,8 @@ func cmdMeetings(args []string) error {
 			"current_wave_batch_round_number":          intValue(getKey(currentWaveBatch, "round_number", 0)),
 			"current_wave_batch_action_count":          intValue(getKey(currentWaveBatch, "action_count", 0)),
 			"current_wave_batch_claim_refs":            cloneValue(getKey(currentWaveBatch, "claim_refs", []any{})),
+			"current_wave_actions":                     currentWaveActions,
+			"blocked_wave_batches":                     blockedWaveBatches,
 			"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),
 			"max_wave_lane_count":                      intValue(debatePlan["max_wave_lane_count"]),
 			"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),

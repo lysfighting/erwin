@@ -575,6 +575,8 @@ assert_json_field "$batch_summary" '"current_wave_batch_summary":' "multi-lane b
 assert_json_field "$batch_summary" '"current_wave_batch_assigned_role": "ops-simulator"' "multi-lane batching summary surfaces the current batch assignee"
 assert_json_field "$batch_summary" '"current_wave_batch_action_count": 2' "multi-lane batching summary surfaces the current batch action count"
 assert_json_field "$batch_summary" '"current_wave_batch_lane_count": 2' "multi-lane batching summary surfaces the current batch lane count"
+assert_json_field "$batch_summary" '"current_wave_actions":' "multi-lane batching summary surfaces the current batch action packets"
+assert_json_field "$batch_summary" '"assigned_role": "ops-simulator"' "multi-lane batching summary keeps the current batch action assignee visible"
 assert_json_field "$batch_summary" '"multi_lane_batch_count": 1' "multi-lane batching summary reports a multi-lane batch"
 assert_json_field "$batch_summary" '"max_wave_lane_count": 2' "multi-lane batching summary reports the lane count of the largest batch"
 
@@ -619,6 +621,10 @@ assert_json_field "$sequenced_orchestrate_b" '"new_phase": "synthesis"' "statefu
 assert_json_field "$sequenced_orchestrate_b" '"ready_wave_batch_count": 1' "stateful-batch council keeps one ready batch after the blocked synthesis attempt"
 assert_json_field "$sequenced_orchestrate_b" '"blocked_wave_batch_count": 2' "stateful-batch council keeps the remaining batches blocked after the blocked synthesis attempt"
 assert_json_field "$sequenced_orchestrate_b" 'Complete current debate batch before output.' "stateful-batch council tells the leader to finish the current batch before output"
+sequenced_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$sequenced_meeting_id")
+assert_json_field "$sequenced_summary" '"current_wave_actions":' "stateful-batch summary surfaces the current batch action packets"
+assert_json_field "$sequenced_summary" '"blocked_wave_batches":' "stateful-batch summary surfaces blocked batch summaries"
+assert_json_field "$sequenced_summary" '"assigned_role": "alpha-reviewer"' "stateful-batch summary keeps blocked batch ownership visible"
 run_in_repo bash scripts/harness-drive.sh meeting-close "$leader_run_id" "$sequenced_meeting_id" "Stateful batch execution smoke complete." >/dev/null
 
 section "Council governance gates"

@@ -6,15 +6,22 @@
 
 ## Project Status
 
-- **Version**: 0.92.0 (in progress)
+- **Version**: 0.93.0 (in progress)
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness active councils now project their current live work packet into leader-facing surfaces)
+- **Last Session**: 2026-03-31 (Harness active councils now project live action packets and blocked batches into leader-facing surfaces)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness active councils now project live action packets and blocked batches into leader-facing surfaces
+
+- **Live council packets are now directly actionable**: scheduler active-council packets and `meetings summary` now project the concrete current-wave action packets, so leader-facing surfaces can see not just the current batch id/phase/count but also the exact open work items inside the live council packet
+- **Blocked batch context is now leader-visible**: debate-phase summaries now also project blocked batch summaries alongside the current live packet, making it explicit which bounded participant batches are queued behind the current one instead of leaving that sequencing hidden in raw meeting state
+- **Council execution smoke widened again**: core smoke now proves scheduler projects active-council action packets and blocked-batch summaries, while teammate smoke now proves `meetings summary` surfaces current batch action packets plus blocked batch ownership in stateful batch execution
+- **Adapter line advanced again**: `harness/adapter-manifest.yml`, `_project/CURRENT.md`, `CHANGELOG.md`, session log, and canonical runtime docs now reflect `0.93.0-prototype`
 
 **Session 2026-03-31** — Harness active councils now project their current live work packet into leader-facing surfaces
 
