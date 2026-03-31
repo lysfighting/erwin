@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness now hands adopted follow-up directly to teammate runtime)
+- **Last Session**: 2026-03-31 (Harness now lets delegated teammates resolve adopted follow-up directly)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now lets delegated teammates resolve adopted follow-up directly
+
+- **Delegated teammate runs can now close the follow-up they own**: `drive resolve-follow-up` now works on a teammate run that was bound through `teammates assign --adopted-follow-up`, routing the resolution back into the governing run while preserving the teammate's bounded ownership
+- **Parent and delegated guidance now both advance cleanly**: when that delegated resolution lands, the teammate run moves into post-follow-up reporting guidance while the governing leader run simultaneously advances out of adopted-follow-up handling into generic post-follow-up execution guidance
+- **Teammate smoke widened again**: teammate smoke now proves the delegated teammate path can resolve the adopted follow-up directly, clear scheduler/home open-follow-up counts, and still leave the parent run eligible for normal completion
 
 **Session 2026-03-31** — Harness now hands adopted follow-up directly to teammate runtime
 

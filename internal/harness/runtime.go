@@ -6205,6 +6205,38 @@ func applyAdoptedFollowUpPacketsToRun(run map[string]any, packets []any) map[str
 	return run
 }
 
+func applyDelegatedFollowUpResolutionToRun(run map[string]any, packet map[string]any, targetState string) map[string]any {
+	packetID := strings.TrimSpace(stringValue(packet["follow_up_packet_id"]))
+	run["delegated_follow_up_state"] = targetState
+	switch targetState {
+	case "done":
+		run["latest_summary"] = firstNonBlank(
+			fmt.Sprintf("Delegated adopted follow-up %s completed.", packetID),
+			"Delegated adopted follow-up completed.",
+		)
+		run["next_expected_action"] = "Report completion back to the leader or continue any remaining bounded execution."
+	case "cancelled":
+		run["latest_summary"] = firstNonBlank(
+			fmt.Sprintf("Delegated adopted follow-up %s cancelled.", packetID),
+			"Delegated adopted follow-up cancelled.",
+		)
+		run["next_expected_action"] = "Report the cancelled delegated follow-up back to the leader and realign the bounded execution plan."
+	default:
+		run["latest_summary"] = firstNonBlank(
+			fmt.Sprintf("Delegated adopted follow-up %s reopened.", packetID),
+			"Delegated adopted follow-up reopened.",
+		)
+		run["next_expected_action"] = firstNonBlank(
+			adoptedFollowUpActionText(packet),
+			strings.TrimSpace(stringValue(run["objective"])),
+			"Continue the delegated adopted follow-up and report back.",
+		)
+	}
+	run["last_reported_at"] = nowISO()
+	run["updated_at"] = nowISO()
+	return run
+}
+
 func resolveFollowUpPacketState(packets []any, requestedPacketID string, targetState string) ([]any, map[string]any, bool) {
 	packetID := strings.TrimSpace(requestedPacketID)
 	if packetID == "" {
@@ -12423,9 +12455,32 @@ func cmdDrive(args []string) error {
 			}
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
-			packets := runAdoptedFollowUpPackets(run)
+			invokingRun := run
+			governingRun := run
+			governingRunIndex := index
+			packets := runAdoptedFollowUpPackets(governingRun)
+			delegatedFollowUpPacketID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"]))
+			delegatedResolve := false
 			if len(packets) == 0 {
-				return errors.New("drive resolve-follow-up requires adopted follow-up packets on the run")
+				if stringValue(run["owner_type"]) == "teammate" && delegatedFollowUpPacketID != "" && strings.TrimSpace(stringValue(run["parent_run_id"])) != "" {
+					if strings.TrimSpace(followUpPacketID) != "" && strings.TrimSpace(followUpPacketID) != delegatedFollowUpPacketID {
+						return fmt.Errorf("teammate run is bound to adopted follow-up packet %s, not %s", delegatedFollowUpPacketID, followUpPacketID)
+					}
+					parentIndex := findRunIndex(registry, stringValue(run["parent_run_id"]))
+					if parentIndex < 0 {
+						return fmt.Errorf("governing run not found for delegated follow-up: %s", stringValue(run["parent_run_id"]))
+					}
+					governingRunIndex = parentIndex
+					governingRun, _ = toMap(runs[parentIndex])
+					packets = runAdoptedFollowUpPackets(governingRun)
+					if len(packets) == 0 {
+						return errors.New("governing run no longer has adopted follow-up packets to resolve")
+					}
+					followUpPacketID = delegatedFollowUpPacketID
+					delegatedResolve = true
+				} else {
+					return errors.New("drive resolve-follow-up requires adopted follow-up packets on the run")
+				}
 			}
 			updatedPackets, updatedPacket, found := resolveFollowUpPacketState(packets, followUpPacketID, targetState)
 			if !found {
@@ -12434,7 +12489,7 @@ func cmdDrive(args []string) error {
 				}
 				return fmt.Errorf("follow-up packet not found: %s", followUpPacketID)
 			}
-			if adoptedMeetingID := strings.TrimSpace(stringValue(run["adopted_from_meeting_id"])); adoptedMeetingID != "" && strings.TrimSpace(stringValue(updatedPacket["action_id"])) != "" {
+			if adoptedMeetingID := strings.TrimSpace(stringValue(governingRun["adopted_from_meeting_id"])); adoptedMeetingID != "" && strings.TrimSpace(stringValue(updatedPacket["action_id"])) != "" {
 				data := readMeeting(adoptedMeetingID)
 				if data != nil {
 					meeting, _ := toMap(data["meeting"])
@@ -12468,12 +12523,36 @@ func cmdDrive(args []string) error {
 					registry = syncAdoptedFollowUpLifecycleForMeeting(registry, meeting)
 				}
 			} else {
-				run = applyAdoptedFollowUpPacketsToRun(run, updatedPackets)
-				runs[index] = run
+				governingRun = applyAdoptedFollowUpPacketsToRun(governingRun, updatedPackets)
+				runs[governingRunIndex] = governingRun
+				registry["runs"] = runs
+			}
+			if delegatedResolve {
+				runs = toList(registry["runs"])
+				index = findRunIndex(registry, runID)
+				if index < 0 {
+					return fmt.Errorf("delegated teammate run not found after follow-up update: %s", runID)
+				}
+				invokingRun, _ = toMap(runs[index])
+				invokingRun = applyDelegatedFollowUpResolutionToRun(invokingRun, updatedPacket, targetState)
+				runs[index] = invokingRun
 				registry["runs"] = runs
 			}
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if delegatedResolve {
+				index = findRunIndex(registry, runID)
+				governingRunIndex = findRunIndex(registry, stringValue(governingRun["run_id"]))
+				if index < 0 || governingRunIndex < 0 {
+					return errors.New("run not found after delegated follow-up update")
+				}
+				return printJSON(map[string]any{
+					"run":                  toList(registry["runs"])[index],
+					"governing_run":        toList(registry["runs"])[governingRunIndex],
+					"resolved_follow_up":   updatedPacket,
+					"delegated_resolution": true,
+				})
 			}
 			index = findRunIndex(registry, runID)
 			if index < 0 {

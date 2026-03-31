@@ -753,6 +753,7 @@ assert_not_json_field "$doctor_after_adoption" '"kind": "run-missing-meeting-nex
 assert_not_json_field "$doctor_after_adoption" '"kind": "run-missing-meeting-summary"' "doctor no longer compares run summary against a non-governing closed meeting"
 
 follow_up_assignment=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-follow-up follow-up-runner --adopted-follow-up)
+follow_up_run_id=$(printf '%s\n' "$follow_up_assignment" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 assert_json_field "$follow_up_assignment" "\"delegated_from_follow_up_packet_id\": \"$decision_record_follow_up_packet_id\"" "teammates assign can bind the primary adopted follow-up packet directly"
 assert_json_field "$follow_up_assignment" "\"delegated_from_meeting_id\": \"$decision_record_meeting_id\"" "teammate follow-up assignment records the governing meeting"
 assert_json_field "$follow_up_assignment" "\"delegated_from_follow_up_execution_kind\": \"decision_record_follow_up\"" "teammate follow-up assignment preserves protocol-aware execution kind"
@@ -777,8 +778,11 @@ else
   echo "$blocked_completion_output"
 fi
 
-decision_record_resolve=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id")
-assert_json_field "$decision_record_resolve" '"next_expected_action": "Continue governed execution after the adopted follow-up is complete."' "drive resolve-follow-up advances run guidance after the adopted follow-up completes"
+decision_record_resolve=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$follow_up_run_id")
+assert_json_field "$decision_record_resolve" '"delegated_resolution": true' "drive resolve-follow-up can resolve a delegated adopted follow-up from the teammate run"
+assert_json_field "$decision_record_resolve" '"delegated_follow_up_state": "done"' "delegated teammate run records follow-up completion state"
+assert_json_field "$decision_record_resolve" '"next_expected_action": "Report completion back to the leader or continue any remaining bounded execution."' "delegated teammate run advances into post-follow-up reporting guidance"
+assert_json_field "$decision_record_resolve" '"next_expected_action": "Continue governed execution after the adopted follow-up is complete."' "governing run guidance still advances after delegated follow-up resolution"
 schedule_after_follow_up_resolution=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_after_follow_up_resolution" '"adopted_output_open_follow_up_packet_count": 0' "scheduler clears adopted open follow-up packet counts after action resolution"
 home_after_follow_up_resolution=$(run_in_repo bash scripts/harness-home.sh)
