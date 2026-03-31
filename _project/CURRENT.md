@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness output packets now synthesize structured follow-up packets)
+- **Last Session**: 2026-03-31 (Harness now adopts structured council output into run state)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — Harness now adopts structured council output into run state
+
+- **Closed councils now leave durable execution packets behind**: `meeting-close` and `adopt-meeting` now write the generated `output_packet`, follow-up packet count, and primary follow-up packet back into run state instead of only copying summary text into `latest_summary` / `next_expected_action`
+- **Adoption drift is now auditable**: `runs authority-audit` now treats missing adopted output metadata, missing adopted follow-up packet counts, and missing adopted primary follow-up packets as explicit `adoption_pending` drift when a closed meeting already produced structured output
+- **Meeting identity is now safer under bursty control-plane work**: new meetings now include sub-second entropy in their ids, so the same mission can materialize multiple meetings in one second without accidental id collision or archive overwrite
 
 **Session 2026-03-31** — Harness output packets now synthesize structured follow-up packets
 

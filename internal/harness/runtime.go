@@ -920,6 +920,11 @@ func rcPath(rcID string, archived bool) string {
 	return filepath.Join(root, rcID+".yml")
 }
 
+func newMeetingID(missionID string) string {
+	timestamp := nowTime().UTC()
+	return fmt.Sprintf("meeting-%s-%09d-%s", timestamp.Format("20060102150405"), timestamp.Nanosecond(), missionID)
+}
+
 func readRegistry() map[string]any {
 	value, _ := toMap(loadData(registryPath(), map[string]any{
 		"version":    1,
@@ -2162,6 +2167,64 @@ func runAuthorityAudit(run map[string]any, registry map[string]any, signalLog ma
 				"expected_value":  nextAction,
 				"note":            "Closed meeting next action has not been adopted into the run state.",
 			})
+		}
+		if strings.TrimSpace(stringValue(run["adopted_from_meeting_id"])) != stringValue(meeting["meeting_id"]) {
+			adoptionGaps = append(adoptionGaps, map[string]any{
+				"claim_ref":       "adopted_from_meeting_id",
+				"resolution_kind": "adoption_pending",
+				"authority_level": "L3",
+				"source_ref":      "meeting:" + stringValue(meeting["meeting_id"]),
+				"winning_source":  "meeting:" + stringValue(meeting["meeting_id"]),
+				"current_value":   stringValue(run["adopted_from_meeting_id"]),
+				"expected_value":  stringValue(meeting["meeting_id"]),
+				"note":            "Closed meeting adoption metadata has not been written back into the run state.",
+			})
+		}
+		orchestration, _ := toMap(meeting["orchestration"])
+		outputPacket, _ := toMap(orchestration["output_packet"])
+		if len(outputPacket) > 0 {
+			expectedKind := stringValue(outputPacket["output_packet_kind"])
+			if expectedKind != "" && strings.TrimSpace(stringValue(run["adopted_output_packet_kind"])) != expectedKind {
+				adoptionGaps = append(adoptionGaps, map[string]any{
+					"claim_ref":       "adopted_output_packet_kind",
+					"resolution_kind": "adoption_pending",
+					"authority_level": "L3",
+					"source_ref":      "meeting:" + stringValue(meeting["meeting_id"]),
+					"winning_source":  "meeting:" + stringValue(meeting["meeting_id"]),
+					"current_value":   stringValue(run["adopted_output_packet_kind"]),
+					"expected_value":  expectedKind,
+					"note":            "Closed meeting output packet kind has not been adopted into the run state.",
+				})
+			}
+			expectedFollowUpCount := intValue(outputPacket["follow_up_packet_count"])
+			if intValue(run["adopted_output_follow_up_packet_count"]) != expectedFollowUpCount {
+				adoptionGaps = append(adoptionGaps, map[string]any{
+					"claim_ref":       "adopted_output_follow_up_packet_count",
+					"resolution_kind": "adoption_pending",
+					"authority_level": "L3",
+					"source_ref":      "meeting:" + stringValue(meeting["meeting_id"]),
+					"winning_source":  "meeting:" + stringValue(meeting["meeting_id"]),
+					"current_value":   intValue(run["adopted_output_follow_up_packet_count"]),
+					"expected_value":  expectedFollowUpCount,
+					"note":            "Closed meeting follow-up packet count has not been adopted into the run state.",
+				})
+			}
+			expectedPrimaryFollowUp := meetingPrimaryFollowUpPacket(meeting)
+			if expectedPrimaryFollowUp != nil {
+				currentPrimaryFollowUp, _ := toMap(run["adopted_primary_follow_up_packet"])
+				if stringValue(currentPrimaryFollowUp["follow_up_packet_id"]) != stringValue(expectedPrimaryFollowUp["follow_up_packet_id"]) {
+					adoptionGaps = append(adoptionGaps, map[string]any{
+						"claim_ref":       "adopted_primary_follow_up_packet",
+						"resolution_kind": "adoption_pending",
+						"authority_level": "L3",
+						"source_ref":      "meeting:" + stringValue(meeting["meeting_id"]),
+						"winning_source":  "meeting:" + stringValue(meeting["meeting_id"]),
+						"current_value":   stringValue(currentPrimaryFollowUp["follow_up_packet_id"]),
+						"expected_value":  stringValue(expectedPrimaryFollowUp["follow_up_packet_id"]),
+						"note":            "Closed meeting primary follow-up packet has not been adopted into the run state.",
+					})
+				}
+			}
 		}
 	}
 
@@ -5729,7 +5792,7 @@ func materializeMeetingFromSchedulerDecision(snapshot, decision, registry, missi
 		return nil, nil, nil, err
 	}
 	question := schedulerDecisionMeetingQuestion(decision)
-	meetingID := fmt.Sprintf("meeting-%s-%s", nowTime().UTC().Format("20060102150405"), stringValue(run["mission_id"]))
+	meetingID := newMeetingID(stringValue(run["mission_id"]))
 	meeting, err := materializeMeeting(meetingID, run, question, "leader-main", stringValue(decision["recommended_decision_protocol"]))
 	if err != nil {
 		return nil, nil, nil, err
@@ -5953,6 +6016,60 @@ func meetingOutcome(meeting map[string]any) map[string]any {
 		"summary":     summary,
 		"next_action": nextAction,
 	}
+}
+
+func meetingPrimaryFollowUpPacket(meeting map[string]any) map[string]any {
+	orchestration, _ := toMap(meeting["orchestration"])
+	outputPacket, _ := toMap(orchestration["output_packet"])
+	for _, item := range toList(outputPacket["follow_up_packets"]) {
+		packet, ok := toMap(item)
+		if !ok {
+			continue
+		}
+		state := firstNonBlank(strings.TrimSpace(stringValue(packet["state"])), "open")
+		if state == "open" {
+			return packet
+		}
+	}
+	for _, item := range toList(outputPacket["follow_up_packets"]) {
+		packet, ok := toMap(item)
+		if ok {
+			return packet
+		}
+	}
+	return nil
+}
+
+func applyMeetingAdoptionToRun(run map[string]any, meeting map[string]any) map[string]any {
+	outcome := meetingOutcome(meeting)
+	if stringValue(outcome["summary"]) != "" {
+		run["latest_summary"] = outcome["summary"]
+	}
+	if stringValue(outcome["next_action"]) != "" {
+		run["next_expected_action"] = outcome["next_action"]
+	}
+	run["adopted_from_meeting_id"] = stringValue(meeting["meeting_id"])
+
+	orchestration, _ := toMap(meeting["orchestration"])
+	outputPacket, _ := toMap(orchestration["output_packet"])
+	if len(outputPacket) > 0 {
+		run["adopted_output_packet_kind"] = stringValue(outputPacket["output_packet_kind"])
+		run["adopted_output_packet"] = cloneValue(outputPacket)
+		run["adopted_output_follow_up_packet_count"] = intValue(outputPacket["follow_up_packet_count"])
+		run["adopted_output_follow_up_packets"] = cloneValue(getKey(outputPacket, "follow_up_packets", []any{}))
+		if primaryFollowUp := meetingPrimaryFollowUpPacket(meeting); primaryFollowUp != nil {
+			run["adopted_primary_follow_up_packet"] = cloneValue(primaryFollowUp)
+		} else {
+			delete(run, "adopted_primary_follow_up_packet")
+		}
+	} else {
+		delete(run, "adopted_output_packet_kind")
+		delete(run, "adopted_output_packet")
+		delete(run, "adopted_output_follow_up_packet_count")
+		delete(run, "adopted_output_follow_up_packets")
+		delete(run, "adopted_primary_follow_up_packet")
+	}
+	return run
 }
 
 func minInt(a, b int) int {
@@ -11908,15 +12025,9 @@ func cmdDrive(args []string) error {
 			if stringValue(meeting["state"]) != "closed" {
 				return errors.New("drive adopt-meeting requires a closed meeting")
 			}
-			outcome := meetingOutcome(meeting)
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
-			if stringValue(outcome["summary"]) != "" {
-				run["latest_summary"] = outcome["summary"]
-			}
-			if stringValue(outcome["next_action"]) != "" {
-				run["next_expected_action"] = outcome["next_action"]
-			}
+			run = applyMeetingAdoptionToRun(run, meeting)
 			run["status_reason"] = firstNonBlank(stringValue(meeting["resolution_note"]), stringValue(run["status_reason"]))
 			run["updated_at"] = nowISO()
 			runs[index] = run
@@ -12098,7 +12209,7 @@ func cmdDrive(args []string) error {
 				return err
 			}
 			backlog := readMaintenanceBacklog()
-			meetingID := fmt.Sprintf("meeting-%s-%s", nowTime().UTC().Format("20060102150405"), stringValue(run["mission_id"]))
+			meetingID := newMeetingID(stringValue(run["mission_id"]))
 			meeting, err := materializeMeeting(meetingID, run, question, stringValue(run["owner_id"]), protocol)
 			if err != nil {
 				return err
@@ -12149,7 +12260,6 @@ func cmdDrive(args []string) error {
 				return fmt.Errorf("meeting not found: %s", meetingID)
 			}
 			meeting, _ := toMap(data["meeting"])
-			outcome := meetingOutcome(meeting)
 			meeting["state"] = "closed"
 			meeting["updated_at"] = nowISO()
 			meeting["closed_at"] = nowISO()
@@ -12190,10 +12300,7 @@ func cmdDrive(args []string) error {
 			}
 			run["state"] = "ready"
 			run["status_reason"] = note
-			if stringValue(outcome["summary"]) != "" {
-				run["latest_summary"] = outcome["summary"]
-			}
-			run["next_expected_action"] = outcome["next_action"]
+			run = applyMeetingAdoptionToRun(run, meeting)
 			run["updated_at"] = nowISO()
 			runs[index] = run
 			registry["runs"] = runs
@@ -14690,7 +14797,7 @@ func cmdTeammatesRemainder(args []string) error {
 			run["active_signals"] = appendUniqueText(toList(run["active_signals"]), stringValue(signal["signal_id"]))
 			payload := map[string]any{"signal": signal, "run": run}
 			if materialize {
-				meetingID := fmt.Sprintf("meeting-%s-%s", nowTime().UTC().Format("20060102150405"), stringValue(run["mission_id"]))
+				meetingID := newMeetingID(stringValue(run["mission_id"]))
 				meeting, err := materializeMeeting(meetingID, run, question, stringValue(run["owner_id"]), protocol)
 				if err != nil {
 					return err

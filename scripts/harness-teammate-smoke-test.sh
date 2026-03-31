@@ -700,6 +700,13 @@ assert_json_field "$rejected_reason_orchestrate_b" '"new_phase": "output"' "rest
 rejected_reason_summary_b=$(run_in_repo bash scripts/harness-meetings.sh summary "$rejected_reason_meeting_id")
 assert_json_field "$rejected_reason_summary_b" '"governance_gap_count": 0' "meeting summary clears governance gaps after the rejected-finding reason is restored"
 
+section "Closed meeting adoption"
+decision_record_close=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$leader_run_id" "$decision_record_meeting_id" "Decision record captured and adopted.")
+assert_json_field "$decision_record_close" '"adopted_output_packet_kind": "decision_record_output"' "meeting-close adopts the structured decision-record output packet into run state"
+assert_json_field "$decision_record_close" '"adopted_output_follow_up_packet_count": 1' "meeting-close adopts the structured output follow-up packet count into run state"
+assert_json_field "$decision_record_close" '"adopted_primary_follow_up_packet": {' "meeting-close keeps the primary adopted follow-up packet in run state"
+assert_json_field "$decision_record_close" '"execution_kind": "decision_record_follow_up"' "meeting-close preserves protocol-specific follow-up execution semantics in adopted run state"
+
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"
 if [ "$FAIL" -ne 0 ]; then
