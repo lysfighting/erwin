@@ -7,14 +7,20 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-01
-- **Last Session**: 2026-04-01 (Harness now prioritizes cancelled follow-up realignment in mixed decision portfolios)
+- **Last Updated**: 2026-04-02
+- **Last Session**: 2026-04-02 (Radar now treats papers as a first-class knowledge-intake gap)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-02** — Radar now treats papers as a first-class knowledge-intake gap
+
+- **Self-iteration research was grounded in first-party sources**: a new research note now records how OpenAI frames Codex self-iteration through explicit self-improvement evals, while Anthropic frames Claude Code self-iteration more through internal dogfooding, autonomous loops, and workflow automation
+- **Paper intake is now named as a real radar blind spot**: `docs/radar/sources.md` now adds primary research surfaces such as arXiv, OpenReview, PMLR, and ACL Anthology instead of treating first-party blogs/docs as sufficient for agent-method and benchmark tracking
+- **Proposal-first learning loop stayed intact**: the proposal ledger now carries explicit entries for paper-aware radar intake and coding-agent self-iteration watch, so automation changes can be reviewed through the existing ledger instead of bypassing it
 
 **Session 2026-04-01** — Harness now prioritizes cancelled follow-up realignment in mixed decision portfolios
 

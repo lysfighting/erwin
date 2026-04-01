@@ -7,6 +7,7 @@ This file defines the authoritative and supporting surfaces used by the `erwin` 
 | Tier | Meaning | Usage Rule |
 |------|---------|------------|
 | 1 | First-party publishers shaping the field directly | Default source of truth |
+| 1R | Primary research and benchmark surfaces | Use when the question is about methods, evals, self-improvement, or research-agent capability |
 | 2 | Ecosystem tools and observability references | Use only to clarify Tier 1 trends |
 
 ## Tier 1
@@ -20,6 +21,15 @@ This file defines the authoritative and supporting surfaces used by the `erwin` 
 | MiniMax | [News](https://www.minimax.io/news), [Developer Platform](https://platform.minimax.io/), [Agent](https://agent.minimax.io/) | P1 | agent products, multimodal workflows, developer platform |
 | Qwen | [Qwen Docs](https://qwen.readthedocs.io/), [QwenLM GitHub](https://github.com/QwenLM), [Qwen Chat](https://chat.qwen.ai/) | P1 | open models, coding, agents, tool use |
 | DeepSeek | [API Docs](https://api-docs.deepseek.com/), [News](https://api-docs.deepseek.com/news/), [Platform](https://platform.deepseek.com/) | P1 | reasoning, tool calls, agent-era APIs, model updates |
+
+## Tier 1R
+
+| Publisher | Primary Surfaces | Priority | Tags |
+|----------|------------------|----------|------|
+| arXiv | [cs.AI](https://arxiv.org/list/cs.AI/recent), [cs.LG](https://arxiv.org/list/cs.LG/recent), [cs.SE](https://arxiv.org/list/cs.SE/recent), [cs.CL](https://arxiv.org/list/cs.CL/recent) | P1R | papers, agent methods, coding agents, self-improvement, evals |
+| OpenReview | [ICLR](https://openreview.net/group?id=ICLR.cc), [COLM](https://openreview.net/group?id=colmweb.org/COLM), [NeurIPS workshops](https://openreview.net/group?id=NeurIPS.cc) | P1R | papers, self-correction, agent design, benchmarks |
+| PMLR | [Proceedings](https://proceedings.mlr.press/) | P1R | peer-reviewed ML systems, evals, research automation |
+| ACL Anthology | [Anthology](https://aclanthology.org/) | P1R | language agents, tool use, retrieval, long-context methods |
 
 ## Tier 2
 
@@ -35,9 +45,10 @@ This file defines the authoritative and supporting surfaces used by the `erwin` 
 When multiple sources are active on the same day, prefer this order:
 
 1. official engineering / developer documentation
-2. official research / product launch posts
-3. official changelogs and release notes
-4. ecosystem observability writeups
+2. official research / system cards / product launch posts
+3. primary papers and benchmark writeups when the question is about methods, evals, or self-improvement
+4. official changelogs and release notes
+5. ecosystem observability writeups
 
 ## Exclusions
 

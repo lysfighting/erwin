@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Radar / Learning Loop
+- **Radar now names papers as a first-class knowledge-intake layer**: `docs/radar/sources.md` now adds primary research surfaces including arXiv, OpenReview, PMLR, and ACL Anthology, and a new research note records why coding-agent self-iteration, self-improvement evals, and benchmark tracking need paper-aware automation rather than first-party blogs alone. The proposal ledger now carries explicit follow-on items for paper-aware radar intake and coding-agent self-iteration watch.
+
 ### Added — Harness Stable Line
 - **Harness v1.0.0 — Cancelled adopted follow-up now outranks ordinary action-adoption work in the decision portfolio**: required human-decision packets now carry a bounded `decision_priority_rank`, and scheduler uses it to keep `realign_cancelled_follow_up` ahead of lower-urgency `adopt_meeting_actions` residue when both coexist in the same portfolio. Core smoke now proves cancelled-follow-up realignment remains the primary decision packet and top-level `home` guidance even when separate meeting-action adoption work is open.
 - **Harness v1.0.0 — Cancelled adopted follow-up now enters scheduler as explicit decision work**: when a mission still carries adopted follow-up packets but none remain open and at least one packet has closed as `cancelled`, scheduler now classifies that mission as `needs-human-decision` with `decision_kind: realign_cancelled_follow_up` instead of quietly treating it as runnable residue. `home` follows the same realignment guidance when no higher-priority control-plane work outranks it, and core smoke now proves the cancelled-follow-up decision lane end to end.
