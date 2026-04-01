@@ -16,6 +16,7 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 | [radar/README.md](radar/README.md) | Operating model for the AI/agent field radar |
 | [radar/sources.md](radar/sources.md) | Authoritative publisher inventory and priority policy |
 | [radar/themes.md](radar/themes.md) | Active theme taxonomy and query language |
+| [radar/daily/](radar/daily/) | Durable daily radar notes, one file per date |
 | [radar/weekly/2026-03-30.md](radar/weekly/2026-03-30.md) | Kickoff weekly synthesis and baseline interpretation |
 
 ## Active

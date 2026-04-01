@@ -15,10 +15,11 @@ Its job is to keep a tight, high-signal map of what matters for this repository.
 ## Output Model
 
 - `Daily radar`
-  - inbox-first
+  - inbox + repo
   - short format
   - up to 5 signals
   - recent window: last 7 days
+  - one durable daily file per date, updated in place
 - `Weekly synthesis`
   - inbox + repo
   - one durable synthesis per week
@@ -67,12 +68,13 @@ See [themes.md](/Users/liyasong/Project/collov/erwin/docs/radar/themes.md) for t
 
 - [sources.md](/Users/liyasong/Project/collov/erwin/docs/radar/sources.md) — publisher inventory
 - [themes.md](/Users/liyasong/Project/collov/erwin/docs/radar/themes.md) — active themes and search language
+- [daily/](/Users/liyasong/Project/collov/erwin/docs/radar/daily) — durable daily radar notes
 - [weekly/](/Users/liyasong/Project/collov/erwin/docs/radar/weekly) — durable weekly synthesis archive
 
 ## Working Rules
 
-- do not create daily markdown files in the repo
-- prefer one durable weekly note over many thin summaries
+- keep daily notes concise and update one file per date rather than creating duplicates
+- prefer durable daily notes plus one weekly synthesis over inbox-only history
 - always include links and dates when the underlying source provides them
 - prefer direct official pages over commentary
 - state clearly when a tool trend is interesting but not strategically relevant
