@@ -43,6 +43,7 @@ Its job is to keep a tight, high-signal map of what matters for this repository.
 - Phoenix
 - Helicone
 - OpenTelemetry
+- GitHub Trending
 
 Tier 2 sources are supporting evidence only.
 They should help interpret a first-party signal, not pull the roadmap.
@@ -69,6 +70,7 @@ See [themes.md](/Users/liyasong/Project/collov/erwin/docs/radar/themes.md) for t
 - [sources.md](/Users/liyasong/Project/collov/erwin/docs/radar/sources.md) — publisher inventory
 - [themes.md](/Users/liyasong/Project/collov/erwin/docs/radar/themes.md) — active themes and search language
 - [daily/](/Users/liyasong/Project/collov/erwin/docs/radar/daily) — durable daily radar notes
+- [trending/](/Users/liyasong/Project/collov/erwin/docs/radar/trending) — durable daily GitHub Trending summaries
 - [weekly/](/Users/liyasong/Project/collov/erwin/docs/radar/weekly) — durable weekly synthesis archive
 
 ## Working Rules
@@ -77,4 +79,5 @@ See [themes.md](/Users/liyasong/Project/collov/erwin/docs/radar/themes.md) for t
 - prefer durable daily notes plus one weekly synthesis over inbox-only history
 - always include links and dates when the underlying source provides them
 - prefer direct official pages over commentary
+- keep GitHub Trending in a separate summary block so popularity signals do not masquerade as first-party field direction
 - state clearly when a tool trend is interesting but not strategically relevant

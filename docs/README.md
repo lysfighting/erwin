@@ -17,6 +17,7 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 | [radar/sources.md](radar/sources.md) | Authoritative publisher inventory and priority policy |
 | [radar/themes.md](radar/themes.md) | Active theme taxonomy and query language |
 | [radar/daily/](radar/daily/) | Durable daily radar notes, one file per date |
+| [radar/trending/](radar/trending/) | Durable daily GitHub Trending summaries |
 | [radar/weekly/2026-03-30.md](radar/weekly/2026-03-30.md) | Kickoff weekly synthesis and baseline interpretation |
 
 ## Active
