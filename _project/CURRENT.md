@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-01
-- **Last Session**: 2026-04-01 (Harness now schedules cancelled follow-up as explicit decision work)
+- **Last Session**: 2026-04-01 (Harness now prioritizes cancelled follow-up realignment in mixed decision portfolios)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-01** — Harness now prioritizes cancelled follow-up realignment in mixed decision portfolios
+
+- **Cancelled follow-up correction now outranks ordinary action-adoption work**: when cancelled adopted follow-up realignment coexists with lower-urgency meeting-action adoption residue, scheduler now keeps `realign_cancelled_follow_up` as the primary human-decision packet instead of flattening both decisions into the same generic class
+- **Decision-portfolio ordering is now explicit**: required human-decision packets now carry a bounded `decision_priority_rank`, giving scheduler a real kind-aware tiebreaker beyond surface, scope, freshness, priority, and risk alone
+- **Core smoke widened again**: core smoke now proves cancelled-follow-up realignment stays primary even when a separate `adopt_meeting_actions` packet is open in the same portfolio, and that `home` preserves the same top-level guidance
 
 **Session 2026-04-01** — Harness now schedules cancelled adopted follow-up as explicit decision work
 

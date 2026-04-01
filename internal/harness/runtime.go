@@ -10216,13 +10216,27 @@ func promoteMaterializedDecisionPackets(decisions []any, activeMeetingIDsByDecis
 
 func schedulerDecisionClass(decision map[string]any) string {
 	return fmt.Sprintf(
-		"%d|%d|%d|%d|%t",
+		"%d|%d|%d|%d|%d|%t",
+		schedulerDecisionKindPriority(stringValue(decision["decision_kind"])),
 		decisionSurfaceRank(stringValue(decision["recommended_decision_surface"])),
 		decisionScopeRank(stringValue(decision["decision_scope"])),
 		schedulerPriorityRank(stringValue(decision["priority"])),
 		schedulerRiskRank(stringValue(decision["effective_risk_level"])),
 		boolValue(decision["release_adjacent"]),
 	)
+}
+
+func schedulerDecisionKindPriority(kind string) int {
+	switch strings.TrimSpace(kind) {
+	case "realign_cancelled_follow_up":
+		return 3
+	case "establish_bundle_governor", "inspect_bundle_authority", "resolve_overlap_conflict", "resolve_parallel_root_runs":
+		return 2
+	case "review_follow_up_signals", "review_gate_decision", "adopt_meeting_actions":
+		return 1
+	default:
+		return 0
+	}
 }
 
 func schedulerFollowUpSignalUrgency(kind string) int {
@@ -10380,6 +10394,11 @@ func sortSchedulerHumanDecisions(decisions []any, previousPrimaryDecisionKey str
 		right, _ := toMap(sorted[j])
 		if boolValue(left["active_decision_stale"]) != boolValue(right["active_decision_stale"]) {
 			return boolValue(left["active_decision_stale"])
+		}
+		leftDecisionPriority := schedulerDecisionKindPriority(stringValue(left["decision_kind"]))
+		rightDecisionPriority := schedulerDecisionKindPriority(stringValue(right["decision_kind"]))
+		if leftDecisionPriority != rightDecisionPriority {
+			return leftDecisionPriority > rightDecisionPriority
 		}
 		leftSurface := decisionSurfaceRank(stringValue(left["recommended_decision_surface"]))
 		rightSurface := decisionSurfaceRank(stringValue(right["recommended_decision_surface"]))
@@ -11034,6 +11053,7 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				"candidate_governor_ids":         stringListToAny(bundleCandidateGovernorIDs),
 				"candidate_governor_packets":     cloneValue(bundleCandidateGovernorPackets),
 				"decision_kind":                  decisionKind,
+				"decision_priority_rank":         schedulerDecisionKindPriority(decisionKind),
 				"recommended_action":             recommendedAction,
 				"recommended_decision_surface":   recommendedDecisionSurface,
 				"recommended_decision_protocol":  recommendedDecisionProtocolValue,

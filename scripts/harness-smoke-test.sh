@@ -1590,6 +1590,28 @@ assert_json_field "$cancelled_schedule_output" '"recommended_action": "Realign t
 cancelled_home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$cancelled_home_output" '"scheduler_required_human_decision_count": 1' "home counts cancelled adopted follow-up as one required human decision"
 assert_json_field "$cancelled_home_output" '"next_action": "Realign the cancelled adopted follow-up before widening execution."' "home next action follows cancelled adopted follow-up realignment"
+cancelled_action_claim=$(run_in_repo bash scripts/harness-claim.sh 20034 "Harness Cancelled Follow-up Action Peer" --owns="file:docs/harness-learning-loop.md")
+assert_json_field "$cancelled_action_claim" '"mission_id": "issue-20034"' "cancelled-follow-up portfolio peer can materialize"
+cancelled_action_run=$(printf '%s\n' "$cancelled_action_claim" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+cancelled_action_meeting=$(run_in_repo bash scripts/harness-drive.sh meeting "$cancelled_action_run" "What explicit action still needs adoption on the peer mission?")
+assert_json_field "$cancelled_action_meeting" '"state": "active"' "action-adoption peer can start an active meeting"
+cancelled_action_meeting_id=$(printf '%s\n' "$cancelled_action_meeting" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+cancelled_action_item=$(run_in_repo bash scripts/harness-meetings.sh add-action "$cancelled_action_meeting_id" "Adopt the peer meeting action before widening execution.")
+assert_json_field "$cancelled_action_item" '"action_items"' "action-adoption peer stores an open meeting action"
+cancelled_priority_schedule_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$cancelled_priority_schedule_output" '"required_human_decision_count": 2' "scheduler keeps cancelled follow-up and meeting-action adoption decisions together in the portfolio"
+assert_json_field "$cancelled_priority_schedule_output" '"decision_priority_rank": 3' "cancelled follow-up realignment carries the stronger decision-priority rank"
+assert_json_field "$cancelled_priority_schedule_output" '"decision_kind": "realign_cancelled_follow_up"' "scheduler keeps cancelled follow-up realignment as the primary decision packet when ordinary action-adoption work is also open"
+assert_json_field "$cancelled_priority_schedule_output" "\"mission_id\": \"issue-20034\"" "action-adoption peer remains visible inside the mixed decision portfolio"
+assert_json_field "$cancelled_priority_schedule_output" '"decision_kind": "adopt_meeting_actions"' "action-adoption peer keeps its ordinary meeting-action decision kind"
+assert_json_field "$cancelled_priority_schedule_output" '"human_decision_queue_position": 2' "action-adoption peer stays behind the stronger cancelled-follow-up correction work"
+cancelled_priority_home_output=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$cancelled_priority_home_output" '"scheduler_required_human_decision_count": 2' "home counts both cancelled-follow-up and meeting-action adoption decisions in the mixed portfolio"
+assert_json_field "$cancelled_priority_home_output" '"next_action": "Realign the cancelled adopted follow-up before widening execution."' "home keeps cancelled-follow-up realignment as the top guidance when ordinary action-adoption work is lower priority"
+cancelled_action_close=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$cancelled_action_run" "$cancelled_action_meeting_id" "Peer action-adoption coverage completed.")
+assert_json_field "$cancelled_action_close" '"state": "closed"' "action-adoption peer meeting can close after cancelled-follow-up priority coverage"
+resolved_cancelled_action_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$cancelled_action_run" completed "Closed action-adoption peer after cancelled-follow-up priority coverage.")
+assert_json_field "$resolved_cancelled_action_run" '"state": "completed"' "action-adoption peer can close after cancelled-follow-up priority coverage"
 
 section "Authority adjudication"
 block_output=$(run_in_repo bash scripts/harness-drive.sh block "$run_id" "Temporary blocker for authority reconcile")
