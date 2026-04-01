@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-01
-- **Last Session**: 2026-04-01 (Harness now aligns cancelled follow-up guidance with audit and doctor)
+- **Last Session**: 2026-04-01 (Harness now aligns completed follow-up guidance with audit and doctor)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-01** — Harness now aligns completed adopted follow-up guidance with audit and doctor
+
+- **Meeting-adoption guidance now understands fully completed follow-up too**: once adopted follow-up packets exist but none remain open, closed-meeting adopted-next-action now expects the same generic post-follow-up guidance that governing run state already uses
+- **Audit and doctor stay quiet after real follow-up completion**: `runs authority-audit` and `doctor` no longer have any reason to flag `next_expected_action` drift once the adopted follow-up has actually been completed
+- **Teammate smoke widened again**: teammate smoke now proves the fully resolved delegated-follow-up path stays free of `run-missing-meeting-next-action` noise in both `doctor` and run-level authority audit
 
 **Session 2026-04-01** — Harness now aligns cancelled adopted follow-up guidance with audit and doctor
 

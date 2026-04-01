@@ -6486,13 +6486,17 @@ func resolveFollowUpPacketState(packets []any, requestedPacketID string, targetS
 
 func meetingAdoptedNextAction(meeting map[string]any) string {
 	outcome := meetingOutcome(meeting)
-	if primaryFollowUp := meetingPrimaryFollowUpPacket(meeting); primaryFollowUp != nil {
+	packets := meetingCurrentFollowUpPackets(meeting)
+	if primaryFollowUp := primaryFollowUpPacketFromList(packets); primaryFollowUp != nil {
 		if nextAction := adoptedFollowUpActionText(primaryFollowUp); nextAction != "" {
 			return nextAction
 		}
 	}
-	if followUpPacketListHasState(meetingCurrentFollowUpPackets(meeting), "cancelled") {
+	if followUpPacketListHasState(packets, "cancelled") {
 		return "Realign the cancelled adopted follow-up before widening execution."
+	}
+	if len(packets) > 0 {
+		return "Continue governed execution after the adopted follow-up is complete."
 	}
 	return stringValue(outcome["next_action"])
 }

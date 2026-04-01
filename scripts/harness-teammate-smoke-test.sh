@@ -847,6 +847,10 @@ assert_json_field "$follow_up_run_after_cancelled_reopen" '"delegated_follow_up_
 assert_json_field "$follow_up_run_after_cancelled_reopen" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "delegated teammate run restores follow-up guidance after cancelled realignment"
 decision_record_reresolve=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$follow_up_run_id")
 assert_json_field "$decision_record_reresolve" '"delegated_follow_up_state": "done"' "delegated teammate run can resolve the reopened adopted follow-up again after cancellation"
+doctor_after_resolved_follow_up=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_not_json_field "$doctor_after_resolved_follow_up" '"kind": "run-missing-meeting-next-action"' "doctor does not misread completed adopted follow-up guidance as missing next_expected_action"
+authority_audit_after_resolved_follow_up=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$leader_run_id")
+assert_not_json_field "$authority_audit_after_resolved_follow_up" '"claim_ref": "next_expected_action"' "authority-audit does not misread completed adopted follow-up guidance as adoption drift"
 schedule_after_follow_up_resolution=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_after_follow_up_resolution" '"adopted_output_open_follow_up_packet_count": 0' "scheduler clears adopted open follow-up packet counts after action resolution"
 home_after_follow_up_resolution=$(run_in_repo bash scripts/harness-home.sh)
