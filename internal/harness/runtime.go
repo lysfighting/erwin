@@ -10960,6 +10960,17 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 				reasons = append(reasons, "Mission is in review/checks/merge-gate handling.")
 				recommendedAction = "Resolve review and checks or merge the ready PR before continuing other work."
 				decisionKind = "review_gate_decision"
+			case authoritativeRun != nil &&
+				adoptedOutputOpenFollowUpPacketCount == 0 &&
+				adoptedOutputFollowUpPacketCount > 0 &&
+				followUpPacketListHasState(runAdoptedFollowUpPackets(authoritativeRun), "cancelled"):
+				classification = "needs-human-decision"
+				reasons = append(reasons, "Mission has a cancelled adopted follow-up packet that still requires leader realignment before execution widens.")
+				recommendedAction = firstNonBlank(
+					strings.TrimSpace(stringValue(authoritativeRun["next_expected_action"])),
+					"Realign the cancelled adopted follow-up before widening execution.",
+				)
+				decisionKind = "realign_cancelled_follow_up"
 			case stringValue(mission["state"]) == "blocked" || authoritativeRunState == "blocked":
 				classification = "blocked-by-policy"
 				reasons = append(reasons, firstNonBlank(stringValue(mission["status_reason"]), stringValue(getKey(authoritativeRun, "status_reason", "")), "Mission is blocked by current policy or runtime state."))
@@ -15337,6 +15348,9 @@ func cmdTeammatesRemainder(args []string) error {
 						return errors.New("parent run has no open adopted follow-up packet to delegate")
 					}
 					return fmt.Errorf("adopted follow-up packet not found on parent run: %s", adoptedFollowUpPacketID)
+				}
+				if firstNonBlank(strings.TrimSpace(stringValue(delegatedFollowUp["state"])), "open") != "open" {
+					return fmt.Errorf("adopted follow-up packet is not open: %s", adoptedFollowUpPacketID)
 				}
 				adoptedFollowUpPacketID = strings.TrimSpace(stringValue(delegatedFollowUp["follow_up_packet_id"]))
 				if objective == "" {

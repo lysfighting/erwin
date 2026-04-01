@@ -8,13 +8,25 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-01
-- **Last Session**: 2026-04-01 (Harness now aligns completed follow-up guidance with audit and doctor)
+- **Last Session**: 2026-04-01 (Harness now schedules cancelled follow-up as explicit decision work)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-01** — Harness now schedules cancelled adopted follow-up as explicit decision work
+
+- **Cancelled follow-up is now a real scheduler decision lane**: if a mission carries adopted follow-up packets but none remain open and at least one has closed as `cancelled`, scheduler now classifies that mission as `needs-human-decision` instead of quietly treating it as runnable residue
+- **Leader-facing control plane now says to realign, not just to notice**: scheduler and `home` now let cancelled-follow-up realignment own the top-level decision guidance when no higher-priority control-plane work outranks it
+- **Core smoke widened again**: core smoke now proves a cancelled adopted follow-up becomes `decision_kind: realign_cancelled_follow_up`, `classification: needs-human-decision`, and top-level `next_action` guidance in both scheduler and `home`
+
+**Session 2026-04-01** — Harness now refuses handoff of closed adopted follow-up packets
+
+- **Closed follow-up packets can no longer be re-delegated**: `teammates assign --adopted-follow-up=<packet>` now rejects explicitly named adopted follow-up packets unless they are still `open`, so `done` or `cancelled` history cannot be silently rebound as fresh bounded execution
+- **Open-only delegation semantics are now explicit**: the adopted follow-up handoff surface now matches the control-plane model that only current open follow-up obligations should produce new bounded teammate work
+- **Teammate smoke widened again**: teammate smoke now proves an explicitly named adopted follow-up packet is rejected for handoff once the packet has already been closed
 
 **Session 2026-04-01** — Harness now aligns completed adopted follow-up guidance with audit and doctor
 

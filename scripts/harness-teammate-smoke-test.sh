@@ -856,6 +856,13 @@ assert_json_field "$schedule_after_follow_up_resolution" '"adopted_output_open_f
 home_after_follow_up_resolution=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_after_follow_up_resolution" '"adopted_output_open_follow_up_packet_count": 0' "home clears adopted open follow-up packet counts after action resolution"
 assert_not_json_field "$home_after_follow_up_resolution" "\"next_action\": \"Collect completion report from delegated adopted follow-up on $follow_up_run_id (worker-follow-up) before closing the governing run.\"" "home next action stops following closed delegated adopted follow-up guidance after resolution"
+closed_follow_up_reassign_output=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-follow-up-closed closed-follow-up-runner --adopted-follow-up="$decision_record_follow_up_packet_id" 2>&1 || true)
+if grep -q "adopted follow-up packet is not open: $decision_record_follow_up_packet_id" <<<"$closed_follow_up_reassign_output"; then
+  pass "adopted follow-up handoff rejects closed adopted follow-up packets"
+else
+  fail "adopted follow-up handoff rejects closed adopted follow-up packets"
+  echo "$closed_follow_up_reassign_output"
+fi
 completed_delegated_follow_up_run=$(run_in_repo bash scripts/harness-drive.sh complete "$follow_up_run_id" "Delegated adopted follow-up completed and reported back.")
 assert_json_field "$completed_delegated_follow_up_run" '"state": "completed"' "drive complete succeeds on the delegated teammate run after its adopted follow-up is resolved"
 completed_after_follow_up=$(run_in_repo bash scripts/harness-drive.sh complete "$leader_run_id" "Decision-record follow-up completed and run can now close.")

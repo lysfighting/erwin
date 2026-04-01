@@ -1568,6 +1568,29 @@ home_output_after=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_after" '"open_meeting_action_count": 0' "home clears resolved meeting action"
 assert_json_field "$home_output_after" '"adopted_output_open_follow_up_packet_count": 0' "home clears adopted open follow-up packet count after action resolution"
 
+section "Cancelled follow-up rescheduling"
+cancelled_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Should this mission realign cancelled follow-up before widening?")
+assert_json_field "$cancelled_meeting_output" '"state": "active"' "cancelled-follow-up meeting starts active"
+cancelled_meeting_id=$(printf '%s\n' "$cancelled_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+cancelled_finding_output=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$cancelled_meeting_id" accepted "Mission needs cancelled follow-up realignment.")
+assert_json_field "$cancelled_finding_output" '"accepted"' "cancelled-follow-up meeting stores accepted finding"
+cancelled_action_output=$(run_in_repo bash scripts/harness-meetings.sh add-action "$cancelled_meeting_id" "Realign the cancelled adopted follow-up before widening execution.")
+assert_json_field "$cancelled_action_output" '"action_items"' "cancelled-follow-up meeting stores action item"
+cancelled_close_output=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$run_id" "$cancelled_meeting_id" "Cancelled follow-up guidance materialized.")
+assert_json_field "$cancelled_close_output" '"state": "closed"' "cancelled-follow-up meeting closes cleanly"
+cancelled_action_id=$(printf '%s\n' "$cancelled_action_output" | sed -n 's/^[[:space:]]*"action_id": "\(action-[^"]*\)",$/\1/p' | head -n1)
+cancelled_resolve_output=$(run_in_repo bash scripts/harness-meetings.sh resolve-action "$cancelled_meeting_id" "$cancelled_action_id" cancelled)
+assert_json_field "$cancelled_resolve_output" '"state": "cancelled"' "meeting action can be cancelled"
+cancelled_run_output=$(run_in_repo bash scripts/harness-runs.sh get "$run_id")
+assert_json_field "$cancelled_run_output" '"next_expected_action": "Realign the cancelled adopted follow-up before widening execution."' "run keeps cancelled adopted follow-up on realignment guidance"
+cancelled_schedule_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
+assert_json_field "$cancelled_schedule_output" '"decision_kind": "realign_cancelled_follow_up"' "scheduler turns cancelled adopted follow-up into an explicit decision lane"
+assert_json_field "$cancelled_schedule_output" '"classification": "needs-human-decision"' "scheduler classifies cancelled adopted follow-up as human decision work"
+assert_json_field "$cancelled_schedule_output" '"recommended_action": "Realign the cancelled adopted follow-up before widening execution."' "scheduler carries cancelled adopted follow-up realignment guidance"
+cancelled_home_output=$(run_in_repo bash scripts/harness-home.sh)
+assert_json_field "$cancelled_home_output" '"scheduler_required_human_decision_count": 1' "home counts cancelled adopted follow-up as one required human decision"
+assert_json_field "$cancelled_home_output" '"next_action": "Realign the cancelled adopted follow-up before widening execution."' "home next action follows cancelled adopted follow-up realignment"
+
 section "Authority adjudication"
 block_output=$(run_in_repo bash scripts/harness-drive.sh block "$run_id" "Temporary blocker for authority reconcile")
 assert_json_field "$block_output" '"kind": "blocked"' "blocking a run emits blocked signal"
