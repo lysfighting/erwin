@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-01
-- **Last Session**: 2026-04-01 (Harness now keeps cancelled follow-up on realignment guidance)
+- **Last Session**: 2026-04-01 (Harness now aligns cancelled follow-up guidance with audit and doctor)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-01** — Harness now aligns cancelled adopted follow-up guidance with audit and doctor
+
+- **Meeting-adoption guidance now understands cancelled follow-up too**: closed meetings whose adopted follow-up packets are all closed as `cancelled` now expect the same explicit realignment guidance that governing run state already uses
+- **Audit and doctor no longer misread cancelled follow-up realignment**: `runs authority-audit` and `doctor` now stay quiet when the run is correctly holding cancelled-follow-up realignment guidance instead of flagging false `next_expected_action` drift
+- **Teammate smoke widened again**: teammate smoke now proves the cancelled delegated follow-up path stays free of `run-missing-meeting-next-action` noise in both `doctor` and run-level authority audit
 
 **Session 2026-04-01** — Harness now keeps cancelled adopted follow-up on realignment guidance
 

@@ -6491,6 +6491,9 @@ func meetingAdoptedNextAction(meeting map[string]any) string {
 			return nextAction
 		}
 	}
+	if followUpPacketListHasState(meetingCurrentFollowUpPackets(meeting), "cancelled") {
+		return "Realign the cancelled adopted follow-up before widening execution."
+	}
 	return stringValue(outcome["next_action"])
 }
 

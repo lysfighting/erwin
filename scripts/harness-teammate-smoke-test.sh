@@ -835,6 +835,10 @@ decision_record_cancel=$(run_in_repo bash scripts/harness-drive.sh resolve-follo
 assert_json_field "$decision_record_cancel" '"delegated_follow_up_state": "cancelled"' "delegated teammate run can cancel the reopened adopted follow-up"
 assert_json_field "$decision_record_cancel" '"next_expected_action": "Report the cancelled delegated follow-up back to the leader and realign the bounded execution plan."' "delegated teammate run advances into cancelled follow-up reporting guidance"
 assert_json_field "$decision_record_cancel" '"next_expected_action": "Realign the cancelled adopted follow-up before widening execution."' "governing run keeps cancelled adopted follow-up on explicit realignment guidance"
+doctor_after_cancelled_follow_up=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_not_json_field "$doctor_after_cancelled_follow_up" '"kind": "run-missing-meeting-next-action"' "doctor does not misread cancelled adopted follow-up realignment as missing next_expected_action"
+authority_audit_after_cancelled_follow_up=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$leader_run_id")
+assert_not_json_field "$authority_audit_after_cancelled_follow_up" '"claim_ref": "next_expected_action"' "authority-audit does not misread cancelled adopted follow-up realignment as adoption drift"
 leader_reopen_after_cancelled_follow_up=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
 assert_json_field "$leader_reopen_after_cancelled_follow_up" '"follow_up_packet_id": "'"$decision_record_follow_up_packet_id"'"' "governing run can reopen a cancelled delegated adopted follow-up"
 assert_json_field "$leader_reopen_after_cancelled_follow_up" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "governing run restores follow-up guidance after cancelled realignment"
