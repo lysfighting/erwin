@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Codex Skills
+- **`cwork` Codex-native work loop added**: introduced `skills/cwork/` as a GitHub-first issue-to-contract-to-PR skill for Codex that preserves the useful teamwork lifecycle while removing dependence on Claude Code slash commands and Claude-only prompt primitives.
+- **Shell-only `cwork` command surface added**: bundled `skills/cwork/scripts/` now includes `cwork-config.sh`, `cwork-git.sh`, `cwork-contract.sh`, `cwork-pr.sh`, `cwork-label.sh`, `cwork-claim.sh`, `cwork-ship.sh`, `cwork-done.sh`, and `cwork-status.sh`, so the skill can execute the full claim-to-PR loop without introducing a Python runtime dependency.
+- **Offline and dry-run validation paths added for `cwork`**: the new script surface supports offline issue fixtures (`cwork-claim.sh --json ...`) and PR-body dry runs (`cwork-ship.sh --dry-run`) for local iteration and compatibility testing in temporary repos.
+- **`cwork` workflow and command references added**: bundled `skills/cwork/references/workflow.md` and `skills/cwork/references/commands.md` map the old teamwork command surfaces onto Codex-native tool usage and the new `cwork` script surface.
+
 ### Added — Harness Stable Line
 - **Harness v1.0.0 — First stable line frozen and fully verified**: promoted the adapter line from the prototype series to `1.0.0`, set `release_stage: stable`, and completed the full committed verification matrix (`go test`, adapter validate, issue/core/release/teammate/runtime-dist/runtime-package/bootstrap smoke, and doctor) against the stable package boundary. Remaining deeper scheduler, bundle, and council work is now treated as post-1.0 expansion rather than a blocker for the stable line.
 

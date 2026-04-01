@@ -35,6 +35,7 @@ Historical teamwork/process material still exists, but it no longer defines the 
 ### Skills
 
 - [skills/README.md](/Users/liyasong/Project/collov/erwin/skills/README.md)
+- [skills/cwork/](/Users/liyasong/Project/collov/erwin/skills/cwork)
 - [skills/arch-review/](/Users/liyasong/Project/collov/erwin/skills/arch-review)
 - [skills/visual-test/](/Users/liyasong/Project/collov/erwin/skills/visual-test)
 - [skills/session-record/](/Users/liyasong/Project/collov/erwin/skills/session-record)

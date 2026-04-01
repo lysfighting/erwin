@@ -8,13 +8,20 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-03-31
-- **Last Session**: 2026-03-31 (Harness 1.0.0 stable line was frozen and fully verified)
+- **Last Session**: 2026-03-31 (cwork Codex-native teamwork counterpart was incubated)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-03-31** — cwork Codex-native teamwork counterpart was completed to a usable command surface
+
+- **Codex-native work-loop skill added**: `skills/cwork/SKILL.md` now defines a GitHub-first issue-to-contract-to-PR workflow for Codex that keeps the useful teamwork protocol while dropping dependence on Claude slash commands and Claude-only prompt primitives
+- **Shell-only deterministic helper layer added**: `skills/cwork/scripts/` now provides self-contained `config`, `git`, `contract`, `pr`, `label`, `claim`, `ship`, `done`, and `status` helpers without requiring a Python interpreter in the target repo
+- **Offline and dry-run paths now exist for validation**: `cwork-claim.sh --json ...` and `cwork-ship.sh --dry-run` make it possible to exercise the workflow in temporary repos without live GitHub writes
+- **Teamwork-to-cwork translation documented**: bundled `skills/cwork/references/workflow.md` and `skills/cwork/references/commands.md` now explain how the old teamwork command surfaces map onto normal Codex tool use and the new cwork script surface
 
 **Session 2026-03-31** — Harness 1.0.0 stable line was frozen and fully verified
 
