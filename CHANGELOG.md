@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added — Radar / Learning Loop
+- **GitHub Trending now has a durable daily board checkpoint**: `docs/radar/trending/2026-04-02.md` captures the default global GitHub Trending board for the day, noting a strong cluster around Claude Code, orchestration, AI coding workflow rules, and adjacent developer tooling without flattening the rest of the board into an AI-only narrative.
 - **Radar now names papers as a first-class knowledge-intake layer**: `docs/radar/sources.md` now adds primary research surfaces including arXiv, OpenReview, PMLR, and ACL Anthology, and a new research note records why coding-agent self-iteration, self-improvement evals, and benchmark tracking need paper-aware automation rather than first-party blogs alone. The proposal ledger now carries explicit follow-on items for paper-aware radar intake and coding-agent self-iteration watch.
 
 ### Added — Harness Stable Line
