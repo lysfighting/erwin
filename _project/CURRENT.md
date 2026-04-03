@@ -35,6 +35,12 @@
 - **Coding-agent signal was real but not exclusive**: the board leaned hard toward Claude Code, orchestration, rules, and adjacent AI coding workflow repos, while still surfacing broader utility and infrastructure projects such as dashboards, presenters, shell tooling, OSINT, and bundlers
 - **Radar now has a reusable daily board checkpoint**: future weekly synthesis work can compare board-level clustering, not just individual publisher posts
 
+**Session 2026-04-02-B** — Daily radar note captured this week's strongest first-party agent/runtime signals
+
+- **A durable first-party radar note now exists**: `docs/radar/daily/2026-04-02.md` captures the strongest official AI and agent developments in the 2026-03-27 to 2026-04-02 window and keeps GitHub Trending explicitly separate as a secondary board-level signal
+- **Google and Anthropic drove the strongest technical movement**: Google ADK Go 1.0 and ADK Java 1.0 both foreground service-grade agent runtime concerns such as tracing, HITL, config, and memory/session services, while Anthropic's March 30 release notes widened long-output control and clarified long-context migration pressure onto current Claude lines
+- **Quiet publisher surfaces were recorded explicitly**: the daily note makes it clear that OpenAI had no new official technical release inside the window and that Moonshot, MiniMax, Qwen, and DeepSeek did not expose strong tracked first-party technical posts during this run
+
 **Session 2026-04-02** — Radar now treats papers as a first-class knowledge-intake gap
 
 - **Self-iteration research was grounded in first-party sources**: a new research note now records how OpenAI frames Codex self-iteration through explicit self-improvement evals, while Anthropic frames Claude Code self-iteration more through internal dogfooding, autonomous loops, and workflow automation
