@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Radar / Daily
+- **Daily AI agent radar note for 2026-04-03**: added `docs/radar/daily/2026-04-03.md`, capturing the 2026-03-27 to 2026-04-03 window with first-party signals from OpenAI, Google, Qwen, and DeepSeek plus a clearly separated GitHub Trending snapshot.
+- **OpenAI now reads as a governed agent-runtime vendor, not just a model vendor**: the new daily note records OpenAI's `Codex` enterprise seat type and token-priced Codex rate card as the clearest in-window evidence that coding-agent execution is being sold and governed as its own operational surface.
+- **Google's developer story now bundles realtime I/O with project-aware coding**: the same note collapses Google's April 1 roundup into one clearer takeaway tying `Gemini 3.1 Flash Live` and `Google Antigravity` to a single build-surface narrative.
+- **Provider reliability remains part of the field signal, not just background noise**: DeepSeek's March 30 and March 31 Web/API incidents were logged as an operational durability reminder for long-running agent systems.
+
 ### Added — Radar / Trending
 - **Daily GitHub Trending note for 2026-04-03**: added `docs/radar/trending/2026-04-03.md`, capturing the default unfiltered global Trending board exactly as rendered in this run. The note records a small mixed board of four repositories rather than forcing an AI-only interpretation, while still flagging the Codex-adjacent `oh-my-codex` and the model-behavior-oriented `system_prompts_leaks` entries.
 

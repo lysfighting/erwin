@@ -8,13 +8,20 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-03
-- **Last Session**: 2026-04-03 (Daily GitHub Trending note captured a small mixed board with two Codex/AI-adjacent entries)
+- **Last Session**: 2026-04-03 (Daily radar captured Codex seat economics, Google agent surface convergence, and provider reliability pressure)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-03** — Daily radar captured Codex seat economics, Google agent surface convergence, and provider reliability pressure
+
+- **Daily radar note added for 2026-04-03**: `docs/radar/daily/2026-04-03.md` now records the 2026-03-27 to 2026-04-03 signal window with first-party sources from OpenAI, Google, Qwen, and DeepSeek plus a separate GitHub Trending snapshot
+- **Strongest market signal shifted toward governed agent runtime**: OpenAI's new Codex seat type and token-priced enterprise access were recorded as the clearest evidence this week that agent execution is being sold and controlled as a separate operational surface
+- **Realtime + project-aware coding convergence stayed explicit**: Google's April 1 roundup was captured as a single signal because it bundles Gemini 3.1 Flash Live and the Antigravity coding agent into one build story instead of separate model and tooling announcements
+- **Provider-health pressure stayed in frame**: DeepSeek's March 30 and March 31 Web/API incidents were logged as a durability reminder for long-running agent systems, keeping reliability pressure visible without turning it into a direct Harness change request
 
 **Session 2026-04-03** — Daily GitHub Trending note captured a small mixed board with two Codex/AI-adjacent entries
 
