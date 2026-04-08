@@ -15,6 +15,7 @@ Historical teamwork/process material still exists, but it no longer defines the 
 - Read [AGENTS.md](/Users/liyasong/Project/collov/erwin/AGENTS.md) for repo context
 - Read [_project/CURRENT.md](/Users/liyasong/Project/collov/erwin/_project/CURRENT.md) for live status
 - Read [docs/README.md](/Users/liyasong/Project/collov/erwin/docs/README.md) for the documentation map
+- Read [docs/harness-explainer.md](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md) for the durable human-readable Harness overview
 - Read [docs/radar/README.md](/Users/liyasong/Project/collov/erwin/docs/radar/README.md) for the new field-radar layer
 
 ## Repo Lanes
@@ -28,6 +29,7 @@ Historical teamwork/process material still exists, but it no longer defines the 
 
 ### Harness
 
+- [docs/harness-explainer.md](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
 - [harness/README.md](/Users/liyasong/Project/collov/erwin/harness/README.md)
 - [skills/harness/README.md](/Users/liyasong/Project/collov/erwin/skills/harness/README.md)
 - [docs/harness-documentation-map.md](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md)

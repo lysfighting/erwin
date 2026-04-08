@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Harness Docs
+- **Harness now has a durable human-readable explainer**: added `docs/harness-explainer.md` as a readable overview covering what `Harness` is, what problem it solves, how it is designed, how its control plane works, and how to use it. The explainer includes Mermaid diagrams plus simplified ASCII fallbacks for identity/layer, operating model, and usage flow.
+
+### Changed — Harness Docs
+- **Harness entrypoints now surface the explainer explicitly**: `README.md`, `docs/README.md`, `docs/harness-documentation-map.md`, `harness/README.md`, and `skills/harness/README.md` now point readers to `docs/harness-explainer.md` as the best first stop when they want the system explained before reading the deeper architecture and contract docs.
+
 ### Added — Radar / Daily
 - **Daily AI agent radar note for 2026-04-03**: added `docs/radar/daily/2026-04-03.md`, capturing the 2026-03-27 to 2026-04-03 window with first-party signals from OpenAI, Google, Qwen, and DeepSeek plus a clearly separated GitHub Trending snapshot.
 - **OpenAI now reads as a governed agent-runtime vendor, not just a model vendor**: the new daily note records OpenAI's `Codex` enterprise seat type and token-priced Codex rate card as the clearest in-window evidence that coding-agent execution is being sold and governed as its own operational surface.

@@ -2,6 +2,10 @@
 
 Codex-native leader surface for the repository-local orchestration harness stable line.
 
+If you want the full human-readable explanation first, read:
+
+- [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
+
 ## What it wraps
 
 - `bash scripts/harness-adapter.sh`

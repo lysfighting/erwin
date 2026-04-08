@@ -2,6 +2,10 @@
 
 This directory contains the committed definition layer for the emerging orchestration harness.
 
+If you want the human-readable overview first, read:
+
+- [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
+
 It is distinct from `.harness/`, which is reserved for local runtime state.
 
 ## Intended structure
