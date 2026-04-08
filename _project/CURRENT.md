@@ -8,7 +8,7 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-08
-- **Last Session**: 2026-04-08 (Added a durable human-readable Harness explainer and linked it from the main entrypoints)
+- **Last Session**: 2026-04-08-B (Aligned fresh-session and skills entrypoints with the new Harness explainer)
 
 ## Current Phase
 
@@ -16,7 +16,13 @@
 
 ## What Was Just Completed
 
-**Session 2026-04-08** — Added a durable human-readable Harness explainer and linked it from the main entrypoints
+**Session 2026-04-08-B** — Aligned fresh-session and skills entrypoints with the new Harness explainer
+
+- **Fresh-session start order now leads with the explainer**: `docs/harness-session-handoff.md` now treats `docs/harness-explainer.md` as the fastest human-readable orientation layer before the deeper architecture and package docs, and it no longer points readers at an obsolete release branch when asking them to inspect recent commits
+- **Top-level skills index now matches current Harness truth**: `skills/README.md` now describes `Harness` as a stable `1.0.0` leader-led orchestration surface instead of an older prototype, and it points readers to the explainer directly from the skills entrypoint
+- **Explainer discoverability is now cleaner across human entrypoints**: the repo now has a more consistent path from `README.md` -> `docs/harness-explainer.md` -> `docs/harness-session-handoff.md` / `skills/README.md`, so readers no longer need to infer whether they should start from a runtime-heavy handoff or an outdated skill index
+
+**Session 2026-04-08-A** — Added a durable human-readable Harness explainer and linked it from the main entrypoints
 
 - **Readable overview is now part of the canonical doc system**: `docs/harness-explainer.md` now explains what `Harness` is, what problem it solves, how it is designed, how the control plane works, and how to use it, instead of forcing readers to infer those answers from architecture and runtime docs alone
 - **The explainer is genuinely visual and durable**: the new doc includes Mermaid diagrams plus simplified ASCII fallbacks for the identity/layer model, operating model, and usage flow, so it remains readable both in rich Markdown renderers and plain text contexts

@@ -1,6 +1,8 @@
 # erwin Skills
 
-Claude Code skills created and maintained by the erwin project.
+Reusable Claude Code and Codex-native skills created and maintained by the erwin project.
+
+If you want the human-readable overview of `Harness`, read [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md).
 
 ## Available Skills
 
@@ -10,7 +12,7 @@ Claude Code skills created and maintained by the erwin project.
 | [/erwin-init](erwin-init/) | Bootstrap any project with full AI intelligence layer | 1.0.0 |
 | [/visual-test](visual-test/) | Screenshot-driven visual bug detection and fixing | 1.0.0 |
 | [/session-record](session-record/) | Record AI session logs with structured format | 1.0.0 |
-| [`/harness`](harness/) | Codex-native orchestration harness leader surface (prototype) | 0.4.0 |
+| [`/harness`](harness/) | Leader-led Codex-native orchestration harness surface | 1.0.0 |
 | [/team](teamwork/) | Init GitHub-first teamwork system + dashboard | 3.10.4 |
 | [/team-issue](teamwork/) | Create GitHub Issues with AI-enriched context | 3.10.4 |
 | [/team-claim](teamwork/) | Claim GitHub Issue → generate Contract → create branch | 3.10.4 |
@@ -93,8 +95,8 @@ description: One-line description shown in skill picker
 
 The skill content is instructions Claude follows when the user invokes `/skill-name`.
 
-## Codex-native Prototypes
+## Codex-native Skills
 
 Newer surfaces may use `SKILL.md` rather than the older single-file command markdown.
 
-- `skills/harness/SKILL.md` is the first repository-local Codex-native harness surface.
+- `skills/harness/SKILL.md` is the first stable repository-local Codex-native harness surface.

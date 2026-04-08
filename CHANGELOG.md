@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed — Harness Docs
 - **Harness entrypoints now surface the explainer explicitly**: `README.md`, `docs/README.md`, `docs/harness-documentation-map.md`, `harness/README.md`, and `skills/harness/README.md` now point readers to `docs/harness-explainer.md` as the best first stop when they want the system explained before reading the deeper architecture and contract docs.
+- **Fresh-session and top-level skills entrypoints now match the explainer and stable-line truth**: `docs/harness-session-handoff.md` now routes fresh sessions through `docs/harness-explainer.md` before the deeper architecture stack and no longer references an obsolete release branch for recent commit review, while `skills/README.md` now describes `Harness` as a stable `1.0.0` leader-led orchestration surface instead of an old prototype.
 
 ### Added — Radar / Daily
 - **Daily AI agent radar note for 2026-04-03**: added `docs/radar/daily/2026-04-03.md`, capturing the 2026-03-27 to 2026-04-03 window with first-party signals from OpenAI, Google, Qwen, and DeepSeek plus a clearly separated GitHub Trending snapshot.

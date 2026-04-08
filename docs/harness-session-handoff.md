@@ -2,7 +2,7 @@
 
 > Status: Active
 >
-> Date: 2026-03-29
+> Date: 2026-04-08
 >
 > Purpose: provide a durable, file-backed starting point for fresh sessions so `Harness` work can resume from repository state instead of relying on chat-context memory.
 
@@ -24,6 +24,8 @@ and only then any surviving conversation context.
 This is intentional state persistence, not incidental documentation.
 
 External field intelligence and real usage feedback should enter `Harness` through the proposal-first learning loop and proposal ledger, not by directly rewriting runtime behavior from fresh observations alone.
+
+When a fresh session needs the fastest human-readable orientation before diving into architecture and control-plane details, start with [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md).
 
 ---
 
@@ -51,6 +53,7 @@ Authoritative references:
 
 - [`AGENTS.md`](/Users/liyasong/Project/collov/erwin/AGENTS.md)
 - [`_project/CURRENT.md`](/Users/liyasong/Project/collov/erwin/_project/CURRENT.md)
+- [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
 - [`docs/harness-documentation-map.md`](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md)
 - [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
 - [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
@@ -342,16 +345,17 @@ For a new session that needs enough context to work safely, start here:
 
 1. [`AGENTS.md`](/Users/liyasong/Project/collov/erwin/AGENTS.md)
 2. [`_project/CURRENT.md`](/Users/liyasong/Project/collov/erwin/_project/CURRENT.md)
-3. [`docs/harness-documentation-map.md`](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md)
-4. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
-5. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
-6. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
-7. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
-8. this file
-9. [`docs/research/harness-gap-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-gap-audit-2026-03-29.md)
-10. [`docs/research/harness-research-drift-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-research-drift-audit-2026-03-29.md)
-11. recent session logs
-12. recent commits on `codex/harness-release-lifecycle`
+3. [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
+4. [`docs/harness-documentation-map.md`](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md)
+5. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
+6. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
+7. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
+8. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
+9. this file
+10. [`docs/research/harness-gap-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-gap-audit-2026-03-29.md)
+11. [`docs/research/harness-research-drift-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-research-drift-audit-2026-03-29.md)
+12. recent session logs
+13. recent Harness commits on `main` or the active task branch
 
 Recommended recent session logs:
 
