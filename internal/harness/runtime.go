@@ -9073,14 +9073,35 @@ func cmdRuns(args []string) error {
 		}
 		return printJSON(runs)
 	case "get":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("runs get", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("runs get requires RUN_ID")
 		}
-		index := findRunIndex(registry, args[1])
-		if index < 0 {
-			return fmt.Errorf("run not found: %s", args[1])
+		runID := strings.TrimSpace(remaining[0])
+		if runID == "" {
+			return errors.New("runs get requires RUN_ID")
 		}
-		return printJSON(toList(registry["runs"])[index])
+		index := findRunIndex(registry, runID)
+		if index < 0 {
+			return fmt.Errorf("run not found: %s", runID)
+		}
+		run, _ := toMap(toList(registry["runs"])[index])
+		if mode == outputModeText {
+			mission := readMission(strings.TrimSpace(stringValue(run["mission_id"])))
+			signalLog := readSignalLog()
+			audit := runAuthorityAudit(run, registry, signalLog)
+			profile, _ := resolveProfile("")
+			scheduler := schedulerSummary(profile, readMissionRegistry(), registry, signalLog, true)
+			activeMeetings := activeMeetingsForRun(runID)
+			activeSignals := activeSignalsForRun(signalLog, runID)
+			openActions := openMeetingActionsForRun(runID)
+			unsatisfiedDeps := unsatisfiedDependencies(run, registry)
+			return printText(renderRunBrief(run, mission, audit, scheduler, registry, activeMeetings, activeSignals, openActions, unsatisfiedDeps))
+		}
+		return printJSON(run)
 	case "authority-audit":
 		if len(args) < 2 {
 			return errors.New("runs authority-audit requires RUN_ID")
@@ -12445,6 +12466,347 @@ func renderMissionBrief(mission, entry, scheduler map[string]any) string {
 		"",
 		"Council:",
 		"- "+missionBriefCouncilAction(entry),
+	)
+	return strings.Join(lines, "\n")
+}
+
+func briefAuditNote(items []any) string {
+	for _, item := range items {
+		record, _ := toMap(item)
+		note := firstNonBlank(
+			strings.TrimSpace(stringValue(record["note"])),
+			strings.TrimSpace(stringValue(record["summary"])),
+		)
+		if note != "" {
+			return note
+		}
+	}
+	return ""
+}
+
+func activeMeetingsForRun(runID string) []map[string]any {
+	meetings := []map[string]any{}
+	for _, item := range listMeetings(false) {
+		meeting, _ := toMap(item)
+		if strings.TrimSpace(stringValue(meeting["run_id"])) != runID {
+			continue
+		}
+		if strings.TrimSpace(stringValue(meeting["state"])) != "active" {
+			continue
+		}
+		meetings = append(meetings, meeting)
+	}
+	sort.Slice(meetings, func(i, j int) bool {
+		left := firstNonBlank(strings.TrimSpace(stringValue(meetings[i]["updated_at"])), strings.TrimSpace(stringValue(meetings[i]["created_at"])))
+		right := firstNonBlank(strings.TrimSpace(stringValue(meetings[j]["updated_at"])), strings.TrimSpace(stringValue(meetings[j]["created_at"])))
+		if left != right {
+			return left > right
+		}
+		return strings.TrimSpace(stringValue(meetings[i]["meeting_id"])) < strings.TrimSpace(stringValue(meetings[j]["meeting_id"]))
+	})
+	return meetings
+}
+
+func openMeetingActionsForRun(runID string) []map[string]any {
+	actions := []map[string]any{}
+	for _, item := range openMeetingActions() {
+		action, _ := toMap(item)
+		if strings.TrimSpace(stringValue(action["run_id"])) != runID {
+			continue
+		}
+		actions = append(actions, action)
+	}
+	return actions
+}
+
+func meetingIDsFromRecords(meetings []map[string]any) []string {
+	ids := []string{}
+	for _, meeting := range meetings {
+		if meetingID := strings.TrimSpace(stringValue(meeting["meeting_id"])); meetingID != "" {
+			ids = append(ids, meetingID)
+		}
+	}
+	return dedupeStrings(ids)
+}
+
+func runBriefOwnerLabel(run map[string]any) string {
+	ownerType := firstNonBlank(strings.TrimSpace(stringValue(run["owner_type"])), "leader")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), strings.TrimSpace(stringValue(run["leader_id"])), "unknown")
+	label := ownerType + ":" + ownerID
+	if role := strings.TrimSpace(stringValue(run["role"])); role != "" {
+		label += " (" + role + ")"
+	}
+	return label
+}
+
+func runBriefNeedsMeeting(audit map[string]any) bool {
+	for _, item := range toList(audit["higher_authority_conflicts"]) {
+		record, _ := toMap(item)
+		if strings.TrimSpace(stringValue(record["resolution_kind"])) == "meeting_request_unadopted" {
+			return true
+		}
+		if strings.TrimSpace(stringValue(record["signal_kind"])) == "requires_meeting" {
+			return true
+		}
+	}
+	return false
+}
+
+func runBriefMeetingRequirement(meetings []map[string]any) string {
+	for _, meeting := range meetings {
+		orchestration, _ := toMap(meeting["orchestration"])
+		requirement := strings.TrimSpace(stringValue(orchestration["next_requirement"]))
+		if requirement != "" {
+			return requirement
+		}
+	}
+	return ""
+}
+
+func runBriefPriority(run, mission, scheduler map[string]any) string {
+	runID := strings.TrimSpace(stringValue(run["run_id"]))
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])))
+	selectedRunIDs := anyListToStrings(toList(scheduler["selected_run_ids"]))
+	authoritativeRunID := strings.TrimSpace(stringValue(mission["authoritative_run_id"]))
+	latestRunID := strings.TrimSpace(stringValue(mission["latest_run_id"]))
+	switch {
+	case containsString(selectedRunIDs, runID) && authoritativeRunID == runID:
+		return fmt.Sprintf("This run is the current foreground scheduler run and still owns mission control for %s.", firstNonBlank(missionID, "its mission"))
+	case containsString(selectedRunIDs, runID):
+		return fmt.Sprintf("This run is in the current scheduler foreground selection for %s.", firstNonBlank(missionID, "its mission"))
+	case activeTeammateRun(run):
+		return fmt.Sprintf("This is a bounded teammate run under %s.", firstNonBlank(strings.TrimSpace(stringValue(run["parent_run_id"])), "its parent run"))
+	case authoritativeRunID == runID && latestRunID == runID && missionID != "":
+		return fmt.Sprintf("This run is both the authoritative and freshest control run for %s.", missionID)
+	case authoritativeRunID == runID && missionID != "":
+		return fmt.Sprintf("This run still owns mission control for %s even though fresher activity exists.", missionID)
+	case latestRunID == runID && authoritativeRunID != "" && missionID != "":
+		return fmt.Sprintf("This is the freshest activity on %s, but mission control remains anchored to %s.", missionID, authoritativeRunID)
+	default:
+		return "This run is recorded in runtime state but is not the current mission-control foreground."
+	}
+}
+
+func runBriefCurrent(run, mission, audit map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string) string {
+	runID := strings.TrimSpace(stringValue(run["run_id"]))
+	switch {
+	case len(activeMeetings) > 0:
+		return fmt.Sprintf("Run %s is under active council control via %s.", runID, strings.Join(meetingIDsFromRecords(activeMeetings), ", "))
+	case intValue(audit["higher_authority_conflict_count"]) > 0:
+		return fmt.Sprintf("Run %s is out of sync with higher-authority signal state.", runID)
+	case intValue(audit["adoption_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s has closed-meeting adoption drift.", runID)
+	case intValue(audit["live_state_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s has live git/worktree drift.", runID)
+	case intValue(audit["contract_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s has contract drift against the active control plane.", runID)
+	case len(unsatisfiedDeps) > 0:
+		return fmt.Sprintf("Run %s is waiting on dependency state.", runID)
+	case mergeReady(run):
+		return fmt.Sprintf("Run %s is merge-ready.", runID)
+	case strings.TrimSpace(stringValue(run["review_status"])) == "pending" ||
+		strings.TrimSpace(stringValue(run["review_status"])) == "changes_requested" ||
+		strings.TrimSpace(stringValue(run["checks_status"])) == "failed":
+		return fmt.Sprintf("Run %s is in review/check gate handling.", runID)
+	case activeTeammateRun(run) &&
+		strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])) != "" &&
+		firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open") == "open":
+		return fmt.Sprintf("Run %s is a teammate-owned delegated follow-up execution unit.", runID)
+	case activeTeammateRun(run):
+		return fmt.Sprintf("Run %s is a teammate-owned bounded execution unit.", runID)
+	}
+	switch strings.TrimSpace(stringValue(run["state"])) {
+	case "blocked":
+		return fmt.Sprintf("Run %s is currently blocked.", runID)
+	case "waiting":
+		return fmt.Sprintf("Run %s is currently waiting.", runID)
+	case "paused":
+		return fmt.Sprintf("Run %s is currently paused.", runID)
+	case "executing":
+		return fmt.Sprintf("Run %s is actively executing.", runID)
+	case "ready":
+		return fmt.Sprintf("Run %s is ready to execute.", runID)
+	case "completed":
+		return fmt.Sprintf("Run %s is completed.", runID)
+	default:
+		return fmt.Sprintf("Run %s is currently in state %s.", runID, firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown"))
+	}
+}
+
+func runBriefWhy(run, audit map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string, activeSignals []map[string]any) string {
+	if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+		return requirement
+	}
+	if note := briefAuditNote(toList(audit["higher_authority_conflicts"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["adoption_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["live_state_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["contract_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["desired_state_gaps"])); note != "" {
+		return note
+	}
+	if len(unsatisfiedDeps) > 0 {
+		return fmt.Sprintf("Unsatisfied dependencies: %s.", strings.Join(dedupeStrings(unsatisfiedDeps), ", "))
+	}
+	if reason := strings.TrimSpace(stringValue(run["status_reason"])); reason != "" {
+		return reason
+	}
+	for _, signal := range activeSignals {
+		summary := strings.TrimSpace(stringValue(signal["summary"]))
+		if summary != "" {
+			return summary
+		}
+	}
+	if summary := strings.TrimSpace(stringValue(run["latest_summary"])); summary != "" {
+		return "Latest governed summary: " + summary
+	}
+	return "No higher-priority drift or blocking reason is currently recorded on this run."
+}
+
+func runBriefLeaderAction(run, audit map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string) string {
+	if len(activeMeetings) > 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Review active council %s before changing run state. %s", ids, requirement)
+		}
+		return fmt.Sprintf("Review active council %s before changing run state.", ids)
+	}
+	switch {
+	case intValue(audit["higher_authority_conflict_count"]) > 0:
+		return "Resolve or adopt the higher-authority signal conflict before continuing this run."
+	case intValue(audit["adoption_gap_count"]) > 0:
+		return "Adopt the governing closed-meeting outcome back into this run before trusting it."
+	case intValue(audit["live_state_gap_count"]) > 0:
+		return "Reconcile the live branch/worktree state before trusting this run."
+	case intValue(audit["contract_gap_count"]) > 0:
+		return "Refresh the contract snapshot so it matches the current run state."
+	case len(unsatisfiedDeps) > 0:
+		return "Wait for dependencies to satisfy their governed state before resuming this run."
+	case mergeReady(run):
+		return "Merge or advance ship state for this run."
+	case strings.TrimSpace(stringValue(run["review_status"])) == "pending" ||
+		strings.TrimSpace(stringValue(run["review_status"])) == "changes_requested" ||
+		strings.TrimSpace(stringValue(run["checks_status"])) == "failed":
+		return "Resolve review or checks before widening execution."
+	}
+	if next := strings.TrimSpace(stringValue(run["next_expected_action"])); next != "" {
+		return next
+	}
+	return "Review the current run state before changing governed execution."
+}
+
+func runBriefTeammateAction(run, registry map[string]any) string {
+	runID := strings.TrimSpace(stringValue(run["run_id"]))
+	if activeTeammateRun(run) {
+		ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+		reporting := anyListToStrings(toList(run["reporting_expectations"]))
+		if len(reporting) > 0 {
+			limit := len(reporting)
+			if limit > 2 {
+				limit = 2
+			}
+			return fmt.Sprintf("%s owns this run; next report should cover %s.", ownerID, strings.Join(reporting[:limit], ", "))
+		}
+		if next := strings.TrimSpace(stringValue(run["next_expected_action"])); next != "" {
+			return fmt.Sprintf("%s owns this run. %s", ownerID, next)
+		}
+		return fmt.Sprintf("%s owns this run; keep reports fresh and stay within the bounded assignment.", ownerID)
+	}
+	childRuns := childRunsForParent(registry, runID)
+	if len(childRuns) > 0 {
+		owners := []string{}
+		for _, child := range childRuns {
+			owners = append(owners, firstNonBlank(strings.TrimSpace(stringValue(child["owner_id"])), strings.TrimSpace(stringValue(child["run_id"]))))
+		}
+		owners = dedupeStrings(owners)
+		if len(owners) > 3 {
+			owners = owners[:3]
+		}
+		return fmt.Sprintf("%s are active beneath this run: %s. Keep their reports fresh before changing leader truth.", countLabel(len(childRuns), "teammate run", "teammate runs"), strings.Join(owners, ", "))
+	}
+	return "No active teammate execution is currently attached to this run."
+}
+
+func runBriefCouncilAction(audit map[string]any, activeMeetings []map[string]any, openMeetingActions []map[string]any) string {
+	if len(activeMeetings) > 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Yes. Active council coverage: %s. Current requirement: %s", ids, requirement)
+		}
+		return fmt.Sprintf("Yes. Active council coverage: %s.", ids)
+	}
+	if len(openMeetingActions) > 0 {
+		return fmt.Sprintf("No active council is open, but %s still remain to be adopted.", countLabel(len(openMeetingActions), "meeting action", "meeting actions"))
+	}
+	if runBriefNeedsMeeting(audit) {
+		return "Yes. A meeting-required signal is still unadopted for this run."
+	}
+	return "No council is currently required."
+}
+
+func renderRunBrief(run, mission, audit, scheduler map[string]any, registry map[string]any, activeMeetings, activeSignals, openMeetingActions []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	mode := firstNonBlank(strings.TrimSpace(stringValue(run["mode"])), "unknown")
+	surface := firstNonBlank(strings.TrimSpace(stringValue(run["execution_surface"])), "unspecified")
+	lines := []string{
+		"Harness Run Briefing",
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf(
+			"Execution: mission=%s, owner=%s, state=%s, mode=%s, surface=%s.",
+			missionID,
+			runBriefOwnerLabel(run),
+			state,
+			mode,
+			surface,
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %d active signal(s), %d authority conflict(s), %d adoption gap(s).",
+			countLabel(len(activeMeetings), "active council", "active councils"),
+			countLabel(len(openMeetingActions), "open meeting action", "open meeting actions"),
+			len(activeSignals),
+			intValue(audit["higher_authority_conflict_count"]),
+			intValue(audit["adoption_gap_count"]),
+		),
+	}
+	if branch := strings.TrimSpace(stringValue(run["branch"])); branch != "" {
+		location := "Location: branch=" + branch
+		if worktreePath := strings.TrimSpace(stringValue(run["worktree_path"])); worktreePath != "" {
+			location += ", worktree=" + worktreePath
+		}
+		location += "."
+		lines = append(lines, location)
+	}
+	lines = append(lines,
+		"",
+		"Priority:",
+		"- "+runBriefPriority(run, mission, scheduler),
+		"",
+		"Current:",
+		"- "+runBriefCurrent(run, mission, audit, activeMeetings, unsatisfiedDeps),
+		"",
+		"Why:",
+		"- "+runBriefWhy(run, audit, activeMeetings, unsatisfiedDeps, activeSignals),
+		"",
+		"Next:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), "No immediate next action is recorded."),
+		"",
+		"Leader:",
+		"- "+runBriefLeaderAction(run, audit, activeMeetings, unsatisfiedDeps),
+		"",
+		"Teammates:",
+		"- "+runBriefTeammateAction(run, registry),
+		"",
+		"Council:",
+		"- "+runBriefCouncilAction(audit, activeMeetings, openMeetingActions),
 	)
 	return strings.Join(lines, "\n")
 }

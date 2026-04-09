@@ -377,6 +377,7 @@ bash scripts/harness-drive.sh reprovision RUN_ID --mode=worktree --apply
 Inspect run-level authority:
 
 ```bash
+bash scripts/harness-runs.sh get RUN_ID --brief
 bash scripts/harness-runs.sh authority-audit RUN_ID
 ```
 

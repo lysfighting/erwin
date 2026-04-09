@@ -19,6 +19,18 @@ pass() { PASS=$((PASS + 1)); echo "  PASS  $1"; }
 fail() { FAIL=$((FAIL + 1)); echo "  FAIL  $1"; }
 section() { echo ""; echo "=== $1 ==="; }
 
+assert_contains() {
+  local text="$1"
+  local needle="$2"
+  local label="$3"
+  if grep -q "$needle" <<<"$text"; then
+    pass "$label"
+  else
+    fail "$label"
+    echo "$text"
+  fi
+}
+
 TEST_REPO="$TMPDIR_ROOT/repo"
 mkdir -p "$TEST_REPO/scripts" "$TEST_REPO/harness/profiles" "$TEST_REPO/harness/templates" "$TEST_REPO/harness/policies"
 registry_path="$TEST_REPO/.harness/runs/registry.yml"
@@ -98,6 +110,9 @@ run_a=$(printf '%s\n' "$assign_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]
 assign_b=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-ops ops-simulator "Check release-facing auth flows" --scope="release auth smoke" --owns="scope:release-auth-smoke|file:CHANGELOG.md" --depends-on="$run_a" --report="progress|risk_raised|verification")
 assert_json_field "$assign_b" '"owner_id": "worker-ops"' "second teammate assignment created"
 run_b=$(printf '%s\n' "$assign_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+run_a_brief=$(run_in_repo bash scripts/harness-runs.sh get "$run_a" --brief)
+assert_contains "$run_a_brief" "This is a bounded teammate run under $leader_run_id." "runs get --brief explains teammate-run priority relative to the parent run"
+assert_contains "$run_a_brief" 'worker-auth owns this run; next report should cover progress, blockers.' "runs get --brief explains the teammate reporting expectation in human-readable form"
 
 list_output=$(run_in_repo bash scripts/harness-teammates.sh list "$leader_run_id")
 assert_json_field "$list_output" '"owner_id": "worker-auth"' "teammate list shows first delegated run"

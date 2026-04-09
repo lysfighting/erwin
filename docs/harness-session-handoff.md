@@ -109,7 +109,7 @@ Shell entrypoints are intentionally thin:
 
 Human-facing runtime note:
 
-- `home` and `doctor` now support `--brief` for leader-readable summaries derived directly from the same control-plane truth, and `missions get MISSION_ID --brief` now does the same at the mission object layer; the default output remains machine-readable JSON for audits, tooling, and exact state inspection
+- `home` and `doctor` now support `--brief` for leader-readable summaries derived directly from the same control-plane truth, and `missions get MISSION_ID --brief` plus `runs get RUN_ID --brief` now do the same at the mission/run object layers; the default output remains machine-readable JSON for audits, tooling, and exact state inspection
 
 Runtime selection order:
 

@@ -139,6 +139,9 @@ assert_json_field "$mission_authority_baseline" '"mission_gap_count": 0' "missio
 assert_json_field "$mission_authority_baseline" '"adjudication_count": 0' "mission authority audit starts without cross-run adjudications"
 authority_baseline=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$authority_baseline" '"contract_gap_count": 0' "initial run authority audit starts without contract drift"
+run_get_brief_output=$(run_in_repo bash scripts/harness-runs.sh get "$run_id" --brief)
+assert_contains "$run_get_brief_output" "Run: $run_id" "runs get --brief names the requested run"
+assert_contains "$run_get_brief_output" 'This run is the current foreground scheduler run and still owns mission control for issue-20001.' "runs get --brief explains foreground mission-control priority"
 
 section "Scheduler baseline"
 schedule_solo_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
@@ -1568,6 +1571,8 @@ section "Meeting lifecycle"
 meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Should this mission stay solo?")
 assert_json_field "$meeting_output" '"state": "active"' "meeting starts active"
 meeting_id=$(printf '%s\n' "$meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+run_brief_active_meeting=$(run_in_repo bash scripts/harness-runs.sh get "$run_id" --brief)
+assert_contains "$run_brief_active_meeting" "Run $run_id is under active council control via $meeting_id." "runs get --brief explains when active council work is governing the run"
 
 finding_output=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" accepted "Mission should stay solo.")
 assert_json_field "$finding_output" '"accepted"' "meeting stores accepted finding"

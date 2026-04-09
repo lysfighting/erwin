@@ -7,14 +7,20 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-09
-- **Last Session**: 2026-04-09-B (Extended the human-facing leader layer down to `missions get --brief`)
+- **Last Updated**: 2026-04-10
+- **Last Session**: 2026-04-10-A (Extended the human-facing leader layer down to `runs get --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-10-A** — Extended the human-facing leader layer down to `runs get --brief`
+
+- **Run objects now have a real human-facing leader entrypoint**: `bash scripts/harness-runs.sh get RUN_ID --brief` now turns the same Go run state, mission-control relationship, authority/adoption drift, dependency state, teammate ownership, and council context into a readable object-layer briefing instead of forcing direct raw run JSON inspection
+- **Run briefings preserve execution truth rather than replacing it**: the new run layer is derived from the existing run registry, mission registry, signal log, live meeting state, and `runs authority-audit` truth, while the default JSON surface remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers foreground, active-council, teammate, and packaged-binary run paths**: core smoke now proves run brief output for a normal foreground run and a run under active council handling, teammate smoke proves the bounded teammate-run path, and runtime-distribution smoke proves `runs get --brief` works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-09-B** — Extended the human-facing leader layer down to `missions get --brief`
 
