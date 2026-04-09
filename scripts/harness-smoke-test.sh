@@ -92,6 +92,25 @@ assert_json_field() {
   fi
 }
 
+assert_contains() {
+  local text="$1"
+  local needle="$2"
+  local label="$3"
+  if grep -q "$needle" <<<"$text"; then
+    pass "$label"
+  else
+    fail "$label"
+    echo "$text"
+  fi
+}
+
+section "Human brief baseline"
+home_brief_idle=$(run_in_repo bash scripts/harness-home.sh --brief)
+doctor_brief_idle=$(run_in_repo bash scripts/harness-doctor.sh --brief)
+assert_contains "$home_brief_idle" 'No active governed execution is in flight.' "home --brief explains the idle control plane"
+assert_contains "$home_brief_idle" 'Claim a mission to enter governed execution.' "home --brief gives the leader a concrete idle next step"
+assert_contains "$doctor_brief_idle" 'Health: healthy' "doctor --brief reports a healthy baseline"
+
 section "Claim"
 claim_output=$(run_in_repo bash scripts/harness-claim.sh 20001 "Harness Smoke Mission" --owns="file:CHANGELOG.md")
 assert_json_field "$claim_output" '"mission_id": "issue-20001"' "claim creates mission"
@@ -110,6 +129,10 @@ mission_get_output=$(run_in_repo bash scripts/harness-missions.sh get issue-2000
 assert_json_field "$mission_get_output" '"state": "claimed"' "mission starts in claimed state"
 assert_json_field "$mission_get_output" '"active_run_ids":' "mission stores active run linkage"
 assert_json_field "$mission_get_output" "\"authoritative_run_id\": \"$run_id\"" "mission records the initial leader run as authoritative control run"
+mission_get_brief_output=$(run_in_repo bash scripts/harness-missions.sh get issue-20001 --brief)
+assert_contains "$mission_get_brief_output" 'Mission: issue-20001' "missions get --brief names the requested mission"
+assert_contains "$mission_get_brief_output" 'classification=runnable' "missions get --brief projects mission scheduler classification"
+assert_contains "$mission_get_brief_output" 'Scheduler currently selected this mission as the foreground mission.' "missions get --brief explains current mission priority from scheduler truth"
 mission_authority_baseline=$(run_in_repo bash scripts/harness-missions.sh authority-audit issue-20001)
 assert_json_field "$mission_authority_baseline" "\"authoritative_run_id\": \"$run_id\"" "mission authority audit reports the leader run as authoritative"
 assert_json_field "$mission_authority_baseline" '"mission_gap_count": 0' "mission authority audit starts without control-plane drift"
@@ -453,6 +476,11 @@ assert_json_field "$schedule_maintenance_output" '"next_action": "Resolve or ref
 home_output_maintenance=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_maintenance" '"scheduler_maintenance_action_count": 2' "home surfaces scheduler maintenance work"
 assert_json_field "$home_output_maintenance" '"scheduler_maintenance_action_tally":' "home surfaces scheduler maintenance tally"
+home_brief_maintenance=$(run_in_repo bash scripts/harness-home.sh --brief)
+assert_contains "$home_brief_maintenance" 'governance maintenance on signal sig-smoke-stale-follow-up' "home --brief names the primary maintenance target from runtime truth"
+assert_contains "$home_brief_maintenance" 'Resolve or refresh the stale signal before letting it influence future scheduling.' "home --brief mirrors maintenance next action"
+doctor_brief_maintenance=$(run_in_repo bash scripts/harness-doctor.sh --brief)
+assert_contains "$doctor_brief_maintenance" 'Health: warnings present' "doctor --brief reports a non-healthy runtime during maintenance drift"
 run_refresh_output=$(run_in_repo bash scripts/harness-drive.sh report "$run_id" "Refresh stale run after maintenance escalation smoke.")
 assert_json_field "$run_refresh_output" '"latest_summary": "Refresh stale run after maintenance escalation smoke."' "leader can refresh stale run after maintenance coverage"
 resolved_stale_signal=$(run_in_repo bash scripts/harness-signals.sh set-state sig-smoke-stale-follow-up resolved "Stale follow-up signal retired after maintenance escalation coverage.")
@@ -719,6 +747,13 @@ assert_json_field "$schedule_multi_escalation_orchestrated" '"action_kind": "hol
 assert_json_field "$schedule_multi_escalation_orchestrated" '"reason": "Collect' "active bundle-council hold actions inherit the live next requirement"
 home_output_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_multi_escalation_orchestrated" '"next_action": "Collect' "home mirrors the live active bundle-council requirement from scheduler state"
+home_brief_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-home.sh --brief)
+assert_contains "$home_brief_multi_escalation_orchestrated" 'Primary control-plane work is an active council on bundle bundle-issue-20011-issue-20012-issue-20013.' "home --brief explains that live council work is primary"
+assert_contains "$home_brief_multi_escalation_orchestrated" 'Current requirement: Collect' "home --brief surfaces the active council requirement in human-readable form"
+mission_brief_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-missions.sh get issue-20011 --brief)
+assert_contains "$mission_brief_multi_escalation_orchestrated" 'classification=needs-human-decision' "missions get --brief reflects mission human-decision state during active council governance"
+assert_contains "$mission_brief_multi_escalation_orchestrated" "Mission issue-20011 is currently under active council control via $multi_escalation_meeting_id." "missions get --brief explains that live council work is governing the mission"
+assert_contains "$mission_brief_multi_escalation_orchestrated" "Review active council $multi_escalation_meeting_id before widening execution." "missions get --brief gives the leader the next council-facing action"
 set_json_field_in_file "$TEST_REPO/.harness/meetings/active/$multi_escalation_meeting_id.yml" "meeting.updated_at" "2026-03-01T00:00:00Z"
 schedule_multi_escalation_stale=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_stale" '"active_decision_stale": true' "scheduler flags stale active bundle councils in the portfolio packet"

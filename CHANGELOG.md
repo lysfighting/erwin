@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Harness Human Interface
+- **Harness now has a real human-readable leader briefing surface**: `bash scripts/harness-home.sh --brief` now renders the existing scheduler, maintenance, mission, teammate, and council control-plane truth as readable leader guidance covering what is primary now, why it is primary, what to do next, what teammates need, and whether council work is active or required.
+- **Harness diagnostics now have a human-readable repair briefing too**: `bash scripts/harness-doctor.sh --brief` now summarizes health state, next repair action, and the top runtime drift items in readable text while preserving the default machine-readable JSON report.
+- **Harness mission objects now have a real human-readable leader entrypoint**: `bash scripts/harness-missions.sh get MISSION_ID --brief` now projects mission state, scheduler classification, queue/priority context, bundle governance, and leader/teammate/council next actions directly from the same Go control-plane truth while leaving default mission JSON unchanged.
+
+### Changed — Harness Human Interface
+- **Canonical Harness entrypoints now acknowledge the human-direct collaboration layer explicitly**: `docs/harness-explainer.md`, `docs/harness-public-contract.md`, `docs/harness-session-handoff.md`, `harness/README.md`, `skills/harness/SKILL.md`, and `skills/harness/README.md` now describe `home` / `doctor --brief` as stable human-facing entrypoints derived from the same Go control-plane truth rather than implying humans should begin from raw JSON only.
+- **Smoke coverage now proves the new leader briefings track real runtime state**: core smoke now checks the briefing layer against idle state, stale maintenance, and active bundle-council guidance, while runtime-distribution smoke proves `home --brief` and `doctor --brief` still work when the packaged binary is used without Go in `PATH`.
+- **Human-facing mission briefings now track real mission control-plane state too**: canonical docs now describe `missions get --brief` as the next leader-facing object layer, core smoke proves both foreground and active-council mission brief behavior, and runtime-distribution smoke proves packaged binaries can render the same mission brief without a local Go toolchain.
+
 ### Added — Harness Docs
 - **Harness now has a durable human-readable explainer**: added `docs/harness-explainer.md` as a readable overview covering what `Harness` is, what problem it solves, how it is designed, how its control plane works, and how to use it. The explainer includes Mermaid diagrams plus simplified ASCII fallbacks for identity/layer, operating model, and usage flow.
 

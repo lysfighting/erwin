@@ -92,6 +92,44 @@ func printJSON(value any) error {
 	return nil
 }
 
+type outputMode string
+
+const (
+	outputModeJSON outputMode = "json"
+	outputModeText outputMode = "text"
+)
+
+func parseOutputMode(command string, args []string) (outputMode, []string, error) {
+	mode := outputModeJSON
+	remaining := []string{}
+	for _, arg := range args {
+		switch arg {
+		case "--brief", "--text", "brief", "text":
+			mode = outputModeText
+		case "--json", "json":
+			mode = outputModeJSON
+		case "--format=json":
+			mode = outputModeJSON
+		case "--format=text", "--format=brief":
+			mode = outputModeText
+		default:
+			if strings.HasPrefix(arg, "--format=") {
+				return "", nil, fmt.Errorf("%s output format must be one of: json, text", command)
+			}
+			remaining = append(remaining, arg)
+		}
+	}
+	return mode, remaining, nil
+}
+
+func printText(text string) error {
+	if !strings.HasSuffix(text, "\n") {
+		text += "\n"
+	}
+	fmt.Print(text)
+	return nil
+}
+
 func nowISO() string {
 	return time.Now().UTC().Format(time.RFC3339Nano)
 }
@@ -2590,9 +2628,9 @@ func delegatedFollowUpMonitorPacket(run map[string]any) map[string]any {
 	state := firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open")
 	lastReportedAt := strings.TrimSpace(stringValue(run["last_reported_at"]))
 	packet := map[string]any{
-		"run_id":  runID,
+		"run_id":   runID,
 		"owner_id": ownerID,
-		"state":   state,
+		"state":    state,
 	}
 	if lastReportedAt != "" {
 		packet["last_reported_at"] = lastReportedAt
@@ -8787,14 +8825,45 @@ func cmdMissions(args []string) error {
 		}
 		return printJSON(missions)
 	case "get":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("missions get", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("missions get requires MISSION_ID")
 		}
-		missionID := strings.TrimSpace(args[1])
+		missionID := strings.TrimSpace(remaining[0])
 		if missionID == "" {
 			return errors.New("missions get requires MISSION_ID")
 		}
+		renderBrief := func(mission map[string]any) error {
+			profile, _ := resolveProfile("")
+			runRegistry := readRegistry()
+			signals := readSignalLog()
+			scheduler := schedulerSummary(profile, registry, runRegistry, signals, true)
+			entry := schedulerMissionClassification(scheduler, missionID)
+			if len(entry) == 0 {
+				entry = map[string]any{
+					"mission_id":                missionID,
+					"mission_state":             stringValue(mission["state"]),
+					"classification":            "unknown",
+					"priority":                  stringValue(mission["priority"]),
+					"risk_level":                stringValue(mission["risk_level"]),
+					"authoritative_run_id":      stringValue(mission["authoritative_run_id"]),
+					"recommended_action":        stringValue(mission["next_expected_action"]),
+					"active_run_count":          len(dedupeStrings(anyListToStrings(toList(mission["active_run_ids"])))),
+					"teammate_run_count":        0,
+					"meeting_count":             0,
+					"open_meeting_action_count": 0,
+					"follow_up_signal_count":    0,
+				}
+			}
+			return printText(renderMissionBrief(mission, entry, scheduler))
+		}
 		if mission := readMission(missionID); mission != nil {
+			if mode == outputModeText {
+				return renderBrief(mission)
+			}
 			return printJSON(mission)
 		}
 		index := findMissionIndex(registry, missionID)
@@ -8802,6 +8871,9 @@ func cmdMissions(args []string) error {
 			return fmt.Errorf("mission not found: %s", missionID)
 		}
 		mission, _ := toMap(toList(registry["missions"])[index])
+		if mode == outputModeText {
+			return renderBrief(mission)
+		}
 		return printJSON(mission)
 	case "graph":
 		graph := []any{}
@@ -11071,64 +11143,64 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		}
 
 		entry := map[string]any{
-			"mission_id":                                 missionID,
-			"mission_state":                              stringValue(mission["state"]),
-			"classification":                             classification,
-			"priority":                                   stringValue(mission["priority"]),
-			"risk_level":                                 stringValue(mission["risk_level"]),
-			"parallel_justified":                         parallelJustified,
-			"parallel_justification":                     parallelJustification,
-			"effective_risk_level":                       effectiveRiskLevel,
-			"profile_high_risk":                          len(profileHighRiskScopeRefs) > 0,
-			"profile_high_risk_scope_refs":               stringListToAny(profileHighRiskScopeRefs),
-			"recommended_decision_surface":               recommendedDecisionSurface,
-			"recommended_decision_protocol":              recommendedDecisionProtocolValue,
-			"recommended_protocol_reason":                recommendedProtocolReason,
-			"meeting_trigger_refs":                       stringListToAny(meetingTriggerRefs),
-			"release_adjacent":                           releaseAdjacent,
-			"authoritative_run_id":                       authoritativeRunID,
-			"authoritative_run_state":                    authoritativeRunState,
-			"authoritative_run_mode":                     authoritativeRunMode,
-			"authoritative_execution_surface":            authoritativeRunSurface,
-			"adopted_output_packet_kind":                 adoptedOutputPacketKind,
-			"adopted_output_follow_up_packet_count":      adoptedOutputFollowUpPacketCount,
-			"adopted_output_open_follow_up_packet_count": adoptedOutputOpenFollowUpPacketCount,
-			"adopted_primary_follow_up_packet":           cloneValue(adoptedPrimaryFollowUpPacket),
-			"adopted_primary_follow_up_action":           adoptedPrimaryFollowUpAction,
-			"adopted_primary_follow_up_delegated_run_id": adoptedPrimaryFollowUpDelegatedRunID,
-			"adopted_primary_follow_up_delegated_owner":  adoptedPrimaryFollowUpDelegatedOwnerID,
-			"adopted_primary_follow_up_delegated_state":  adoptedPrimaryFollowUpDelegatedState,
+			"mission_id":                                           missionID,
+			"mission_state":                                        stringValue(mission["state"]),
+			"classification":                                       classification,
+			"priority":                                             stringValue(mission["priority"]),
+			"risk_level":                                           stringValue(mission["risk_level"]),
+			"parallel_justified":                                   parallelJustified,
+			"parallel_justification":                               parallelJustification,
+			"effective_risk_level":                                 effectiveRiskLevel,
+			"profile_high_risk":                                    len(profileHighRiskScopeRefs) > 0,
+			"profile_high_risk_scope_refs":                         stringListToAny(profileHighRiskScopeRefs),
+			"recommended_decision_surface":                         recommendedDecisionSurface,
+			"recommended_decision_protocol":                        recommendedDecisionProtocolValue,
+			"recommended_protocol_reason":                          recommendedProtocolReason,
+			"meeting_trigger_refs":                                 stringListToAny(meetingTriggerRefs),
+			"release_adjacent":                                     releaseAdjacent,
+			"authoritative_run_id":                                 authoritativeRunID,
+			"authoritative_run_state":                              authoritativeRunState,
+			"authoritative_run_mode":                               authoritativeRunMode,
+			"authoritative_execution_surface":                      authoritativeRunSurface,
+			"adopted_output_packet_kind":                           adoptedOutputPacketKind,
+			"adopted_output_follow_up_packet_count":                adoptedOutputFollowUpPacketCount,
+			"adopted_output_open_follow_up_packet_count":           adoptedOutputOpenFollowUpPacketCount,
+			"adopted_primary_follow_up_packet":                     cloneValue(adoptedPrimaryFollowUpPacket),
+			"adopted_primary_follow_up_action":                     adoptedPrimaryFollowUpAction,
+			"adopted_primary_follow_up_delegated_run_id":           adoptedPrimaryFollowUpDelegatedRunID,
+			"adopted_primary_follow_up_delegated_owner":            adoptedPrimaryFollowUpDelegatedOwnerID,
+			"adopted_primary_follow_up_delegated_state":            adoptedPrimaryFollowUpDelegatedState,
 			"adopted_primary_follow_up_delegated_last_reported_at": adoptedPrimaryFollowUpDelegatedLastReportedAt,
 			"adopted_primary_follow_up_delegated_age_hours":        adoptedPrimaryFollowUpDelegatedAgeHours,
 			"adopted_primary_follow_up_delegated_stale":            adoptedPrimaryFollowUpDelegatedStale,
-			"adopted_primary_follow_up_delegated_action": adoptedPrimaryFollowUpDelegatedAction,
-			"active_run_ids":                             stringListToAny(dedupeStrings(activeRunIDs)),
-			"active_run_count":                           len(dedupeStrings(activeRunIDs)),
-			"teammate_run_count":                         activeTeammateCount,
-			"unsatisfied_mission_dependencies":           stringListToAny(unsatisfiedMissionDeps),
-			"unsatisfied_run_dependencies":               stringListToAny(unsatisfiedRunDeps),
-			"meeting_count":                              activeMeetingCountByMission[missionID],
-			"open_meeting_action_count":                  openMeetingActionCountByMission[missionID],
-			"follow_up_signal_count":                     len(followUpSignalsByMission[missionID]),
-			"follow_up_signals":                          cloneValue(followUpSignalsByMission[missionID]),
-			"fresh_follow_up_signal_kinds":               stringListToAny(freshFollowUpSignalKinds),
-			"follow_up_signal_urgency_rank":              followUpSignalUrgencyRank,
-			"stale_follow_up_signal_count":               len(staleFollowUpSignalsByMission[missionID]),
-			"stale_follow_up_signals":                    cloneValue(staleFollowUpSignalsByMission[missionID]),
-			"bundle_id":                                  bundleID,
-			"bundle_state":                               bundleState,
-			"bundle_role":                                bundleRole,
-			"bundle_resolution_kind":                     bundleResolutionKind,
-			"bundle_governing_mission_id":                bundleGovernorID,
-			"bundle_governance_source_kind":              bundleGovernanceSourceKind,
-			"bundle_adopted_from_meeting_id":             bundleAdoptedFromMeetingID,
-			"bundle_required_action":                     bundleRequiredAction,
-			"candidate_governor_ids":                     stringListToAny(bundleCandidateGovernorIDs),
-			"candidate_governor_packets":                 cloneValue(bundleCandidateGovernorPackets),
-			"latest_summary":                             stringValue(mission["latest_summary"]),
-			"recommended_action":                         recommendedAction,
-			"reasons":                                    stringListToAny(dedupeStrings(reasons)),
-			"updated_at":                                 updatedAt,
+			"adopted_primary_follow_up_delegated_action":           adoptedPrimaryFollowUpDelegatedAction,
+			"active_run_ids":                                       stringListToAny(dedupeStrings(activeRunIDs)),
+			"active_run_count":                                     len(dedupeStrings(activeRunIDs)),
+			"teammate_run_count":                                   activeTeammateCount,
+			"unsatisfied_mission_dependencies":                     stringListToAny(unsatisfiedMissionDeps),
+			"unsatisfied_run_dependencies":                         stringListToAny(unsatisfiedRunDeps),
+			"meeting_count":                                        activeMeetingCountByMission[missionID],
+			"open_meeting_action_count":                            openMeetingActionCountByMission[missionID],
+			"follow_up_signal_count":                               len(followUpSignalsByMission[missionID]),
+			"follow_up_signals":                                    cloneValue(followUpSignalsByMission[missionID]),
+			"fresh_follow_up_signal_kinds":                         stringListToAny(freshFollowUpSignalKinds),
+			"follow_up_signal_urgency_rank":                        followUpSignalUrgencyRank,
+			"stale_follow_up_signal_count":                         len(staleFollowUpSignalsByMission[missionID]),
+			"stale_follow_up_signals":                              cloneValue(staleFollowUpSignalsByMission[missionID]),
+			"bundle_id":                                            bundleID,
+			"bundle_state":                                         bundleState,
+			"bundle_role":                                          bundleRole,
+			"bundle_resolution_kind":                               bundleResolutionKind,
+			"bundle_governing_mission_id":                          bundleGovernorID,
+			"bundle_governance_source_kind":                        bundleGovernanceSourceKind,
+			"bundle_adopted_from_meeting_id":                       bundleAdoptedFromMeetingID,
+			"bundle_required_action":                               bundleRequiredAction,
+			"candidate_governor_ids":                               stringListToAny(bundleCandidateGovernorIDs),
+			"candidate_governor_packets":                           cloneValue(bundleCandidateGovernorPackets),
+			"latest_summary":                                       stringValue(mission["latest_summary"]),
+			"recommended_action":                                   recommendedAction,
+			"reasons":                                              stringListToAny(dedupeStrings(reasons)),
+			"updated_at":                                           updatedAt,
 		}
 		entryByMission[missionID] = entry
 		missionOrder = append(missionOrder, missionID)
@@ -11874,8 +11946,517 @@ func writeSchedulerSnapshot(snapshot map[string]any) (map[string]any, error) {
 	return snapshot, nil
 }
 
+func pluralize(count int, singular, plural string) string {
+	if count == 1 {
+		return singular
+	}
+	return plural
+}
+
+func countLabel(count int, singular, plural string) string {
+	return fmt.Sprintf("%d %s", count, pluralize(count, singular, plural))
+}
+
+func schedulerMissionClassification(scheduler map[string]any, missionID string) map[string]any {
+	for _, item := range toList(scheduler["mission_classifications"]) {
+		entry, _ := toMap(item)
+		if strings.TrimSpace(stringValue(entry["mission_id"])) == missionID {
+			return entry
+		}
+	}
+	return map[string]any{}
+}
+
+func controlPlaneTargetLabel(packet map[string]any) string {
+	if bundleID := strings.TrimSpace(stringValue(packet["bundle_id"])); bundleID != "" {
+		return "bundle " + bundleID
+	}
+	targetKind := strings.TrimSpace(stringValue(packet["target_kind"]))
+	targetID := firstNonBlank(strings.TrimSpace(stringValue(packet["target_id"])), strings.TrimSpace(stringValue(packet["decision_id"])))
+	if targetKind != "" && targetID != "" {
+		return fmt.Sprintf("%s %s", targetKind, targetID)
+	}
+	if missionID := strings.TrimSpace(stringValue(packet["mission_id"])); missionID != "" {
+		return "mission " + missionID
+	}
+	switch {
+	case targetID != "":
+		return targetID
+	default:
+		return "the current control-plane packet"
+	}
+}
+
+func homeBriefCurrentFocus(summary, scheduler map[string]any) string {
+	primaryKind := strings.TrimSpace(stringValue(summary["scheduler_primary_control_plane_kind"]))
+	primaryPacket, _ := toMap(summary["scheduler_primary_control_plane_packet"])
+	selectedMissionIDs := anyListToStrings(toList(summary["scheduler_selected_mission_ids"]))
+	switch primaryKind {
+	case "maintenance":
+		return fmt.Sprintf("Primary control-plane work is governance maintenance on %s.", controlPlaneTargetLabel(primaryPacket))
+	case "human-decision":
+		target := controlPlaneTargetLabel(primaryPacket)
+		switch firstNonBlank(strings.TrimSpace(stringValue(primaryPacket["recommended_decision_surface"])), "leader-decision") {
+		case "active-council":
+			return fmt.Sprintf("Primary control-plane work is an active council on %s.", target)
+		case "council":
+			return fmt.Sprintf("Primary control-plane work is a council-backed decision on %s.", target)
+		default:
+			return fmt.Sprintf("Primary control-plane work is a leader decision on %s.", target)
+		}
+	default:
+		switch {
+		case len(selectedMissionIDs) > 1:
+			return fmt.Sprintf("A bounded parallel batch is active across %s.", strings.Join(selectedMissionIDs, ", "))
+		case len(selectedMissionIDs) == 1:
+			selectedID := selectedMissionIDs[0]
+			entry := schedulerMissionClassification(scheduler, selectedID)
+			if latestSummary := strings.TrimSpace(stringValue(entry["latest_summary"])); latestSummary != "" {
+				return fmt.Sprintf("Foreground mission %s is active: %s.", selectedID, latestSummary)
+			}
+			return fmt.Sprintf("Foreground mission %s is currently selected.", selectedID)
+		case intValue(summary["active_run_count"]) == 0:
+			return "No active governed execution is in flight."
+		case intValue(summary["active_meeting_count"]) > 0:
+			return "Governed execution is currently centered on active council work."
+		case intValue(summary["blocked_run_count"]) > 0 || intValue(summary["dependency_blocked_count"]) > 0:
+			return "Governed execution exists, but the current work is blocked or waiting."
+		default:
+			return "Governed execution is active."
+		}
+	}
+}
+
+func homeBriefWhy(summary, scheduler map[string]any) string {
+	primaryPacket, _ := toMap(summary["scheduler_primary_control_plane_packet"])
+	switch {
+	case strings.TrimSpace(stringValue(primaryPacket["reason"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["reason"]))
+	case strings.TrimSpace(stringValue(primaryPacket["note"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["note"]))
+	case strings.TrimSpace(stringValue(primaryPacket["summary"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["summary"]))
+	}
+	selectedMissionIDs := anyListToStrings(toList(summary["scheduler_selected_mission_ids"]))
+	if len(selectedMissionIDs) > 0 {
+		entry := schedulerMissionClassification(scheduler, selectedMissionIDs[0])
+		reasons := anyListToStrings(toList(entry["reasons"]))
+		if len(reasons) > 0 {
+			limit := len(reasons)
+			if limit > 2 {
+				limit = 2
+			}
+			return strings.Join(reasons[:limit], " ")
+		}
+	}
+	if intValue(summary["scheduler_required_human_decision_count"]) == 0 &&
+		intValue(summary["scheduler_maintenance_action_count"]) == 0 &&
+		intValue(summary["active_run_count"]) == 0 {
+		return "The control plane has no selected mission, active council, or maintenance packet yet."
+	}
+	return "This is the highest-priority control-plane packet under the current scheduler, authority, and maintenance policy."
+}
+
+func homeBriefLeaderAction(summary, scheduler map[string]any) string {
+	nextAction := strings.TrimSpace(stringValue(summary["next_action"]))
+	if nextAction != "" {
+		if nextAction == "No active runs. Claim a mission." {
+			return "Claim a mission to enter governed execution."
+		}
+		return nextAction
+	}
+	selectedMissionIDs := anyListToStrings(toList(summary["scheduler_selected_mission_ids"]))
+	if len(selectedMissionIDs) > 0 {
+		entry := schedulerMissionClassification(scheduler, selectedMissionIDs[0])
+		if action := strings.TrimSpace(stringValue(entry["recommended_action"])); action != "" {
+			return action
+		}
+	}
+	return "Review the current control-plane state before changing governed execution."
+}
+
+func homeBriefTeammateAction(summary map[string]any) string {
+	if action := strings.TrimSpace(stringValue(summary["primary_adopted_follow_up_delegated_action"])); action != "" {
+		return action
+	}
+	activeTeammates := intValue(summary["active_teammate_count"])
+	switch {
+	case activeTeammates > 0:
+		return fmt.Sprintf("%s are active; keep reports fresh and preserve bounded ownership before changing leader truth.", countLabel(activeTeammates, "teammate run", "teammate runs"))
+	default:
+		return "No active teammate work is currently in flight."
+	}
+}
+
+func homeBriefCouncilAction(summary map[string]any) string {
+	activeMeetings := intValue(summary["active_meeting_count"])
+	councilDecisions := intValue(summary["scheduler_council_decision_count"])
+	primaryDecision, _ := toMap(summary["scheduler_primary_required_human_decision"])
+	decisionAction := strings.TrimSpace(stringValue(primaryDecision["recommended_action"]))
+	switch {
+	case activeMeetings > 0:
+		if decisionAction != "" {
+			return fmt.Sprintf("Yes. %s active. Current requirement: %s", countLabel(activeMeetings, "council", "councils"), decisionAction)
+		}
+		return fmt.Sprintf("Yes. %s active; keep council output current before changing governed truth.", countLabel(activeMeetings, "council", "councils"))
+	case councilDecisions > 0:
+		if decisionAction != "" {
+			return "Yes. A council should be opened or reviewed next: " + decisionAction
+		}
+		return "Yes. A council-backed decision is pending before execution should widen."
+	default:
+		return "No council is currently required."
+	}
+}
+
+func renderHomeBrief(summary, scheduler map[string]any) string {
+	lines := []string{
+		"Harness Leader Briefing",
+		fmt.Sprintf(
+			"Profile: %s",
+			firstNonBlank(strings.TrimSpace(stringValue(summary["profile_id"])), "unknown"),
+		),
+		fmt.Sprintf(
+			"State: %s, %s, %s, %s, %s.",
+			countLabel(intValue(summary["active_mission_count"]), "active mission", "active missions"),
+			countLabel(intValue(summary["active_run_count"]), "active run", "active runs"),
+			countLabel(intValue(summary["active_teammate_count"]), "active teammate", "active teammates"),
+			countLabel(intValue(summary["active_meeting_count"]), "active council", "active councils"),
+			countLabel(intValue(summary["active_signal_count"]), "active signal", "active signals"),
+		),
+		"",
+		"Current:",
+		"- " + homeBriefCurrentFocus(summary, scheduler),
+		"",
+		"Why:",
+		"- " + homeBriefWhy(summary, scheduler),
+		"",
+		"Next:",
+		"- " + firstNonBlank(strings.TrimSpace(stringValue(summary["next_action"])), "No immediate next action is recorded."),
+		"",
+		"Leader:",
+		"- " + homeBriefLeaderAction(summary, scheduler),
+		"",
+		"Teammates:",
+		"- " + homeBriefTeammateAction(summary),
+		"",
+		"Council:",
+		"- " + homeBriefCouncilAction(summary),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func doctorHealthLabel(report map[string]any) string {
+	switch {
+	case intValue(report["critical_count"]) > 0:
+		return "critical drift"
+	case intValue(report["warning_count"]) > 0:
+		return "warnings present"
+	default:
+		return "healthy"
+	}
+}
+
+func renderDoctorBrief(report map[string]any) string {
+	lines := []string{
+		"Harness Doctor Briefing",
+		fmt.Sprintf(
+			"Profile: %s",
+			firstNonBlank(strings.TrimSpace(stringValue(report["profile_id"])), "unknown"),
+		),
+		fmt.Sprintf(
+			"Health: %s (%d critical, %d warning, %d info).",
+			doctorHealthLabel(report),
+			intValue(report["critical_count"]),
+			intValue(report["warning_count"]),
+			intValue(report["info_count"]),
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %d open meeting action(s).",
+			countLabel(intValue(report["active_mission_count"]), "active mission", "active missions"),
+			countLabel(intValue(report["active_teammate_count"]), "active teammate", "active teammates"),
+			intValue(report["open_meeting_actions"]),
+		),
+		"",
+		"Next:",
+		"- " + firstNonBlank(strings.TrimSpace(stringValue(report["next_action"])), "No immediate repair action is recorded."),
+		"",
+		"Top issues:",
+	}
+	issues := toList(report["issues"])
+	if len(issues) == 0 {
+		lines = append(lines, "- None.")
+		return strings.Join(lines, "\n")
+	}
+	limit := len(issues)
+	if limit > 3 {
+		limit = 3
+	}
+	for _, item := range issues[:limit] {
+		issue, _ := toMap(item)
+		severity := strings.ToUpper(firstNonBlank(strings.TrimSpace(stringValue(issue["severity"])), "info"))
+		summary := firstNonBlank(strings.TrimSpace(stringValue(issue["summary"])), strings.TrimSpace(stringValue(issue["kind"])))
+		recommendation := strings.TrimSpace(stringValue(issue["recommendation"]))
+		ref := strings.TrimSpace(stringValue(issue["ref"]))
+		line := fmt.Sprintf("[%s] %s", severity, summary)
+		if recommendation != "" {
+			line += " Next: " + recommendation
+		}
+		if ref != "" {
+			line += " Ref: " + ref
+		}
+		lines = append(lines, "- "+line)
+	}
+	if len(issues) > limit {
+		lines = append(lines, fmt.Sprintf("- %d more issue(s) remain in the JSON report.", len(issues)-limit))
+	}
+	return strings.Join(lines, "\n")
+}
+
+func missionBriefDecisionMeetingIDs(entry map[string]any) []string {
+	return dedupeStrings(append(
+		anyListToStrings(toList(entry["active_decision_meeting_ids"])),
+		anyListToStrings(toList(entry["bundle_active_decision_meeting_ids"]))...,
+	))
+}
+
+func missionBriefWhy(entry map[string]any) string {
+	reasons := anyListToStrings(toList(entry["reasons"]))
+	if len(reasons) == 0 {
+		return "No additional blocking reason is recorded for this mission."
+	}
+	limit := len(reasons)
+	if limit > 3 {
+		limit = 3
+	}
+	return strings.Join(reasons[:limit], " ")
+}
+
+func missionBriefCurrent(mission, entry, scheduler map[string]any) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(entry["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])))
+	classification := firstNonBlank(strings.TrimSpace(stringValue(entry["classification"])), "unknown")
+	activeDecisionMeetingIDs := missionBriefDecisionMeetingIDs(entry)
+	switch {
+	case len(activeDecisionMeetingIDs) > 0:
+		return fmt.Sprintf("Mission %s is currently under active council control via %s.", missionID, strings.Join(activeDecisionMeetingIDs, ", "))
+	case boolValue(entry["selected"]) && intValue(scheduler["selected_mission_count"]) > 1:
+		return fmt.Sprintf("Mission %s is in the current bounded parallel batch.", missionID)
+	case boolValue(entry["selected"]):
+		return fmt.Sprintf("Mission %s is the current foreground mission.", missionID)
+	case classification == "needs-human-decision":
+		switch firstNonBlank(strings.TrimSpace(stringValue(entry["recommended_decision_surface"])), "leader-decision") {
+		case "council":
+			return fmt.Sprintf("Mission %s is waiting on a council-backed decision before execution widens.", missionID)
+		case "active-council":
+			return fmt.Sprintf("Mission %s is waiting on active council work before execution widens.", missionID)
+		default:
+			return fmt.Sprintf("Mission %s is waiting on a leader decision before execution widens.", missionID)
+		}
+	case classification == "blocked-by-dependency":
+		return fmt.Sprintf("Mission %s is blocked on dependency state.", missionID)
+	case classification == "blocked-by-policy":
+		return fmt.Sprintf("Mission %s is blocked by current policy or fresh control-plane signals.", missionID)
+	case classification == "blocked-by-overlap":
+		return fmt.Sprintf("Mission %s is blocked by cross-mission ownership overlap.", missionID)
+	case classification == "deferred" && strings.TrimSpace(stringValue(entry["bundle_governing_mission_id"])) != "":
+		return fmt.Sprintf("Mission %s is intentionally deferred behind governing mission %s.", missionID, strings.TrimSpace(stringValue(entry["bundle_governing_mission_id"])))
+	case classification == "deferred" && strings.TrimSpace(stringValue(entry["authoritative_run_state"])) != "":
+		return fmt.Sprintf("Mission %s is currently deferred with authoritative run state %s.", missionID, strings.TrimSpace(stringValue(entry["authoritative_run_state"])))
+	case classification == "completed":
+		return fmt.Sprintf("Mission %s is no longer active in the control plane.", missionID)
+	default:
+		return fmt.Sprintf("Mission %s is clear to continue under the current control-plane policy.", missionID)
+	}
+}
+
+func missionBriefPriority(mission, entry, scheduler map[string]any) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(entry["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])))
+	classification := firstNonBlank(strings.TrimSpace(stringValue(entry["classification"])), "unknown")
+	switch {
+	case classification == "completed":
+		return "This mission is outside the live scheduler portfolio because it is no longer active."
+	case boolValue(entry["selected"]) && intValue(scheduler["selected_mission_count"]) > 1:
+		return "Scheduler admitted this mission into the current bounded parallel batch."
+	case boolValue(entry["selected"]):
+		return "Scheduler currently selected this mission as the foreground mission."
+	case boolValue(entry["primary_human_decision"]):
+		return "This mission owns the current primary human-decision packet."
+	case intValue(entry["human_decision_queue_position"]) > 1 && strings.TrimSpace(stringValue(entry["deferred_by_primary_control_plane_kind"])) == "maintenance":
+		return fmt.Sprintf("This mission's human-decision packet is queue position %d and is currently deferred behind primary maintenance.", intValue(entry["human_decision_queue_position"]))
+	case intValue(entry["human_decision_queue_position"]) > 1:
+		return fmt.Sprintf("This mission's human-decision packet is queue position %d in the current scheduler portfolio.", intValue(entry["human_decision_queue_position"]))
+	case strings.TrimSpace(stringValue(entry["deferred_by_primary_control_plane_kind"])) == "maintenance":
+		primaryMaintenance, _ := toMap(scheduler["primary_maintenance_action"])
+		target := controlPlaneTargetLabel(primaryMaintenance)
+		actionKind := firstNonBlank(strings.TrimSpace(stringValue(primaryMaintenance["action_kind"])), "maintenance")
+		if target != "the current control-plane packet" {
+			return fmt.Sprintf("Higher-priority maintenance (%s on %s) currently outranks this mission.", actionKind, target)
+		}
+		return fmt.Sprintf("Higher-priority maintenance (%s) currently outranks this mission.", actionKind)
+	case intValue(entry["bundle_active_decision_meeting_count"]) > 0:
+		return fmt.Sprintf("This mission is being held behind live bundle council coverage on %s.", firstNonBlank(strings.TrimSpace(stringValue(entry["bundle_id"])), missionID))
+	case classification == "runnable" && intValue(scheduler["selected_mission_count"]) > 0:
+		selectedMissionIDs := anyListToStrings(toList(scheduler["selected_mission_ids"]))
+		if len(selectedMissionIDs) > 0 {
+			return fmt.Sprintf("This mission is runnable, but %s currently owns the foreground slot.", selectedMissionIDs[0])
+		}
+		return "This mission is runnable, but another governed mission currently owns the foreground slot."
+	default:
+		return "No separate higher-priority control-plane packet is currently recorded ahead of this mission."
+	}
+}
+
+func missionBriefLeaderAction(mission, entry map[string]any) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(entry["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])))
+	activeDecisionMeetingIDs := missionBriefDecisionMeetingIDs(entry)
+	recommendedAction := strings.TrimSpace(stringValue(entry["recommended_action"]))
+	switch {
+	case len(activeDecisionMeetingIDs) > 0:
+		if recommendedAction != "" {
+			return fmt.Sprintf("Review active council %s before widening execution. %s", strings.Join(activeDecisionMeetingIDs, ", "), recommendedAction)
+		}
+		return fmt.Sprintf("Review active council %s before widening execution.", strings.Join(activeDecisionMeetingIDs, ", "))
+	case strings.TrimSpace(stringValue(entry["recommended_decision_surface"])) == "council":
+		protocol := firstNonBlank(strings.TrimSpace(stringValue(entry["recommended_decision_protocol"])), "evidence-review")
+		if recommendedAction != "" {
+			return fmt.Sprintf("Open or materialize a %s council for %s. %s", protocol, missionID, recommendedAction)
+		}
+		return fmt.Sprintf("Open or materialize a %s council for %s before widening execution.", protocol, missionID)
+	case strings.TrimSpace(stringValue(entry["classification"])) == "needs-human-decision":
+		if recommendedAction != "" {
+			return recommendedAction
+		}
+		return fmt.Sprintf("Record the governing leader decision for %s before widening execution.", missionID)
+	case strings.TrimSpace(stringValue(entry["classification"])) == "runnable":
+		if next := strings.TrimSpace(stringValue(mission["next_expected_action"])); next != "" {
+			return next
+		}
+		if runID := strings.TrimSpace(stringValue(entry["authoritative_run_id"])); runID != "" {
+			return fmt.Sprintf("Advance authoritative run %s on %s.", runID, missionID)
+		}
+	}
+	if recommendedAction != "" {
+		return recommendedAction
+	}
+	return "Review the current mission control-plane state before changing governed execution."
+}
+
+func missionBriefTeammateAction(entry map[string]any) string {
+	if delegatedRunID := strings.TrimSpace(stringValue(entry["adopted_primary_follow_up_delegated_run_id"])); delegatedRunID != "" {
+		owner := firstNonBlank(strings.TrimSpace(stringValue(entry["adopted_primary_follow_up_delegated_owner"])), "The delegated owner")
+		state := firstNonBlank(strings.TrimSpace(stringValue(entry["adopted_primary_follow_up_delegated_state"])), "active")
+		if action := strings.TrimSpace(stringValue(entry["adopted_primary_follow_up_delegated_action"])); action != "" {
+			return fmt.Sprintf("%s currently owns delegated follow-up run %s (%s). %s", owner, delegatedRunID, state, action)
+		}
+		return fmt.Sprintf("%s currently owns delegated follow-up run %s (%s); keep that report fresh.", owner, delegatedRunID, state)
+	}
+	if count := intValue(entry["teammate_run_count"]); count > 0 {
+		return fmt.Sprintf("%s are active on this mission; keep reports fresh and bounded before changing leader truth.", countLabel(count, "teammate run", "teammate runs"))
+	}
+	return "No active teammate work is currently attached to this mission."
+}
+
+func missionBriefCouncilAction(entry map[string]any) string {
+	activeDecisionMeetingIDs := missionBriefDecisionMeetingIDs(entry)
+	if len(activeDecisionMeetingIDs) > 0 {
+		return fmt.Sprintf("Yes. Active council coverage: %s.", strings.Join(activeDecisionMeetingIDs, ", "))
+	}
+	if count := intValue(entry["meeting_count"]); count > 0 {
+		return fmt.Sprintf("Yes. %s are active on this mission.", countLabel(count, "council", "councils"))
+	}
+	switch firstNonBlank(strings.TrimSpace(stringValue(entry["recommended_decision_surface"])), "leader-decision") {
+	case "council":
+		protocol := firstNonBlank(strings.TrimSpace(stringValue(entry["recommended_decision_protocol"])), "evidence-review")
+		return fmt.Sprintf("Yes. Next human surface should be a %s council.", protocol)
+	case "active-council":
+		return "Yes. This mission is already under active council handling."
+	default:
+		return "No council is currently required."
+	}
+}
+
+func renderMissionBrief(mission, entry, scheduler map[string]any) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(entry["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	missionState := firstNonBlank(strings.TrimSpace(stringValue(entry["mission_state"])), strings.TrimSpace(stringValue(mission["state"])), "unknown")
+	classification := firstNonBlank(strings.TrimSpace(stringValue(entry["classification"])), "unknown")
+	priority := firstNonBlank(strings.TrimSpace(stringValue(entry["priority"])), strings.TrimSpace(stringValue(mission["priority"])), "unranked")
+	effectiveRisk := firstNonBlank(strings.TrimSpace(stringValue(entry["effective_risk_level"])), strings.TrimSpace(stringValue(entry["risk_level"])), strings.TrimSpace(stringValue(mission["risk_level"])), "default")
+	authoritativeRunID := firstNonBlank(strings.TrimSpace(stringValue(entry["authoritative_run_id"])), strings.TrimSpace(stringValue(mission["authoritative_run_id"])))
+	authoritativeRunState := strings.TrimSpace(stringValue(entry["authoritative_run_state"]))
+	activeCouncilCount := len(missionBriefDecisionMeetingIDs(entry))
+	if activeCouncilCount == 0 {
+		activeCouncilCount = intValue(entry["meeting_count"])
+	}
+	lines := []string{
+		"Harness Mission Briefing",
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf(
+			"State: mission=%s, classification=%s, priority=%s, effective risk=%s.",
+			missionState,
+			classification,
+			priority,
+			effectiveRisk,
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %s, %d open meeting action(s), %d fresh follow-up signal(s).",
+			countLabel(intValue(entry["active_run_count"]), "active run", "active runs"),
+			countLabel(intValue(entry["teammate_run_count"]), "teammate run", "teammate runs"),
+			countLabel(activeCouncilCount, "active council", "active councils"),
+			intValue(entry["open_meeting_action_count"]),
+			intValue(entry["follow_up_signal_count"]),
+		),
+	}
+	if authoritativeRunID != "" {
+		runLabel := authoritativeRunID
+		if authoritativeRunState != "" {
+			runLabel = fmt.Sprintf("%s (%s)", authoritativeRunID, authoritativeRunState)
+		}
+		lines = append(lines, "Control: authoritative run "+runLabel+".")
+	}
+	if bundleID := strings.TrimSpace(stringValue(entry["bundle_id"])); bundleID != "" {
+		bundleParts := []string{fmt.Sprintf("Bundle: %s", bundleID)}
+		if controlState := firstNonBlank(strings.TrimSpace(stringValue(entry["bundle_control_state"])), strings.TrimSpace(stringValue(entry["bundle_state"]))); controlState != "" {
+			bundleParts = append(bundleParts, "state "+controlState)
+		}
+		if governorID := strings.TrimSpace(stringValue(entry["bundle_governing_mission_id"])); governorID != "" {
+			bundleParts = append(bundleParts, "governor "+governorID)
+		}
+		lines = append(lines, strings.Join(bundleParts, ", ")+".")
+	}
+	lines = append(lines,
+		"",
+		"Priority:",
+		"- "+missionBriefPriority(mission, entry, scheduler),
+		"",
+		"Current:",
+		"- "+missionBriefCurrent(mission, entry, scheduler),
+		"",
+		"Why:",
+		"- "+missionBriefWhy(entry),
+		"",
+		"Next:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(entry["recommended_action"])), strings.TrimSpace(stringValue(mission["next_expected_action"])), "No immediate next action is recorded."),
+		"",
+		"Leader:",
+		"- "+missionBriefLeaderAction(mission, entry),
+		"",
+		"Teammates:",
+		"- "+missionBriefTeammateAction(entry),
+		"",
+		"Council:",
+		"- "+missionBriefCouncilAction(entry),
+	)
+	return strings.Join(lines, "\n")
+}
+
 func cmdHome(args []string) error {
-	_ = args
+	mode, remaining, err := parseOutputMode("home", args)
+	if err != nil {
+		return err
+	}
+	if len(remaining) > 0 {
+		return errors.New("home does not accept positional arguments")
+	}
 	if err := ensureRuntimeDirs(); err != nil {
 		return err
 	}
@@ -12139,6 +12720,12 @@ func cmdHome(args []string) error {
 	switch {
 	case len(orphanSignals) > 0 || len(orphanMeetings) > 0:
 		nextAction = "Reconcile orphaned runtime objects before proceeding."
+	case stringValue(scheduler["primary_control_plane_kind"]) == "maintenance":
+		nextAction = firstNonBlank(
+			stringValue(scheduler["next_action"]),
+			stringValue(getKey(scheduler, "primary_maintenance_action.recommended_action", "")),
+			nextAction,
+		)
 	case intValue(scheduler["required_human_decision_count"]) > 0:
 		nextAction = stringValue(scheduler["next_action"])
 	case intValue(graphAuthorityAudit["cross_mission_conflict_count"]) > 0:
@@ -12181,89 +12768,93 @@ func cmdHome(args []string) error {
 	case len(waitingRuns) > 0:
 		nextAction = "Review waiting runs and dependency state."
 	}
-	return printJSON(map[string]any{
-		"profile_id":                                       stringValue(getKey(profile, "profile.profile_id", "")),
-		"active_mission_count":                             len(activeMissions),
-		"blocked_mission_count":                            len(blockedMissions),
-		"review_mission_count":                             len(reviewMissions),
-		"dependency_mission_count":                         len(dependencyBlockedMissions),
-		"mission_graph_edge_count":                         missionGraphEdges,
-		"mission_bundle_count":                             intValue(graphAuthorityAudit["bundle_count"]),
-		"mission_conflicted_bundle_count":                  intValue(graphAuthorityAudit["conflicted_bundle_count"]),
-		"mission_governed_bundle_count":                    intValue(graphAuthorityAudit["governed_bundle_count"]),
-		"mission_escalated_bundle_count":                   intValue(graphAuthorityAudit["escalated_bundle_count"]),
-		"mission_graph_conflict_count":                     intValue(graphAuthorityAudit["cross_mission_conflict_count"]),
-		"mission_dependency_adjudication_count":            intValue(graphAuthorityAudit["dependency_adjudication_count"]),
-		"active_run_count":                                 len(activeRuns),
-		"active_teammate_count":                            len(activeTeammates),
-		"blocked_run_count":                                len(blockedRuns),
-		"dependency_blocked_count":                         len(dependencyBlockedRuns),
-		"review_blocked_count":                             len(reviewBlockedRuns),
-		"checks_failed_count":                              len(checksFailedRuns),
-		"merge_ready_count":                                len(mergeReadyRuns),
-		"ownership_overlap_count":                          len(overlappingClaims),
-		"active_signal_count":                              len(activeSignals),
-		"coordination_signal_count":                        len(coordinationSignals),
-		"active_meeting_count":                             len(meetings),
-		"active_rc_count":                                  boolToInt(activeRCRecord != nil),
-		"open_meeting_action_count":                        len(meetingActions),
-		"orphan_signal_count":                              len(orphanSignals),
-		"orphan_meeting_count":                             len(orphanMeetings),
-		"missions":                                         activeMissions,
-		"dependency_blocked_missions":                      dependencyBlockedMissions,
-		"mission_authority_audit":                          graphAuthorityAudit,
-		"runs":                                             activeRuns,
-		"dependency_blocked_runs":                          dependencyBlockedRuns,
-		"signals":                                          activeSignals,
-		"meetings":                                         meetings,
-		"overlapping_claims":                               overlappingClaims,
-		"active_rc":                                        mapOrEmpty(activeRCRecord),
-		"meeting_actions":                                  meetingActions,
-		"orphan_signals":                                   orphanSignals,
-		"orphan_meetings":                                  orphanMeetings,
-		"scheduler_execution_mode":                         stringValue(scheduler["execution_mode"]),
-		"scheduler_selected_mission_count":                 intValue(scheduler["selected_mission_count"]),
-		"scheduler_required_human_decision_count":          intValue(scheduler["required_human_decision_count"]),
-		"scheduler_deferred_human_decision_count":          intValue(scheduler["deferred_human_decision_count"]),
-		"scheduler_council_decision_count":                 intValue(scheduler["council_decision_count"]),
-		"scheduler_maintenance_action_count":               intValue(scheduler["maintenance_action_count"]),
-		"scheduler_deferred_maintenance_action_count":      intValue(scheduler["deferred_maintenance_action_count"]),
-		"scheduler_reschedule_action_count":                intValue(scheduler["reschedule_action_count"]),
-		"scheduler_tally":                                  cloneValue(getKey(scheduler, "classification_tally", map[string]any{})),
-		"scheduler_bundle_role_tally":                      cloneValue(getKey(scheduler, "bundle_role_tally", map[string]any{})),
-		"scheduler_active_council_bundle_count":            intValue(scheduler["active_council_bundle_count"]),
-		"scheduler_active_council_bundle_ids":              cloneValue(getKey(scheduler, "active_council_bundle_ids", []any{})),
-		"scheduler_required_human_decision_scope_tally":    cloneValue(getKey(scheduler, "required_human_decision_scope_tally", map[string]any{})),
-		"scheduler_required_human_decision_surface_tally":  cloneValue(getKey(scheduler, "required_human_decision_surface_tally", map[string]any{})),
-		"scheduler_decision_selection_policy":              stringValue(scheduler["decision_selection_policy"]),
-		"scheduler_previous_primary_human_decision_key":    stringValue(scheduler["previous_primary_human_decision_key"]),
-		"scheduler_primary_required_human_decision":        cloneValue(getKey(scheduler, "primary_required_human_decision", map[string]any{})),
-		"scheduler_maintenance_selection_policy":           stringValue(scheduler["maintenance_selection_policy"]),
-		"scheduler_previous_primary_maintenance_key":       stringValue(scheduler["previous_primary_maintenance_key"]),
-		"scheduler_primary_maintenance_action":             cloneValue(getKey(scheduler, "primary_maintenance_action", map[string]any{})),
-		"scheduler_primary_control_plane_kind":             stringValue(scheduler["primary_control_plane_kind"]),
-		"scheduler_primary_control_plane_selection_policy": stringValue(scheduler["primary_control_plane_selection_policy"]),
-		"scheduler_primary_control_plane_packet":           cloneValue(getKey(scheduler, "primary_control_plane_packet", map[string]any{})),
-		"scheduler_deferred_control_plane_packet_count":    intValue(scheduler["deferred_control_plane_packet_count"]),
-		"scheduler_maintenance_action_tally":               cloneValue(getKey(scheduler, "maintenance_action_tally", map[string]any{})),
-		"scheduler_previous_selected_mission_ids":          cloneValue(toList(scheduler["previous_selected_mission_ids"])),
-		"scheduler_selected_mission_ids":                   cloneValue(toList(scheduler["selected_mission_ids"])),
-		"scheduler_next_action":                            stringValue(scheduler["next_action"]),
-		"adopted_output_run_count":                         adoptedOutputRunCount,
-		"adopted_output_follow_up_packet_count":            adoptedOutputFollowUpPacketCount,
-		"adopted_output_open_follow_up_packet_count":       adoptedOutputOpenFollowUpPacketCount,
-		"primary_adopted_output_run_id":                    primaryAdoptedOutputRunID,
-		"primary_adopted_output_packet_kind":               primaryAdoptedOutputPacketKind,
-		"primary_adopted_follow_up_packet":                 cloneValue(primaryAdoptedFollowUpPacket),
-		"primary_adopted_follow_up_delegated_run_id":       primaryAdoptedFollowUpDelegatedRunID,
-		"primary_adopted_follow_up_delegated_owner":        primaryAdoptedFollowUpDelegatedOwnerID,
-		"primary_adopted_follow_up_delegated_state":        primaryAdoptedFollowUpDelegatedState,
+	summary := map[string]any{
+		"profile_id":                                           stringValue(getKey(profile, "profile.profile_id", "")),
+		"active_mission_count":                                 len(activeMissions),
+		"blocked_mission_count":                                len(blockedMissions),
+		"review_mission_count":                                 len(reviewMissions),
+		"dependency_mission_count":                             len(dependencyBlockedMissions),
+		"mission_graph_edge_count":                             missionGraphEdges,
+		"mission_bundle_count":                                 intValue(graphAuthorityAudit["bundle_count"]),
+		"mission_conflicted_bundle_count":                      intValue(graphAuthorityAudit["conflicted_bundle_count"]),
+		"mission_governed_bundle_count":                        intValue(graphAuthorityAudit["governed_bundle_count"]),
+		"mission_escalated_bundle_count":                       intValue(graphAuthorityAudit["escalated_bundle_count"]),
+		"mission_graph_conflict_count":                         intValue(graphAuthorityAudit["cross_mission_conflict_count"]),
+		"mission_dependency_adjudication_count":                intValue(graphAuthorityAudit["dependency_adjudication_count"]),
+		"active_run_count":                                     len(activeRuns),
+		"active_teammate_count":                                len(activeTeammates),
+		"blocked_run_count":                                    len(blockedRuns),
+		"dependency_blocked_count":                             len(dependencyBlockedRuns),
+		"review_blocked_count":                                 len(reviewBlockedRuns),
+		"checks_failed_count":                                  len(checksFailedRuns),
+		"merge_ready_count":                                    len(mergeReadyRuns),
+		"ownership_overlap_count":                              len(overlappingClaims),
+		"active_signal_count":                                  len(activeSignals),
+		"coordination_signal_count":                            len(coordinationSignals),
+		"active_meeting_count":                                 len(meetings),
+		"active_rc_count":                                      boolToInt(activeRCRecord != nil),
+		"open_meeting_action_count":                            len(meetingActions),
+		"orphan_signal_count":                                  len(orphanSignals),
+		"orphan_meeting_count":                                 len(orphanMeetings),
+		"missions":                                             activeMissions,
+		"dependency_blocked_missions":                          dependencyBlockedMissions,
+		"mission_authority_audit":                              graphAuthorityAudit,
+		"runs":                                                 activeRuns,
+		"dependency_blocked_runs":                              dependencyBlockedRuns,
+		"signals":                                              activeSignals,
+		"meetings":                                             meetings,
+		"overlapping_claims":                                   overlappingClaims,
+		"active_rc":                                            mapOrEmpty(activeRCRecord),
+		"meeting_actions":                                      meetingActions,
+		"orphan_signals":                                       orphanSignals,
+		"orphan_meetings":                                      orphanMeetings,
+		"scheduler_execution_mode":                             stringValue(scheduler["execution_mode"]),
+		"scheduler_selected_mission_count":                     intValue(scheduler["selected_mission_count"]),
+		"scheduler_required_human_decision_count":              intValue(scheduler["required_human_decision_count"]),
+		"scheduler_deferred_human_decision_count":              intValue(scheduler["deferred_human_decision_count"]),
+		"scheduler_council_decision_count":                     intValue(scheduler["council_decision_count"]),
+		"scheduler_maintenance_action_count":                   intValue(scheduler["maintenance_action_count"]),
+		"scheduler_deferred_maintenance_action_count":          intValue(scheduler["deferred_maintenance_action_count"]),
+		"scheduler_reschedule_action_count":                    intValue(scheduler["reschedule_action_count"]),
+		"scheduler_tally":                                      cloneValue(getKey(scheduler, "classification_tally", map[string]any{})),
+		"scheduler_bundle_role_tally":                          cloneValue(getKey(scheduler, "bundle_role_tally", map[string]any{})),
+		"scheduler_active_council_bundle_count":                intValue(scheduler["active_council_bundle_count"]),
+		"scheduler_active_council_bundle_ids":                  cloneValue(getKey(scheduler, "active_council_bundle_ids", []any{})),
+		"scheduler_required_human_decision_scope_tally":        cloneValue(getKey(scheduler, "required_human_decision_scope_tally", map[string]any{})),
+		"scheduler_required_human_decision_surface_tally":      cloneValue(getKey(scheduler, "required_human_decision_surface_tally", map[string]any{})),
+		"scheduler_decision_selection_policy":                  stringValue(scheduler["decision_selection_policy"]),
+		"scheduler_previous_primary_human_decision_key":        stringValue(scheduler["previous_primary_human_decision_key"]),
+		"scheduler_primary_required_human_decision":            cloneValue(getKey(scheduler, "primary_required_human_decision", map[string]any{})),
+		"scheduler_maintenance_selection_policy":               stringValue(scheduler["maintenance_selection_policy"]),
+		"scheduler_previous_primary_maintenance_key":           stringValue(scheduler["previous_primary_maintenance_key"]),
+		"scheduler_primary_maintenance_action":                 cloneValue(getKey(scheduler, "primary_maintenance_action", map[string]any{})),
+		"scheduler_primary_control_plane_kind":                 stringValue(scheduler["primary_control_plane_kind"]),
+		"scheduler_primary_control_plane_selection_policy":     stringValue(scheduler["primary_control_plane_selection_policy"]),
+		"scheduler_primary_control_plane_packet":               cloneValue(getKey(scheduler, "primary_control_plane_packet", map[string]any{})),
+		"scheduler_deferred_control_plane_packet_count":        intValue(scheduler["deferred_control_plane_packet_count"]),
+		"scheduler_maintenance_action_tally":                   cloneValue(getKey(scheduler, "maintenance_action_tally", map[string]any{})),
+		"scheduler_previous_selected_mission_ids":              cloneValue(toList(scheduler["previous_selected_mission_ids"])),
+		"scheduler_selected_mission_ids":                       cloneValue(toList(scheduler["selected_mission_ids"])),
+		"scheduler_next_action":                                stringValue(scheduler["next_action"]),
+		"adopted_output_run_count":                             adoptedOutputRunCount,
+		"adopted_output_follow_up_packet_count":                adoptedOutputFollowUpPacketCount,
+		"adopted_output_open_follow_up_packet_count":           adoptedOutputOpenFollowUpPacketCount,
+		"primary_adopted_output_run_id":                        primaryAdoptedOutputRunID,
+		"primary_adopted_output_packet_kind":                   primaryAdoptedOutputPacketKind,
+		"primary_adopted_follow_up_packet":                     cloneValue(primaryAdoptedFollowUpPacket),
+		"primary_adopted_follow_up_delegated_run_id":           primaryAdoptedFollowUpDelegatedRunID,
+		"primary_adopted_follow_up_delegated_owner":            primaryAdoptedFollowUpDelegatedOwnerID,
+		"primary_adopted_follow_up_delegated_state":            primaryAdoptedFollowUpDelegatedState,
 		"primary_adopted_follow_up_delegated_last_reported_at": primaryAdoptedFollowUpDelegatedLastReportedAt,
 		"primary_adopted_follow_up_delegated_age_hours":        primaryAdoptedFollowUpDelegatedAgeHours,
 		"primary_adopted_follow_up_delegated_stale":            primaryAdoptedFollowUpDelegatedStale,
-		"primary_adopted_follow_up_delegated_action":       primaryAdoptedFollowUpDelegatedAction,
-		"next_action":                                      nextAction,
-	})
+		"primary_adopted_follow_up_delegated_action":           primaryAdoptedFollowUpDelegatedAction,
+		"next_action":                                          nextAction,
+	}
+	if mode == outputModeText {
+		return printText(renderHomeBrief(summary, scheduler))
+	}
+	return printJSON(summary)
 }
 
 func boolToInt(value bool) int {
@@ -12281,8 +12872,18 @@ func mapOrEmpty(value map[string]any) map[string]any {
 }
 
 func cmdDoctor(args []string) error {
-	_ = args
-	return printJSON(doctorReport())
+	mode, remaining, err := parseOutputMode("doctor", args)
+	if err != nil {
+		return err
+	}
+	if len(remaining) > 0 {
+		return errors.New("doctor does not accept positional arguments")
+	}
+	report := doctorReport()
+	if mode == outputModeText {
+		return printText(renderDoctorBrief(report))
+	}
+	return printJSON(report)
 }
 
 func cmdIssue(args []string) error {
@@ -15454,7 +16055,7 @@ func cmdTeammatesRemainder(args []string) error {
 				"worktree_path":         stringValue(parentRun["worktree_path"]),
 				"context_files":         stringListToAny(dedupeStrings(authorityRefs)),
 				"verification_commands": []any{},
-				"notes":                assignmentNotes,
+				"notes":                 assignmentNotes,
 			}))
 			setOwnershipSelectors(contractPayload, dedupeStrings(append([]string{"scope:" + slugify(firstNonBlank(assignedScope, objective))}, ownershipClaimsInput...)))
 			freshness, _ := toMap(contractPayload["freshness"])

@@ -39,7 +39,11 @@ EOF
     git init -q &&
     git config user.email "runtime-dist@example.com" &&
     git config user.name "Harness Runtime Dist Test" &&
-    chmod +x scripts/*.sh install-codex.sh
+    git checkout -q -b main &&
+    chmod +x scripts/*.sh install-codex.sh &&
+    printf '# Harness Runtime Dist Smoke Test\n' >README.md &&
+    git add . &&
+    git commit -q -m "Initial commit"
 ) || exit 1
 
 run_in_repo() {
@@ -87,8 +91,17 @@ section "Run without Go in PATH"
 NO_GO_PATH="$(path_without_go)"
 adapter_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-adapter.sh validate)
 home_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-home.sh)
+home_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-home.sh --brief)
+doctor_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-doctor.sh --brief)
+claim_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-claim.sh 9101 "Packaged Runtime Mission" --owns="file:README.md")
+mission_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh get issue-9101 --brief)
 assert_contains "$adapter_output" '"valid": true' "adapter validate works via packaged binary without Go"
 assert_contains "$home_output" '"next_action": "No active runs. Claim a mission."' "home works via packaged binary without Go"
+assert_contains "$home_brief_output" 'No active governed execution is in flight.' "home --brief works via packaged binary without Go"
+assert_contains "$doctor_brief_output" 'Health: healthy' "doctor --brief works via packaged binary without Go"
+assert_contains "$claim_output" '"mission_id": "issue-9101"' "claim works via packaged binary without Go"
+assert_contains "$mission_brief_output" 'Mission: issue-9101' "missions get --brief works via packaged binary without Go"
+assert_contains "$mission_brief_output" 'Scheduler currently selected this mission as the foreground mission.' "packaged mission brief still follows scheduler truth without Go"
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"

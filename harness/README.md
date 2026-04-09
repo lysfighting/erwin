@@ -43,9 +43,9 @@ If no packaged binary is available, the runtime falls back to building a local G
 That means normal harness use no longer requires `python3`, and repos can opt into a no-Go runtime path by shipping packaged binaries.
 
 - `harness-adapter.sh` — adapter manifest introspection and package validation
-- `harness-missions.sh` — mission registry inspection, mission graph view, and mission-level authority audit
-- `harness-home.sh` — leader home view
-- `harness-doctor.sh` — runtime diagnostics
+- `harness-missions.sh` — mission registry inspection, mission graph view, mission-level authority audit, and `missions get --brief` leader summaries
+- `harness-home.sh` — leader home view, including `--brief` for a human-readable leader briefing
+- `harness-doctor.sh` — runtime diagnostics, including `--brief` for a human-readable health briefing
 - `harness-issue.sh` — structured issue drafting and creation
 - `harness-claim.sh` — mission claim + contract/run creation
 - `harness-drive.sh` — run-state control, dependency waiting, meetings, reprovision, outcome adoption
@@ -70,13 +70,14 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 
 ## Core loop
 
-1. `home` shows the current governed state.
-2. `doctor` checks runtime health and drift.
-3. `claim` creates a run and contract from a mission.
-4. `drive` moves the run through execution, blocking, meeting, and completion states.
-5. `teammates` turns delegated work into first-class runtime state instead of implicit chat.
-6. `meetings` records council outputs.
-7. `maintenance` reconciles or normalizes runtime state.
+1. `home` shows the current governed state and can emit a leader-readable briefing with `--brief`.
+2. `doctor` checks runtime health and drift and can emit a human-readable repair briefing with `--brief`.
+3. `missions get MISSION_ID --brief` explains one mission's state, current priority, next action, and council/teammate context without leaving the mission control plane.
+4. `claim` creates a run and contract from a mission.
+5. `drive` moves the run through execution, blocking, meeting, and completion states.
+6. `teammates` turns delegated work into first-class runtime state instead of implicit chat.
+7. `meetings` records council outputs.
+8. `maintenance` reconciles or normalizes runtime state.
 
 The release side is no longer limited to the happy path.
 The harness now also covers the high-friction release scenarios that used to depend on legacy operator memory:

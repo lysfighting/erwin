@@ -2,7 +2,7 @@
 
 > Status: Active
 >
-> Date: 2026-04-08
+> Date: 2026-04-09
 >
 > Purpose: provide a durable, file-backed starting point for fresh sessions so `Harness` work can resume from repository state instead of relying on chat-context memory.
 
@@ -106,6 +106,10 @@ Shell entrypoints are intentionally thin:
 - [`scripts/harness-meetings.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-meetings.sh)
 - [`scripts/harness-ship.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-ship.sh)
 - [`scripts/harness-rc.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-rc.sh)
+
+Human-facing runtime note:
+
+- `home` and `doctor` now support `--brief` for leader-readable summaries derived directly from the same control-plane truth, and `missions get MISSION_ID --brief` now does the same at the mission object layer; the default output remains machine-readable JSON for audits, tooling, and exact state inspection
 
 Runtime selection order:
 

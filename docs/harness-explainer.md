@@ -2,7 +2,7 @@
 
 > Status: Active
 >
-> Date: 2026-04-08
+> Date: 2026-04-09
 >
 > Purpose: provide one durable, human-readable explanation of what `Harness` is, how it is designed, and how to use it without requiring readers to reconstruct the system from architecture docs, runtime code, or chat history.
 
@@ -322,18 +322,25 @@ Top-level leader view:
 
 ```bash
 bash scripts/harness-home.sh
+bash scripts/harness-home.sh --brief
 ```
+
+Use `--brief` when a human wants a leader-readable summary of current focus, why it is primary, the next step, teammate state, and whether council work is now in play.
 
 Runtime diagnosis:
 
 ```bash
 bash scripts/harness-doctor.sh
+bash scripts/harness-doctor.sh --brief
 ```
+
+Keep the default JSON when another tool or automation needs the raw control-plane payload.
 
 Mission control:
 
 ```bash
 bash scripts/harness-missions.sh list
+bash scripts/harness-missions.sh get issue-1234 --brief
 bash scripts/harness-missions.sh graph
 ```
 

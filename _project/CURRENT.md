@@ -7,14 +7,26 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-08
-- **Last Session**: 2026-04-08-B (Aligned fresh-session and skills entrypoints with the new Harness explainer)
+- **Last Updated**: 2026-04-09
+- **Last Session**: 2026-04-09-B (Extended the human-facing leader layer down to `missions get --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-09-B** — Extended the human-facing leader layer down to `missions get --brief`
+
+- **Mission objects now have a real human-facing leader entrypoint**: `bash scripts/harness-missions.sh get MISSION_ID --brief` now turns the same scheduler mission-classification truth into a readable object-level briefing that tells a human the mission state, why it is blocked/deferred/selected, what the next action is, and what leader, teammate, and council roles need to do next
+- **Mission briefings stay on the same Go control plane**: the new mission layer is derived from the existing mission registry, run registry, signal log, and scheduler bundle/decision state instead of inventing a parallel summary store; JSON mission output remains the default unchanged public contract
+- **Human-facing verification now covers both foreground and live-council mission paths**: core smoke now proves mission brief output for a normal foreground mission and for an actively governed bundle-council mission, and runtime-distribution smoke proves `missions get --brief` still works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-09-A** — Added leader-readable `home` / `doctor` briefings on top of the stable Harness control plane
+
+- **Human-facing collaboration now has a real first slice**: `harness-home.sh --brief` now turns the existing scheduler / mission / maintenance / council runtime truth into a leader-readable briefing that tells a human what is primary now, why it is primary, what to do next, what teammates need, and whether council work is active or required, instead of forcing direct raw-JSON reading for the first control-plane pass
+- **Diagnostics now have the same human-readable entry path**: `harness-doctor.sh --brief` now summarizes runtime health, next repair action, and the top drift issues in readable text while keeping the default machine-readable JSON contract intact for exact audit/tooling use
+- **The human layer is still derived from the same control-plane truth**: this did not add a parallel state system or move logic out of Go; smoke coverage now proves the briefing layer follows idle state, stale-maintenance escalation, active bundle-council guidance, and packaged-binary runtime execution from the real runtime payloads
 
 **Session 2026-04-08-B** — Aligned fresh-session and skills entrypoints with the new Harness explainer
 
@@ -556,9 +568,9 @@
    - D. Validate that daily output produces proposal candidates without recommending direct runtime changes
    - E. Validate that weekly synthesis produces a durable `Harness Evolution Proposals` section before adding more automation complexity
 3. **Harness next work**:
-   - A. Continue authority adjudication into broader multi-mission bundle handling when no obvious governing dependency or single active council anchor exists
-   - B. Continue pushing council behavior from bounded orchestration toward fuller multi-lane automated debate execution
-   - C. Continue scheduler beyond the current snapshot/execution-mode plus bundle-aware deferral baseline into larger-portfolio admission, rescheduling, and execution-portfolio policy
+   - A. Continue the human-direct collaboration layer beyond `home` / `doctor --brief`, especially mission/run/meeting views that still require too much raw JSON inspection for normal leader use
+   - B. Keep shell surfaces human-facing and derived from the Go control plane instead of expanding raw JSON first or drifting toward a separate GUI/product story
+   - C. Continue authority adjudication, council execution, and scheduler depth where it materially improves real leader-facing collaboration rather than merely adding more internal packet detail
    - D. Use the proposal ledger before promoting field intelligence or real-usage patterns into runtime/backlog changes
 4. If starting fresh, read `AGENTS.md`, `_project/CURRENT.md`, `docs/README.md`, `docs/radar/README.md`, `docs/harness-documentation-map.md`, and then the current harness docs or weekly radar synthesis depending on the task
 
@@ -589,7 +601,7 @@
 
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, and direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, a formalized runtime distribution strategy, and committed `1.0.0` release criteria; remaining work is post-1.0 expansion
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, a formalized runtime distribution strategy, committed `1.0.0` release criteria, and new human-readable `home` / `doctor --brief` leader entrypoints; remaining work is post-1.0 expansion, especially richer human-direct collaboration beyond the top-level briefing layer
 
 ## File Locations
 

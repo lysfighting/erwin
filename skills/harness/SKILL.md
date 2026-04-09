@@ -14,12 +14,15 @@ The harness is file-backed:
 
 1. Start with the home view:
    `bash scripts/harness-home.sh`
+   Use `bash scripts/harness-home.sh --brief` when you need a human-readable leader summary before drilling into raw JSON.
 2. If anything looks off, inspect runtime health:
    `bash scripts/harness-doctor.sh`
+   Use `bash scripts/harness-doctor.sh --brief` when you want the top repair priorities in readable prose first.
 3. Validate the reusable adapter contract if packaging or sync drift is suspected:
    `bash scripts/harness-adapter.sh validate`
 4. Inspect the mission control plane when dependency shape or execution topology is unclear:
    `bash scripts/harness-missions.sh ...`
+   Use `bash scripts/harness-missions.sh get MISSION_ID --brief` when you want one mission's state, queue position, next step, and council/teammate context in readable prose first.
 5. Create or draft executable issues when work is not yet claimable:
    `bash scripts/harness-issue.sh ...`
 6. Claim work into governed execution:
@@ -49,6 +52,8 @@ The harness is file-backed:
   `bash scripts/harness-missions.sh list`
 - `missions-get`
   `bash scripts/harness-missions.sh get issue-1234`
+- `missions-get-brief`
+  `bash scripts/harness-missions.sh get issue-1234 --brief`
 - `missions-graph`
   `bash scripts/harness-missions.sh graph`
 - `issue-draft`

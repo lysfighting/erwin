@@ -10,8 +10,9 @@ If you want the full human-readable explanation first, read:
 
 - `bash scripts/harness-adapter.sh`
 - `bash scripts/harness-missions.sh`
-- `bash scripts/harness-home.sh`
-- `bash scripts/harness-doctor.sh`
+- `bash scripts/harness-missions.sh get issue-1234 --brief`
+- `bash scripts/harness-home.sh` (`--brief` for a human-readable leader briefing)
+- `bash scripts/harness-doctor.sh` (`--brief` for a human-readable health briefing)
 - `bash scripts/harness-issue.sh`
 - `bash scripts/harness-claim.sh`
 - `bash scripts/harness-drive.sh`
@@ -26,7 +27,8 @@ If you want the full human-readable explanation first, read:
 Use this when the model should act as the harness leader:
 
 - validate adapter/package integrity before bootstrap or sync work
-- inspect governed state
+- inspect governed state, including a human-readable leader briefing before drilling into raw JSON
+- inspect one mission as a human-readable leader object through `missions get MISSION_ID --brief` before drilling into raw mission JSON
 - inspect mission graph and mission-level desired state
 - inspect mission-level authority through `missions authority-audit` when the freshest teammate activity and the leader-governed control run should differ
 - inspect graph-level mission conflicts through `missions authority-audit --all` when active missions may be colliding across ownership boundaries
