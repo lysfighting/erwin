@@ -37,6 +37,7 @@ Use this when the model should act as the harness leader:
 - inspect one run as a human-readable leader object through `runs get RUN_ID --brief` before drilling into raw run JSON
 - inspect run drift as a human-readable leader object through `runs authority-audit RUN_ID --brief` before drilling into raw audit JSON
 - inspect one active or closed council as a human-readable leader object through `meetings summary MEETING_ID --brief` before drilling into raw meeting JSON
+- inspect same-claim council authority as a human-readable leader object through `meetings authority-audit MEETING_ID --brief` before drilling into raw council-audit JSON
 - inspect mission graph and mission-level desired state
 - inspect mission-level authority through `missions authority-audit` when the freshest teammate activity and the leader-governed control run should differ
 - inspect graph-level mission conflicts through `missions authority-audit --all` when active missions may be colliding across ownership boundaries

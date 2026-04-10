@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-10
-- **Last Session**: 2026-04-10-E (Extended the human-facing leader layer into `missions authority-audit --brief`)
+- **Last Session**: 2026-04-10-F (Extended the human-facing leader layer into `meetings authority-audit --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-10-F** — Extended the human-facing leader layer into `meetings authority-audit --brief`
+
+- **Council same-claim authority now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh authority-audit MEETING_ID --brief` now turns the same meeting authority audit, same-claim winner/tie verdicts, and next authority action into a readable council-repair briefing instead of forcing direct raw council-audit JSON inspection
+- **Meeting authority briefings stay on the same Go control plane**: the new council-audit layer is derived from the existing meeting authority audit, meeting packet state, and meeting summary packet rather than inventing a parallel council-repair model; default `meetings authority-audit` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers adjudicated and packaged-binary meeting-authority paths**: teammate smoke now proves a higher-authority winner reads correctly in `meetings authority-audit --brief`, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-10-E** — Extended the human-facing leader layer into `missions authority-audit --brief`
 

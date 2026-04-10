@@ -337,6 +337,9 @@ assert_json_field "$summary_output" '"open_route_action_count": 0' "meeting summ
 assert_json_field "$summary_output" '"unrouted_claim_count": 0' "meeting summary reports no unrouted conflict claim"
 authority_audit=$(run_in_repo bash scripts/harness-meetings.sh authority-audit "$meeting_id")
 assert_json_field "$authority_audit" '"resolution_kind": "authority_wins"' "authority audit explains higher-authority winner"
+authority_audit_brief=$(run_in_repo bash scripts/harness-meetings.sh authority-audit "$meeting_id" --brief)
+assert_contains "$authority_audit_brief" "Meeting $meeting_id already has an adjudicated higher-authority winner for its same-claim conflicts." "meetings authority-audit --brief explains adjudicated council authority in human-readable form"
+assert_contains "$authority_audit_brief" 'No additional authority repair is required; continue the council toward synthesis or output.' "meetings authority-audit --brief names the leader action once a higher-authority winner is established"
 
 section "Automated council synthesis"
 auto_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "What should the council synthesize about auth release notes?")

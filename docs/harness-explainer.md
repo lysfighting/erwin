@@ -425,10 +425,12 @@ bash scripts/harness-meetings.sh add-participant MEETING_ID TEAMMATE_RUN_ID arch
 bash scripts/harness-meetings.sh orchestrate MEETING_ID
 bash scripts/harness-meetings.sh summary MEETING_ID
 bash scripts/harness-meetings.sh summary MEETING_ID --brief
+bash scripts/harness-meetings.sh authority-audit MEETING_ID --brief
 bash scripts/harness-meetings.sh authority-audit MEETING_ID
 ```
 
 Use `--brief` when a human wants the meeting phase, blocking reason, current council work packet, protocol-aware output state, and next leader/council action without reopening raw meeting JSON.
+Use `meetings authority-audit --brief` when the question is narrower: whether same-claim findings inside the council already have a governed winner or still need explicit judgment.
 
 Close or adopt outcomes:
 

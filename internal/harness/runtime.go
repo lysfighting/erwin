@@ -15960,15 +15960,27 @@ func cmdMeetings(args []string) error {
 		}
 		return printJSON(summary)
 	case "authority-audit":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("meetings authority-audit", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("meetings authority-audit requires MEETING_ID")
 		}
-		data := readMeeting(args[1])
+		meetingID := strings.TrimSpace(remaining[0])
+		if meetingID == "" {
+			return errors.New("meetings authority-audit requires MEETING_ID")
+		}
+		data := readMeeting(meetingID)
 		if data == nil {
-			return fmt.Errorf("meeting not found: %s", args[1])
+			return fmt.Errorf("meeting not found: %s", meetingID)
 		}
 		meeting, _ := toMap(data["meeting"])
-		return printJSON(meetingAuthorityAudit(meeting))
+		audit := meetingAuthorityAudit(meeting)
+		if mode == outputModeText {
+			return printText(renderMeetingAuthorityAuditBrief(meeting, audit, meetingSummaryPacket(meeting)))
+		}
+		return printJSON(audit)
 	case "materialize-primary-decision":
 		requestedMissionID := ""
 		for _, arg := range args[1:] {
@@ -16382,6 +16394,145 @@ func renderMeetingBrief(meeting, summary map[string]any) string {
 		"",
 		"Output:",
 		"- " + meetingBriefOutput(summary),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func meetingAuthorityAuditRepairNeeded(audit map[string]any) bool {
+	return intValue(audit["unresolved_conflict_count"]) > 0
+}
+
+func meetingAuthorityAuditCurrent(meeting, audit map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		return fmt.Sprintf("Meeting %s still has same-authority findings that need explicit judgment.", meetingID)
+	case intValue(audit["conflict_count"]) > 0:
+		return fmt.Sprintf("Meeting %s already has an adjudicated higher-authority winner for its same-claim conflicts.", meetingID)
+	default:
+		return fmt.Sprintf("No same-claim authority conflict is currently recorded on meeting %s.", meetingID)
+	}
+}
+
+func meetingAuthorityAuditWhy(audit map[string]any) string {
+	if note := meetingBriefFirstConflictNote(audit); note != "" {
+		return note
+	}
+	return "No same-claim authority conflict note is currently recorded."
+}
+
+func meetingAuthorityAuditNext(meeting, audit, summary map[string]any) string {
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		return "Record explicit synthesis judgment or add higher-authority evidence before output."
+	case intValue(audit["conflict_count"]) > 0:
+		return firstNonBlank(
+			strings.TrimSpace(stringValue(summary["next_action"])),
+			meetingNextRequirement(meeting),
+			"Continue the council toward synthesis or output; the current same-claim winner is already established.",
+		)
+	default:
+		return firstNonBlank(
+			strings.TrimSpace(stringValue(summary["next_action"])),
+			meetingNextRequirement(meeting),
+			"No immediate meeting-authority action is recorded.",
+		)
+	}
+}
+
+func meetingAuthorityAuditLeaderAction(meeting, audit, summary map[string]any) string {
+	if strings.TrimSpace(stringValue(meeting["state"])) == "closed" {
+		return "Inspect the closed council record and reopen only if the governed claim changed."
+	}
+	if intValue(audit["unresolved_conflict_count"]) > 0 {
+		return "Leader should record explicit synthesis judgment or add higher-authority evidence for the tied claim before output."
+	}
+	if intValue(audit["conflict_count"]) > 0 {
+		return "No additional authority repair is required; continue the council toward synthesis or output."
+	}
+	return firstNonBlank(
+		strings.TrimSpace(stringValue(summary["next_action"])),
+		meetingNextRequirement(meeting),
+		"No leader-side meeting authority repair is currently required.",
+	)
+}
+
+func meetingAuthorityAuditCouncilAction(audit map[string]any) string {
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		return "Yes. This council still needs live judgment on a same-claim authority tie."
+	case intValue(audit["conflict_count"]) > 0:
+		return "No additional council authority repair is required; a higher-authority winner is already established."
+	default:
+		return "No same-claim council authority conflict is currently active."
+	}
+}
+
+func meetingAuthorityAuditEvidence(audit map[string]any) []string {
+	lines := []string{}
+	for _, item := range toList(audit["conflicts"]) {
+		conflict, _ := toMap(item)
+		claimRef := firstNonBlank(strings.TrimSpace(stringValue(conflict["claim_ref"])), "unknown-claim")
+		dimension := firstNonBlank(strings.TrimSpace(stringValue(conflict["dimension"])), "factual")
+		note := firstNonBlank(strings.TrimSpace(stringValue(conflict["note"])), "No explanatory note recorded.")
+		lines = append(lines, fmt.Sprintf("Conflict on %s (%s): %s", claimRef, dimension, note))
+		if len(lines) == 3 {
+			return lines
+		}
+	}
+	if len(lines) == 0 {
+		lines = append(lines, "No same-claim authority conflict evidence is currently recorded.")
+	}
+	return lines
+}
+
+func renderMeetingAuthorityAuditBrief(meeting, audit, summary map[string]any) string {
+	findings, _ := toMap(meeting["findings"])
+	totalFindings := len(toList(findings["accepted"])) + len(toList(findings["rejected"])) + len(toList(findings["unresolved"]))
+	auditState := "aligned"
+	switch {
+	case meetingAuthorityAuditRepairNeeded(audit):
+		auditState = "repair-needed"
+	case intValue(audit["conflict_count"]) > 0:
+		auditState = "governed"
+	}
+	lines := []string{
+		"Harness Meeting Authority Briefing",
+		fmt.Sprintf("Meeting: %s", firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")),
+		fmt.Sprintf(
+			"Authority: target=%s, state=%s, phase=%s, protocol=%s, audit=%s.",
+			meetingBriefTargetLabel(meeting),
+			firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup"),
+			firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review"),
+			auditState,
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %s.",
+			countLabel(intValue(audit["conflict_count"]), "authority conflict", "authority conflicts"),
+			countLabel(intValue(audit["unresolved_conflict_count"]), "unresolved conflict", "unresolved conflicts"),
+			countLabel(totalFindings, "finding", "findings"),
+		),
+		"",
+		"Current:",
+		"- " + meetingAuthorityAuditCurrent(meeting, audit),
+		"",
+		"Why:",
+		"- " + meetingAuthorityAuditWhy(audit),
+		"",
+		"Next:",
+		"- " + meetingAuthorityAuditNext(meeting, audit, summary),
+		"",
+		"Leader:",
+		"- " + meetingAuthorityAuditLeaderAction(meeting, audit, summary),
+		"",
+		"Council:",
+		"- " + meetingAuthorityAuditCouncilAction(audit),
+		"",
+		"Evidence:",
+	}
+	for _, line := range meetingAuthorityAuditEvidence(audit) {
+		lines = append(lines, "- "+line)
 	}
 	return strings.Join(lines, "\n")
 }
