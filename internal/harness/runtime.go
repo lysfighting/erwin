@@ -8923,10 +8923,11 @@ func cmdMissions(args []string) error {
 			return err
 		}
 		if len(remaining) >= 1 && remaining[0] == "--all" {
+			graph := missionGraphAuthorityAudit(registry, readRegistry(), false)
 			if mode == outputModeText {
-				return errors.New("missions authority-audit --all does not support --brief")
+				return printText(renderMissionGraphAuthorityAuditBrief(graph))
 			}
-			return printJSON(missionGraphAuthorityAudit(registry, readRegistry(), false))
+			return printJSON(graph)
 		}
 		if len(remaining) != 1 {
 			return errors.New("missions authority-audit requires MISSION_ID or --all")
@@ -12714,6 +12715,299 @@ func renderMissionAuthorityAuditBrief(mission, audit map[string]any, activeMeeti
 		"Evidence:",
 	)
 	for _, line := range missionAuthorityAuditEvidence(audit) {
+		lines = append(lines, "- "+line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func missionGraphBundlePriority(bundle map[string]any) int {
+	switch strings.TrimSpace(stringValue(bundle["bundle_state"])) {
+	case "escalation-required":
+		return 3
+	case "conflicted":
+		return 2
+	case "governed":
+		return 1
+	default:
+		return 0
+	}
+}
+
+func missionGraphSortedBundles(graph map[string]any) []map[string]any {
+	bundles := []map[string]any{}
+	for _, item := range toList(graph["bundles"]) {
+		bundle, _ := toMap(item)
+		if len(bundle) == 0 {
+			continue
+		}
+		bundles = append(bundles, bundle)
+	}
+	sort.Slice(bundles, func(i, j int) bool {
+		left := bundles[i]
+		right := bundles[j]
+		leftPriority := missionGraphBundlePriority(left)
+		rightPriority := missionGraphBundlePriority(right)
+		if leftPriority != rightPriority {
+			return leftPriority > rightPriority
+		}
+		if intValue(left["conflict_count"]) != intValue(right["conflict_count"]) {
+			return intValue(left["conflict_count"]) > intValue(right["conflict_count"])
+		}
+		if intValue(left["adjudication_count"]) != intValue(right["adjudication_count"]) {
+			return intValue(left["adjudication_count"]) > intValue(right["adjudication_count"])
+		}
+		if intValue(left["mission_count"]) != intValue(right["mission_count"]) {
+			return intValue(left["mission_count"]) > intValue(right["mission_count"])
+		}
+		return strings.TrimSpace(stringValue(left["bundle_id"])) < strings.TrimSpace(stringValue(right["bundle_id"]))
+	})
+	return bundles
+}
+
+func missionGraphPrimaryBundle(graph map[string]any) map[string]any {
+	bundles := missionGraphSortedBundles(graph)
+	if len(bundles) == 0 {
+		return nil
+	}
+	return bundles[0]
+}
+
+func missionGraphBundleMissionIDs(bundle map[string]any) []string {
+	return anyListToStrings(toList(bundle["mission_ids"]))
+}
+
+func missionGraphCouncilAnchorMissionIDs(bundle map[string]any) []string {
+	ids := []string{}
+	for _, item := range toList(bundle["candidate_governor_packets"]) {
+		packet, _ := toMap(item)
+		if intValue(packet["active_meeting_count"]) > 0 || intValue(packet["open_meeting_actions"]) > 0 {
+			if missionID := strings.TrimSpace(stringValue(packet["mission_id"])); missionID != "" {
+				ids = append(ids, missionID)
+			}
+		}
+	}
+	return dedupeStrings(ids)
+}
+
+func missionGraphCurrent(graph map[string]any) string {
+	primary := missionGraphPrimaryBundle(graph)
+	if primary == nil {
+		return "No connected mission bundle currently needs graph-level authority handling."
+	}
+	bundleID := firstNonBlank(strings.TrimSpace(stringValue(primary["bundle_id"])), "unknown")
+	missionIDs := missionGraphBundleMissionIDs(primary)
+	switch strings.TrimSpace(stringValue(primary["bundle_state"])) {
+	case "escalation-required":
+		return fmt.Sprintf("Bundle %s still needs one governing mission across %s.", bundleID, strings.Join(missionIDs, ", "))
+	case "conflicted":
+		return fmt.Sprintf("Bundle %s has unresolved cross-mission ownership conflict across %s.", bundleID, strings.Join(missionIDs, ", "))
+	case "governed":
+		if governingMissionID := strings.TrimSpace(stringValue(primary["governing_mission_id"])); governingMissionID != "" {
+			return fmt.Sprintf("Bundle %s is currently governed by %s across %s.", bundleID, governingMissionID, strings.Join(missionIDs, ", "))
+		}
+		return fmt.Sprintf("Bundle %s is currently governed across %s.", bundleID, strings.Join(missionIDs, ", "))
+	default:
+		return fmt.Sprintf("Bundle %s links %s but does not currently outrank other graph work.", bundleID, strings.Join(missionIDs, ", "))
+	}
+}
+
+func missionGraphWhy(graph map[string]any) string {
+	primary := missionGraphPrimaryBundle(graph)
+	if primary != nil {
+		for _, item := range toList(primary["governance_notes"]) {
+			if note := strings.TrimSpace(stringValue(item)); note != "" {
+				return note
+			}
+		}
+		switch strings.TrimSpace(stringValue(primary["resolution_kind"])) {
+		case "bundle_conflict":
+			return "Multiple active missions still claim overlapping ownership without a governing dependency, explicit transfer, or council outcome."
+		case "bundle_governor_required", "multi_council_bundle_governor_required":
+			return "The graph has authority signals, but no single governing mission currently wins the bundle."
+		case "single_root_governed_bundle", "single_winner_governed_bundle", "bundle_governor_adjudicated", "explicit_bundle_governor", "council_adopted_bundle_governor", "council_governed_bundle":
+			if governingMissionID := strings.TrimSpace(stringValue(primary["governing_mission_id"])); governingMissionID != "" {
+				return fmt.Sprintf("Current bundle governance is anchored to %s under the existing mission-graph adjudication.", governingMissionID)
+			}
+		}
+	}
+	switch {
+	case intValue(graph["mission_gap_count"]) > 0 || intValue(graph["mission_unresolved_conflict_count"]) > 0:
+		return "No connected bundle currently needs graph-level repair, but mission-level authority drift still exists in the underlying audit set."
+	default:
+		return "No active mission pair currently overlaps or requires bundle-level governance."
+	}
+}
+
+func missionGraphNext(graph map[string]any) string {
+	primary := missionGraphPrimaryBundle(graph)
+	if primary == nil {
+		if intValue(graph["mission_gap_count"]) > 0 || intValue(graph["mission_unresolved_conflict_count"]) > 0 {
+			return "Review the mission-level authority briefs for any remaining non-graph drift."
+		}
+		return "No mission-graph authority repair is currently required."
+	}
+	return firstNonBlank(strings.TrimSpace(stringValue(primary["required_action"])), "No immediate graph-level action is recorded.")
+}
+
+func missionGraphLeaderAction(graph map[string]any) string {
+	primary := missionGraphPrimaryBundle(graph)
+	if primary == nil {
+		if intValue(graph["mission_gap_count"]) > 0 || intValue(graph["mission_unresolved_conflict_count"]) > 0 {
+			return "Leader should inspect mission-level authority briefs; graph-level bundle repair is not the blocking problem right now."
+		}
+		return "No graph-level leader action is currently required."
+	}
+	missionIDs := missionGraphBundleMissionIDs(primary)
+	switch strings.TrimSpace(stringValue(primary["bundle_state"])) {
+	case "escalation-required":
+		if candidateIDs := anyListToStrings(toList(primary["candidate_governor_ids"])); len(candidateIDs) > 0 {
+			return fmt.Sprintf("Leader should make or materialize a bundle-governor decision across %s before widening execution on %s.", strings.Join(candidateIDs, ", "), strings.Join(missionIDs, ", "))
+		}
+		return "Leader should establish one governing mission before widening execution on this bundle."
+	case "conflicted":
+		return "Leader should narrow selectors, serialize the missions, or open a governing council before widening execution."
+	case "governed":
+		if governingMissionID := strings.TrimSpace(stringValue(primary["governing_mission_id"])); governingMissionID != "" {
+			return fmt.Sprintf("Leader should keep bundle authority anchored to %s while all other overlapping missions stay bounded behind it.", governingMissionID)
+		}
+	}
+	return "Review the current mission graph before changing governed parallel execution."
+}
+
+func missionGraphCouncilAction(graph map[string]any) string {
+	primary := missionGraphPrimaryBundle(graph)
+	if primary == nil {
+		return "No bundle-scoped council is currently required."
+	}
+	if anchors := missionGraphCouncilAnchorMissionIDs(primary); len(anchors) > 0 {
+		return fmt.Sprintf("Council coverage already exists on %s.", strings.Join(anchors, ", "))
+	}
+	switch strings.TrimSpace(stringValue(primary["bundle_state"])) {
+	case "escalation-required", "conflicted":
+		return "A bundle-scoped council is the next human surface if leader judgment should not decide the overlap directly."
+	default:
+		return "No new council action is currently required for the primary bundle."
+	}
+}
+
+func missionGraphBundleSummary(bundle map[string]any) string {
+	state := firstNonBlank(strings.TrimSpace(stringValue(bundle["bundle_state"])), "unknown")
+	bundleID := firstNonBlank(strings.TrimSpace(stringValue(bundle["bundle_id"])), "unknown")
+	missionIDs := missionGraphBundleMissionIDs(bundle)
+	summary := fmt.Sprintf("[%s] %s: %s", state, bundleID, strings.Join(missionIDs, ", "))
+	if governingMissionID := strings.TrimSpace(stringValue(bundle["governing_mission_id"])); governingMissionID != "" {
+		summary += fmt.Sprintf(" (governor %s)", governingMissionID)
+	}
+	if state == "escalation-required" {
+		if candidates := anyListToStrings(toList(bundle["candidate_governor_ids"])); len(candidates) > 0 {
+			summary += fmt.Sprintf(" (candidates %s)", strings.Join(candidates, ", "))
+		}
+	}
+	if action := strings.TrimSpace(stringValue(bundle["required_action"])); action != "" {
+		summary += ". Next: " + action
+	}
+	return summary
+}
+
+func missionGraphEvidence(graph map[string]any) []string {
+	lines := []string{}
+	for _, bundle := range missionGraphSortedBundles(graph) {
+		for _, item := range toList(bundle["governance_notes"]) {
+			note := strings.TrimSpace(stringValue(item))
+			if note == "" {
+				continue
+			}
+			lines = append(lines, note)
+			if len(lines) == 3 {
+				return lines
+			}
+		}
+	}
+	type bucket struct {
+		label string
+		items []any
+	}
+	buckets := []bucket{
+		{label: "Cross-mission conflict", items: toList(graph["cross_mission_conflicts"])},
+		{label: "Cross-mission adjudication", items: toList(graph["cross_mission_adjudications"])},
+		{label: "Dependency adjudication", items: toList(graph["dependency_adjudications"])},
+	}
+	for _, bucket := range buckets {
+		for _, item := range bucket.items {
+			record, _ := toMap(item)
+			note := firstNonBlank(strings.TrimSpace(stringValue(record["note"])), "No explanatory note recorded.")
+			lines = append(lines, fmt.Sprintf("%s: %s", bucket.label, note))
+			if len(lines) == 3 {
+				return lines
+			}
+		}
+	}
+	if len(lines) == 0 {
+		lines = append(lines, "No graph-level authority evidence is currently recorded.")
+	}
+	return lines
+}
+
+func renderMissionGraphAuthorityAuditBrief(graph map[string]any) string {
+	graphState := "clear"
+	switch {
+	case intValue(graph["escalated_bundle_count"]) > 0 || intValue(graph["conflicted_bundle_count"]) > 0:
+		graphState = "repair-needed"
+	case intValue(graph["bundle_count"]) > 0:
+		graphState = "governed"
+	}
+	lines := []string{
+		"Harness Mission Graph Authority Briefing",
+		fmt.Sprintf(
+			"Graph: %s, %s, %s, %s, %s.",
+			countLabel(intValue(graph["mission_count"]), "mission", "missions"),
+			countLabel(intValue(graph["bundle_count"]), "connected bundle", "connected bundles"),
+			countLabel(intValue(graph["conflicted_bundle_count"]), "conflicted bundle", "conflicted bundles"),
+			countLabel(intValue(graph["governed_bundle_count"]), "governed bundle", "governed bundles"),
+			countLabel(intValue(graph["escalated_bundle_count"]), "escalation-required bundle", "escalation-required bundles"),
+		),
+		fmt.Sprintf(
+			"Authority: state=%s, %s, %s, %s.",
+			graphState,
+			countLabel(intValue(graph["mission_gap_count"]), "mission gap", "mission gaps"),
+			countLabel(intValue(graph["cross_mission_conflict_count"]), "cross-mission conflict", "cross-mission conflicts"),
+			countLabel(intValue(graph["cross_mission_adjudication_count"]), "cross-mission adjudication", "cross-mission adjudications"),
+		),
+		"",
+		"Current:",
+		"- " + missionGraphCurrent(graph),
+		"",
+		"Why:",
+		"- " + missionGraphWhy(graph),
+		"",
+		"Next:",
+		"- " + missionGraphNext(graph),
+		"",
+		"Leader:",
+		"- " + missionGraphLeaderAction(graph),
+		"",
+		"Council:",
+		"- " + missionGraphCouncilAction(graph),
+		"",
+		"Bundles:",
+	}
+	bundles := missionGraphSortedBundles(graph)
+	if len(bundles) == 0 {
+		lines = append(lines, "- None.")
+	} else {
+		limit := len(bundles)
+		if limit > 3 {
+			limit = 3
+		}
+		for _, bundle := range bundles[:limit] {
+			lines = append(lines, "- "+missionGraphBundleSummary(bundle))
+		}
+		if len(bundles) > limit {
+			lines = append(lines, fmt.Sprintf("- %d more bundle(s) remain in the JSON audit.", len(bundles)-limit))
+		}
+	}
+	lines = append(lines, "", "Evidence:")
+	for _, line := range missionGraphEvidence(graph) {
 		lines = append(lines, "- "+line)
 	}
 	return strings.Join(lines, "\n")

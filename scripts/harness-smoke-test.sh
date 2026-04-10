@@ -140,6 +140,8 @@ assert_json_field "$mission_authority_baseline" '"adjudication_count": 0' "missi
 mission_authority_baseline_brief=$(run_in_repo bash scripts/harness-missions.sh authority-audit issue-20001 --brief)
 assert_contains "$mission_authority_baseline_brief" 'Mission: issue-20001' "missions authority-audit --brief names the requested mission"
 assert_contains "$mission_authority_baseline_brief" 'Mission issue-20001 is aligned with its authoritative run-derived control plane.' "missions authority-audit --brief explains aligned mission control without raw JSON"
+graph_authority_baseline_brief=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all --brief)
+assert_contains "$graph_authority_baseline_brief" 'No connected mission bundle currently needs graph-level authority handling.' "missions authority-audit --all --brief explains a healthy graph without raw JSON"
 authority_baseline=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$authority_baseline" '"contract_gap_count": 0' "initial run authority audit starts without contract drift"
 authority_baseline_brief=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id" --brief)
@@ -511,6 +513,9 @@ assert_json_field "$graph_authority_output" '"root_mission_ids":' "mission graph
 assert_json_field "$graph_authority_output" '"required_action": "Narrow selectors, serialize missions, or add a governing dependency/council before parallel execution."' "mission graph authority gives the conflicted bundle a leader-facing next action"
 assert_json_field "$graph_authority_output" '"selector_refs":' "mission graph authority surfaces shared selectors for the conflicted bundle"
 assert_json_field "$graph_authority_output" '"resolution_kind": "parallel_mission_ownership_conflict"' "mission graph authority audit explains the multi-mission ownership conflict"
+graph_authority_brief_output=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all --brief)
+assert_contains "$graph_authority_brief_output" 'Bundle bundle-issue-20001-issue-20002 has unresolved cross-mission ownership conflict across issue-20001, issue-20002.' "missions authority-audit --all --brief explains conflicted bundle state in human-readable form"
+assert_contains "$graph_authority_brief_output" 'Leader should narrow selectors, serialize the missions, or open a governing council before widening execution.' "missions authority-audit --all --brief names the leader action for conflicted bundles"
 doctor_output_graph_conflict=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output_graph_conflict" '"kind": "mission-graph-authority-conflict"' "doctor surfaces cross-mission authority conflict"
 resolved_second_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$second_run_id" completed "Resolved cross-mission smoke overlap.")
@@ -685,6 +690,9 @@ assert_json_field "$graph_authority_multi_escalation" '"escalated_bundle_count":
 assert_json_field "$graph_authority_multi_escalation" '"required_action": "Open a council or add an explicit dependency/ownership transfer to establish a governing mission before parallel execution."' "escalation-required bundles get a leader-facing next action"
 assert_json_field "$graph_authority_multi_escalation" '"candidate_governor_ids":' "escalation-required bundles expose candidate governing mission ids"
 assert_json_field "$graph_authority_multi_escalation" '"candidate_governor_packets":' "escalation-required bundles expose candidate governing mission packets"
+graph_authority_multi_escalation_brief=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all --brief)
+assert_contains "$graph_authority_multi_escalation_brief" 'Bundle bundle-issue-20011-issue-20012-issue-20013 still needs one governing mission across issue-20011, issue-20012, issue-20013.' "missions authority-audit --all --brief explains escalation-required bundle state in human-readable form"
+assert_contains "$graph_authority_multi_escalation_brief" 'Leader should make or materialize a bundle-governor decision across issue-20011, issue-20012, issue-20013 before widening execution on issue-20011, issue-20012, issue-20013.' "missions authority-audit --all --brief names the leader action for escalation-required bundles"
 schedule_multi_escalation_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_output" '"bundle_role": "escalation-required"' "scheduler marks tied bundles as escalation-required"
 assert_json_field "$schedule_multi_escalation_output" '"decision_kind": "establish_bundle_governor"' "scheduler escalates tied bundles into an explicit governing-mission decision"

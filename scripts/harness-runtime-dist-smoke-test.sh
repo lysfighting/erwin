@@ -97,6 +97,7 @@ claim_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-claim.sh 
 schedule_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh schedule --brief)
 mission_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh get issue-9101 --brief)
 mission_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh authority-audit issue-9101 --brief)
+mission_graph_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh authority-audit --all --brief)
 run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 run_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.sh get "$run_id" --brief)
 run_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.sh authority-audit "$run_id" --brief)
@@ -116,6 +117,7 @@ assert_contains "$mission_brief_output" 'Mission: issue-9101' "missions get --br
 assert_contains "$mission_brief_output" 'Scheduler currently selected this mission as the foreground mission.' "packaged mission brief still follows scheduler truth without Go"
 assert_contains "$mission_authority_brief_output" 'Mission: issue-9101' "missions authority-audit --brief works via packaged binary without Go"
 assert_contains "$mission_authority_brief_output" 'Mission issue-9101 is aligned with its authoritative run-derived control plane.' "packaged mission authority brief still follows mission-control truth without Go"
+assert_contains "$mission_graph_authority_brief_output" 'No connected mission bundle currently needs graph-level authority handling.' "missions authority-audit --all --brief works via packaged binary without Go"
 assert_contains "$run_brief_output" "Run: $run_id" "runs get --brief works via packaged binary without Go"
 assert_contains "$run_brief_output" 'This run is the current foreground scheduler run and still owns mission control for issue-9101.' "packaged run brief still follows scheduler truth without Go"
 assert_contains "$run_authority_brief_output" "Run: $run_id" "runs authority-audit --brief works via packaged binary without Go"

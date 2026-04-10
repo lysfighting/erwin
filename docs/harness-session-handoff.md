@@ -33,6 +33,7 @@ Current human-direct entry stack:
 - `bash scripts/harness-missions.sh schedule --brief`
 - `bash scripts/harness-missions.sh get MISSION_ID --brief`
 - `bash scripts/harness-missions.sh authority-audit MISSION_ID --brief`
+- `bash scripts/harness-missions.sh authority-audit --all --brief`
 - `bash scripts/harness-runs.sh get RUN_ID --brief`
 - `bash scripts/harness-runs.sh authority-audit RUN_ID --brief`
 - `bash scripts/harness-meetings.sh summary MEETING_ID --brief`

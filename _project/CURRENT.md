@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-10
-- **Last Session**: 2026-04-10-F (Extended the human-facing leader layer into `meetings authority-audit --brief`)
+- **Last Session**: 2026-04-10-G (Extended the human-facing leader layer into `missions authority-audit --all --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-10-G** — Extended the human-facing leader layer into `missions authority-audit --all --brief`
+
+- **Mission graph bundles now have a real human-facing leader entrypoint**: `bash scripts/harness-missions.sh authority-audit --all --brief` now turns the same bundle graph, conflict/escalation/governed verdicts, candidate governors, and required action into a readable graph-layer briefing instead of forcing direct raw mission-graph JSON inspection
+- **Mission graph authority briefings stay on the same Go control plane**: the new graph-audit layer is derived from the existing mission graph authority audit, bundle governance notes, and candidate governor packets rather than inventing a parallel bundle-repair model; default `missions authority-audit --all` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers healthy, conflicted, escalation-required, and packaged-binary graph-authority paths**: core smoke now proves both a clean graph and two non-healthy bundle states read correctly in `missions authority-audit --all --brief`, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-10-F** — Extended the human-facing leader layer into `meetings authority-audit --brief`
 
