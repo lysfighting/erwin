@@ -139,6 +139,9 @@ assert_json_field "$mission_authority_baseline" '"mission_gap_count": 0' "missio
 assert_json_field "$mission_authority_baseline" '"adjudication_count": 0' "mission authority audit starts without cross-run adjudications"
 authority_baseline=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$authority_baseline" '"contract_gap_count": 0' "initial run authority audit starts without contract drift"
+authority_baseline_brief=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id" --brief)
+assert_contains "$authority_baseline_brief" "Run: $run_id" "runs authority-audit --brief names the requested run"
+assert_contains "$authority_baseline_brief" "Run $run_id is still progressing toward its desired state." "runs authority-audit --brief explains desired-state progress without raw JSON"
 run_get_brief_output=$(run_in_repo bash scripts/harness-runs.sh get "$run_id" --brief)
 assert_contains "$run_get_brief_output" "Run: $run_id" "runs get --brief names the requested run"
 assert_contains "$run_get_brief_output" 'This run is the current foreground scheduler run and still owns mission control for issue-20001.' "runs get --brief explains foreground mission-control priority"
@@ -1702,6 +1705,9 @@ assert_json_field "$authority_signal_output" "\"signal_id\": \"$authority_signal
 authority_audit_output=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$authority_audit_output" '"higher_authority_conflict_count": 1' "run authority audit reports higher-authority cross-surface conflict"
 assert_json_field "$authority_audit_output" '"resolution_kind": "run_state_overridden"' "run authority audit explains why the signal currently wins"
+authority_audit_brief_output=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id" --brief)
+assert_contains "$authority_audit_brief_output" "Run $run_id is currently out of sync with higher-authority signal state." "runs authority-audit --brief explains higher-authority drift in human-readable form"
+assert_contains "$authority_audit_brief_output" "Leader should inspect signal $authority_signal_id and either adopt it into run state or resolve it explicitly." "runs authority-audit --brief names the leader repair action for higher-authority drift"
 doctor_output_authority=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output_authority" '"kind": "run-authority-conflict"' "doctor surfaces unresolved run-level authority conflict"
 resolved_authority_signal=$(run_in_repo bash scripts/harness-signals.sh set-state "$authority_signal_id" resolved "Leader resolved the higher-authority blocker.")

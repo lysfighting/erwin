@@ -82,6 +82,8 @@ The harness is file-backed:
   `bash scripts/harness-runs.sh transfer-ownership SOURCE_RUN_ID TARGET_RUN_ID --owns=scope:release-auth-smoke --reason="Shift bounded ownership to the implementation path"`
 - `run-authority-audit`
   `bash scripts/harness-runs.sh authority-audit RUN_ID`
+- `run-authority-audit-brief`
+  `bash scripts/harness-runs.sh authority-audit RUN_ID --brief`
 - `teammate-report`
   `bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID "Caller patch is in place" --kind=progress --evidence=src/auth.ts|tests/auth.spec.ts`
 - `signals-adjudicate`
@@ -182,6 +184,7 @@ The harness is file-backed:
 - Use `meetings summary` before adoption when you need to see synthesis readiness, debate-round depth, blocker counts, and any still-open wave/route obligations at a glance.
 - Use `meetings summary MEETING_ID --brief` when you want the human-readable council state, blocking reason, current work packet, and protocol-aware output guidance before drilling into raw meeting JSON.
 - Use `meetings authority-audit` when you need a leader-facing explanation of which same-claim finding currently wins on authority.
+- Use `runs authority-audit RUN_ID --brief` when you want the human-readable run-drift verdict, repair action, and leader/teammate/council implications before drilling into raw audit JSON.
 - Use `runs authority-audit` when a run may be drifting against fresher or higher-authority active signals, or when `doctor` reports `run-authority-conflict`.
 - Use `runs get RUN_ID --brief` when you want the human-readable execution summary for one run before drilling into raw run JSON or authority-audit detail.
 - Use `runs authority-audit` when a run claims it is ready/verified/clean but the live worktree is still dirty; the audit now surfaces that intent-vs-live-git disagreement explicitly.

@@ -9110,15 +9110,29 @@ func cmdRuns(args []string) error {
 		}
 		return printJSON(run)
 	case "authority-audit":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("runs authority-audit", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("runs authority-audit requires RUN_ID")
 		}
-		index := findRunIndex(registry, args[1])
+		runID := strings.TrimSpace(remaining[0])
+		if runID == "" {
+			return errors.New("runs authority-audit requires RUN_ID")
+		}
+		index := findRunIndex(registry, runID)
 		if index < 0 {
-			return fmt.Errorf("run not found: %s", args[1])
+			return fmt.Errorf("run not found: %s", runID)
 		}
 		run, _ := toMap(toList(registry["runs"])[index])
-		return printJSON(runAuthorityAudit(run, registry, readSignalLog()))
+		audit := runAuthorityAudit(run, registry, readSignalLog())
+		if mode == outputModeText {
+			activeMeetings := activeMeetingsForRun(runID)
+			openActions := openMeetingActionsForRun(runID)
+			return printText(renderRunAuthorityAuditBrief(run, audit, registry, activeMeetings, openActions))
+		}
+		return printJSON(audit)
 	case "add":
 		payload, err := readStdinJSON()
 		if err != nil {
@@ -12815,6 +12829,290 @@ func renderRunBrief(run, mission, audit, scheduler map[string]any, registry map[
 		"Council:",
 		"- "+runBriefCouncilAction(audit, activeMeetings, openMeetingActions),
 	)
+	return strings.Join(lines, "\n")
+}
+
+func runAuthorityAuditRepairNeeded(audit map[string]any) bool {
+	return intValue(audit["higher_authority_conflict_count"]) > 0 ||
+		intValue(audit["adoption_gap_count"]) > 0 ||
+		intValue(audit["live_state_gap_count"]) > 0 ||
+		intValue(audit["contract_gap_count"]) > 0
+}
+
+func runAuthorityAuditMeetingSources(items []any) []string {
+	ids := []string{}
+	for _, item := range items {
+		record, _ := toMap(item)
+		for _, field := range []string{"source_ref", "winning_source"} {
+			value := strings.TrimSpace(stringValue(record[field]))
+			if strings.HasPrefix(value, "meeting:") {
+				ids = append(ids, strings.TrimPrefix(value, "meeting:"))
+			}
+		}
+	}
+	return dedupeStrings(ids)
+}
+
+func runAuthorityAuditCurrent(run, audit map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	switch {
+	case intValue(audit["higher_authority_conflict_count"]) > 0:
+		return fmt.Sprintf("Run %s is currently out of sync with higher-authority signal state.", runID)
+	case intValue(audit["adoption_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s still has closed-council adoption drift.", runID)
+	case intValue(audit["live_state_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s is drifting against live git or worktree state.", runID)
+	case intValue(audit["contract_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s is drifting against a stale contract snapshot.", runID)
+	case intValue(audit["desired_state_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s is still progressing toward its desired state.", runID)
+	default:
+		return fmt.Sprintf("Run %s is authority-aligned across signals, meetings, contract state, and live state.", runID)
+	}
+}
+
+func runAuthorityAuditWhy(audit map[string]any) string {
+	if note := briefAuditNote(toList(audit["higher_authority_conflicts"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["adoption_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["live_state_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["contract_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["desired_state_gaps"])); note != "" {
+		return note
+	}
+	if intValue(audit["superseded_signal_count"]) > 0 {
+		return fmt.Sprintf("%s are already superseded by fresher authority and no longer create unresolved drift.", countLabel(intValue(audit["superseded_signal_count"]), "signal", "signals"))
+	}
+	return "No higher-authority, adoption, live-state, contract, or desired-state gaps are currently recorded."
+}
+
+func runAuthorityAuditLiveAction(audit map[string]any) string {
+	for _, item := range toList(audit["live_state_gaps"]) {
+		record, _ := toMap(item)
+		switch strings.TrimSpace(stringValue(record["claim_ref"])) {
+		case "live_worktree_missing":
+			return "Reprovision the missing worktree or repair the run's provisioning record before trusting execution."
+		case "live_branch":
+			return "Repair the run branch record or switch the live worktree back so governed execution agrees again."
+		case "live_dirty":
+			return "Clean the live worktree before governed verification, handoff, or ship-state widening."
+		}
+	}
+	return "Reconcile the live worktree state before trusting this run."
+}
+
+func runAuthorityAuditNext(audit map[string]any) string {
+	switch {
+	case intValue(audit["higher_authority_conflict_count"]) > 0:
+		for _, item := range toList(audit["higher_authority_conflicts"]) {
+			record, _ := toMap(item)
+			if strings.TrimSpace(stringValue(record["resolution_kind"])) == "meeting_request_unadopted" {
+				return "Open or resume the required meeting before trusting this run."
+			}
+		}
+		return "Resolve or explicitly adopt the higher-authority signal that currently overrides this run."
+	case intValue(audit["adoption_gap_count"]) > 0:
+		if meetingIDs := runAuthorityAuditMeetingSources(toList(audit["adoption_gaps"])); len(meetingIDs) > 0 {
+			return fmt.Sprintf("Adopt the closed council output from %s back into this run.", strings.Join(meetingIDs, ", "))
+		}
+		return "Adopt the governing closed-meeting output back into this run."
+	case intValue(audit["live_state_gap_count"]) > 0:
+		return runAuthorityAuditLiveAction(audit)
+	case intValue(audit["contract_gap_count"]) > 0:
+		return "Refresh the contract snapshot so it matches the active run control plane."
+	case intValue(audit["desired_state_gap_count"]) > 0:
+		return "Advance the run toward its desired state or explicitly relax the desired-state contract."
+	default:
+		return "No authority-repair action is currently required."
+	}
+}
+
+func runAuthorityAuditLeaderAction(audit map[string]any, activeMeetings []map[string]any) string {
+	if len(activeMeetings) > 0 && intValue(audit["higher_authority_conflict_count"]) == 0 && intValue(audit["adoption_gap_count"]) == 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Keep active council %s moving. Current requirement: %s", ids, requirement)
+		}
+		return fmt.Sprintf("Keep active council %s moving before changing governed execution.", ids)
+	}
+	if intValue(audit["higher_authority_conflict_count"]) > 0 {
+		for _, item := range toList(audit["higher_authority_conflicts"]) {
+			record, _ := toMap(item)
+			if strings.TrimSpace(stringValue(record["resolution_kind"])) == "meeting_request_unadopted" {
+				return "Leader should open or resume the required meeting and hold run state until that council coverage exists."
+			}
+			if signalID := strings.TrimSpace(stringValue(record["signal_id"])); signalID != "" {
+				return fmt.Sprintf("Leader should inspect signal %s and either adopt it into run state or resolve it explicitly.", signalID)
+			}
+		}
+		return "Leader should resolve or adopt the higher-authority signal conflict before widening execution."
+	}
+	if intValue(audit["adoption_gap_count"]) > 0 {
+		if meetingIDs := runAuthorityAuditMeetingSources(toList(audit["adoption_gaps"])); len(meetingIDs) > 0 {
+			return fmt.Sprintf("Leader should adopt the closed council record from %s before trusting this run again.", strings.Join(meetingIDs, ", "))
+		}
+		return "Leader should adopt the governing closed-meeting output before trusting this run again."
+	}
+	if intValue(audit["live_state_gap_count"]) > 0 {
+		return runAuthorityAuditLiveAction(audit)
+	}
+	if intValue(audit["contract_gap_count"]) > 0 {
+		return "Leader should refresh the contract snapshot so planning truth matches the active run."
+	}
+	if intValue(audit["desired_state_gap_count"]) > 0 {
+		return "Leader should either drive the run to the desired state or update the desired-state contract."
+	}
+	return "No leader-side authority repair is currently required."
+}
+
+func runAuthorityAuditTeammateAction(run, registry, audit map[string]any) string {
+	runID := strings.TrimSpace(stringValue(run["run_id"]))
+	hasIssues := runAuthorityAuditRepairNeeded(audit)
+	if activeTeammateRun(run) {
+		ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+		if hasIssues {
+			return fmt.Sprintf("%s should keep the bounded assignment stable and keep reports fresh while leader repairs authority drift.", ownerID)
+		}
+		return fmt.Sprintf("%s can continue within the bounded assignment; no teammate-specific authority repair is currently required.", ownerID)
+	}
+	childRuns := childRunsForParent(registry, runID)
+	if len(childRuns) > 0 {
+		if hasIssues {
+			return fmt.Sprintf("%s beneath this run should hold their current boundary until authority drift is repaired.", countLabel(len(childRuns), "teammate run", "teammate runs"))
+		}
+		return fmt.Sprintf("%s beneath this run can continue while authority remains aligned.", countLabel(len(childRuns), "teammate run", "teammate runs"))
+	}
+	return "No teammate-specific authority repair is implied by the current audit."
+}
+
+func runAuthorityAuditCouncilAction(audit map[string]any, activeMeetings, openMeetingActions []map[string]any) string {
+	if len(activeMeetings) > 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Active council coverage exists via %s. Current requirement: %s", ids, requirement)
+		}
+		return fmt.Sprintf("Active council coverage exists via %s.", ids)
+	}
+	if runBriefNeedsMeeting(audit) {
+		return "Council is required next; a meeting-request signal is still unadopted on this run."
+	}
+	if len(openMeetingActions) > 0 {
+		return fmt.Sprintf("No live council is open, but %s still remain to be adopted.", countLabel(len(openMeetingActions), "meeting action", "meeting actions"))
+	}
+	if meetingIDs := runAuthorityAuditMeetingSources(toList(audit["adoption_gaps"])); len(meetingIDs) > 0 {
+		return fmt.Sprintf("No live council is open, but closed council output from %s still needs adoption.", strings.Join(meetingIDs, ", "))
+	}
+	return "No council action is currently required."
+}
+
+func runAuthorityAuditEvidence(audit map[string]any) []string {
+	type bucket struct {
+		label string
+		items []any
+	}
+	buckets := []bucket{
+		{label: "Higher-authority conflict", items: toList(audit["higher_authority_conflicts"])},
+		{label: "Adoption gap", items: toList(audit["adoption_gaps"])},
+		{label: "Live-state gap", items: toList(audit["live_state_gaps"])},
+		{label: "Contract gap", items: toList(audit["contract_gaps"])},
+		{label: "Desired-state gap", items: toList(audit["desired_state_gaps"])},
+	}
+	lines := []string{}
+	for _, bucket := range buckets {
+		for _, item := range bucket.items {
+			record, _ := toMap(item)
+			claimRef := firstNonBlank(strings.TrimSpace(stringValue(record["claim_ref"])), "unknown-claim")
+			note := firstNonBlank(
+				strings.TrimSpace(stringValue(record["note"])),
+				strings.TrimSpace(stringValue(record["summary"])),
+				"No explanatory note recorded.",
+			)
+			lines = append(lines, fmt.Sprintf("%s on %s: %s", bucket.label, claimRef, note))
+			if len(lines) == 3 {
+				return lines
+			}
+		}
+	}
+	if len(lines) == 0 && intValue(audit["superseded_signal_count"]) > 0 {
+		lines = append(lines, fmt.Sprintf("%s are already superseded by fresher authority.", countLabel(intValue(audit["superseded_signal_count"]), "signal", "signals")))
+	}
+	if len(lines) == 0 {
+		lines = append(lines, "No unresolved authority evidence is currently recorded.")
+	}
+	return lines
+}
+
+func renderRunAuthorityAuditBrief(run, audit, registry map[string]any, activeMeetings, openMeetingActions []map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	auditState := "aligned"
+	switch {
+	case runAuthorityAuditRepairNeeded(audit):
+		auditState = "repair-needed"
+	case intValue(audit["desired_state_gap_count"]) > 0:
+		auditState = "in-progress"
+	}
+	lines := []string{
+		"Harness Run Authority Briefing",
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf(
+			"Authority: mission=%s, owner=%s, state=%s, audit=%s.",
+			missionID,
+			runBriefOwnerLabel(run),
+			state,
+			auditState,
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %s, %s, %s, %s.",
+			countLabel(intValue(audit["higher_authority_conflict_count"]), "higher-authority conflict", "higher-authority conflicts"),
+			countLabel(intValue(audit["adoption_gap_count"]), "adoption gap", "adoption gaps"),
+			countLabel(intValue(audit["live_state_gap_count"]), "live-state gap", "live-state gaps"),
+			countLabel(intValue(audit["contract_gap_count"]), "contract gap", "contract gaps"),
+			countLabel(intValue(audit["desired_state_gap_count"]), "desired-state gap", "desired-state gaps"),
+			countLabel(intValue(audit["superseded_signal_count"]), "superseded signal", "superseded signals"),
+		),
+	}
+	if branch := strings.TrimSpace(stringValue(run["branch"])); branch != "" {
+		location := "Location: branch=" + branch
+		if worktreePath := strings.TrimSpace(stringValue(run["worktree_path"])); worktreePath != "" {
+			location += ", worktree=" + worktreePath
+		}
+		location += "."
+		lines = append(lines, location)
+	}
+	lines = append(lines,
+		"",
+		"Current:",
+		"- "+runAuthorityAuditCurrent(run, audit),
+		"",
+		"Why:",
+		"- "+runAuthorityAuditWhy(audit),
+		"",
+		"Next:",
+		"- "+runAuthorityAuditNext(audit),
+		"",
+		"Leader:",
+		"- "+runAuthorityAuditLeaderAction(audit, activeMeetings),
+		"",
+		"Teammates:",
+		"- "+runAuthorityAuditTeammateAction(run, registry, audit),
+		"",
+		"Council:",
+		"- "+runAuthorityAuditCouncilAction(audit, activeMeetings, openMeetingActions),
+		"",
+		"Evidence:",
+	)
+	for _, line := range runAuthorityAuditEvidence(audit) {
+		lines = append(lines, "- "+line)
+	}
 	return strings.Join(lines, "\n")
 }
 

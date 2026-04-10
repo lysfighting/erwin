@@ -381,8 +381,11 @@ Inspect run-level authority:
 
 ```bash
 bash scripts/harness-runs.sh get RUN_ID --brief
+bash scripts/harness-runs.sh authority-audit RUN_ID --brief
 bash scripts/harness-runs.sh authority-audit RUN_ID
 ```
+
+Use `runs authority-audit --brief` when the question is not "what is this run doing?" but "why is this run no longer trustworthy and what should leader/council/teammates do next?".
 
 ### 5. Delegate To Teammates
 

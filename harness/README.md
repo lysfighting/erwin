@@ -49,7 +49,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 - `harness-issue.sh` — structured issue drafting and creation
 - `harness-claim.sh` — mission claim + contract/run creation
 - `harness-drive.sh` — run-state control, dependency waiting, meetings, reprovision, outcome adoption
-- `harness-runs.sh` — direct run inspection, `runs get --brief` leader summaries, desired-state mutation, bounded ownership transfer, and run-level authority audit
+- `harness-runs.sh` — direct run inspection, `runs get/authority-audit --brief` leader summaries, desired-state mutation, bounded ownership transfer, and run-level authority audit
 - `harness-teammates.sh` — bounded teammate assignment, governed communication, and meeting escalation
 - `harness-ship.sh` — verification, PR lifecycle, review/check gates, deterministic merge, merge readiness
 - `harness-ship.sh` also supports branch push and PR draft generation

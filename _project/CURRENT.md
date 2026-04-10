@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-10
-- **Last Session**: 2026-04-10-C (Extended the human-facing leader layer into `missions schedule --brief`)
+- **Last Session**: 2026-04-10-D (Extended the human-facing leader layer into `runs authority-audit --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-10-D** — Extended the human-facing leader layer into `runs authority-audit --brief`
+
+- **Run authority drift now has a real human-facing leader entrypoint**: `bash scripts/harness-runs.sh authority-audit RUN_ID --brief` now turns the same higher-authority conflicts, adoption drift, live-state drift, contract drift, and desired-state gaps into a readable audit-layer briefing instead of forcing direct raw authority JSON inspection
+- **Run authority briefings stay on the same Go control plane**: the new authority layer is derived from the existing run authority audit, live meeting linkage, teammate lineage, and audit evidence truth rather than inventing a parallel repair-summary model; default `runs authority-audit` JSON remains unchanged for exact inspection, tooling, and automation
+- **Human-facing verification now covers desired-state-progress, higher-authority-conflict, and packaged-binary authority paths**: core smoke now proves both an in-progress desired-state authority brief and a non-healthy higher-authority-conflict brief, and runtime-distribution smoke proves `runs authority-audit --brief` works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-10-C** — Extended the human-facing leader layer into `missions schedule --brief`
 
