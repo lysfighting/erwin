@@ -8918,13 +8918,20 @@ func cmdMissions(args []string) error {
 			return printJSON(written)
 		})
 	case "authority-audit":
-		if len(args) >= 2 && args[1] == "--all" {
+		mode, remaining, err := parseOutputMode("missions authority-audit", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) >= 1 && remaining[0] == "--all" {
+			if mode == outputModeText {
+				return errors.New("missions authority-audit --all does not support --brief")
+			}
 			return printJSON(missionGraphAuthorityAudit(registry, readRegistry(), false))
 		}
-		if len(args) < 2 {
+		if len(remaining) != 1 {
 			return errors.New("missions authority-audit requires MISSION_ID or --all")
 		}
-		missionID := strings.TrimSpace(args[1])
+		missionID := strings.TrimSpace(remaining[0])
 		if missionID == "" {
 			return errors.New("missions authority-audit requires MISSION_ID or --all")
 		}
@@ -8936,7 +8943,18 @@ func cmdMissions(args []string) error {
 			}
 			mission, _ = toMap(toList(registry["missions"])[index])
 		}
-		return printJSON(missionAuthorityAudit(mission, readRegistry()))
+		runtimeRegistry := readRegistry()
+		audit := missionAuthorityAudit(mission, runtimeRegistry)
+		if mode == outputModeText {
+			activeMeetingCountByMission, openMeetingActionCountByMission, _, _ := meetingActivityByMission(runtimeRegistry)
+			return printText(renderMissionAuthorityAuditBrief(
+				mission,
+				audit,
+				activeMeetingCountByMission[missionID],
+				openMeetingActionCountByMission[missionID],
+			))
+		}
+		return printJSON(audit)
 	case "establish-governor":
 		if len(args) < 3 {
 			return errors.New("missions establish-governor requires BUNDLE_ID GOVERNING_MISSION_ID [NOTE]")
@@ -12488,6 +12506,216 @@ func renderMissionBrief(mission, entry, scheduler map[string]any) string {
 		"Council:",
 		"- "+missionBriefCouncilAction(entry),
 	)
+	return strings.Join(lines, "\n")
+}
+
+func missionAuthorityAuditRepairNeeded(audit map[string]any) bool {
+	return intValue(audit["mission_gap_count"]) > 0 || intValue(audit["unresolved_conflict_count"]) > 0
+}
+
+func missionAuthorityAuditRunIDs(items []any) []string {
+	runIDs := []string{}
+	for _, item := range items {
+		record, _ := toMap(item)
+		for _, field := range []string{"source_ref", "winning_source", "losing_source"} {
+			value := strings.TrimSpace(stringValue(record[field]))
+			if strings.HasPrefix(value, "run:") {
+				runIDs = append(runIDs, strings.TrimPrefix(value, "run:"))
+			}
+		}
+	}
+	return dedupeStrings(runIDs)
+}
+
+func missionAuthorityAuditCurrent(mission, audit map[string]any) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	authoritativeRunID := strings.TrimSpace(stringValue(audit["authoritative_run_id"]))
+	latestRunID := strings.TrimSpace(stringValue(audit["latest_run_id"]))
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		return fmt.Sprintf("Mission %s currently has competing active root runs and is not yet a single trustworthy control surface.", missionID)
+	case intValue(audit["mission_gap_count"]) > 0:
+		return fmt.Sprintf("Mission %s record has drifted from its authoritative run-derived control plane.", missionID)
+	case intValue(audit["adjudication_count"]) > 0 && authoritativeRunID != "" && latestRunID != "" && authoritativeRunID != latestRunID:
+		return fmt.Sprintf("Mission %s remains governed by authoritative run %s even though freshest activity is on %s.", missionID, authoritativeRunID, latestRunID)
+	case intValue(audit["adjudication_count"]) > 0:
+		return fmt.Sprintf("Mission %s remains governed by its authoritative run despite fresher sibling activity.", missionID)
+	default:
+		return fmt.Sprintf("Mission %s is aligned with its authoritative run-derived control plane.", missionID)
+	}
+}
+
+func missionAuthorityAuditWhy(audit map[string]any) string {
+	if note := briefAuditNote(toList(audit["unresolved_conflicts"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["mission_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["adjudications"])); note != "" {
+		return note
+	}
+	return "No mission-record drift, authoritative-run adjudication, or competing root-run conflict is currently recorded."
+}
+
+func missionAuthorityAuditNext(mission, audit map[string]any) string {
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		conflictRunIDs := missionAuthorityAuditRunIDs(toList(audit["unresolved_conflicts"]))
+		if len(conflictRunIDs) > 0 {
+			return fmt.Sprintf("Close or merge competing root runs %s before widening mission control.", strings.Join(conflictRunIDs, ", "))
+		}
+		return "Close or merge the competing root runs before widening mission control."
+	case intValue(audit["mission_gap_count"]) > 0:
+		return "Regenerate the mission record from run truth before trusting leader surfaces."
+	}
+	if next := strings.TrimSpace(stringValue(mission["next_expected_action"])); next != "" {
+		return next
+	}
+	if authoritativeRunID := strings.TrimSpace(stringValue(audit["authoritative_run_id"])); authoritativeRunID != "" {
+		return fmt.Sprintf("Keep mission control anchored to authoritative run %s.", authoritativeRunID)
+	}
+	return "No immediate mission authority action is recorded."
+}
+
+func missionAuthorityAuditLeaderAction(mission, audit map[string]any) string {
+	authoritativeRunID := strings.TrimSpace(stringValue(audit["authoritative_run_id"]))
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		if authoritativeRunID != "" {
+			return fmt.Sprintf("Leader should close or merge competing root runs until only authoritative run %s remains in control.", authoritativeRunID)
+		}
+		return "Leader should close or merge competing root runs until only one non-teammate control run remains."
+	case intValue(audit["mission_gap_count"]) > 0:
+		return "Leader should regenerate mission state from authoritative run truth before changing mission control."
+	case intValue(audit["adjudication_count"]) > 0 && authoritativeRunID != "":
+		return fmt.Sprintf("Leader should keep mission control anchored to authoritative run %s and treat fresher sibling activity as execution evidence, not mission truth.", authoritativeRunID)
+	default:
+		return "No leader-side mission authority repair is currently required."
+	}
+}
+
+func missionAuthorityAuditTeammateAction(audit map[string]any) string {
+	teammateCount := intValue(audit["active_teammate_run_count"])
+	switch {
+	case teammateCount == 0:
+		return "No active teammate run is currently affecting mission control."
+	case missionAuthorityAuditRepairNeeded(audit):
+		return fmt.Sprintf("%s should keep reports fresh while leader repairs mission control drift.", countLabel(teammateCount, "teammate run", "teammate runs"))
+	case intValue(audit["adjudication_count"]) > 0:
+		return fmt.Sprintf("%s can continue bounded execution, but they do not currently own mission control.", countLabel(teammateCount, "teammate run", "teammate runs"))
+	default:
+		return fmt.Sprintf("%s are active on this mission; keep reports fresh before changing leader truth.", countLabel(teammateCount, "teammate run", "teammate runs"))
+	}
+}
+
+func missionAuthorityAuditCouncilAction(audit map[string]any, activeMeetingCount int, openMeetingActionCount int) string {
+	switch {
+	case activeMeetingCount > 0:
+		return fmt.Sprintf("Yes. %s are already active on this mission.", countLabel(activeMeetingCount, "council", "councils"))
+	case openMeetingActionCount > 0:
+		return fmt.Sprintf("No active council is open, but %s still remain on this mission.", countLabel(openMeetingActionCount, "open meeting action", "open meeting actions"))
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		return "No council is currently required by mission-authority audit alone; leader should resolve the competing root runs directly."
+	default:
+		return "No council action is currently required."
+	}
+}
+
+func missionAuthorityAuditEvidence(audit map[string]any) []string {
+	type bucket struct {
+		label string
+		items []any
+	}
+	buckets := []bucket{
+		{label: "Mission gap", items: toList(audit["mission_gaps"])},
+		{label: "Adjudication", items: toList(audit["adjudications"])},
+		{label: "Unresolved conflict", items: toList(audit["unresolved_conflicts"])},
+	}
+	lines := []string{}
+	for _, bucket := range buckets {
+		for _, item := range bucket.items {
+			record, _ := toMap(item)
+			claimRef := firstNonBlank(strings.TrimSpace(stringValue(record["claim_ref"])), "unknown-claim")
+			note := firstNonBlank(
+				strings.TrimSpace(stringValue(record["note"])),
+				strings.TrimSpace(stringValue(record["summary"])),
+				"No explanatory note recorded.",
+			)
+			lines = append(lines, fmt.Sprintf("%s on %s: %s", bucket.label, claimRef, note))
+			if len(lines) == 3 {
+				return lines
+			}
+		}
+	}
+	if len(lines) == 0 {
+		lines = append(lines, "No unresolved mission authority evidence is currently recorded.")
+	}
+	return lines
+}
+
+func renderMissionAuthorityAuditBrief(mission, audit map[string]any, activeMeetingCount int, openMeetingActionCount int) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	missionState := firstNonBlank(strings.TrimSpace(stringValue(mission["state"])), "unknown")
+	auditState := "aligned"
+	switch {
+	case missionAuthorityAuditRepairNeeded(audit):
+		auditState = "repair-needed"
+	case intValue(audit["adjudication_count"]) > 0:
+		auditState = "governed"
+	}
+	lines := []string{
+		"Harness Mission Authority Briefing",
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf(
+			"Authority: state=%s, audit=%s, authoritative=%s, latest=%s.",
+			missionState,
+			auditState,
+			firstNonBlank(strings.TrimSpace(stringValue(audit["authoritative_run_id"])), "none"),
+			firstNonBlank(strings.TrimSpace(stringValue(audit["latest_run_id"])), "none"),
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %s, %s, %s.",
+			countLabel(intValue(audit["active_root_run_count"]), "active root run", "active root runs"),
+			countLabel(intValue(audit["active_teammate_run_count"]), "active teammate run", "active teammate runs"),
+			countLabel(intValue(audit["mission_gap_count"]), "mission gap", "mission gaps"),
+			countLabel(intValue(audit["adjudication_count"]), "adjudication", "adjudications"),
+			countLabel(intValue(audit["unresolved_conflict_count"]), "unresolved conflict", "unresolved conflicts"),
+		),
+	}
+	if branch := strings.TrimSpace(stringValue(mission["branch"])); branch != "" {
+		location := "Location: branch=" + branch
+		if worktreePath := strings.TrimSpace(stringValue(mission["worktree_path"])); worktreePath != "" {
+			location += ", worktree=" + worktreePath
+		}
+		location += "."
+		lines = append(lines, location)
+	}
+	lines = append(lines,
+		"",
+		"Current:",
+		"- "+missionAuthorityAuditCurrent(mission, audit),
+		"",
+		"Why:",
+		"- "+missionAuthorityAuditWhy(audit),
+		"",
+		"Next:",
+		"- "+missionAuthorityAuditNext(mission, audit),
+		"",
+		"Leader:",
+		"- "+missionAuthorityAuditLeaderAction(mission, audit),
+		"",
+		"Teammates:",
+		"- "+missionAuthorityAuditTeammateAction(audit),
+		"",
+		"Council:",
+		"- "+missionAuthorityAuditCouncilAction(audit, activeMeetingCount, openMeetingActionCount),
+		"",
+		"Evidence:",
+	)
+	for _, line := range missionAuthorityAuditEvidence(audit) {
+		lines = append(lines, "- "+line)
+	}
 	return strings.Join(lines, "\n")
 }
 

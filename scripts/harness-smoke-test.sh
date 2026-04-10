@@ -137,6 +137,9 @@ mission_authority_baseline=$(run_in_repo bash scripts/harness-missions.sh author
 assert_json_field "$mission_authority_baseline" "\"authoritative_run_id\": \"$run_id\"" "mission authority audit reports the leader run as authoritative"
 assert_json_field "$mission_authority_baseline" '"mission_gap_count": 0' "mission authority audit starts without control-plane drift"
 assert_json_field "$mission_authority_baseline" '"adjudication_count": 0' "mission authority audit starts without cross-run adjudications"
+mission_authority_baseline_brief=$(run_in_repo bash scripts/harness-missions.sh authority-audit issue-20001 --brief)
+assert_contains "$mission_authority_baseline_brief" 'Mission: issue-20001' "missions authority-audit --brief names the requested mission"
+assert_contains "$mission_authority_baseline_brief" 'Mission issue-20001 is aligned with its authoritative run-derived control plane.' "missions authority-audit --brief explains aligned mission control without raw JSON"
 authority_baseline=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$authority_baseline" '"contract_gap_count": 0' "initial run authority audit starts without contract drift"
 authority_baseline_brief=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id" --brief)

@@ -262,6 +262,9 @@ assert_json_field "$mission_authority_output" "\"authoritative_run_id\": \"$lead
 assert_json_field "$mission_authority_output" '"adjudication_count": 1' "mission authority audit records a leader-over-teammate adjudication"
 assert_json_field "$mission_authority_output" '"resolution_kind": "leader_run_controls_mission"' "mission authority audit explains that the leader run controls mission state"
 assert_json_field "$mission_authority_output" '"unresolved_conflict_count": 0' "mission authority audit reports no unresolved root-run conflict in the delegated case"
+mission_authority_brief_output=$(run_in_repo bash scripts/harness-missions.sh authority-audit issue-33001 --brief)
+assert_contains "$mission_authority_brief_output" "Mission issue-33001 remains governed by authoritative run $leader_run_id even though freshest activity is on" "missions authority-audit --brief explains leader-over-teammate control in human-readable form"
+assert_contains "$mission_authority_brief_output" "Leader should keep mission control anchored to authoritative run $leader_run_id and treat fresher sibling activity as execution evidence, not mission truth." "missions authority-audit --brief names the leader action for governed teammate activity"
 
 section "Meeting escalation"
 escalate_output=$(run_in_repo bash scripts/harness-teammates.sh escalate "$run_b" "Do we need a release-note update for auth scope?" --materialize)

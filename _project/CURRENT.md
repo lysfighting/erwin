@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-10
-- **Last Session**: 2026-04-10-D (Extended the human-facing leader layer into `runs authority-audit --brief`)
+- **Last Session**: 2026-04-10-E (Extended the human-facing leader layer into `missions authority-audit --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-10-E** — Extended the human-facing leader layer into `missions authority-audit --brief`
+
+- **Mission control drift now has a real human-facing leader entrypoint**: `bash scripts/harness-missions.sh authority-audit MISSION_ID --brief` now turns the same mission-record drift, leader-over-teammate control adjudication, and competing root-run authority truth into a readable mission-repair briefing instead of forcing direct raw mission-audit JSON inspection
+- **Mission authority briefings stay on the same Go control plane**: the new mission-audit layer is derived from the existing mission authority audit, mission registry state, run registry truth, and mission-level meeting activity counts rather than inventing a parallel mission-repair model; default `missions authority-audit` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers aligned, leader-over-teammate, and packaged-binary mission-authority paths**: core smoke now proves aligned mission authority brief output, teammate smoke proves the governed leader-over-teammate adjudication path, and runtime-distribution smoke proves `missions authority-audit --brief` works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-10-D** — Extended the human-facing leader layer into `runs authority-audit --brief`
 

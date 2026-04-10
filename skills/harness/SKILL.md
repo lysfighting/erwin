@@ -56,6 +56,8 @@ The harness is file-backed:
   `bash scripts/harness-missions.sh get issue-1234`
 - `missions-get-brief`
   `bash scripts/harness-missions.sh get issue-1234 --brief`
+- `missions-authority-audit-brief`
+  `bash scripts/harness-missions.sh authority-audit issue-1234 --brief`
 - `runs-get-brief`
   `bash scripts/harness-runs.sh get RUN_ID --brief`
 - `meetings-summary-brief`
@@ -187,6 +189,7 @@ The harness is file-backed:
 - Use `runs authority-audit RUN_ID --brief` when you want the human-readable run-drift verdict, repair action, and leader/teammate/council implications before drilling into raw audit JSON.
 - Use `runs authority-audit` when a run may be drifting against fresher or higher-authority active signals, or when `doctor` reports `run-authority-conflict`.
 - Use `runs get RUN_ID --brief` when you want the human-readable execution summary for one run before drilling into raw run JSON or authority-audit detail.
+- Use `missions authority-audit MISSION_ID --brief` when you want the human-readable mission-control verdict, leader-over-teammate adjudication, and next repair action before drilling into raw mission-audit JSON.
 - Use `runs authority-audit` when a run claims it is ready/verified/clean but the live worktree is still dirty; the audit now surfaces that intent-vs-live-git disagreement explicitly.
 - Use `missions authority-audit --all` when mission bundles overlap; it now explains bundle-level `resolution_kind`, shared selectors, and the leader-facing `required_action` instead of only listing pairwise conflicts.
 - After a meeting closes, either let `meeting-close` apply its outcome or explicitly run `adopt-meeting`.

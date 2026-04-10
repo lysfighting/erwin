@@ -342,10 +342,13 @@ Mission control:
 bash scripts/harness-missions.sh schedule --brief
 bash scripts/harness-missions.sh list
 bash scripts/harness-missions.sh get issue-1234 --brief
+bash scripts/harness-missions.sh authority-audit issue-1234 --brief
 bash scripts/harness-missions.sh graph
 ```
 
 Use `schedule --brief` when a human wants the scheduler portfolio itself in readable form: what primary control-plane packet currently wins, why it wins, whether foreground execution is admitted, and what decision/maintenance/reschedule backlog still sits behind it.
+
+Use `missions authority-audit --brief` when the question is not "what state is this mission in?" but "is this durable mission record still trustworthy, or is fresher/competing run activity changing who should control it?".
 
 ### 3. Turn Work Into Governed Execution
 

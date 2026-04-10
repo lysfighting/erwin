@@ -32,6 +32,7 @@ Current human-direct entry stack:
 - `bash scripts/harness-home.sh --brief`
 - `bash scripts/harness-missions.sh schedule --brief`
 - `bash scripts/harness-missions.sh get MISSION_ID --brief`
+- `bash scripts/harness-missions.sh authority-audit MISSION_ID --brief`
 - `bash scripts/harness-runs.sh get RUN_ID --brief`
 - `bash scripts/harness-runs.sh authority-audit RUN_ID --brief`
 - `bash scripts/harness-meetings.sh summary MEETING_ID --brief`
@@ -118,7 +119,7 @@ Shell entrypoints are intentionally thin:
 
 Human-facing runtime note:
 
-- `home` and `doctor` now support `--brief` for leader-readable summaries derived directly from the same control-plane truth, and `missions get MISSION_ID --brief` plus `runs get RUN_ID --brief` now do the same at the mission/run object layers; the default output remains machine-readable JSON for audits, tooling, and exact state inspection
+- `home` and `doctor` now support `--brief` for leader-readable summaries derived directly from the same control-plane truth, and `missions get MISSION_ID --brief`, `missions authority-audit MISSION_ID --brief`, `runs get RUN_ID --brief`, and `runs authority-audit RUN_ID --brief` now do the same at the mission/run object and repair layers; the default output remains machine-readable JSON for audits, tooling, and exact state inspection
 
 Runtime selection order:
 
