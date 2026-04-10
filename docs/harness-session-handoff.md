@@ -2,7 +2,7 @@
 
 > Status: Active
 >
-> Date: 2026-04-09
+> Date: 2026-04-10
 >
 > Purpose: provide a durable, file-backed starting point for fresh sessions so `Harness` work can resume from repository state instead of relying on chat-context memory.
 
@@ -26,6 +26,13 @@ This is intentional state persistence, not incidental documentation.
 External field intelligence and real usage feedback should enter `Harness` through the proposal-first learning loop and proposal ledger, not by directly rewriting runtime behavior from fresh observations alone.
 
 When a fresh session needs the fastest human-readable orientation before diving into architecture and control-plane details, start with [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md).
+
+Current human-direct entry stack:
+
+- `bash scripts/harness-home.sh --brief`
+- `bash scripts/harness-missions.sh get MISSION_ID --brief`
+- `bash scripts/harness-runs.sh get RUN_ID --brief`
+- `bash scripts/harness-meetings.sh summary MEETING_ID --brief`
 
 ---
 

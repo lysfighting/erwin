@@ -15237,109 +15237,23 @@ func cmdMeetings(args []string) error {
 		}
 		return printJSON(getKey(data, "meeting", map[string]any{}))
 	case "summary":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("meetings summary", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("meetings summary requires MEETING_ID")
 		}
-		data := readMeeting(args[1])
+		data := readMeeting(remaining[0])
 		if data == nil {
-			return fmt.Errorf("meeting not found: %s", args[1])
+			return fmt.Errorf("meeting not found: %s", remaining[0])
 		}
 		meeting, _ := toMap(data["meeting"])
-		ensureMeetingGovernanceState(meeting)
-		outcome := meetingOutcome(meeting)
-		openActionCount := 0
-		for _, item := range toList(meeting["action_items"]) {
-			mapping, ok := toMap(item)
-			if !ok || stringValue(mapping["state"]) == "" || stringValue(mapping["state"]) == "open" {
-				openActionCount++
-			}
+		summary := meetingSummaryPacket(meeting)
+		if mode == outputModeText {
+			return printText(renderMeetingBrief(meeting, summary))
 		}
-		findings, _ := toMap(meeting["findings"])
-		orchestration, _ := toMap(meeting["orchestration"])
-		synthesis, _ := toMap(orchestration["synthesis"])
-		autoSynthesis, _ := toMap(orchestration["auto_synthesis"])
-		debatePlan, _ := toMap(orchestration["debate_plan"])
-		wavePlan, _ := toMap(orchestration["wave_plan"])
-		outputPacket, _ := toMap(orchestration["output_packet"])
-		currentWaveBatch := meetingCurrentWaveBatch(wavePlan, debatePlan)
-		currentWaveActions := meetingCurrentWaveActions(wavePlan, debatePlan)
-		blockedWaveBatches := meetingBlockedWaveBatchSummaries(debatePlan)
-		authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
-		governanceGaps := meetingGovernancePolicyGaps(meeting)
-		return printJSON(map[string]any{
-			"meeting_id":                               stringValue(meeting["meeting_id"]),
-			"state":                                    stringValue(meeting["state"]),
-			"decision_protocol":                        stringValue(meeting["decision_protocol"]),
-			"decision_protocol_reason":                 stringValue(meeting["decision_protocol_reason"]),
-			"question":                                 stringValue(meeting["question"]),
-			"outcome_summary":                          outcome["summary"],
-			"next_action":                              outcome["next_action"],
-			"phase_history_count":                      len(toList(meeting["phase_history"])),
-			"governance_gap_count":                     len(governanceGaps),
-			"governance_gaps":                          stringListToAny(governanceGaps),
-			"debate_round":                             intValue(orchestration["debate_round"]),
-			"synthesis_status":                         stringValue(synthesis["status"]),
-			"blocking_gap_count":                       len(toList(synthesis["blocking_gaps"])),
-			"coverage_note_count":                      len(toList(synthesis["coverage_notes"])),
-			"authority_conflict_count":                 intValue(authorityAudit["conflict_count"]),
-			"unresolved_authority_conflict_count":      intValue(authorityAudit["unresolved_conflict_count"]),
-			"role_spec_count":                          len(toList(meeting["role_specs"])),
-			"locked_decisions":                         len(toList(meeting["locked_decisions"])),
-			"accepted_count":                           len(toList(findings["accepted"])),
-			"rejected_count":                           len(toList(findings["rejected"])),
-			"unresolved_count":                         len(toList(findings["unresolved"])),
-			"traced_finding_count":                     intValue(getKey(synthesis, "tally.traced_findings", 0)),
-			"untraced_finding_count":                   intValue(getKey(synthesis, "tally.untraced_findings", 0)),
-			"auto_generated_finding_count":             intValue(autoSynthesis["generated_finding_count"]),
-			"auto_generated_action_count":              intValue(autoSynthesis["generated_action_count"]),
-			"auto_generated_claim_count":               intValue(autoSynthesis["generated_claim_count"]),
-			"planned_route_count":                      intValue(debatePlan["planned_route_count"]),
-			"resolved_route_count":                     intValue(debatePlan["resolved_route_count"]),
-			"open_route_action_count":                  intValue(debatePlan["open_route_action_count"]),
-			"resolved_without_cross_examination_count": intValue(debatePlan["resolved_without_cross_examination_count"]),
-			"authority_resolved_route_count":           intValue(debatePlan["authority_resolved_route_count"]),
-			"protocol_deferred_route_count":            intValue(debatePlan["protocol_deferred_route_count"]),
-			"protocol_bound_route_count":               intValue(debatePlan["protocol_bound_route_count"]),
-			"planned_round_count":                      intValue(debatePlan["planned_round_count"]),
-			"resolved_round_count":                     intValue(debatePlan["resolved_round_count"]),
-			"open_round_action_count":                  intValue(debatePlan["open_round_action_count"]),
-			"wave_batch_count":                         intValue(debatePlan["wave_batch_count"]),
-			"open_wave_batch_count":                    intValue(debatePlan["open_wave_batch_count"]),
-			"ready_wave_batch_count":                   intValue(debatePlan["ready_wave_batch_count"]),
-			"blocked_wave_batch_count":                 intValue(debatePlan["blocked_wave_batch_count"]),
-			"resolved_wave_batch_count":                intValue(debatePlan["resolved_wave_batch_count"]),
-			"batch_selection_policy":                   stringValue(debatePlan["batch_selection_policy"]),
-			"previous_current_wave_batch_id":           stringValue(debatePlan["previous_current_wave_batch_id"]),
-			"current_wave_batch_id":                    stringValue(debatePlan["current_wave_batch_id"]),
-			"current_wave_batch_summary":               stringValue(debatePlan["current_wave_batch_summary"]),
-			"current_wave_batch_lane_count":            intValue(debatePlan["current_wave_batch_lane_count"]),
-			"current_wave_batch_assigned_role":         stringValue(getKey(currentWaveBatch, "assigned_role", "")),
-			"current_wave_batch_assigned_run_id":       stringValue(getKey(currentWaveBatch, "assigned_run_id", "")),
-			"current_wave_batch_phase":                 stringValue(getKey(currentWaveBatch, "expected_phase", "")),
-			"current_wave_batch_round_number":          intValue(getKey(currentWaveBatch, "round_number", 0)),
-			"current_wave_batch_action_count":          intValue(getKey(currentWaveBatch, "action_count", 0)),
-			"current_wave_batch_claim_refs":            cloneValue(getKey(currentWaveBatch, "claim_refs", []any{})),
-			"current_wave_actions":                     currentWaveActions,
-			"blocked_wave_batches":                     blockedWaveBatches,
-			"output_packet_kind":                       stringValue(getKey(outputPacket, "output_packet_kind", "")),
-			"output_packet_completion_gap_count":       intValue(getKey(outputPacket, "completion_gap_count", 0)),
-			"output_packet":                            cloneValue(outputPacket),
-			"output_debate_lane_count":                 intValue(getKey(outputPacket, "debate_lane_count", 0)),
-			"output_accepted_debate_lane_count":        intValue(getKey(outputPacket, "accepted_debate_lane_count", 0)),
-			"output_rejected_debate_lane_count":        intValue(getKey(outputPacket, "rejected_debate_lane_count", 0)),
-			"output_unresolved_debate_lane_count":      intValue(getKey(outputPacket, "unresolved_debate_lane_count", 0)),
-			"output_open_debate_lane_count":            intValue(getKey(outputPacket, "open_debate_lane_count", 0)),
-			"output_debate_lane_packets":               cloneValue(getKey(outputPacket, "debate_lane_packets", []any{})),
-			"output_follow_up_packet_count":            intValue(getKey(outputPacket, "follow_up_packet_count", 0)),
-			"output_open_follow_up_packet_count":       intValue(getKey(outputPacket, "open_follow_up_packet_count", 0)),
-			"output_follow_up_packets":                 cloneValue(getKey(outputPacket, "follow_up_packets", []any{})),
-			"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),
-			"max_wave_lane_count":                      intValue(debatePlan["max_wave_lane_count"]),
-			"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),
-			"open_wave_action_count":                   intValue(wavePlan["open_wave_action_count"]),
-			"unrouted_claim_count":                     intValue(debatePlan["unrouted_claim_count"]),
-			"open_action_count":                        openActionCount,
-		})
+		return printJSON(summary)
 	case "authority-audit":
 		if len(args) < 2 {
 			return errors.New("meetings authority-audit requires MEETING_ID")
@@ -15382,6 +15296,389 @@ func cmdMeetings(args []string) error {
 	default:
 		return cmdMeetingsRemainder(args)
 	}
+}
+
+func meetingSummaryPacket(meeting map[string]any) map[string]any {
+	ensureMeetingGovernanceState(meeting)
+	outcome := meetingOutcome(meeting)
+	openActionCount := 0
+	for _, item := range toList(meeting["action_items"]) {
+		mapping, ok := toMap(item)
+		if !ok || stringValue(mapping["state"]) == "" || stringValue(mapping["state"]) == "open" {
+			openActionCount++
+		}
+	}
+	findings, _ := toMap(meeting["findings"])
+	orchestration, _ := toMap(meeting["orchestration"])
+	synthesis, _ := toMap(orchestration["synthesis"])
+	autoSynthesis, _ := toMap(orchestration["auto_synthesis"])
+	debatePlan, _ := toMap(orchestration["debate_plan"])
+	wavePlan, _ := toMap(orchestration["wave_plan"])
+	outputPacket, _ := toMap(orchestration["output_packet"])
+	currentWaveBatch := meetingCurrentWaveBatch(wavePlan, debatePlan)
+	currentWaveActions := meetingCurrentWaveActions(wavePlan, debatePlan)
+	blockedWaveBatches := meetingBlockedWaveBatchSummaries(debatePlan)
+	authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	return map[string]any{
+		"meeting_id":                               stringValue(meeting["meeting_id"]),
+		"state":                                    stringValue(meeting["state"]),
+		"decision_protocol":                        stringValue(meeting["decision_protocol"]),
+		"decision_protocol_reason":                 stringValue(meeting["decision_protocol_reason"]),
+		"question":                                 stringValue(meeting["question"]),
+		"outcome_summary":                          outcome["summary"],
+		"next_action":                              outcome["next_action"],
+		"phase_history_count":                      len(toList(meeting["phase_history"])),
+		"governance_gap_count":                     len(governanceGaps),
+		"governance_gaps":                          stringListToAny(governanceGaps),
+		"debate_round":                             intValue(orchestration["debate_round"]),
+		"synthesis_status":                         stringValue(synthesis["status"]),
+		"blocking_gap_count":                       len(toList(synthesis["blocking_gaps"])),
+		"coverage_note_count":                      len(toList(synthesis["coverage_notes"])),
+		"authority_conflict_count":                 intValue(authorityAudit["conflict_count"]),
+		"unresolved_authority_conflict_count":      intValue(authorityAudit["unresolved_conflict_count"]),
+		"role_spec_count":                          len(toList(meeting["role_specs"])),
+		"locked_decisions":                         len(toList(meeting["locked_decisions"])),
+		"accepted_count":                           len(toList(findings["accepted"])),
+		"rejected_count":                           len(toList(findings["rejected"])),
+		"unresolved_count":                         len(toList(findings["unresolved"])),
+		"traced_finding_count":                     intValue(getKey(synthesis, "tally.traced_findings", 0)),
+		"untraced_finding_count":                   intValue(getKey(synthesis, "tally.untraced_findings", 0)),
+		"auto_generated_finding_count":             intValue(autoSynthesis["generated_finding_count"]),
+		"auto_generated_action_count":              intValue(autoSynthesis["generated_action_count"]),
+		"auto_generated_claim_count":               intValue(autoSynthesis["generated_claim_count"]),
+		"planned_route_count":                      intValue(debatePlan["planned_route_count"]),
+		"resolved_route_count":                     intValue(debatePlan["resolved_route_count"]),
+		"open_route_action_count":                  intValue(debatePlan["open_route_action_count"]),
+		"resolved_without_cross_examination_count": intValue(debatePlan["resolved_without_cross_examination_count"]),
+		"authority_resolved_route_count":           intValue(debatePlan["authority_resolved_route_count"]),
+		"protocol_deferred_route_count":            intValue(debatePlan["protocol_deferred_route_count"]),
+		"protocol_bound_route_count":               intValue(debatePlan["protocol_bound_route_count"]),
+		"planned_round_count":                      intValue(debatePlan["planned_round_count"]),
+		"resolved_round_count":                     intValue(debatePlan["resolved_round_count"]),
+		"open_round_action_count":                  intValue(debatePlan["open_round_action_count"]),
+		"wave_batch_count":                         intValue(debatePlan["wave_batch_count"]),
+		"open_wave_batch_count":                    intValue(debatePlan["open_wave_batch_count"]),
+		"ready_wave_batch_count":                   intValue(debatePlan["ready_wave_batch_count"]),
+		"blocked_wave_batch_count":                 intValue(debatePlan["blocked_wave_batch_count"]),
+		"resolved_wave_batch_count":                intValue(debatePlan["resolved_wave_batch_count"]),
+		"batch_selection_policy":                   stringValue(debatePlan["batch_selection_policy"]),
+		"previous_current_wave_batch_id":           stringValue(debatePlan["previous_current_wave_batch_id"]),
+		"current_wave_batch_id":                    stringValue(debatePlan["current_wave_batch_id"]),
+		"current_wave_batch_summary":               stringValue(debatePlan["current_wave_batch_summary"]),
+		"current_wave_batch_lane_count":            intValue(debatePlan["current_wave_batch_lane_count"]),
+		"current_wave_batch_assigned_role":         stringValue(getKey(currentWaveBatch, "assigned_role", "")),
+		"current_wave_batch_assigned_run_id":       stringValue(getKey(currentWaveBatch, "assigned_run_id", "")),
+		"current_wave_batch_phase":                 stringValue(getKey(currentWaveBatch, "expected_phase", "")),
+		"current_wave_batch_round_number":          intValue(getKey(currentWaveBatch, "round_number", 0)),
+		"current_wave_batch_action_count":          intValue(getKey(currentWaveBatch, "action_count", 0)),
+		"current_wave_batch_claim_refs":            cloneValue(getKey(currentWaveBatch, "claim_refs", []any{})),
+		"current_wave_actions":                     currentWaveActions,
+		"blocked_wave_batches":                     blockedWaveBatches,
+		"output_packet_kind":                       stringValue(getKey(outputPacket, "output_packet_kind", "")),
+		"output_packet_completion_gap_count":       intValue(getKey(outputPacket, "completion_gap_count", 0)),
+		"output_packet":                            cloneValue(outputPacket),
+		"output_debate_lane_count":                 intValue(getKey(outputPacket, "debate_lane_count", 0)),
+		"output_accepted_debate_lane_count":        intValue(getKey(outputPacket, "accepted_debate_lane_count", 0)),
+		"output_rejected_debate_lane_count":        intValue(getKey(outputPacket, "rejected_debate_lane_count", 0)),
+		"output_unresolved_debate_lane_count":      intValue(getKey(outputPacket, "unresolved_debate_lane_count", 0)),
+		"output_open_debate_lane_count":            intValue(getKey(outputPacket, "open_debate_lane_count", 0)),
+		"output_debate_lane_packets":               cloneValue(getKey(outputPacket, "debate_lane_packets", []any{})),
+		"output_follow_up_packet_count":            intValue(getKey(outputPacket, "follow_up_packet_count", 0)),
+		"output_open_follow_up_packet_count":       intValue(getKey(outputPacket, "open_follow_up_packet_count", 0)),
+		"output_follow_up_packets":                 cloneValue(getKey(outputPacket, "follow_up_packets", []any{})),
+		"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),
+		"max_wave_lane_count":                      intValue(debatePlan["max_wave_lane_count"]),
+		"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),
+		"open_wave_action_count":                   intValue(wavePlan["open_wave_action_count"]),
+		"unrouted_claim_count":                     intValue(debatePlan["unrouted_claim_count"]),
+		"open_action_count":                        openActionCount,
+	}
+}
+
+func meetingBriefTargetLabel(meeting map[string]any) string {
+	if missionID := strings.TrimSpace(stringValue(meeting["mission_id"])); missionID != "" {
+		return missionID
+	}
+	if runID := strings.TrimSpace(stringValue(meeting["run_id"])); runID != "" {
+		return runID
+	}
+	return "this decision surface"
+}
+
+func meetingNextRequirement(meeting map[string]any) string {
+	return strings.TrimSpace(stringValue(getKey(meeting, "orchestration.next_requirement", "")))
+}
+
+func meetingBriefPriority(meeting map[string]any) string {
+	target := meetingBriefTargetLabel(meeting)
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	if state == "closed" {
+		return fmt.Sprintf("This council is closed and now acts as a durable decision record for %s.", target)
+	}
+	switch phase {
+	case "output":
+		return fmt.Sprintf("This active council is at the output/adoption edge for %s.", target)
+	case "synthesis":
+		return fmt.Sprintf("This active council is synthesizing governed judgment for %s.", target)
+	default:
+		return fmt.Sprintf("This active council is the live governance object for %s.", target)
+	}
+}
+
+func meetingBriefCurrent(meeting, summary, synthesis map[string]any, governanceGaps []string) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	if state == "closed" {
+		return fmt.Sprintf("Meeting %s is closed.", meetingID)
+	}
+	if len(governanceGaps) > 0 {
+		return fmt.Sprintf("Meeting %s is blocked in %s by governance policy gaps.", meetingID, phase)
+	}
+	switch phase {
+	case "setup":
+		return fmt.Sprintf("Meeting %s is still in setup.", meetingID)
+	case "independent_review":
+		openWaveActions := intValue(summary["open_wave_action_count"])
+		if openWaveActions > 0 {
+			return fmt.Sprintf("Meeting %s is collecting %d bounded independent-review assessment(s).", meetingID, openWaveActions)
+		}
+		return fmt.Sprintf("Meeting %s is waiting for enough independent-review coverage to move forward.", meetingID)
+	case "cross_examination":
+		if batchSummary := strings.TrimSpace(stringValue(summary["current_wave_batch_summary"])); batchSummary != "" {
+			return fmt.Sprintf("Meeting %s is in live cross-examination: %s", meetingID, batchSummary)
+		}
+		if intValue(summary["open_route_action_count"]) > 0 {
+			return fmt.Sprintf("Meeting %s still has open cross-examination route obligations.", meetingID)
+		}
+		if intValue(summary["open_round_action_count"]) > 0 {
+			return fmt.Sprintf("Meeting %s still has open follow-up debate rounds.", meetingID)
+		}
+		return fmt.Sprintf("Meeting %s is in cross-examination.", meetingID)
+	case "synthesis":
+		switch strings.TrimSpace(stringValue(summary["synthesis_status"])) {
+		case "blocked":
+			return fmt.Sprintf("Meeting %s is blocked in synthesis.", meetingID)
+		case "needs_supplement":
+			return fmt.Sprintf("Meeting %s needs synthesis supplementation before output.", meetingID)
+		default:
+			return fmt.Sprintf("Meeting %s is synthesizing the council record.", meetingID)
+		}
+	case "output":
+		if packetKind := strings.TrimSpace(stringValue(summary["output_packet_kind"])); packetKind != "" {
+			return fmt.Sprintf("Meeting %s has a provisional %s packet ready for adoption or close.", meetingID, packetKind)
+		}
+		return fmt.Sprintf("Meeting %s is in output.", meetingID)
+	}
+	if len(toList(synthesis["blocking_gaps"])) > 0 {
+		return fmt.Sprintf("Meeting %s still has synthesis blocking gaps.", meetingID)
+	}
+	return fmt.Sprintf("Meeting %s is currently in phase %s.", meetingID, phase)
+}
+
+func meetingBriefFirstConflictNote(authorityAudit map[string]any) string {
+	for _, item := range toList(authorityAudit["conflicts"]) {
+		conflict, _ := toMap(item)
+		if note := strings.TrimSpace(stringValue(conflict["note"])); note != "" {
+			return note
+		}
+	}
+	return ""
+}
+
+func meetingBriefWhy(meeting, summary, synthesis, authorityAudit map[string]any, governanceGaps []string) string {
+	if len(governanceGaps) > 0 {
+		return governanceGaps[0]
+	}
+	if batchSummary := strings.TrimSpace(stringValue(summary["current_wave_batch_summary"])); batchSummary != "" {
+		return batchSummary
+	}
+	if intValue(summary["unresolved_authority_conflict_count"]) > 0 {
+		if note := meetingBriefFirstConflictNote(authorityAudit); note != "" {
+			return note
+		}
+		return "Same-authority findings still disagree on at least one governed claim."
+	}
+	for _, item := range toList(synthesis["blocking_gaps"]) {
+		if text := strings.TrimSpace(stringValue(item)); text != "" {
+			return text
+		}
+	}
+	if nextRequirement := meetingNextRequirement(meeting); nextRequirement != "" {
+		return nextRequirement
+	}
+	if summaryText := strings.TrimSpace(stringValue(getKey(summary, "output_packet.summary", ""))); summaryText != "" {
+		return summaryText
+	}
+	if outcomeSummary := strings.TrimSpace(stringValue(summary["outcome_summary"])); outcomeSummary != "" {
+		return outcomeSummary
+	}
+	return firstNonBlank(strings.TrimSpace(stringValue(meeting["question"])), "No higher-priority council constraint is currently recorded.")
+}
+
+func meetingBriefNext(meeting, summary map[string]any) string {
+	if strings.TrimSpace(stringValue(meeting["state"])) != "closed" {
+		if nextRequirement := meetingNextRequirement(meeting); nextRequirement != "" {
+			return nextRequirement
+		}
+	}
+	if nextAction := strings.TrimSpace(stringValue(summary["next_action"])); nextAction != "" {
+		return nextAction
+	}
+	return "No immediate next action is recorded."
+}
+
+func meetingBriefLeaderAction(meeting, summary, synthesis map[string]any, governanceGaps []string) string {
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	nextRequirement := meetingNextRequirement(meeting)
+	if state == "closed" {
+		return "Inspect the closed council record or reopen only if the governed decision changed."
+	}
+	if len(governanceGaps) > 0 {
+		return "Repair council governance prerequisites before advancing this meeting."
+	}
+	switch phase {
+	case "setup":
+		return firstNonBlank(nextRequirement, "Add packet/participant prerequisites before independent review.")
+	case "independent_review":
+		if intValue(summary["open_wave_action_count"]) > 0 {
+			return fmt.Sprintf("Collect the remaining %d independent-review assessment(s) before cross-examination.", intValue(summary["open_wave_action_count"]))
+		}
+		return firstNonBlank(nextRequirement, "Confirm independent-review coverage before advancing.")
+	case "cross_examination":
+		if intValue(summary["current_wave_batch_action_count"]) > 0 {
+			return "Keep the current debate batch moving before synthesis."
+		}
+		if intValue(summary["open_route_action_count"]) > 0 {
+			return "Record the remaining cross-examination positions before synthesis."
+		}
+		if intValue(summary["open_round_action_count"]) > 0 {
+			return "Collect the remaining follow-up debate responses before synthesis."
+		}
+		return firstNonBlank(nextRequirement, "Review cross-examination coverage before synthesis.")
+	case "synthesis":
+		switch strings.TrimSpace(stringValue(summary["synthesis_status"])) {
+		case "blocked":
+			return "Resolve synthesis blocking gaps before output."
+		case "needs_supplement":
+			return "Supplement synthesis evidence before output."
+		default:
+			return firstNonBlank(nextRequirement, "Review the synthesized council record and advance to output when ready.")
+		}
+	case "output":
+		return "Adopt or close the meeting outcome once the output packet looks correct."
+	}
+	if len(toList(synthesis["blocking_gaps"])) > 0 {
+		return "Resolve synthesis blocking gaps before treating this council as ready."
+	}
+	return firstNonBlank(nextRequirement, "Review the current council state before changing governance.")
+}
+
+func meetingBriefCurrentAssignee(summary map[string]any) string {
+	role := strings.TrimSpace(stringValue(summary["current_wave_batch_assigned_role"]))
+	runID := strings.TrimSpace(stringValue(summary["current_wave_batch_assigned_run_id"]))
+	switch {
+	case role != "" && runID != "":
+		return fmt.Sprintf("%s on %s", role, runID)
+	case role != "":
+		return role
+	case runID != "":
+		return runID
+	default:
+		return ""
+	}
+}
+
+func meetingBriefCouncilAction(summary map[string]any) string {
+	if intValue(summary["current_wave_batch_action_count"]) > 0 {
+		if assignee := meetingBriefCurrentAssignee(summary); assignee != "" {
+			return fmt.Sprintf("Current live council work is assigned to %s for %d action(s).", assignee, intValue(summary["current_wave_batch_action_count"]))
+		}
+		return fmt.Sprintf("Current live council work still has %d action(s) queued in the active batch.", intValue(summary["current_wave_batch_action_count"]))
+	}
+	if intValue(summary["open_wave_action_count"]) > 0 {
+		return fmt.Sprintf("%d bounded independent-review assessment(s) are still owed by council participants.", intValue(summary["open_wave_action_count"]))
+	}
+	if intValue(summary["open_route_action_count"]) > 0 {
+		return fmt.Sprintf("%d cross-examination route obligation(s) are still open.", intValue(summary["open_route_action_count"]))
+	}
+	if intValue(summary["open_round_action_count"]) > 0 {
+		return fmt.Sprintf("%d follow-up debate round obligation(s) are still open.", intValue(summary["open_round_action_count"]))
+	}
+	if intValue(summary["output_follow_up_packet_count"]) > 0 {
+		return fmt.Sprintf("The council has produced %d follow-up packet(s); %d remain open after adoption.", intValue(summary["output_follow_up_packet_count"]), intValue(summary["output_open_follow_up_packet_count"]))
+	}
+	if intValue(summary["open_action_count"]) > 0 {
+		return fmt.Sprintf("%d meeting action item(s) remain open.", intValue(summary["open_action_count"]))
+	}
+	return "No live council action is currently outstanding."
+}
+
+func meetingBriefOutput(summary map[string]any) string {
+	packetKind := strings.TrimSpace(stringValue(summary["output_packet_kind"]))
+	if packetKind == "" {
+		return "No provisional output packet is recorded yet."
+	}
+	parts := []string{fmt.Sprintf("Current output packet is %s.", packetKind)}
+	if followUpCount := intValue(summary["output_follow_up_packet_count"]); followUpCount > 0 {
+		parts = append(parts, fmt.Sprintf("%d of %d follow-up packet(s) remain open.", intValue(summary["output_open_follow_up_packet_count"]), followUpCount))
+	}
+	if laneCount := intValue(summary["output_debate_lane_count"]); laneCount > 0 {
+		parts = append(parts, fmt.Sprintf("Debate lanes: %d accepted, %d rejected, %d unresolved.", intValue(summary["output_accepted_debate_lane_count"]), intValue(summary["output_rejected_debate_lane_count"]), intValue(summary["output_unresolved_debate_lane_count"])))
+	}
+	return strings.Join(parts, " ")
+}
+
+func renderMeetingBrief(meeting, summary map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
+	synthesis, _ := toMap(meetingSynthesisAudit(meeting))
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	lines := []string{
+		"Harness Meeting Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf("Question: %s", firstNonBlank(strings.TrimSpace(stringValue(meeting["question"])), "No council question recorded.")),
+		fmt.Sprintf(
+			"Scope: %d participant(s), %d role spec(s), %d governance gap(s), %d unresolved authority conflict(s), %d open action(s).",
+			len(toList(meeting["participants"])),
+			len(toList(meeting["role_specs"])),
+			intValue(summary["governance_gap_count"]),
+			intValue(summary["unresolved_authority_conflict_count"]),
+			intValue(summary["open_action_count"]),
+		),
+		"",
+		"Priority:",
+		"- " + meetingBriefPriority(meeting),
+		"",
+		"Current:",
+		"- " + meetingBriefCurrent(meeting, summary, synthesis, governanceGaps),
+		"",
+		"Why:",
+		"- " + meetingBriefWhy(meeting, summary, synthesis, authorityAudit, governanceGaps),
+		"",
+		"Next:",
+		"- " + meetingBriefNext(meeting, summary),
+		"",
+		"Leader:",
+		"- " + meetingBriefLeaderAction(meeting, summary, synthesis, governanceGaps),
+		"",
+		"Council:",
+		"- " + meetingBriefCouncilAction(summary),
+		"",
+		"Output:",
+		"- " + meetingBriefOutput(summary),
+	}
+	return strings.Join(lines, "\n")
 }
 
 func cmdMeetingsRemainder(args []string) error {

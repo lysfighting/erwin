@@ -56,6 +56,8 @@ The harness is file-backed:
   `bash scripts/harness-missions.sh get issue-1234 --brief`
 - `runs-get-brief`
   `bash scripts/harness-runs.sh get RUN_ID --brief`
+- `meetings-summary-brief`
+  `bash scripts/harness-meetings.sh summary MEETING_ID --brief`
 - `missions-graph`
   `bash scripts/harness-missions.sh graph`
 - `issue-draft`
@@ -175,6 +177,7 @@ The harness is file-backed:
 - When recording positions that speak about the same question, include `--claim=` and `--dimension=` so auto-synthesis and authority audit can group them into the same council claim.
 - When multiple findings speak about the same claim, use `--claim=` and `--dimension=` on `meetings add-finding` so authority conflicts can be audited cleanly.
 - Use `meetings summary` before adoption when you need to see synthesis readiness, debate-round depth, blocker counts, and any still-open wave/route obligations at a glance.
+- Use `meetings summary MEETING_ID --brief` when you want the human-readable council state, blocking reason, current work packet, and protocol-aware output guidance before drilling into raw meeting JSON.
 - Use `meetings authority-audit` when you need a leader-facing explanation of which same-claim finding currently wins on authority.
 - Use `runs authority-audit` when a run may be drifting against fresher or higher-authority active signals, or when `doctor` reports `run-authority-conflict`.
 - Use `runs get RUN_ID --brief` when you want the human-readable execution summary for one run before drilling into raw run JSON or authority-audit detail.

@@ -517,6 +517,10 @@ assert_json_field "$incident_output_summary" '"owner": "incident-commander"' "in
 assert_json_field "$incident_output_summary" '"output_follow_up_packet_count": 1' "incident-command output packet synthesizes one structured follow-up packet"
 assert_json_field "$incident_output_summary" '"execution_kind": "incident_checkpoint"' "incident-command follow-up packet keeps protocol-specific execution semantics visible"
 assert_json_field "$incident_output_summary" '"claim_ref": "incident-rollback"' "incident-command follow-up packet keeps the governed claim lane visible"
+incident_output_brief=$(run_in_repo bash scripts/harness-meetings.sh summary "$incident_meeting_id" --brief)
+assert_contains "$incident_output_brief" 'protocol=incident-command.' "meetings summary --brief preserves protocol-aware incident state"
+assert_contains "$incident_output_brief" "Meeting $incident_meeting_id has a provisional incident_command_output packet ready for adoption or close." "meetings summary --brief explains protocol-aware output readiness"
+assert_contains "$incident_output_brief" 'Current output packet is incident_command_output. 1 of 1 follow-up packet(s) remain open.' "meetings summary --brief explains protocol-aware follow-up output"
 
 run_in_repo bash scripts/harness-meetings.sh set-protocol "$incident_meeting_id" decision-record >/dev/null
 decision_record_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$incident_meeting_id")
@@ -693,6 +697,9 @@ assert_json_field "$governance_orchestrate_a" 'missing authority hierarchy' "gov
 governance_summary_a=$(run_in_repo bash scripts/harness-meetings.sh summary "$governance_meeting_id")
 assert_json_field "$governance_summary_a" '"governance_gap_count": 1' "meeting summary surfaces one authority-hierarchy governance gap"
 assert_json_field "$governance_summary_a" 'missing authority hierarchy' "meeting summary names the authority-hierarchy governance gap"
+governance_brief_a=$(run_in_repo bash scripts/harness-meetings.sh summary "$governance_meeting_id" --brief)
+assert_contains "$governance_brief_a" "Meeting $governance_meeting_id is blocked in setup by governance policy gaps." "meetings summary --brief explains governance blocking in human-readable form"
+assert_contains "$governance_brief_a" 'missing authority hierarchy' "meetings summary --brief names the blocking governance gap"
 
 rewrite_json_in_file "$governance_meeting_file" 's~"authority_hierarchy": \[\]~"authority_hierarchy": ["L1: live git/GitHub state","L2: active runtime state","L3: committed harness definitions"]~s'
 run_in_repo bash scripts/harness-meetings.sh add-participant "$governance_meeting_id" "$run_a" implementation-verifier >/dev/null

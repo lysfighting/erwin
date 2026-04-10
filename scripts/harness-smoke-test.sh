@@ -757,6 +757,10 @@ mission_brief_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-m
 assert_contains "$mission_brief_multi_escalation_orchestrated" 'classification=needs-human-decision' "missions get --brief reflects mission human-decision state during active council governance"
 assert_contains "$mission_brief_multi_escalation_orchestrated" "Mission issue-20011 is currently under active council control via $multi_escalation_meeting_id." "missions get --brief explains that live council work is governing the mission"
 assert_contains "$mission_brief_multi_escalation_orchestrated" "Review active council $multi_escalation_meeting_id before widening execution." "missions get --brief gives the leader the next council-facing action"
+meeting_brief_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-meetings.sh summary "$multi_escalation_meeting_id" --brief)
+assert_contains "$meeting_brief_multi_escalation_orchestrated" "Meeting: $multi_escalation_meeting_id" "meetings summary --brief names the active council"
+assert_contains "$meeting_brief_multi_escalation_orchestrated" "Meeting $multi_escalation_meeting_id is collecting 3 bounded independent-review assessment(s)." "meetings summary --brief explains the current live council state"
+assert_contains "$meeting_brief_multi_escalation_orchestrated" 'Current live council work still has 3 action(s) queued in the active batch.' "meetings summary --brief explains the current council work packet"
 set_json_field_in_file "$TEST_REPO/.harness/meetings/active/$multi_escalation_meeting_id.yml" "meeting.updated_at" "2026-03-01T00:00:00Z"
 schedule_multi_escalation_stale=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_stale" '"active_decision_stale": true' "scheduler flags stale active bundle councils in the portfolio packet"

@@ -415,8 +415,11 @@ Work the meeting directly:
 bash scripts/harness-meetings.sh add-participant MEETING_ID TEAMMATE_RUN_ID architecture-challenger
 bash scripts/harness-meetings.sh orchestrate MEETING_ID
 bash scripts/harness-meetings.sh summary MEETING_ID
+bash scripts/harness-meetings.sh summary MEETING_ID --brief
 bash scripts/harness-meetings.sh authority-audit MEETING_ID
 ```
+
+Use `--brief` when a human wants the meeting phase, blocking reason, current council work packet, protocol-aware output state, and next leader/council action without reopening raw meeting JSON.
 
 Close or adopt outcomes:
 

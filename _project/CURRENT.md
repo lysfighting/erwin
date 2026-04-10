@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-10
-- **Last Session**: 2026-04-10-A (Extended the human-facing leader layer down to `runs get --brief`)
+- **Last Session**: 2026-04-10-B (Extended the human-facing leader layer down to `meetings summary --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-10-B** — Extended the human-facing leader layer down to `meetings summary --brief`
+
+- **Meeting objects now have a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh summary MEETING_ID --brief` now turns the same live council state, phase, blocking reason, current work packet, protocol-aware output state, and leader/council next actions into a readable object-layer briefing instead of forcing direct raw meeting JSON inspection
+- **Meeting briefings stay on the same Go control plane**: the new meeting layer is derived from the existing meeting packet, orchestration state, authority audit, synthesis audit, and output packet truth instead of inventing a parallel council summary model; default `meetings summary` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers active, blocked, protocol-output, and packaged-binary meeting paths**: core smoke now proves meeting brief output for an active independent-review council, teammate smoke proves both governance-blocked and incident-command output paths, and runtime-distribution smoke proves `meetings summary --brief` works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-10-A** — Extended the human-facing leader layer down to `runs get --brief`
 

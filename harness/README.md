@@ -56,7 +56,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 - `harness-ship.sh` can also open GitHub PRs directly when `gh` is authenticated
 - `harness-ship.sh` now also handles post-merge cleanup of worktrees and local branches
 - `harness-rc.sh` — release-candidate create/verify/promote/close plus surgical `fix`, `cancel`, `hotfix`, and `backport` flow
-- `harness-meetings.sh` — meeting inspection and council output mutation
+- `harness-meetings.sh` — meeting inspection, `meetings summary --brief` leader summaries, and council output mutation
 - `harness-maintenance.sh` — reconciliation + runtime normalization
 - `harness-bootstrap.sh` — copy the harness adapter into another git repository
 - `harness-sync.sh` — resync a bootstrapped adapter from its source repository

@@ -97,6 +97,10 @@ claim_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-claim.sh 
 mission_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh get issue-9101 --brief)
 run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 run_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.sh get "$run_id" --brief)
+meeting_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh meeting "$run_id" "Should packaged runtime keep meeting briefings human-readable?")
+meeting_id=$(printf '%s\n' "$meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+meeting_orchestrate_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh orchestrate "$meeting_id")
+meeting_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh summary "$meeting_id" --brief)
 assert_contains "$adapter_output" '"valid": true' "adapter validate works via packaged binary without Go"
 assert_contains "$home_output" '"next_action": "No active runs. Claim a mission."' "home works via packaged binary without Go"
 assert_contains "$home_brief_output" 'No active governed execution is in flight.' "home --brief works via packaged binary without Go"
@@ -106,6 +110,9 @@ assert_contains "$mission_brief_output" 'Mission: issue-9101' "missions get --br
 assert_contains "$mission_brief_output" 'Scheduler currently selected this mission as the foreground mission.' "packaged mission brief still follows scheduler truth without Go"
 assert_contains "$run_brief_output" "Run: $run_id" "runs get --brief works via packaged binary without Go"
 assert_contains "$run_brief_output" 'This run is the current foreground scheduler run and still owns mission control for issue-9101.' "packaged run brief still follows scheduler truth without Go"
+assert_contains "$meeting_orchestrate_output" '"new_phase": "setup"' "meeting orchestration works via packaged binary without Go"
+assert_contains "$meeting_brief_output" "Meeting: $meeting_id" "meetings summary --brief works via packaged binary without Go"
+assert_contains "$meeting_brief_output" 'Add packet/participant prerequisites before independent review.' "packaged meeting brief still follows live council requirements without Go"
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"
