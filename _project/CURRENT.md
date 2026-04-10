@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-10
-- **Last Session**: 2026-04-10-G (Extended the human-facing leader layer into `missions authority-audit --all --brief`)
+- **Last Session**: 2026-04-10-H (Extended the human-facing leader layer into `missions graph --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-10-H** — Extended the human-facing leader layer into `missions graph --brief`
+
+- **Mission topology now has a real human-facing leader entrypoint**: `bash scripts/harness-missions.sh graph --brief` now turns the same active roots, dependency edges, graph-level next action, and teammate/council coverage into a readable topology-layer briefing instead of forcing direct raw mission-graph JSON inspection
+- **Mission topology briefings stay on the same Go control plane**: the new graph layer is derived from the existing mission registry topology, active run linkage, and live meeting coverage rather than inventing a parallel mission-graph summary model; default `missions graph` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers standalone, dependency-anchored, and packaged-binary graph-topology paths**: core smoke now proves both a single-root graph and a dependency-anchored graph read correctly in `missions graph --brief`, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-10-G** — Extended the human-facing leader layer into `missions authority-audit --all --brief`
 

@@ -32,6 +32,7 @@ Use this when the model should act as the harness leader:
 - validate adapter/package integrity before bootstrap or sync work
 - inspect governed state, including a human-readable leader briefing before drilling into raw JSON
 - inspect the scheduler portfolio as a human-readable leader object through `missions schedule --brief` before drilling into raw scheduler JSON
+- inspect active mission topology as a human-readable leader object through `missions graph --brief` before drilling into raw graph JSON
 - inspect one mission as a human-readable leader object through `missions get MISSION_ID --brief` before drilling into raw mission JSON
 - inspect mission control drift as a human-readable leader object through `missions authority-audit MISSION_ID --brief` before drilling into raw mission-audit JSON
 - inspect mission graph drift as a human-readable leader object through `missions authority-audit --all --brief` before drilling into raw bundle-audit JSON

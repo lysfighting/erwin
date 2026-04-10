@@ -96,6 +96,7 @@ doctor_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-do
 claim_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-claim.sh 9101 "Packaged Runtime Mission" --owns="file:README.md")
 schedule_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh schedule --brief)
 mission_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh get issue-9101 --brief)
+mission_graph_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh graph --brief)
 mission_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh authority-audit issue-9101 --brief)
 mission_graph_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh authority-audit --all --brief)
 run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
@@ -115,6 +116,7 @@ assert_contains "$schedule_brief_output" 'Foreground execution is currently cent
 assert_contains "$schedule_brief_output" 'Foreground batch is issue-9101 under solo mode.' "packaged scheduler brief still follows foreground scheduler truth without Go"
 assert_contains "$mission_brief_output" 'Mission: issue-9101' "missions get --brief works via packaged binary without Go"
 assert_contains "$mission_brief_output" 'Scheduler currently selected this mission as the foreground mission.' "packaged mission brief still follows scheduler truth without Go"
+assert_contains "$mission_graph_brief_output" 'Topology currently has one standalone active mission: issue-9101.' "missions graph --brief works via packaged binary without Go"
 assert_contains "$mission_authority_brief_output" 'Mission: issue-9101' "missions authority-audit --brief works via packaged binary without Go"
 assert_contains "$mission_authority_brief_output" 'Mission issue-9101 is aligned with its authoritative run-derived control plane.' "packaged mission authority brief still follows mission-control truth without Go"
 assert_contains "$mission_graph_authority_brief_output" 'No connected mission bundle currently needs graph-level authority handling.' "missions authority-audit --all --brief works via packaged binary without Go"

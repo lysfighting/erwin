@@ -58,6 +58,8 @@ The harness is file-backed:
   `bash scripts/harness-missions.sh get issue-1234 --brief`
 - `missions-authority-audit-brief`
   `bash scripts/harness-missions.sh authority-audit issue-1234 --brief`
+- `missions-graph-brief`
+  `bash scripts/harness-missions.sh graph --brief`
 - `missions-graph-authority-brief`
   `bash scripts/harness-missions.sh authority-audit --all --brief`
 - `runs-get-brief`
@@ -194,6 +196,7 @@ The harness is file-backed:
 - Use `runs authority-audit RUN_ID --brief` when you want the human-readable run-drift verdict, repair action, and leader/teammate/council implications before drilling into raw audit JSON.
 - Use `runs authority-audit` when a run may be drifting against fresher or higher-authority active signals, or when `doctor` reports `run-authority-conflict`.
 - Use `runs get RUN_ID --brief` when you want the human-readable execution summary for one run before drilling into raw run JSON or authority-audit detail.
+- Use `missions graph --brief` when you want the human-readable active root/dependency topology, current graph-level next step, and teammate/council coverage before drilling into raw graph JSON.
 - Use `missions authority-audit MISSION_ID --brief` when you want the human-readable mission-control verdict, leader-over-teammate adjudication, and next repair action before drilling into raw mission-audit JSON.
 - Use `missions authority-audit --all --brief` when you want the human-readable mission-graph bundle verdict, governing or candidate mission set, and next graph-level leader action before drilling into raw bundle-audit JSON.
 - Use `runs authority-audit` when a run claims it is ready/verified/clean but the live worktree is still dirty; the audit now surfaces that intent-vs-live-git disagreement explicitly.

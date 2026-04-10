@@ -43,7 +43,7 @@ If no packaged binary is available, the runtime falls back to building a local G
 That means normal harness use no longer requires `python3`, and repos can opt into a no-Go runtime path by shipping packaged binaries.
 
 - `harness-adapter.sh` — adapter manifest introspection and package validation
-- `harness-missions.sh` — scheduler portfolio inspection, mission registry inspection, mission graph view, mission-level authority audit, and leader summaries for `missions schedule --brief`, `missions get --brief`, and `missions authority-audit --brief` including `--all` graph mode
+- `harness-missions.sh` — scheduler portfolio inspection, mission registry inspection, mission graph view, mission-level authority audit, and leader summaries for `missions schedule --brief`, `missions graph --brief`, `missions get --brief`, and `missions authority-audit --brief` including `--all` graph mode
 - `harness-home.sh` — leader home view, including `--brief` for a human-readable leader briefing
 - `harness-doctor.sh` — runtime diagnostics, including `--brief` for a human-readable health briefing
 - `harness-issue.sh` — structured issue drafting and creation
@@ -72,7 +72,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 
 1. `home` shows the current governed state and can emit a leader-readable briefing with `--brief`.
 2. `doctor` checks runtime health and drift and can emit a human-readable repair briefing with `--brief`.
-3. `missions get MISSION_ID --brief` explains one mission's current state, `missions authority-audit MISSION_ID --brief` explains whether that durable mission record still matches authoritative run truth, and `missions authority-audit --all --brief` explains which connected mission bundle currently needs graph-level authority handling.
+3. `missions graph --brief` explains the active mission topology, `missions get MISSION_ID --brief` explains one mission's current state, `missions authority-audit MISSION_ID --brief` explains whether that durable mission record still matches authoritative run truth, and `missions authority-audit --all --brief` explains which connected mission bundle currently needs graph-level authority handling.
 4. `claim` creates a run and contract from a mission.
 5. `drive` moves the run through execution, blocking, meeting, and completion states.
 6. `teammates` turns delegated work into first-class runtime state instead of implicit chat.

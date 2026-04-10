@@ -1077,6 +1077,27 @@ func listMissions() []any {
 	return missions
 }
 
+func missionGraphSnapshot() map[string]any {
+	graph := []any{}
+	for _, item := range listMissions() {
+		mission, _ := toMap(item)
+		graph = append(graph, map[string]any{
+			"mission_id":           stringValue(mission["mission_id"]),
+			"state":                stringValue(mission["state"]),
+			"depends_on":           cloneValue(toList(mission["depends_on"])),
+			"ownership_claims":     cloneValue(toList(mission["ownership_claims"])),
+			"active_run_ids":       cloneValue(toList(mission["active_run_ids"])),
+			"latest_run_id":        stringValue(mission["latest_run_id"]),
+			"authoritative_run_id": stringValue(mission["authoritative_run_id"]),
+			"next_expected_action": stringValue(mission["next_expected_action"]),
+		})
+	}
+	return map[string]any{
+		"mission_count": len(graph),
+		"missions":      graph,
+	}
+}
+
 func readActiveMeeting(meetingID string) map[string]any {
 	activePath := meetingPath(meetingID, false)
 	if !exists(activePath) {
@@ -8876,24 +8897,19 @@ func cmdMissions(args []string) error {
 		}
 		return printJSON(mission)
 	case "graph":
-		graph := []any{}
-		for _, item := range listMissions() {
-			mission, _ := toMap(item)
-			graph = append(graph, map[string]any{
-				"mission_id":           stringValue(mission["mission_id"]),
-				"state":                stringValue(mission["state"]),
-				"depends_on":           cloneValue(toList(mission["depends_on"])),
-				"ownership_claims":     cloneValue(toList(mission["ownership_claims"])),
-				"active_run_ids":       cloneValue(toList(mission["active_run_ids"])),
-				"latest_run_id":        stringValue(mission["latest_run_id"]),
-				"authoritative_run_id": stringValue(mission["authoritative_run_id"]),
-				"next_expected_action": stringValue(mission["next_expected_action"]),
-			})
+		mode, remaining, err := parseOutputMode("missions graph", args[1:])
+		if err != nil {
+			return err
 		}
-		return printJSON(map[string]any{
-			"mission_count": len(graph),
-			"missions":      graph,
-		})
+		if len(remaining) != 0 {
+			return errors.New("missions graph does not accept additional arguments")
+		}
+		graph := missionGraphSnapshot()
+		if mode == outputModeText {
+			activeMeetingCountByMission, _, _, _ := meetingActivityByMission(readRegistry())
+			return printText(renderMissionTopologyBrief(graph, readRegistry(), activeMeetingCountByMission))
+		}
+		return printJSON(graph)
 	case "schedule":
 		mode, remaining, err := parseOutputMode("missions schedule", args[1:])
 		if err != nil {
@@ -13009,6 +13025,334 @@ func renderMissionGraphAuthorityAuditBrief(graph map[string]any) string {
 	lines = append(lines, "", "Evidence:")
 	for _, line := range missionGraphEvidence(graph) {
 		lines = append(lines, "- "+line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func missionTopologyMissions(graph map[string]any) []map[string]any {
+	missions := []map[string]any{}
+	for _, item := range toList(graph["missions"]) {
+		mission, _ := toMap(item)
+		if len(mission) > 0 {
+			missions = append(missions, mission)
+		}
+	}
+	return missions
+}
+
+func missionTopologyActiveMissionIDs(graph map[string]any) []string {
+	ids := []string{}
+	for _, mission := range missionTopologyMissions(graph) {
+		if activeMission(mission) {
+			if missionID := strings.TrimSpace(stringValue(mission["mission_id"])); missionID != "" {
+				ids = append(ids, missionID)
+			}
+		}
+	}
+	sort.Strings(ids)
+	return ids
+}
+
+func missionTopologyMissionByID(graph map[string]any) map[string]map[string]any {
+	byID := map[string]map[string]any{}
+	for _, mission := range missionTopologyMissions(graph) {
+		if missionID := strings.TrimSpace(stringValue(mission["mission_id"])); missionID != "" {
+			byID[missionID] = mission
+		}
+	}
+	return byID
+}
+
+func missionTopologyDependencyEdges(graph map[string]any) []string {
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	activeSet := map[string]bool{}
+	for _, missionID := range activeMissionIDs {
+		activeSet[missionID] = true
+	}
+	edges := []string{}
+	for _, mission := range missionTopologyMissions(graph) {
+		if !activeMission(mission) {
+			continue
+		}
+		missionID := strings.TrimSpace(stringValue(mission["mission_id"]))
+		for _, item := range toList(mission["depends_on"]) {
+			dependencyID := strings.TrimSpace(stringValue(item))
+			if dependencyID != "" && activeSet[dependencyID] {
+				edges = append(edges, fmt.Sprintf("%s -> %s", missionID, dependencyID))
+			}
+		}
+	}
+	sort.Strings(edges)
+	return dedupeStrings(edges)
+}
+
+func missionTopologyChildrenByMission(graph map[string]any) map[string][]string {
+	children := map[string][]string{}
+	for _, edge := range missionTopologyDependencyEdges(graph) {
+		parts := strings.Split(edge, " -> ")
+		if len(parts) != 2 {
+			continue
+		}
+		childID := strings.TrimSpace(parts[0])
+		parentID := strings.TrimSpace(parts[1])
+		children[parentID] = dedupeStrings(append(children[parentID], childID))
+	}
+	for missionID := range children {
+		sort.Strings(children[missionID])
+	}
+	return children
+}
+
+func missionTopologyRootMissionIDs(graph map[string]any) []string {
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	activeSet := map[string]bool{}
+	for _, missionID := range activeMissionIDs {
+		activeSet[missionID] = true
+	}
+	roots := []string{}
+	for _, mission := range missionTopologyMissions(graph) {
+		if !activeMission(mission) {
+			continue
+		}
+		missionID := strings.TrimSpace(stringValue(mission["mission_id"]))
+		hasActiveDependency := false
+		for _, item := range toList(mission["depends_on"]) {
+			dependencyID := strings.TrimSpace(stringValue(item))
+			if dependencyID != "" && activeSet[dependencyID] {
+				hasActiveDependency = true
+				break
+			}
+		}
+		if !hasActiveDependency {
+			roots = append(roots, missionID)
+		}
+	}
+	sort.Strings(roots)
+	return roots
+}
+
+func missionTopologyActiveTeammateCountByMission(registry map[string]any) map[string]int {
+	counts := map[string]int{}
+	for _, item := range toList(registry["runs"]) {
+		run, _ := toMap(item)
+		if !activeTeammateRun(run) {
+			continue
+		}
+		missionID := strings.TrimSpace(stringValue(run["mission_id"]))
+		if missionID == "" {
+			continue
+		}
+		counts[missionID]++
+	}
+	return counts
+}
+
+func missionTopologyCurrent(graph map[string]any) string {
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	if len(activeMissionIDs) == 0 {
+		if intValue(graph["mission_count"]) > 0 {
+			return "No active mission is currently present in the mission graph."
+		}
+		return "No mission has been claimed into the graph yet."
+	}
+	roots := missionTopologyRootMissionIDs(graph)
+	children := missionTopologyChildrenByMission(graph)
+	switch {
+	case len(activeMissionIDs) == 1 && len(children[activeMissionIDs[0]]) == 0:
+		return fmt.Sprintf("Topology currently has one standalone active mission: %s.", activeMissionIDs[0])
+	case len(roots) == 1 && len(children[roots[0]]) > 0:
+		return fmt.Sprintf("Active topology is anchored on root %s with dependent missions %s.", roots[0], strings.Join(children[roots[0]], ", "))
+	case len(roots) > 1:
+		return fmt.Sprintf("Active topology currently has %d root missions: %s.", len(roots), strings.Join(roots, ", "))
+	default:
+		return fmt.Sprintf("Active topology currently spans %d missions across %d dependency edge(s).", len(activeMissionIDs), len(missionTopologyDependencyEdges(graph)))
+	}
+}
+
+func missionTopologyWhy(graph map[string]any) string {
+	edges := missionTopologyDependencyEdges(graph)
+	if len(edges) > 0 {
+		limit := len(edges)
+		if limit > 3 {
+			limit = 3
+		}
+		return "Active dependency edges: " + strings.Join(edges[:limit], ", ") + "."
+	}
+	if len(missionTopologyActiveMissionIDs(graph)) > 0 {
+		return "No active dependency edge is currently recorded."
+	}
+	if intValue(graph["mission_count"]) > 0 {
+		return "Only inactive or completed missions remain in the graph."
+	}
+	return "No mission graph topology exists yet because no mission has been claimed."
+}
+
+func missionTopologyNext(graph map[string]any) string {
+	byID := missionTopologyMissionByID(graph)
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	if len(activeMissionIDs) == 0 {
+		return "Claim or reopen a mission if new governed work is needed."
+	}
+	roots := missionTopologyRootMissionIDs(graph)
+	children := missionTopologyChildrenByMission(graph)
+	if len(roots) == 1 {
+		rootMission := byID[roots[0]]
+		if nextAction := strings.TrimSpace(stringValue(rootMission["next_expected_action"])); nextAction != "" {
+			return nextAction
+		}
+		if len(children[roots[0]]) > 0 {
+			return fmt.Sprintf("Advance root mission %s so dependent missions can unblock.", roots[0])
+		}
+		return fmt.Sprintf("Advance root mission %s.", roots[0])
+	}
+	if len(roots) > 1 {
+		return "Inspect root mission next actions individually; the graph currently has multiple parallel roots."
+	}
+	firstMission := byID[activeMissionIDs[0]]
+	if nextAction := strings.TrimSpace(stringValue(firstMission["next_expected_action"])); nextAction != "" {
+		return nextAction
+	}
+	return "Review the active mission graph before changing governed execution."
+}
+
+func missionTopologyLeaderAction(graph map[string]any) string {
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	if len(activeMissionIDs) == 0 {
+		return "Leader should claim or reopen a mission if new governed work is needed."
+	}
+	roots := missionTopologyRootMissionIDs(graph)
+	children := missionTopologyChildrenByMission(graph)
+	switch {
+	case len(roots) == 1 && len(children[roots[0]]) > 0:
+		return fmt.Sprintf("Leader should keep execution anchored on root mission %s while dependent missions stay bounded behind it.", roots[0])
+	case len(roots) > 1:
+		return "Leader should review root missions individually and use `missions authority-audit --all --brief` if root boundaries overlap or need a governor."
+	default:
+		return "Leader should keep the active mission graph bounded and drive the current root mission forward."
+	}
+}
+
+func missionTopologyTeammateAction(graph map[string]any, registry map[string]any) string {
+	countByMission := missionTopologyActiveTeammateCountByMission(registry)
+	total := 0
+	for _, missionID := range missionTopologyActiveMissionIDs(graph) {
+		total += countByMission[missionID]
+	}
+	if total == 0 {
+		return "No active teammate run is currently attached to the active mission graph."
+	}
+	return fmt.Sprintf("%s are active across the current graph; keep their reports fresh while root missions advance.", countLabel(total, "teammate run", "teammate runs"))
+}
+
+func missionTopologyCouncilAction(graph map[string]any, activeMeetingCountByMission map[string]int) string {
+	anchored := []string{}
+	for _, missionID := range missionTopologyActiveMissionIDs(graph) {
+		if activeMeetingCountByMission[missionID] > 0 {
+			anchored = append(anchored, missionID)
+		}
+	}
+	if len(anchored) == 0 {
+		return "No active council is currently attached to the active mission graph."
+	}
+	sort.Strings(anchored)
+	return fmt.Sprintf("%s currently have active council coverage: %s.", countLabel(len(anchored), "mission", "missions"), strings.Join(anchored, ", "))
+}
+
+func missionTopologyNodeSummary(mission map[string]any, childrenByMission map[string][]string, activeSet map[string]bool) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	deps := []string{}
+	for _, item := range toList(mission["depends_on"]) {
+		dependencyID := strings.TrimSpace(stringValue(item))
+		if dependencyID != "" && activeSet[dependencyID] {
+			deps = append(deps, dependencyID)
+		}
+	}
+	sort.Strings(deps)
+	parts := []string{}
+	if len(deps) == 0 {
+		parts = append(parts, "root")
+	} else {
+		parts = append(parts, "depends on "+strings.Join(deps, ", "))
+	}
+	if len(childrenByMission[missionID]) > 0 {
+		parts = append(parts, fmt.Sprintf("%d dependent mission(s)", len(childrenByMission[missionID])))
+	}
+	parts = append(parts, countLabel(len(anyListToStrings(toList(mission["active_run_ids"]))), "active run", "active runs"))
+	if nextAction := strings.TrimSpace(stringValue(mission["next_expected_action"])); nextAction != "" {
+		parts = append(parts, "next: "+nextAction)
+	}
+	return fmt.Sprintf("%s: %s.", missionID, strings.Join(parts, ", "))
+}
+
+func renderMissionTopologyBrief(graph map[string]any, registry map[string]any, activeMeetingCountByMission map[string]int) string {
+	missions := missionTopologyMissions(graph)
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	roots := missionTopologyRootMissionIDs(graph)
+	edges := missionTopologyDependencyEdges(graph)
+	childrenByMission := missionTopologyChildrenByMission(graph)
+	activeSet := map[string]bool{}
+	for _, missionID := range activeMissionIDs {
+		activeSet[missionID] = true
+	}
+	lines := []string{
+		"Harness Mission Graph Briefing",
+		fmt.Sprintf(
+			"Graph: %s, %s, %s, %s.",
+			countLabel(intValue(graph["mission_count"]), "mission", "missions"),
+			countLabel(len(activeMissionIDs), "active mission", "active missions"),
+			countLabel(len(roots), "active root mission", "active root missions"),
+			countLabel(len(edges), "active dependency edge", "active dependency edges"),
+		),
+		"",
+		"Current:",
+		"- " + missionTopologyCurrent(graph),
+		"",
+		"Why:",
+		"- " + missionTopologyWhy(graph),
+		"",
+		"Next:",
+		"- " + missionTopologyNext(graph),
+		"",
+		"Leader:",
+		"- " + missionTopologyLeaderAction(graph),
+		"",
+		"Teammates:",
+		"- " + missionTopologyTeammateAction(graph, registry),
+		"",
+		"Council:",
+		"- " + missionTopologyCouncilAction(graph, activeMeetingCountByMission),
+		"",
+		"Topology:",
+	}
+	highlighted := []map[string]any{}
+	for _, mission := range missions {
+		if activeMission(mission) {
+			highlighted = append(highlighted, mission)
+		}
+	}
+	sort.Slice(highlighted, func(i, j int) bool {
+		left := highlighted[i]
+		right := highlighted[j]
+		leftID := strings.TrimSpace(stringValue(left["mission_id"]))
+		rightID := strings.TrimSpace(stringValue(right["mission_id"]))
+		if containsString(roots, leftID) != containsString(roots, rightID) {
+			return containsString(roots, leftID)
+		}
+		return leftID < rightID
+	})
+	if len(highlighted) == 0 {
+		lines = append(lines, "- None.")
+	} else {
+		limit := len(highlighted)
+		if limit > 3 {
+			limit = 3
+		}
+		for _, mission := range highlighted[:limit] {
+			lines = append(lines, "- "+missionTopologyNodeSummary(mission, childrenByMission, activeSet))
+		}
+		if len(highlighted) > limit {
+			lines = append(lines, fmt.Sprintf("- %d more mission(s) remain in the JSON graph.", len(highlighted)-limit))
+		}
 	}
 	return strings.Join(lines, "\n")
 }

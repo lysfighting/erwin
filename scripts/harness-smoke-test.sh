@@ -142,6 +142,8 @@ assert_contains "$mission_authority_baseline_brief" 'Mission: issue-20001' "miss
 assert_contains "$mission_authority_baseline_brief" 'Mission issue-20001 is aligned with its authoritative run-derived control plane.' "missions authority-audit --brief explains aligned mission control without raw JSON"
 graph_authority_baseline_brief=$(run_in_repo bash scripts/harness-missions.sh authority-audit --all --brief)
 assert_contains "$graph_authority_baseline_brief" 'No connected mission bundle currently needs graph-level authority handling.' "missions authority-audit --all --brief explains a healthy graph without raw JSON"
+graph_brief_output=$(run_in_repo bash scripts/harness-missions.sh graph --brief)
+assert_contains "$graph_brief_output" 'Topology currently has one standalone active mission: issue-20001.' "missions graph --brief explains a single active root mission without raw JSON"
 authority_baseline=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$authority_baseline" '"contract_gap_count": 0' "initial run authority audit starts without contract drift"
 authority_baseline_brief=$(run_in_repo bash scripts/harness-runs.sh authority-audit "$run_id" --brief)
@@ -540,6 +542,9 @@ scheduler_dependency_output=$(run_in_repo bash scripts/harness-missions.sh sched
 assert_json_field "$scheduler_dependency_output" '"mission_id": "issue-20003"' "scheduler includes the dependency-governed mission"
 assert_json_field "$scheduler_dependency_output" '"classification": "blocked-by-dependency"' "scheduler classifies unsatisfied dependent missions as blocked-by-dependency"
 assert_json_field "$scheduler_dependency_output" '"action_kind": "move_to_waiting"' "scheduler emits a reschedule action when a dependency-blocked run is still foregrounded"
+graph_brief_dependency=$(run_in_repo bash scripts/harness-missions.sh graph --brief)
+assert_contains "$graph_brief_dependency" 'Active topology is anchored on root issue-20001 with dependent missions issue-20003.' "missions graph --brief explains dependency-anchored mission topology without raw JSON"
+assert_contains "$graph_brief_dependency" 'Leader should keep execution anchored on root mission issue-20001 while dependent missions stay bounded behind it.' "missions graph --brief names the leader action for dependency-governed topology"
 resolved_dependent_run=$(run_in_repo bash scripts/harness-runs.sh set-state "$dependent_run_id" completed "Resolved dependency-governed overlap smoke path.")
 assert_json_field "$resolved_dependent_run" '"state": "completed"' "dependent overlapping mission can be closed after adjudication coverage"
 

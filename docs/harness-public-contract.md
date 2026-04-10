@@ -141,8 +141,9 @@ Their lifecycle meaning must not.
 The package currently guarantees:
 
 - file-backed runtime state with locking
-- human-readable `--brief` output on `home`, `doctor`, `missions schedule`, `missions get`, `missions authority-audit`, `missions authority-audit --all`, `runs get`, `runs authority-audit`, `meetings summary`, and `meetings authority-audit`, derived from the same runtime/control-plane truth that still remains available as default machine-readable JSON
+- human-readable `--brief` output on `home`, `doctor`, `missions schedule`, `missions graph`, `missions get`, `missions authority-audit`, `missions authority-audit --all`, `runs get`, `runs authority-audit`, `meetings summary`, and `meetings authority-audit`, derived from the same runtime/control-plane truth that still remains available as default machine-readable JSON
 - leader-facing scheduler briefings through `missions schedule --brief`, projecting the current primary control-plane packet, decision/maintenance queue shape, foreground batch admission, and reschedule backlog without inventing a parallel scheduler state model
+- leader-facing mission topology briefings through `missions graph --brief`, projecting active roots, dependency edges, topology-level next action, and teammate/council coverage without inventing a parallel mission-graph state model
 - leader-facing mission briefings through `missions get MISSION_ID --brief`, projecting mission state, scheduler classification, priority/queue position, bundle governance context, leader action, teammate action, and council status without inventing a parallel mission state model
 - leader-facing mission authority briefings through `missions authority-audit MISSION_ID --brief`, projecting mission-record drift, leader-over-teammate adjudication, root-run conflicts, and the next leader repair action without inventing a parallel mission-audit model
 - leader-facing mission-graph authority briefings through `missions authority-audit --all --brief`, projecting the current primary bundle verdict, bundle-level required action, governing or candidate mission set, and concise graph evidence without inventing a parallel graph-audit model
