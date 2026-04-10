@@ -94,6 +94,7 @@ home_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-home.sh)
 home_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-home.sh --brief)
 doctor_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-doctor.sh --brief)
 claim_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-claim.sh 9101 "Packaged Runtime Mission" --owns="file:README.md")
+schedule_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh schedule --brief)
 mission_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh get issue-9101 --brief)
 run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 run_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.sh get "$run_id" --brief)
@@ -106,6 +107,8 @@ assert_contains "$home_output" '"next_action": "No active runs. Claim a mission.
 assert_contains "$home_brief_output" 'No active governed execution is in flight.' "home --brief works via packaged binary without Go"
 assert_contains "$doctor_brief_output" 'Health: healthy' "doctor --brief works via packaged binary without Go"
 assert_contains "$claim_output" '"mission_id": "issue-9101"' "claim works via packaged binary without Go"
+assert_contains "$schedule_brief_output" 'Foreground execution is currently centered on mission issue-9101.' "missions schedule --brief works via packaged binary without Go"
+assert_contains "$schedule_brief_output" 'Foreground batch is issue-9101 under solo mode.' "packaged scheduler brief still follows foreground scheduler truth without Go"
 assert_contains "$mission_brief_output" 'Mission: issue-9101' "missions get --brief works via packaged binary without Go"
 assert_contains "$mission_brief_output" 'Scheduler currently selected this mission as the foreground mission.' "packaged mission brief still follows scheduler truth without Go"
 assert_contains "$run_brief_output" "Run: $run_id" "runs get --brief works via packaged binary without Go"

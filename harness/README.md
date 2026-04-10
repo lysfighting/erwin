@@ -43,7 +43,7 @@ If no packaged binary is available, the runtime falls back to building a local G
 That means normal harness use no longer requires `python3`, and repos can opt into a no-Go runtime path by shipping packaged binaries.
 
 - `harness-adapter.sh` — adapter manifest introspection and package validation
-- `harness-missions.sh` — mission registry inspection, mission graph view, mission-level authority audit, and `missions get --brief` leader summaries
+- `harness-missions.sh` — scheduler portfolio inspection, mission registry inspection, mission graph view, mission-level authority audit, and `missions schedule/get --brief` leader summaries
 - `harness-home.sh` — leader home view, including `--brief` for a human-readable leader briefing
 - `harness-doctor.sh` — runtime diagnostics, including `--brief` for a human-readable health briefing
 - `harness-issue.sh` — structured issue drafting and creation

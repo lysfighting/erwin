@@ -8895,8 +8895,12 @@ func cmdMissions(args []string) error {
 			"missions":      graph,
 		})
 	case "schedule":
+		mode, remaining, err := parseOutputMode("missions schedule", args[1:])
+		if err != nil {
+			return err
+		}
 		includeAll := false
-		for _, arg := range args[1:] {
+		for _, arg := range remaining {
 			if arg == "--all" {
 				includeAll = true
 			}
@@ -8907,6 +8911,9 @@ func cmdMissions(args []string) error {
 			written, err := writeSchedulerSnapshot(snapshot)
 			if err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderSchedulerBrief(written))
 			}
 			return printJSON(written)
 		})
@@ -12808,6 +12815,178 @@ func renderRunBrief(run, mission, audit, scheduler map[string]any, registry map[
 		"Council:",
 		"- "+runBriefCouncilAction(audit, activeMeetings, openMeetingActions),
 	)
+	return strings.Join(lines, "\n")
+}
+
+func schedulerBriefCurrent(scheduler map[string]any) string {
+	primaryKind := strings.TrimSpace(stringValue(scheduler["primary_control_plane_kind"]))
+	primaryPacket, _ := toMap(scheduler["primary_control_plane_packet"])
+	selectedMissionIDs := anyListToStrings(toList(scheduler["selected_mission_ids"]))
+	switch primaryKind {
+	case "maintenance":
+		return fmt.Sprintf("Primary control-plane work is governance maintenance on %s.", controlPlaneTargetLabel(primaryPacket))
+	case "human-decision":
+		target := controlPlaneTargetLabel(primaryPacket)
+		switch firstNonBlank(strings.TrimSpace(stringValue(primaryPacket["recommended_decision_surface"])), "leader-decision") {
+		case "active-council":
+			return fmt.Sprintf("Primary control-plane work is an active council on %s.", target)
+		case "council":
+			return fmt.Sprintf("Primary control-plane work is a council-backed decision on %s.", target)
+		default:
+			return fmt.Sprintf("Primary control-plane work is a leader decision on %s.", target)
+		}
+	default:
+		switch {
+		case len(selectedMissionIDs) > 1:
+			return fmt.Sprintf("Foreground execution is a bounded parallel batch across %s.", strings.Join(selectedMissionIDs, ", "))
+		case len(selectedMissionIDs) == 1:
+			return fmt.Sprintf("Foreground execution is currently centered on mission %s.", selectedMissionIDs[0])
+		case intValue(scheduler["mission_count"]) == 0:
+			return "No mission is currently present in the scheduler portfolio."
+		default:
+			return "No foreground batch is currently admitted."
+		}
+	}
+}
+
+func schedulerBriefWhy(scheduler map[string]any) string {
+	primaryPacket, _ := toMap(scheduler["primary_control_plane_packet"])
+	switch {
+	case strings.TrimSpace(stringValue(primaryPacket["reason"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["reason"]))
+	case strings.TrimSpace(stringValue(primaryPacket["note"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["note"]))
+	case strings.TrimSpace(stringValue(primaryPacket["summary"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["summary"]))
+	}
+	selectedMissionIDs := anyListToStrings(toList(scheduler["selected_mission_ids"]))
+	if len(selectedMissionIDs) > 0 {
+		entry := schedulerMissionClassification(scheduler, selectedMissionIDs[0])
+		reasons := anyListToStrings(toList(entry["reasons"]))
+		if len(reasons) > 0 {
+			limit := len(reasons)
+			if limit > 2 {
+				limit = 2
+			}
+			return strings.Join(reasons[:limit], " ")
+		}
+	}
+	if intValue(scheduler["required_human_decision_count"]) == 0 &&
+		intValue(scheduler["maintenance_action_count"]) == 0 &&
+		intValue(scheduler["selected_mission_count"]) == 0 {
+		return "The scheduler currently has no selected mission, queued human decision, or maintenance packet."
+	}
+	return "This is the highest-priority scheduler packet under the current authority, maintenance, and admission policy."
+}
+
+func schedulerBriefLeaderAction(scheduler map[string]any) string {
+	if nextAction := strings.TrimSpace(stringValue(scheduler["next_action"])); nextAction != "" {
+		return nextAction
+	}
+	if len(anyListToStrings(toList(scheduler["selected_mission_ids"]))) > 0 {
+		entry := schedulerMissionClassification(scheduler, anyListToStrings(toList(scheduler["selected_mission_ids"]))[0])
+		if action := strings.TrimSpace(stringValue(entry["recommended_action"])); action != "" {
+			return action
+		}
+	}
+	return "Review the current scheduler portfolio before changing governed execution."
+}
+
+func schedulerBriefQueue(scheduler map[string]any) string {
+	requiredDecisions := intValue(scheduler["required_human_decision_count"])
+	maintenanceActions := intValue(scheduler["maintenance_action_count"])
+	primaryKind := strings.TrimSpace(stringValue(scheduler["primary_control_plane_kind"]))
+	primaryPacket, _ := toMap(scheduler["primary_control_plane_packet"])
+	parts := []string{}
+	switch primaryKind {
+	case "human-decision":
+		parts = append(parts, fmt.Sprintf("Decision queue has %d packet(s); primary target is %s.", requiredDecisions, controlPlaneTargetLabel(primaryPacket)))
+		if deferred := intValue(scheduler["deferred_human_decision_count"]); deferred > 0 {
+			parts = append(parts, fmt.Sprintf("%d decision packet(s) remain deferred behind it.", deferred))
+		}
+		if maintenanceActions > 0 {
+			parts = append(parts, fmt.Sprintf("%d maintenance packet(s) remain visible behind the decision queue.", maintenanceActions))
+		}
+	case "maintenance":
+		parts = append(parts, fmt.Sprintf("Maintenance queue has %d packet(s); primary target is %s.", maintenanceActions, controlPlaneTargetLabel(primaryPacket)))
+		if deferred := intValue(scheduler["deferred_maintenance_action_count"]); deferred > 0 {
+			parts = append(parts, fmt.Sprintf("%d maintenance packet(s) remain deferred behind it.", deferred))
+		}
+		if requiredDecisions > 0 {
+			parts = append(parts, fmt.Sprintf("%d human decision packet(s) remain visible behind maintenance.", requiredDecisions))
+		}
+	default:
+		if requiredDecisions > 0 || maintenanceActions > 0 {
+			parts = append(parts, fmt.Sprintf("Background queue still holds %d human decision packet(s) and %d maintenance packet(s).", requiredDecisions, maintenanceActions))
+		} else {
+			parts = append(parts, "No human-decision or maintenance queue currently outranks foreground execution.")
+		}
+	}
+	if intValue(scheduler["active_council_bundle_count"]) > 0 {
+		parts = append(parts, fmt.Sprintf("%s already carry active council governance.", countLabel(intValue(scheduler["active_council_bundle_count"]), "bundle", "bundles")))
+	}
+	return strings.Join(parts, " ")
+}
+
+func schedulerBriefForeground(scheduler map[string]any) string {
+	selectedMissionIDs := anyListToStrings(toList(scheduler["selected_mission_ids"]))
+	switch {
+	case len(selectedMissionIDs) > 1:
+		return fmt.Sprintf("Foreground batch is %s under %s mode.", strings.Join(selectedMissionIDs, ", "), firstNonBlank(strings.TrimSpace(stringValue(scheduler["execution_mode"])), "unknown"))
+	case len(selectedMissionIDs) == 1:
+		return fmt.Sprintf("Foreground batch is %s under %s mode.", selectedMissionIDs[0], firstNonBlank(strings.TrimSpace(stringValue(scheduler["execution_mode"])), "unknown"))
+	default:
+		return "No foreground mission batch is currently admitted."
+	}
+}
+
+func schedulerBriefReschedule(scheduler map[string]any) string {
+	count := intValue(scheduler["reschedule_action_count"])
+	if count == 0 {
+		return "No reschedule action is currently pending."
+	}
+	for _, item := range toList(scheduler["reschedule_actions"]) {
+		action, _ := toMap(item)
+		if text := firstNonBlank(strings.TrimSpace(stringValue(action["recommended_action"])), strings.TrimSpace(stringValue(action["reason"]))); text != "" {
+			return fmt.Sprintf("%s %d total reschedule action(s) remain queued.", text, count)
+		}
+	}
+	return fmt.Sprintf("%d reschedule action(s) remain queued.", count)
+}
+
+func renderSchedulerBrief(scheduler map[string]any) string {
+	lines := []string{
+		"Harness Scheduler Briefing",
+		fmt.Sprintf("Snapshot: %s", firstNonBlank(strings.TrimSpace(stringValue(scheduler["snapshot_id"])), "unknown")),
+		fmt.Sprintf(
+			"Portfolio: %s, %s, %s, %s.",
+			countLabel(intValue(scheduler["mission_count"]), "mission", "missions"),
+			countLabel(intValue(scheduler["selected_mission_count"]), "selected mission", "selected missions"),
+			countLabel(intValue(scheduler["required_human_decision_count"]), "human decision", "human decisions"),
+			countLabel(intValue(scheduler["maintenance_action_count"]), "maintenance packet", "maintenance packets"),
+		),
+		"",
+		"Current:",
+		"- " + schedulerBriefCurrent(scheduler),
+		"",
+		"Why:",
+		"- " + schedulerBriefWhy(scheduler),
+		"",
+		"Next:",
+		"- " + firstNonBlank(strings.TrimSpace(stringValue(scheduler["next_action"])), "No immediate next action is recorded."),
+		"",
+		"Leader:",
+		"- " + schedulerBriefLeaderAction(scheduler),
+		"",
+		"Queue:",
+		"- " + schedulerBriefQueue(scheduler),
+		"",
+		"Foreground:",
+		"- " + schedulerBriefForeground(scheduler),
+		"",
+		"Reschedule:",
+		"- " + schedulerBriefReschedule(scheduler),
+	}
 	return strings.Join(lines, "\n")
 }
 

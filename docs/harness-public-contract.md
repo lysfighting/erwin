@@ -141,7 +141,8 @@ Their lifecycle meaning must not.
 The package currently guarantees:
 
 - file-backed runtime state with locking
-- human-readable `--brief` output on `home`, `doctor`, `missions get`, `runs get`, and `meetings summary`, derived from the same runtime/control-plane truth that still remains available as default machine-readable JSON
+- human-readable `--brief` output on `home`, `doctor`, `missions schedule`, `missions get`, `runs get`, and `meetings summary`, derived from the same runtime/control-plane truth that still remains available as default machine-readable JSON
+- leader-facing scheduler briefings through `missions schedule --brief`, projecting the current primary control-plane packet, decision/maintenance queue shape, foreground batch admission, and reschedule backlog without inventing a parallel scheduler state model
 - leader-facing mission briefings through `missions get MISSION_ID --brief`, projecting mission state, scheduler classification, priority/queue position, bundle governance context, leader action, teammate action, and council status without inventing a parallel mission state model
 - leader-facing run briefings through `runs get RUN_ID --brief`, projecting execution ownership, mission-control priority, authority/adoption drift, dependency or council holds, and leader/teammate next actions without inventing a parallel run state model
 - leader-facing meeting briefings through `meetings summary MEETING_ID --brief`, projecting live council phase, blocking reason, current work packet, protocol-aware output state, and leader/council next actions without inventing a parallel meeting state model

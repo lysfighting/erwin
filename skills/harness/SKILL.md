@@ -50,6 +50,8 @@ The harness is file-backed:
   `bash scripts/harness-adapter.sh validate`
 - `missions-list`
   `bash scripts/harness-missions.sh list`
+- `missions-schedule-brief`
+  `bash scripts/harness-missions.sh schedule --brief`
 - `missions-get`
   `bash scripts/harness-missions.sh get issue-1234`
 - `missions-get-brief`
@@ -151,6 +153,7 @@ The harness is file-backed:
 ## Operating rules
 
 - Treat `harness-home` as the control plane entry point.
+- Use `missions schedule --brief` when you want the scheduler portfolio itself in human-readable form before drilling into raw scheduler JSON or the durable snapshot.
 - Treat `harness-missions.sh` as the mission-level control plane above individual runs.
 - Treat `harness-adapter.sh validate` as the package boundary check when bootstrap/sync behavior is in doubt.
 - Treat `harness-runtime-dist-smoke-test.sh` as the proof that a repo can run the packaged runtime without a local Go toolchain.

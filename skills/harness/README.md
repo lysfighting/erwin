@@ -9,6 +9,7 @@ If you want the full human-readable explanation first, read:
 ## What it wraps
 
 - `bash scripts/harness-adapter.sh`
+- `bash scripts/harness-missions.sh schedule --brief`
 - `bash scripts/harness-missions.sh`
 - `bash scripts/harness-missions.sh get issue-1234 --brief`
 - `bash scripts/harness-runs.sh get RUN_ID --brief`
@@ -30,6 +31,7 @@ Use this when the model should act as the harness leader:
 
 - validate adapter/package integrity before bootstrap or sync work
 - inspect governed state, including a human-readable leader briefing before drilling into raw JSON
+- inspect the scheduler portfolio as a human-readable leader object through `missions schedule --brief` before drilling into raw scheduler JSON
 - inspect one mission as a human-readable leader object through `missions get MISSION_ID --brief` before drilling into raw mission JSON
 - inspect one run as a human-readable leader object through `runs get RUN_ID --brief` before drilling into raw run JSON
 - inspect one active or closed council as a human-readable leader object through `meetings summary MEETING_ID --brief` before drilling into raw meeting JSON

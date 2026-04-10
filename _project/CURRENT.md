@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-10
-- **Last Session**: 2026-04-10-B (Extended the human-facing leader layer down to `meetings summary --brief`)
+- **Last Session**: 2026-04-10-C (Extended the human-facing leader layer into `missions schedule --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-10-C** — Extended the human-facing leader layer into `missions schedule --brief`
+
+- **Scheduler portfolios now have a real human-facing leader entrypoint**: `bash scripts/harness-missions.sh schedule --brief` now turns the same scheduler snapshot, primary control-plane packet, decision/maintenance queue, foreground batch admission, and reschedule backlog into a readable portfolio-layer briefing instead of forcing direct raw scheduler JSON inspection
+- **Scheduler briefings stay on the same Go control plane**: the new scheduler layer is derived from the existing scheduler summary and durable snapshot truth rather than inventing a parallel scheduler summary model; default `missions schedule` JSON remains unchanged for exact inspection, automation, and materialization
+- **Human-facing verification now covers foreground, active-council, and packaged-binary scheduler paths**: core smoke now proves scheduler brief output for an ordinary foreground mission and for an active-council primary control-plane packet that blocks foreground admission, and runtime-distribution smoke proves `missions schedule --brief` works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-10-B** — Extended the human-facing leader layer down to `meetings summary --brief`
 

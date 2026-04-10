@@ -30,6 +30,7 @@ When a fresh session needs the fastest human-readable orientation before diving 
 Current human-direct entry stack:
 
 - `bash scripts/harness-home.sh --brief`
+- `bash scripts/harness-missions.sh schedule --brief`
 - `bash scripts/harness-missions.sh get MISSION_ID --brief`
 - `bash scripts/harness-runs.sh get RUN_ID --brief`
 - `bash scripts/harness-meetings.sh summary MEETING_ID --brief`

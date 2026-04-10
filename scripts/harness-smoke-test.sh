@@ -149,6 +149,9 @@ assert_json_field "$schedule_solo_output" '"execution_mode": "solo"' "scheduler 
 assert_json_field "$schedule_solo_output" '"selected_mission_count": 1' "scheduler emits a selected mission batch"
 assert_json_field "$schedule_solo_output" '"snapshot_path":' "scheduler writes a durable snapshot"
 assert_json_field "$schedule_solo_output" '"mission_id": "issue-20001"' "scheduler includes the claimed mission in its classification output"
+schedule_solo_brief=$(run_in_repo bash scripts/harness-missions.sh schedule --brief)
+assert_contains "$schedule_solo_brief" 'Foreground execution is currently centered on mission issue-20001.' "missions schedule --brief explains foreground execution when no higher control-plane packet exists"
+assert_contains "$schedule_solo_brief" 'Foreground batch is issue-20001 under solo mode.' "missions schedule --brief names the admitted foreground batch"
 
 section "Fresh signal rescheduling"
 fresh_signal_output=$(
@@ -748,6 +751,10 @@ assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_bl
 assert_json_field "$schedule_multi_escalation_orchestrated" '"next_action": "Collect' "scheduler next action follows the live active bundle-council requirement"
 assert_json_field "$schedule_multi_escalation_orchestrated" '"action_kind": "hold_for_active_bundle_council"' "scheduler still emits active bundle-council hold actions after progress projection"
 assert_json_field "$schedule_multi_escalation_orchestrated" '"reason": "Collect' "active bundle-council hold actions inherit the live next requirement"
+schedule_brief_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-missions.sh schedule --brief)
+assert_contains "$schedule_brief_multi_escalation_orchestrated" 'Primary control-plane work is an active council on bundle bundle-issue-20011-issue-20012-issue-20013.' "missions schedule --brief explains when active council work is the primary control-plane packet"
+assert_contains "$schedule_brief_multi_escalation_orchestrated" 'Decision queue has 1 packet(s); primary target is bundle bundle-issue-20011-issue-20012-issue-20013.' "missions schedule --brief explains the human-decision queue target"
+assert_contains "$schedule_brief_multi_escalation_orchestrated" 'No foreground mission batch is currently admitted.' "missions schedule --brief explains when active council work currently blocks a foreground batch"
 home_output_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_multi_escalation_orchestrated" '"next_action": "Collect' "home mirrors the live active bundle-council requirement from scheduler state"
 home_brief_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-home.sh --brief)
