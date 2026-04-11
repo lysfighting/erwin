@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-11
-- **Last Session**: 2026-04-11-C (Extended the human-facing leader layer into `signals adjudicate --brief`)
+- **Last Session**: 2026-04-11-D (Extended the human-facing leader layer into `meetings orchestrate --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-11-D** — Extended the human-facing leader layer into `meetings orchestrate --brief`
+
+- **Council orchestration now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh orchestrate MEETING_ID --brief` now turns the same orchestration mutation result into a readable council-chair briefing that tells a human whether the meeting advanced or held, why, what current wave/debate/output packet is live, and what leader/council action comes next
+- **Meeting orchestration briefings stay on the same Go control plane**: the new layer is derived from the existing meeting packet, orchestration state, wave/debate plans, synthesis audit, and auto-synthesis result rather than inventing a parallel council-progress model; default `meetings orchestrate` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers advancing and packaged-binary council orchestration paths**: core smoke now proves `meetings orchestrate --brief` explains setup-to-independent-review advancement and current independent-review work, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-11-C** — Extended the human-facing leader layer into `signals adjudicate --brief`
 

@@ -68,6 +68,8 @@ The harness is file-backed:
   `bash scripts/harness-teammates.sh get TEAMMATE_RUN_ID --brief`
 - `meetings-summary-brief`
   `bash scripts/harness-meetings.sh summary MEETING_ID --brief`
+- `meetings-orchestrate-brief`
+  `bash scripts/harness-meetings.sh orchestrate MEETING_ID --brief`
 - `meeting-authority-audit-brief`
   `bash scripts/harness-meetings.sh authority-audit MEETING_ID --brief`
 - `missions-graph`
@@ -187,6 +189,7 @@ The harness is file-backed:
 - Treat `depends_on` plus desired state as part of the control plane, not just metadata.
 - Allow teammate-to-teammate communication only through governed links or sibling relationships.
 - Use `meetings orchestrate` to advance council phases instead of manually skipping straight to synthesis.
+- Use `meetings orchestrate MEETING_ID --brief` when you want the human-readable orchestration result: phase advancement or hold, current wave/debate/output work packet, auto-synthesis effect, and next leader/council action before drilling into raw orchestration JSON.
 - Use `drive meeting ... --protocol=...` or `meetings set-protocol` when the default `evidence-review` protocol is not the right fit for the decision surface.
 - Treat `meetings orchestrate` as the council chair: once bounded positions exist, it can auto-synthesize provisional findings and unresolved-action prompts without overwriting manual judgment that is already on the record.
 - Treat missing independent review as first-class wave debt: `meetings orchestrate` now reports `open_wave_action_count` so the leader can see who still owes a bounded review before cross-examination.

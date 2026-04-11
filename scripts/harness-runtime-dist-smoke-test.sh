@@ -110,6 +110,7 @@ signals_adjudicate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./script
 meeting_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh meeting "$run_id" "Should packaged runtime keep meeting briefings human-readable?")
 meeting_id=$(printf '%s\n' "$meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 meeting_orchestrate_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh orchestrate "$meeting_id")
+meeting_orchestrate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh orchestrate "$meeting_id" --brief)
 meeting_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh summary "$meeting_id" --brief)
 meeting_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh authority-audit "$meeting_id" --brief)
 assert_contains "$adapter_output" '"valid": true' "adapter validate works via packaged binary without Go"
@@ -135,6 +136,8 @@ assert_contains "$signals_brief_output" 'Primary: progress signal' "signals acti
 assert_contains "$signals_brief_output" 'worker-packaged should keep the report fresh' "packaged signal brief still follows teammate signal truth without Go"
 assert_contains "$signals_adjudicate_brief_output" 'No active signal was adjudicated as superseded.' "signals adjudicate --brief works via packaged binary without Go"
 assert_contains "$meeting_orchestrate_output" '"new_phase": "setup"' "meeting orchestration works via packaged binary without Go"
+assert_contains "$meeting_orchestrate_brief_output" 'Harness Meeting Orchestration Briefing' "meetings orchestrate --brief works via packaged binary without Go"
+assert_contains "$meeting_orchestrate_brief_output" 'Add packet/participant prerequisites before independent review.' "packaged meeting orchestration brief still follows live council requirements without Go"
 assert_contains "$meeting_brief_output" "Meeting: $meeting_id" "meetings summary --brief works via packaged binary without Go"
 assert_contains "$meeting_brief_output" 'Add packet/participant prerequisites before independent review.' "packaged meeting brief still follows live council requirements without Go"
 assert_contains "$meeting_authority_brief_output" "Meeting: $meeting_id" "meetings authority-audit --brief works via packaged binary without Go"

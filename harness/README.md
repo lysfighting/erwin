@@ -57,7 +57,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 - `harness-ship.sh` can also open GitHub PRs directly when `gh` is authenticated
 - `harness-ship.sh` now also handles post-merge cleanup of worktrees and local branches
 - `harness-rc.sh` — release-candidate create/verify/promote/close plus surgical `fix`, `cancel`, `hotfix`, and `backport` flow
-- `harness-meetings.sh` — meeting inspection, `meetings summary/authority-audit --brief` leader summaries, and council output mutation
+- `harness-meetings.sh` — meeting inspection, `meetings summary/orchestrate/authority-audit --brief` leader summaries, council orchestration, and council output mutation
 - `harness-maintenance.sh` — reconciliation + runtime normalization
 - `harness-bootstrap.sh` — copy the harness adapter into another git repository
 - `harness-sync.sh` — resync a bootstrapped adapter from its source repository
@@ -78,7 +78,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 5. `drive` moves the run through execution, blocking, meeting, and completion states.
 6. `signals active [MISSION_ID] --brief` explains current active control signals before humans adopt, resolve, or materialize them into meetings; `signals adjudicate SIGNAL_ID|--all --brief` explains which signals were actually resolved as superseded and why.
 7. `teammates get TEAMMATE_RUN_ID --brief` turns delegated work into a readable bounded execution object instead of implicit chat or raw teammate JSON.
-8. `meetings` records council outputs.
+8. `meetings summary MEETING_ID --brief` explains the live council state, and `meetings orchestrate MEETING_ID --brief` explains what changed when council orchestration advances or holds.
 9. `maintenance` reconciles or normalizes runtime state.
 
 The release side is no longer limited to the happy path.

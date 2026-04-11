@@ -17579,6 +17579,93 @@ func meetingBriefOutput(summary map[string]any) string {
 	return strings.Join(parts, " ")
 }
 
+func meetingOrchestrationCurrent(meeting map[string]any, oldPhase, newPhase string, gaps []any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	if oldPhase != newPhase {
+		return fmt.Sprintf("Meeting %s advanced from %s to %s.", meetingID, oldPhase, newPhase)
+	}
+	if len(gaps) > 0 {
+		return fmt.Sprintf("Meeting %s stayed in %s with %s blocking advancement.", meetingID, newPhase, countLabel(len(gaps), "gap", "gaps"))
+	}
+	return fmt.Sprintf("Meeting %s stayed in %s while orchestration refreshed the current work packet and next requirement.", meetingID, newPhase)
+}
+
+func meetingOrchestrationWhy(gaps []any, nextRequirement string, autoSynthesis map[string]any) string {
+	for _, item := range gaps {
+		if gap := strings.TrimSpace(stringValue(item)); gap != "" {
+			return gap
+		}
+	}
+	if strings.TrimSpace(stringValue(autoSynthesis["status"])) == "generated" {
+		parts := []string{}
+		if count := intValue(autoSynthesis["generated_finding_count"]); count > 0 {
+			parts = append(parts, countLabel(count, "finding", "findings"))
+		}
+		if count := intValue(autoSynthesis["generated_action_count"]); count > 0 {
+			parts = append(parts, countLabel(count, "action", "actions"))
+		}
+		if count := intValue(autoSynthesis["generated_locked_decision_count"]); count > 0 {
+			parts = append(parts, countLabel(count, "locked decision", "locked decisions"))
+		}
+		if len(parts) > 0 {
+			return "Auto-synthesis generated " + strings.Join(parts, ", ") + " from the governed council record."
+		}
+		return "Auto-synthesis generated a provisional output packet from the governed council record."
+	}
+	return firstNonBlank(strings.TrimSpace(nextRequirement), "No additional orchestration reason is recorded.")
+}
+
+func renderMeetingOrchestrationBrief(result map[string]any) string {
+	meeting, _ := toMap(result["meeting"])
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	synthesis, _ := toMap(meetingSynthesisAudit(meeting))
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	autoSynthesis, _ := toMap(result["auto_synthesis"])
+	oldPhase := firstNonBlank(strings.TrimSpace(stringValue(result["old_phase"])), "setup")
+	newPhase := firstNonBlank(strings.TrimSpace(stringValue(result["new_phase"])), strings.TrimSpace(stringValue(meeting["phase"])), oldPhase)
+	nextRequirement := firstNonBlank(strings.TrimSpace(stringValue(result["next_requirement"])), meetingNextRequirement(meeting))
+	gaps := toList(result["gaps"])
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	lines := []string{
+		"Harness Meeting Orchestration Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Transition: %s -> %s.", oldPhase, newPhase),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, protocol=%s.", missionID, hostRunID, state, protocol),
+		fmt.Sprintf(
+			"Work Packet: phase=%s, open_wave=%d, open_routes=%d, open_rounds=%d, output=%s.",
+			firstNonBlank(strings.TrimSpace(stringValue(summary["current_wave_batch_phase"])), newPhase),
+			intValue(summary["open_wave_action_count"]),
+			intValue(summary["open_route_action_count"]),
+			intValue(summary["open_round_action_count"]),
+			firstNonBlank(strings.TrimSpace(stringValue(summary["output_packet_kind"])), "none"),
+		),
+		"",
+		"Current:",
+		"- " + meetingOrchestrationCurrent(meeting, oldPhase, newPhase, gaps),
+		"",
+		"Why:",
+		"- " + meetingOrchestrationWhy(gaps, nextRequirement, autoSynthesis),
+		"",
+		"Next:",
+		"- " + firstNonBlank(nextRequirement, meetingBriefNext(meeting, summary)),
+		"",
+		"Leader:",
+		"- " + meetingBriefLeaderAction(meeting, summary, synthesis, governanceGaps),
+		"",
+		"Council:",
+		"- " + meetingBriefCouncilAction(summary),
+		"",
+		"Output:",
+		"- " + meetingBriefOutput(summary),
+	}
+	return strings.Join(lines, "\n")
+}
+
 func renderMeetingBrief(meeting, summary map[string]any) string {
 	ensureMeetingGovernanceState(meeting)
 	authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
@@ -17896,10 +17983,14 @@ func cmdMeetingsRemainder(args []string) error {
 			return printJSON(meeting)
 		})
 	case "orchestrate":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("meetings orchestrate", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("meetings orchestrate requires MEETING_ID")
 		}
-		meetingID := args[1]
+		meetingID := remaining[0]
 		return withHarnessLock(func() error {
 			data := readActiveMeeting(meetingID)
 			if data == nil {
@@ -18118,7 +18209,7 @@ func cmdMeetingsRemainder(args []string) error {
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}
-			return printJSON(map[string]any{
+			result := map[string]any{
 				"meeting":          meeting,
 				"old_phase":        oldPhase,
 				"new_phase":        firstNonBlank(stringValue(meeting["phase"]), newPhase),
@@ -18126,7 +18217,11 @@ func cmdMeetingsRemainder(args []string) error {
 				"next_requirement": nextRequirement,
 				"auto_synthesis":   autoSynthesis,
 				"orchestration":    meeting["orchestration"],
-			})
+			}
+			if mode == outputModeText {
+				return printText(renderMeetingOrchestrationBrief(result))
+			}
+			return printJSON(result)
 		})
 	case "add-participant":
 		if len(args) < 4 {

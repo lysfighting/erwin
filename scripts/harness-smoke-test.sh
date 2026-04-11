@@ -763,7 +763,10 @@ assert_json_field "$schedule_multi_escalation_conflict" '"action_kind": "clear_i
 assert_json_field "$schedule_multi_escalation_conflict" '"Explicit bundle governor points at issue-20012' "scheduler explains the conflicting explicit governor against the active bundle council anchor"
 cleared_multi_escalation_governor=$(run_in_repo bash scripts/harness-missions.sh clear-governor "$multi_escalation_bundle_id" "Clear conflicting explicit governor after active bundle council coverage.")
 assert_json_field "$cleared_multi_escalation_governor" "\"bundle_id\": \"$multi_escalation_bundle_id\"" "conflicting explicit governor can be cleared after active bundle-council coverage"
-run_in_repo bash scripts/harness-meetings.sh orchestrate "$multi_escalation_meeting_id" >/dev/null
+multi_escalation_orchestrate_brief=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$multi_escalation_meeting_id" --brief)
+assert_contains "$multi_escalation_orchestrate_brief" "Meeting: $multi_escalation_meeting_id" "meetings orchestrate --brief names the active council"
+assert_contains "$multi_escalation_orchestrate_brief" 'Transition: setup -> independent_review.' "meetings orchestrate --brief explains council phase advancement without raw JSON"
+assert_contains "$multi_escalation_orchestrate_brief" 'Collect 3 independent-review position(s) from bounded participants.' "meetings orchestrate --brief names the current council work packet"
 schedule_multi_escalation_orchestrated=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_phase": "independent_review"' "scheduler projects active bundle-council phase into the portfolio packet"
 assert_json_field "$schedule_multi_escalation_orchestrated" '"active_decision_next_requirement": "Collect' "scheduler projects active bundle-council next requirement into the portfolio packet"
