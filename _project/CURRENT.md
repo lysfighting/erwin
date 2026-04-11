@@ -8,11 +8,11 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-12
-- **Last Session**: 2026-04-12-A (Extended the human-facing leader layer into `maintenance reconcile --brief`)
+- **Last Session**: 2026-04-12 (Harness leader briefings synced with main knowledge-system structure)
 
 ## Current Phase
 
-**Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
+**Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
 
@@ -117,7 +117,29 @@
 - **Readable overview is now part of the canonical doc system**: `docs/harness-explainer.md` now explains what `Harness` is, what problem it solves, how it is designed, how the control plane works, and how to use it, instead of forcing readers to infer those answers from architecture and runtime docs alone
 - **The explainer is genuinely visual and durable**: the new doc includes Mermaid diagrams plus simplified ASCII fallbacks for the identity/layer model, operating model, and usage flow, so it remains readable both in rich Markdown renderers and plain text contexts
 - **Harness entrypoints now route people to the right place**: `README.md`, `docs/README.md`, `docs/harness-documentation-map.md`, `harness/README.md`, and `skills/harness/README.md` now all point to the explainer as the best first stop for humans who want to understand Harness before diving into the deeper canonical docs
+**Session 2026-04-12** — Selective knowledge-refactor artifacts absorbed into the main knowledge system
 
+- **Old knowledge-refactor work was harvested instead of merged wholesale**: useful feedback cases, active knowledge threads, paper-watch notes, and proposal review gates were copied into `main` without accepting the old branch's stale generated-surface model or deleting current daily/trending/latest files
+- **Feedback cases are now first-class knowledge inputs**: `docs/feedback/cases/` now carries normalized `HU-001` through `HU-007` cases for research-directory drift, premature proposal pressure, session-memory dependence, productized-surface overreach, delegated follow-up lifecycle gaps, council visibility gaps, and benchmark eval-trust interpretation
+- **Knowledge now has a live thread registry**: `docs/knowledge/active-threads.md` connects durable threads, evidence classes, proposal links, and update triggers so future sessions do not need to reconstruct knowledge state from archived Codex threads
+- **Paper watch and proposal gates are now discoverable**: `docs/radar/papers/`, `docs/radar/weekly/README.md`, and `docs/proposals/` now expose paper-aware intake, weekly synthesis gates, benchmark-integrity checks, monitorability checks, worked proposal reviews, and eval-candidate follow-through
+- **The coding-agent self-iteration note moved into the durable knowledge layer**: the former research note now lives at `docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md`, matching its actual role as a cross-cutting active knowledge anchor
+- **The knowledge skill now follows the same structure**: `skills/knowledge/` now points future sessions at `active-threads`, proposal-layer ledgers, and review gates instead of the older top-level proposal ledger path
+
+**Session 2026-04-11** — Knowledge system now has aligned visual, text, and machine-readable reading surfaces
+
+- **Visual front door added**: `docs/index.html` is now generated from the latest daily, weekly, and trending notes, giving the repo a human-facing briefing surface with archive browsing, layer navigation, and a visible operating model instead of relying on transient Codex automation cards
+- **Text and machine outputs now come from the same generator**: `docs/knowledge/briefing.md` and `docs/knowledge/index.json` are now rebuilt alongside `docs/index.html`, so humans, scripts, and future agents all read from the same surface data rather than inventing separate ad hoc summaries
+- **Automation prompts now know to refresh the surface**: the daily radar, weekly synthesis, and GitHub Trending automations now tell each run to rebuild the knowledge surface after writing its radar files
+- **Canonical layered architecture restored on the main line**: `docs/feedback/`, `docs/knowledge/`, `docs/proposals/`, and `docs/research/README.md` now define the active boundary `radar -> feedback -> knowledge -> proposals -> implementation`, reusing the good ideas from the older knowledge-system thread without continuing that detached execution lane
+- **Radar was explicitly demoted to intake, not the whole knowledge system**: `README.md`, `docs/README.md`, `docs/radar/README.md`, `docs/knowledge/README.md`, and `skills/knowledge/SKILL.md` now align on the same model, and the `knowledge` skill gives future sessions a durable Codex-native entrypoint for synthesis work instead of letting new signal disappear into markdown exhaust or archived threads
+
+**Session 2026-04-08** — Daily radar captured Codex seat governance, Google's terminal-plus-edge agent push, and Anthropic surface silence
+
+- **Daily radar note added for 2026-04-08**: `docs/radar/daily/2026-04-08.md` now records the 2026-04-01 to 2026-04-08 window with first-party signals from OpenAI, Google, and DeepSeek plus a separate GitHub Trending snapshot.
+- **OpenAI's strongest in-window move stayed operational rather than model-centric**: the radar note records OpenAI's April 2 `Codex` seat and rate-card update as further evidence that coding-agent execution is being sold and governed as its own runtime surface.
+- **Google drove the strongest product motion this week**: April 2 and April 7 posts were consolidated into a clearer read that Google is simultaneously lowering the cost of terminal agentic coding and making on-device agent workflows concrete through Gemma 4, AI Edge Gallery, and LiteRT-LM.
+- **Anthropic coverage remained deliberate even without an in-window launch**: the run explicitly checked Anthropic's public technical surfaces and recorded that the newest visible Engineering posts remain March 24 and March 25, keeping official-source silence visible instead of silently dropping Anthropic from the radar.
 **Session 2026-04-03** — Daily radar captured Codex seat economics, Google agent surface convergence, and provider reliability pressure
 
 - **Daily radar note added for 2026-04-03**: `docs/radar/daily/2026-04-03.md` now records the 2026-03-27 to 2026-04-03 signal window with first-party sources from OpenAI, Google, Qwen, and DeepSeek plus a separate GitHub Trending snapshot

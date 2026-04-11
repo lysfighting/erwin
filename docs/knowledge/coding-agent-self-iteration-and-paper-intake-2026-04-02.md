@@ -19,7 +19,7 @@ The immediate implication is:
 
 - keep the existing first-party radar
 - add a paper-aware intake lane
-- route any paper-derived insight through the existing proposal-first learning loop
+- route any paper-derived insight through the existing knowledge-first, proposal-gated learning loop
 
 ---
 

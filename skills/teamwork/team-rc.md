@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.12.0"
+version: "3.12.1"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -1027,17 +1027,27 @@ If merge fails → output error details → **STOP**
 ### Step P7: Tag on Main
 
 ```bash
-git fetch origin "$PROD_BRANCH"
+# Get the exact merge commit SHA from the PR — immune to fetch timing issues.
+# Using origin/$PROD_BRANCH is fragile: if fetch hasn't picked up the merge yet,
+# the tag lands on the wrong commit (caused V0.1.6 incident).
+MERGE_SHA=$(gh pr view "$PR_NUMBER" --json mergeCommit --jq '.mergeCommit.oid' --repo "$REPO")
+
+if [ -z "$MERGE_SHA" ] || [ "$MERGE_SHA" = "null" ]; then
+  echo "ERROR: Could not get merge commit SHA from PR #$PR_NUMBER" >&2
+  echo "Falling back to origin/$PROD_BRANCH"
+  git fetch origin "$PROD_BRANCH"
+  MERGE_SHA="origin/$PROD_BRANCH"
+fi
 
 # Idempotency: skip if tag already exists (re-entry after partial failure)
 if git rev-parse "$VERSION" >/dev/null 2>&1; then
   echo "Tag $VERSION already exists — skipping"
 else
-  bash ~/.claude/commands/scripts/tw-git.sh tag "$VERSION" "origin/$PROD_BRANCH"
+  bash ~/.claude/commands/scripts/tw-git.sh tag "$VERSION" "$MERGE_SHA"
 fi
 ```
 
-**Does NOT checkout or modify the working tree.** Tags the remote production branch ref directly.
+**Does NOT checkout or modify the working tree.** Tags the PR merge commit SHA directly.
 
 Output: Tag **{VERSION}** pushed (or "already exists" on re-entry)
 
