@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-11
-- **Last Session**: 2026-04-11-A (Extended the human-facing leader layer into `teammates get --brief`)
+- **Last Session**: 2026-04-11-B (Extended the human-facing leader layer into `signals active --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-11-B** — Extended the human-facing leader layer into `signals active --brief`
+
+- **Active control signals now have a real human-facing leader entrypoint**: `bash scripts/harness-signals.sh active [MISSION_ID] --brief` now turns the same active signal log, signal priority, freshness, scope, summary, and leader/teammate/council next actions into a readable signal-layer briefing instead of forcing direct raw signal JSON inspection
+- **Signal briefings stay on the same Go control plane**: the new signal layer is derived from the existing signal log, run registry, signal freshness windows, and teammate ownership truth rather than inventing a parallel signal state model; default `signals active` JSON remains unchanged for exact inspection and tooling, and signal mutation/adjudication semantics remain unchanged
+- **Human-facing verification now covers fresh coordination and packaged-binary teammate-signal paths**: core smoke now proves `signals active --brief` explains a fresh meeting-required signal and its leader action, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-11-A** — Extended the human-facing leader layer into `teammates get --brief`
 

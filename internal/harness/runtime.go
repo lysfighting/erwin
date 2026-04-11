@@ -9505,9 +9505,16 @@ func cmdSignals(args []string) error {
 	case "list":
 		return printJSON(log)
 	case "active":
+		mode, remaining, err := parseOutputMode("signals active", args[1:])
+		if err != nil {
+			return err
+		}
 		missionID := ""
-		if len(args) > 1 {
-			missionID = args[1]
+		if len(remaining) > 1 {
+			return errors.New("signals active accepts at most one optional MISSION_ID")
+		}
+		if len(remaining) == 1 {
+			missionID = strings.TrimSpace(remaining[0])
 		}
 		signals := []any{}
 		for _, item := range toList(log["signals"]) {
@@ -9515,6 +9522,9 @@ func cmdSignals(args []string) error {
 			if activeSignal(signal) && (missionID == "" || stringValue(signal["mission_id"]) == missionID) {
 				signals = append(signals, signal)
 			}
+		}
+		if mode == outputModeText {
+			return printText(renderActiveSignalsBrief(signals, missionID, readRegistry()))
 		}
 		return printJSON(signals)
 	case "emit":
@@ -13952,6 +13962,229 @@ func renderTeammateBrief(run, parentRun, mission, audit map[string]any, activeMe
 		"Council:",
 		"- "+teammateBriefCouncilAction(run, audit, activeMeetings, openMeetingActions),
 	)
+	return strings.Join(lines, "\n")
+}
+
+func signalBriefKindRank(kind string) int {
+	switch normalizeSignalKind(kind) {
+	case "risk_raised":
+		return 1
+	case "requires_rebase":
+		return 2
+	case "blocked":
+		return 3
+	case "requires_meeting", "interface_change", "review_feedback", "priority_change", "dependency_discovered":
+		return 4
+	case "release_ready":
+		return 5
+	case "progress":
+		return 8
+	default:
+		return 9
+	}
+}
+
+func signalBriefExpired(signal map[string]any) bool {
+	freshUntil, err := parseISO(stringValue(signal["fresh_until"]))
+	return err == nil && freshUntil != nil && freshUntil.Before(nowTime())
+}
+
+func signalBriefRecords(signals []any) []map[string]any {
+	records := []map[string]any{}
+	for _, item := range signals {
+		signal, _ := toMap(item)
+		if len(signal) > 0 {
+			records = append(records, signal)
+		}
+	}
+	sort.Slice(records, func(i, j int) bool {
+		leftExpired := signalBriefExpired(records[i])
+		rightExpired := signalBriefExpired(records[j])
+		if leftExpired != rightExpired {
+			return leftExpired
+		}
+		leftRank := signalBriefKindRank(stringValue(records[i]["kind"]))
+		rightRank := signalBriefKindRank(stringValue(records[j]["kind"]))
+		if leftRank != rightRank {
+			return leftRank < rightRank
+		}
+		leftTime := firstNonBlank(stringValue(records[i]["emitted_at"]), stringValue(records[i]["updated_at"]))
+		rightTime := firstNonBlank(stringValue(records[j]["emitted_at"]), stringValue(records[j]["updated_at"]))
+		if leftTime != rightTime {
+			return isoAfter(leftTime, rightTime)
+		}
+		return stringValue(records[i]["signal_id"]) < stringValue(records[j]["signal_id"])
+	})
+	return records
+}
+
+func signalBriefScope(signal map[string]any) string {
+	parts := []string{}
+	if missionID := strings.TrimSpace(stringValue(signal["mission_id"])); missionID != "" {
+		parts = append(parts, "mission "+missionID)
+	}
+	if runID := strings.TrimSpace(stringValue(signal["run_id"])); runID != "" {
+		parts = append(parts, "run "+runID)
+	}
+	if len(parts) == 0 {
+		return "the control plane"
+	}
+	return strings.Join(parts, ", ")
+}
+
+func signalBriefFreshness(signal map[string]any) string {
+	if freshUntil := strings.TrimSpace(stringValue(signal["fresh_until"])); freshUntil != "" {
+		if signalBriefExpired(signal) {
+			return fmt.Sprintf("Freshness window expired at %s.", freshUntil)
+		}
+		return fmt.Sprintf("Fresh until %s.", freshUntil)
+	}
+	if emittedAt := strings.TrimSpace(stringValue(signal["emitted_at"])); emittedAt != "" {
+		if age := ageHours(emittedAt); age != nil {
+			return fmt.Sprintf("No fresh_until is recorded; emitted %.2f hours ago.", *age)
+		}
+	}
+	return "No freshness window is recorded."
+}
+
+func signalBriefLeaderAction(signal map[string]any, registry map[string]any) string {
+	kind := normalizeSignalKind(stringValue(signal["kind"]))
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "unknown")
+	if signalBriefExpired(signal) {
+		return fmt.Sprintf("Resolve or refresh expired signal %s before letting it steer scheduling.", signalID)
+	}
+	runID := strings.TrimSpace(stringValue(signal["run_id"]))
+	run := map[string]any{}
+	if runID != "" {
+		if index := findRunIndex(registry, runID); index >= 0 {
+			run, _ = toMap(toList(registry["runs"])[index])
+		}
+	}
+	switch kind {
+	case "blocked":
+		return "Adopt the blocker into run state or resolve the signal if fresher execution supersedes it."
+	case "requires_meeting":
+		return "Review the coordination signal and either adopt it into state or materialize the required meeting."
+	case "interface_change":
+		return "Review the interface-change signal and notify governed sibling work before widening execution."
+	case "review_feedback":
+		return "Review the feedback signal and adopt it into governed review state before widening execution."
+	case "priority_change":
+		return "Review the priority-change signal and adopt it into mission priority before widening execution."
+	case "risk_raised":
+		return "Review the risk-raised signal and either tighten policy or convene a governed decision before widening execution."
+	case "requires_rebase":
+		return "Rebase or refresh the governed run state before continuing this mission."
+	case "dependency_discovered":
+		return "Adopt the dependency signal into mission or run dependency state before continuing."
+	case "progress":
+		if stringValue(run["owner_type"]) == "teammate" {
+			return "Review the teammate progress report, keep the assignment bounded, and update leader truth only if the evidence warrants it."
+		}
+		return "Review the progress report and update run or mission state only if the evidence warrants it."
+	case "release_ready":
+		return "Verify release readiness through ship/RC gates before treating this signal as final."
+	default:
+		return fmt.Sprintf("Review signal %s and either adopt it into governed state or resolve it with evidence.", signalID)
+	}
+}
+
+func signalBriefTeammateAction(signal map[string]any, registry map[string]any) string {
+	runID := strings.TrimSpace(stringValue(signal["run_id"]))
+	if runID != "" {
+		if index := findRunIndex(registry, runID); index >= 0 {
+			run, _ := toMap(toList(registry["runs"])[index])
+			if stringValue(run["owner_type"]) == "teammate" {
+				ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+				return fmt.Sprintf("%s should keep the report fresh, stay within the bounded assignment, and provide evidence for leader adoption or resolution.", ownerID)
+			}
+		}
+	}
+	sourceType := strings.TrimSpace(stringValue(signal["source_type"]))
+	sourceID := strings.TrimSpace(stringValue(signal["source_id"]))
+	if sourceType == "teammate" || sourceType == "sibling" {
+		return fmt.Sprintf("%s should keep the signal fresh and provide bounded evidence.", firstNonBlank(sourceID, "The teammate source"))
+	}
+	return "No teammate-specific action is required unless this signal came from delegated work."
+}
+
+func signalBriefCouncilAction(signal map[string]any) string {
+	switch normalizeSignalKind(stringValue(signal["kind"])) {
+	case "requires_meeting":
+		return "Council may be required if no active meeting already covers this signal."
+	case "risk_raised", "interface_change", "review_feedback":
+		return "Council may be appropriate when the signal changes risk, interface boundaries, or contested review judgment."
+	default:
+		return "No council is required unless leader review finds contested or high-blast-radius evidence."
+	}
+}
+
+func signalBriefLine(signal map[string]any) string {
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "unknown")
+	kind := firstNonBlank(normalizeSignalKind(stringValue(signal["kind"])), "unknown")
+	summary := firstNonBlank(strings.TrimSpace(stringValue(signal["summary"])), strings.TrimSpace(stringValue(signal["title"])), "No summary recorded.")
+	return fmt.Sprintf("%s: %s on %s. %s", signalID, kind, signalBriefScope(signal), summary)
+}
+
+func renderActiveSignalsBrief(signals []any, missionID string, registry map[string]any) string {
+	records := signalBriefRecords(signals)
+	scope := "all missions"
+	if strings.TrimSpace(missionID) != "" {
+		scope = "mission " + strings.TrimSpace(missionID)
+	}
+	lines := []string{
+		"Harness Signal Briefing",
+		fmt.Sprintf("Scope: %s.", scope),
+		fmt.Sprintf("Signals: %s.", countLabel(len(records), "active signal", "active signals")),
+	}
+	if len(records) == 0 {
+		lines = append(lines,
+			"",
+			"Current:",
+			"- No active signal currently matches this scope.",
+			"",
+			"Next:",
+			"- Continue through scheduler, mission, run, teammate, or council briefings as needed.",
+		)
+		return strings.Join(lines, "\n")
+	}
+	primary := records[0]
+	primaryID := firstNonBlank(strings.TrimSpace(stringValue(primary["signal_id"])), "unknown")
+	primaryKind := firstNonBlank(normalizeSignalKind(stringValue(primary["kind"])), "unknown")
+	lines = append(lines,
+		fmt.Sprintf("Primary: %s signal %s is active on %s.", primaryKind, primaryID, signalBriefScope(primary)),
+		"Freshness: "+signalBriefFreshness(primary),
+		"",
+		"Current:",
+		"- "+signalBriefLine(primary),
+		"",
+		"Why:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(primary["summary"])), strings.TrimSpace(stringValue(primary["title"])), "No signal summary is recorded."),
+		"",
+		"Next:",
+		"- "+signalBriefLeaderAction(primary, registry),
+		"",
+		"Leader:",
+		"- "+signalBriefLeaderAction(primary, registry),
+		"",
+		"Teammate:",
+		"- "+signalBriefTeammateAction(primary, registry),
+		"",
+		"Council:",
+		"- "+signalBriefCouncilAction(primary),
+		"",
+		"Active Signals:",
+	)
+	limit := len(records)
+	if limit > 3 {
+		limit = 3
+	}
+	for _, signal := range records[:limit] {
+		lines = append(lines, "- "+signalBriefLine(signal))
+	}
+	if len(records) > limit {
+		lines = append(lines, fmt.Sprintf("- %d more signal(s) remain in the JSON signal log.", len(records)-limit))
+	}
 	return strings.Join(lines, "\n")
 }
 

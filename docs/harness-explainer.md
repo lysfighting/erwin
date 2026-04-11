@@ -408,7 +408,10 @@ Record teammate progress:
 
 ```bash
 bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID "Progress update" --kind=progress
+bash scripts/harness-signals.sh active MISSION_ID --brief
 ```
+
+Use `signals active --brief` when the question is control-signal visibility: which active signal is currently most important, whether it is fresh, what it applies to, and whether the next move is adoption, resolution, teammate evidence, or council materialization.
 
 Govern teammate communication:
 

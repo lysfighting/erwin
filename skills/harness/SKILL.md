@@ -94,6 +94,8 @@ The harness is file-backed:
   `bash scripts/harness-runs.sh authority-audit RUN_ID`
 - `run-authority-audit-brief`
   `bash scripts/harness-runs.sh authority-audit RUN_ID --brief`
+- `signals-active-brief`
+  `bash scripts/harness-signals.sh active MISSION_ID --brief`
 - `teammate-report`
   `bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID "Caller patch is in place" --kind=progress --evidence=src/auth.ts|tests/auth.spec.ts`
 - `signals-adjudicate`
@@ -198,6 +200,7 @@ The harness is file-backed:
 - Use `runs authority-audit RUN_ID --brief` when you want the human-readable run-drift verdict, repair action, and leader/teammate/council implications before drilling into raw audit JSON.
 - Use `runs authority-audit` when a run may be drifting against fresher or higher-authority active signals, or when `doctor` reports `run-authority-conflict`.
 - Use `runs get RUN_ID --brief` when you want the human-readable execution summary for one run before drilling into raw run JSON or authority-audit detail.
+- Use `signals active [MISSION_ID] --brief` when you want the human-readable active signal priority, freshness, scope, and leader/teammate/council next action before drilling into raw signal JSON.
 - Use `teammates get TEAMMATE_RUN_ID --brief` when you want the human-readable bounded teammate assignment, dependency/report freshness state, governed communication context, and leader/teammate/council next actions before drilling into raw teammate JSON.
 - Use `missions graph --brief` when you want the human-readable active root/dependency topology, current graph-level next step, and teammate/council coverage before drilling into raw graph JSON.
 - Use `missions authority-audit MISSION_ID --brief` when you want the human-readable mission-control verdict, leader-over-teammate adjudication, and next repair action before drilling into raw mission-audit JSON.

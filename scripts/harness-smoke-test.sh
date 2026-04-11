@@ -188,6 +188,9 @@ fresh_signal_output=$(
 EOF
 )
 assert_json_field "$fresh_signal_output" '"kind": "requires_meeting"' "fresh follow-up signal can be emitted directly"
+signals_active_brief=$(run_in_repo bash scripts/harness-signals.sh active issue-20001 --brief)
+assert_contains "$signals_active_brief" 'Primary: requires_meeting signal sig-smoke-fresh-follow-up is active on mission issue-20001' "signals active --brief names the primary active signal without raw JSON"
+assert_contains "$signals_active_brief" 'Review the coordination signal and either adopt it into state or materialize the required meeting.' "signals active --brief gives the leader a concrete signal action"
 schedule_fresh_signal_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_fresh_signal_output" '"decision_kind": "review_follow_up_signals"' "scheduler escalates fresh coordination signals into an explicit decision"
 assert_json_field "$schedule_fresh_signal_output" '"action_kind": "pause_for_fresh_follow_up_signal"' "scheduler emits a reschedule action for fresh coordination signals"
