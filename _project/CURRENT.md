@@ -7,14 +7,20 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-10
-- **Last Session**: 2026-04-10-H (Extended the human-facing leader layer into `missions graph --brief`)
+- **Last Updated**: 2026-04-11
+- **Last Session**: 2026-04-11-A (Extended the human-facing leader layer into `teammates get --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-11-A** — Extended the human-facing leader layer into `teammates get --brief`
+
+- **Teammate objects now have a real human-facing leader entrypoint**: `bash scripts/harness-teammates.sh get TEAMMATE_RUN_ID --brief` now turns the same bounded assignment scope, parent run linkage, dependency/report freshness state, delegated follow-up provenance, governed peer communication, and leader/teammate/council next actions into a readable teammate-layer briefing instead of forcing direct raw teammate JSON inspection
+- **Teammate briefings stay on the same Go control plane**: the new teammate layer is derived from the existing run registry, signal log, run authority audit, dependency truth, meeting coverage, and delegated follow-up monitor packet rather than inventing a parallel teammate state model; default `teammates get` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers ordinary, dependency-blocked, delegated follow-up, and packaged-binary teammate paths**: teammate smoke now proves `teammates get --brief` on ordinary bounded work, dependency-blocked sibling work, and adopted-follow-up handoff work, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-10-H** — Extended the human-facing leader layer into `missions graph --brief`
 

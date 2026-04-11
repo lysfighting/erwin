@@ -102,6 +102,9 @@ mission_graph_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./s
 run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 run_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.sh get "$run_id" --brief)
 run_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.sh authority-audit "$run_id" --brief)
+teammate_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh assign "$run_id" worker-packaged packaged-helper "Check packaged runtime teammate brief" --scope="packaged teammate" --owns=scope:packaged-teammate --report="progress|verification")
+teammate_run_id=$(printf '%s\n' "$teammate_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+teammate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh get "$teammate_run_id" --brief)
 meeting_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh meeting "$run_id" "Should packaged runtime keep meeting briefings human-readable?")
 meeting_id=$(printf '%s\n' "$meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 meeting_orchestrate_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh orchestrate "$meeting_id")
@@ -124,6 +127,8 @@ assert_contains "$run_brief_output" "Run: $run_id" "runs get --brief works via p
 assert_contains "$run_brief_output" 'This run is the current foreground scheduler run and still owns mission control for issue-9101.' "packaged run brief still follows scheduler truth without Go"
 assert_contains "$run_authority_brief_output" "Run: $run_id" "runs authority-audit --brief works via packaged binary without Go"
 assert_contains "$run_authority_brief_output" "Run $run_id is still progressing toward its desired state." "packaged run authority brief still follows desired-state progress truth without Go"
+assert_contains "$teammate_brief_output" 'Teammate: worker-packaged' "teammates get --brief works via packaged binary without Go"
+assert_contains "$teammate_brief_output" "Assignment: mission=issue-9101, parent=$run_id, role=packaged-helper, state=ready" "packaged teammate brief still follows teammate assignment truth without Go"
 assert_contains "$meeting_orchestrate_output" '"new_phase": "setup"' "meeting orchestration works via packaged binary without Go"
 assert_contains "$meeting_brief_output" "Meeting: $meeting_id" "meetings summary --brief works via packaged binary without Go"
 assert_contains "$meeting_brief_output" 'Add packet/participant prerequisites before independent review.' "packaged meeting brief still follows live council requirements without Go"

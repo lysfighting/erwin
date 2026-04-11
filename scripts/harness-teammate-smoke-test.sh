@@ -113,6 +113,13 @@ run_b=$(printf '%s\n' "$assign_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]
 run_a_brief=$(run_in_repo bash scripts/harness-runs.sh get "$run_a" --brief)
 assert_contains "$run_a_brief" "This is a bounded teammate run under $leader_run_id." "runs get --brief explains teammate-run priority relative to the parent run"
 assert_contains "$run_a_brief" 'worker-auth owns this run; next report should cover progress, blockers.' "runs get --brief explains the teammate reporting expectation in human-readable form"
+teammate_a_brief=$(run_in_repo bash scripts/harness-teammates.sh get "$run_a" --brief)
+assert_contains "$teammate_a_brief" 'Teammate: worker-auth' "teammates get --brief names the bounded teammate owner"
+assert_contains "$teammate_a_brief" "Assignment: mission=issue-33001, parent=$leader_run_id, role=implementation-verifier, state=ready" "teammates get --brief explains the teammate assignment context"
+assert_contains "$teammate_a_brief" 'worker-auth should continue Patch auth callers and report progress, blockers, verification.' "teammates get --brief tells the teammate what to report next"
+teammate_b_brief=$(run_in_repo bash scripts/harness-teammates.sh get "$run_b" --brief)
+assert_contains "$teammate_b_brief" "worker-ops is waiting on unsatisfied dependencies: $run_a." "teammates get --brief explains dependency-blocked teammate state"
+assert_contains "$teammate_b_brief" "Leader should keep worker-ops bounded behind dependencies: $run_a." "teammates get --brief tells the leader how to handle dependency-blocked teammate work"
 
 list_output=$(run_in_repo bash scripts/harness-teammates.sh list "$leader_run_id")
 assert_json_field "$list_output" '"owner_id": "worker-auth"' "teammate list shows first delegated run"
@@ -788,6 +795,11 @@ assert_json_field "$follow_up_assignment" "\"delegated_from_meeting_id\": \"$dec
 assert_json_field "$follow_up_assignment" "\"delegated_from_follow_up_execution_kind\": \"decision_record_follow_up\"" "teammate follow-up assignment preserves protocol-aware execution kind"
 assert_json_field "$follow_up_assignment" "\"objective\": \"$decision_record_follow_up_action\"" "teammate follow-up assignment derives its objective from adopted follow-up guidance"
 assert_json_field "$follow_up_assignment" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "teammate follow-up assignment starts from the adopted follow-up action text"
+follow_up_brief=$(run_in_repo bash scripts/harness-teammates.sh get "$follow_up_run_id" --brief)
+assert_contains "$follow_up_brief" 'Teammate: worker-follow-up' "teammates get --brief names the delegated follow-up owner"
+assert_contains "$follow_up_brief" "Delegated Follow-up: packet=$decision_record_follow_up_packet_id, state=open, meeting=$decision_record_meeting_id." "teammates get --brief explains delegated follow-up provenance"
+assert_contains "$follow_up_brief" "worker-follow-up should execute delegated follow-up $decision_record_follow_up_packet_id:" "teammates get --brief tells the delegated follow-up teammate what to do"
+assert_contains "$follow_up_brief" 'synthesis_must_record_tradeoff' "teammates get --brief preserves the delegated follow-up execution kind"
 schedule_after_follow_up_handoff=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_after_follow_up_handoff" "\"adopted_primary_follow_up_delegated_run_id\": \"$follow_up_run_id\"" "scheduler surfaces the delegated teammate run for the adopted follow-up"
 assert_json_field "$schedule_after_follow_up_handoff" "\"adopted_primary_follow_up_delegated_owner\": \"worker-follow-up\"" "scheduler surfaces the delegated teammate owner for the adopted follow-up"

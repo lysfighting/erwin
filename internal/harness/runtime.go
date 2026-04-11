@@ -13698,6 +13698,263 @@ func renderRunBrief(run, mission, audit, scheduler map[string]any, registry map[
 	return strings.Join(lines, "\n")
 }
 
+func teammateReportFreshness(run map[string]any) (bool, string) {
+	lastReportedAt := strings.TrimSpace(stringValue(run["last_reported_at"]))
+	staleAfter := floatValue(policyValue("cleanup.stale_run_after_hours", 24))
+	if lastReportedAt == "" {
+		return true, "No last_reported_at is recorded, so the leader cannot trust this teammate's freshness."
+	}
+	age := ageHours(lastReportedAt)
+	if age == nil {
+		return true, fmt.Sprintf("Last report timestamp %s could not be parsed.", lastReportedAt)
+	}
+	if *age > staleAfter {
+		return true, fmt.Sprintf("Last report is %.2f hours old, beyond the %.2f-hour freshness policy.", *age, staleAfter)
+	}
+	return false, fmt.Sprintf("Last report is %.2f hours old, within the %.2f-hour freshness policy.", *age, staleAfter)
+}
+
+func teammateBriefPeerIDs(run map[string]any) []string {
+	return dedupeStrings(append(anyListToStrings(toList(run["communication_peers"])), anyListToStrings(toList(run["siblings"]))...))
+}
+
+func teammateBriefCurrent(run map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	if len(activeMeetings) > 0 {
+		return fmt.Sprintf("%s is under active council control via %s.", ownerID, strings.Join(meetingIDsFromRecords(activeMeetings), ", "))
+	}
+	if len(unsatisfiedDeps) > 0 {
+		return fmt.Sprintf("%s is waiting on unsatisfied dependencies: %s.", ownerID, strings.Join(dedupeStrings(unsatisfiedDeps), ", "))
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		followUpState := firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open")
+		return fmt.Sprintf("%s is bound to delegated adopted follow-up packet %s in state %s.", ownerID, packetID, followUpState)
+	}
+	objective := firstNonBlank(strings.TrimSpace(stringValue(run["objective"])), strings.TrimSpace(stringValue(run["assigned_scope"])), "its bounded assignment")
+	if activeRun(run) {
+		return fmt.Sprintf("%s is %s on bounded assignment: %s.", ownerID, state, objective)
+	}
+	return fmt.Sprintf("%s is recorded as %s on bounded assignment: %s.", ownerID, state, objective)
+}
+
+func teammateBriefWhy(run, audit map[string]any, activeMeetings, activeSignals []map[string]any, unsatisfiedDeps []string) string {
+	if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+		return requirement
+	}
+	if note := briefAuditNote(toList(audit["higher_authority_conflicts"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["adoption_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["live_state_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["contract_gaps"])); note != "" {
+		return note
+	}
+	if len(unsatisfiedDeps) > 0 {
+		return fmt.Sprintf("Dependencies have not reached their desired state yet: %s.", strings.Join(dedupeStrings(unsatisfiedDeps), ", "))
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		followUpState := firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open")
+		if summary := strings.TrimSpace(stringValue(run["delegated_from_follow_up_summary"])); summary != "" {
+			return fmt.Sprintf("Delegated follow-up %s is %s: %s", packetID, followUpState, summary)
+		}
+		return fmt.Sprintf("Delegated follow-up %s is %s and still governs this teammate assignment.", packetID, followUpState)
+	}
+	if reason := strings.TrimSpace(stringValue(run["status_reason"])); reason != "" {
+		return reason
+	}
+	for _, signal := range activeSignals {
+		if summary := strings.TrimSpace(stringValue(signal["summary"])); summary != "" {
+			return summary
+		}
+	}
+	if summary := strings.TrimSpace(stringValue(run["latest_summary"])); summary != "" {
+		return "Latest teammate report: " + summary
+	}
+	return "No blocker or higher-authority drift is currently recorded for this teammate assignment."
+}
+
+func teammateBriefLeaderAction(run, parentRun, audit map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	if len(parentRun) == 0 {
+		return fmt.Sprintf("Leader should repair the missing parent_run_id link before trusting %s as bounded teammate work.", runID)
+	}
+	if len(activeMeetings) > 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Leader should review active council %s before changing this teammate assignment. %s", ids, requirement)
+		}
+		return fmt.Sprintf("Leader should review active council %s before changing this teammate assignment.", ids)
+	}
+	if runAuthorityAuditRepairNeeded(audit) {
+		return runBriefLeaderAction(run, audit, activeMeetings, unsatisfiedDeps)
+	}
+	if len(unsatisfiedDeps) > 0 {
+		return fmt.Sprintf("Leader should keep %s bounded behind dependencies: %s.", ownerID, strings.Join(dedupeStrings(unsatisfiedDeps), ", "))
+	}
+	stale, reportLine := teammateReportFreshness(run)
+	if stale {
+		return fmt.Sprintf("Leader should request a fresh report from %s. %s", ownerID, reportLine)
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		if monitor := delegatedFollowUpMonitorPacket(run); len(monitor) > 0 {
+			return stringValue(monitor["action"])
+		}
+		return fmt.Sprintf("Leader should monitor delegated adopted follow-up packet %s until %s reports back.", packetID, ownerID)
+	}
+	parentRunID := firstNonBlank(strings.TrimSpace(stringValue(parentRun["run_id"])), strings.TrimSpace(stringValue(run["parent_run_id"])), "the parent run")
+	return fmt.Sprintf("Leader should monitor %s reports and keep parent run %s bounded until this assignment reports back.", ownerID, parentRunID)
+}
+
+func teammateBriefTeammateAction(run map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	if len(activeMeetings) > 0 {
+		return fmt.Sprintf("%s should participate in council %s with bounded evidence and role discipline.", ownerID, strings.Join(meetingIDsFromRecords(activeMeetings), ", "))
+	}
+	if len(unsatisfiedDeps) > 0 {
+		return fmt.Sprintf("%s should wait for dependencies to satisfy their desired state before widening local execution.", ownerID)
+	}
+	stale, _ := teammateReportFreshness(run)
+	if stale {
+		return fmt.Sprintf("%s should report fresh status, blockers, and verification evidence before leader widens execution.", ownerID)
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		if action := strings.TrimSpace(stringValue(run["delegated_from_follow_up_required_action"])); action != "" {
+			return fmt.Sprintf("%s should execute delegated follow-up %s: %s", ownerID, packetID, action)
+		}
+		return fmt.Sprintf("%s should execute delegated follow-up %s and report completion evidence.", ownerID, packetID)
+	}
+	objective := firstNonBlank(strings.TrimSpace(stringValue(run["objective"])), strings.TrimSpace(stringValue(run["assigned_scope"])), "the bounded assignment")
+	reporting := anyListToStrings(toList(run["reporting_expectations"]))
+	if len(reporting) > 0 {
+		return fmt.Sprintf("%s should continue %s and report %s.", ownerID, objective, strings.Join(reporting, ", "))
+	}
+	if next := strings.TrimSpace(stringValue(run["next_expected_action"])); next != "" {
+		return fmt.Sprintf("%s should %s", ownerID, strings.TrimSuffix(next, ".")+".")
+	}
+	return fmt.Sprintf("%s should continue the bounded assignment and report progress, blockers, and verification.", ownerID)
+}
+
+func teammateBriefCouncilAction(run, audit map[string]any, activeMeetings []map[string]any, openMeetingActions []map[string]any) string {
+	if len(activeMeetings) > 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Active council coverage exists via %s. Current requirement: %s", ids, requirement)
+		}
+		return fmt.Sprintf("Active council coverage exists via %s.", ids)
+	}
+	if runBriefNeedsMeeting(audit) {
+		return "Council is required next; a teammate meeting-request signal is still unadopted."
+	}
+	if len(openMeetingActions) > 0 {
+		return fmt.Sprintf("No live council is open, but %s still remain to be adopted.", countLabel(len(openMeetingActions), "meeting action", "meeting actions"))
+	}
+	return "No council action is currently required for this teammate assignment."
+}
+
+func teammateBriefCommunicationAction(run map[string]any) string {
+	peers := teammateBriefPeerIDs(run)
+	if len(peers) == 0 {
+		return "No governed teammate communication peer is currently linked."
+	}
+	limit := len(peers)
+	if limit > 3 {
+		limit = 3
+	}
+	message := fmt.Sprintf("Governed communication peers: %s.", strings.Join(peers[:limit], ", "))
+	if len(peers) > limit {
+		message += fmt.Sprintf(" %d more peer(s) remain in JSON.", len(peers)-limit)
+	}
+	return message
+}
+
+func renderTeammateBrief(run, parentRun, mission, audit map[string]any, activeMeetings, activeSignals, openMeetingActions []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	parentRunID := firstNonBlank(strings.TrimSpace(stringValue(run["parent_run_id"])), "missing")
+	role := firstNonBlank(strings.TrimSpace(stringValue(run["role"])), "unspecified")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	mode := firstNonBlank(strings.TrimSpace(stringValue(run["mode"])), "unknown")
+	surface := firstNonBlank(strings.TrimSpace(stringValue(run["execution_surface"])), "unspecified")
+	assignedScope := firstNonBlank(strings.TrimSpace(stringValue(run["assigned_scope"])), "unspecified")
+	claims := ownershipClaims(run)
+	if len(claims) == 0 {
+		claims = []string{"none"}
+	}
+	dependencies := dependencyTargets(run)
+	if len(dependencies) == 0 {
+		dependencies = []string{"none"}
+	}
+	_, reportLine := teammateReportFreshness(run)
+	lines := []string{
+		"Harness Teammate Briefing",
+		fmt.Sprintf("Teammate: %s", ownerID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf(
+			"Assignment: mission=%s, parent=%s, role=%s, state=%s, mode=%s, surface=%s.",
+			missionID,
+			parentRunID,
+			role,
+			state,
+			mode,
+			surface,
+		),
+		fmt.Sprintf(
+			"Scope: %s, ownership=%s, depends_on=%s.",
+			assignedScope,
+			strings.Join(claims, ", "),
+			strings.Join(dependencies, ", "),
+		),
+		fmt.Sprintf(
+			"Signals: %d active signal(s), %d authority conflict(s), %d active council(s).",
+			len(activeSignals),
+			intValue(audit["higher_authority_conflict_count"]),
+			len(activeMeetings),
+		),
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		lines = append(lines, fmt.Sprintf(
+			"Delegated Follow-up: packet=%s, state=%s, meeting=%s.",
+			packetID,
+			firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open"),
+			firstNonBlank(strings.TrimSpace(stringValue(run["delegated_from_meeting_id"])), "unknown"),
+		))
+	}
+	lines = append(lines,
+		"Report: "+reportLine,
+		"",
+		"Current:",
+		"- "+teammateBriefCurrent(run, activeMeetings, unsatisfiedDeps),
+		"",
+		"Why:",
+		"- "+teammateBriefWhy(run, audit, activeMeetings, activeSignals, unsatisfiedDeps),
+		"",
+		"Next:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), "No immediate next action is recorded."),
+		"",
+		"Leader:",
+		"- "+teammateBriefLeaderAction(run, parentRun, audit, activeMeetings, unsatisfiedDeps),
+		"",
+		"Teammate:",
+		"- "+teammateBriefTeammateAction(run, activeMeetings, unsatisfiedDeps),
+		"",
+		"Communication:",
+		"- "+teammateBriefCommunicationAction(run),
+		"",
+		"Council:",
+		"- "+teammateBriefCouncilAction(run, audit, activeMeetings, openMeetingActions),
+	)
+	return strings.Join(lines, "\n")
+}
+
 func runAuthorityAuditRepairNeeded(audit map[string]any) bool {
 	return intValue(audit["higher_authority_conflict_count"]) > 0 ||
 		intValue(audit["adoption_gap_count"]) > 0 ||
@@ -18023,16 +18280,43 @@ func cmdTeammates(args []string) error {
 		}
 		return printJSON(runs)
 	case "get":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("teammates get", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("teammates get requires RUN_ID")
 		}
-		index := findRunIndex(registry, args[1])
+		runID := strings.TrimSpace(remaining[0])
+		if runID == "" {
+			return errors.New("teammates get requires RUN_ID")
+		}
+		index := findRunIndex(registry, runID)
 		if index < 0 {
-			return fmt.Errorf("teammate run not found: %s", args[1])
+			return fmt.Errorf("teammate run not found: %s", runID)
 		}
 		run, _ := toMap(toList(registry["runs"])[index])
 		if stringValue(run["owner_type"]) != "teammate" {
-			return fmt.Errorf("teammate run not found: %s", args[1])
+			return fmt.Errorf("teammate run not found: %s", runID)
+		}
+		if mode == outputModeText {
+			parentRun := map[string]any{}
+			if parentRunID := strings.TrimSpace(stringValue(run["parent_run_id"])); parentRunID != "" {
+				if parentIndex := findRunIndex(registry, parentRunID); parentIndex >= 0 {
+					parentRun, _ = toMap(toList(registry["runs"])[parentIndex])
+				}
+			}
+			mission := readMission(strings.TrimSpace(stringValue(run["mission_id"])))
+			if mission == nil {
+				mission = map[string]any{}
+			}
+			signalLog := readSignalLog()
+			audit := runAuthorityAudit(run, registry, signalLog)
+			activeMeetings := activeMeetingsForRun(runID)
+			activeSignals := activeSignalsForRun(signalLog, runID)
+			openActions := openMeetingActionsForRun(runID)
+			unsatisfiedDeps := unsatisfiedDependencies(run, registry)
+			return printText(renderTeammateBrief(run, parentRun, mission, audit, activeMeetings, activeSignals, openActions, unsatisfiedDeps))
 		}
 		return printJSON(run)
 	default:

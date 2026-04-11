@@ -399,7 +399,10 @@ Assign bounded execution:
 
 ```bash
 bash scripts/harness-teammates.sh assign RUN_ID worker-a implementation "Implement bounded slice"
+bash scripts/harness-teammates.sh get TEAMMATE_RUN_ID --brief
 ```
+
+Use `teammates get --brief` when a human wants to inspect one bounded teammate object directly: what scope it owns, whether dependencies or report freshness are blocking it, what the teammate should do next, what the leader should monitor, and whether council or governed peer communication is involved.
 
 Record teammate progress:
 
