@@ -7,14 +7,22 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-11
-- **Last Session**: 2026-04-11 (Knowledge system gained aligned visual, text, and machine-readable surfaces)
+- **Last Updated**: 2026-04-12
+- **Last Session**: 2026-04-12 (Selective knowledge-refactor artifacts absorbed into the main knowledge system)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-12** — Selective knowledge-refactor artifacts absorbed into the main knowledge system
+
+- **Old knowledge-refactor work was harvested instead of merged wholesale**: useful feedback cases, active knowledge threads, paper-watch notes, and proposal review gates were copied into `main` without accepting the old branch's stale generated-surface model or deleting current daily/trending/latest files
+- **Feedback cases are now first-class knowledge inputs**: `docs/feedback/cases/` now carries normalized `HU-001` through `HU-007` cases for research-directory drift, premature proposal pressure, session-memory dependence, productized-surface overreach, delegated follow-up lifecycle gaps, council visibility gaps, and benchmark eval-trust interpretation
+- **Knowledge now has a live thread registry**: `docs/knowledge/active-threads.md` connects durable threads, evidence classes, proposal links, and update triggers so future sessions do not need to reconstruct knowledge state from archived Codex threads
+- **Paper watch and proposal gates are now discoverable**: `docs/radar/papers/`, `docs/radar/weekly/README.md`, and `docs/proposals/` now expose paper-aware intake, weekly synthesis gates, benchmark-integrity checks, monitorability checks, worked proposal reviews, and eval-candidate follow-through
+- **The coding-agent self-iteration note moved into the durable knowledge layer**: the former research note now lives at `docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md`, matching its actual role as a cross-cutting active knowledge anchor
 
 **Session 2026-04-11** — Knowledge system now has aligned visual, text, and machine-readable reading surfaces
 

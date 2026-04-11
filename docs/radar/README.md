@@ -74,7 +74,9 @@ See [themes.md](themes.md) for the current taxonomy and keywords.
 - [themes.md](themes.md) — active themes and search language
 - [daily/](daily/) — mirrored daily radar notes in the main working tree
 - [trending/](trending/) — mirrored daily GitHub Trending summaries in the main working tree
+- [papers/](papers/) — selective paper-watch archive for slower research and benchmark signal
 - [weekly/](weekly/) — durable weekly synthesis archive
+- [weekly/README.md](weekly/README.md) — synthesis review gates and required durable sections
 
 ## Working Rules
 
@@ -86,3 +88,10 @@ See [themes.md](themes.md) for the current taxonomy and keywords.
 - prefer direct official pages over commentary
 - keep GitHub Trending in a separate summary block so popularity signals do not masquerade as first-party field direction
 - state clearly when a tool trend is interesting but not strategically relevant
+
+## Paper Watch
+
+Paper and benchmark intake belongs in [papers/](papers/) when it materially sharpens an active knowledge thread.
+
+It should remain slower and more selective than the daily radar stream.
+The paper-watch archive should connect back to [../knowledge/active-threads.md](../knowledge/active-threads.md) before it creates proposal pressure.

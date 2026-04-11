@@ -21,6 +21,8 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 | [radar/README.md](radar/README.md) | Operating model for the AI/agent field radar |
 | [radar/sources.md](radar/sources.md) | Authoritative publisher inventory and priority policy |
 | [radar/themes.md](radar/themes.md) | Active theme taxonomy and query language |
+| [radar/papers/README.md](radar/papers/README.md) | Selective paper-watch archive for agent methods, benchmarks, and observability papers |
+| [radar/weekly/README.md](radar/weekly/README.md) | Weekly synthesis guide and review gates |
 | [radar/weekly/2026-03-30.md](radar/weekly/2026-03-30.md) | Kickoff weekly synthesis and baseline interpretation |
 
 ## Knowledge System
@@ -34,7 +36,10 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 | [feedback/harness-usage-case-template.md](feedback/harness-usage-case-template.md) | Canonical schema for normalized Harness usage cases |
 | [knowledge/README.md](knowledge/README.md) | Durable knowledge layer entrypoint |
 | [knowledge/operating-model.md](knowledge/operating-model.md) | Canonical layered operating model for radar, feedback, knowledge, and proposals |
+| [knowledge/active-threads.md](knowledge/active-threads.md) | Live thread registry linking evidence classes, durable interpretation, and proposal pressure |
 | [proposals/README.md](proposals/README.md) | Proposal-layer boundary and review rule |
+| [proposals/harness-review-gates.md](proposals/harness-review-gates.md) | Proposal review gates for traceability, maturity, benchmark integrity, and eval follow-through |
+| [proposals/harness-eval-candidate-ledger.md](proposals/harness-eval-candidate-ledger.md) | Bridge from reviewed `encode-as-eval` posture into concrete eval candidates |
 
 ## Active
 
@@ -45,7 +50,7 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 | [harness-architecture.md](harness-architecture.md) | Single authoritative architecture narrative for Harness |
 | [harness-learning-loop.md](harness-learning-loop.md) | Proposal-first learning loop for evolving Harness from field signal and real usage |
 | [harness-operating-model.md](harness-operating-model.md) | Leader/teammate/council operating model for Harness |
-| [harness-proposal-ledger.md](harness-proposal-ledger.md) | Durable ledger of reviewed Harness evolution proposals |
+| [proposals/harness-proposal-ledger.md](proposals/harness-proposal-ledger.md) | Durable ledger of reviewed Harness evolution proposals |
 | [harness-public-contract.md](harness-public-contract.md) | Durable public contract for the Codex-native orchestration harness package |
 | [harness-release-criteria.md](harness-release-criteria.md) | Explicit `1.0.0` promotion bar, contract freeze, and verification matrix for Harness |
 | [harness-session-handoff.md](harness-session-handoff.md) | Durable fresh-session handoff and state-persistence entrypoint for Harness |

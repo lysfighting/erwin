@@ -95,25 +95,21 @@ def get_proposal_titles(text: str, limit: int = 3) -> list[str]:
     return titles
 
 
+def is_note_file(path: Path) -> bool:
+    return path.is_file() and path.name not in {"latest.md", "README.md"}
+
+
 def recent_files(directory: Path, limit: int = 6) -> list[Path]:
     if not directory.exists():
         return []
-    files = [
-        path
-        for path in directory.glob("*.md")
-        if path.is_file() and path.name != "latest.md"
-    ]
+    files = [path for path in directory.glob("*.md") if is_note_file(path)]
     return sorted(files, reverse=True)[:limit]
 
 
 def count_files(directory: Path) -> int:
     if not directory.exists():
         return 0
-    return sum(
-        1
-        for path in directory.glob("*.md")
-        if path.is_file() and path.name != "latest.md"
-    )
+    return sum(1 for path in directory.glob("*.md") if is_note_file(path))
 
 
 def rel_path(path: Path) -> str:

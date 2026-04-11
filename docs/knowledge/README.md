@@ -43,8 +43,13 @@ This is where the repo should maintain:
 ## Current Notes
 
 - [operating-model.md](operating-model.md) — canonical role definition for the repo knowledge system, including the knowledge skill / knowledge-agent responsibility split
+- [active-threads.md](active-threads.md) — compact registry of live knowledge threads, evidence classes, proposal linkage, and update triggers
 - [briefing.md](briefing.md) — generated text-first reading surface built from the latest radar streams
 - [index.json](index.json) — generated machine-readable index for agents, scripts, and future surfaces
+- [coding-agent-self-iteration-and-paper-intake-2026-04-02.md](coding-agent-self-iteration-and-paper-intake-2026-04-02.md) — durable synthesis of first-party and paper-aware coding-agent self-iteration signal
+- [harness-engineering-vs-internal-gaps-2026-04-02.md](harness-engineering-vs-internal-gaps-2026-04-02.md) — comparison of external harness-engineering signal against internal repo gaps
+- [runtime-legibility-patterns-2026-04-02.md](runtime-legibility-patterns-2026-04-02.md) — reusable runtime legibility patterns for Harness and agent systems
+- [benchmark-integrity-and-eval-awareness-2026-04-09.md](benchmark-integrity-and-eval-awareness-2026-04-09.md) — benchmark-trust and eval-awareness thread for interpreting external agent scores
 
 ## Generated Surfaces
 
