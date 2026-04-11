@@ -9576,9 +9576,13 @@ func cmdSignals(args []string) error {
 			return printJSON(signal)
 		})
 	case "adjudicate":
+		mode, remaining, err := parseOutputMode("signals adjudicate", args[1:])
+		if err != nil {
+			return err
+		}
 		targetAll := false
 		signalID := ""
-		for _, arg := range args[1:] {
+		for _, arg := range remaining {
 			if arg == "--all" {
 				targetAll = true
 			} else if !strings.HasPrefix(arg, "--") && signalID == "" {
@@ -9619,10 +9623,14 @@ func cmdSignals(args []string) error {
 					return err
 				}
 			}
-			return printJSON(map[string]any{
+			result := map[string]any{
 				"resolved_count": len(resolved),
 				"signals":        resolved,
-			})
+			}
+			if mode == outputModeText {
+				return printText(renderSignalAdjudicationBrief(result, targetAll, signalID))
+			}
+			return printJSON(result)
 		})
 	default:
 		return fmt.Errorf("unknown signals subcommand: %s", subcommand)
@@ -14184,6 +14192,100 @@ func renderActiveSignalsBrief(signals []any, missionID string, registry map[stri
 	}
 	if len(records) > limit {
 		lines = append(lines, fmt.Sprintf("- %d more signal(s) remain in the JSON signal log.", len(records)-limit))
+	}
+	return strings.Join(lines, "\n")
+}
+
+func signalAdjudicationResolutionLine(signal map[string]any) string {
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "unknown")
+	kind := firstNonBlank(normalizeSignalKind(stringValue(signal["kind"])), "unknown")
+	resolutionKind := firstNonBlank(strings.TrimSpace(stringValue(signal["resolution_kind"])), "resolved")
+	note := firstNonBlank(strings.TrimSpace(stringValue(signal["resolution_note"])), "No resolution note is recorded.")
+	supersededBy := strings.TrimSpace(stringValue(signal["superseded_by"]))
+	if supersededBy != "" {
+		return fmt.Sprintf("%s: %s on %s resolved as %s by %s. %s", signalID, kind, signalBriefScope(signal), resolutionKind, supersededBy, note)
+	}
+	return fmt.Sprintf("%s: %s on %s resolved as %s. %s", signalID, kind, signalBriefScope(signal), resolutionKind, note)
+}
+
+func renderSignalAdjudicationBrief(result map[string]any, targetAll bool, signalID string) string {
+	records := signalBriefRecords(toList(result["signals"]))
+	target := "all active signals"
+	if !targetAll && strings.TrimSpace(signalID) != "" {
+		target = "signal " + strings.TrimSpace(signalID)
+	}
+	resolvedCount := intValue(result["resolved_count"])
+	lines := []string{
+		"Harness Signal Adjudication Briefing",
+		fmt.Sprintf("Target: %s.", target),
+		fmt.Sprintf("Resolved: %s.", countLabel(resolvedCount, "signal", "signals")),
+	}
+	if len(records) == 0 {
+		current := "No active signal was adjudicated as superseded."
+		why := "No currently active signal matched supersession rules against fresher run or meeting truth."
+		if !targetAll && strings.TrimSpace(signalID) != "" {
+			current = fmt.Sprintf("No active signal was adjudicated as superseded for signal %s.", strings.TrimSpace(signalID))
+			why = "The targeted signal is absent, already resolved, or still not superseded by fresher run or meeting truth."
+		}
+		lines = append(lines,
+			"",
+			"Current:",
+			"- "+current,
+			"",
+			"Why:",
+			"- "+why,
+			"",
+			"Next:",
+			"- Inspect `signals active --brief`, then adopt valid active signals into governed state, materialize required council, or resolve stale signals explicitly with evidence.",
+			"",
+			"Leader:",
+			"- Keep any still-active signal authoritative until a fresher runtime object supersedes it or leader resolves it directly.",
+			"",
+			"Teammate:",
+			"- No teammate action changed; source teammates should keep bounded evidence fresh while leader adjudicates.",
+			"",
+			"Council:",
+			"- Council is required only when a still-active signal asks for governed judgment or carries high-blast-radius evidence.",
+		)
+		return strings.Join(lines, "\n")
+	}
+	primary := records[0]
+	resolvedVerb := "were"
+	if resolvedCount == 1 {
+		resolvedVerb = "was"
+	}
+	lines = append(lines,
+		"Primary: "+signalAdjudicationResolutionLine(primary),
+		"",
+		"Current:",
+		"- "+fmt.Sprintf("%s %s resolved against fresher authority truth.", countLabel(resolvedCount, "signal", "signals"), resolvedVerb),
+		"",
+		"Why:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(primary["resolution_note"])), "Fresher runtime truth superseded the active signal."),
+		"",
+		"Next:",
+		"- Re-run `signals active --brief` or `doctor --brief`, then continue the mission or run now that stale signal noise is cleared.",
+		"",
+		"Leader:",
+		"- Treat the resolved signals as history; do not let them steer scheduling unless new evidence reopens the issue.",
+		"",
+		"Teammate:",
+		"- Teammates can continue only within their existing bounded run or mission scope; adjudication did not assign new work.",
+		"",
+		"Council:",
+		"- No council is required for these resolved supersessions unless remaining active signals still call for one.",
+		"",
+		"Resolved Signals:",
+	)
+	limit := len(records)
+	if limit > 5 {
+		limit = 5
+	}
+	for _, signal := range records[:limit] {
+		lines = append(lines, "- "+signalAdjudicationResolutionLine(signal))
+	}
+	if len(records) > limit {
+		lines = append(lines, fmt.Sprintf("- %d more resolved signal(s) remain in the JSON adjudication result.", len(records)-limit))
 	}
 	return strings.Join(lines, "\n")
 }

@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-11
-- **Last Session**: 2026-04-11-B (Extended the human-facing leader layer into `signals active --brief`)
+- **Last Session**: 2026-04-11-C (Extended the human-facing leader layer into `signals adjudicate --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-11-C** — Extended the human-facing leader layer into `signals adjudicate --brief`
+
+- **Signal repair now has a real human-facing leader entrypoint**: `bash scripts/harness-signals.sh adjudicate SIGNAL_ID|--all --brief` now turns the same Go adjudication result into a readable signal-repair briefing that tells a human which signals were resolved as superseded, what fresher run or meeting truth won, why no-op adjudication did not change state, and what leader/teammate/council action remains
+- **Signal adjudication briefings stay on the same Go control plane**: the new layer is derived from the existing signal supersession logic and signal log mutation result rather than inventing a parallel repair model; default `signals adjudicate` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers no-op, superseded-signal, and packaged-binary adjudication paths**: core smoke now proves `signals adjudicate --brief` explains both a fresh active signal that is not superseded and a blocked signal superseded by fresher run state, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-11-B** — Extended the human-facing leader layer into `signals active --brief`
 

@@ -50,7 +50,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 - `harness-claim.sh` — mission claim + contract/run creation
 - `harness-drive.sh` — run-state control, dependency waiting, meetings, reprovision, outcome adoption
 - `harness-runs.sh` — direct run inspection, `runs get/authority-audit --brief` leader summaries, desired-state mutation, bounded ownership transfer, and run-level authority audit
-- `harness-signals.sh` — active signal visibility, signal emission/state changes, and `signals active --brief` for human-readable control-signal guidance
+- `harness-signals.sh` — active signal visibility, signal emission/state changes, and `signals active/adjudicate --brief` for human-readable control-signal guidance and repair
 - `harness-teammates.sh` — bounded teammate assignment, governed communication, meeting escalation, and `teammates get --brief` for a human-readable bounded execution object
 - `harness-ship.sh` — verification, PR lifecycle, review/check gates, deterministic merge, merge readiness
 - `harness-ship.sh` also supports branch push and PR draft generation
@@ -76,7 +76,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 3. `missions graph --brief` explains the active mission topology, `missions get MISSION_ID --brief` explains one mission's current state, `missions authority-audit MISSION_ID --brief` explains whether that durable mission record still matches authoritative run truth, and `missions authority-audit --all --brief` explains which connected mission bundle currently needs graph-level authority handling.
 4. `claim` creates a run and contract from a mission.
 5. `drive` moves the run through execution, blocking, meeting, and completion states.
-6. `signals active [MISSION_ID] --brief` explains current active control signals before humans adopt, resolve, or materialize them into meetings.
+6. `signals active [MISSION_ID] --brief` explains current active control signals before humans adopt, resolve, or materialize them into meetings; `signals adjudicate SIGNAL_ID|--all --brief` explains which signals were actually resolved as superseded and why.
 7. `teammates get TEAMMATE_RUN_ID --brief` turns delegated work into a readable bounded execution object instead of implicit chat or raw teammate JSON.
 8. `meetings` records council outputs.
 9. `maintenance` reconciles or normalizes runtime state.

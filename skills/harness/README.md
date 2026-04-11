@@ -13,6 +13,7 @@ If you want the full human-readable explanation first, read:
 - `bash scripts/harness-missions.sh`
 - `bash scripts/harness-missions.sh get issue-1234 --brief`
 - `bash scripts/harness-runs.sh get RUN_ID --brief`
+- `bash scripts/harness-signals.sh adjudicate --all --brief`
 - `bash scripts/harness-meetings.sh summary MEETING_ID --brief`
 - `bash scripts/harness-home.sh` (`--brief` for a human-readable leader briefing)
 - `bash scripts/harness-doctor.sh` (`--brief` for a human-readable health briefing)
@@ -39,6 +40,7 @@ Use this when the model should act as the harness leader:
 - inspect one run as a human-readable leader object through `runs get RUN_ID --brief` before drilling into raw run JSON
 - inspect run drift as a human-readable leader object through `runs authority-audit RUN_ID --brief` before drilling into raw audit JSON
 - inspect active control signals as a human-readable leader object through `signals active [MISSION_ID] --brief` before drilling into raw signal JSON
+- inspect signal repair as a human-readable leader object through `signals adjudicate SIGNAL_ID|--all --brief` before drilling into raw adjudication JSON
 - inspect one bounded teammate as a human-readable leader object through `teammates get TEAMMATE_RUN_ID --brief` before drilling into raw teammate JSON
 - inspect one active or closed council as a human-readable leader object through `meetings summary MEETING_ID --brief` before drilling into raw meeting JSON
 - inspect same-claim council authority as a human-readable leader object through `meetings authority-audit MEETING_ID --brief` before drilling into raw council-audit JSON

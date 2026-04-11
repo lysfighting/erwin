@@ -191,6 +191,8 @@ assert_json_field "$fresh_signal_output" '"kind": "requires_meeting"' "fresh fol
 signals_active_brief=$(run_in_repo bash scripts/harness-signals.sh active issue-20001 --brief)
 assert_contains "$signals_active_brief" 'Primary: requires_meeting signal sig-smoke-fresh-follow-up is active on mission issue-20001' "signals active --brief names the primary active signal without raw JSON"
 assert_contains "$signals_active_brief" 'Review the coordination signal and either adopt it into state or materialize the required meeting.' "signals active --brief gives the leader a concrete signal action"
+signals_adjudicate_fresh_brief=$(run_in_repo bash scripts/harness-signals.sh adjudicate sig-smoke-fresh-follow-up --brief)
+assert_contains "$signals_adjudicate_fresh_brief" 'No active signal was adjudicated as superseded for signal sig-smoke-fresh-follow-up.' "signals adjudicate --brief explains an active signal that is not superseded"
 schedule_fresh_signal_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_fresh_signal_output" '"decision_kind": "review_follow_up_signals"' "scheduler escalates fresh coordination signals into an explicit decision"
 assert_json_field "$schedule_fresh_signal_output" '"action_kind": "pause_for_fresh_follow_up_signal"' "scheduler emits a reschedule action for fresh coordination signals"
@@ -1694,8 +1696,19 @@ resume_output=$(run_in_repo bash scripts/harness-drive.sh resume "$run_id" "Bloc
 assert_json_field "$resume_output" '"state": "ready"' "run can resume after blocker clears"
 doctor_output_blocked=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output_blocked" '"kind": "signal-authority-superseded"' "doctor surfaces superseded blocked signal"
+signals_adjudicate_blocked_brief=$(run_in_repo bash scripts/harness-signals.sh adjudicate "$blocked_signal_id" --brief)
+assert_contains "$signals_adjudicate_blocked_brief" 'Resolved: 1 signal.' "signals adjudicate --brief summarizes resolved superseded signal count"
+assert_contains "$signals_adjudicate_blocked_brief" "$blocked_signal_id: blocked on mission issue-20001, run $run_id resolved as authority_superseded by run:$run_id." "signals adjudicate --brief explains which runtime truth superseded the signal"
+
+block_reconcile_output=$(run_in_repo bash scripts/harness-drive.sh block "$run_id" "Temporary blocker for maintenance reconcile")
+assert_json_field "$block_reconcile_output" '"kind": "blocked"' "blocking a run emits a second blocked signal for maintenance reconcile"
+blocked_reconcile_signal_id=$(printf '%s\n' "$block_reconcile_output" | sed -n 's/^[[:space:]]*"signal_id": "\(sig-[^"]*\)",$/\1/p' | head -n1)
+resume_reconcile_output=$(run_in_repo bash scripts/harness-drive.sh resume "$run_id" "Second blocker cleared")
+assert_json_field "$resume_reconcile_output" '"state": "ready"' "run can resume after second blocker clears"
+doctor_output_reconcile_blocked=$(run_in_repo bash scripts/harness-doctor.sh)
+assert_json_field "$doctor_output_reconcile_blocked" '"kind": "signal-authority-superseded"' "doctor surfaces second superseded blocked signal"
 reconcile_output=$(run_in_repo bash scripts/harness-maintenance.sh reconcile)
-assert_json_field "$reconcile_output" "$blocked_signal_id" "reconcile adjudicates superseded blocked signal"
+assert_json_field "$reconcile_output" "$blocked_reconcile_signal_id" "reconcile adjudicates superseded blocked signal"
 
 authority_signal_id="sig-smoke-l1-blocked"
 authority_signal_output=$(
