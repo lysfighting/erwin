@@ -7,14 +7,20 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-11
-- **Last Session**: 2026-04-11-D (Extended the human-facing leader layer into `meetings orchestrate --brief`)
+- **Last Updated**: 2026-04-12
+- **Last Session**: 2026-04-12-A (Extended the human-facing leader layer into `maintenance reconcile --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Codex-native Harness track
 
 ## What Was Just Completed
+
+**Session 2026-04-12-A** — Extended the human-facing leader layer into `maintenance reconcile --brief`
+
+- **Runtime repair now has a real human-facing leader entrypoint**: `bash scripts/harness-maintenance.sh reconcile --brief` now turns the same reconciliation mutation result into a readable repair briefing that tells a human which orphaned signals, superseded signals, and orphaned meetings were repaired, why no-op reconciliation did not change state, and what health-confirmation step comes next
+- **Maintenance reconciliation briefings stay on the same Go control plane**: the new layer is derived from the existing reconcile result and signal/meeting repair semantics rather than inventing a parallel repair model; default `maintenance reconcile` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers repaired and packaged-binary reconciliation paths**: core smoke now proves `maintenance reconcile --brief` explains a superseded-signal repair and still leaves default JSON available afterward, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-11-D** — Extended the human-facing leader layer into `meetings orchestrate --brief`
 

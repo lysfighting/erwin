@@ -1710,8 +1710,12 @@ resume_reconcile_output=$(run_in_repo bash scripts/harness-drive.sh resume "$run
 assert_json_field "$resume_reconcile_output" '"state": "ready"' "run can resume after second blocker clears"
 doctor_output_reconcile_blocked=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output_reconcile_blocked" '"kind": "signal-authority-superseded"' "doctor surfaces second superseded blocked signal"
-reconcile_output=$(run_in_repo bash scripts/harness-maintenance.sh reconcile)
-assert_json_field "$reconcile_output" "$blocked_reconcile_signal_id" "reconcile adjudicates superseded blocked signal"
+reconcile_brief_output=$(run_in_repo bash scripts/harness-maintenance.sh reconcile --brief)
+assert_contains "$reconcile_brief_output" 'Harness Maintenance Reconcile Briefing' "maintenance reconcile --brief emits a human-readable repair briefing"
+assert_contains "$reconcile_brief_output" 'Signals: 1 signal repaired (0 orphaned, 1 superseded).' "maintenance reconcile --brief summarizes signal repair counts without raw JSON"
+assert_contains "$reconcile_brief_output" "Adjudicated signals: $blocked_reconcile_signal_id." "maintenance reconcile --brief names the adjudicated superseded signal"
+reconcile_noop_output=$(run_in_repo bash scripts/harness-maintenance.sh reconcile)
+assert_json_field "$reconcile_noop_output" '"signal_count": 0' "maintenance reconcile keeps default JSON output after brief repair"
 
 authority_signal_id="sig-smoke-l1-blocked"
 authority_signal_output=$(

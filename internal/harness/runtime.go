@@ -19282,6 +19282,95 @@ func cmdTeammatesRemainder(args []string) error {
 	}
 }
 
+func maintenanceReconcileIDs(result map[string]any, key string) []string {
+	return anyListToStrings(toList(result[key]))
+}
+
+func maintenanceReconcileIDLine(label string, ids []string) string {
+	if len(ids) == 0 {
+		return label + ": none."
+	}
+	limit := len(ids)
+	if limit > 5 {
+		limit = 5
+	}
+	line := fmt.Sprintf("%s: %s.", label, strings.Join(ids[:limit], ", "))
+	if len(ids) > limit {
+		line = fmt.Sprintf("%s %d more item(s) remain in the JSON result.", line, len(ids)-limit)
+	}
+	return line
+}
+
+func maintenanceReconcileWhy(reconciledSignals, adjudicatedSignals, reconciledMeetings []string) string {
+	switch {
+	case len(reconciledSignals) > 0:
+		return "Orphaned active signals were resolved because their referenced run is missing or no longer active."
+	case len(adjudicatedSignals) > 0:
+		return "Superseded active signals were resolved because fresher run or meeting truth already overtook them."
+	case len(reconciledMeetings) > 0:
+		return "Orphaned active meetings were closed because their referenced run is missing or no longer active."
+	default:
+		return "No active orphaned signal, superseded signal, or orphaned meeting matched the reconciliation rules."
+	}
+}
+
+func renderMaintenanceReconcileBrief(result map[string]any) string {
+	reconciledSignals := maintenanceReconcileIDs(result, "reconciled_signal_ids")
+	adjudicatedSignals := maintenanceReconcileIDs(result, "adjudicated_signal_ids")
+	reconciledMeetings := maintenanceReconcileIDs(result, "reconciled_meeting_ids")
+	signalCount := intValue(result["signal_count"])
+	meetingCount := intValue(result["meeting_count"])
+	total := signalCount + meetingCount
+	status := "no-op"
+	if total > 0 {
+		status = "repaired"
+	}
+	current := "No runtime repair was needed."
+	next := "Continue with `doctor --brief`, scheduler, mission, run, teammate, signal, or council briefings as needed."
+	leader := "No leader repair action is required from this reconciliation result."
+	council := "No council is required unless another active decision surface still calls for governed judgment."
+	if total > 0 {
+		current = fmt.Sprintf(
+			"Reconciliation repaired %s and %s.",
+			countLabel(signalCount, "signal", "signals"),
+			countLabel(meetingCount, "meeting", "meetings"),
+		)
+		next = "Run `doctor --brief` to confirm the control plane is healthy, then continue from scheduler or object-level briefings."
+		leader = "Treat repaired signals and closed orphaned meetings as history; do not let them steer scheduling unless new evidence reopens the issue."
+		council = "No council is required for deterministic reconciliation, but remaining active decision signals may still need governed handling."
+	}
+	lines := []string{
+		"Harness Maintenance Reconcile Briefing",
+		fmt.Sprintf("Result: %s.", status),
+		fmt.Sprintf("Signals: %s repaired (%d orphaned, %d superseded).", countLabel(signalCount, "signal", "signals"), len(reconciledSignals), len(adjudicatedSignals)),
+		fmt.Sprintf("Meetings: %s closed.", countLabel(meetingCount, "meeting", "meetings")),
+		"",
+		"Current:",
+		"- " + current,
+		"",
+		"Why:",
+		"- " + maintenanceReconcileWhy(reconciledSignals, adjudicatedSignals, reconciledMeetings),
+		"",
+		"Next:",
+		"- " + next,
+		"",
+		"Leader:",
+		"- " + leader,
+		"",
+		"Teammate:",
+		"- No teammate work was assigned by reconciliation; teammates should continue only inside existing bounded run scopes.",
+		"",
+		"Council:",
+		"- " + council,
+		"",
+		"Repaired Objects:",
+		"- " + maintenanceReconcileIDLine("Reconciled signals", reconciledSignals),
+		"- " + maintenanceReconcileIDLine("Adjudicated signals", adjudicatedSignals),
+		"- " + maintenanceReconcileIDLine("Reconciled meetings", reconciledMeetings),
+	}
+	return strings.Join(lines, "\n")
+}
+
 func cmdMaintenance(args []string) error {
 	if len(args) < 1 {
 		return errors.New("maintenance requires a subcommand")
@@ -19403,6 +19492,13 @@ func cmdMaintenance(args []string) error {
 			})
 		})
 	case "reconcile":
+		mode, remaining, err := parseOutputMode("maintenance reconcile", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 0 {
+			return errors.New("maintenance reconcile does not accept positional arguments")
+		}
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			log := readSignalLog()
@@ -19474,13 +19570,17 @@ func cmdMaintenance(args []string) error {
 					return err
 				}
 			}
-			return printJSON(map[string]any{
+			result := map[string]any{
 				"reconciled_signal_ids":  stringListToAny(reconciledSignals),
 				"adjudicated_signal_ids": stringListToAny(adjudicatedSignals),
 				"reconciled_meeting_ids": stringListToAny(reconciledMeetings),
 				"signal_count":           len(reconciledSignals) + len(adjudicatedSignals),
 				"meeting_count":          len(reconciledMeetings),
-			})
+			}
+			if mode == outputModeText {
+				return printText(renderMaintenanceReconcileBrief(result))
+			}
+			return printJSON(result)
 		})
 	default:
 		return fmt.Errorf("unknown maintenance subcommand: %s", args[0])

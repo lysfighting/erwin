@@ -160,6 +160,7 @@ The harness is file-backed:
   `bash scripts/harness-rc.sh promote RC_ID "promotion note"`
 - `maintenance`
   `bash scripts/harness-maintenance.sh reconcile`
+  `bash scripts/harness-maintenance.sh reconcile --brief`
   `bash scripts/harness-maintenance.sh normalize`
 - `desired-state`
   `bash scripts/harness-runtime.sh runs set-desired RUN_ID --goal=completed --verification=passed --ship=merged`
@@ -175,6 +176,7 @@ The harness is file-backed:
 - Treat `harness-missions.sh` as the mission-level control plane above individual runs.
 - Treat `harness-adapter.sh validate` as the package boundary check when bootstrap/sync behavior is in doubt.
 - Treat `harness-runtime-dist-smoke-test.sh` as the proof that a repo can run the packaged runtime without a local Go toolchain.
+- Use `maintenance reconcile --brief` when you want the human-readable repair result for orphaned signals, superseded signals, and orphaned meetings before drilling into raw reconciliation JSON.
 - Treat `maintenance normalize` as the migration path for older `.harness/` state when mission objects or ownership claims were introduced after those runs were created.
 - Prefer the narrowest safe state change.
 - Use meetings for high-ambiguity or high-blast-radius decisions.
