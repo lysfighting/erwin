@@ -1,0 +1,175 @@
+{
+  "surface_version": 1,
+  "hero_title": "Readable field intelligence instead of disappearing thread residue.",
+  "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
+  "counts": {
+    "total_notes": 14,
+    "stream_count": 3,
+    "layer_count": 5
+  },
+  "canonical_paths": {
+    "visual_surface": "index.html",
+    "briefing": "knowledge/briefing.md",
+    "machine_index": "knowledge/index.json",
+    "operating_model": "knowledge/operating-model.md",
+    "learning_loop": "harness-learning-loop.md"
+  },
+  "flow": [
+    {
+      "name": "Radar",
+      "description": "Collect authoritative external signal and keep noise bounded."
+    },
+    {
+      "name": "Feedback",
+      "description": "Normalize real Harness usage pressure into repeatable cases."
+    },
+    {
+      "name": "Knowledge",
+      "description": "Connect source material, usage pressure, and internal gaps into durable understanding."
+    },
+    {
+      "name": "Proposals",
+      "description": "Turn mature evidence into selective, reviewable change candidates."
+    },
+    {
+      "name": "Implementation",
+      "description": "Only reviewed proposals should feed Harness, Skills, or eval work."
+    }
+  ],
+  "layers": [
+    {
+      "name": "Radar",
+      "href": "radar/README.md",
+      "description": "External first-party signal, recurring notes, source policy, and the freshest field view."
+    },
+    {
+      "name": "Feedback",
+      "href": "feedback/README.md",
+      "description": "Structured Harness usage cases instead of raw session dumping."
+    },
+    {
+      "name": "Knowledge",
+      "href": "knowledge/README.md",
+      "description": "Durable synthesis, timelines, concept maps, and topic continuity."
+    },
+    {
+      "name": "Proposals",
+      "href": "proposals/README.md",
+      "description": "Selective reviewed change candidates after evidence is mature enough."
+    },
+    {
+      "name": "Research",
+      "href": "research/README.md",
+      "description": "One-off analysis and incubation, kept useful but out of the active lane."
+    }
+  ],
+  "streams": {
+    "weekly": {
+      "label": "Weekly",
+      "title": "AI/Agent Weekly Synthesis — 2026-04-10",
+      "meta": "Coverage window: 2026-04-03 to 2026-04-10",
+      "highlights": [
+        "Anthropic had the strongest first-party in-window platform signal by a wide margin. The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) show **Claude Managed Agents** entering public beta on **April 8, 2026**, the new **`ant` CLI** launching the same day, the **advisor tool** entering public beta on **April 9, 2026**, and the Bedrock-compatible `/anthropic/v1/messages` shape entering research preview on **April 7, 2026**. Taken together, that is not a routine docs refresh. It is Anthropic turning agent orchestration, planning quality, and operator ergonomics into a product surface.",
+        "Anthropic's Claude Platform substreams were explicitly checked as required. The new [Advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) describe a planner/executor split in which a cheaper executor can consult a stronger advisor model mid-generation, while the new [Managed Agents production tutorial](https://platform.claude.com/cookbook/managed-agents-cma-operate-in-production) published on **April 8, 2026** makes vault-backed credentials, webhook-driven human-in-the-loop, MCP toolsets, and session lifecycle management look like the default production pattern rather than an advanced custom build.",
+        "Anthropic's Claude Code surface was also explicitly checked. The current [Claude Code docs overview](https://code.claude.com/docs/en/overview) now foregrounds agent teams, the Agent SDK, cloud scheduled tasks, remote control, and cross-surface continuity. The public [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md) currently tops at `2.1.98`, adding a Monitor tool, git-worktree awareness, OTEL `TRACEPARENT` propagation, and several subagent / permission / cleanup fixes. The rendered changelog page does not expose a publish date for `2.1.98`, so the safe reading is: Claude Code continues to broaden materially as an operational agent surface, but we should avoid overstating which specific changelog items landed inside this exact week."
+      ],
+      "latest_path": "radar/weekly/latest.md",
+      "archive_path": "radar/weekly/",
+      "recent": [
+        {
+          "name": "2026-04-10",
+          "path": "radar/weekly/2026-04-10.md"
+        },
+        {
+          "name": "2026-04-03",
+          "path": "radar/weekly/2026-04-03.md"
+        },
+        {
+          "name": "2026-03-30",
+          "path": "radar/weekly/2026-03-30.md"
+        }
+      ],
+      "count": 3
+    },
+    "daily": {
+      "label": "Daily",
+      "title": "AI Agent Daily Radar — 2026-04-10",
+      "meta": "Window: 2026-04-03 to 2026-04-10",
+      "highlights": [
+        "**Anthropic is formalizing trustworthy agents as a full-stack governance problem.** In [Trustworthy agents in practice](https://www.anthropic.com/research/trustworthy-agents) published on **April 9, 2026**, Anthropic says agent safety has to cover the model, harness, tools, and surrounding environment, and points to plan mode, subagents, permission boundaries, benchmarks, monitoring, and open standards such as MCP. The durable takeaway is that agent runtime design is now an explicit governance surface, not just prompt engineering.",
+        "**OpenAI is saying enterprise buyers are moving from copilots to agent operating layers.** In [The next phase of enterprise AI](https://openai.com/index/next-phase-of-enterprise-ai/) published on **April 8, 2026**, OpenAI says enterprise now makes up more than 40% of revenue, Codex has reached **3 million weekly active users**, and customers want governed agents that span company systems and data. The key signal is that agent deployment is being framed as company-wide infrastructure rather than an isolated feature.",
+        "**Anthropic is packaging frontier coding agents as cybersecurity infrastructure.** In [Project Glasswing](https://www.anthropic.com/glasswing) published on **April 7, 2026**, Anthropic launched a joint initiative around Mythos Preview for defensive security and said the model has already found thousands of zero-day vulnerabilities. High-end coding agents are being sold and governed as security operations tooling, not only as developer productivity."
+      ],
+      "latest_path": "radar/daily/latest.md",
+      "archive_path": "radar/daily/",
+      "recent": [
+        {
+          "name": "2026-04-10",
+          "path": "radar/daily/2026-04-10.md"
+        },
+        {
+          "name": "2026-04-09",
+          "path": "radar/daily/2026-04-09.md"
+        },
+        {
+          "name": "2026-04-08",
+          "path": "radar/daily/2026-04-08.md"
+        },
+        {
+          "name": "2026-04-03",
+          "path": "radar/daily/2026-04-03.md"
+        },
+        {
+          "name": "2026-04-02",
+          "path": "radar/daily/2026-04-02.md"
+        }
+      ],
+      "count": 5
+    },
+    "trending": {
+      "label": "Trending",
+      "title": "GitHub Trending — 2026-04-10",
+      "meta": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-10. This run used the default global trending page with no extra filters; the page rendered 10 repositories.",
+      "highlights": [
+        "[landing-ai/vision-agent](https://github.com/landing-ai/vision-agent) — agent framework for computer vision workflows. Python. 952 stars today.",
+        "[mem0ai/mem0](https://github.com/mem0ai/mem0) — memory layer for AI applications and agents. Python. 816 stars today.",
+        "[enso-labs/enso](https://github.com/enso-labs/enso) — self-improving software engineering agent. Python. 401 stars today."
+      ],
+      "latest_path": "radar/trending/latest.md",
+      "archive_path": "radar/trending/",
+      "recent": [
+        {
+          "name": "2026-04-10",
+          "path": "radar/trending/2026-04-10.md"
+        },
+        {
+          "name": "2026-04-09",
+          "path": "radar/trending/2026-04-09.md"
+        },
+        {
+          "name": "2026-04-08",
+          "path": "radar/trending/2026-04-08.md"
+        },
+        {
+          "name": "2026-04-07",
+          "path": "radar/trending/2026-04-07.md"
+        },
+        {
+          "name": "2026-04-03",
+          "path": "radar/trending/2026-04-03.md"
+        },
+        {
+          "name": "2026-04-02",
+          "path": "radar/trending/2026-04-02.md"
+        }
+      ],
+      "count": 6
+    }
+  },
+  "deep_dive": "The durable theme this week is the productization of the agent control plane.",
+  "proposal_candidates": [
+    "Planner / executor split as a first-class Harness primitive",
+    "Managed runtime profiles for long-running agent jobs",
+    "Trace-native subagent operations"
+  ]
+}

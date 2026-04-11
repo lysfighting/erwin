@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Erwin Knowledge Surface</title>
+  <style>
+    :root {
+      --paper: #f7f1e7;
+      --paper-deep: #efe4d4;
+      --ink: #1f2430;
+      --muted: #586172;
+      --line: rgba(31, 36, 48, 0.12);
+      --accent: #b85d2b;
+      --shadow: 0 24px 70px rgba(31, 36, 48, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(184, 93, 43, 0.12), transparent 30%),
+        radial-gradient(circle at 85% 10%, rgba(33, 91, 107, 0.14), transparent 26%),
+        linear-gradient(180deg, #fbf6ee 0%, var(--paper) 48%, #f3ebdd 100%);
+      font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+    code {
+      font-family: "SF Mono", "JetBrains Mono", "Menlo", monospace;
+      background: rgba(31, 36, 48, 0.06);
+      padding: 0.12rem 0.35rem;
+      border-radius: 0.45rem;
+      font-size: 0.95em;
+    }
+    .shell {
+      width: min(1280px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      padding: 14px 18px;
+      border: 1px solid rgba(31, 36, 48, 0.08);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.68);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 14px 38px rgba(31, 36, 48, 0.06);
+    }
+    .masthead strong {
+      font-size: 0.95rem;
+      letter-spacing: 0.02em;
+    }
+    .masthead nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .nav-pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      border: 1px solid rgba(31, 36, 48, 0.08);
+      color: var(--muted);
+      background: rgba(255,255,255,0.72);
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+    .nav-pill:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.92);
+      box-shadow: 0 10px 24px rgba(31, 36, 48, 0.08);
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 32px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.76), rgba(255,255,255,0.54)),
+        linear-gradient(135deg, rgba(184, 93, 43, 0.10), rgba(33, 91, 107, 0.10));
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -80px auto;
+      width: 240px;
+      height: 240px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(184, 93, 43, 0.22), transparent 70%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(31, 36, 48, 0.08);
+      color: var(--muted);
+    }
+    h1, h2, h3, h4 {
+      font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      margin: 0;
+      letter-spacing: -0.03em;
+    }
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 4.3rem);
+      line-height: 0.95;
+      margin-top: 16px;
+      max-width: 12ch;
+    }
+    .hero p {
+      max-width: 66ch;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.7;
+    }
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .stat-chip {
+      min-width: 150px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(31, 36, 48, 0.08);
+      background: rgba(255,255,255,0.66);
+      box-shadow: 0 14px 30px rgba(31, 36, 48, 0.05);
+    }
+    .stat-chip strong {
+      display: block;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+    .stat-chip span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 24px;
+      margin-top: 28px;
+    }
+    .hero-panel {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px;
+      background: rgba(255,255,255,0.55);
+    }
+    .hero-panel p {
+      margin-top: 12px;
+      font-size: 0.96rem;
+      line-height: 1.65;
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .flow-step {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      min-height: 110px;
+      background: rgba(255,255,255,0.62);
+    }
+    .flow-step strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+    .flow-step p {
+      margin: 0;
+      font-size: 0.92rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .section {
+      margin-top: 28px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(255,255,255,0.55);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      scroll-margin-top: 18px;
+    }
+    .section-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .section-header p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 60ch;
+      line-height: 1.65;
+    }
+    .brief-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .brief-card {
+      border-radius: 24px;
+      padding: 22px;
+      min-height: 100%;
+      border: 1px solid rgba(31, 36, 48, 0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.66));
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+    .brief-card.warm { box-shadow: 0 18px 45px rgba(184, 93, 43, 0.12); }
+    .brief-card.cool { box-shadow: 0 18px 45px rgba(33, 91, 107, 0.12); }
+    .brief-card.violet { box-shadow: 0 18px 45px rgba(123, 79, 154, 0.10); }
+    .brief-card:hover {
+      transform: translateY(-3px);
+    }
+    .brief-card h3 {
+      margin-top: 10px;
+      font-size: 1.65rem;
+      line-height: 1.08;
+    }
+    .brief-card .meta {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+    .brief-card ul {
+      margin: 18px 0 0;
+      padding-left: 18px;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+    .brief-card li + li { margin-top: 10px; }
+    .card-actions {
+      margin-top: 22px;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .primary-link, .secondary-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      border: 1px solid var(--line);
+    }
+    .primary-link {
+      background: rgba(31, 36, 48, 0.92);
+      color: #fffaf2;
+      border-color: transparent;
+    }
+    .secondary-link {
+      background: rgba(255,255,255,0.7);
+      color: var(--muted);
+    }
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap: 18px;
+    }
+    .insight-card, .proposal-card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px;
+      background: rgba(255,255,255,0.72);
+    }
+    .insight-card p, .proposal-card p {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.72;
+    }
+    .proposal-card ul {
+      margin: 16px 0 0;
+      padding-left: 18px;
+      line-height: 1.6;
+    }
+    .archive-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .archive-column {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 20px;
+      background: rgba(255,255,255,0.7);
+    }
+    .archive-column h4 { font-size: 1.35rem; }
+    .archive-column ul {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0 0;
+      display: grid;
+      gap: 10px;
+    }
+    .archive-column li {
+      padding-bottom: 10px;
+      border-bottom: 1px dashed rgba(31, 36, 48, 0.08);
+      color: var(--muted);
+    }
+    .archive-column li:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .empty-item {
+      color: var(--muted);
+      font-style: italic;
+    }
+    .layer-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .layer-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      background: rgba(255,255,255,0.74);
+    }
+    .layer-card p {
+      margin-top: 10px;
+      font-size: 0.93rem;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+    @media (max-width: 980px) {
+      .masthead {
+        border-radius: 22px;
+        align-items: start;
+        flex-direction: column;
+      }
+      .hero-grid, .brief-grid, .split, .archive-grid, .layer-grid, .flow {
+        grid-template-columns: 1fr;
+      }
+      .shell { width: min(100vw - 20px, 100%); }
+      .hero, .section { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="masthead">
+      <strong>Erwin Briefing Surface</strong>
+      <nav>
+        <a class="nav-pill" href="#briefing">Latest briefing</a>
+        <a class="nav-pill" href="#interpretation">Interpretation</a>
+        <a class="nav-pill" href="#architecture">Architecture</a>
+        <a class="nav-pill" href="#history">History</a>
+      </nav>
+    </div>
+    <section class="hero">
+      <div class="eyebrow">Erwin Knowledge Surface</div>
+      <h1>Readable field intelligence instead of disappearing thread residue.</h1>
+      <p>
+        This page is the human-facing front door for the repository&#x27;s knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-chip"><strong>14</strong><span>Durable notes indexed</span></div>
+        <div class="stat-chip"><strong>3 streams</strong><span>Daily, weekly, trending</span></div>
+        <div class="stat-chip"><strong>5 layers</strong><span>Radar to implementation</span></div>
+      </div>
+      <div class="hero-grid">
+        <div class="hero-panel">
+          <div class="eyebrow">Current Lead</div>
+          <h2>AI/Agent Weekly Synthesis — 2026-04-10</h2>
+          <p>The durable theme this week is the productization of the agent control plane.</p>
+        </div>
+        <div class="hero-panel">
+          <div class="eyebrow">At A Glance</div>
+          <h2>What to open first</h2>
+          <p>
+            Start with <a href="radar/weekly/latest.md"><code>weekly/latest.md</code></a> when you need the durable weekly read, then use the archive lists below to move backward in time. This page always reflects the current <code>latest.md</code> set for each stream.
+          </p>
+          <div class="card-actions">
+            <a class="primary-link" href="knowledge/briefing.md">Open text briefing</a>
+            <a class="secondary-link" href="knowledge/index.json">Open machine index</a>
+          </div>
+        </div>
+      </div>
+      <div class="flow">
+        <div class="flow-step"><strong>Radar</strong><p>Collect authoritative external signal and keep noise bounded.</p></div><div class="flow-step"><strong>Feedback</strong><p>Normalize real Harness usage pressure into repeatable cases.</p></div><div class="flow-step"><strong>Knowledge</strong><p>Connect source material, usage pressure, and internal gaps into durable understanding.</p></div><div class="flow-step"><strong>Proposals</strong><p>Turn mature evidence into selective, reviewable change candidates.</p></div><div class="flow-step"><strong>Implementation</strong><p>Only reviewed proposals should feed Harness, Skills, or eval work.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="briefing">
+      <div class="section-header">
+        <div>
+          <div class="eyebrow">Latest Briefing</div>
+          <h2>The current field read</h2>
+        </div>
+        <p>These cards are generated from the latest daily, weekly, and trending notes so you can scan the signal surface without opening raw markdown first.</p>
+      </div>
+      <div class="brief-grid">
+
+    <article class="brief-card warm">
+      <div class="eyebrow">Weekly</div>
+      <h3>AI/Agent Weekly Synthesis — 2026-04-10</h3>
+      <p class="meta">Coverage window: 2026-04-03 to 2026-04-10</p>
+      <ul><li>Anthropic had the strongest first-party in-window platform signal by a wide margin. The <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a> show <strong>Claude Managed Agents</strong> entering public beta on <strong>April 8, 2026</strong>, the new <strong><code>ant</code> CLI</strong> launching the same day, the <strong>advisor tool</strong> entering public beta on <strong>April 9, 2026</strong>, and the Bedrock-compatible <code>/anthropic/v1/messages</code> shape entering research preview on <strong>April 7, 2026</strong>. Taken together, that is not a routine docs refresh. It is Anthropic turning agent orchestration, planning quality, and operator ergonomics into a product surface.</li><li>Anthropic's Claude Platform substreams were explicitly checked as required. The new <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool">Advisor tool docs</a> describe a planner/executor split in which a cheaper executor can consult a stronger advisor model mid-generation, while the new <a href="https://platform.claude.com/cookbook/managed-agents-cma-operate-in-production">Managed Agents production tutorial</a> published on <strong>April 8, 2026</strong> makes vault-backed credentials, webhook-driven human-in-the-loop, MCP toolsets, and session lifecycle management look like the default production pattern rather than an advanced custom build.</li><li>Anthropic's Claude Code surface was also explicitly checked. The current <a href="https://code.claude.com/docs/en/overview">Claude Code docs overview</a> now foregrounds agent teams, the Agent SDK, cloud scheduled tasks, remote control, and cross-surface continuity. The public <a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md">Claude Code changelog</a> currently tops at <code>2.1.98</code>, adding a Monitor tool, git-worktree awareness, OTEL <code>TRACEPARENT</code> propagation, and several subagent / permission / cleanup fixes. The rendered changelog page does not expose a publish date for <code>2.1.98</code>, so the safe reading is: Claude Code continues to broaden materially as an operational agent surface, but we should avoid overstating which specific changelog items landed inside this exact week.</li></ul>
+      <div class="card-actions">
+        <a class="primary-link" href="radar/weekly/latest.md">Open latest</a>
+        <a class="secondary-link" href="radar/weekly/">Browse archive</a>
+      </div>
+    </article>
+
+
+    <article class="brief-card cool">
+      <div class="eyebrow">Daily</div>
+      <h3>AI Agent Daily Radar — 2026-04-10</h3>
+      <p class="meta">Window: 2026-04-03 to 2026-04-10</p>
+      <ul><li><strong>Anthropic is formalizing trustworthy agents as a full-stack governance problem.</strong> In <a href="https://www.anthropic.com/research/trustworthy-agents">Trustworthy agents in practice</a> published on <strong>April 9, 2026</strong>, Anthropic says agent safety has to cover the model, harness, tools, and surrounding environment, and points to plan mode, subagents, permission boundaries, benchmarks, monitoring, and open standards such as MCP. The durable takeaway is that agent runtime design is now an explicit governance surface, not just prompt engineering.</li><li><strong>OpenAI is saying enterprise buyers are moving from copilots to agent operating layers.</strong> In <a href="https://openai.com/index/next-phase-of-enterprise-ai/">The next phase of enterprise AI</a> published on <strong>April 8, 2026</strong>, OpenAI says enterprise now makes up more than 40% of revenue, Codex has reached <strong>3 million weekly active users</strong>, and customers want governed agents that span company systems and data. The key signal is that agent deployment is being framed as company-wide infrastructure rather than an isolated feature.</li><li><strong>Anthropic is packaging frontier coding agents as cybersecurity infrastructure.</strong> In <a href="https://www.anthropic.com/glasswing">Project Glasswing</a> published on <strong>April 7, 2026</strong>, Anthropic launched a joint initiative around Mythos Preview for defensive security and said the model has already found thousands of zero-day vulnerabilities. High-end coding agents are being sold and governed as security operations tooling, not only as developer productivity.</li></ul>
+      <div class="card-actions">
+        <a class="primary-link" href="radar/daily/latest.md">Open latest</a>
+        <a class="secondary-link" href="radar/daily/">Browse archive</a>
+      </div>
+    </article>
+
+
+    <article class="brief-card violet">
+      <div class="eyebrow">Trending</div>
+      <h3>GitHub Trending — 2026-04-10</h3>
+      <p class="meta">Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-10. This run used the default global trending page with no extra filters; the page rendered 10 repositories.</p>
+      <ul><li><a href="https://github.com/landing-ai/vision-agent">landing-ai/vision-agent</a> — agent framework for computer vision workflows. Python. 952 stars today.</li><li><a href="https://github.com/mem0ai/mem0">mem0ai/mem0</a> — memory layer for AI applications and agents. Python. 816 stars today.</li><li><a href="https://github.com/enso-labs/enso">enso-labs/enso</a> — self-improving software engineering agent. Python. 401 stars today.</li></ul>
+      <div class="card-actions">
+        <a class="primary-link" href="radar/trending/latest.md">Open latest</a>
+        <a class="secondary-link" href="radar/trending/">Browse archive</a>
+      </div>
+    </article>
+
+      </div>
+    </section>
+
+    <section class="section" id="interpretation">
+      <div class="section-header">
+        <div>
+          <div class="eyebrow">Durable Interpretation</div>
+          <h2>What the latest week is trying to teach us</h2>
+        </div>
+        <p>The point of the knowledge layer is not to keep more text. It is to keep a cleaner understanding of what changes, why it matters, and what deserves a proposal.</p>
+      </div>
+      <div class="split">
+        <article class="insight-card">
+          <h3>Theme Deep Dive</h3>
+          <p>The durable theme this week is the productization of the agent control plane.</p>
+        </article>
+        <article class="proposal-card">
+          <h3>Current Proposal Candidates</h3>
+          <p>The weekly synthesis can nominate proposal candidates, but proposal creation should remain selective and reviewable.</p>
+          <ul><li>Planner / executor split as a first-class Harness primitive</li><li>Managed runtime profiles for long-running agent jobs</li><li>Trace-native subagent operations</li></ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="architecture">
+      <div class="section-header">
+        <div>
+          <div class="eyebrow">Knowledge Architecture</div>
+          <h2>The full system, not just Radar</h2>
+        </div>
+        <p>Radar is only the intake layer. These directories define how external signal, internal usage pressure, durable synthesis, and reviewed proposals fit together.</p>
+      </div>
+      <div class="layer-grid">
+        <article class="layer-card"><h3><a href="radar/README.md">Radar</a></h3><p>External first-party signal, recurring notes, source policy, and the freshest field view.</p></article><article class="layer-card"><h3><a href="feedback/README.md">Feedback</a></h3><p>Structured Harness usage cases instead of raw session dumping.</p></article><article class="layer-card"><h3><a href="knowledge/README.md">Knowledge</a></h3><p>Durable synthesis, timelines, concept maps, and topic continuity.</p></article><article class="layer-card"><h3><a href="proposals/README.md">Proposals</a></h3><p>Selective reviewed change candidates after evidence is mature enough.</p></article><article class="layer-card"><h3><a href="research/README.md">Research</a></h3><p>One-off analysis and incubation, kept useful but out of the active lane.</p></article>
+      </div>
+      <p class="footer-note">
+        Canonical behavior is defined in <a href="knowledge/operating-model.md"><code>docs/knowledge/operating-model.md</code></a> and linked back into the Harness learning loop at <a href="harness-learning-loop.md"><code>docs/harness-learning-loop.md</code></a>.
+      </p>
+    </section>
+
+    <section class="section" id="history">
+      <div class="section-header">
+        <div>
+          <div class="eyebrow">Recent History</div>
+          <h2>Older signal should still be visible</h2>
+        </div>
+        <p>This archive strip keeps non-latest notes reachable without asking you to browse hidden automation threads or raw SQLite metadata.</p>
+      </div>
+      <div class="archive-grid">
+
+    <section class="archive-column">
+      <h4>Daily Radar</h4>
+      <ul><li><a href="radar/daily/2026-04-10.md">2026-04-10</a></li><li><a href="radar/daily/2026-04-09.md">2026-04-09</a></li><li><a href="radar/daily/2026-04-08.md">2026-04-08</a></li><li><a href="radar/daily/2026-04-03.md">2026-04-03</a></li><li><a href="radar/daily/2026-04-02.md">2026-04-02</a></li></ul>
+    </section>
+
+
+    <section class="archive-column">
+      <h4>Weekly Synthesis</h4>
+      <ul><li><a href="radar/weekly/2026-04-10.md">2026-04-10</a></li><li><a href="radar/weekly/2026-04-03.md">2026-04-03</a></li><li><a href="radar/weekly/2026-03-30.md">2026-03-30</a></li></ul>
+    </section>
+
+
+    <section class="archive-column">
+      <h4>GitHub Trending</h4>
+      <ul><li><a href="radar/trending/2026-04-10.md">2026-04-10</a></li><li><a href="radar/trending/2026-04-09.md">2026-04-09</a></li><li><a href="radar/trending/2026-04-08.md">2026-04-08</a></li><li><a href="radar/trending/2026-04-07.md">2026-04-07</a></li><li><a href="radar/trending/2026-04-03.md">2026-04-03</a></li><li><a href="radar/trending/2026-04-02.md">2026-04-02</a></li></ul>
+    </section>
+
+      </div>
+    </section>
+  </main>
+</body>
+</html>

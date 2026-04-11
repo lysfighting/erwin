@@ -27,6 +27,10 @@ The default rule is:
 
 **signals become proposals first; only reviewed proposals can become evals, prototypes, or adopted system changes.**
 
+Inside the broader repo knowledge system, the preferred path is:
+
+`radar -> feedback -> knowledge -> proposals -> implementation`
+
 ---
 
 ## Core Rule
@@ -377,4 +381,3 @@ This document does not replace:
 Those documents define the system.
 
 This document defines how the system should learn and evolve without losing discipline.
-
