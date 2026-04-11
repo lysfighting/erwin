@@ -14,7 +14,7 @@ This file defines the authoritative and supporting surfaces used by the `erwin` 
 
 | Publisher | Primary Surfaces | Priority | Tags |
 |----------|------------------|----------|------|
-| Anthropic | [Engineering](https://www.anthropic.com/engineering), [News](https://www.anthropic.com/news), [Docs](https://docs.anthropic.com/) | P1 | agents, context engineering, coding, safety, evals |
+| Anthropic | [Engineering](https://www.anthropic.com/engineering), [News](https://www.anthropic.com/news), [Claude Blog](https://claude.com/blog/), [Docs](https://docs.anthropic.com/), [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Managed Agents docs](https://platform.claude.com/docs/en/managed-agents/quickstart), [Advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code overview](https://docs.anthropic.com/en/docs/claude-code/overview), [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md) | P1 | agents, context engineering, coding, safety, evals, managed agents, advisor patterns, Claude Code |
 | OpenAI | [Index](https://openai.com/index/), [Developers](https://developers.openai.com/), [Resources](https://developers.openai.com/resources) | P1 | codex, harness, tools, evals, agents |
 | Google | [Google Developers Blog](https://developers.googleblog.com/), [Google Cloud Blog](https://cloud.google.com/blog), [Vertex AI docs](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/) | P1 | interoperability, agent infra, evals, enterprise agents |
 | Moonshot / Kimi | [Open Platform Blog](https://platform.moonshot.ai/blog/posts), [Platform](https://platform.moonshot.ai/), [Kimi](https://kimi.ai/) | P1 | tool use, reasoning, long context, agent behavior |
@@ -49,6 +49,22 @@ When multiple sources are active on the same day, prefer this order:
 3. primary papers and benchmark writeups when the question is about methods, evals, or self-improvement
 4. official changelogs and release notes
 5. ecosystem observability writeups
+
+## Publisher-Specific Must-Check Surfaces
+
+### Anthropic
+
+Every Anthropic pass should explicitly check these surfaces before concluding that the window is quiet:
+
+1. [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview)
+2. [Managed Agents docs](https://platform.claude.com/docs/en/managed-agents/quickstart)
+3. [Advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool)
+4. [Claude Code overview](https://docs.anthropic.com/en/docs/claude-code/overview)
+5. [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md)
+6. [Anthropic Engineering](https://www.anthropic.com/engineering)
+7. [Claude Blog](https://claude.com/blog/)
+
+This prevents product-surface releases such as Managed Agents, advisor patterns, or Claude Code changes from being missed just because they did not land as a conventional engineering or marketing post.
 
 ## Exclusions
 

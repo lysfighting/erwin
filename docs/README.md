@@ -1,9 +1,14 @@
 # docs/ — Technical Documentation Index
 
+Open [index.html](index.html) when you want the human-facing knowledge surface rather than the raw markdown tree.
+Open [knowledge/briefing.md](knowledge/briefing.md) when you want the same surface in fast text form.
+
 ## Current Direction
 
 - [erwin-repositioning-2026-03-30.md](erwin-repositioning-2026-03-30.md) — proposed repo pivot from narrow skill incubator toward an AI/agent exploration lab, including slimming guidance and automation scope
+- [index.html](index.html) — visual front door for latest daily / weekly / trending outputs plus the full knowledge-system map
 - [radar/README.md](radar/README.md) — AI/agent field radar entrypoint, source policy, and weekly synthesis model
+- [knowledge/operating-model.md](knowledge/operating-model.md) — canonical `radar -> feedback -> knowledge -> proposals -> implementation` operating model
 - [harness-learning-loop.md](harness-learning-loop.md) — proposal-first evolution model for turning field signal and real usage into reviewed Harness changes
 
 The current center of gravity in this repository is `Harness` plus broader AI/agent research.
@@ -17,6 +22,19 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 | [radar/sources.md](radar/sources.md) | Authoritative publisher inventory and priority policy |
 | [radar/themes.md](radar/themes.md) | Active theme taxonomy and query language |
 | [radar/weekly/2026-03-30.md](radar/weekly/2026-03-30.md) | Kickoff weekly synthesis and baseline interpretation |
+
+## Knowledge System
+
+| Document | Purpose |
+|----------|---------|
+| [index.html](index.html) | Visual knowledge surface for latest briefings and archive browsing |
+| [knowledge/briefing.md](knowledge/briefing.md) | Generated text-first briefing for the current knowledge surface |
+| [knowledge/index.json](knowledge/index.json) | Generated machine-readable knowledge index |
+| [feedback/README.md](feedback/README.md) | Structured Harness usage-feedback layer |
+| [feedback/harness-usage-case-template.md](feedback/harness-usage-case-template.md) | Canonical schema for normalized Harness usage cases |
+| [knowledge/README.md](knowledge/README.md) | Durable knowledge layer entrypoint |
+| [knowledge/operating-model.md](knowledge/operating-model.md) | Canonical layered operating model for radar, feedback, knowledge, and proposals |
+| [proposals/README.md](proposals/README.md) | Proposal-layer boundary and review rule |
 
 ## Active
 

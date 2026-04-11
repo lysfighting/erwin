@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Knowledge System
+- **Visual knowledge surface**: added `docs/index.html` plus `scripts/build-knowledge-surface.py`, turning the latest radar notes into a stable human-facing briefing surface with archive browsing, layer navigation, and a visible operating model instead of relying on transient automation inbox cards or hidden thread metadata.
+- **Coordinated text and machine surfaces**: the same generator now also emits `docs/knowledge/briefing.md` and `docs/knowledge/index.json`, so humans, scripts, and future agents can all consume the same current knowledge state without rebuilding separate summaries by hand.
+- **Automation-to-surface handoff documented**: recurring radar outputs are now expected to rebuild the generated knowledge surface after updating their stream files, keeping `docs/index.html`, `docs/knowledge/briefing.md`, and `docs/knowledge/index.json` aligned with daily, weekly, and trending notes.
+- **Canonical layered knowledge architecture**: added `docs/feedback/README.md`, `docs/feedback/harness-usage-case-template.md`, `docs/knowledge/README.md`, `docs/knowledge/operating-model.md`, `docs/proposals/README.md`, and `docs/research/README.md` to make the active repo path explicit: `radar -> feedback -> knowledge -> proposals -> implementation`.
+- **Knowledge skill**: added `skills/knowledge/README.md` and `skills/knowledge/SKILL.md` so future Codex sessions have a durable repo-native entrypoint for curation, synthesis, and proposal gating instead of treating radar notes or old research docs as the whole knowledge system.
+- **Repo entrypoints now point at the new reading surface**: `README.md`, `docs/README.md`, `docs/radar/README.md`, `docs/harness-learning-loop.md`, and `skills/README.md` now treat `radar` as an intake layer and the generated visual surface plus layered docs as the stable way humans should read the system.
+
+### Added — Radar / Surface Data
+- **Recent radar corpus synced into the visible surface**: added daily notes for `2026-04-08`, `2026-04-09`, and `2026-04-10`; trending notes for `2026-04-07` through `2026-04-10`; and weekly syntheses for `2026-04-03` and `2026-04-10`, along with `latest.md` pointers for each stream, so the new knowledge surface opens with real current material instead of placeholder content.
+
+### Added — Radar / Daily
+- **Daily AI agent radar note for 2026-04-08**: added `docs/radar/daily/2026-04-08.md` and refreshed `docs/radar/daily/latest.md` with the 2026-04-01 to 2026-04-08 window, separating first-party signals from the GitHub Trending snapshot.
+- **OpenAI is still operationalizing coding agents as a governed surface**: the new note records OpenAI's April 2 `Codex` enterprise seat and rate-card update as the clearest in-window sign that agent execution is being budgeted and permissioned independently from ordinary chat access.
+- **Google's strongest story this week combined cheaper terminal agents with concrete edge agents**: the same note ties April 7 Gemini CLI updates to April 2 Gemma 4 edge-agent guidance, rather than treating them as unrelated model and tooling blurbs.
+- **Anthropic silence is now explicit radar output instead of an implicit omission**: the 2026-04-08 note records that Anthropic's tracked Engineering and public technical surfaces did not expose a new in-window post, while still naming the most recent visible March 24 and March 25 engineering artifacts.
+
 ### Added — Radar / Daily
 - **Daily AI agent radar note for 2026-04-03**: added `docs/radar/daily/2026-04-03.md`, capturing the 2026-03-27 to 2026-04-03 window with first-party signals from OpenAI, Google, Qwen, and DeepSeek plus a clearly separated GitHub Trending snapshot.
 - **OpenAI now reads as a governed agent-runtime vendor, not just a model vendor**: the new daily note records OpenAI's `Codex` enterprise seat type and token-priced Codex rate card as the clearest in-window evidence that coding-agent execution is being sold and governed as its own operational surface.
