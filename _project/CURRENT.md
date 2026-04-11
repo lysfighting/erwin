@@ -23,6 +23,7 @@
 - **Knowledge now has a live thread registry**: `docs/knowledge/active-threads.md` connects durable threads, evidence classes, proposal links, and update triggers so future sessions do not need to reconstruct knowledge state from archived Codex threads
 - **Paper watch and proposal gates are now discoverable**: `docs/radar/papers/`, `docs/radar/weekly/README.md`, and `docs/proposals/` now expose paper-aware intake, weekly synthesis gates, benchmark-integrity checks, monitorability checks, worked proposal reviews, and eval-candidate follow-through
 - **The coding-agent self-iteration note moved into the durable knowledge layer**: the former research note now lives at `docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md`, matching its actual role as a cross-cutting active knowledge anchor
+- **The knowledge skill now follows the same structure**: `skills/knowledge/` now points future sessions at `active-threads`, proposal-layer ledgers, and review gates instead of the older top-level proposal ledger path
 
 **Session 2026-04-11** — Knowledge system now has aligned visual, text, and machine-readable reading surfaces
 

@@ -33,6 +33,9 @@ This skill is for the middle of that system, especially the `feedback -> knowled
 
 - [`docs/README.md`](../../docs/README.md)
 - [`docs/knowledge/README.md`](../../docs/knowledge/README.md)
+- [`docs/knowledge/active-threads.md`](../../docs/knowledge/active-threads.md)
 - [`docs/knowledge/operating-model.md`](../../docs/knowledge/operating-model.md)
 - [`docs/harness-learning-loop.md`](../../docs/harness-learning-loop.md)
-- [`docs/harness-proposal-ledger.md`](../../docs/harness-proposal-ledger.md)
+- [`docs/proposals/README.md`](../../docs/proposals/README.md)
+- [`docs/proposals/harness-proposal-ledger.md`](../../docs/proposals/harness-proposal-ledger.md)
+- [`docs/proposals/harness-review-gates.md`](../../docs/proposals/harness-review-gates.md)
