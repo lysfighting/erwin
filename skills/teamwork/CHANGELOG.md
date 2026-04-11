@@ -2,6 +2,12 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.12.1] — 2026-04-03
+
+### Fixed — RC promote tag uses PR merge commit SHA instead of origin/main
+
+- **team-rc.md** Step P7: Tag now uses `gh pr view --json mergeCommit` to get the exact merge commit SHA, instead of `origin/$PROD_BRANCH`. Fallback to `origin/$PROD_BRANCH` only if the API call fails or returns `null`. Prevents tag landing on wrong commit when fetch hasn't picked up the merge yet (V0.1.6 incident root cause).
+
 ## [3.12.0] — 2026-03-27
 
 ### Changed — Issue numbers now use markdown links for clickable hyperlinks
