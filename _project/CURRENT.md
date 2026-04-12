@@ -7,14 +7,20 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-12
-- **Last Session**: 2026-04-12 (Harness leader briefings synced with main knowledge-system structure)
+- **Last Updated**: 2026-04-13
+- **Last Session**: 2026-04-13-A (Extended the human-facing leader layer into `maintenance normalize --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-13-A** — Extended the human-facing leader layer into `maintenance normalize --brief`
+
+- **Runtime migration now has a real human-facing leader entrypoint**: `bash scripts/harness-maintenance.sh normalize --brief` now turns the same normalization mutation result into a readable migration briefing that tells a human which legacy run, signal, and contract records were upgraded, why no-op normalization did not change state, and what health-confirmation step comes next
+- **Maintenance normalization briefings stay on the same Go control plane**: the new layer is derived from the existing normalize result and run/signal/contract migration semantics rather than inventing a parallel migration model; default `maintenance normalize` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers migrated and packaged-binary normalization paths**: core smoke now proves `maintenance normalize --brief` explains legacy run/signal migration and still leaves default JSON available afterward, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-12-A** — Extended the human-facing leader layer into `maintenance reconcile --brief`
 

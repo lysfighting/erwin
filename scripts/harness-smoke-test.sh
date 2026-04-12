@@ -1785,9 +1785,14 @@ cat > "$TEST_REPO/.harness/signals/log.yml" <<'EOF'
 }
 EOF
 
-normalize_output=$(run_in_repo bash scripts/harness-maintenance.sh normalize)
-assert_json_field "$normalize_output" '"run_count": 1' "normalize repairs missing run metadata"
-assert_json_field "$normalize_output" '"signal_count": 1' "normalize repairs missing signal metadata"
+normalize_brief_output=$(run_in_repo bash scripts/harness-maintenance.sh normalize --brief)
+assert_contains "$normalize_brief_output" 'Harness Maintenance Normalize Briefing' "maintenance normalize --brief emits a human-readable migration briefing"
+assert_contains "$normalize_brief_output" 'Runs: 1 run normalized.' "maintenance normalize --brief summarizes normalized run count without raw JSON"
+assert_contains "$normalize_brief_output" 'Signals: 1 signal normalized.' "maintenance normalize --brief summarizes normalized signal count without raw JSON"
+assert_contains "$normalize_brief_output" 'Runs: run-smoke-missing-fields.' "maintenance normalize --brief names the normalized run"
+normalize_noop_output=$(run_in_repo bash scripts/harness-maintenance.sh normalize)
+assert_json_field "$normalize_noop_output" '"run_count": 0' "maintenance normalize keeps default JSON output after brief migration"
+assert_json_field "$normalize_noop_output" '"signal_count": 0' "maintenance normalize leaves no signal work after brief migration"
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"

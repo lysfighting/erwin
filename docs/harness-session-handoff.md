@@ -44,6 +44,7 @@ Current human-direct entry stack:
 - `bash scripts/harness-meetings.sh orchestrate MEETING_ID --brief`
 - `bash scripts/harness-meetings.sh authority-audit MEETING_ID --brief`
 - `bash scripts/harness-maintenance.sh reconcile --brief`
+- `bash scripts/harness-maintenance.sh normalize --brief`
 
 ---
 
@@ -127,7 +128,7 @@ Shell entrypoints are intentionally thin:
 
 Human-facing runtime note:
 
-- `home` and `doctor` now support `--brief` for leader-readable summaries derived directly from the same control-plane truth, and `missions schedule --brief`, `missions graph --brief`, `missions get MISSION_ID --brief`, `missions authority-audit MISSION_ID --brief`, `missions authority-audit --all --brief`, `runs get RUN_ID --brief`, `runs authority-audit RUN_ID --brief`, `signals active [MISSION_ID] --brief`, `signals adjudicate SIGNAL_ID|--all --brief`, `teammates get TEAMMATE_RUN_ID --brief`, `meetings summary MEETING_ID --brief`, `meetings orchestrate MEETING_ID --brief`, `meetings authority-audit MEETING_ID --brief`, and `maintenance reconcile --brief` now do the same across scheduler, mission, graph, run, signal, teammate, council, and maintenance-repair layers; the default output remains machine-readable JSON for audits, tooling, and exact state inspection
+- `home` and `doctor` now support `--brief` for leader-readable summaries derived directly from the same control-plane truth, and `missions schedule --brief`, `missions graph --brief`, `missions get MISSION_ID --brief`, `missions authority-audit MISSION_ID --brief`, `missions authority-audit --all --brief`, `runs get RUN_ID --brief`, `runs authority-audit RUN_ID --brief`, `signals active [MISSION_ID] --brief`, `signals adjudicate SIGNAL_ID|--all --brief`, `teammates get TEAMMATE_RUN_ID --brief`, `meetings summary MEETING_ID --brief`, `meetings orchestrate MEETING_ID --brief`, `meetings authority-audit MEETING_ID --brief`, `maintenance reconcile --brief`, and `maintenance normalize --brief` now do the same across scheduler, mission, graph, run, signal, teammate, council, and maintenance-repair layers; the default output remains machine-readable JSON for audits, tooling, and exact state inspection
 
 Runtime selection order:
 

@@ -58,7 +58,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 - `harness-ship.sh` now also handles post-merge cleanup of worktrees and local branches
 - `harness-rc.sh` — release-candidate create/verify/promote/close plus surgical `fix`, `cancel`, `hotfix`, and `backport` flow
 - `harness-meetings.sh` — meeting inspection, `meetings summary/orchestrate/authority-audit --brief` leader summaries, council orchestration, and council output mutation
-- `harness-maintenance.sh` — reconciliation + runtime normalization, including `maintenance reconcile --brief` repair summaries
+- `harness-maintenance.sh` — reconciliation + runtime normalization, including `maintenance reconcile/normalize --brief` repair and migration summaries
 - `harness-bootstrap.sh` — copy the harness adapter into another git repository
 - `harness-sync.sh` — resync a bootstrapped adapter from its source repository
 
@@ -79,7 +79,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 6. `signals active [MISSION_ID] --brief` explains current active control signals before humans adopt, resolve, or materialize them into meetings; `signals adjudicate SIGNAL_ID|--all --brief` explains which signals were actually resolved as superseded and why.
 7. `teammates get TEAMMATE_RUN_ID --brief` turns delegated work into a readable bounded execution object instead of implicit chat or raw teammate JSON.
 8. `meetings summary MEETING_ID --brief` explains the live council state, and `meetings orchestrate MEETING_ID --brief` explains what changed when council orchestration advances or holds.
-9. `maintenance reconcile --brief` explains what repair changed or why no repair was needed; `maintenance normalize` upgrades older runtime state.
+9. `maintenance reconcile --brief` explains what repair changed or why no repair was needed; `maintenance normalize --brief` explains what legacy runtime state was upgraded.
 
 The release side is no longer limited to the happy path.
 The harness now also covers the high-friction release scenarios that used to depend on legacy operator memory:

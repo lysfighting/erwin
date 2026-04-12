@@ -19286,7 +19286,7 @@ func maintenanceReconcileIDs(result map[string]any, key string) []string {
 	return anyListToStrings(toList(result[key]))
 }
 
-func maintenanceReconcileIDLine(label string, ids []string) string {
+func maintenanceBriefIDLine(label string, ids []string) string {
 	if len(ids) == 0 {
 		return label + ": none."
 	}
@@ -19364,9 +19364,85 @@ func renderMaintenanceReconcileBrief(result map[string]any) string {
 		"- " + council,
 		"",
 		"Repaired Objects:",
-		"- " + maintenanceReconcileIDLine("Reconciled signals", reconciledSignals),
-		"- " + maintenanceReconcileIDLine("Adjudicated signals", adjudicatedSignals),
-		"- " + maintenanceReconcileIDLine("Reconciled meetings", reconciledMeetings),
+		"- " + maintenanceBriefIDLine("Reconciled signals", reconciledSignals),
+		"- " + maintenanceBriefIDLine("Adjudicated signals", adjudicatedSignals),
+		"- " + maintenanceBriefIDLine("Reconciled meetings", reconciledMeetings),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func maintenanceNormalizeIDs(result map[string]any, key string) []string {
+	return anyListToStrings(toList(result[key]))
+}
+
+func maintenanceNormalizeWhy(runIDs, signalIDs, contractIDs []string) string {
+	switch {
+	case len(runIDs) > 0:
+		return "Older run records were missing current runtime fields such as timestamps, ownership selectors, desired state, or dependency policy."
+	case len(signalIDs) > 0:
+		return "Older signal records were missing canonical kind or emitted-at fields required by current signal semantics."
+	case len(contractIDs) > 0:
+		return "Historical contract snapshots were stale against current run control-plane fields."
+	default:
+		return "No legacy run, signal, or contract record required normalization."
+	}
+}
+
+func renderMaintenanceNormalizeBrief(result map[string]any) string {
+	runIDs := maintenanceNormalizeIDs(result, "normalized_run_ids")
+	signalIDs := maintenanceNormalizeIDs(result, "normalized_signal_ids")
+	contractIDs := maintenanceNormalizeIDs(result, "normalized_contracts")
+	runCount := intValue(result["run_count"])
+	signalCount := intValue(result["signal_count"])
+	contractCount := intValue(result["contract_count"])
+	total := runCount + signalCount + contractCount
+	status := "no-op"
+	if total > 0 {
+		status = "normalized"
+	}
+	current := "No runtime normalization was needed."
+	next := "Continue with `doctor --brief`, scheduler, mission, run, signal, teammate, or council briefings as needed."
+	leader := "No leader migration action is required from this normalization result."
+	council := "No council is required for deterministic schema normalization."
+	if total > 0 {
+		current = fmt.Sprintf(
+			"Normalization upgraded %s, %s, and %s.",
+			countLabel(runCount, "run", "runs"),
+			countLabel(signalCount, "signal", "signals"),
+			countLabel(contractCount, "contract", "contracts"),
+		)
+		next = "Run `doctor --brief` to confirm the upgraded runtime state is healthy, then continue from the relevant object briefing."
+		leader = "Treat normalized records as current runtime truth; inspect raw JSON only if a follow-up doctor issue remains."
+	}
+	lines := []string{
+		"Harness Maintenance Normalize Briefing",
+		fmt.Sprintf("Result: %s.", status),
+		fmt.Sprintf("Runs: %s normalized.", countLabel(runCount, "run", "runs")),
+		fmt.Sprintf("Signals: %s normalized.", countLabel(signalCount, "signal", "signals")),
+		fmt.Sprintf("Contracts: %s refreshed.", countLabel(contractCount, "contract", "contracts")),
+		"",
+		"Current:",
+		"- " + current,
+		"",
+		"Why:",
+		"- " + maintenanceNormalizeWhy(runIDs, signalIDs, contractIDs),
+		"",
+		"Next:",
+		"- " + next,
+		"",
+		"Leader:",
+		"- " + leader,
+		"",
+		"Teammate:",
+		"- No teammate work was assigned by normalization; teammates should continue only inside existing bounded run scopes.",
+		"",
+		"Council:",
+		"- " + council,
+		"",
+		"Normalized Objects:",
+		"- " + maintenanceBriefIDLine("Runs", runIDs),
+		"- " + maintenanceBriefIDLine("Signals", signalIDs),
+		"- " + maintenanceBriefIDLine("Contracts", contractIDs),
 	}
 	return strings.Join(lines, "\n")
 }
@@ -19380,6 +19456,13 @@ func cmdMaintenance(args []string) error {
 	}
 	switch args[0] {
 	case "normalize":
+		mode, remaining, err := parseOutputMode("maintenance normalize", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 0 {
+			return errors.New("maintenance normalize does not accept positional arguments")
+		}
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			missionRegistry := readMissionRegistry()
@@ -19482,14 +19565,18 @@ func cmdMaintenance(args []string) error {
 					return err
 				}
 			}
-			return printJSON(map[string]any{
+			result := map[string]any{
 				"normalized_run_ids":    stringListToAny(normalizedRuns),
 				"normalized_signal_ids": stringListToAny(normalizedSignals),
 				"normalized_contracts":  stringListToAny(dedupeStrings(normalizedContracts)),
 				"run_count":             len(normalizedRuns),
 				"signal_count":          len(normalizedSignals),
 				"contract_count":        len(dedupeStrings(normalizedContracts)),
-			})
+			}
+			if mode == outputModeText {
+				return printText(renderMaintenanceNormalizeBrief(result))
+			}
+			return printJSON(result)
 		})
 	case "reconcile":
 		mode, remaining, err := parseOutputMode("maintenance reconcile", args[1:])

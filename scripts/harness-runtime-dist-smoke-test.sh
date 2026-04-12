@@ -108,6 +108,7 @@ teammate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-
 signals_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-signals.sh active issue-9101 --brief)
 signals_adjudicate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-signals.sh adjudicate --all --brief)
 maintenance_reconcile_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-maintenance.sh reconcile --brief)
+maintenance_normalize_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-maintenance.sh normalize --brief)
 meeting_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh meeting "$run_id" "Should packaged runtime keep meeting briefings human-readable?")
 meeting_id=$(printf '%s\n' "$meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 meeting_orchestrate_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh orchestrate "$meeting_id")
@@ -137,6 +138,7 @@ assert_contains "$signals_brief_output" 'Primary: progress signal' "signals acti
 assert_contains "$signals_brief_output" 'worker-packaged should keep the report fresh' "packaged signal brief still follows teammate signal truth without Go"
 assert_contains "$signals_adjudicate_brief_output" 'No active signal was adjudicated as superseded.' "signals adjudicate --brief works via packaged binary without Go"
 assert_contains "$maintenance_reconcile_brief_output" 'No runtime repair was needed.' "maintenance reconcile --brief works via packaged binary without Go"
+assert_contains "$maintenance_normalize_brief_output" 'No runtime normalization was needed.' "maintenance normalize --brief works via packaged binary without Go"
 assert_contains "$meeting_orchestrate_output" '"new_phase": "setup"' "meeting orchestration works via packaged binary without Go"
 assert_contains "$meeting_orchestrate_brief_output" 'Harness Meeting Orchestration Briefing' "meetings orchestrate --brief works via packaged binary without Go"
 assert_contains "$meeting_orchestrate_brief_output" 'Add packet/participant prerequisites before independent review.' "packaged meeting orchestration brief still follows live council requirements without Go"

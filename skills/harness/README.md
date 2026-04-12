@@ -17,6 +17,7 @@ If you want the full human-readable explanation first, read:
 - `bash scripts/harness-meetings.sh summary MEETING_ID --brief`
 - `bash scripts/harness-meetings.sh orchestrate MEETING_ID --brief`
 - `bash scripts/harness-maintenance.sh reconcile --brief`
+- `bash scripts/harness-maintenance.sh normalize --brief`
 - `bash scripts/harness-home.sh` (`--brief` for a human-readable leader briefing)
 - `bash scripts/harness-doctor.sh` (`--brief` for a human-readable health briefing)
 - `bash scripts/harness-issue.sh`
@@ -48,6 +49,7 @@ Use this when the model should act as the harness leader:
 - advance or refresh council orchestration as a human-readable leader object through `meetings orchestrate MEETING_ID --brief` before drilling into raw orchestration JSON
 - inspect same-claim council authority as a human-readable leader object through `meetings authority-audit MEETING_ID --brief` before drilling into raw council-audit JSON
 - inspect runtime repair as a human-readable leader object through `maintenance reconcile --brief` before drilling into raw reconciliation JSON
+- inspect runtime migration as a human-readable leader object through `maintenance normalize --brief` before drilling into raw normalization JSON
 - inspect mission graph and mission-level desired state
 - inspect mission-level authority through `missions authority-audit` when the freshest teammate activity and the leader-governed control run should differ
 - inspect graph-level mission conflicts through `missions authority-audit --all` when active missions may be colliding across ownership boundaries

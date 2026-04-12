@@ -520,9 +520,11 @@ Reconcile or normalize runtime state:
 bash scripts/harness-maintenance.sh reconcile
 bash scripts/harness-maintenance.sh reconcile --brief
 bash scripts/harness-maintenance.sh normalize
+bash scripts/harness-maintenance.sh normalize --brief
 ```
 
 Use `maintenance reconcile --brief` when a human wants the repair result first: which orphaned or superseded signals and orphaned meetings were cleaned up, why reconciliation did or did not change state, and what health check should happen next.
+Use `maintenance normalize --brief` when a human wants the migration result first: which older run, signal, or contract records were upgraded into current runtime shape, why no-op normalization changed nothing, and what health check should happen next.
 
 Build or package the runtime:
 
