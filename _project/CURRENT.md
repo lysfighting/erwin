@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-13
-- **Last Session**: 2026-04-13-A (Extended the human-facing leader layer into `maintenance normalize --brief`)
+- **Last Session**: 2026-04-13-B (Extended the human-facing leader layer into `meetings lock-decision --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-13-B** — Extended the human-facing leader layer into `meetings lock-decision --brief`
+
+- **Council scope locking now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh lock-decision MEETING_ID TEXT --brief` now turns the same locked-decision mutation into a readable briefing that tells a human which council decision was bounded, why that scope is authoritative, and what leader/teammate/council action comes next
+- **Meeting decision-lock briefings stay on the same Go control plane**: the new layer is derived from the existing `locked_decisions` meeting state and decision-lock arguments rather than inventing a separate council-scope model; default `meetings lock-decision` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council-scope locks**: teammate smoke now proves `meetings lock-decision --brief` explains bounded decision scope for a live council, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-13-A** — Extended the human-facing leader layer into `maintenance normalize --brief`
 

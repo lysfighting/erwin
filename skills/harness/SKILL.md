@@ -114,6 +114,7 @@ The harness is file-backed:
   `bash scripts/harness-meetings.sh add-known-context MEETING_ID "Current release notes mention auth callers but not required scope."`
 - `meeting-lock`
   `bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to auth release notes only." --reason="Avoid widening blast radius during review." --authority=L2 --evidence=harness/profiles/erwin.yml`
+  `bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to auth release notes only." --reason="Avoid widening blast radius during review." --authority=L2 --evidence=harness/profiles/erwin.yml --brief`
 - `meeting-position`
   `bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID independent_review challenge "This contract leaks release policy" --claim=release-policy-scope --dimension=factual --evidence=docs/spec.md`
 - `meeting-orchestrate`
@@ -179,6 +180,7 @@ The harness is file-backed:
 - Treat `harness-runtime-dist-smoke-test.sh` as the proof that a repo can run the packaged runtime without a local Go toolchain.
 - Use `maintenance reconcile --brief` when you want the human-readable repair result for orphaned signals, superseded signals, and orphaned meetings before drilling into raw reconciliation JSON.
 - Use `maintenance normalize --brief` when you want the human-readable migration result for legacy run, signal, and contract records before drilling into raw normalization JSON.
+- Use `meetings lock-decision --brief` when you want the human-readable result of a council scope lock before drilling into raw meeting JSON.
 - Treat `maintenance normalize` as the migration path for older `.harness/` state when mission objects or ownership claims were introduced after those runs were created.
 - Prefer the narrowest safe state change.
 - Use meetings for high-ambiguity or high-blast-radius decisions.

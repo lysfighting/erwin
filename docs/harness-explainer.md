@@ -433,6 +433,8 @@ Work the meeting directly:
 
 ```bash
 bash scripts/harness-meetings.sh add-participant MEETING_ID TEAMMATE_RUN_ID architecture-challenger
+bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to the concrete decision." --reason="Avoid widening council scope." --authority=L2 --evidence=harness/profiles/erwin.yml
+bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to the concrete decision." --reason="Avoid widening council scope." --authority=L2 --evidence=harness/profiles/erwin.yml --brief
 bash scripts/harness-meetings.sh orchestrate MEETING_ID
 bash scripts/harness-meetings.sh orchestrate MEETING_ID --brief
 bash scripts/harness-meetings.sh summary MEETING_ID
@@ -442,6 +444,7 @@ bash scripts/harness-meetings.sh authority-audit MEETING_ID
 ```
 
 Use `--brief` when a human wants the meeting phase, blocking reason, current council work packet, protocol-aware output state, and next leader/council action without reopening raw meeting JSON.
+Use `meetings lock-decision --brief` when the human has just bounded council scope and needs to know what was locked, why that is the current decision surface, and what leader/teammate/council action comes next.
 Use `meetings orchestrate --brief` when the human has just asked the council chair to advance or refresh orchestration and needs to know what changed, why it advanced or stayed put, and which leader/council work packet is next.
 Use `meetings authority-audit --brief` when the question is narrower: whether same-claim findings inside the council already have a governed winner or still need explicit judgment.
 

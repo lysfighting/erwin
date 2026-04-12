@@ -288,8 +288,11 @@ assert_json_field "$role_b" '"ops-simulator"' "meeting keeps the second bounded 
 known_context=$(run_in_repo bash scripts/harness-meetings.sh add-known-context "$meeting_id" "Release notes currently mention auth callers but not required scope.")
 assert_json_field "$known_context" '"known_context"' "meeting records known context"
 
-locked_decision=$(run_in_repo bash scripts/harness-meetings.sh lock-decision "$meeting_id" "Do not widen teammate scope beyond auth-related release notes." --reason="Bounded council scope for this meeting." --authority="L2" --evidence=harness/profiles/erwin.yml)
-assert_json_field "$locked_decision" '"locked_decisions"' "meeting records locked decisions"
+locked_decision=$(run_in_repo bash scripts/harness-meetings.sh lock-decision "$meeting_id" "Do not widen brief scope beyond auth-related release notes." --reason="Bounded council scope for this meeting." --authority="L2" --evidence=harness/profiles/erwin.yml --brief)
+assert_contains "$locked_decision" 'Harness Meeting Decision Lock Briefing' "meetings lock-decision --brief emits a human-readable decision lock briefing"
+assert_contains "$locked_decision" "Meeting: $meeting_id" "meetings lock-decision --brief names the target council"
+assert_contains "$locked_decision" 'Decision: decision-' "meetings lock-decision --brief names the locked decision"
+assert_contains "$locked_decision" 'Leader should keep the council bounded to: Do not widen brief scope beyond auth-related release notes.' "meetings lock-decision --brief preserves free-text scope while telling the leader how to preserve council scope"
 
 participant_a=$(run_in_repo bash scripts/harness-meetings.sh add-participant "$meeting_id" "$run_a" implementation-verifier)
 participant_b=$(run_in_repo bash scripts/harness-meetings.sh add-participant "$meeting_id" "$run_b" ops-simulator)

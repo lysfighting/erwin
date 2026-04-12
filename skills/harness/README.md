@@ -15,6 +15,7 @@ If you want the full human-readable explanation first, read:
 - `bash scripts/harness-runs.sh get RUN_ID --brief`
 - `bash scripts/harness-signals.sh adjudicate --all --brief`
 - `bash scripts/harness-meetings.sh summary MEETING_ID --brief`
+- `bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to the concrete decision." --brief`
 - `bash scripts/harness-meetings.sh orchestrate MEETING_ID --brief`
 - `bash scripts/harness-maintenance.sh reconcile --brief`
 - `bash scripts/harness-maintenance.sh normalize --brief`
@@ -46,6 +47,7 @@ Use this when the model should act as the harness leader:
 - inspect signal repair as a human-readable leader object through `signals adjudicate SIGNAL_ID|--all --brief` before drilling into raw adjudication JSON
 - inspect one bounded teammate as a human-readable leader object through `teammates get TEAMMATE_RUN_ID --brief` before drilling into raw teammate JSON
 - inspect one active or closed council as a human-readable leader object through `meetings summary MEETING_ID --brief` before drilling into raw meeting JSON
+- lock council decision scope as a human-readable leader action through `meetings lock-decision MEETING_ID TEXT --brief` before drilling into raw meeting JSON
 - advance or refresh council orchestration as a human-readable leader object through `meetings orchestrate MEETING_ID --brief` before drilling into raw orchestration JSON
 - inspect same-claim council authority as a human-readable leader object through `meetings authority-audit MEETING_ID --brief` before drilling into raw council-audit JSON
 - inspect runtime repair as a human-readable leader object through `maintenance reconcile --brief` before drilling into raw reconciliation JSON

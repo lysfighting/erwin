@@ -122,6 +122,29 @@ func parseOutputMode(command string, args []string) (outputMode, []string, error
 	return mode, remaining, nil
 }
 
+func parseOutputModeFlagsOnly(command string, args []string) (outputMode, []string, error) {
+	mode := outputModeJSON
+	remaining := []string{}
+	for _, arg := range args {
+		switch arg {
+		case "--brief", "--text":
+			mode = outputModeText
+		case "--json":
+			mode = outputModeJSON
+		case "--format=json":
+			mode = outputModeJSON
+		case "--format=text", "--format=brief":
+			mode = outputModeText
+		default:
+			if strings.HasPrefix(arg, "--format=") {
+				return "", nil, fmt.Errorf("%s output format must be one of: json, text", command)
+			}
+			remaining = append(remaining, arg)
+		}
+	}
+	return mode, remaining, nil
+}
+
 func printText(text string) error {
 	if !strings.HasSuffix(text, "\n") {
 		text += "\n"
@@ -17854,6 +17877,101 @@ func renderMeetingAuthorityAuditBrief(meeting, audit, summary map[string]any) st
 	return strings.Join(lines, "\n")
 }
 
+func meetingDecisionLockTarget(meeting, lockedDecision map[string]any) string {
+	parts := []string{}
+	if bundleID := strings.TrimSpace(stringValue(lockedDecision["bundle_id"])); bundleID != "" {
+		parts = append(parts, "bundle="+bundleID)
+	}
+	if governingMissionID := strings.TrimSpace(stringValue(lockedDecision["governing_mission_id"])); governingMissionID != "" {
+		parts = append(parts, "governing_mission="+governingMissionID)
+	}
+	if len(parts) > 0 {
+		return strings.Join(parts, ", ")
+	}
+	return meetingBriefTargetLabel(meeting)
+}
+
+func meetingDecisionLockWhy(lockedDecision map[string]any) string {
+	return firstNonBlank(
+		strings.TrimSpace(stringValue(lockedDecision["reason"])),
+		"No explicit reason was recorded; the locked text itself is the bounded council scope.",
+	)
+}
+
+func meetingDecisionLockNext(meeting, summary map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "MEETING_ID")
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	if len(governanceGaps) > 0 {
+		return fmt.Sprintf("Repair council governance gaps (%s), then run `meetings orchestrate %s --brief`.", strings.Join(governanceGaps, "; "), meetingID)
+	}
+	if len(toList(meeting["role_specs"])) == 0 {
+		return fmt.Sprintf("Add bounded council role specs, then add participants and run `meetings orchestrate %s --brief`.", meetingID)
+	}
+	if len(toList(meeting["participants"])) == 0 {
+		return fmt.Sprintf("Add bounded council participants, then run `meetings orchestrate %s --brief`.", meetingID)
+	}
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	if phase == "setup" {
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` to move the locked council into independent review when prerequisites are present.", meetingID)
+	}
+	return firstNonBlank(
+		meetingNextRequirement(meeting),
+		strings.TrimSpace(stringValue(summary["next_action"])),
+		fmt.Sprintf("Continue council work through `meetings orchestrate %s --brief`.", meetingID),
+	)
+}
+
+func renderMeetingDecisionLockBrief(meeting, lockedDecision map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	decisionID := firstNonBlank(strings.TrimSpace(stringValue(lockedDecision["decision_id"])), "unknown")
+	decisionSummary := firstNonBlank(strings.TrimSpace(stringValue(lockedDecision["summary"])), "No locked decision text recorded.")
+	authorityLevel := firstNonBlank(strings.TrimSpace(stringValue(lockedDecision["authority_level"])), "L2")
+	evidenceRefs := anyListToStrings(toList(lockedDecision["evidence_refs"]))
+	lockedCount := len(toList(meeting["locked_decisions"]))
+	lines := []string{
+		"Harness Meeting Decision Lock Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Decision: %s", decisionID),
+		fmt.Sprintf("Council: target=%s, mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", meetingDecisionLockTarget(meeting, lockedDecision), missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf("Scope: authority=%s, evidence=%s, locked_decisions=%d.", authorityLevel, countLabel(len(evidenceRefs), "reference", "references"), lockedCount),
+		"",
+		"Current:",
+		fmt.Sprintf("- Meeting %s now has locked decision %s: %s", meetingID, decisionID, decisionSummary),
+		"",
+		"Why:",
+		"- " + meetingDecisionLockWhy(lockedDecision),
+		"",
+		"Next:",
+		"- " + meetingDecisionLockNext(meeting, summary),
+		"",
+		"Leader:",
+		"- Leader should keep the council bounded to: " + decisionSummary,
+		"",
+		"Teammate:",
+		"- Teammates should provide evidence and positions only inside the locked decision scope; if their assignment would widen it, escalate before proceeding.",
+		"",
+		"Council:",
+		"- Yes. This meeting is now the governed council surface for the locked decision; advance it only through the configured decision protocol.",
+		"",
+		"Evidence:",
+	}
+	if len(evidenceRefs) == 0 {
+		lines = append(lines, "- No evidence references were attached to this lock.")
+	} else {
+		for _, ref := range evidenceRefs {
+			lines = append(lines, "- "+ref)
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
 func cmdMeetingsRemainder(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
@@ -18325,17 +18443,21 @@ func cmdMeetingsRemainder(args []string) error {
 			return printJSON(meeting)
 		})
 	case "lock-decision":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("meetings lock-decision", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("meetings lock-decision requires MEETING_ID TEXT")
 		}
-		meetingID := args[1]
+		meetingID := remaining[0]
 		textTokens := []string{}
 		reason := ""
 		authorityLevel := "L2"
 		evidenceRefs := []string{}
 		governingMissionID := ""
 		bundleID := ""
-		for _, arg := range args[2:] {
+		for _, arg := range remaining[1:] {
 			switch {
 			case strings.HasPrefix(arg, "--reason="):
 				reason = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--reason=")), reason)
@@ -18379,6 +18501,9 @@ func cmdMeetingsRemainder(args []string) error {
 			meeting["locked_decisions"] = locked
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderMeetingDecisionLockBrief(meeting, lockedDecision))
 			}
 			return printJSON(meeting)
 		})
