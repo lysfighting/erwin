@@ -11,7 +11,7 @@
 
 ## At A Glance
 
-- `14` durable notes are currently indexed across `3` recurring streams.
+- `16` durable notes are currently indexed across `3` recurring streams.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -26,21 +26,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar — 2026-04-10
+### AI Agent Daily Radar - 2026-04-13
 
-- Metadata: `Window: 2026-04-03 to 2026-04-10`
-- **Anthropic is formalizing trustworthy agents as a full-stack governance problem.** In [Trustworthy agents in practice](https://www.anthropic.com/research/trustworthy-agents) published on **April 9, 2026**, Anthropic says agent safety has to cover the model, harness, tools, and surrounding environment, and points to plan mode, subagents, permission boundaries, benchmarks, monitoring, and open standards such as MCP. The durable takeaway is that agent runtime design is now an explicit governance surface, not just prompt engineering.
-- **OpenAI is saying enterprise buyers are moving from copilots to agent operating layers.** In [The next phase of enterprise AI](https://openai.com/index/next-phase-of-enterprise-ai/) published on **April 8, 2026**, OpenAI says enterprise now makes up more than 40% of revenue, Codex has reached **3 million weekly active users**, and customers want governed agents that span company systems and data. The key signal is that agent deployment is being framed as company-wide infrastructure rather than an isolated feature.
-- **Anthropic is packaging frontier coding agents as cybersecurity infrastructure.** In [Project Glasswing](https://www.anthropic.com/glasswing) published on **April 7, 2026**, Anthropic launched a joint initiative around Mythos Preview for defensive security and said the model has already found thousands of zero-day vulnerabilities. High-end coding agents are being sold and governed as security operations tooling, not only as developer productivity.
+- Metadata: `Window: 2026-04-06 to 2026-04-13`
+- **Anthropic launched Claude Managed Agents as a hosted agent harness.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) list **April 8, 2026** as the public beta launch date, and the [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) defines agents, environments, sessions, and events as first-class API concepts. The important shift is that Anthropic is no longer only documenting tool calls; it is offering managed containers, SSE event streams, persisted sessions, built-in tools, MCP, skills, sandboxing, compaction, and prompt caching as a full autonomous-agent runtime surface.
+- **Anthropic launched the advisor tool for executor/advisor model splits.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) date the public beta to **April 9, 2026**, and the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) frame it as a way for faster executor models to consult a higher-intelligence advisor model mid-generation. The durable pattern is explicit runtime decomposition: most tokens come from a cheaper executor, while strategic intervention is isolated, metered, cached, and visible in usage iterations.
+- **Anthropic added `ant`, a CLI that makes Claude API resources scriptable.** The [April 8, 2026](https://platform.claude.com/docs/en/release-notes/overview) release note pairs the CLI with Managed Agents, and the [CLI docs](https://platform.claude.com/docs/en/api/sdks/cli) show beta agent/session/environment resources exposed as command namespaces with YAML/JSON input, transforms, pagination, and native Claude Code integration. This matters because agent infrastructure is becoming inspectable and automatable from the terminal, not only from SDK code.
 
 ## Trending Snapshot
 
-### GitHub Trending — 2026-04-10
+### GitHub Trending - 2026-04-13
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-10. This run used the default global trending page with no extra filters; the page rendered 10 repositories.`
-- [landing-ai/vision-agent](https://github.com/landing-ai/vision-agent) — agent framework for computer vision workflows. Python. 952 stars today.
-- [mem0ai/mem0](https://github.com/mem0ai/mem0) — memory layer for AI applications and agents. Python. 816 stars today.
-- [enso-labs/enso](https://github.com/enso-labs/enso) — self-improving software engineering agent. Python. 401 stars today.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-13. This run used the default global trending page with no extra filters; the page rendered 14 repositories.`
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) - adaptive AI agent project. Python. 7,454 stars today.
+- [microsoft/markitdown](https://github.com/microsoft/markitdown) - converts files and office documents to Markdown. Python. 2,513 stars today.
+- [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) - CLAUDE.md guidance distilled from LLM coding pitfalls. 2,369 stars today.
 
 ## Durable Interpretation
 
@@ -56,6 +56,7 @@ The durable theme this week is the productization of the agent control plane.
 
 ### Daily Radar
 
+- [2026-04-13](../radar/daily/2026-04-13.md)
 - [2026-04-10](../radar/daily/2026-04-10.md)
 - [2026-04-09](../radar/daily/2026-04-09.md)
 - [2026-04-08](../radar/daily/2026-04-08.md)
@@ -70,9 +71,9 @@ The durable theme this week is the productization of the agent control plane.
 
 ### GitHub Trending
 
+- [2026-04-13](../radar/trending/2026-04-13.md)
 - [2026-04-10](../radar/trending/2026-04-10.md)
 - [2026-04-09](../radar/trending/2026-04-09.md)
 - [2026-04-08](../radar/trending/2026-04-08.md)
 - [2026-04-07](../radar/trending/2026-04-07.md)
 - [2026-04-03](../radar/trending/2026-04-03.md)
-- [2026-04-02](../radar/trending/2026-04-02.md)
