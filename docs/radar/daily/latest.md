@@ -1,49 +1,52 @@
-# AI Agent Daily Radar — 2026-04-10
+# AI Agent Daily Radar - 2026-04-13
 
-Window: 2026-04-03 to 2026-04-10
+Window: 2026-04-06 to 2026-04-13
 
 ## New Signals
 
-- **Anthropic is formalizing trustworthy agents as a full-stack governance problem.** In [Trustworthy agents in practice](https://www.anthropic.com/research/trustworthy-agents) published on **April 9, 2026**, Anthropic says agent safety has to cover the model, harness, tools, and surrounding environment, and points to plan mode, subagents, permission boundaries, benchmarks, monitoring, and open standards such as MCP. The durable takeaway is that agent runtime design is now an explicit governance surface, not just prompt engineering.
-- **OpenAI is saying enterprise buyers are moving from copilots to agent operating layers.** In [The next phase of enterprise AI](https://openai.com/index/next-phase-of-enterprise-ai/) published on **April 8, 2026**, OpenAI says enterprise now makes up more than 40% of revenue, Codex has reached **3 million weekly active users**, and customers want governed agents that span company systems and data. The key signal is that agent deployment is being framed as company-wide infrastructure rather than an isolated feature.
-- **Anthropic is packaging frontier coding agents as cybersecurity infrastructure.** In [Project Glasswing](https://www.anthropic.com/glasswing) published on **April 7, 2026**, Anthropic launched a joint initiative around Mythos Preview for defensive security and said the model has already found thousands of zero-day vulnerabilities. High-end coding agents are being sold and governed as security operations tooling, not only as developer productivity.
-- **Anthropic is now publishing concrete delegation heuristics for coding-agent work.** In [How and when to use subagents in Claude Code](https://claude.com/blog/how-and-when-to-use-subagents-in-claude-code) published on **April 7, 2026**, Anthropic recommends subagents for research-heavy tasks, independent parallel subtasks, and fresh-slate review, while warning against same-file conflicts and tightly sequential work. This moves the discussion from vague "multi-agent" talk to concrete critical-path guidance.
-- **DeepSeek logged another user-facing reliability incident on its official status surface.** On [DeepSeek Service Status](https://status.deepseek.com/), the **April 3, 2026** incident shows a web/APP service abnormal event from **16:36 CST** to **16:50 CST**. It is not a product launch, but it is a first-party reminder that provider reliability still constrains real agent usage.
+- **Anthropic launched Claude Managed Agents as a hosted agent harness.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) list **April 8, 2026** as the public beta launch date, and the [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) defines agents, environments, sessions, and events as first-class API concepts. The important shift is that Anthropic is no longer only documenting tool calls; it is offering managed containers, SSE event streams, persisted sessions, built-in tools, MCP, skills, sandboxing, compaction, and prompt caching as a full autonomous-agent runtime surface.
+- **Anthropic launched the advisor tool for executor/advisor model splits.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) date the public beta to **April 9, 2026**, and the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) frame it as a way for faster executor models to consult a higher-intelligence advisor model mid-generation. The durable pattern is explicit runtime decomposition: most tokens come from a cheaper executor, while strategic intervention is isolated, metered, cached, and visible in usage iterations.
+- **Anthropic added `ant`, a CLI that makes Claude API resources scriptable.** The [April 8, 2026](https://platform.claude.com/docs/en/release-notes/overview) release note pairs the CLI with Managed Agents, and the [CLI docs](https://platform.claude.com/docs/en/api/sdks/cli) show beta agent/session/environment resources exposed as command namespaces with YAML/JSON input, transforms, pagination, and native Claude Code integration. This matters because agent infrastructure is becoming inspectable and automatable from the terminal, not only from SDK code.
+- **Claude Code's current changelog is converging on managed sessions, observability, and subagent correctness.** The official [Claude Code CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md) currently lists version **2.1.101** with fixes around remote-session environment creation, beta tracing controls for `OTEL_LOG_USER_PROMPTS`, `OTEL_LOG_TOOL_DETAILS`, and `OTEL_LOG_TOOL_CONTENT`, subagent MCP inheritance, isolated-worktree access, resume-chain recovery, and rate-limit/refusal diagnostics. No publish date is shown in the changelog entry, so treat this as a current-surface signal rather than a dated launch.
+- **OpenAI continued to frame enterprise AI as a governed agent operating layer.** In [The next phase of enterprise AI](https://openai.com/index/next-phase-of-enterprise-ai/), published **April 8, 2026**, OpenAI says Codex reached 3 million weekly active users and describes Frontier, Stateful Runtime Environment, and unified employee agent workflows as infrastructure for company-wide agents. This repeats the broader market pressure seen last run: buyers are asking for governed agents across tools, data, context, and permissions.
 
 ## GitHub Trending Snapshot
 
-Secondary ecosystem demand, not first-party field signal:
+Secondary ecosystem demand, not first-party field signal. Snapshot checked from [GitHub Trending, daily](https://github.com/trending?since=daily) on **2026-04-13**.
 
-- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) is surfacing with **6,788 stars today** because it packages an explicit long-lived agent runtime. That makes it a strong proxy for open-market appetite around agent operating layers.
-- [obra/superpowers](https://github.com/obra/superpowers) is surfacing with **2,318 stars today** because it offers an agentic skills framework and development methodology. That is a clean demand signal for reusable skill and operating-model layers.
-- [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) is surfacing with **1,371 stars today** because a single-file Claude behavior contract remains highly copyable. The board is rewarding lightweight instruction surfaces, not only heavy frameworks.
-- [coleam00/Archon](https://github.com/coleam00/Archon) is surfacing with **138 stars today** because it explicitly positions itself as an open-source harness builder for AI coding. It is directly harness-adjacent even if smaller than the board's largest entries.
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) surfaced with **7,454 stars today** because it packages an explicit long-lived agent runtime. This remains the clearest open-market signal for agent operating layers.
+- [multica-ai/multica](https://github.com/multica-ai/multica) surfaced with **1,609 stars today** as an open-source managed agents platform for assigning tasks, tracking progress, and compounding skills. It directly mirrors Anthropic's managed-agent framing from the open-source side.
+- [coleam00/Archon](https://github.com/coleam00/Archon) surfaced with **612 stars today** as an open-source harness builder for AI coding. It remains directly harness-adjacent because it emphasizes deterministic and repeatable coding-agent execution.
+- [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) surfaced with **2,369 stars today** because a single `CLAUDE.md` behavior contract remains highly copyable. The board is still rewarding lightweight agent instruction surfaces.
+- [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem) surfaced with **753 stars today** because it captures Claude Code session context and reinjects compressed memory. That is a demand signal for durable agent memory and session continuity.
+- [snarktank/ralph](https://github.com/snarktank/ralph) surfaced with **463 stars today** as an autonomous loop that runs until PRD items complete. It stress-tests the same long-running execution and completion-accounting concerns that managed agents expose.
 
 ## Harness-Relevant Signals
 
-- Anthropic's **April 9** governance paper is the strongest signal in this window. It validates Harness as a real layer, but it also pressures that layer to stay legible: explicit permissions, bounded delegation, traceable tool use, and environment-aware safeguards.
-- Anthropic's **April 7** subagents guide and OpenAI's **April 8** enterprise note converge on the same operating model: keep the main control plane thin, delegate bounded work, and treat parallel agent execution as a managed runtime surface instead of ad hoc chat usage.
-- DeepSeek's **April 3** incident keeps the reliability constraint visible. Capability narratives are accelerating faster than provider durability, so runtime policy and failure handling still matter.
-- GitHub Trending stress-tests the same pattern from below: the repos attracting attention are skills, harnesses, and agent runtimes, not just raw model wrappers.
+- Anthropic's Managed Agents launch is the strongest signal in this window. It validates the harness as a product boundary: agent definition, execution environment, session lifecycle, event stream, tool set, and state are being bundled as one runtime contract.
+- The advisor tool is a clean control-plane pattern, not just a model feature. It separates execution from strategic review while preserving usage accounting, streaming semantics, error handling, and cache behavior.
+- The `ant` CLI matters because it makes agent runtime state scriptable. If managed agents become normal infrastructure, terminal-native inspection and versioned YAML/JSON request bodies become part of how teams operate them.
+- Claude Code changelog items around OTel controls, resume recovery, subagent inheritance, isolated worktrees, and clearer rate/refusal diagnostics map directly to the pain points of long-running coding-agent systems: traceability, continuity, permissions, and recoverability.
+- OpenAI and Anthropic now converge from opposite directions: OpenAI is describing enterprise-wide governed agent infrastructure, while Anthropic is exposing concrete managed-agent and advisor-tool APIs.
 
 ## Candidate Proposals
 
-- `source_type`: `first_party_governance_guidance`
-  `problem_pattern`: `agent_safety_and_reliability_require_controls_across_model_harness_tools_and_environment`
-  `why_it_matters_for_harness`: Anthropic is now explicitly naming the harness as part of the trustworthy-agent boundary, which means Harness should keep that boundary inspectable and evaluable rather than implicit.
-  `recommended_disposition`: `encode-as-eval`
-- `source_type`: `first_party_enterprise_adoption`
-  `problem_pattern`: `agent_execution_is_becoming_a_company_wide_operating_layer_with_permissions_and_context`
-  `why_it_matters_for_harness`: OpenAI is signaling that enterprises increasingly want governed agents that span tools, data, and stateful context, which is a durable market pressure on orchestration surfaces.
+- `source_type`: `first_party_managed_agent_runtime`
+  `problem_pattern`: `agent_runtime_boundaries_are_becoming_product_contracts`
+  `why_it_matters_for_harness`: Managed Agents makes agent, environment, session, event, tool, MCP, skill, and sandbox boundaries explicit enough to compare against Harness' own runtime vocabulary.
   `recommended_disposition`: `watch`
-- `source_type`: `first_party_security_initiative`
-  `problem_pattern`: `frontier_coding_agents_are_moving_into_defensive_security_workflows`
-  `why_it_matters_for_harness`: Glasswing suggests the reliability bar for coding agents is getting pulled upward by security-critical use cases, even before general-purpose teams adopt the same rigor.
+- `source_type`: `first_party_agent_control_pattern`
+  `problem_pattern`: `long_horizon_agent_work_needs_separate_execution_and_strategic_review_loops`
+  `why_it_matters_for_harness`: The advisor tool is an official example of bounded supervisory intervention with metering, caching, and failure semantics, which is useful evaluation pressure for delegation and review models.
+  `recommended_disposition`: `encode-as-eval`
+- `source_type`: `secondary_ecosystem_trending`
+  `problem_pattern`: `open_source_agent_projects_are_competing_on_managed_sessions_skills_memory_and_repeatability`
+  `why_it_matters_for_harness`: GitHub Trending is surfacing managed-agent, harness, skills, memory, and autonomous-loop repositories at the same time first-party vendors harden similar surfaces.
   `recommended_disposition`: `prototype`
 
 ## Watch Next
 
-- Anthropic: watch for recordings or concrete collateral from [Anthropic at Google Cloud Next 2026](https://www.anthropic.com/events/anthropic-at-google-cloud-next-2026), especially the sessions on multi-agent architecture, context-centric decomposition, verification subagents, and eval design scheduled for **April 22, 2026**.
-- Google: official Google agent surfaces were comparatively quiet in this **2026-04-03 to 2026-04-10** window. Keep watching the [Google Developers Blog AI feed](https://developers.googleblog.com/search/?technology_categories=AI) and [Google AI Dev](https://ai.google.dev/) for the next dated ADK or Gemini runtime post.
-- Moonshot, MiniMax, and Qwen: no equally strong clearly dated public technical post was visible on the public surfaces checked in this window. Keep watching official blogs, release notes, and docs for agent, runtime, and tooling material.
-- DeepSeek: keep monitoring [status.deepseek.com](https://status.deepseek.com/) and the [DeepSeek API news feed](https://api-docs.deepseek.com/news/news250325) for whether operational churn gives way to clearer runtime or tool-use guidance.
+- Anthropic: keep checking [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents docs](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), and the [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md). The next meaningful items to watch are Managed Agents endpoint stability, session-event semantics, Claude Code release dates, and whether advisor-tool usage becomes measurable in ordinary observability pipelines.
+- Google: no strong new official Google AI/agent runtime item dated **2026-04-06 to 2026-04-13** was found in the checked official developer surfaces. Continue watching the [Google Developers Blog AI feed](https://developers.googleblog.com/search/?technology_categories=AI) and [Google AI for Developers](https://ai.google.dev/).
+- Moonshot, MiniMax, and Qwen: no strong clearly dated official technical agent/runtime update was found in-window on the checked public surfaces. Continue watching official release notes, blogs, and model/API docs rather than relying on aggregator posts.
+- DeepSeek: [DeepSeek Service Status](https://status.deepseek.com/) showed no incidents from **April 6 through April 13, 2026** during this run; keep monitoring for reliability movement alongside the [DeepSeek API news feed](https://api-docs.deepseek.com/news/news250325).
