@@ -7,14 +7,22 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-12
-- **Last Session**: 2026-04-12 (Selective knowledge-refactor artifacts absorbed into the main knowledge system)
+- **Last Updated**: 2026-04-14
+- **Last Session**: 2026-04-14 (cwork skill harvested into the repo without merging stale branch history)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-14** — cwork skill harvested into repo without merging stale branch history
+
+- **cwork is now a repo-owned Codex skill**: `skills/cwork/` was copied from the historical `codex/cwork-skill` branch into the current repo line, matching the already-installed `~/.codex/skills/cwork` content
+- **Old branch was not merged wholesale**: only the `skills/cwork/` directory was harvested, avoiding the stale branch's large unrelated deletions across docs, knowledge, radar, runtime, and old session files
+- **Skill index and installer examples now mention cwork**: `README.md`, `AGENTS.md`, and `skills/README.md` list `/cwork` next to `/harness` and `/knowledge`, and `install-codex.sh` now documents `./install-codex.sh cwork`
+- **Offline claim smoke exposed and fixed a branch override bug**: `cwork-claim.sh --branch` now keeps the contract branch and actual Git branch aligned during claim setup
+- **No new session-log file was created**: this update is recorded in `CURRENT.md` and `CHANGELOG.md` to avoid adding more low-value session clutter
 
 **Session 2026-04-12** — Selective knowledge-refactor artifacts absorbed into the main knowledge system
 

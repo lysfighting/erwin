@@ -7,6 +7,7 @@
 # Usage:
 #   ./install-codex.sh
 #   ./install-codex.sh harness
+#   ./install-codex.sh cwork
 #   ./install-codex.sh --copy harness
 #   ./install-codex.sh --copy --target /tmp/codex-skills harness
 
@@ -43,6 +44,7 @@ while [[ $# -gt 0 ]]; do
       echo "Usage:"
       echo "  ./install-codex.sh                    Install all Codex-native skills"
       echo "  ./install-codex.sh harness            Install one skill"
+      echo "  ./install-codex.sh cwork              Install the Codex work-loop skill"
       echo "  ./install-codex.sh --copy harness     Copy instead of symlink"
       echo "  ./install-codex.sh -t DIR harness     Install to custom directory"
       exit 0
