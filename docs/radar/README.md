@@ -72,8 +72,8 @@ See [themes.md](themes.md) for the current taxonomy and keywords.
 - [../index.html](../index.html) — visual reading surface for latest briefings and archive browsing
 - [sources.md](sources.md) — publisher inventory
 - [themes.md](themes.md) — active themes and search language
-- [daily/](daily/) — mirrored daily radar notes in the main working tree
-- [trending/](trending/) — mirrored daily GitHub Trending summaries in the main working tree
+- [daily/README.md](daily/README.md) — daily radar stream rules and archive entrypoint
+- [trending/README.md](trending/README.md) — GitHub Trending stream rules and archive entrypoint
 - [papers/](papers/) — selective paper-watch archive for slower research and benchmark signal
 - [weekly/](weekly/) — durable weekly synthesis archive
 - [weekly/README.md](weekly/README.md) — synthesis review gates and required durable sections

@@ -28,6 +28,13 @@
 - **Meeting position briefings stay on the same Go control plane**: the new layer is derived from the existing `positions` meeting state plus live coverage/wave/debate calculations rather than inventing a separate council-progress model; default `meetings add-position` JSON remains unchanged for exact inspection and tooling
 - **Human-facing verification now covers source and packaged-binary council-position paths**: teammate smoke now proves `meetings add-position --brief` explains remaining independent-review coverage for a live council, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
+**Session 2026-04-14** — Daily and trending radar stream entrypoints added
+
+- **Daily radar now has a directory-level contract**: `docs/radar/daily/README.md` documents dated files, `latest.md`, 7-day windows, first-party source priority, secondary ecosystem evidence, and knowledge-surface refresh expectations
+- **GitHub Trending now has a directory-level contract**: `docs/radar/trending/README.md` documents default global Trending capture, direct repo links, capture dates, board-shape preservation, and Tier 2 interpretation boundaries
+- **Radar navigation is less implicit**: `docs/README.md` and `docs/radar/README.md` now link directly to both stream entrypoints instead of leaving daily/trending directories as unexplained archives
+- **No new session-log file was created**: this update is recorded in `CURRENT.md` and `CHANGELOG.md` to keep project history useful without adding low-value session clutter
+
 **Session 2026-04-14** — cwork skill harvested into repo without merging stale branch history
 
 - **cwork is now a repo-owned Codex skill**: `skills/cwork/` was copied from the historical `codex/cwork-skill` branch into the current repo line, matching the already-installed `~/.codex/skills/cwork` content
