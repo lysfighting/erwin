@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Radar
+- **Daily and trending stream entrypoints**: added `docs/radar/daily/README.md` and `docs/radar/trending/README.md` so the two daily radar streams now carry their own file naming, `latest.md`, source-priority, and knowledge-surface refresh rules.
+- **Radar stream navigation tightened**: updated `docs/README.md` and `docs/radar/README.md` to point directly at the daily and GitHub Trending stream entrypoints instead of leaving those directories as unexplained archives.
+
 ### Added — Skills
 - **Codex-native cwork skill harvested into repo**: added `skills/cwork/` as the durable repo copy of the already-installed Codex work-loop skill, preserving the useful GitHub issue -> contract -> PR protocol from historical teamwork without merging the stale `codex/cwork-skill` branch wholesale.
 - **cwork install and index surfaces**: updated `README.md`, `AGENTS.md`, `skills/README.md`, and `install-codex.sh` examples so `/cwork` appears alongside `/harness` and `/knowledge` as a Codex-native `SKILL.md` surface installable through `./install-codex.sh cwork`.

@@ -8,13 +8,20 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-14
-- **Last Session**: 2026-04-14 (cwork skill harvested into the repo without merging stale branch history)
+- **Last Session**: 2026-04-14 (daily and trending radar stream entrypoints added)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-14** — Daily and trending radar stream entrypoints added
+
+- **Daily radar now has a directory-level contract**: `docs/radar/daily/README.md` documents dated files, `latest.md`, 7-day windows, first-party source priority, secondary ecosystem evidence, and knowledge-surface refresh expectations
+- **GitHub Trending now has a directory-level contract**: `docs/radar/trending/README.md` documents default global Trending capture, direct repo links, capture dates, board-shape preservation, and Tier 2 interpretation boundaries
+- **Radar navigation is less implicit**: `docs/README.md` and `docs/radar/README.md` now link directly to both stream entrypoints instead of leaving daily/trending directories as unexplained archives
+- **No new session-log file was created**: this update is recorded in `CURRENT.md` and `CHANGELOG.md` to keep project history useful without adding low-value session clutter
 
 **Session 2026-04-14** — cwork skill harvested into repo without merging stale branch history
 
