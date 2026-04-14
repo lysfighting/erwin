@@ -48,10 +48,11 @@ erwin/
 │
 ├── skills/                 ← Reusable skills
 │   ├── harness/            ← Active
+│   ├── knowledge/          ← Active
+│   ├── cwork/              ← Active
 │   ├── arch-review/        ← Active
 │   ├── visual-test/        ← Active
 │   ├── session-record/     ← Active
-│   ├── wing/               ← Transitional
 │   └── teamwork/           ← Legacy
 │
 ├── _project/
@@ -105,6 +106,7 @@ erwin/
 | Harness docs | `docs/harness-documentation-map.md` |
 | Harness package boundary | `harness/`, `scripts/`, `cmd/`, `internal/` |
 | Skills | `skills/` |
+| Codex work loop skill | `skills/cwork/SKILL.md` |
 | Historical boundary | `archive/README.md` |
 | Source material | `reference/drive-skill/commands/drive.md` |
 

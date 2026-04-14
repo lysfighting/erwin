@@ -22,6 +22,14 @@
 - **Meeting position briefings stay on the same Go control plane**: the new layer is derived from the existing `positions` meeting state plus live coverage/wave/debate calculations rather than inventing a separate council-progress model; default `meetings add-position` JSON remains unchanged for exact inspection and tooling
 - **Human-facing verification now covers source and packaged-binary council-position paths**: teammate smoke now proves `meetings add-position --brief` explains remaining independent-review coverage for a live council, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
+**Session 2026-04-14** — cwork skill harvested into repo without merging stale branch history
+
+- **cwork is now a repo-owned Codex skill**: `skills/cwork/` was copied from the historical `codex/cwork-skill` branch into the current repo line, matching the already-installed `~/.codex/skills/cwork` content
+- **Old branch was not merged wholesale**: only the `skills/cwork/` directory was harvested, avoiding the stale branch's large unrelated deletions across docs, knowledge, radar, runtime, and old session files
+- **Skill index and installer examples now mention cwork**: `README.md`, `AGENTS.md`, and `skills/README.md` list `/cwork` next to `/harness` and `/knowledge`, and `install-codex.sh` now documents `./install-codex.sh cwork`
+- **Offline claim smoke exposed and fixed a branch override bug**: `cwork-claim.sh --branch` now keeps the contract branch and actual Git branch aligned during claim setup
+- **No new session-log file was created**: this update is recorded in `CURRENT.md` and `CHANGELOG.md` to avoid adding more low-value session clutter
+
 **Session 2026-04-13-B** — Extended the human-facing leader layer into `meetings lock-decision --brief`
 
 - **Council scope locking now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh lock-decision MEETING_ID TEXT --brief` now turns the same locked-decision mutation into a readable briefing that tells a human which council decision was bounded, why that scope is authoritative, and what leader/teammate/council action comes next
@@ -135,6 +143,7 @@
 - **Readable overview is now part of the canonical doc system**: `docs/harness-explainer.md` now explains what `Harness` is, what problem it solves, how it is designed, how the control plane works, and how to use it, instead of forcing readers to infer those answers from architecture and runtime docs alone
 - **The explainer is genuinely visual and durable**: the new doc includes Mermaid diagrams plus simplified ASCII fallbacks for the identity/layer model, operating model, and usage flow, so it remains readable both in rich Markdown renderers and plain text contexts
 - **Harness entrypoints now route people to the right place**: `README.md`, `docs/README.md`, `docs/harness-documentation-map.md`, `harness/README.md`, and `skills/harness/README.md` now all point to the explainer as the best first stop for humans who want to understand Harness before diving into the deeper canonical docs
+
 **Session 2026-04-12** — Selective knowledge-refactor artifacts absorbed into the main knowledge system
 
 - **Old knowledge-refactor work was harvested instead of merged wholesale**: useful feedback cases, active knowledge threads, paper-watch notes, and proposal review gates were copied into `main` without accepting the old branch's stale generated-surface model or deleting current daily/trending/latest files

@@ -47,6 +47,8 @@ Historical teamwork/process material still exists, but it no longer defines the 
 ### Skills
 
 - [skills/README.md](skills/README.md)
+- [skills/knowledge/](skills/knowledge)
+- [skills/cwork/](skills/cwork)
 - [skills/arch-review/](skills/arch-review)
 - [skills/visual-test/](skills/visual-test)
 - [skills/session-record/](skills/session-record)
