@@ -7,14 +7,20 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-13
-- **Last Session**: 2026-04-13-B (Extended the human-facing leader layer into `meetings lock-decision --brief`)
+- **Last Updated**: 2026-04-14
+- **Last Session**: 2026-04-14-A (Extended the human-facing leader layer into `meetings add-position --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-14-A** — Extended the human-facing leader layer into `meetings add-position --brief`
+
+- **Council position recording now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh add-position MEETING_ID RUN_ID PHASE STANCE TEXT --brief` now turns the same position-recording mutation into a readable briefing that tells a human which council claim/dimension was affected, who contributed it, whether more independent review or debate is still owed, and what leader/teammate/council action comes next
+- **Meeting position briefings stay on the same Go control plane**: the new layer is derived from the existing `positions` meeting state plus live coverage/wave/debate calculations rather than inventing a separate council-progress model; default `meetings add-position` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council-position paths**: teammate smoke now proves `meetings add-position --brief` explains remaining independent-review coverage for a live council, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-13-B** — Extended the human-facing leader layer into `meetings lock-decision --brief`
 

@@ -435,6 +435,8 @@ Work the meeting directly:
 bash scripts/harness-meetings.sh add-participant MEETING_ID TEAMMATE_RUN_ID architecture-challenger
 bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to the concrete decision." --reason="Avoid widening council scope." --authority=L2 --evidence=harness/profiles/erwin.yml
 bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to the concrete decision." --reason="Avoid widening council scope." --authority=L2 --evidence=harness/profiles/erwin.yml --brief
+bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID independent_review support "Bounded evidence summary." --claim=decision-claim --dimension=factual --evidence=docs/spec.md
+bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID independent_review support "Bounded evidence summary." --claim=decision-claim --dimension=factual --evidence=docs/spec.md --brief
 bash scripts/harness-meetings.sh orchestrate MEETING_ID
 bash scripts/harness-meetings.sh orchestrate MEETING_ID --brief
 bash scripts/harness-meetings.sh summary MEETING_ID
@@ -445,6 +447,7 @@ bash scripts/harness-meetings.sh authority-audit MEETING_ID
 
 Use `--brief` when a human wants the meeting phase, blocking reason, current council work packet, protocol-aware output state, and next leader/council action without reopening raw meeting JSON.
 Use `meetings lock-decision --brief` when the human has just bounded council scope and needs to know what was locked, why that is the current decision surface, and what leader/teammate/council action comes next.
+Use `meetings add-position --brief` when the human or teammate has just recorded a council position and needs to know what claim/phase it affected, whether more independent review or debate is still owed, and who should act next.
 Use `meetings orchestrate --brief` when the human has just asked the council chair to advance or refresh orchestration and needs to know what changed, why it advanced or stayed put, and which leader/council work packet is next.
 Use `meetings authority-audit --brief` when the question is narrower: whether same-claim findings inside the council already have a governed winner or still need explicit judgment.
 

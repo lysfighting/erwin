@@ -517,7 +517,11 @@ incident_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrat
 assert_json_field "$incident_orchestrate_a" '"new_phase": "independent_review"' "incident-command meeting advances into independent review"
 assert_json_field "$incident_orchestrate_a" '"next_requirement": "Collect 2 bounded incident assessment(s)' "incident-command meeting uses protocol-specific independent-review guidance"
 
-run_in_repo bash scripts/harness-meetings.sh add-position "$incident_meeting_id" "$run_a" independent_review support "We should roll back immediately to reduce release blast radius." --claim=incident-rollback --dimension=operational --authority=L2 --evidence=CHANGELOG.md >/dev/null
+incident_position_brief=$(run_in_repo bash scripts/harness-meetings.sh add-position "$incident_meeting_id" "$run_a" independent_review support "We should roll back immediately to reduce release blast radius." --claim=incident-rollback --dimension=operational --authority=L2 --evidence=CHANGELOG.md --brief)
+assert_contains "$incident_position_brief" 'Harness Meeting Position Briefing' "meetings add-position --brief emits a human-readable council position briefing"
+assert_contains "$incident_position_brief" "Meeting: $incident_meeting_id" "meetings add-position --brief names the target council"
+assert_contains "$incident_position_brief" 'claim=incident-rollback/operational' "meetings add-position --brief preserves the governed claim scope"
+assert_contains "$incident_position_brief" 'Collect 1 remaining independent-review position' "meetings add-position --brief explains remaining council coverage"
 run_in_repo bash scripts/harness-meetings.sh add-position "$incident_meeting_id" "$run_b" independent_review challenge "We can hold the release if the operator note lands first." --claim=incident-rollback --dimension=operational --authority=L2 --evidence=docs/release.md >/dev/null
 
 incident_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$incident_meeting_id")

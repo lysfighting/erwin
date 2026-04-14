@@ -17972,6 +17972,170 @@ func renderMeetingDecisionLockBrief(meeting, lockedDecision map[string]any) stri
 	return strings.Join(lines, "\n")
 }
 
+func meetingPositionClaimLabel(position map[string]any) string {
+	claimRef := firstNonBlank(strings.TrimSpace(stringValue(position["claim_ref"])), "unspecified-claim")
+	dimension := firstNonBlank(strings.TrimSpace(stringValue(position["dimension"])), "factual")
+	return fmt.Sprintf("%s/%s", claimRef, dimension)
+}
+
+func meetingPositionActorLabel(position map[string]any) string {
+	role := strings.TrimSpace(stringValue(position["role"]))
+	runID := strings.TrimSpace(stringValue(position["run_id"]))
+	ownerID := strings.TrimSpace(stringValue(position["owner_id"]))
+	switch {
+	case role != "" && runID != "":
+		return fmt.Sprintf("%s on %s", role, runID)
+	case runID != "":
+		return runID
+	case ownerID != "":
+		return ownerID
+	default:
+		return "unknown participant"
+	}
+}
+
+func meetingPositionResponseLabel(position map[string]any) string {
+	parts := []string{}
+	if respondsToRunID := strings.TrimSpace(stringValue(position["responds_to_run_id"])); respondsToRunID != "" {
+		parts = append(parts, "run="+respondsToRunID)
+	}
+	if respondsToRole := strings.TrimSpace(stringValue(position["responds_to_role"])); respondsToRole != "" {
+		parts = append(parts, "role="+respondsToRole)
+	}
+	if respondsToPositionID := strings.TrimSpace(stringValue(position["responds_to_position_id"])); respondsToPositionID != "" {
+		parts = append(parts, "position="+respondsToPositionID)
+	}
+	if len(parts) == 0 {
+		return "none"
+	}
+	return strings.Join(parts, ", ")
+}
+
+func meetingPositionWhy(position map[string]any) string {
+	phase := strings.TrimSpace(stringValue(position["phase"]))
+	stance := firstNonBlank(strings.TrimSpace(stringValue(position["stance"])), "position")
+	claim := meetingPositionClaimLabel(position)
+	switch phase {
+	case "independent_review":
+		return fmt.Sprintf("This records a bounded %s independent-review position on %s before debate or synthesis can be trusted.", stance, claim)
+	case "cross_examination":
+		if meetingPositionResponseLabel(position) != "none" {
+			return fmt.Sprintf("This records a linked %s cross-examination response on %s against %s.", stance, claim, meetingPositionResponseLabel(position))
+		}
+		return fmt.Sprintf("This records a %s cross-examination position on %s, but no explicit response target was attached.", stance, claim)
+	case "synthesis":
+		return fmt.Sprintf("This records a synthesis-phase %s position on %s for final council judgment.", stance, claim)
+	default:
+		return fmt.Sprintf("This records a %s position on %s.", stance, claim)
+	}
+}
+
+func meetingPositionNext(meeting, position, wavePlan, debatePlan map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "MEETING_ID")
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	if len(governanceGaps) > 0 {
+		return fmt.Sprintf("Repair council governance gaps (%s), then run `meetings orchestrate %s --brief`.", strings.Join(governanceGaps, "; "), meetingID)
+	}
+	switch strings.TrimSpace(stringValue(position["phase"])) {
+	case "independent_review":
+		if count := intValue(wavePlan["open_wave_action_count"]); count > 0 {
+			return fmt.Sprintf("Collect %s, then run `meetings orchestrate %s --brief`.", countLabel(count, "remaining independent-review position", "remaining independent-review positions"), meetingID)
+		}
+		if count := intValue(debatePlan["open_route_action_count"]); count > 0 {
+			return fmt.Sprintf("Run `meetings orchestrate %s --brief` to advance or refresh %s for the contested claim lane.", meetingID, countLabel(count, "cross-examination route", "cross-examination routes"))
+		}
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` to advance the council from recorded independent review toward synthesis or output.", meetingID)
+	case "cross_examination":
+		if meetingPositionResponseLabel(position) == "none" {
+			return "Record an explicit `--responds-to-run`, `--responds-to-role`, or `--responds-to-position` if this cross-examination is meant to satisfy a routed debate obligation."
+		}
+		if count := intValue(debatePlan["open_round_action_count"]); count > 0 {
+			return fmt.Sprintf("Collect %s, then run `meetings orchestrate %s --brief`.", countLabel(count, "remaining follow-up debate response", "remaining follow-up debate responses"), meetingID)
+		}
+		if count := intValue(debatePlan["open_route_action_count"]); count > 0 {
+			return fmt.Sprintf("Record %s, then run `meetings orchestrate %s --brief`.", countLabel(count, "remaining cross-examination route response", "remaining cross-examination route responses"), meetingID)
+		}
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` to refresh debate state and move toward synthesis when the lane is covered.", meetingID)
+	case "synthesis":
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` to refresh synthesis/output readiness after this synthesis position.", meetingID)
+	default:
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` to refresh council state after this position.", meetingID)
+	}
+}
+
+func meetingPositionCouncilAction(position, wavePlan, debatePlan map[string]any) string {
+	switch {
+	case intValue(wavePlan["open_wave_action_count"]) > 0:
+		return fmt.Sprintf("%s still owed before the council should move out of independent review.", countLabel(intValue(wavePlan["open_wave_action_count"]), "independent-review position is", "independent-review positions are"))
+	case intValue(debatePlan["open_route_action_count"]) > 0:
+		return fmt.Sprintf("%s still open before synthesis should be trusted.", countLabel(intValue(debatePlan["open_route_action_count"]), "cross-examination route is", "cross-examination routes are"))
+	case intValue(debatePlan["open_round_action_count"]) > 0:
+		return fmt.Sprintf("%s still open before synthesis should be trusted.", countLabel(intValue(debatePlan["open_round_action_count"]), "follow-up debate round is", "follow-up debate rounds are"))
+	case strings.TrimSpace(stringValue(position["phase"])) == "synthesis":
+		return "Council should review whether this synthesis position closes the governed claim or leaves follow-up work."
+	default:
+		return "Council position coverage is recorded; use orchestration to decide whether to advance, debate, synthesize, or output."
+	}
+}
+
+func renderMeetingPositionBrief(meeting, position map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	coverageAudit, _ := toMap(meetingCoverageAudit(meeting))
+	wavePlan, _ := toMap(meetingWavePlan(meeting, coverageAudit))
+	debatePlan, _ := toMap(meetingDebatePlan(meeting))
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	positionID := firstNonBlank(strings.TrimSpace(stringValue(position["position_id"])), "unknown")
+	evidenceRefs := anyListToStrings(toList(position["evidence_refs"]))
+	lines := []string{
+		"Harness Meeting Position Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Position: %s", positionID),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf(
+			"Position Scope: actor=%s, stance=%s, phase=%s, claim=%s, authority=%s, evidence=%s.",
+			meetingPositionActorLabel(position),
+			firstNonBlank(strings.TrimSpace(stringValue(position["stance"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(position["phase"])), "unknown"),
+			meetingPositionClaimLabel(position),
+			firstNonBlank(strings.TrimSpace(stringValue(position["authority_level"])), "L2"),
+			countLabel(len(evidenceRefs), "reference", "references"),
+		),
+		"",
+		"Current:",
+		fmt.Sprintf("- Meeting %s now includes position %s from %s: %s", meetingID, positionID, meetingPositionActorLabel(position), firstNonBlank(strings.TrimSpace(stringValue(position["summary"])), "No position summary recorded.")),
+		"",
+		"Why:",
+		"- " + meetingPositionWhy(position),
+		"",
+		"Next:",
+		"- " + meetingPositionNext(meeting, position, wavePlan, debatePlan),
+		"",
+		"Leader:",
+		fmt.Sprintf("- Leader should keep this position inside %s and use `meetings orchestrate %s --brief` before trusting phase advancement.", meetingPositionClaimLabel(position), meetingID),
+		"",
+		"Teammate:",
+		fmt.Sprintf("- %s should continue only inside the recorded council role and claim scope; other teammates should wait for orchestration or leader direction.", meetingPositionActorLabel(position)),
+		"",
+		"Council:",
+		"- " + meetingPositionCouncilAction(position, wavePlan, debatePlan),
+		"",
+		"Evidence:",
+	}
+	if len(evidenceRefs) == 0 {
+		lines = append(lines, "- No evidence references were attached to this position.")
+	} else {
+		for _, ref := range evidenceRefs {
+			lines = append(lines, "- "+ref)
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
 func cmdMeetingsRemainder(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
@@ -18508,13 +18672,17 @@ func cmdMeetingsRemainder(args []string) error {
 			return printJSON(meeting)
 		})
 	case "add-position":
-		if len(args) < 5 {
+		mode, remaining, err := parseOutputModeFlagsOnly("meetings add-position", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 4 {
 			return errors.New("meetings add-position requires MEETING_ID RUN_ID PHASE STANCE TEXT")
 		}
-		meetingID := args[1]
-		runID := args[2]
-		phase := args[3]
-		stance := args[4]
+		meetingID := remaining[0]
+		runID := remaining[1]
+		phase := remaining[2]
+		stance := remaining[3]
 		positionTokens := []string{}
 		evidenceRefs := []string{}
 		authorityLevel := "L2"
@@ -18523,7 +18691,7 @@ func cmdMeetingsRemainder(args []string) error {
 		respondsToRunID := ""
 		respondsToRole := ""
 		respondsToPositionID := ""
-		for _, arg := range args[5:] {
+		for _, arg := range remaining[4:] {
 			switch {
 			case strings.HasPrefix(arg, "--evidence="):
 				evidenceRefs = append(evidenceRefs, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--evidence=")))...)
@@ -18586,7 +18754,7 @@ func cmdMeetingsRemainder(args []string) error {
 			}
 			meeting["participants"] = participants
 			positions := toList(meeting["positions"])
-			positions = append(positions, map[string]any{
+			position := map[string]any{
 				"position_id":             "position-" + nowTime().UTC().Format("20060102150405"),
 				"run_id":                  runID,
 				"owner_id":                stringValue(run["owner_id"]),
@@ -18602,11 +18770,15 @@ func cmdMeetingsRemainder(args []string) error {
 				"responds_to_role":        respondsToRole,
 				"responds_to_position_id": respondsToPositionID,
 				"recorded_at":             nowISO(),
-			})
+			}
+			positions = append(positions, position)
 			meeting["positions"] = positions
 			setMeetingPhase(meeting, phase, fmt.Sprintf("position recorded by %s", runID))
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderMeetingPositionBrief(meeting, position))
 			}
 			return printJSON(meeting)
 		})

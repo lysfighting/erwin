@@ -116,6 +116,9 @@ meeting_orchestrate_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/har
 meeting_orchestrate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh orchestrate "$meeting_id" --brief)
 meeting_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh summary "$meeting_id" --brief)
 meeting_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh authority-audit "$meeting_id" --brief)
+position_meeting_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh meeting "$run_id" "Should packaged runtime keep position briefings human-readable?")
+position_meeting_id=$(printf '%s\n' "$position_meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+meeting_position_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh add-position "$position_meeting_id" "$run_id" independent_review support "Keep brief position text visible." --claim=packaged-position --dimension=factual --evidence=harness/profiles/erwin.yml --brief)
 assert_contains "$adapter_output" '"valid": true' "adapter validate works via packaged binary without Go"
 assert_contains "$home_output" '"next_action": "No active runs. Claim a mission."' "home works via packaged binary without Go"
 assert_contains "$home_brief_output" 'No active governed execution is in flight.' "home --brief works via packaged binary without Go"
@@ -149,6 +152,8 @@ assert_contains "$meeting_brief_output" "Meeting: $meeting_id" "meetings summary
 assert_contains "$meeting_brief_output" 'Add packet/participant prerequisites before independent review.' "packaged meeting brief still follows live council requirements without Go"
 assert_contains "$meeting_authority_brief_output" "Meeting: $meeting_id" "meetings authority-audit --brief works via packaged binary without Go"
 assert_contains "$meeting_authority_brief_output" "No same-claim authority conflict is currently recorded on meeting $meeting_id." "packaged meeting authority brief still follows council-authority truth without Go"
+assert_contains "$meeting_position_brief_output" 'Harness Meeting Position Briefing' "meetings add-position --brief works via packaged binary without Go"
+assert_contains "$meeting_position_brief_output" 'Keep brief position text visible.' "packaged meeting position brief preserves free-text council position content"
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"

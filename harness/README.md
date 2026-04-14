@@ -57,7 +57,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 - `harness-ship.sh` can also open GitHub PRs directly when `gh` is authenticated
 - `harness-ship.sh` now also handles post-merge cleanup of worktrees and local branches
 - `harness-rc.sh` — release-candidate create/verify/promote/close plus surgical `fix`, `cancel`, `hotfix`, and `backport` flow
-- `harness-meetings.sh` — meeting inspection, `meetings summary/lock-decision/orchestrate/authority-audit --brief` leader summaries, council orchestration, and council output mutation
+- `harness-meetings.sh` — meeting inspection, `meetings summary/lock-decision/add-position/orchestrate/authority-audit --brief` leader summaries, council orchestration, and council output mutation
 - `harness-maintenance.sh` — reconciliation + runtime normalization, including `maintenance reconcile/normalize --brief` repair and migration summaries
 - `harness-bootstrap.sh` — copy the harness adapter into another git repository
 - `harness-sync.sh` — resync a bootstrapped adapter from its source repository
@@ -78,7 +78,7 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 5. `drive` moves the run through execution, blocking, meeting, and completion states.
 6. `signals active [MISSION_ID] --brief` explains current active control signals before humans adopt, resolve, or materialize them into meetings; `signals adjudicate SIGNAL_ID|--all --brief` explains which signals were actually resolved as superseded and why.
 7. `teammates get TEAMMATE_RUN_ID --brief` turns delegated work into a readable bounded execution object instead of implicit chat or raw teammate JSON.
-8. `meetings summary MEETING_ID --brief` explains the live council state, `meetings lock-decision MEETING_ID TEXT --brief` explains the bounded council decision scope just recorded, and `meetings orchestrate MEETING_ID --brief` explains what changed when council orchestration advances or holds.
+8. `meetings summary MEETING_ID --brief` explains the live council state, `meetings lock-decision MEETING_ID TEXT --brief` explains the bounded council decision scope just recorded, `meetings add-position MEETING_ID TEAMMATE_RUN_ID PHASE STANCE TEXT --brief` explains what a recorded council position changed, and `meetings orchestrate MEETING_ID --brief` explains what changed when council orchestration advances or holds.
 9. `maintenance reconcile --brief` explains what repair changed or why no repair was needed; `maintenance normalize --brief` explains what legacy runtime state was upgraded.
 
 The release side is no longer limited to the happy path.
