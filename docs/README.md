@@ -22,6 +22,8 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 | [radar/README.md](radar/README.md) | Operating model for the AI/agent field radar |
 | [radar/sources.md](radar/sources.md) | Authoritative publisher inventory and priority policy |
 | [radar/themes.md](radar/themes.md) | Active theme taxonomy and query language |
+| [radar/daily/README.md](radar/daily/README.md) | Daily radar stream rules and archive entrypoint |
+| [radar/trending/README.md](radar/trending/README.md) | GitHub Trending stream rules and archive entrypoint |
 | [radar/papers/README.md](radar/papers/README.md) | Selective paper-watch archive for agent methods, benchmarks, and observability papers |
 | [radar/weekly/README.md](radar/weekly/README.md) | Weekly synthesis guide and review gates |
 | [radar/weekly/2026-03-30.md](radar/weekly/2026-03-30.md) | Kickoff weekly synthesis and baseline interpretation |

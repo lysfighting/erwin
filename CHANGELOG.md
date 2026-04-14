@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Harness entrypoints now surface the explainer explicitly**: `README.md`, `docs/README.md`, `docs/harness-documentation-map.md`, `harness/README.md`, and `skills/harness/README.md` now point readers to `docs/harness-explainer.md` as the best first stop when they want the system explained before reading the deeper architecture and contract docs.
 - **Fresh-session and top-level skills entrypoints now match the explainer and stable-line truth**: `docs/harness-session-handoff.md` now routes fresh sessions through `docs/harness-explainer.md` before the deeper architecture stack and no longer references an obsolete release branch for recent commit review, while `skills/README.md` now describes `Harness` as a stable `1.0.0` leader-led orchestration surface instead of an old prototype.
 
+### Added — Radar
+- **Daily and trending stream entrypoints**: added `docs/radar/daily/README.md` and `docs/radar/trending/README.md` so the two daily radar streams now carry their own file naming, `latest.md`, source-priority, and knowledge-surface refresh rules.
+- **Radar stream navigation tightened**: updated `docs/README.md` and `docs/radar/README.md` to point directly at the daily and GitHub Trending stream entrypoints instead of leaving those directories as unexplained archives.
+
 ### Added — Skills
 - **Codex-native cwork skill harvested into repo**: added `skills/cwork/` as the durable repo copy of the already-installed Codex work-loop skill, preserving the useful GitHub issue -> contract -> PR protocol from historical teamwork without merging the stale `codex/cwork-skill` branch wholesale.
 - **cwork install and index surfaces**: updated `README.md`, `AGENTS.md`, `skills/README.md`, and `install-codex.sh` examples so `/cwork` appears alongside `/harness` and `/knowledge` as a Codex-native `SKILL.md` surface installable through `./install-codex.sh cwork`.
