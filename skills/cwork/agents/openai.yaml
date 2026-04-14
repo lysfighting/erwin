@@ -1,0 +1,4 @@
+interface:
+  display_name: "cwork (Codex Work)"
+  short_description: "Codex-native GitHub work loop"
+  default_prompt: "Use $cwork to run a GitHub-first issue-to-contract-to-PR workflow in Codex without relying on Claude Code slash commands."

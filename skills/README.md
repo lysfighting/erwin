@@ -1,6 +1,6 @@
 # erwin Skills
 
-Claude Code skills created and maintained by the erwin project.
+Claude Code and Codex skills created and maintained by the erwin project.
 
 ## Available Skills
 
@@ -12,6 +12,7 @@ Claude Code skills created and maintained by the erwin project.
 | [/session-record](session-record/) | Record AI session logs with structured format | 1.0.0 |
 | [`/harness`](harness/) | Codex-native orchestration harness leader surface (prototype) | 0.4.0 |
 | [`/knowledge`](knowledge/) | Codex-native layered knowledge-system curation and proposal gating | 1.0.0 |
+| [`/cwork`](cwork/) | Codex-native GitHub issue-to-contract-to-PR workflow | incubating |
 | [/team](teamwork/) | Init GitHub-first teamwork system + dashboard | 3.10.4 |
 | [/team-issue](teamwork/) | Create GitHub Issues with AI-enriched context | 3.10.4 |
 | [/team-claim](teamwork/) | Claim GitHub Issue → generate Contract → create branch | 3.10.4 |
@@ -35,6 +36,7 @@ For Codex-native `SKILL.md` skills:
 ./install-codex.sh
 ./install-codex.sh harness
 ./install-codex.sh knowledge
+./install-codex.sh cwork
 ```
 
 Installs Codex-native skills to `~/.codex/skills/`.
@@ -101,3 +103,4 @@ Newer surfaces may use `SKILL.md` rather than the older single-file command mark
 
 - `skills/harness/SKILL.md` is the first repository-local Codex-native harness surface.
 - `skills/knowledge/SKILL.md` is the canonical Codex-native knowledge curation surface.
+- `skills/cwork/SKILL.md` is the Codex-native GitHub work-loop surface derived from the historical teamwork protocol.
