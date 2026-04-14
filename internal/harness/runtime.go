@@ -18136,6 +18136,149 @@ func renderMeetingPositionBrief(meeting, position map[string]any) string {
 	return strings.Join(lines, "\n")
 }
 
+func meetingFindingActorLabel(finding map[string]any) string {
+	role := strings.TrimSpace(stringValue(finding["source_role"]))
+	runID := strings.TrimSpace(stringValue(finding["source_run_id"]))
+	switch {
+	case role != "" && runID != "":
+		return fmt.Sprintf("%s on %s", role, runID)
+	case runID != "":
+		return runID
+	case role != "":
+		return role
+	default:
+		return "council record"
+	}
+}
+
+func meetingFindingTraceLabel(finding map[string]any) string {
+	supportingCount := len(toList(finding["supporting_position_ids"]))
+	challengingCount := len(toList(finding["challenging_position_ids"]))
+	parts := []string{
+		countLabel(supportingCount, "supporting position", "supporting positions"),
+		countLabel(challengingCount, "challenging position", "challenging positions"),
+	}
+	return strings.Join(parts, ", ")
+}
+
+func meetingFindingWhy(kind string, finding map[string]any) string {
+	reason := strings.TrimSpace(stringValue(finding["reason"]))
+	if reason != "" {
+		return reason
+	}
+	claim := meetingPositionClaimLabel(finding)
+	switch kind {
+	case "accepted":
+		return fmt.Sprintf("This accepts the governed claim %s from the recorded council evidence.", claim)
+	case "rejected":
+		return fmt.Sprintf("This rejects the governed claim %s, but no explicit reason was recorded yet.", claim)
+	case "unresolved":
+		return fmt.Sprintf("This keeps the governed claim %s unresolved for explicit follow-up or higher-authority evidence.", claim)
+	default:
+		return fmt.Sprintf("This records council judgment on %s.", claim)
+	}
+}
+
+func meetingFindingNext(meeting map[string]any, kind string, finding map[string]any, authorityAudit map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "MEETING_ID")
+	if kind == "rejected" && strings.TrimSpace(stringValue(finding["reason"])) == "" {
+		return fmt.Sprintf("Record an explicit reason for rejected finding %s before output, then run `meetings orchestrate %s --brief`.", firstNonBlank(strings.TrimSpace(stringValue(finding["finding_id"])), "FINDING_ID"), meetingID)
+	}
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	if len(governanceGaps) > 0 {
+		return fmt.Sprintf("Repair council governance gaps (%s), then run `meetings orchestrate %s --brief`.", strings.Join(governanceGaps, "; "), meetingID)
+	}
+	if intValue(authorityAudit["unresolved_conflict_count"]) > 0 {
+		return fmt.Sprintf("Run `meetings authority-audit %s --brief` and record explicit judgment or higher-authority evidence before output.", meetingID)
+	}
+	if kind == "unresolved" {
+		return fmt.Sprintf("Keep the unresolved claim visible as follow-up or add more evidence, then run `meetings orchestrate %s --brief`.", meetingID)
+	}
+	return fmt.Sprintf("Run `meetings orchestrate %s --brief` to refresh synthesis/output readiness from the updated council judgment.", meetingID)
+}
+
+func meetingFindingLeaderAction(meeting map[string]any, kind string, finding map[string]any, authorityAudit map[string]any) string {
+	if kind == "rejected" && strings.TrimSpace(stringValue(finding["reason"])) == "" {
+		return "Leader should add a clear rejection reason before treating this council as ready for output."
+	}
+	if intValue(authorityAudit["unresolved_conflict_count"]) > 0 {
+		return "Leader should adjudicate same-claim finding conflicts before adoption or close."
+	}
+	if kind == "unresolved" {
+		return "Leader should preserve this unresolved judgment as explicit follow-up or collect stronger evidence before adoption."
+	}
+	return fmt.Sprintf("Leader should keep this finding inside %s and refresh council readiness before adoption.", meetingPositionClaimLabel(finding))
+}
+
+func meetingFindingCouncilAction(kind string, finding map[string]any, authorityAudit map[string]any) string {
+	if kind == "rejected" && strings.TrimSpace(stringValue(finding["reason"])) == "" {
+		return "Council cannot treat this rejection as output-ready until the rejection reason is recorded."
+	}
+	if intValue(authorityAudit["unresolved_conflict_count"]) > 0 {
+		return "Council still has same-claim authority conflict to resolve."
+	}
+	if kind == "unresolved" {
+		return "Council should carry this unresolved lane into output follow-up rather than silently closing it."
+	}
+	return "Council judgment is recorded; orchestration should decide whether synthesis or output is now ready."
+}
+
+func renderMeetingFindingBrief(meeting map[string]any, kind string, finding map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	findingID := firstNonBlank(strings.TrimSpace(stringValue(finding["finding_id"])), "unknown")
+	evidenceRefs := anyListToStrings(toList(finding["evidence_refs"]))
+	lines := []string{
+		"Harness Meeting Finding Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Finding: %s", findingID),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf(
+			"Finding Scope: kind=%s, actor=%s, claim=%s, authority=%s, evidence=%s, trace=%s.",
+			kind,
+			meetingFindingActorLabel(finding),
+			meetingPositionClaimLabel(finding),
+			firstNonBlank(strings.TrimSpace(stringValue(finding["authority_level"])), "L2"),
+			countLabel(len(evidenceRefs), "reference", "references"),
+			meetingFindingTraceLabel(finding),
+		),
+		"",
+		"Current:",
+		fmt.Sprintf("- Meeting %s now records a %s finding %s: %s", meetingID, kind, findingID, firstNonBlank(strings.TrimSpace(stringValue(finding["summary"])), "No finding summary recorded.")),
+		"",
+		"Why:",
+		"- " + meetingFindingWhy(kind, finding),
+		"",
+		"Next:",
+		"- " + meetingFindingNext(meeting, kind, finding, authorityAudit),
+		"",
+		"Leader:",
+		"- " + meetingFindingLeaderAction(meeting, kind, finding, authorityAudit),
+		"",
+		"Teammate:",
+		fmt.Sprintf("- %s should keep any follow-up evidence inside %s unless the leader widens council scope.", meetingFindingActorLabel(finding), meetingPositionClaimLabel(finding)),
+		"",
+		"Council:",
+		"- " + meetingFindingCouncilAction(kind, finding, authorityAudit),
+		"",
+		"Evidence:",
+	}
+	if len(evidenceRefs) == 0 {
+		lines = append(lines, "- No evidence references were attached to this finding.")
+	} else {
+		for _, ref := range evidenceRefs {
+			lines = append(lines, "- "+ref)
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
 func cmdMeetingsRemainder(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
@@ -18806,11 +18949,15 @@ func cmdMeetingsRemainder(args []string) error {
 			return printJSON(meeting)
 		})
 	case "add-finding":
-		if len(args) < 4 {
+		mode, remaining, err := parseOutputModeFlagsOnly("meetings add-finding", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 3 {
 			return errors.New("meetings add-finding requires MEETING_ID accepted|rejected|unresolved TEXT")
 		}
-		meetingID := args[1]
-		findingKind := args[2]
+		meetingID := remaining[0]
+		findingKind := remaining[1]
 		if findingKind != "accepted" && findingKind != "rejected" && findingKind != "unresolved" {
 			return errors.New("meetings add-finding kind must be accepted, rejected, or unresolved")
 		}
@@ -18824,7 +18971,7 @@ func cmdMeetingsRemainder(args []string) error {
 		dimension := "factual"
 		supportingPositionIDs := []string{}
 		challengingPositionIDs := []string{}
-		for _, arg := range args[3:] {
+		for _, arg := range remaining[2:] {
 			switch {
 			case strings.HasPrefix(arg, "--reason="):
 				reason = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--reason=")), reason)
@@ -18865,7 +19012,7 @@ func cmdMeetingsRemainder(args []string) error {
 			if findings == nil {
 				findings = map[string]any{}
 			}
-			bucket := append(toList(findings[findingKind]), map[string]any{
+			finding := map[string]any{
 				"finding_id":               "finding-" + nowTime().UTC().Format("20060102150405"),
 				"summary":                  summary,
 				"reason":                   reason,
@@ -18878,11 +19025,15 @@ func cmdMeetingsRemainder(args []string) error {
 				"supporting_position_ids":  stringListToAny(dedupeStrings(supportingPositionIDs)),
 				"challenging_position_ids": stringListToAny(dedupeStrings(challengingPositionIDs)),
 				"recorded_at":              nowISO(),
-			})
+			}
+			bucket := append(toList(findings[findingKind]), finding)
 			findings[findingKind] = bucket
 			meeting["findings"] = findings
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderMeetingFindingBrief(meeting, findingKind, finding))
 			}
 			return printJSON(meeting)
 		})

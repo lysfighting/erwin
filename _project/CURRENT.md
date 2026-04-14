@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-14
-- **Last Session**: 2026-04-14-A (Extended the human-facing leader layer into `meetings add-position --brief`)
+- **Last Session**: 2026-04-14-B (Extended the human-facing leader layer into `meetings add-finding --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-14-B** — Extended the human-facing leader layer into `meetings add-finding --brief`
+
+- **Council judgment recording now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh add-finding MEETING_ID accepted|rejected|unresolved TEXT --brief` now turns the same finding-recording mutation into a readable briefing that tells a human which council claim/dimension was judged, what kind of finding was recorded, what authority/evidence/position trace supports it, and what leader/teammate/council action comes next
+- **Meeting finding briefings stay on the same Go control plane**: the new layer is derived from the existing `findings` meeting state plus same-claim authority and governance-gap calculations rather than inventing a separate council-judgment model; default `meetings add-finding` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council-judgment paths**: teammate smoke now proves `meetings add-finding --brief` explains rejected-finding governance repair before output, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-14-A** — Extended the human-facing leader layer into `meetings add-position --brief`
 

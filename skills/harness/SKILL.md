@@ -122,6 +122,7 @@ The harness is file-backed:
   `bash scripts/harness-meetings.sh orchestrate MEETING_ID`
 - `meeting-finding`
   `bash scripts/harness-meetings.sh add-finding MEETING_ID rejected "Ship immediately without release-note updates." --reason="Cross-examination found operator-facing drift." --authority=L2 --evidence=CHANGELOG.md --role=ops-simulator`
+  `bash scripts/harness-meetings.sh add-finding MEETING_ID rejected "Ship immediately without release-note updates." --reason="Cross-examination found operator-facing drift." --authority=L2 --evidence=CHANGELOG.md --role=ops-simulator --brief`
 - `meeting-close`
   `bash scripts/harness-drive.sh meeting-close RUN_ID MEETING_ID "resolution"`
 - `adopt-meeting`
@@ -183,6 +184,7 @@ The harness is file-backed:
 - Use `maintenance normalize --brief` when you want the human-readable migration result for legacy run, signal, and contract records before drilling into raw normalization JSON.
 - Use `meetings lock-decision --brief` when you want the human-readable result of a council scope lock before drilling into raw meeting JSON.
 - Use `meetings add-position --brief` when you want the human-readable result of a newly recorded council position before drilling into raw meeting JSON.
+- Use `meetings add-finding --brief` when you want the human-readable result of a newly recorded council judgment before drilling into raw meeting JSON.
 - Treat `maintenance normalize` as the migration path for older `.harness/` state when mission objects or ownership claims were introduced after those runs were created.
 - Prefer the narrowest safe state change.
 - Use meetings for high-ambiguity or high-blast-radius decisions.

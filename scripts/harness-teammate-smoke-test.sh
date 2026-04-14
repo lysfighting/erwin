@@ -741,7 +741,11 @@ rejected_reason_pos_a=$(run_in_repo bash scripts/harness-meetings.sh add-positio
 rejected_reason_pos_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$rejected_reason_meeting_id" "$run_b" independent_review support "Independent review agrees the broader rollout note would overstate impact." --claim=rejected-reason-scope --dimension=factual --authority=L2 --evidence=CHANGELOG.md)
 rejected_reason_pos_a_id=$(printf '%s\n' "$rejected_reason_pos_a" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
 rejected_reason_pos_b_id=$(printf '%s\n' "$rejected_reason_pos_b" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
-run_in_repo bash scripts/harness-meetings.sh add-finding "$rejected_reason_meeting_id" rejected "Reject broad rollout note." --authority=L2 --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator --claim=rejected-reason-scope --dimension=factual --supports="$rejected_reason_pos_a_id|$rejected_reason_pos_b_id" >/dev/null
+rejected_reason_finding_brief=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$rejected_reason_meeting_id" rejected "Reject broad rollout note." --authority=L2 --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator --claim=rejected-reason-scope --dimension=factual --supports="$rejected_reason_pos_a_id|$rejected_reason_pos_b_id" --brief)
+assert_contains "$rejected_reason_finding_brief" 'Harness Meeting Finding Briefing' "meetings add-finding --brief emits a human-readable council finding briefing"
+assert_contains "$rejected_reason_finding_brief" "Meeting: $rejected_reason_meeting_id" "meetings add-finding --brief names the target council"
+assert_contains "$rejected_reason_finding_brief" 'kind=rejected' "meetings add-finding --brief preserves the finding kind"
+assert_contains "$rejected_reason_finding_brief" 'Record an explicit reason for rejected finding' "meetings add-finding --brief explains rejected-finding governance repair"
 run_in_repo bash scripts/harness-meetings.sh set-phase "$rejected_reason_meeting_id" synthesis >/dev/null
 
 rejected_reason_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$rejected_reason_meeting_id")

@@ -17,6 +17,7 @@ If you want the full human-readable explanation first, read:
 - `bash scripts/harness-meetings.sh summary MEETING_ID --brief`
 - `bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to the concrete decision." --brief`
 - `bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID independent_review support "Bounded evidence summary." --brief`
+- `bash scripts/harness-meetings.sh add-finding MEETING_ID accepted "Bounded judgment summary." --brief`
 - `bash scripts/harness-meetings.sh orchestrate MEETING_ID --brief`
 - `bash scripts/harness-maintenance.sh reconcile --brief`
 - `bash scripts/harness-maintenance.sh normalize --brief`
@@ -50,6 +51,7 @@ Use this when the model should act as the harness leader:
 - inspect one active or closed council as a human-readable leader object through `meetings summary MEETING_ID --brief` before drilling into raw meeting JSON
 - lock council decision scope as a human-readable leader action through `meetings lock-decision MEETING_ID TEXT --brief` before drilling into raw meeting JSON
 - record council positions as a human-readable leader action through `meetings add-position MEETING_ID TEAMMATE_RUN_ID PHASE STANCE TEXT --brief` before drilling into raw meeting JSON
+- record council findings as a human-readable leader action through `meetings add-finding MEETING_ID accepted|rejected|unresolved TEXT --brief` before drilling into raw meeting JSON
 - advance or refresh council orchestration as a human-readable leader object through `meetings orchestrate MEETING_ID --brief` before drilling into raw orchestration JSON
 - inspect same-claim council authority as a human-readable leader object through `meetings authority-audit MEETING_ID --brief` before drilling into raw council-audit JSON
 - inspect runtime repair as a human-readable leader object through `maintenance reconcile --brief` before drilling into raw reconciliation JSON
