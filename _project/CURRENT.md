@@ -7,14 +7,20 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-14
-- **Last Session**: 2026-04-14-B (Extended the human-facing leader layer into `meetings add-finding --brief`)
+- **Last Updated**: 2026-04-15
+- **Last Session**: 2026-04-15-A (Extended the human-facing leader layer into `meetings add-action --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-15-A** — Extended the human-facing leader layer into `meetings add-action --brief`
+
+- **Council action recording now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh add-action MEETING_ID TEXT --brief` now turns the same action-recording mutation into a readable briefing that tells a human which council action item was added, what the open action backlog looks like, who owns the next step, and whether teammate assignment or adoption is still needed
+- **Meeting action briefings stay on the same Go control plane**: the new layer is derived from the existing `action_items` meeting state plus meeting summary and governance-gap calculations rather than inventing a separate follow-up model; default `meetings add-action` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council-action paths**: teammate smoke now proves `meetings add-action --brief` explains that teammate execution remains leader-owned, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-14-B** — Extended the human-facing leader layer into `meetings add-finding --brief`
 

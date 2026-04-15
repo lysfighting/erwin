@@ -18279,6 +18279,104 @@ func renderMeetingFindingBrief(meeting map[string]any, kind string, finding map[
 	return strings.Join(lines, "\n")
 }
 
+func meetingActionNext(meeting, action, summary map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "MEETING_ID")
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	switch actionState {
+	case "done":
+		return fmt.Sprintf("Run `meetings summary %s --brief` to confirm adopted follow-up and open-action counts are clear.", meetingID)
+	case "cancelled":
+		return fmt.Sprintf("Run `meetings summary %s --brief` to confirm cancellation realignment before widening execution.", meetingID)
+	}
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	if len(governanceGaps) > 0 {
+		return fmt.Sprintf("Repair council governance gaps (%s), then run `meetings orchestrate %s --brief`.", strings.Join(governanceGaps, "; "), meetingID)
+	}
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	switch phase {
+	case "output":
+		return fmt.Sprintf("Adopt or close meeting %s after confirming this action item is represented in the output/follow-up plan.", meetingID)
+	case "synthesis":
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` so synthesis/output readiness reflects this action item.", meetingID)
+	}
+	if intValue(summary["open_wave_action_count"]) > 0 || intValue(summary["open_route_action_count"]) > 0 || intValue(summary["open_round_action_count"]) > 0 {
+		return fmt.Sprintf("Keep council work moving through `meetings orchestrate %s --brief`; this action should not replace still-open review or debate obligations.", meetingID)
+	}
+	return fmt.Sprintf("Run `meetings summary %s --brief` or `meetings orchestrate %s --brief` before adoption to confirm where this action belongs.", meetingID, meetingID)
+}
+
+func meetingActionLeaderAction(meeting, action, summary map[string]any) string {
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	if actionState == "open" {
+		if strings.TrimSpace(stringValue(meeting["phase"])) == "output" {
+			return "Leader should adopt or close the meeting only after this action is owned by the output/follow-up plan."
+		}
+		return "Leader should keep this action visible as council follow-up and avoid widening execution until ownership is clear."
+	}
+	if actionState == "cancelled" {
+		return "Leader should confirm the cancellation was intentional and any replacement follow-up is explicit."
+	}
+	return "Leader should confirm completed action state has propagated to adopted follow-up counts if the meeting was already adopted."
+}
+
+func meetingActionCouncilAction(meeting, action, summary map[string]any) string {
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	if actionState != "open" {
+		return fmt.Sprintf("Action is %s; council should only reopen it if the governed decision changed.", actionState)
+	}
+	if intValue(summary["output_follow_up_packet_count"]) > 0 {
+		return fmt.Sprintf("Council output already has %s; ensure this action is not duplicate follow-up before adoption.", countLabel(intValue(summary["output_follow_up_packet_count"]), "follow-up packet", "follow-up packets"))
+	}
+	if intValue(summary["open_action_count"]) > 0 {
+		return fmt.Sprintf("Council backlog now includes %s; keep ownership explicit before adoption.", countLabel(intValue(summary["open_action_count"]), "open action item", "open action items"))
+	}
+	return "Council should keep this action visible until it is adopted, resolved, cancelled, or delegated."
+}
+
+func renderMeetingActionBrief(meeting, action map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	actionID := firstNonBlank(strings.TrimSpace(stringValue(action["action_id"])), "unknown")
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	lines := []string{
+		"Harness Meeting Action Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Action: %s", actionID),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf(
+			"Action Scope: state=%s, open_actions=%d, output_follow_up=%d.",
+			actionState,
+			intValue(summary["open_action_count"]),
+			intValue(summary["output_follow_up_packet_count"]),
+		),
+		"",
+		"Current:",
+		fmt.Sprintf("- Meeting %s now records action %s: %s", meetingID, actionID, firstNonBlank(strings.TrimSpace(stringValue(action["summary"])), "No action summary recorded.")),
+		"",
+		"Why:",
+		"- This turns council follow-up into an explicit action item instead of leaving it implicit in raw meeting state.",
+		"",
+		"Next:",
+		"- " + meetingActionNext(meeting, action, summary),
+		"",
+		"Leader:",
+		"- " + meetingActionLeaderAction(meeting, action, summary),
+		"",
+		"Teammate:",
+		"- No teammate was assigned by this meeting action itself; teammates should only execute it after the leader assigns or adopts it into a bounded run/follow-up scope.",
+		"",
+		"Council:",
+		"- " + meetingActionCouncilAction(meeting, action, summary),
+	}
+	return strings.Join(lines, "\n")
+}
+
 func cmdMeetingsRemainder(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
@@ -19038,26 +19136,37 @@ func cmdMeetingsRemainder(args []string) error {
 			return printJSON(meeting)
 		})
 	case "add-action":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("meetings add-action", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("meetings add-action requires MEETING_ID TEXT")
 		}
-		meetingID := args[1]
-		actionText := strings.TrimSpace(strings.Join(args[2:], " "))
+		meetingID := remaining[0]
+		actionText := strings.TrimSpace(strings.Join(remaining[1:], " "))
+		if actionText == "" {
+			return errors.New("meetings add-action requires TEXT")
+		}
 		return withHarnessLock(func() error {
 			data := readActiveMeeting(meetingID)
 			if data == nil {
 				return fmt.Errorf("active meeting not found: %s", meetingID)
 			}
 			meeting, _ := toMap(data["meeting"])
-			actions := append(toList(meeting["action_items"]), map[string]any{
+			action := map[string]any{
 				"action_id":   "action-" + nowTime().UTC().Format("20060102150405"),
 				"summary":     actionText,
 				"recorded_at": nowISO(),
 				"state":       "open",
-			})
+			}
+			actions := append(toList(meeting["action_items"]), action)
 			meeting["action_items"] = actions
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderMeetingActionBrief(meeting, action))
 			}
 			return printJSON(meeting)
 		})

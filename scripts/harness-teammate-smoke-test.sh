@@ -327,8 +327,11 @@ accepted_finding=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$me
 assert_json_field "$accepted_finding" '"accepted"' "meeting records accepted findings"
 lower_authority_conflict=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" unresolved "Release notes might be optional for this scope change." --reason="Earlier hypothesis before cross-examination." --authority="L3" --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator --claim=release-note-scope --dimension=factual --supports="$position_b_id")
 assert_json_field "$lower_authority_conflict" '"unresolved"' "meeting records lower-authority conflicting finding"
-action_output=$(run_in_repo bash scripts/harness-meetings.sh add-action "$meeting_id" "Update release notes before merging the auth change.")
-assert_json_field "$action_output" '"action_items"' "meeting records action items"
+action_output=$(run_in_repo bash scripts/harness-meetings.sh add-action "$meeting_id" "Update release notes before merging the auth change." --brief)
+assert_contains "$action_output" 'Harness Meeting Action Briefing' "meetings add-action --brief explains the recorded council action in human-readable form"
+assert_contains "$action_output" "Meeting: $meeting_id" "meetings add-action --brief names the council that owns the action"
+assert_contains "$action_output" 'Action: action-' "meetings add-action --brief names the recorded action item"
+assert_contains "$action_output" 'No teammate was assigned by this meeting action itself' "meetings add-action --brief explains teammate assignment remains leader-owned"
 
 orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
 assert_json_field "$orchestrate_c" '"new_phase": "output"' "meeting orchestration can close directly to output once synthesis is already ready"

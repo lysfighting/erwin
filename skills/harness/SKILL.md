@@ -123,6 +123,9 @@ The harness is file-backed:
 - `meeting-finding`
   `bash scripts/harness-meetings.sh add-finding MEETING_ID rejected "Ship immediately without release-note updates." --reason="Cross-examination found operator-facing drift." --authority=L2 --evidence=CHANGELOG.md --role=ops-simulator`
   `bash scripts/harness-meetings.sh add-finding MEETING_ID rejected "Ship immediately without release-note updates." --reason="Cross-examination found operator-facing drift." --authority=L2 --evidence=CHANGELOG.md --role=ops-simulator --brief`
+- `meeting-action`
+  `bash scripts/harness-meetings.sh add-action MEETING_ID "Update release notes before merging the auth change."`
+  `bash scripts/harness-meetings.sh add-action MEETING_ID "Update release notes before merging the auth change." --brief`
 - `meeting-close`
   `bash scripts/harness-drive.sh meeting-close RUN_ID MEETING_ID "resolution"`
 - `adopt-meeting`
@@ -185,6 +188,7 @@ The harness is file-backed:
 - Use `meetings lock-decision --brief` when you want the human-readable result of a council scope lock before drilling into raw meeting JSON.
 - Use `meetings add-position --brief` when you want the human-readable result of a newly recorded council position before drilling into raw meeting JSON.
 - Use `meetings add-finding --brief` when you want the human-readable result of a newly recorded council judgment before drilling into raw meeting JSON.
+- Use `meetings add-action --brief` when you want the human-readable result of a newly recorded council action item, including whether leader assignment or adoption is still needed, before drilling into raw meeting JSON.
 - Treat `maintenance normalize` as the migration path for older `.harness/` state when mission objects or ownership claims were introduced after those runs were created.
 - Prefer the narrowest safe state change.
 - Use meetings for high-ambiguity or high-blast-radius decisions.
