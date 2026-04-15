@@ -11,7 +11,7 @@
 
 ## At A Glance
 
-- `18` durable notes are currently indexed across `3` recurring streams.
+- `19` durable notes are currently indexed across `3` recurring streams.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -26,12 +26,12 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-04-14
+### AI Agent Daily Radar - 2026-04-15
 
-- Metadata: `Window: 2026-04-08 to 2026-04-14`
-- **Claude Code Desktop now has an official recurring scheduled-task surface.** The official [Claude Code Desktop scheduled tasks docs](https://code.claude.com/docs/en/desktop-scheduled-tasks) are current on the checked `code.claude.com` surface, though the page exposes no explicit publish date, so treat this as a current-surface signal rather than a dated launch. The important signal is not the scheduler alone; it makes Claude Code a recurring automation runner with missed-run behavior, permission controls, and task management, which puts desktop coding agents closer to durable background operations.
-- **Anthropic's Managed Agents launch remains the strongest dated runtime signal in-window.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) date the public beta to **April 8, 2026**, and the [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) describes a hosted agent harness with environments, sessions, tools, code execution, web access, MCP, skills, event streams, and sandboxing. The durable takeaway is that first-party agent infrastructure is moving from tool-call patterns into managed runtime contracts.
-- **Anthropic's advisor tool remains the clearest first-party executor/advisor split.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) date the public beta to **April 9, 2026**, and the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) frame a higher-capability advisor model as an explicit callable tool for a cheaper executor model. This is a useful control-plane pattern for long-running agents because strategy, execution, usage accounting, and failure semantics become visible runtime concepts.
+- Metadata: `Window: 2026-04-08 to 2026-04-15`
+- **Claude Code shipped multiple in-window operations upgrades.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) lists version 2.1.108 on **April 14, 2026**, adding 1-hour prompt-cache TTL controls, session recap, slash-command discovery through the Skill tool, better resume defaults, sharper rate-limit errors, and fixes for Agent-tool permission handling and transcript durability. The **April 13, 2026** 2.1.105 release added `EnterWorktree` path switching, PreCompact hooks, plugin background monitors, stale worktree cleanup, MCP truncation guidance, scheduled-task repair, and headless/remote MCP fixes. This is the clearest Claude Code in-window signal: coding-agent reliability is moving into cache policy, resumability, hooks, monitors, worktrees, and remote/headless execution.
+- **Anthropic added a platform migration clock for older Claude 4 models.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) dated **April 14, 2026** announce deprecation of `claude-sonnet-4-20250514` and `claude-opus-4-20250514`, with API retirement scheduled for **June 15, 2026**, and recommend migration to Claude Sonnet 4.6 and Claude Opus 4.6. For harness work, this is less a feature launch than a dependency hygiene signal: long-running agent systems need explicit model-lifecycle checks, migration tests, and stale-model detection.
+- **Anthropic's Managed Agents public beta remains the strongest managed-runtime signal in-window.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) date the launch to **April 8, 2026**, and the [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) describes a pre-built configurable agent harness for long-running and asynchronous work, with agents, environments, sessions, events, built-in tools, MCP, skills, server-sent event streaming, and beta access via `managed-agents-2026-04-01`. The paired Anthropic engineering post, [Scaling Managed Agents: Decoupling the brain from the hands](https://www.anthropic.com/engineering/managed-agents), makes the architecture explicit: session log, harness, and sandbox are separated so each can fail or evolve independently.
 
 ## Trending Snapshot
 
@@ -56,12 +56,12 @@ The durable theme this week is the productization of the agent control plane.
 
 ### Daily Radar
 
+- [2026-04-15](../radar/daily/2026-04-15.md)
 - [2026-04-14](../radar/daily/2026-04-14.md)
 - [2026-04-13](../radar/daily/2026-04-13.md)
 - [2026-04-10](../radar/daily/2026-04-10.md)
 - [2026-04-09](../radar/daily/2026-04-09.md)
 - [2026-04-08](../radar/daily/2026-04-08.md)
-- [2026-04-03](../radar/daily/2026-04-03.md)
 
 ### Weekly Synthesis
 
