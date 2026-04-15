@@ -126,6 +126,9 @@ The harness is file-backed:
 - `meeting-action`
   `bash scripts/harness-meetings.sh add-action MEETING_ID "Update release notes before merging the auth change."`
   `bash scripts/harness-meetings.sh add-action MEETING_ID "Update release notes before merging the auth change." --brief`
+- `meeting-resolve-action`
+  `bash scripts/harness-meetings.sh resolve-action MEETING_ID ACTION_ID done`
+  `bash scripts/harness-meetings.sh resolve-action MEETING_ID ACTION_ID done --brief`
 - `meeting-close`
   `bash scripts/harness-drive.sh meeting-close RUN_ID MEETING_ID "resolution"`
 - `adopt-meeting`
@@ -189,6 +192,7 @@ The harness is file-backed:
 - Use `meetings add-position --brief` when you want the human-readable result of a newly recorded council position before drilling into raw meeting JSON.
 - Use `meetings add-finding --brief` when you want the human-readable result of a newly recorded council judgment before drilling into raw meeting JSON.
 - Use `meetings add-action --brief` when you want the human-readable result of a newly recorded council action item, including whether leader assignment or adoption is still needed, before drilling into raw meeting JSON.
+- Use `meetings resolve-action --brief` when you want the human-readable result of closing, cancelling, or reopening a council action, including adopted follow-up sync, before drilling into raw meeting JSON.
 - Treat `maintenance normalize` as the migration path for older `.harness/` state when mission objects or ownership claims were introduced after those runs were created.
 - Prefer the narrowest safe state change.
 - Use meetings for high-ambiguity or high-blast-radius decisions.

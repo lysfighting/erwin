@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-15
-- **Last Session**: 2026-04-15-A (Extended the human-facing leader layer into `meetings add-action --brief`)
+- **Last Session**: 2026-04-15-B (Extended the human-facing leader layer into `meetings resolve-action --brief`)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-15-B** — Extended the human-facing leader layer into `meetings resolve-action --brief`
+
+- **Council action closure now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh resolve-action MEETING_ID ACTION_ID [STATE] --brief` now turns the same action-resolution mutation into a readable briefing that tells a human which action was closed, cancelled, or reopened, what the remaining action backlog looks like, and what leader/teammate/council action comes next
+- **Meeting action-resolution briefings stay on the same Go control plane**: the new layer is derived from updated `action_items`, refreshed meeting output packets, and the same adopted follow-up lifecycle sync that already updates governing runs; default `meetings resolve-action` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary action lifecycle paths**: core smoke now proves done and cancelled action resolution explain adopted follow-up synchronization, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-15-A** — Extended the human-facing leader layer into `meetings add-action --brief`
 

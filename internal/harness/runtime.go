@@ -18377,6 +18377,192 @@ func renderMeetingActionBrief(meeting, action map[string]any) string {
 	return strings.Join(lines, "\n")
 }
 
+func meetingActionResolutionSyncSummary(registry map[string]any, meetingID string) map[string]any {
+	runIDs := []string{}
+	nextActions := []string{}
+	packetCount := 0
+	openPacketCount := 0
+	donePacketCount := 0
+	cancelledPacketCount := 0
+	for _, item := range toList(registry["runs"]) {
+		run, ok := toMap(item)
+		if !ok || strings.TrimSpace(stringValue(run["adopted_from_meeting_id"])) != meetingID {
+			continue
+		}
+		runID := strings.TrimSpace(stringValue(run["run_id"]))
+		if runID != "" {
+			runIDs = append(runIDs, runID)
+		}
+		if nextAction := strings.TrimSpace(stringValue(run["next_expected_action"])); nextAction != "" {
+			nextActions = append(nextActions, nextAction)
+		}
+		packets := toList(run["adopted_output_follow_up_packets"])
+		packetCount += len(packets)
+		openPacketCount += followUpPacketOpenCount(packets)
+		for _, packetItem := range packets {
+			packet, ok := toMap(packetItem)
+			if !ok {
+				continue
+			}
+			switch firstNonBlank(strings.TrimSpace(stringValue(packet["state"])), "open") {
+			case "done":
+				donePacketCount++
+			case "cancelled":
+				cancelledPacketCount++
+			}
+		}
+	}
+	return map[string]any{
+		"adopted_run_count":                    len(runIDs),
+		"adopted_run_ids":                      stringListToAny(dedupeStrings(runIDs)),
+		"adopted_follow_up_packet_count":       packetCount,
+		"adopted_open_follow_up_packet_count":  openPacketCount,
+		"adopted_done_follow_up_packet_count":  donePacketCount,
+		"adopted_cancelled_follow_up_count":    cancelledPacketCount,
+		"adopted_run_next_expected_actions":    stringListToAny(dedupeStrings(nextActions)),
+		"adopted_primary_next_expected_action": firstNonBlank(dedupeStrings(nextActions)...),
+	}
+}
+
+func meetingActionResolutionNext(meeting, action, summary, syncSummary map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "MEETING_ID")
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	adoptedRunCount := intValue(syncSummary["adopted_run_count"])
+	adoptedOpenFollowUpCount := intValue(syncSummary["adopted_open_follow_up_packet_count"])
+	switch actionState {
+	case "open":
+		if adoptedRunCount > 0 {
+			return "Inspect the adopted run with `runs get RUN_ID --brief` and confirm the reopened follow-up is owned before widening execution."
+		}
+		return fmt.Sprintf("Keep meeting %s open or adopt it only after this reopened action has explicit owner scope.", meetingID)
+	case "cancelled":
+		if adoptedRunCount > 0 {
+			return "Run `missions schedule --brief` or `home --brief`; cancelled adopted follow-up may require leader realignment before execution widens."
+		}
+		return fmt.Sprintf("Confirm the cancellation rationale is explicit before closing or adopting meeting %s.", meetingID)
+	case "done":
+		if intValue(summary["open_action_count"]) > 0 {
+			return fmt.Sprintf("Resolve or delegate the remaining %s before treating meeting %s as follow-up-clean.", countLabel(intValue(summary["open_action_count"]), "open council action", "open council actions"), meetingID)
+		}
+		if adoptedRunCount > 0 && adoptedOpenFollowUpCount == 0 {
+			return "Run `home --brief` or `missions schedule --brief` to confirm adopted follow-up counts cleared from leader-facing execution."
+		}
+		return fmt.Sprintf("Run `meetings summary %s --brief` to confirm output/adoption readiness after this action closure.", meetingID)
+	default:
+		return fmt.Sprintf("Run `meetings summary %s --brief` to inspect current council action state.", meetingID)
+	}
+}
+
+func meetingActionResolutionLeaderAction(action, syncSummary map[string]any) string {
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	adoptedRunCount := intValue(syncSummary["adopted_run_count"])
+	switch actionState {
+	case "done":
+		if adoptedRunCount > 0 {
+			return "Leader should confirm the adopted run no longer carries this follow-up as open work before completing the run."
+		}
+		return "Leader should decide whether the meeting can now move toward output, close, or adoption."
+	case "cancelled":
+		if adoptedRunCount > 0 {
+			return "Leader should realign the cancelled adopted follow-up before widening execution or marking the run complete."
+		}
+		return "Leader should record replacement work or explicit cancellation rationale if this action still affects the decision."
+	default:
+		return "Leader should assign, delegate, or adopt this reopened action into a bounded execution scope."
+	}
+}
+
+func meetingActionResolutionTeammateAction(action map[string]any) string {
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	switch actionState {
+	case "done":
+		return "No new teammate work is created by this resolution; any teammate that owned the work should report evidence through its bounded run."
+	case "cancelled":
+		return "Teammates should stop work on this action unless the leader issues a replacement bounded assignment."
+	default:
+		return "No teammate is automatically assigned by reopening this action; execution still requires leader-owned delegation or adoption."
+	}
+}
+
+func meetingActionResolutionCouncilAction(action, summary map[string]any) string {
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	switch actionState {
+	case "done":
+		if intValue(summary["open_action_count"]) > 0 {
+			return fmt.Sprintf("Council still has %s to account for before follow-up can be considered clean.", countLabel(intValue(summary["open_action_count"]), "open action", "open actions"))
+		}
+		return "Council action backlog is clear; output/adoption readiness should now depend on remaining synthesis or authority checks."
+	case "cancelled":
+		return "Council should preserve the cancellation as a governed follow-up decision rather than silently dropping the obligation."
+	default:
+		return "Council should treat this action as open follow-up until it is resolved, cancelled, delegated, or adopted."
+	}
+}
+
+func renderMeetingActionResolutionBrief(meeting, action, registry map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	syncSummary := meetingActionResolutionSyncSummary(registry, meetingID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	actionID := firstNonBlank(strings.TrimSpace(stringValue(action["action_id"])), "unknown")
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	adoptedRunIDs := anyListToStrings(toList(syncSummary["adopted_run_ids"]))
+	lines := []string{
+		"Harness Meeting Action Resolution Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Action: %s", actionID),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf(
+			"Resolution Scope: state=%s, open_actions=%d, adopted_runs=%d, adopted_open_follow_up=%d.",
+			actionState,
+			intValue(summary["open_action_count"]),
+			intValue(syncSummary["adopted_run_count"]),
+			intValue(syncSummary["adopted_open_follow_up_packet_count"]),
+		),
+		"",
+		"Current:",
+		fmt.Sprintf("- Meeting %s now has action %s marked %s: %s", meetingID, actionID, actionState, firstNonBlank(strings.TrimSpace(stringValue(action["summary"])), "No action summary recorded.")),
+		"",
+		"Why:",
+		"- Resolving a council action refreshes meeting output follow-up and syncs any already-adopted run state from the same runtime truth.",
+		"",
+		"Next:",
+		"- " + meetingActionResolutionNext(meeting, action, summary, syncSummary),
+		"",
+		"Leader:",
+		"- " + meetingActionResolutionLeaderAction(action, syncSummary),
+		"",
+		"Teammate:",
+		"- " + meetingActionResolutionTeammateAction(action),
+		"",
+		"Council:",
+		"- " + meetingActionResolutionCouncilAction(action, summary),
+		"",
+		"Adopted Follow-up:",
+	}
+	if len(adoptedRunIDs) == 0 {
+		lines = append(lines, "- No adopted run currently mirrors this meeting; this resolution affects meeting truth until close/adoption.")
+	} else {
+		lines = append(lines, fmt.Sprintf(
+			"- Synced to adopted run(s): %s. packets=%d, open=%d, done=%d, cancelled=%d.",
+			strings.Join(adoptedRunIDs, ", "),
+			intValue(syncSummary["adopted_follow_up_packet_count"]),
+			intValue(syncSummary["adopted_open_follow_up_packet_count"]),
+			intValue(syncSummary["adopted_done_follow_up_packet_count"]),
+			intValue(syncSummary["adopted_cancelled_follow_up_count"]),
+		))
+		if nextAction := strings.TrimSpace(stringValue(syncSummary["adopted_primary_next_expected_action"])); nextAction != "" {
+			lines = append(lines, "- Adopted run guidance: "+nextAction)
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
 func cmdMeetingsRemainder(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
@@ -19171,14 +19357,18 @@ func cmdMeetingsRemainder(args []string) error {
 			return printJSON(meeting)
 		})
 	case "resolve-action":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("meetings resolve-action", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("meetings resolve-action requires MEETING_ID ACTION_ID [STATE]")
 		}
-		meetingID := args[1]
-		actionID := args[2]
+		meetingID := remaining[0]
+		actionID := remaining[1]
 		actionState := "done"
-		if len(args) > 3 {
-			actionState = args[3]
+		if len(remaining) > 2 {
+			actionState = remaining[2]
 		}
 		if actionState != "done" && actionState != "cancelled" && actionState != "open" {
 			return errors.New("meetings resolve-action state must be one of: open, done, cancelled")
@@ -19191,6 +19381,7 @@ func cmdMeetingsRemainder(args []string) error {
 			meeting, _ := toMap(data["meeting"])
 			actions := toList(meeting["action_items"])
 			found := false
+			resolvedAction := map[string]any{}
 			for index, item := range actions {
 				action, ok := toMap(item)
 				if ok && stringValue(action["action_id"]) == actionID {
@@ -19200,6 +19391,7 @@ func cmdMeetingsRemainder(args []string) error {
 						action["closed_at"] = nowISO()
 					}
 					actions[index] = action
+					resolvedAction = action
 					found = true
 					break
 				}
@@ -19223,6 +19415,9 @@ func cmdMeetingsRemainder(args []string) error {
 			registry = syncAdoptedFollowUpLifecycleForMeeting(registry, meeting)
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderMeetingActionResolutionBrief(meeting, resolvedAction, registry))
 			}
 			return printJSON(meeting)
 		})

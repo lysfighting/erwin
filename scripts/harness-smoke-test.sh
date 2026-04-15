@@ -1639,8 +1639,11 @@ assert_json_field "$doctor_output_before" '"issue_count": 0' "doctor stays healt
 
 section "Action resolution"
 action_id=$(printf '%s\n' "$action_output" | sed -n 's/^[[:space:]]*"action_id": "\(action-[^"]*\)",$/\1/p' | head -n1)
-resolve_output=$(run_in_repo bash scripts/harness-meetings.sh resolve-action "$meeting_id" "$action_id" done)
-assert_json_field "$resolve_output" '"state": "done"' "meeting action can be resolved"
+resolve_output=$(run_in_repo bash scripts/harness-meetings.sh resolve-action "$meeting_id" "$action_id" done --brief)
+assert_contains "$resolve_output" 'Harness Meeting Action Resolution Briefing' "meetings resolve-action --brief explains action closure in human-readable form"
+assert_contains "$resolve_output" "Action: $action_id" "meetings resolve-action --brief names the resolved action"
+assert_contains "$resolve_output" 'Resolution Scope: state=done' "meetings resolve-action --brief reports the closed action state"
+assert_contains "$resolve_output" 'adopted_open_follow_up=0' "meetings resolve-action --brief shows adopted follow-up counts after sync"
 
 home_output_after=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output_after" '"open_meeting_action_count": 0' "home clears resolved meeting action"
@@ -1657,8 +1660,10 @@ assert_json_field "$cancelled_action_output" '"action_items"' "cancelled-follow-
 cancelled_close_output=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$run_id" "$cancelled_meeting_id" "Cancelled follow-up guidance materialized.")
 assert_json_field "$cancelled_close_output" '"state": "closed"' "cancelled-follow-up meeting closes cleanly"
 cancelled_action_id=$(printf '%s\n' "$cancelled_action_output" | sed -n 's/^[[:space:]]*"action_id": "\(action-[^"]*\)",$/\1/p' | head -n1)
-cancelled_resolve_output=$(run_in_repo bash scripts/harness-meetings.sh resolve-action "$cancelled_meeting_id" "$cancelled_action_id" cancelled)
-assert_json_field "$cancelled_resolve_output" '"state": "cancelled"' "meeting action can be cancelled"
+cancelled_resolve_output=$(run_in_repo bash scripts/harness-meetings.sh resolve-action "$cancelled_meeting_id" "$cancelled_action_id" cancelled --brief)
+assert_contains "$cancelled_resolve_output" 'Harness Meeting Action Resolution Briefing' "meetings resolve-action --brief explains action cancellation in human-readable form"
+assert_contains "$cancelled_resolve_output" 'Resolution Scope: state=cancelled' "meetings resolve-action --brief reports cancelled action state"
+assert_contains "$cancelled_resolve_output" 'cancelled=1' "meetings resolve-action --brief shows cancelled adopted follow-up sync"
 cancelled_run_output=$(run_in_repo bash scripts/harness-runs.sh get "$run_id")
 assert_json_field "$cancelled_run_output" '"next_expected_action": "Realign the cancelled adopted follow-up before widening execution."' "run keeps cancelled adopted follow-up on realignment guidance"
 cancelled_schedule_output=$(run_in_repo bash scripts/harness-missions.sh schedule)
