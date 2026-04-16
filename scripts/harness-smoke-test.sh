@@ -1644,6 +1644,13 @@ dirty_intent_recovered=$(run_in_repo bash scripts/harness-runs.sh authority-audi
 assert_json_field "$dirty_intent_recovered" '"live_state_gap_count": 0' "run authority audit clears after dirty live worktree is cleaned"
 
 section "Meeting lifecycle"
+meeting_open_brief=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Should this mission use a briefing-friendly council?" --protocol=decision-record --brief)
+assert_contains "$meeting_open_brief" 'Harness Meeting Open Briefing' "drive meeting --brief emits a human-readable meeting opening briefing"
+assert_contains "$meeting_open_brief" "Run: $run_id" "drive meeting --brief names the host run"
+assert_contains "$meeting_open_brief" 'Protocol: decision-record.' "drive meeting --brief preserves explicit decision protocol"
+assert_contains "$meeting_open_brief" 'Open meeting-' "drive meeting --brief tells the leader how to inspect the new council"
+meeting_open_brief_id=$(printf '%s\n' "$meeting_open_brief" | sed -n 's/^Meeting: \(meeting-[^[:space:]]*\)$/\1/p' | head -n1)
+run_in_repo bash scripts/harness-drive.sh meeting-close "$run_id" "$meeting_open_brief_id" "Closed drive meeting brief smoke council." >/dev/null
 meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Should this mission stay solo?")
 assert_json_field "$meeting_output" '"state": "active"' "meeting starts active"
 meeting_id=$(printf '%s\n' "$meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)

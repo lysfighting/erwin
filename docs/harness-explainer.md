@@ -447,6 +447,7 @@ Open a meeting:
 
 ```bash
 bash scripts/harness-drive.sh meeting RUN_ID "What should we do here?"
+bash scripts/harness-drive.sh meeting RUN_ID "What should we do here?" --brief
 ```
 
 Work the meeting directly:
@@ -471,6 +472,7 @@ bash scripts/harness-meetings.sh authority-audit MEETING_ID --brief
 bash scripts/harness-meetings.sh authority-audit MEETING_ID
 ```
 
+Use `drive meeting --brief` when a leader opens a council and wants the created meeting id, host run, protocol, backlog ref, and the exact `meetings summary/orchestrate --brief` follow-up path before drilling into raw JSON.
 Use `--brief` when a human wants the meeting phase, blocking reason, current council work packet, protocol-aware output state, and next leader/council action without reopening raw meeting JSON.
 Use `meetings lock-decision --brief` when the human has just bounded council scope and needs to know what was locked, why that is the current decision surface, and what leader/teammate/council action comes next.
 Use `meetings add-position --brief` when the human or teammate has just recorded a council position and needs to know what claim/phase it affected, whether more independent review or debate is still owed, and who should act next.

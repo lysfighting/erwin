@@ -15734,6 +15734,50 @@ func renderDriveActionBrief(action, previousState string, run, signal map[string
 	return strings.Join(lines, "\n")
 }
 
+func renderDriveMeetingBrief(meeting, backlogEntry, run map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	synthesis, _ := toMap(meetingSynthesisAudit(meeting))
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), strings.TrimSpace(stringValue(run["mission_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "active")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	question := firstNonBlank(strings.TrimSpace(stringValue(meeting["question"])), "No council question recorded.")
+	backlogRef := firstNonBlank(strings.TrimSpace(stringValue(backlogEntry["meeting_ref"])), meetingPath(meetingID, false))
+	next := fmt.Sprintf("Open %s with `bash scripts/harness-meetings.sh summary %s --brief`, then advance it with `bash scripts/harness-meetings.sh orchestrate %s --brief` once packet and participants are ready.", meetingID, meetingID, meetingID)
+	lines := []string{
+		"Harness Meeting Open Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Council: mission=%s, state=%s, phase=%s, protocol=%s.", missionID, state, phase, protocol),
+		fmt.Sprintf("Protocol: %s.", protocol),
+		fmt.Sprintf("Question: %s", question),
+		fmt.Sprintf("Backlog: %s.", backlogRef),
+		"",
+		"Current:",
+		"- " + fmt.Sprintf("Meeting %s is active in %s and attached to run %s.", meetingID, phase, runID),
+		"",
+		"Why:",
+		"- Leader opened a bounded council instead of letting ambiguity widen the run implicitly; conclusions still need explicit adoption back into run or mission state.",
+		"",
+		"Next:",
+		"- " + next,
+		"",
+		"Leader:",
+		"- " + meetingBriefLeaderAction(meeting, summary, synthesis, governanceGaps),
+		"",
+		"Council:",
+		"- " + meetingBriefCouncilAction(summary),
+		"",
+		"Output:",
+		"- " + meetingBriefOutput(summary),
+	}
+	return strings.Join(lines, "\n")
+}
+
 func renderDriveFollowUpBrief(invokingRun, governingRun, packet map[string]any, delegated bool) string {
 	invokingRunID := firstNonBlank(strings.TrimSpace(stringValue(invokingRun["run_id"])), "unknown")
 	governingRunID := firstNonBlank(strings.TrimSpace(stringValue(governingRun["run_id"])), invokingRunID)
@@ -16532,13 +16576,17 @@ func cmdDrive(args []string) error {
 			return printJSON(map[string]any{"run": run, "signal": signal})
 		})
 	case "meeting":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive meeting", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("drive meeting requires RUN_ID QUESTION [--protocol=evidence-review|incident-command|decision-record]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		protocol := ""
 		questionTokens := []string{}
-		for _, arg := range args[2:] {
+		for _, arg := range remaining[1:] {
 			if strings.HasPrefix(arg, "--protocol=") {
 				protocol = strings.TrimSpace(strings.TrimPrefix(arg, "--protocol="))
 			} else {
@@ -16585,6 +16633,9 @@ func cmdDrive(args []string) error {
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderDriveMeetingBrief(meeting, entry, run))
 			}
 			return printJSON(map[string]any{"meeting": meeting, "backlog_entry": entry, "run": run})
 		})

@@ -123,6 +123,9 @@ teammate_message_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/
 teammate_escalate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh escalate "$teammate_run_id" "Should packaged teammate escalate ambiguous release evidence?" --materialize --protocol=decision-record --brief)
 maintenance_reconcile_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-maintenance.sh reconcile --brief)
 maintenance_normalize_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-maintenance.sh normalize --brief)
+meeting_open_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh meeting "$run_id" "Should packaged runtime open meetings as human briefings?" --protocol=decision-record --brief)
+meeting_open_brief_id=$(printf '%s\n' "$meeting_open_brief_output" | sed -n 's/^Meeting: \(meeting-[^[:space:]]*\)$/\1/p' | head -n1)
+(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh meeting-close "$run_id" "$meeting_open_brief_id" "Closed packaged meeting-open brief smoke." >/dev/null)
 meeting_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh meeting "$run_id" "Should packaged runtime keep meeting briefings human-readable?")
 meeting_id=$(printf '%s\n' "$meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
 meeting_lock_decision_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh lock-decision "$meeting_id" "Keep packaged runtime meeting scope bounded." --reason="Packaged runtime smoke should prove decision locks stay human-readable." --authority=L2 --evidence=harness/profiles/erwin.yml --brief)
@@ -209,6 +212,8 @@ assert_contains "$signals_brief_output" 'worker-packaged-brief should keep the r
 assert_contains "$signals_adjudicate_brief_output" 'No active signal was adjudicated as superseded.' "signals adjudicate --brief works via packaged binary without Go"
 assert_contains "$maintenance_reconcile_brief_output" 'No runtime repair was needed.' "maintenance reconcile --brief works via packaged binary without Go"
 assert_contains "$maintenance_normalize_brief_output" 'No runtime normalization was needed.' "maintenance normalize --brief works via packaged binary without Go"
+assert_contains "$meeting_open_brief_output" 'Harness Meeting Open Briefing' "drive meeting --brief works via packaged binary without Go"
+assert_contains "$meeting_open_brief_output" 'Protocol: decision-record.' "packaged drive meeting brief preserves explicit council protocol without Go"
 assert_contains "$meeting_lock_decision_brief_output" 'Harness Meeting Decision Lock Briefing' "meetings lock-decision --brief works via packaged binary without Go"
 assert_contains "$meeting_lock_decision_brief_output" 'Leader should keep the council bounded to: Keep packaged runtime meeting scope bounded.' "packaged meeting decision lock brief still follows council-scope truth without Go"
 assert_contains "$meeting_orchestrate_output" '"new_phase": "setup"' "meeting orchestration works via packaged binary without Go"

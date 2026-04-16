@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-16
-- **Last Session**: 2026-04-16-G (Extended the human-facing leader layer into teammate escalation)
+- **Last Session**: 2026-04-16-H (Extended the human-facing leader layer into council creation)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-16-H** — Extended the human-facing leader layer into `drive meeting --brief`
+
+- **Council creation now has a real human-facing leader entrypoint**: `bash scripts/harness-drive.sh meeting RUN_ID QUESTION --brief` now turns the same meeting materialization mutation into a readable handoff that names the created council, host run, mission, selected decision protocol, backlog ref, and exact `meetings summary/orchestrate --brief` follow-up path
+- **Meeting-open briefings stay on the same Go control plane**: the new layer is derived after the active meeting, maintenance backlog entry, and waiting run state are persisted; default `drive meeting` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council creation**: core smoke proves source-runtime meeting-open briefings with explicit protocol selection, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-16-G** — Extended the human-facing leader layer into `teammates escalate --brief`
 
