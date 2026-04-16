@@ -11,7 +11,7 @@
 
 ## At A Glance
 
-- `20` durable notes are currently indexed across `3` recurring streams.
+- `21` durable notes are currently indexed across `3` recurring streams.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -35,12 +35,12 @@
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-04-15
+### GitHub Trending - 2026-04-16
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending?since=daily) as captured on 2026-04-15. This run used the default global trending page with no extra filters; the page rendered 12 repositories.`
-- [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) - a single `CLAUDE.md` behavior file distilling Andrej Karpathy's public LLM advice for Claude Code. 6,261 stars, 1,818 stars today.
-- [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem) - Claude Code plugin for capturing, compressing, and reinjecting session context. TypeScript. 3,431 stars, 784 stars today.
-- [jamiepine/voicebox](https://github.com/jamiepine/voicebox) - open-source voice synthesis studio with local, Docker, and desktop usage modes. TypeScript. 1,558 stars, 435 stars today.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-16. This run used the default global trending page with no extra filters; the page rendered 13 repositories.`
+- [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) - a single `CLAUDE.md` file to improve Claude Code behavior, derived from Andrej Karpathy's observations on LLM coding pitfalls. 43,081 stars, 9,646 stars today.
+- [pascalorg/editor](https://github.com/pascalorg/editor) - tool for creating and sharing 3D architectural projects. TypeScript. 12,654 stars, 1,391 stars today.
+- [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem) - Claude Code plugin that captures coding sessions, compresses them with AI, and injects relevant context into future sessions. TypeScript. 57,857 stars, 2,305 stars today.
 
 ## Durable Interpretation
 
@@ -71,9 +71,9 @@ The durable theme this week is the productization of the agent control plane.
 
 ### GitHub Trending
 
+- [2026-04-16](../radar/trending/2026-04-16.md)
 - [2026-04-15](../radar/trending/2026-04-15.md)
 - [2026-04-14](../radar/trending/2026-04-14.md)
 - [2026-04-13](../radar/trending/2026-04-13.md)
 - [2026-04-10](../radar/trending/2026-04-10.md)
 - [2026-04-09](../radar/trending/2026-04-09.md)
-- [2026-04-08](../radar/trending/2026-04-08.md)
