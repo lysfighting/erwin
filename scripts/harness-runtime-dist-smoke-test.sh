@@ -113,6 +113,7 @@ run_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.
 run_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.sh authority-audit "$run_id" --brief)
 teammate_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh assign "$run_id" worker-packaged packaged-helper "Check packaged runtime teammate brief" --scope="packaged teammate" --owns=scope:packaged-teammate --report="progress|verification")
 teammate_run_id=$(printf '%s\n' "$teammate_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+teammate_assign_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh assign "$run_id" worker-packaged-brief packaged-helper "Check packaged runtime teammate assignment brief" --scope="packaged teammate brief" --owns=scope:packaged-teammate-brief --report="progress|verification" --brief)
 teammate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh get "$teammate_run_id" --brief)
 signals_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-signals.sh active issue-9101 --brief)
 signals_adjudicate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-signals.sh adjudicate --all --brief)
@@ -188,10 +189,12 @@ assert_contains "$run_brief_output" "Run: $run_id" "runs get --brief works via p
 assert_contains "$run_brief_output" 'This run is the current foreground scheduler run and still owns mission control for issue-9101.' "packaged run brief still follows scheduler truth without Go"
 assert_contains "$run_authority_brief_output" "Run: $run_id" "runs authority-audit --brief works via packaged binary without Go"
 assert_contains "$run_authority_brief_output" "Run $run_id is still progressing toward its desired state." "packaged run authority brief still follows desired-state progress truth without Go"
+assert_contains "$teammate_assign_brief_output" 'Harness Teammate Assignment Briefing' "teammates assign --brief works via packaged binary without Go"
+assert_contains "$teammate_assign_brief_output" 'Teammate: worker-packaged-brief' "packaged teammate assignment brief preserves the delegated owner without Go"
 assert_contains "$teammate_brief_output" 'Teammate: worker-packaged' "teammates get --brief works via packaged binary without Go"
 assert_contains "$teammate_brief_output" "Assignment: mission=issue-9101, parent=$run_id, role=packaged-helper, state=ready" "packaged teammate brief still follows teammate assignment truth without Go"
 assert_contains "$signals_brief_output" 'Primary: progress signal' "signals active --brief works via packaged binary without Go"
-assert_contains "$signals_brief_output" 'worker-packaged should keep the report fresh' "packaged signal brief still follows teammate signal truth without Go"
+assert_contains "$signals_brief_output" 'worker-packaged-brief should keep the report fresh' "packaged signal brief still follows latest teammate assignment signal truth without Go"
 assert_contains "$signals_adjudicate_brief_output" 'No active signal was adjudicated as superseded.' "signals adjudicate --brief works via packaged binary without Go"
 assert_contains "$maintenance_reconcile_brief_output" 'No runtime repair was needed.' "maintenance reconcile --brief works via packaged binary without Go"
 assert_contains "$maintenance_normalize_brief_output" 'No runtime normalization was needed.' "maintenance normalize --brief works via packaged binary without Go"

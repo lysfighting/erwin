@@ -107,6 +107,13 @@ section "Delegation"
 assign_a=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-auth implementation-verifier "Patch auth callers" --scope="auth callers" --owns="scope:auth-callers" --report="progress|blockers|verification")
 assert_json_field "$assign_a" '"owner_id": "worker-auth"' "first teammate assignment created"
 run_a=$(printf '%s\n' "$assign_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+assign_brief=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-ui implementation-verifier "Patch UI callers" --scope="ui callers" --owns="scope:ui-callers" --report="progress|blockers|verification" --brief)
+assert_contains "$assign_brief" 'Harness Teammate Assignment Briefing' "teammates assign --brief emits a human-readable assignment briefing"
+assert_contains "$assign_brief" 'Teammate: worker-ui' "teammates assign --brief names the bounded teammate owner"
+assert_contains "$assign_brief" "Assignment: mission=issue-33001, role=implementation-verifier, state=ready" "teammates assign --brief explains the created teammate run context"
+assert_contains "$assign_brief" 'Scope: ui callers, ownership=scope:ui-callers' "teammates assign --brief explains assignment scope and ownership"
+assert_contains "$assign_brief" 'Leader delegated a bounded execution unit' "teammates assign --brief explains why the delegation is bounded"
+assert_contains "$assign_brief" 'worker-ui should continue Patch UI callers and report progress, blockers, verification.' "teammates assign --brief tells the teammate what to do next"
 assign_b=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-ops ops-simulator "Check release-facing auth flows" --scope="release auth smoke" --owns="scope:release-auth-smoke|file:CHANGELOG.md" --depends-on="$run_a" --report="progress|risk_raised|verification")
 assert_json_field "$assign_b" '"owner_id": "worker-ops"' "second teammate assignment created"
 run_b=$(printf '%s\n' "$assign_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
@@ -606,7 +613,7 @@ assert_json_field "$aligned_summary" '"planned_route_count": 0' "aligned-review 
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_mission_count": 1' "home surfaces active mission count"
-assert_json_field "$home_output" '"active_teammate_count": 7' "home surfaces active teammate runs"
+assert_json_field "$home_output" '"active_teammate_count": 8' "home surfaces active teammate runs"
 assert_json_field "$home_output" '"coordination_signal_count":' "home surfaces coordination signal count"
 assert_json_field "$home_output" '"dependency_blocked_count": 1' "home surfaces dependency-blocked runs"
 assert_json_field "$home_output" '"ownership_overlap_count": 0' "home stays free of ownership overlap"

@@ -13996,6 +13996,90 @@ func renderTeammateBrief(run, parentRun, mission, audit map[string]any, activeMe
 	return strings.Join(lines, "\n")
 }
 
+func renderTeammateAssignmentBrief(run, parentRun, mission, audit, assignmentSignal map[string]any, activeMeetings, activeSignals, openMeetingActions []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	parentRunID := firstNonBlank(strings.TrimSpace(stringValue(run["parent_run_id"])), firstNonBlank(strings.TrimSpace(stringValue(parentRun["run_id"])), "missing"))
+	role := firstNonBlank(strings.TrimSpace(stringValue(run["role"])), "unspecified")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	mode := firstNonBlank(strings.TrimSpace(stringValue(run["mode"])), "unknown")
+	surface := firstNonBlank(strings.TrimSpace(stringValue(run["execution_surface"])), "unspecified")
+	assignedScope := firstNonBlank(strings.TrimSpace(stringValue(run["assigned_scope"])), "unspecified")
+	contractRef := firstNonBlank(strings.TrimSpace(stringValue(run["contract_ref"])), "missing")
+	claims := ownershipClaims(run)
+	if len(claims) == 0 {
+		claims = []string{"none"}
+	}
+	dependencies := dependencyTargets(run)
+	if len(dependencies) == 0 {
+		dependencies = []string{"none"}
+	}
+	peers := teammateBriefPeerIDs(run)
+	if len(peers) == 0 {
+		peers = []string{"none"}
+	}
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(assignmentSignal["signal_id"])), "none")
+	signalKind := firstNonBlank(normalizeSignalKind(stringValue(assignmentSignal["kind"])), "progress")
+	signalFreshUntil := firstNonBlank(strings.TrimSpace(stringValue(assignmentSignal["fresh_until"])), "not recorded")
+	lines := []string{
+		"Harness Teammate Assignment Briefing",
+		fmt.Sprintf("Teammate: %s", ownerID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Parent: %s.", parentRunID),
+		fmt.Sprintf(
+			"Assignment: mission=%s, role=%s, state=%s, mode=%s, surface=%s.",
+			missionID,
+			role,
+			state,
+			mode,
+			surface,
+		),
+		fmt.Sprintf(
+			"Scope: %s, ownership=%s, depends_on=%s, peers=%s.",
+			assignedScope,
+			strings.Join(claims, ", "),
+			strings.Join(dependencies, ", "),
+			strings.Join(peers, ", "),
+		),
+		fmt.Sprintf("Contract: %s", contractRef),
+		fmt.Sprintf("Signal: %s (%s, fresh_until=%s).", signalID, signalKind, signalFreshUntil),
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		lines = append(lines, fmt.Sprintf(
+			"Delegated Follow-up: packet=%s, state=%s, meeting=%s, execution=%s.",
+			packetID,
+			firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open"),
+			firstNonBlank(strings.TrimSpace(stringValue(run["delegated_from_meeting_id"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(run["delegated_from_follow_up_execution_kind"])), "unspecified"),
+		))
+	}
+	lines = append(lines,
+		"",
+		"Current:",
+		"- "+teammateBriefCurrent(run, activeMeetings, unsatisfiedDeps),
+		"",
+		"Why:",
+		"- Leader delegated a bounded execution unit; the teammate can act inside the recorded scope, ownership selectors, reporting contract, and governed communication peers.",
+		"",
+		"Next:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), "Acknowledge the assignment and report progress, blockers, and verification."),
+		"",
+		"Leader:",
+		"- "+teammateBriefLeaderAction(run, parentRun, audit, activeMeetings, unsatisfiedDeps),
+		"",
+		"Teammate:",
+		"- "+teammateBriefTeammateAction(run, activeMeetings, unsatisfiedDeps),
+		"",
+		"Communication:",
+		"- "+teammateBriefCommunicationAction(run),
+		"",
+		"Council:",
+		"- "+teammateBriefCouncilAction(run, audit, activeMeetings, openMeetingActions),
+	)
+	return strings.Join(lines, "\n")
+}
+
 func signalBriefKindRank(kind string) int {
 	switch normalizeSignalKind(kind) {
 	case "risk_raised":
@@ -19801,12 +19885,16 @@ func cmdTeammatesRemainder(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
 	case "assign":
-		if len(args) < 4 {
+		outputModeValue, assignArgs, err := parseOutputModeFlagsOnly("teammates assign", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(assignArgs) < 3 {
 			return errors.New("teammates assign requires PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE]")
 		}
-		parentRunID := args[1]
-		teammateID := args[2]
-		role := args[3]
+		parentRunID := assignArgs[0]
+		teammateID := assignArgs[1]
+		role := assignArgs[2]
 		positionals := []string{}
 		assignedScope := ""
 		executionSurface := "worktree-thread"
@@ -19820,7 +19908,7 @@ func cmdTeammatesRemainder(args []string) error {
 		reportingExpectations := []string{}
 		delegateAdoptedFollowUp := false
 		adoptedFollowUpPacketID := ""
-		for _, arg := range args[4:] {
+		for _, arg := range assignArgs[3:] {
 			switch {
 			case strings.HasPrefix(arg, "--scope="):
 				assignedScope = strings.TrimSpace(strings.TrimPrefix(arg, "--scope="))
@@ -20078,6 +20166,19 @@ func cmdTeammatesRemainder(args []string) error {
 			assignmentSignal, err := emitSignal("progress", teammateRun, "Delegated teammate assignment: "+teammateID, fmt.Sprintf("%s assigned as %s: %s", teammateID, role, objective), []string{parentRunID, teammateRunID, stringValue(parentRun["mission_id"])}, "sibling", "high", "L2", []string{contractPath}, 12.0)
 			if err != nil {
 				return err
+			}
+			if outputModeValue == outputModeText {
+				signalLog := readSignalLog()
+				mission := readMission(strings.TrimSpace(stringValue(teammateRun["mission_id"])))
+				if mission == nil {
+					mission = map[string]any{}
+				}
+				audit := runAuthorityAudit(teammateRun, registry, signalLog)
+				activeMeetings := activeMeetingsForRun(teammateRunID)
+				activeSignals := activeSignalsForRun(signalLog, teammateRunID)
+				openActions := openMeetingActionsForRun(teammateRunID)
+				unsatisfiedDeps := unsatisfiedDependencies(teammateRun, registry)
+				return printText(renderTeammateAssignmentBrief(teammateRun, parentRun, mission, audit, assignmentSignal, activeMeetings, activeSignals, openActions, unsatisfiedDeps))
 			}
 			return printJSON(map[string]any{"run": teammateRun, "signal": assignmentSignal})
 		})

@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-16
-- **Last Session**: 2026-04-16-C (Extended the human-facing leader layer into adopted follow-up resolution)
+- **Last Session**: 2026-04-16-D (Extended the human-facing leader layer into teammate assignment)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-16-D** — Extended the human-facing leader layer into `teammates assign --brief`
+
+- **Teammate assignment now has a real human-facing leader entrypoint**: `bash scripts/harness-teammates.sh assign PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE] --brief` now turns the same bounded delegation mutation into a readable handoff that names the created teammate run, parent run, contract, ownership selectors, dependencies, governed communication peers, assignment signal, and next leader/teammate/council boundary
+- **Assignment briefings stay on the same Go control plane**: the new layer is derived after the teammate run, parent run update, contract, and assignment signal are persisted; default `teammates assign` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary teammate delegation creation**: teammate smoke proves ordinary assignment briefings from source runtime, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-16-C** — Extended the human-facing leader layer into `drive resolve-follow-up --brief`
 
