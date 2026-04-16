@@ -127,6 +127,10 @@ drive_start_brief=$(run_in_repo bash scripts/harness-drive.sh start "$brief_run_
 assert_contains "$drive_start_brief" 'Harness Drive Action Briefing' "drive start --brief emits a human-readable drive briefing"
 assert_contains "$drive_start_brief" 'Action: start' "drive start --brief names the state mutation"
 assert_contains "$drive_start_brief" 'State: ready -> executing' "drive start --brief explains the state transition"
+drive_report_brief=$(run_in_repo bash scripts/harness-drive.sh report "$brief_run_id" "Brief progress checkpoint." --brief)
+assert_contains "$drive_report_brief" 'Action: report' "drive report --brief names the report mutation"
+assert_contains "$drive_report_brief" 'State: executing -> executing' "drive report --brief explains state is refreshed without transition"
+assert_contains "$drive_report_brief" 'Brief progress checkpoint.' "drive report --brief shows the reported progress"
 drive_wait_brief=$(run_in_repo bash scripts/harness-drive.sh wait "$brief_run_id" "Waiting on smoke dependency." --on=run-smoke-dependency --brief)
 assert_contains "$drive_wait_brief" 'Action: wait' "drive wait --brief names the dependency hold"
 assert_contains "$drive_wait_brief" 'State: executing -> waiting' "drive wait --brief explains the state transition"

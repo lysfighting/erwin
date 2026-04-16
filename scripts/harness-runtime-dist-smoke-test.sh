@@ -96,6 +96,7 @@ doctor_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-do
 claim_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-claim.sh 9100 "Packaged Runtime Brief Action Mission" --owns="file:harness/README.md" --brief)
 brief_run_id=$(printf '%s\n' "$claim_brief_output" | sed -n 's/^Run: \(run-[^[:space:]]*\)$/\1/p' | head -n1)
 drive_start_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh start "$brief_run_id" "Packaged brief execution started." --brief)
+drive_report_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh report "$brief_run_id" "Packaged brief progress checkpoint." --brief)
 drive_wait_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh wait "$brief_run_id" "Packaged brief dependency wait." --on=run-packaged-dependency --brief)
 drive_block_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh block "$brief_run_id" "Packaged brief blocker." --brief)
 drive_resume_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh resume "$brief_run_id" "Packaged brief blocker cleared." --brief)
@@ -137,6 +138,8 @@ assert_contains "$home_brief_output" 'No active governed execution is in flight.
 assert_contains "$doctor_brief_output" 'Health: healthy' "doctor --brief works via packaged binary without Go"
 assert_contains "$claim_brief_output" 'Harness Claim Briefing' "claim --brief works via packaged binary without Go"
 assert_contains "$drive_start_brief_output" 'Action: start' "drive start --brief works via packaged binary without Go"
+assert_contains "$drive_report_brief_output" 'Action: report' "drive report --brief works via packaged binary without Go"
+assert_contains "$drive_report_brief_output" 'Packaged brief progress checkpoint.' "packaged drive report brief preserves reported progress without Go"
 assert_contains "$drive_wait_brief_output" 'Action: wait' "drive wait --brief works via packaged binary without Go"
 assert_contains "$drive_block_brief_output" 'Signal: sig-' "drive block --brief works via packaged binary without Go"
 assert_contains "$drive_resume_brief_output" 'Action: resume' "drive resume --brief works via packaged binary without Go"

@@ -65,7 +65,7 @@ Use this when the model should act as the harness leader:
 - inspect graph-level mission conflicts through `missions authority-audit --all` when active missions may be colliding across ownership boundaries
 - draft or create executable issues
 - claim work into execution with `claim --brief` when a human needs the created mission/run/contract and next leader action before drilling into raw JSON
-- drive core run actions with `drive start|resume|wait|block|complete --brief` when a human needs the state transition, emitted signal, and next leader/teammate/council action before drilling into raw JSON
+- drive core run actions with `drive report|start|resume|wait|block|complete --brief` when a human needs the progress report, state transition, emitted signal, and next leader/teammate/council action before drilling into raw JSON
 - convene and close councils
 - assign and govern bounded teammate execution
 - transfer bounded ownership selectors formally when work changes hands

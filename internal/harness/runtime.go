@@ -15349,6 +15349,8 @@ func renderClaimBrief(summary map[string]any) string {
 
 func driveActionWhy(action string) string {
 	switch action {
+	case "report":
+		return "Reporting progress refreshes durable run truth so the scheduler, doctor, and leader stop depending on chat memory."
 	case "start":
 		return "Starting a run makes the leader's execution intent explicit instead of relying on chat momentum."
 	case "resume":
@@ -15367,6 +15369,8 @@ func driveActionWhy(action string) string {
 func driveActionLeaderAction(action string, run, signal map[string]any) string {
 	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "RUN_ID")
 	switch action {
+	case "report":
+		return fmt.Sprintf("Use the refreshed report on %s to choose whether to continue, delegate, hold, or ship.", runID)
 	case "start":
 		return "Keep the work inside the recorded ownership boundary and report material progress before widening scope."
 	case "resume":
@@ -15395,6 +15399,8 @@ func driveActionTeammateAction(action string, run map[string]any) string {
 	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), "leader-main")
 	if ownerType == "teammate" {
 		switch action {
+		case "report":
+			return fmt.Sprintf("%s refreshed their bounded execution state; the leader should monitor whether follow-up is still needed.", ownerID)
 		case "complete":
 			return fmt.Sprintf("%s should report completion evidence back to the leader before the parent run widens.", ownerID)
 		case "wait":
@@ -15410,6 +15416,8 @@ func driveActionTeammateAction(action string, run map[string]any) string {
 
 func driveActionCouncilAction(action string, run map[string]any) string {
 	switch action {
+	case "report":
+		return "Council work is not required unless this report raises ambiguity, risk, or conflicting evidence."
 	case "block":
 		return "Open or materialize a council only if the blocker is an ambiguous decision rather than a direct execution issue."
 	case "wait":
@@ -15733,11 +15741,15 @@ func cmdDrive(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
 	case "report":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive report", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("drive report requires RUN_ID SUMMARY")
 		}
-		runID := args[1]
-		summary := strings.TrimSpace(strings.Join(args[2:], " "))
+		runID := remaining[0]
+		summary := strings.TrimSpace(strings.Join(remaining[1:], " "))
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			index := findRunIndex(registry, runID)
@@ -15746,6 +15758,7 @@ func cmdDrive(args []string) error {
 			}
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
+			previousState := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
 			run["latest_summary"] = summary
 			run["last_reported_at"] = nowISO()
 			run["updated_at"] = nowISO()
@@ -15753,6 +15766,9 @@ func cmdDrive(args []string) error {
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderDriveActionBrief("report", previousState, run, nil))
 			}
 			return printJSON(run)
 		})

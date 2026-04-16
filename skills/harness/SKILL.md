@@ -30,7 +30,7 @@ The harness is file-backed:
    Use `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE] --brief` when you want the created mission/run/contract and leader boundary in readable prose first.
 7. Drive run state:
    `bash scripts/harness-drive.sh ...`
-   Use `--brief` on `start`, `resume`, `wait`, `block`, and `complete` when you want the state mutation explained before drilling into raw JSON.
+   Use `--brief` on `report`, `start`, `resume`, `wait`, `block`, and `complete` when you want the progress update or state mutation explained before drilling into raw JSON.
 8. Delegate bounded work when leader execution should split:
    `bash scripts/harness-teammates.sh ...`
 9. Prepare release handoff when execution is done:
@@ -197,7 +197,7 @@ The harness is file-backed:
 
 - Treat `harness-home` as the control plane entry point.
 - Use `claim --brief` when a human needs the newly created mission/run/contract, provisioning result, and next leader action without reading raw claim JSON.
-- Use `drive start|resume|wait|block|complete --brief` when a human needs the run state transition, emitted blocker signal, and leader/teammate/council boundary without reading raw run JSON.
+- Use `drive report|start|resume|wait|block|complete --brief` when a human needs the run progress update, state transition, emitted blocker signal, and leader/teammate/council boundary without reading raw run JSON.
 - Use `missions schedule --brief` when you want the scheduler portfolio itself in human-readable form before drilling into raw scheduler JSON or the durable snapshot.
 - Treat `harness-missions.sh` as the mission-level control plane above individual runs.
 - Treat `harness-adapter.sh validate` as the package boundary check when bootstrap/sync behavior is in doubt.

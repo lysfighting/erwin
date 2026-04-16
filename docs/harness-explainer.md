@@ -375,6 +375,7 @@ Start the run:
 ```bash
 bash scripts/harness-drive.sh start RUN_ID
 bash scripts/harness-drive.sh start RUN_ID --brief
+bash scripts/harness-drive.sh report RUN_ID "progress checkpoint" --brief
 ```
 
 ### 4. Drive Execution

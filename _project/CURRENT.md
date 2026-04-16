@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-16
-- **Last Session**: 2026-04-16-A (Extended the human-facing leader layer into claim and core drive action handoffs)
+- **Last Session**: 2026-04-16-B (Extended the human-facing leader layer into drive progress reports)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-16-B** — Extended the human-facing leader layer into `drive report --brief`
+
+- **Progress reporting now has a real human-facing leader entrypoint**: `bash scripts/harness-drive.sh report RUN_ID SUMMARY --brief` now turns the same report mutation into a readable handoff that names the run, mission, refreshed state, reported progress, and next leader/teammate/council boundary
+- **Report briefings stay on the same Go control plane**: the new layer is derived from the updated run record after `latest_summary`, `last_reported_at`, and `updated_at` are persisted; default `drive report` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary progress reporting**: core smoke proves report brief output on live runtime state, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-16-A** — Extended the human-facing leader layer into `claim --brief` and core `drive ... --brief` action handoffs
 

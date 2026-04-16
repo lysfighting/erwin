@@ -32,6 +32,7 @@ Current human-direct entry stack:
 - `bash scripts/harness-home.sh --brief`
 - `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE] --brief`
 - `bash scripts/harness-drive.sh start RUN_ID --brief`
+- `bash scripts/harness-drive.sh report RUN_ID "progress checkpoint" --brief`
 - `bash scripts/harness-drive.sh resume RUN_ID --brief`
 - `bash scripts/harness-drive.sh wait RUN_ID "reason" --brief`
 - `bash scripts/harness-drive.sh block RUN_ID "reason" --brief`
@@ -139,7 +140,7 @@ Shell entrypoints are intentionally thin:
 
 Human-facing runtime note:
 
-- `home` and `doctor` now support `--brief` for leader-readable summaries derived directly from the same control-plane truth, and `claim --brief`, `drive start|resume|wait|block|complete --brief`, `missions schedule --brief`, `missions graph --brief`, `missions get MISSION_ID --brief`, `missions authority-audit MISSION_ID --brief`, `missions authority-audit --all --brief`, `runs get RUN_ID --brief`, `runs authority-audit RUN_ID --brief`, `signals active [MISSION_ID] --brief`, `signals adjudicate SIGNAL_ID|--all --brief`, `teammates get TEAMMATE_RUN_ID --brief`, `meetings summary MEETING_ID --brief`, `meetings lock-decision MEETING_ID TEXT --brief`, `meetings add-position MEETING_ID TEAMMATE_RUN_ID PHASE STANCE TEXT --brief`, `meetings add-finding MEETING_ID accepted|rejected|unresolved TEXT --brief`, `meetings add-action MEETING_ID TEXT --brief`, `meetings resolve-action MEETING_ID ACTION_ID [STATE] --brief`, `meetings orchestrate MEETING_ID --brief`, `meetings authority-audit MEETING_ID --brief`, `maintenance reconcile --brief`, and `maintenance normalize --brief` now do the same across claim, drive, scheduler, mission, graph, run, signal, teammate, council, and maintenance-repair layers; the default output remains machine-readable JSON for audits, tooling, and exact state inspection
+- `home` and `doctor` now support `--brief` for leader-readable summaries derived directly from the same control-plane truth, and `claim --brief`, `drive report|start|resume|wait|block|complete --brief`, `missions schedule --brief`, `missions graph --brief`, `missions get MISSION_ID --brief`, `missions authority-audit MISSION_ID --brief`, `missions authority-audit --all --brief`, `runs get RUN_ID --brief`, `runs authority-audit RUN_ID --brief`, `signals active [MISSION_ID] --brief`, `signals adjudicate SIGNAL_ID|--all --brief`, `teammates get TEAMMATE_RUN_ID --brief`, `meetings summary MEETING_ID --brief`, `meetings lock-decision MEETING_ID TEXT --brief`, `meetings add-position MEETING_ID TEAMMATE_RUN_ID PHASE STANCE TEXT --brief`, `meetings add-finding MEETING_ID accepted|rejected|unresolved TEXT --brief`, `meetings add-action MEETING_ID TEXT --brief`, `meetings resolve-action MEETING_ID ACTION_ID [STATE] --brief`, `meetings orchestrate MEETING_ID --brief`, `meetings authority-audit MEETING_ID --brief`, `maintenance reconcile --brief`, and `maintenance normalize --brief` now do the same across claim, drive, scheduler, mission, graph, run, signal, teammate, council, and maintenance-repair layers; the default output remains machine-readable JSON for audits, tooling, and exact state inspection
 
 Runtime selection order:
 
