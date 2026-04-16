@@ -14180,6 +14180,76 @@ func renderTeammateMessageBrief(sourceRun, targetRun, mission, signal, registry 
 	return strings.Join(lines, "\n")
 }
 
+func renderTeammateEscalationBrief(run, parentRun, mission, signal, meeting, registry map[string]any, materialized bool, requestedProtocol string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	parentRunID := firstNonBlank(strings.TrimSpace(stringValue(run["parent_run_id"])), strings.TrimSpace(stringValue(parentRun["run_id"])), "missing")
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "none")
+	signalKind := firstNonBlank(normalizeSignalKind(stringValue(signal["kind"])), "requires_meeting")
+	signalFreshUntil := firstNonBlank(strings.TrimSpace(stringValue(signal["fresh_until"])), "not recorded")
+	question := firstNonBlank(strings.TrimSpace(stringValue(signal["summary"])), strings.TrimSpace(stringValue(run["status_reason"])), "No escalation question recorded.")
+	assignedScope := firstNonBlank(strings.TrimSpace(stringValue(run["assigned_scope"])), "unspecified")
+	contractRef := firstNonBlank(strings.TrimSpace(stringValue(run["contract_ref"])), "none")
+	protocol := ""
+	protocolReason := ""
+	meetingID := "not materialized"
+	if materialized && len(meeting) > 0 {
+		meetingID = firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+		protocol = firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+		protocolReason = strings.TrimSpace(stringValue(meeting["decision_protocol_reason"]))
+	} else {
+		protocol, protocolReason = inferMeetingDecisionProtocol(run, question, requestedProtocol)
+	}
+	materializedLabel := "no"
+	if materialized && len(meeting) > 0 {
+		materializedLabel = "yes"
+	}
+	next := signalBriefLeaderAction(signal, registry)
+	if materialized && len(meeting) > 0 {
+		next = fmt.Sprintf("Open %s with `bash scripts/harness-meetings.sh summary %s --brief`, then advance the council with `bash scripts/harness-meetings.sh orchestrate %s --brief`.", meetingID, meetingID, meetingID)
+	}
+	council := signalBriefCouncilAction(signal)
+	if materialized && len(meeting) > 0 {
+		council = fmt.Sprintf("Council %s is active under %s; keep the question bounded and convert output into leader-adopted run or mission state.", meetingID, protocol)
+	}
+	lines := []string{
+		"Harness Teammate Escalation Briefing",
+		fmt.Sprintf("Teammate: %s", ownerID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Parent: %s.", parentRunID),
+		fmt.Sprintf("Escalation: kind=%s, signal=%s, fresh_until=%s, materialized=%s.", signalKind, signalID, signalFreshUntil, materializedLabel),
+		fmt.Sprintf("Meeting: %s.", meetingID),
+		fmt.Sprintf("Protocol: %s.", protocol),
+		fmt.Sprintf("Scope: mission=%s, teammate_scope=%s, contract=%s.", missionID, assignedScope, contractRef),
+		fmt.Sprintf("Question: %s", question),
+	}
+	if protocolReason != "" {
+		lines = append(lines, fmt.Sprintf("Protocol Reason: %s", protocolReason))
+	}
+	lines = append(lines,
+		"",
+		"Current:",
+		"- "+signalBriefLine(signal),
+		"",
+		"Why:",
+		"- A bounded teammate is surfacing ambiguity or risk instead of widening its assignment implicitly; the leader must decide whether this becomes council work and what authority it can change.",
+		"",
+		"Next:",
+		"- "+next,
+		"",
+		"Leader:",
+		"- "+next,
+		"",
+		"Teammate:",
+		"- "+fmt.Sprintf("%s should pause scope-widening work, keep evidence fresh, and participate only inside the bounded question.", ownerID),
+		"",
+		"Council:",
+		"- "+council,
+	)
+	return strings.Join(lines, "\n")
+}
+
 func signalBriefKindRank(kind string) int {
 	switch normalizeSignalKind(kind) {
 	case "risk_raised":
@@ -20496,14 +20566,18 @@ func cmdTeammatesRemainder(args []string) error {
 			return printJSON(map[string]any{"signal": signal, "source_run": sourceRun, "target_run": targetRun})
 		})
 	case "escalate":
-		if len(args) < 3 {
+		outputModeValue, escalateArgs, err := parseOutputModeFlagsOnly("teammates escalate", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(escalateArgs) < 2 {
 			return errors.New("teammates escalate requires RUN_ID QUESTION [--materialize] [--protocol=evidence-review|incident-command|decision-record]")
 		}
-		runID := args[1]
+		runID := escalateArgs[0]
 		materialize := false
 		protocol := ""
 		questionTokens := []string{}
-		for _, arg := range args[2:] {
+		for _, arg := range escalateArgs[1:] {
 			if arg == "--materialize" {
 				materialize = true
 			} else if strings.HasPrefix(arg, "--protocol=") {
@@ -20533,9 +20607,10 @@ func cmdTeammatesRemainder(args []string) error {
 			run["updated_at"] = nowISO()
 			run["active_signals"] = appendUniqueText(toList(run["active_signals"]), stringValue(signal["signal_id"]))
 			payload := map[string]any{"signal": signal, "run": run}
+			meeting := map[string]any{}
 			if materialize {
 				meetingID := newMeetingID(stringValue(run["mission_id"]))
-				meeting, err := materializeMeeting(meetingID, run, question, stringValue(run["owner_id"]), protocol)
+				meeting, err = materializeMeeting(meetingID, run, question, stringValue(run["owner_id"]), protocol)
 				if err != nil {
 					return err
 				}
@@ -20552,6 +20627,19 @@ func cmdTeammatesRemainder(args []string) error {
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if outputModeValue == outputModeText {
+				parentRun := map[string]any{}
+				if parentRunID := strings.TrimSpace(stringValue(run["parent_run_id"])); parentRunID != "" {
+					if parentIndex := findRunIndex(registry, parentRunID); parentIndex >= 0 {
+						parentRun, _ = toMap(toList(registry["runs"])[parentIndex])
+					}
+				}
+				mission := readMission(strings.TrimSpace(stringValue(run["mission_id"])))
+				if mission == nil {
+					mission = map[string]any{}
+				}
+				return printText(renderTeammateEscalationBrief(run, parentRun, mission, signal, meeting, registry, materialize, protocol))
 			}
 			return printJSON(payload)
 		})

@@ -435,9 +435,11 @@ Govern teammate communication:
 ```bash
 bash scripts/harness-teammates.sh message TEAMMATE_A TEAMMATE_B interface_change "Signature changed"
 bash scripts/harness-teammates.sh message TEAMMATE_A TEAMMATE_B interface_change "Signature changed" --brief
+bash scripts/harness-teammates.sh escalate TEAMMATE_RUN_ID "Do we need a decision here?" --materialize --brief
 ```
 
 Use `teammates message --brief` when linked teammates need governed communication that a human can read immediately: who sent it, who received it, what signal kind it emitted, what evidence supports it, and whether the leader or a council needs to act.
+Use `teammates escalate --brief` when a bounded teammate needs leader/council attention: what question is being raised, which `requires_meeting` signal was emitted, whether a council was materialized, which decision protocol applies, and what the leader should open next.
 
 ### 6. Use Councils And Meetings
 

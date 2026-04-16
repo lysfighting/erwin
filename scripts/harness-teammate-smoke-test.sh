@@ -299,6 +299,13 @@ assert_json_field "$escalate_output" '"kind": "requires_meeting"' "teammate esca
 assert_json_field "$escalate_output" '"state": "active"' "teammate escalation materializes active meeting"
 meeting_signal_id=$(printf '%s\n' "$escalate_output" | sed -n 's/^[[:space:]]*"signal_id": "\(sig-[^"]*\)",$/\1/p' | head -n1)
 meeting_id=$(printf '%s\n' "$escalate_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+escalate_brief=$(run_in_repo bash scripts/harness-teammates.sh escalate "$run_b" "Should release notes mention the scoped auth caller contract?" --materialize --protocol=decision-record --brief)
+assert_contains "$escalate_brief" 'Harness Teammate Escalation Briefing' "teammates escalate --brief emits a human-readable escalation briefing"
+assert_contains "$escalate_brief" "Teammate: worker-ops" "teammates escalate --brief names the escalating teammate"
+assert_contains "$escalate_brief" 'Escalation: kind=requires_meeting, signal=sig-' "teammates escalate --brief names the meeting signal"
+assert_contains "$escalate_brief" 'Meeting: meeting-' "teammates escalate --brief names the materialized council"
+assert_contains "$escalate_brief" 'Protocol: decision-record.' "teammates escalate --brief preserves explicit decision protocol"
+assert_contains "$escalate_brief" 'Open meeting-' "teammates escalate --brief tells the leader how to inspect the council"
 
 role_a=$(run_in_repo bash scripts/harness-meetings.sh add-role "$meeting_id" implementation-verifier --mission="Verify the scoped auth change against code and release notes." --allow="L1: live git state|L2: active runtime state|L3: committed harness definitions" --forbid="L4+: stale summaries")
 role_b=$(run_in_repo bash scripts/harness-meetings.sh add-role "$meeting_id" ops-simulator --mission="Simulate release-facing operator impact." --allow="L1: live git state|L2: active runtime state|L3: committed harness definitions" --forbid="Unverified memory")

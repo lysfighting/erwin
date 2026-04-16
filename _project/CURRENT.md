@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-16
-- **Last Session**: 2026-04-16-F (Extended the human-facing leader layer into teammate messaging)
+- **Last Session**: 2026-04-16-G (Extended the human-facing leader layer into teammate escalation)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-16-G** — Extended the human-facing leader layer into `teammates escalate --brief`
+
+- **Teammate escalation now has a real human-facing leader entrypoint**: `bash scripts/harness-teammates.sh escalate TEAMMATE_RUN_ID QUESTION --brief` now turns the same teammate escalation mutation into a readable handoff that names the escalating teammate, emitted `requires_meeting` signal, optional materialized council, selected decision protocol, question, and next leader/teammate/council boundary
+- **Escalation briefings stay on the same Go control plane**: the new layer is derived after the escalation signal and optional council materialization are persisted; default `teammates escalate` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary teammate escalation**: teammate smoke proves source-runtime materialized escalation briefings with explicit protocol selection, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-16-F** — Extended the human-facing leader layer into `teammates message --brief`
 
