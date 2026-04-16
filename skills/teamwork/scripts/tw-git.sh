@@ -20,6 +20,7 @@
 #   bash tw-git.sh worktree-find-by-branch BRANCH       # Find worktree path for a branch
 #   bash tw-git.sh log-since [BASE]                     # Show commits + diff stat since base
 #   bash tw-git.sh cut-release VERSION                  # Cut rc/VERSION from base (remote-only, no checkout)
+#   bash tw-git.sh rebuild-rc-on-prod RC PROD VERSION [--dry-run]  # Rebuild rc/VERSION on top of PROD via commit-tree
 #   bash tw-git.sh slugify TITLE                         # Slugify title for branch names
 #   bash tw-git.sh find-rc                               # Find active RC branch (exit 1=none, 3=multiple)
 #   bash tw-git.sh next-version PREFIX                   # Derive next patch version from tags
@@ -74,7 +75,7 @@ usage() {
   echo "             rebase, tag, commit, worktree-guard, claim-setup," >&2
   echo "             worktree-add, worktree-remove," >&2
   echo "             worktree-main-repo, worktree-find-by-branch, log-since," >&2
-  echo "             cut-release, slugify, find-rc, next-version," >&2
+  echo "             cut-release, rebuild-rc-on-prod, slugify, find-rc, next-version," >&2
   echo "             list-merged-branches, milestone-resolve" >&2
   exit 1
 }
@@ -315,6 +316,101 @@ cmd_cut_release() {
     exit 2
   }
   echo "$rc_branch"
+}
+
+cmd_rebuild_rc_on_prod() {
+  # USAGE: rebuild-rc-on-prod RC_BRANCH PROD_BRANCH VERSION [--dry-run]
+  #
+  # Rebuilds origin/RC_BRANCH on top of origin/PROD_BRANCH using git commit-tree:
+  # the new commit has the RC branch's tree but PROD branch as its parent, so
+  # merge-base(rebuilt_rc, prod) = prod HEAD. This turns the RC PR into a clean
+  # fast-forward, avoiding the squash-only release conflict pattern where RC
+  # diverges from prod since the original fork point.
+  #
+  # Main-only files (present on prod but not on rc) are implicitly deleted by
+  # the new commit. They are reported on stdout so the caller can confirm
+  # before pushing.
+  #
+  # Stdout (key=value, newline-separated; MAIN_ONLY_FILES uses heredoc framing):
+  #   OLD_SHA=<previous origin/RC_BRANCH sha>
+  #   NEW_SHA=<commit-tree result>
+  #   MAIN_ONLY_FILES<<EOF / ...paths.../ EOF   (or MAIN_ONLY_FILES= if none)
+  #   STATUS=dry-run | pushed | already-fast-forwardable
+  #
+  # Progress/errors go to stderr.
+
+  local rc_branch="${1:-}" prod_branch="${2:-}" version="${3:-}" dry_run=0
+  if [ $# -ge 4 ] && [ "$4" = "--dry-run" ]; then
+    dry_run=1
+  fi
+  if [ -z "$rc_branch" ] || [ -z "$prod_branch" ] || [ -z "$version" ]; then
+    echo "ERROR: rebuild-rc-on-prod requires RC_BRANCH PROD_BRANCH VERSION [--dry-run]" >&2
+    exit 1
+  fi
+
+  git fetch origin "$rc_branch" "$prod_branch" 2>/dev/null || {
+    echo "ERROR: Could not fetch $rc_branch or $prod_branch from origin" >&2
+    exit 2
+  }
+
+  local old_sha rc_tree prod_sha
+  old_sha=$(git rev-parse "origin/$rc_branch" 2>/dev/null) || {
+    echo "ERROR: origin/$rc_branch does not exist" >&2
+    exit 2
+  }
+  rc_tree=$(git rev-parse "origin/$rc_branch^{tree}" 2>/dev/null) || exit 2
+  prod_sha=$(git rev-parse "origin/$prod_branch" 2>/dev/null) || {
+    echo "ERROR: origin/$prod_branch does not exist" >&2
+    exit 2
+  }
+
+  # Short-circuit: if prod is already an ancestor of rc, the PR will fast-forward
+  # naturally — rebuild would be a no-op churn and can be skipped.
+  if git merge-base --is-ancestor "$prod_sha" "$old_sha" 2>/dev/null; then
+    echo "OLD_SHA=$old_sha"
+    echo "NEW_SHA=$old_sha"
+    echo "MAIN_ONLY_FILES="
+    echo "STATUS=already-fast-forwardable"
+    return 0
+  fi
+
+  # Files added in prod relative to rc = present on prod but not on rc.
+  # After rebuild the new commit has rc's tree, so these files effectively
+  # disappear from the rc branch — caller must confirm this is intentional.
+  local main_only_files
+  main_only_files=$(git diff --name-only --diff-filter=A \
+    "origin/$rc_branch..origin/$prod_branch" 2>/dev/null || true)
+
+  local new_sha
+  new_sha=$(git commit-tree "$rc_tree" -p "$prod_sha" -m "release: $version") || {
+    echo "ERROR: git commit-tree failed" >&2
+    exit 2
+  }
+
+  echo "OLD_SHA=$old_sha"
+  echo "NEW_SHA=$new_sha"
+  if [ -n "$main_only_files" ]; then
+    echo "MAIN_ONLY_FILES<<EOF"
+    printf '%s\n' "$main_only_files"
+    echo "EOF"
+  else
+    echo "MAIN_ONLY_FILES="
+  fi
+
+  if [ $dry_run -eq 1 ]; then
+    echo "STATUS=dry-run"
+    return 0
+  fi
+
+  # --force-with-lease protects against concurrent RC updates: if someone else
+  # pushed to rc between our fetch and our push, the lease fails and we abort.
+  if git push origin "$new_sha:refs/heads/$rc_branch" \
+       --force-with-lease="$rc_branch:$old_sha" 2>&1; then
+    echo "STATUS=pushed"
+  else
+    echo "ERROR: force-push of rebuilt $rc_branch failed (lease violation or network error)" >&2
+    exit 2
+  fi
 }
 
 cmd_slugify() {
@@ -709,6 +805,7 @@ case "$SUBCOMMAND" in
   worktree-find-by-branch) cmd_worktree_find_by_branch "$@" ;;
   log-since)              cmd_log_since "$@" ;;
   cut-release)            cmd_cut_release "$@" ;;
+  rebuild-rc-on-prod)     cmd_rebuild_rc_on_prod "$@" ;;
   slugify)                cmd_slugify "$@" ;;
   find-rc)                cmd_find_rc ;;
   next-version)           cmd_next_version "$@" ;;

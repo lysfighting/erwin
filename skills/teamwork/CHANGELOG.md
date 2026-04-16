@@ -2,6 +2,20 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.13.0] — 2026-04-16
+
+### Added — RC rebuild on production for squash-only release patterns
+
+- **team-rc.md Step P4.5** (new): inserted between P4 confirmation and P5 release notes. Triggered only when `BASE_BRANCH != PROD_BRANCH` AND `release.strategy: rebuild-on-prod` in `config.yml`. Default `cut-only` preserves legacy behavior, so develop→main and single-branch repos are unaffected.
+- **tw-git.sh `rebuild-rc-on-prod`** (new subcommand): rebuilds `origin/rc/VERSION` via `git commit-tree`, keeping the RC tree but setting `origin/PROD_BRANCH` as the parent. Pushes with `--force-with-lease`. Supports `--dry-run` to preview before any remote mutation. Outputs KV format (`OLD_SHA`, `NEW_SHA`, `MAIN_ONLY_FILES`, `STATUS`) for md-layer parsing.
+- **Main-only file guard**: when rebuild would implicitly delete files present on prod but not on rc, user sees the file list via `AskUserQuestion` with three options — execute rebuild / cherry-pick first then retry / abort.
+- **Rollback hint**: old RC sha is printed before force-push so the user can manually restore with `git push origin OLD_SHA:RC_BRANCH --force-with-lease` if regression appears after promote.
+- **Why**: in squash-only release repos (e.g., `pre-launch` → `main` where every release is a squash merge), main and base re-diverge after every release. The merge-base between `rc/VERSION` and main stays anchored at the original repo fork point, so the PR rejects with `mergeStateStatus=DIRTY` and conflicts across every direct-to-main change in history. Observed on vi_agent V0.1.11 (97-file conflict, auto-merge timed out after 10 min). Previously required manual `git commit-tree` rebuild; now automated with explicit opt-in.
+
+### Fixed — Release notes date filter now uses UTC Z format
+
+- **team-rc.md Step P5**: `PREV_DATE` is now normalized to `YYYY-MM-DDTHH:MM:SSZ` UTC format via `git log --format=%at` + `date -u -r "$PREV_TS"` (BSD / macOS) or `date -u -d "@$PREV_TS"` (GNU / Linux). Previously used raw `%aI` output which emits local-tz ISO like `2026-04-14T20:38:18+08:00`. GitHub API `mergedAt` is always UTC Z like `2026-04-14T14:51:49Z`. String comparison across the two formats silently dropped PRs merged in the offset window (e.g. UTC `12:38:18Z` ~ `20:38:18+08:00` vanished). Observed incident: PR #1247 missing from V0.1.11 release notes.
+
 ## [3.12.1] — 2026-04-03
 
 ### Fixed — RC promote tag uses PR merge commit SHA instead of origin/main
