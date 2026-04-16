@@ -272,6 +272,13 @@ message_output=$(run_in_repo bash scripts/harness-teammates.sh message "$run_a" 
 assert_json_field "$message_output" '"kind": "interface_change"' "teammate message emits sibling signal"
 assert_json_field "$message_output" "\"$run_b\"" "teammate message targets sibling run"
 message_signal_id=$(printf '%s\n' "$message_output" | sed -n 's/^[[:space:]]*"signal_id": "\(sig-[^"]*\)",$/\1/p' | head -n1)
+message_brief=$(run_in_repo bash scripts/harness-teammates.sh message "$run_a" "$run_b" interface_change "Caller signature still requires scope for release note review" --evidence=src/auth.ts --brief)
+assert_contains "$message_brief" 'Harness Teammate Message Briefing' "teammates message --brief emits a human-readable message briefing"
+assert_contains "$message_brief" "Source: worker-auth ($run_a)." "teammates message --brief names the source teammate"
+assert_contains "$message_brief" "Target: worker-ops ($run_b)." "teammates message --brief names the target teammate"
+assert_contains "$message_brief" 'Message: kind=interface_change, signal=sig-' "teammates message --brief names the message signal"
+assert_contains "$message_brief" 'governed teammate-to-teammate communication' "teammates message --brief explains governed communication"
+assert_contains "$message_brief" 'Review the interface-change signal' "teammates message --brief tells the leader how to handle interface-change communication"
 
 section "Mission authority"
 mission_control_output=$(run_in_repo bash scripts/harness-missions.sh get issue-33001)

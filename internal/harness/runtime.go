@@ -14132,6 +14132,54 @@ func renderTeammateReportBrief(run, parentRun, mission, audit, signal, registry 
 	return strings.Join(lines, "\n")
 }
 
+func renderTeammateMessageBrief(sourceRun, targetRun, mission, signal, registry map[string]any) string {
+	sourceRunID := firstNonBlank(strings.TrimSpace(stringValue(sourceRun["run_id"])), "unknown")
+	targetRunID := firstNonBlank(strings.TrimSpace(stringValue(targetRun["run_id"])), "unknown")
+	sourceOwner := firstNonBlank(strings.TrimSpace(stringValue(sourceRun["owner_id"])), sourceRunID)
+	targetOwner := firstNonBlank(strings.TrimSpace(stringValue(targetRun["owner_id"])), targetRunID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(sourceRun["mission_id"])), strings.TrimSpace(stringValue(targetRun["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "none")
+	signalKind := firstNonBlank(normalizeSignalKind(stringValue(signal["kind"])), "unknown")
+	signalSummary := firstNonBlank(strings.TrimSpace(stringValue(signal["summary"])), "No summary recorded.")
+	signalFreshUntil := firstNonBlank(strings.TrimSpace(stringValue(signal["fresh_until"])), "not recorded")
+	evidence := anyListToStrings(toList(signal["evidence_refs"]))
+	if len(evidence) == 0 {
+		evidence = []string{"none"}
+	}
+	targetScope := firstNonBlank(strings.TrimSpace(stringValue(targetRun["assigned_scope"])), "unspecified")
+	lines := []string{
+		"Harness Teammate Message Briefing",
+		fmt.Sprintf("Source: %s (%s).", sourceOwner, sourceRunID),
+		fmt.Sprintf("Target: %s (%s).", targetOwner, targetRunID),
+		fmt.Sprintf("Message: kind=%s, signal=%s, fresh_until=%s.", signalKind, signalID, signalFreshUntil),
+		fmt.Sprintf("Scope: mission=%s, target_scope=%s.", missionID, targetScope),
+		fmt.Sprintf("Summary: %s", signalSummary),
+		fmt.Sprintf("Evidence: %s.", strings.Join(evidence, ", ")),
+		"",
+		"Current:",
+		"- " + signalBriefLine(signal),
+		"",
+		"Why:",
+		"- This is governed teammate-to-teammate communication: the source can notify a linked peer, but leader authority still decides whether the signal changes mission or run truth.",
+		"",
+		"Next:",
+		"- " + signalBriefLeaderAction(signal, registry),
+		"",
+		"Leader:",
+		"- " + signalBriefLeaderAction(signal, registry),
+		"",
+		"Source Teammate:",
+		"- " + signalBriefTeammateAction(signal, registry),
+		"",
+		"Target Teammate:",
+		"- " + fmt.Sprintf("%s should review the message inside %s and respond or report only if it changes bounded execution.", targetOwner, targetScope),
+		"",
+		"Council:",
+		"- " + signalBriefCouncilAction(signal),
+	}
+	return strings.Join(lines, "\n")
+}
+
 func signalBriefKindRank(kind string) int {
 	switch normalizeSignalKind(kind) {
 	case "risk_raised":
@@ -20368,19 +20416,23 @@ func cmdTeammatesRemainder(args []string) error {
 			return printJSON(map[string]any{"run": run, "signal": signal})
 		})
 	case "message":
-		if len(args) < 5 {
+		outputModeValue, messageArgs, err := parseOutputModeFlagsOnly("teammates message", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(messageArgs) < 4 {
 			return errors.New("teammates message requires SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY")
 		}
-		sourceRunID := args[1]
-		targetRunID := args[2]
-		kind := args[3]
+		sourceRunID := messageArgs[0]
+		targetRunID := messageArgs[1]
+		kind := messageArgs[2]
 		title := ""
 		confidence := "medium"
 		authorityLevel := "L2"
 		freshHours := 6.0
 		evidenceRefs := []string{}
 		summaryTokens := []string{}
-		for _, arg := range args[4:] {
+		for _, arg := range messageArgs[3:] {
 			switch {
 			case strings.HasPrefix(arg, "--title="):
 				title = strings.TrimSpace(strings.TrimPrefix(arg, "--title="))
@@ -20433,6 +20485,13 @@ func cmdTeammatesRemainder(args []string) error {
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if outputModeValue == outputModeText {
+				mission := readMission(strings.TrimSpace(stringValue(sourceRun["mission_id"])))
+				if mission == nil {
+					mission = map[string]any{}
+				}
+				return printText(renderTeammateMessageBrief(sourceRun, targetRun, mission, signal, registry))
 			}
 			return printJSON(map[string]any{"signal": signal, "source_run": sourceRun, "target_run": targetRun})
 		})

@@ -434,7 +434,10 @@ Govern teammate communication:
 
 ```bash
 bash scripts/harness-teammates.sh message TEAMMATE_A TEAMMATE_B interface_change "Signature changed"
+bash scripts/harness-teammates.sh message TEAMMATE_A TEAMMATE_B interface_change "Signature changed" --brief
 ```
+
+Use `teammates message --brief` when linked teammates need governed communication that a human can read immediately: who sent it, who received it, what signal kind it emitted, what evidence supports it, and whether the leader or a council needs to act.
 
 ### 6. Use Councils And Meetings
 

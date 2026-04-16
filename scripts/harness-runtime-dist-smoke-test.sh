@@ -114,10 +114,12 @@ run_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/har
 teammate_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh assign "$run_id" worker-packaged packaged-helper "Check packaged runtime teammate brief" --scope="packaged teammate" --owns=scope:packaged-teammate --report="progress|verification")
 teammate_run_id=$(printf '%s\n' "$teammate_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 teammate_assign_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh assign "$run_id" worker-packaged-brief packaged-helper "Check packaged runtime teammate assignment brief" --scope="packaged teammate brief" --owns=scope:packaged-teammate-brief --report="progress|verification" --brief)
+teammate_brief_run_id=$(printf '%s\n' "$teammate_assign_brief_output" | sed -n 's/^Run: \(run-[^[:space:]]*\)$/\1/p' | head -n1)
 teammate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh get "$teammate_run_id" --brief)
 signals_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-signals.sh active issue-9101 --brief)
 signals_adjudicate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-signals.sh adjudicate --all --brief)
 teammate_report_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh report "$teammate_run_id" "Packaged teammate reported progress." --kind=progress --evidence=README.md --brief)
+teammate_message_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh message "$teammate_run_id" "$teammate_brief_run_id" interface_change "Packaged teammate shared governed interface context." --evidence=README.md --brief)
 maintenance_reconcile_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-maintenance.sh reconcile --brief)
 maintenance_normalize_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-maintenance.sh normalize --brief)
 meeting_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh meeting "$run_id" "Should packaged runtime keep meeting briefings human-readable?")
@@ -196,6 +198,8 @@ assert_contains "$teammate_brief_output" 'Teammate: worker-packaged' "teammates 
 assert_contains "$teammate_brief_output" "Assignment: mission=issue-9101, parent=$run_id, role=packaged-helper, state=ready" "packaged teammate brief still follows teammate assignment truth without Go"
 assert_contains "$teammate_report_brief_output" 'Harness Teammate Report Briefing' "teammates report --brief works via packaged binary without Go"
 assert_contains "$teammate_report_brief_output" 'Packaged teammate reported progress.' "packaged teammate report brief preserves reported progress without Go"
+assert_contains "$teammate_message_brief_output" 'Harness Teammate Message Briefing' "teammates message --brief works via packaged binary without Go"
+assert_contains "$teammate_message_brief_output" 'Packaged teammate shared governed interface context.' "packaged teammate message brief preserves governed message content without Go"
 assert_contains "$signals_brief_output" 'Primary: progress signal' "signals active --brief works via packaged binary without Go"
 assert_contains "$signals_brief_output" 'worker-packaged-brief should keep the report fresh' "packaged signal brief still follows latest teammate assignment signal truth without Go"
 assert_contains "$signals_adjudicate_brief_output" 'No active signal was adjudicated as superseded.' "signals adjudicate --brief works via packaged binary without Go"

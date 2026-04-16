@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-16
-- **Last Session**: 2026-04-16-E (Extended the human-facing leader layer into teammate reporting)
+- **Last Session**: 2026-04-16-F (Extended the human-facing leader layer into teammate messaging)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-16-F** — Extended the human-facing leader layer into `teammates message --brief`
+
+- **Governed teammate messaging now has a real human-facing leader entrypoint**: `bash scripts/harness-teammates.sh message SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY --brief` now turns the same governed peer-communication mutation into a readable handoff that names source and target teammates, emitted signal, summary, evidence, freshness, and next leader/source/target/council boundary
+- **Message briefings stay on the same Go control plane**: the new layer is derived after source/target run signal linkage and the sibling-scope signal are persisted; default `teammates message` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary teammate messaging**: teammate smoke proves source-runtime governed communication briefings, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-16-E** — Extended the human-facing leader layer into `teammates report --brief`
 

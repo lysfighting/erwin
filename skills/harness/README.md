@@ -28,7 +28,7 @@ If you want the full human-readable explanation first, read:
 - `bash scripts/harness-issue.sh`
 - `bash scripts/harness-claim.sh` (`--brief` for a human-readable claim handoff)
 - `bash scripts/harness-drive.sh` (`start|resume|wait|block|complete --brief` for human-readable action handoffs)
-- `bash scripts/harness-teammates.sh` (`assign|report|get --brief` for human-readable bounded delegation surfaces)
+- `bash scripts/harness-teammates.sh` (`assign|report|message|get --brief` for human-readable bounded delegation surfaces)
 - `bash scripts/harness-ship.sh`
 - `bash scripts/harness-rc.sh`
 - `bash scripts/harness-meetings.sh`
@@ -51,6 +51,7 @@ Use this when the model should act as the harness leader:
 - inspect signal repair as a human-readable leader object through `signals adjudicate SIGNAL_ID|--all --brief` before drilling into raw adjudication JSON
 - assign bounded teammate execution as a human-readable leader action through `teammates assign PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE] --brief` before drilling into raw assignment JSON
 - record teammate progress as a human-readable leader action through `teammates report TEAMMATE_RUN_ID SUMMARY --brief` before drilling into raw report JSON
+- record governed teammate communication as a human-readable leader action through `teammates message SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY --brief` before drilling into raw message JSON
 - inspect one bounded teammate as a human-readable leader object through `teammates get TEAMMATE_RUN_ID --brief` before drilling into raw teammate JSON
 - inspect one active or closed council as a human-readable leader object through `meetings summary MEETING_ID --brief` before drilling into raw meeting JSON
 - lock council decision scope as a human-readable leader action through `meetings lock-decision MEETING_ID TEXT --brief` before drilling into raw meeting JSON
@@ -71,6 +72,7 @@ Use this when the model should act as the harness leader:
 - convene and close councils
 - assign bounded teammate execution with `teammates assign --brief` when a human needs the created teammate run, contract, ownership boundary, assignment signal, and next leader/teammate/council action before drilling into raw JSON
 - record teammate reports with `teammates report --brief` when a human needs the emitted signal, freshness, evidence, and leader/teammate/council action before drilling into raw JSON
+- record governed peer communication with `teammates message --brief` when a human needs the source, target, emitted signal, evidence, and leader/source/target/council action before drilling into raw JSON
 - govern bounded teammate execution
 - transfer bounded ownership selectors formally when work changes hands
 - copy bounded ownership selectors across explicitly shared runs when paired execution or review should retain the same governed boundary
