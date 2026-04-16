@@ -117,6 +117,7 @@ teammate_assign_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/h
 teammate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh get "$teammate_run_id" --brief)
 signals_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-signals.sh active issue-9101 --brief)
 signals_adjudicate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-signals.sh adjudicate --all --brief)
+teammate_report_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh report "$teammate_run_id" "Packaged teammate reported progress." --kind=progress --evidence=README.md --brief)
 maintenance_reconcile_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-maintenance.sh reconcile --brief)
 maintenance_normalize_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-maintenance.sh normalize --brief)
 meeting_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh meeting "$run_id" "Should packaged runtime keep meeting briefings human-readable?")
@@ -193,6 +194,8 @@ assert_contains "$teammate_assign_brief_output" 'Harness Teammate Assignment Bri
 assert_contains "$teammate_assign_brief_output" 'Teammate: worker-packaged-brief' "packaged teammate assignment brief preserves the delegated owner without Go"
 assert_contains "$teammate_brief_output" 'Teammate: worker-packaged' "teammates get --brief works via packaged binary without Go"
 assert_contains "$teammate_brief_output" "Assignment: mission=issue-9101, parent=$run_id, role=packaged-helper, state=ready" "packaged teammate brief still follows teammate assignment truth without Go"
+assert_contains "$teammate_report_brief_output" 'Harness Teammate Report Briefing' "teammates report --brief works via packaged binary without Go"
+assert_contains "$teammate_report_brief_output" 'Packaged teammate reported progress.' "packaged teammate report brief preserves reported progress without Go"
 assert_contains "$signals_brief_output" 'Primary: progress signal' "signals active --brief works via packaged binary without Go"
 assert_contains "$signals_brief_output" 'worker-packaged-brief should keep the report fresh' "packaged signal brief still follows latest teammate assignment signal truth without Go"
 assert_contains "$signals_adjudicate_brief_output" 'No active signal was adjudicated as superseded.' "signals adjudicate --brief works via packaged binary without Go"

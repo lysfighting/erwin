@@ -421,10 +421,12 @@ Record teammate progress:
 
 ```bash
 bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID "Progress update" --kind=progress
+bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID "Progress update" --kind=progress --brief
 bash scripts/harness-signals.sh active MISSION_ID --brief
 bash scripts/harness-signals.sh adjudicate --all --brief
 ```
 
+Use `teammates report --brief` when a human wants to understand a teammate status update as a governed control-plane signal: what was reported, what evidence was attached, how fresh it is, and whether the leader should adopt, resolve, or escalate the signal.
 Use `signals active --brief` when the question is control-signal visibility: which active signal is currently most important, whether it is fresh, what it applies to, and whether the next move is adoption, resolution, teammate evidence, or council materialization.
 Use `signals adjudicate --brief` when the question is signal repair: whether active signals were actually superseded by fresher run or meeting truth, why they were or were not resolved, and what the leader should inspect next.
 

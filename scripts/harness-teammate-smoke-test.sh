@@ -261,6 +261,12 @@ section "Reporting and communication"
 report_output=$(run_in_repo bash scripts/harness-teammates.sh report "$run_a" "Auth caller patch is ready for sibling review" --kind=progress --evidence=src/auth.ts)
 assert_json_field "$report_output" '"kind": "progress"' "teammate report emits progress signal"
 assert_json_field "$report_output" '"latest_summary": "Auth caller patch is ready for sibling review"' "teammate report updates run summary"
+report_brief=$(run_in_repo bash scripts/harness-teammates.sh report "$run_a" "Auth caller patch remains ready after local verification" --kind=progress --evidence=src/auth.ts --brief)
+assert_contains "$report_brief" 'Harness Teammate Report Briefing' "teammates report --brief emits a human-readable report briefing"
+assert_contains "$report_brief" 'Report: kind=progress, signal=sig-' "teammates report --brief names the report signal"
+assert_contains "$report_brief" 'Summary: Auth caller patch remains ready after local verification' "teammates report --brief preserves the reported progress summary"
+assert_contains "$report_brief" 'This teammate report is now a structured control-plane signal' "teammates report --brief explains report governance"
+assert_contains "$report_brief" 'Review the teammate progress report, keep the assignment bounded' "teammates report --brief tells the leader how to use the report"
 
 message_output=$(run_in_repo bash scripts/harness-teammates.sh message "$run_a" "$run_b" interface_change "Caller signature now requires scope" --evidence=src/auth.ts)
 assert_json_field "$message_output" '"kind": "interface_change"' "teammate message emits sibling signal"

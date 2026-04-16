@@ -14080,6 +14080,58 @@ func renderTeammateAssignmentBrief(run, parentRun, mission, audit, assignmentSig
 	return strings.Join(lines, "\n")
 }
 
+func renderTeammateReportBrief(run, parentRun, mission, audit, signal, registry map[string]any, activeMeetings, activeSignals, openMeetingActions []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	parentRunID := firstNonBlank(strings.TrimSpace(stringValue(run["parent_run_id"])), firstNonBlank(strings.TrimSpace(stringValue(parentRun["run_id"])), "missing"))
+	role := firstNonBlank(strings.TrimSpace(stringValue(run["role"])), "unspecified")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	assignedScope := firstNonBlank(strings.TrimSpace(stringValue(run["assigned_scope"])), "unspecified")
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "none")
+	signalKind := firstNonBlank(normalizeSignalKind(stringValue(signal["kind"])), "progress")
+	signalSummary := firstNonBlank(strings.TrimSpace(stringValue(signal["summary"])), strings.TrimSpace(stringValue(run["latest_summary"])), "No summary recorded.")
+	signalFreshUntil := firstNonBlank(strings.TrimSpace(stringValue(signal["fresh_until"])), "not recorded")
+	evidence := anyListToStrings(toList(signal["evidence_refs"]))
+	if len(evidence) == 0 {
+		evidence = []string{"none"}
+	}
+	_, reportLine := teammateReportFreshness(run)
+	lines := []string{
+		"Harness Teammate Report Briefing",
+		fmt.Sprintf("Teammate: %s", ownerID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Parent: %s.", parentRunID),
+		fmt.Sprintf("Report: kind=%s, signal=%s, fresh_until=%s.", signalKind, signalID, signalFreshUntil),
+		fmt.Sprintf("Assignment: mission=%s, role=%s, state=%s, scope=%s.", missionID, role, state, assignedScope),
+		fmt.Sprintf("Summary: %s", signalSummary),
+		fmt.Sprintf("Evidence: %s.", strings.Join(evidence, ", ")),
+		"Report Freshness: " + reportLine,
+		"",
+		"Current:",
+		"- " + teammateBriefCurrent(run, activeMeetings, unsatisfiedDeps),
+		"",
+		"Why:",
+		"- This teammate report is now a structured control-plane signal for leader review, adoption, resolution, or council materialization when the signal kind warrants it.",
+		"",
+		"Next:",
+		"- " + firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), signalBriefLeaderAction(signal, registry)),
+		"",
+		"Leader:",
+		"- " + signalBriefLeaderAction(signal, registry),
+		"",
+		"Teammate:",
+		"- " + signalBriefTeammateAction(signal, registry),
+		"",
+		"Communication:",
+		"- " + teammateBriefCommunicationAction(run),
+		"",
+		"Council:",
+		"- " + signalBriefCouncilAction(signal),
+	}
+	return strings.Join(lines, "\n")
+}
+
 func signalBriefKindRank(kind string) int {
 	switch normalizeSignalKind(kind) {
 	case "risk_raised":
@@ -20217,10 +20269,14 @@ func cmdTeammatesRemainder(args []string) error {
 			return printJSON(map[string]any{"linked": []any{runAID, runBID}, "reason": reason})
 		})
 	case "report":
-		if len(args) < 3 {
+		outputModeValue, reportArgs, err := parseOutputModeFlagsOnly("teammates report", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(reportArgs) < 2 {
 			return errors.New("teammates report requires RUN_ID SUMMARY")
 		}
-		runID := args[1]
+		runID := reportArgs[0]
 		kind := "progress"
 		title := ""
 		confidence := "medium"
@@ -20231,7 +20287,7 @@ func cmdTeammatesRemainder(args []string) error {
 		appliesTo := []string{}
 		nextAction := ""
 		summaryTokens := []string{}
-		for _, arg := range args[2:] {
+		for _, arg := range reportArgs[1:] {
 			switch {
 			case strings.HasPrefix(arg, "--kind="):
 				kind = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--kind=")), kind)
@@ -20289,6 +20345,25 @@ func cmdTeammatesRemainder(args []string) error {
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if outputModeValue == outputModeText {
+				signalLog := readSignalLog()
+				parentRun := map[string]any{}
+				if parentRunID := strings.TrimSpace(stringValue(run["parent_run_id"])); parentRunID != "" {
+					if parentIndex := findRunIndex(registry, parentRunID); parentIndex >= 0 {
+						parentRun, _ = toMap(toList(registry["runs"])[parentIndex])
+					}
+				}
+				mission := readMission(strings.TrimSpace(stringValue(run["mission_id"])))
+				if mission == nil {
+					mission = map[string]any{}
+				}
+				audit := runAuthorityAudit(run, registry, signalLog)
+				activeMeetings := activeMeetingsForRun(runID)
+				activeSignals := activeSignalsForRun(signalLog, runID)
+				openActions := openMeetingActionsForRun(runID)
+				unsatisfiedDeps := unsatisfiedDependencies(run, registry)
+				return printText(renderTeammateReportBrief(run, parentRun, mission, audit, signal, registry, activeMeetings, activeSignals, openActions, unsatisfiedDeps))
 			}
 			return printJSON(map[string]any{"run": run, "signal": signal})
 		})
