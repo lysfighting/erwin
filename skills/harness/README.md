@@ -26,8 +26,8 @@ If you want the full human-readable explanation first, read:
 - `bash scripts/harness-home.sh` (`--brief` for a human-readable leader briefing)
 - `bash scripts/harness-doctor.sh` (`--brief` for a human-readable health briefing)
 - `bash scripts/harness-issue.sh`
-- `bash scripts/harness-claim.sh`
-- `bash scripts/harness-drive.sh`
+- `bash scripts/harness-claim.sh` (`--brief` for a human-readable claim handoff)
+- `bash scripts/harness-drive.sh` (`start|resume|wait|block|complete --brief` for human-readable action handoffs)
 - `bash scripts/harness-teammates.sh`
 - `bash scripts/harness-ship.sh`
 - `bash scripts/harness-rc.sh`
@@ -64,7 +64,8 @@ Use this when the model should act as the harness leader:
 - inspect mission-level authority through `missions authority-audit` when the freshest teammate activity and the leader-governed control run should differ
 - inspect graph-level mission conflicts through `missions authority-audit --all` when active missions may be colliding across ownership boundaries
 - draft or create executable issues
-- claim work into execution
+- claim work into execution with `claim --brief` when a human needs the created mission/run/contract and next leader action before drilling into raw JSON
+- drive core run actions with `drive start|resume|wait|block|complete --brief` when a human needs the state transition, emitted signal, and next leader/teammate/council action before drilling into raw JSON
 - convene and close councils
 - assign and govern bounded teammate execution
 - transfer bounded ownership selectors formally when work changes hands

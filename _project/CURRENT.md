@@ -7,14 +7,20 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-15
-- **Last Session**: 2026-04-15-B (Extended the human-facing leader layer into `meetings resolve-action --brief`)
+- **Last Updated**: 2026-04-16
+- **Last Session**: 2026-04-16-A (Extended the human-facing leader layer into claim and core drive action handoffs)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-16-A** — Extended the human-facing leader layer into `claim --brief` and core `drive ... --brief` action handoffs
+
+- **Claiming work now has a real human-facing leader entrypoint**: `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE] --brief` now turns the same claim mutation into a readable handoff that names the created mission/run/branch, provisioning result, contract path, and post-claim leader/teammate/council boundary
+- **Core drive actions now explain their state mutations to humans**: `bash scripts/harness-drive.sh start|resume|wait|block|complete ... --brief` now renders the run state transition, current summary, next expected action, teammate boundary, council boundary, and emitted blocker signal when `block` creates one, while default drive JSON remains unchanged
+- **Human-facing verification now covers source and packaged-binary action handoffs**: core smoke proves claim/start/wait/block/resume/complete briefings on live runtime state, and runtime-distribution smoke proves the same surfaces work through the packaged binary without Go in `PATH`
 
 **Session 2026-04-15-B** — Extended the human-facing leader layer into `meetings resolve-action --brief`
 

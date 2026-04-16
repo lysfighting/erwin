@@ -27,8 +27,10 @@ The harness is file-backed:
    `bash scripts/harness-issue.sh ...`
 6. Claim work into governed execution:
    `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE]`
+   Use `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE] --brief` when you want the created mission/run/contract and leader boundary in readable prose first.
 7. Drive run state:
    `bash scripts/harness-drive.sh ...`
+   Use `--brief` on `start`, `resume`, `wait`, `block`, and `complete` when you want the state mutation explained before drilling into raw JSON.
 8. Delegate bounded work when leader execution should split:
    `bash scripts/harness-teammates.sh ...`
 9. Prepare release handoff when execution is done:
@@ -78,14 +80,26 @@ The harness is file-backed:
   `bash scripts/harness-issue.sh draft "Mission title" --criteria="A|B"`
 - `claim`
   `bash scripts/harness-claim.sh 1234`
+- `claim-brief`
+  `bash scripts/harness-claim.sh 1234 --brief`
 - `claim-with-ownership`
   `bash scripts/harness-claim.sh 1234 --depends-on=run-older-claim --owns=surface:release-notes`
 - `start`
   `bash scripts/harness-drive.sh start RUN_ID`
+- `start-brief`
+  `bash scripts/harness-drive.sh start RUN_ID --brief`
 - `wait`
   `bash scripts/harness-drive.sh wait RUN_ID "Waiting on sibling verification" --on=RUN_A|RUN_B`
+- `wait-brief`
+  `bash scripts/harness-drive.sh wait RUN_ID "Waiting on sibling verification" --on=RUN_A|RUN_B --brief`
 - `block`
   `bash scripts/harness-drive.sh block RUN_ID "reason"`
+- `block-brief`
+  `bash scripts/harness-drive.sh block RUN_ID "reason" --brief`
+- `resume-brief`
+  `bash scripts/harness-drive.sh resume RUN_ID --brief`
+- `complete-brief`
+  `bash scripts/harness-drive.sh complete RUN_ID "Execution complete" --brief`
 - `meeting`
   `bash scripts/harness-drive.sh meeting RUN_ID "question"`
 - `teammate-assign`
@@ -182,6 +196,8 @@ The harness is file-backed:
 ## Operating rules
 
 - Treat `harness-home` as the control plane entry point.
+- Use `claim --brief` when a human needs the newly created mission/run/contract, provisioning result, and next leader action without reading raw claim JSON.
+- Use `drive start|resume|wait|block|complete --brief` when a human needs the run state transition, emitted blocker signal, and leader/teammate/council boundary without reading raw run JSON.
 - Use `missions schedule --brief` when you want the scheduler portfolio itself in human-readable form before drilling into raw scheduler JSON or the durable snapshot.
 - Treat `harness-missions.sh` as the mission-level control plane above individual runs.
 - Treat `harness-adapter.sh validate` as the package boundary check when bootstrap/sync behavior is in doubt.

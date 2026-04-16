@@ -365,12 +365,16 @@ Claim work:
 
 ```bash
 bash scripts/harness-claim.sh 1234
+bash scripts/harness-claim.sh 1234 --brief
 ```
+
+Use `claim --brief` when a human wants the newly created mission, leader run, branch, provisioning result, contract path, and immediate next action without opening raw claim JSON.
 
 Start the run:
 
 ```bash
 bash scripts/harness-drive.sh start RUN_ID
+bash scripts/harness-drive.sh start RUN_ID --brief
 ```
 
 ### 4. Drive Execution
@@ -379,9 +383,15 @@ Move run state:
 
 ```bash
 bash scripts/harness-drive.sh wait RUN_ID "Waiting on dependency" --on=RUN_A
+bash scripts/harness-drive.sh wait RUN_ID "Waiting on dependency" --on=RUN_A --brief
 bash scripts/harness-drive.sh block RUN_ID "reason"
+bash scripts/harness-drive.sh block RUN_ID "reason" --brief
+bash scripts/harness-drive.sh resume RUN_ID --brief
+bash scripts/harness-drive.sh complete RUN_ID "Execution complete" --brief
 bash scripts/harness-drive.sh reprovision RUN_ID --mode=worktree --apply
 ```
+
+Use `drive ... --brief` on `start`, `resume`, `wait`, `block`, and `complete` when a human wants the state transition, current run summary, next leader action, teammate boundary, council boundary, and emitted blocker signal if one was created.
 
 Inspect run-level authority:
 

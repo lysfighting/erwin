@@ -15308,8 +15308,176 @@ func ternaryString(condition bool, whenTrue, whenFalse string) string {
 	return whenFalse
 }
 
+func renderClaimBrief(summary map[string]any) string {
+	provisioning, _ := toMap(summary["provisioning"])
+	mode := firstNonBlank(strings.TrimSpace(stringValue(provisioning["mode"])), "none")
+	applied := boolValue(provisioning["applied"])
+	applyRequested := boolValue(provisioning["apply_requested"])
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(summary["mission_id"])), "unknown")
+	runID := firstNonBlank(strings.TrimSpace(stringValue(summary["run_id"])), "unknown")
+	title := firstNonBlank(strings.TrimSpace(stringValue(summary["title"])), "Untitled mission")
+	branch := firstNonBlank(strings.TrimSpace(stringValue(summary["branch"])), "unknown")
+	contractPath := firstNonBlank(strings.TrimSpace(stringValue(summary["contract_path"])), "unknown")
+	nextAction := firstNonBlank(strings.TrimSpace(stringValue(summary["next_action"])), "Start drive flow and run the narrowest useful verification.")
+	lines := []string{
+		"Harness Claim Briefing",
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Branch: %s", branch),
+		fmt.Sprintf("Provisioning: mode=%s, apply_requested=%t, applied=%t.", mode, applyRequested, applied),
+		"",
+		"Current:",
+		fmt.Sprintf("- Claimed %s as %s and created the leader run %s.", title, missionID, runID),
+		"",
+		"Why:",
+		fmt.Sprintf("- This turns the issue into durable Harness control-plane state: mission, run, and contract at %s.", contractPath),
+		"",
+		"Next:",
+		"- " + nextAction,
+		"",
+		"Leader:",
+		fmt.Sprintf("- Run `drive start %s --brief` when you are ready to begin governed execution.", runID),
+		"",
+		"Teammates:",
+		"- No teammate was assigned by this claim; delegate only after the leader defines bounded ownership.",
+		"",
+		"Council:",
+		"- No council is opened by this claim; use a meeting only if ambiguity or blast radius requires governed decision work.",
+	}
+	return strings.Join(lines, "\n")
+}
+
+func driveActionWhy(action string) string {
+	switch action {
+	case "start":
+		return "Starting a run makes the leader's execution intent explicit instead of relying on chat momentum."
+	case "resume":
+		return "Resuming a run records that the leader has cleared the hold or blocker enough for governed execution to continue."
+	case "wait":
+		return "Waiting records dependency ownership and keeps execution paused until the required runs satisfy their desired state."
+	case "block":
+		return "Blocking a run records an active control signal so the scheduler, doctor, and leader can see the obstruction."
+	case "complete":
+		return "Completing a run records execution closure after adopted follow-up and delegated follow-up gates have cleared."
+	default:
+		return "This drive action updates the run through the same durable Go control plane used by JSON automation."
+	}
+}
+
+func driveActionLeaderAction(action string, run, signal map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "RUN_ID")
+	switch action {
+	case "start":
+		return "Keep the work inside the recorded ownership boundary and report material progress before widening scope."
+	case "resume":
+		return "Confirm the reason for the previous hold is resolved, then continue with the narrowest useful verification."
+	case "wait":
+		deps := dependencyTargets(run)
+		if len(deps) > 0 {
+			return fmt.Sprintf("Monitor %s before resuming %s.", strings.Join(deps, ", "), runID)
+		}
+		return fmt.Sprintf("Keep %s paused until the dependency condition is explicit enough to resume safely.", runID)
+	case "block":
+		signalID := strings.TrimSpace(stringValue(signal["signal_id"]))
+		if signalID != "" {
+			return fmt.Sprintf("Inspect or resolve signal %s before resuming %s.", signalID, runID)
+		}
+		return fmt.Sprintf("Resolve the blocker before resuming %s.", runID)
+	case "complete":
+		return "Move to ship, review, release, or cleanup only after verification and authority checks match the desired state."
+	default:
+		return firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), "Review the run before changing state again.")
+	}
+}
+
+func driveActionTeammateAction(action string, run map[string]any) string {
+	ownerType := firstNonBlank(strings.TrimSpace(stringValue(run["owner_type"])), "leader")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), "leader-main")
+	if ownerType == "teammate" {
+		switch action {
+		case "complete":
+			return fmt.Sprintf("%s should report completion evidence back to the leader before the parent run widens.", ownerID)
+		case "wait":
+			return fmt.Sprintf("%s should stay inside the bounded assignment while dependencies remain unresolved.", ownerID)
+		case "block":
+			return fmt.Sprintf("%s should keep the blocker evidence current and avoid unrelated work until the leader realigns scope.", ownerID)
+		default:
+			return fmt.Sprintf("%s owns this bounded execution unit and should keep reports fresh.", ownerID)
+		}
+	}
+	return "No teammate is automatically assigned by this drive action; delegation still requires an explicit teammate run."
+}
+
+func driveActionCouncilAction(action string, run map[string]any) string {
+	switch action {
+	case "block":
+		return "Open or materialize a council only if the blocker is an ambiguous decision rather than a direct execution issue."
+	case "wait":
+		return "Council work is not required unless dependency resolution needs governed judgment."
+	case "complete":
+		return "Council work is not required unless completion contradicts active meeting, signal, or authority state."
+	default:
+		return "No council is opened by this drive action."
+	}
+}
+
+func renderDriveActionBrief(action, previousState string, run, signal map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	ownerType := firstNonBlank(strings.TrimSpace(stringValue(run["owner_type"])), "leader")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), "leader-main")
+	summary := firstNonBlank(strings.TrimSpace(stringValue(run["latest_summary"])), strings.TrimSpace(stringValue(run["status_reason"])), "No run summary recorded.")
+	if state == "waiting" || state == "blocked" {
+		summary = firstNonBlank(strings.TrimSpace(stringValue(run["status_reason"])), strings.TrimSpace(stringValue(run["latest_summary"])), "No run summary recorded.")
+	}
+	nextAction := firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), "Inspect the run before changing state again.")
+	lines := []string{
+		"Harness Drive Action Briefing",
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf("Action: %s", action),
+		fmt.Sprintf("State: %s -> %s, owner=%s/%s.", firstNonBlank(strings.TrimSpace(previousState), "unknown"), state, ownerType, ownerID),
+		"",
+		"Current:",
+		fmt.Sprintf("- Run %s is now %s: %s", runID, state, summary),
+		"",
+		"Why:",
+		"- " + driveActionWhy(action),
+		"",
+		"Next:",
+		"- " + nextAction,
+		"",
+		"Leader:",
+		"- " + driveActionLeaderAction(action, run, signal),
+		"",
+		"Teammate:",
+		"- " + driveActionTeammateAction(action, run),
+		"",
+		"Council:",
+		"- " + driveActionCouncilAction(action, run),
+	}
+	if len(signal) > 0 {
+		lines = append(lines,
+			"",
+			fmt.Sprintf(
+				"Signal: %s (%s, state=%s, authority=%s).",
+				firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(signal["kind"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(signal["state"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(signal["authority_level"])), "unknown"),
+			),
+		)
+	}
+	return strings.Join(lines, "\n")
+}
+
 func cmdClaim(args []string) error {
-	if len(args) < 1 {
+	mode, remaining, err := parseOutputModeFlagsOnly("claim", args)
+	if err != nil {
+		return err
+	}
+	if len(remaining) < 1 {
 		return errors.New("claim requires ISSUE_NUMBER [TITLE_OVERRIDE]")
 	}
 	if err := ensureRuntimeDirs(); err != nil {
@@ -15321,7 +15489,7 @@ func cmdClaim(args []string) error {
 	ownershipClaimsInput := []string{}
 	overlapPolicyValue := "exclusive"
 	positionals := []string{}
-	for _, arg := range args {
+	for _, arg := range remaining {
 		switch {
 		case strings.HasPrefix(arg, "--provision="):
 			provisionMode = strings.TrimPrefix(arg, "--provision=")
@@ -15366,7 +15534,7 @@ func cmdClaim(args []string) error {
 	}
 
 	var summary map[string]any
-	err := withHarnessLock(func() error {
+	err = withHarnessLock(func() error {
 		registry := readRegistry()
 		missionID := "issue-" + issueNumber
 		for _, item := range toList(registry["runs"]) {
@@ -15549,6 +15717,9 @@ func cmdClaim(args []string) error {
 	if err != nil {
 		return err
 	}
+	if mode == outputModeText {
+		return printText(renderClaimBrief(summary))
+	}
 	return printJSON(summary)
 }
 
@@ -15586,33 +15757,45 @@ func cmdDrive(args []string) error {
 			return printJSON(run)
 		})
 	case "start":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive start", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("drive start requires RUN_ID [SUMMARY]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		summary := "Execution started"
-		if len(args) > 2 {
-			summary = strings.TrimSpace(strings.Join(args[2:], " "))
+		if len(remaining) > 1 {
+			summary = strings.TrimSpace(strings.Join(remaining[1:], " "))
 		}
-		return updateDriveRunState(runID, "executing", summary, "")
+		return updateDriveRunState(runID, "executing", summary, "", "start", mode)
 	case "resume":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive resume", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("drive resume requires RUN_ID [SUMMARY]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		summary := "Execution resumed"
-		if len(args) > 2 {
-			summary = strings.TrimSpace(strings.Join(args[2:], " "))
+		if len(remaining) > 1 {
+			summary = strings.TrimSpace(strings.Join(remaining[1:], " "))
 		}
-		return updateDriveRunState(runID, "ready", summary, "")
+		return updateDriveRunState(runID, "ready", summary, "", "resume", mode)
 	case "wait":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive wait", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("drive wait requires RUN_ID [REASON] [--on=RUN_ID|RUN_ID]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		reasonTokens := []string{}
 		dependsOn := []string{}
-		for _, arg := range args[2:] {
+		for _, arg := range remaining[1:] {
 			switch {
 			case strings.HasPrefix(arg, "--on="):
 				dependsOn = append(dependsOn, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--on=")))...)
@@ -15632,6 +15815,7 @@ func cmdDrive(args []string) error {
 			}
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
+			previousState := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
 			if err := validateRunTransition(run, "waiting"); err != nil {
 				return err
 			}
@@ -15648,16 +15832,23 @@ func cmdDrive(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderDriveActionBrief("wait", previousState, run, nil))
+			}
 			return printJSON(run)
 		})
 	case "complete":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive complete", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("drive complete requires RUN_ID [SUMMARY]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		summary := "Execution completed"
-		if len(args) > 2 {
-			summary = strings.TrimSpace(strings.Join(args[2:], " "))
+		if len(remaining) > 1 {
+			summary = strings.TrimSpace(strings.Join(remaining[1:], " "))
 		}
 		return withHarnessLock(func() error {
 			registry := readRegistry()
@@ -15667,6 +15858,7 @@ func cmdDrive(args []string) error {
 			}
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
+			previousState := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
 			if err := validateRunTransition(run, "completed"); err != nil {
 				return err
 			}
@@ -15680,6 +15872,9 @@ func cmdDrive(args []string) error {
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderDriveActionBrief("complete", previousState, run, nil))
 			}
 			return printJSON(run)
 		})
@@ -15939,11 +16134,15 @@ func cmdDrive(args []string) error {
 			return printJSON(run)
 		})
 	case "block":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive block", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("drive block requires RUN_ID REASON")
 		}
-		runID := args[1]
-		reason := strings.TrimSpace(strings.Join(args[2:], " "))
+		runID := remaining[0]
+		reason := strings.TrimSpace(strings.Join(remaining[1:], " "))
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			index := findRunIndex(registry, runID)
@@ -15952,6 +16151,7 @@ func cmdDrive(args []string) error {
 			}
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
+			previousState := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
 			if err := validateRunTransition(run, "blocked"); err != nil {
 				return err
 			}
@@ -15987,6 +16187,9 @@ func cmdDrive(args []string) error {
 			log["signals"] = append(toList(log["signals"]), signal)
 			if err := writeSignalLog(log); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderDriveActionBrief("block", previousState, run, signal))
 			}
 			return printJSON(map[string]any{"run": run, "signal": signal})
 		})
@@ -16126,7 +16329,7 @@ func cmdDrive(args []string) error {
 	}
 }
 
-func updateDriveRunState(runID, newState, summary, reason string) error {
+func updateDriveRunState(runID, newState, summary, reason, action string, mode outputMode) error {
 	return withHarnessLock(func() error {
 		registry := readRegistry()
 		index := findRunIndex(registry, runID)
@@ -16135,6 +16338,7 @@ func updateDriveRunState(runID, newState, summary, reason string) error {
 		}
 		runs := toList(registry["runs"])
 		run, _ := toMap(runs[index])
+		previousState := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
 		if err := validateRunTransition(run, newState); err != nil {
 			return err
 		}
@@ -16147,6 +16351,9 @@ func updateDriveRunState(runID, newState, summary, reason string) error {
 		registry["runs"] = runs
 		if err := writeRegistry(registry); err != nil {
 			return err
+		}
+		if mode == outputModeText {
+			return printText(renderDriveActionBrief(action, previousState, run, nil))
 		}
 		return printJSON(run)
 	})

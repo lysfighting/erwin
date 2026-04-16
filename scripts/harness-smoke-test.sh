@@ -111,6 +111,40 @@ assert_contains "$home_brief_idle" 'No active governed execution is in flight.' 
 assert_contains "$home_brief_idle" 'Claim a mission to enter governed execution.' "home --brief gives the leader a concrete idle next step"
 assert_contains "$doctor_brief_idle" 'Health: healthy' "doctor --brief reports a healthy baseline"
 
+section "Human action briefings"
+claim_brief_output=$(run_in_repo bash scripts/harness-claim.sh 20000 "Harness Brief Action Mission" --owns="file:README.md" --brief)
+assert_contains "$claim_brief_output" 'Harness Claim Briefing' "claim --brief emits a human-readable claim briefing"
+assert_contains "$claim_brief_output" 'Mission: issue-20000' "claim --brief names the claimed mission"
+assert_contains "$claim_brief_output" 'No teammate was assigned by this claim' "claim --brief preserves the leader-owned delegation boundary"
+brief_run_id=$(printf '%s\n' "$claim_brief_output" | sed -n 's/^Run: \(run-[^[:space:]]*\)$/\1/p' | head -n1)
+if [[ -n "$brief_run_id" ]]; then
+  pass "claim --brief exposes the created run id"
+else
+  fail "claim --brief exposes the created run id"
+  echo "$claim_brief_output"
+fi
+drive_start_brief=$(run_in_repo bash scripts/harness-drive.sh start "$brief_run_id" "Brief execution started." --brief)
+assert_contains "$drive_start_brief" 'Harness Drive Action Briefing' "drive start --brief emits a human-readable drive briefing"
+assert_contains "$drive_start_brief" 'Action: start' "drive start --brief names the state mutation"
+assert_contains "$drive_start_brief" 'State: ready -> executing' "drive start --brief explains the state transition"
+drive_wait_brief=$(run_in_repo bash scripts/harness-drive.sh wait "$brief_run_id" "Waiting on smoke dependency." --on=run-smoke-dependency --brief)
+assert_contains "$drive_wait_brief" 'Action: wait' "drive wait --brief names the dependency hold"
+assert_contains "$drive_wait_brief" 'State: executing -> waiting' "drive wait --brief explains the state transition"
+assert_contains "$drive_wait_brief" 'Monitor run-smoke-dependency before resuming' "drive wait --brief gives leader dependency guidance"
+drive_block_brief=$(run_in_repo bash scripts/harness-drive.sh block "$brief_run_id" "Blocked for smoke coverage." --brief)
+assert_contains "$drive_block_brief" 'Action: block' "drive block --brief names the blocker mutation"
+assert_contains "$drive_block_brief" 'State: waiting -> blocked' "drive block --brief explains the state transition"
+assert_contains "$drive_block_brief" 'Signal: sig-' "drive block --brief names the emitted control signal"
+drive_resume_brief=$(run_in_repo bash scripts/harness-drive.sh resume "$brief_run_id" "Blocker cleared." --brief)
+assert_contains "$drive_resume_brief" 'Action: resume' "drive resume --brief names the resumed state"
+assert_contains "$drive_resume_brief" 'State: blocked -> ready' "drive resume --brief explains the state transition"
+signals_after_brief_block=$(run_in_repo bash scripts/harness-signals.sh adjudicate --all)
+assert_json_field "$signals_after_brief_block" '"resolved_count": 1' "signal adjudication clears the blocker emitted by drive block --brief"
+drive_complete_brief=$(run_in_repo bash scripts/harness-drive.sh complete "$brief_run_id" "Brief action flow complete." --brief)
+assert_contains "$drive_complete_brief" 'Action: complete' "drive complete --brief names the completion mutation"
+assert_contains "$drive_complete_brief" 'State: ready -> completed' "drive complete --brief explains the state transition"
+assert_contains "$drive_complete_brief" 'Move to ship, review, release, or cleanup' "drive complete --brief gives post-completion leader guidance"
+
 section "Claim"
 claim_output=$(run_in_repo bash scripts/harness-claim.sh 20001 "Harness Smoke Mission" --owns="file:CHANGELOG.md")
 assert_json_field "$claim_output" '"mission_id": "issue-20001"' "claim creates mission"
@@ -464,7 +498,7 @@ resolved_follow_up_mixed_run=$(run_in_repo bash scripts/harness-runs.sh set-stat
 assert_json_field "$resolved_follow_up_mixed_run" '"state": "completed"' "mixed follow-up mission can close after strongest-signal coverage"
 
 section "Maintenance escalation"
-rewrite_json_in_file "$registry_path" 's/"last_reported_at": "[^"]*"/"last_reported_at": "2026-03-01T00:00:00Z"/'
+rewrite_json_in_file "$registry_path" 's/"last_reported_at": "[^"]*"/"last_reported_at": "2026-03-01T00:00:00Z"/g'
 stale_signal_output=$(
   cd "$TEST_REPO" &&
     cat <<EOF | bash scripts/harness-signals.sh emit

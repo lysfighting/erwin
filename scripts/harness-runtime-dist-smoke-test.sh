@@ -93,6 +93,14 @@ adapter_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-adapter
 home_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-home.sh)
 home_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-home.sh --brief)
 doctor_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-doctor.sh --brief)
+claim_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-claim.sh 9100 "Packaged Runtime Brief Action Mission" --owns="file:harness/README.md" --brief)
+brief_run_id=$(printf '%s\n' "$claim_brief_output" | sed -n 's/^Run: \(run-[^[:space:]]*\)$/\1/p' | head -n1)
+drive_start_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh start "$brief_run_id" "Packaged brief execution started." --brief)
+drive_wait_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh wait "$brief_run_id" "Packaged brief dependency wait." --on=run-packaged-dependency --brief)
+drive_block_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh block "$brief_run_id" "Packaged brief blocker." --brief)
+drive_resume_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh resume "$brief_run_id" "Packaged brief blocker cleared." --brief)
+signals_after_drive_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-signals.sh adjudicate --all)
+drive_complete_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh complete "$brief_run_id" "Packaged brief flow complete." --brief)
 claim_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-claim.sh 9101 "Packaged Runtime Mission" --owns="file:README.md")
 schedule_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh schedule --brief)
 mission_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh get issue-9101 --brief)
@@ -127,6 +135,13 @@ assert_contains "$adapter_output" '"valid": true' "adapter validate works via pa
 assert_contains "$home_output" '"next_action": "No active runs. Claim a mission."' "home works via packaged binary without Go"
 assert_contains "$home_brief_output" 'No active governed execution is in flight.' "home --brief works via packaged binary without Go"
 assert_contains "$doctor_brief_output" 'Health: healthy' "doctor --brief works via packaged binary without Go"
+assert_contains "$claim_brief_output" 'Harness Claim Briefing' "claim --brief works via packaged binary without Go"
+assert_contains "$drive_start_brief_output" 'Action: start' "drive start --brief works via packaged binary without Go"
+assert_contains "$drive_wait_brief_output" 'Action: wait' "drive wait --brief works via packaged binary without Go"
+assert_contains "$drive_block_brief_output" 'Signal: sig-' "drive block --brief works via packaged binary without Go"
+assert_contains "$drive_resume_brief_output" 'Action: resume' "drive resume --brief works via packaged binary without Go"
+assert_contains "$signals_after_drive_brief_output" '"resolved_count": 1' "packaged signal adjudication clears drive block --brief signal"
+assert_contains "$drive_complete_brief_output" 'Action: complete' "drive complete --brief works via packaged binary without Go"
 assert_contains "$claim_output" '"mission_id": "issue-9101"' "claim works via packaged binary without Go"
 assert_contains "$schedule_brief_output" 'Foreground execution is currently centered on mission issue-9101.' "missions schedule --brief works via packaged binary without Go"
 assert_contains "$schedule_brief_output" 'Foreground batch is issue-9101 under solo mode.' "packaged scheduler brief still follows foreground scheduler truth without Go"
