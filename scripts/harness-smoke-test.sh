@@ -1650,7 +1650,11 @@ assert_contains "$meeting_open_brief" "Run: $run_id" "drive meeting --brief name
 assert_contains "$meeting_open_brief" 'Protocol: decision-record.' "drive meeting --brief preserves explicit decision protocol"
 assert_contains "$meeting_open_brief" 'Open meeting-' "drive meeting --brief tells the leader how to inspect the new council"
 meeting_open_brief_id=$(printf '%s\n' "$meeting_open_brief" | sed -n 's/^Meeting: \(meeting-[^[:space:]]*\)$/\1/p' | head -n1)
-run_in_repo bash scripts/harness-drive.sh meeting-close "$run_id" "$meeting_open_brief_id" "Closed drive meeting brief smoke council." >/dev/null
+meeting_close_brief=$(run_in_repo bash scripts/harness-drive.sh meeting-close "$run_id" "$meeting_open_brief_id" "Closed drive meeting brief smoke council." --brief)
+assert_contains "$meeting_close_brief" 'Harness Meeting Adoption Briefing' "drive meeting-close --brief emits a human-readable meeting adoption briefing"
+assert_contains "$meeting_close_brief" 'Action: meeting-close' "drive meeting-close --brief names the close action"
+assert_contains "$meeting_close_brief" "Meeting: $meeting_open_brief_id" "drive meeting-close --brief names the closed council"
+assert_contains "$meeting_close_brief" 'Adoption: output=none, follow_up=0, open_follow_up=0.' "drive meeting-close --brief reports adopted output and follow-up counts"
 meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$run_id" "Should this mission stay solo?")
 assert_json_field "$meeting_output" '"state": "active"' "meeting starts active"
 meeting_id=$(printf '%s\n' "$meeting_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
@@ -1803,6 +1807,11 @@ resolved_authority_signal=$(run_in_repo bash scripts/harness-signals.sh set-stat
 assert_json_field "$resolved_authority_signal" '"state": "resolved"' "higher-authority authority-conflict signal can be resolved"
 readopt_output=$(run_in_repo bash scripts/harness-drive.sh adopt-meeting "$run_id" "$meeting_id")
 assert_json_field "$readopt_output" "\"meeting_id\": \"$meeting_id\"" "run can re-adopt the closed meeting outcome after authority handling"
+readopt_brief=$(run_in_repo bash scripts/harness-drive.sh adopt-meeting "$run_id" "$meeting_id" --brief)
+assert_contains "$readopt_brief" 'Harness Meeting Adoption Briefing' "drive adopt-meeting --brief emits a human-readable meeting adoption briefing"
+assert_contains "$readopt_brief" 'Action: adopt-meeting' "drive adopt-meeting --brief names the adoption action"
+assert_contains "$readopt_brief" "Meeting: $meeting_id" "drive adopt-meeting --brief names the adopted council"
+assert_contains "$readopt_brief" 'Continue governed execution after the adopted follow-up is complete.' "drive adopt-meeting --brief preserves current adopted run next action"
 doctor_output_recovered=$(run_in_repo bash scripts/harness-doctor.sh)
 assert_json_field "$doctor_output_recovered" '"issue_count": 0' "doctor returns to healthy state after run-level authority conflict is resolved"
 

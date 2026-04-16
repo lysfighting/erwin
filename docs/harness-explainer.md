@@ -486,8 +486,12 @@ Close or adopt outcomes:
 
 ```bash
 bash scripts/harness-drive.sh meeting-close RUN_ID MEETING_ID "resolution"
+bash scripts/harness-drive.sh meeting-close RUN_ID MEETING_ID "resolution" --brief
 bash scripts/harness-drive.sh adopt-meeting RUN_ID MEETING_ID
+bash scripts/harness-drive.sh adopt-meeting RUN_ID MEETING_ID --brief
 ```
+
+Use `drive meeting-close --brief` or `drive adopt-meeting --brief` when a human needs to see what council outcome was written back into the run, whether structured output or follow-up packets were adopted, and whether any bundle-governor authority signal was created.
 
 ### 7. Work Adopted Follow-Up
 

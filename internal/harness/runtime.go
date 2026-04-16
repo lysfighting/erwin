@@ -15778,6 +15778,63 @@ func renderDriveMeetingBrief(meeting, backlogEntry, run map[string]any) string {
 	return strings.Join(lines, "\n")
 }
 
+func renderDriveMeetingAdoptionBrief(action string, run, meeting, authorityAdoption map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), strings.TrimSpace(stringValue(run["mission_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "closed")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "output")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	outcomeSummary := firstNonBlank(strings.TrimSpace(stringValue(summary["outcome_summary"])), strings.TrimSpace(stringValue(meeting["resolution_note"])), "No outcome summary recorded.")
+	nextAction := firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), strings.TrimSpace(stringValue(summary["next_action"])), "Review the adopted meeting outcome before widening execution.")
+	outputKind := firstNonBlank(strings.TrimSpace(stringValue(summary["output_packet_kind"])), "none")
+	followUpCount := intValue(summary["output_follow_up_packet_count"])
+	openFollowUpCount := intValue(summary["output_open_follow_up_packet_count"])
+	authorityLine := "No bundle-governor authority signal was adopted from this meeting."
+	if len(authorityAdoption) > 0 {
+		authorityLine = fmt.Sprintf(
+			"%s adopted for bundle %s with signal %s.",
+			firstNonBlank(strings.TrimSpace(stringValue(authorityAdoption["governing_mission_id"])), "Unknown governor"),
+			firstNonBlank(strings.TrimSpace(stringValue(authorityAdoption["bundle_id"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(authorityAdoption["signal_id"])), "unknown"),
+		)
+	}
+	leaderAction := "Continue governed execution using the adopted meeting outcome."
+	if openFollowUpCount > 0 {
+		leaderAction = "Resolve or delegate the adopted follow-up packets before widening or completing this run."
+	}
+	lines := []string{
+		"Harness Meeting Adoption Briefing",
+		fmt.Sprintf("Action: %s", action),
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Council: mission=%s, state=%s, phase=%s, protocol=%s.", missionID, state, phase, protocol),
+		fmt.Sprintf("Outcome: %s", outcomeSummary),
+		fmt.Sprintf("Adoption: output=%s, follow_up=%d, open_follow_up=%d.", outputKind, followUpCount, openFollowUpCount),
+		"",
+		"Current:",
+		"- " + fmt.Sprintf("Meeting %s is closed and its outcome is adopted onto run %s.", meetingID, runID),
+		"",
+		"Why:",
+		"- Closing or adopting a council writes the governed output back into run state so scheduler, home, doctor, and authority audits follow durable truth instead of stale meeting JSON.",
+		"",
+		"Next:",
+		"- " + nextAction,
+		"",
+		"Leader:",
+		"- " + leaderAction,
+		"",
+		"Council:",
+		"- Inspect the closed council record or reopen only if the governed decision changed.",
+		"",
+		"Authority:",
+		"- " + authorityLine,
+	}
+	return strings.Join(lines, "\n")
+}
+
 func renderDriveFollowUpBrief(invokingRun, governingRun, packet map[string]any, delegated bool) string {
 	invokingRunID := firstNonBlank(strings.TrimSpace(stringValue(invokingRun["run_id"])), "unknown")
 	governingRunID := firstNonBlank(strings.TrimSpace(stringValue(governingRun["run_id"])), invokingRunID)
@@ -16248,11 +16305,15 @@ func cmdDrive(args []string) error {
 			return printJSON(run)
 		})
 	case "adopt-meeting":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive adopt-meeting", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("drive adopt-meeting requires RUN_ID MEETING_ID")
 		}
-		runID := args[1]
-		meetingID := args[2]
+		runID := remaining[0]
+		meetingID := remaining[1]
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			index := findRunIndex(registry, runID)
@@ -16276,6 +16337,9 @@ func cmdDrive(args []string) error {
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderDriveMeetingAdoptionBrief("adopt-meeting", run, meeting, nil))
 			}
 			return printJSON(map[string]any{
 				"run": run,
@@ -16640,14 +16704,18 @@ func cmdDrive(args []string) error {
 			return printJSON(map[string]any{"meeting": meeting, "backlog_entry": entry, "run": run})
 		})
 	case "meeting-close":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive meeting-close", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("drive meeting-close requires RUN_ID MEETING_ID [NOTE]")
 		}
-		runID := args[1]
-		meetingID := args[2]
+		runID := remaining[0]
+		meetingID := remaining[1]
 		note := "Meeting closed"
-		if len(args) > 3 {
-			note = strings.TrimSpace(strings.Join(args[3:], " "))
+		if len(remaining) > 2 {
+			note = strings.TrimSpace(strings.Join(remaining[2:], " "))
 		}
 		return withHarnessLock(func() error {
 			registry := readRegistry()
@@ -16706,6 +16774,9 @@ func cmdDrive(args []string) error {
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderDriveMeetingAdoptionBrief("meeting-close", run, meeting, authorityAdoption))
 			}
 			return printJSON(map[string]any{
 				"meeting":            meeting,

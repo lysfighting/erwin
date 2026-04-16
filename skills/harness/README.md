@@ -27,7 +27,7 @@ If you want the full human-readable explanation first, read:
 - `bash scripts/harness-doctor.sh` (`--brief` for a human-readable health briefing)
 - `bash scripts/harness-issue.sh`
 - `bash scripts/harness-claim.sh` (`--brief` for a human-readable claim handoff)
-- `bash scripts/harness-drive.sh` (`start|resume|wait|block|complete|meeting --brief` for human-readable action handoffs)
+- `bash scripts/harness-drive.sh` (`start|resume|wait|block|complete|meeting|meeting-close|adopt-meeting --brief` for human-readable action handoffs)
 - `bash scripts/harness-teammates.sh` (`assign|report|message|escalate|get --brief` for human-readable bounded delegation surfaces)
 - `bash scripts/harness-ship.sh`
 - `bash scripts/harness-rc.sh`
@@ -50,6 +50,7 @@ Use this when the model should act as the harness leader:
 - inspect active control signals as a human-readable leader object through `signals active [MISSION_ID] --brief` before drilling into raw signal JSON
 - inspect signal repair as a human-readable leader object through `signals adjudicate SIGNAL_ID|--all --brief` before drilling into raw adjudication JSON
 - open a bounded council as a human-readable leader action through `drive meeting RUN_ID QUESTION --brief` before drilling into raw meeting JSON
+- close or re-adopt a council outcome as a human-readable leader action through `drive meeting-close RUN_ID MEETING_ID [NOTE] --brief` or `drive adopt-meeting RUN_ID MEETING_ID --brief` before drilling into raw adoption JSON
 - assign bounded teammate execution as a human-readable leader action through `teammates assign PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE] --brief` before drilling into raw assignment JSON
 - record teammate progress as a human-readable leader action through `teammates report TEAMMATE_RUN_ID SUMMARY --brief` before drilling into raw report JSON
 - record governed teammate communication as a human-readable leader action through `teammates message SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY --brief` before drilling into raw message JSON
@@ -72,6 +73,7 @@ Use this when the model should act as the harness leader:
 - claim work into execution with `claim --brief` when a human needs the created mission/run/contract and next leader action before drilling into raw JSON
 - drive core run actions with `drive report|start|resume|wait|block|complete|resolve-follow-up --brief` when a human needs the progress report, state transition, emitted signal, adopted follow-up result, and next leader/teammate/council action before drilling into raw JSON
 - open councils with `drive meeting --brief` when a human needs the created meeting id, host run, protocol, backlog ref, and next `meetings summary/orchestrate --brief` path before drilling into raw JSON
+- close or re-adopt councils with `drive meeting-close --brief` / `drive adopt-meeting --brief` when a human needs the adopted outcome, output packet kind, follow-up counts, authority adoption, and next run action before drilling into raw JSON
 - convene and close councils
 - assign bounded teammate execution with `teammates assign --brief` when a human needs the created teammate run, contract, ownership boundary, assignment signal, and next leader/teammate/council action before drilling into raw JSON
 - record teammate reports with `teammates report --brief` when a human needs the emitted signal, freshness, evidence, and leader/teammate/council action before drilling into raw JSON

@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-16
-- **Last Session**: 2026-04-16-H (Extended the human-facing leader layer into council creation)
+- **Last Session**: 2026-04-16-I (Extended the human-facing leader layer into council adoption)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-16-I** — Extended the human-facing leader layer into `meeting-close` / `adopt-meeting --brief`
+
+- **Council adoption now has real human-facing leader entrypoints**: `bash scripts/harness-drive.sh meeting-close RUN_ID MEETING_ID [NOTE] --brief` and `bash scripts/harness-drive.sh adopt-meeting RUN_ID MEETING_ID --brief` now turn council closure or re-adoption into readable handoffs that name the council, run, outcome, output packet kind, follow-up counts, authority adoption, and next leader/council boundary
+- **Adoption briefings stay on the same Go control plane**: the new layer is derived after closed meeting state, backlog updates, authority adoption, and run adoption fields are persisted; default `meeting-close` and `adopt-meeting` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council adoption**: core smoke proves source-runtime close and re-adoption briefings, and runtime-distribution smoke proves the same surfaces work through the packaged binary without Go in `PATH`
 
 **Session 2026-04-16-H** — Extended the human-facing leader layer into `drive meeting --brief`
 
