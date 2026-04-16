@@ -132,6 +132,36 @@ meeting_finding_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/h
 meeting_action_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh add-action "$position_meeting_id" "Keep brief action text visible." --brief)
 meeting_action_id=$(printf '%s\n' "$meeting_action_brief_output" | sed -n 's/^Action: \(action-[^[:space:]]*\)$/\1/p' | head -n1)
 meeting_action_resolution_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-meetings.sh resolve-action "$position_meeting_id" "$meeting_action_id" done --brief)
+follow_up_claim_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-claim.sh 9102 "Packaged Runtime Follow-Up Mission" --owns="file:docs/harness-public-contract.md")
+follow_up_run_id=$(printf '%s\n' "$follow_up_claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+follow_up_packet_id="followup-packaged-runtime-smoke"
+python3 - "$TEST_REPO/.harness/runs/registry.yml" "$follow_up_run_id" "$follow_up_packet_id" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+registry_path, run_id, packet_id = sys.argv[1:]
+data = json.loads(Path(registry_path).read_text())
+packet = {
+    "follow_up_packet_id": packet_id,
+    "state": "open",
+    "summary": "Resolve packaged adopted follow-up through drive.",
+    "required_follow_up": "Resolve packaged adopted follow-up through drive.",
+    "execution_kind": "packaged_runtime_follow_up",
+}
+for run in data.get("runs", []):
+    if run.get("run_id") == run_id:
+        run["adopted_from_meeting_id"] = "meeting-packaged-runtime-smoke"
+        run["adopted_output_follow_up_packet_count"] = 1
+        run["adopted_output_follow_up_packets"] = [packet]
+        run["adopted_primary_follow_up_packet"] = packet
+        run["next_expected_action"] = packet["required_follow_up"]
+        break
+else:
+    raise SystemExit(f"run not found: {run_id}")
+Path(registry_path).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+PY
+follow_up_resolve_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-drive.sh resolve-follow-up "$follow_up_run_id" "$follow_up_packet_id" done --brief)
 assert_contains "$adapter_output" '"valid": true' "adapter validate works via packaged binary without Go"
 assert_contains "$home_output" '"next_action": "No active runs. Claim a mission."' "home works via packaged binary without Go"
 assert_contains "$home_brief_output" 'No active governed execution is in flight.' "home --brief works via packaged binary without Go"
@@ -182,6 +212,8 @@ assert_contains "$meeting_action_brief_output" 'Harness Meeting Action Briefing'
 assert_contains "$meeting_action_brief_output" 'Keep brief action text visible.' "packaged meeting action brief preserves free-text council action content"
 assert_contains "$meeting_action_resolution_brief_output" 'Harness Meeting Action Resolution Briefing' "meetings resolve-action --brief works via packaged binary without Go"
 assert_contains "$meeting_action_resolution_brief_output" 'Resolution Scope: state=done' "packaged meeting action resolution brief preserves resolved state"
+assert_contains "$follow_up_resolve_brief_output" 'Harness Follow-Up Resolution Briefing' "drive resolve-follow-up --brief works via packaged binary without Go"
+assert_contains "$follow_up_resolve_brief_output" 'Resolution Scope: state=done, delegated=false' "packaged follow-up resolution brief preserves resolved state"
 
 section "Summary"
 echo "PASS=$PASS FAIL=$FAIL"

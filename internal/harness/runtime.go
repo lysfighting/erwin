@@ -15480,6 +15480,61 @@ func renderDriveActionBrief(action, previousState string, run, signal map[string
 	return strings.Join(lines, "\n")
 }
 
+func renderDriveFollowUpBrief(invokingRun, governingRun, packet map[string]any, delegated bool) string {
+	invokingRunID := firstNonBlank(strings.TrimSpace(stringValue(invokingRun["run_id"])), "unknown")
+	governingRunID := firstNonBlank(strings.TrimSpace(stringValue(governingRun["run_id"])), invokingRunID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(governingRun["mission_id"])), strings.TrimSpace(stringValue(invokingRun["mission_id"])), "unknown")
+	packetID := firstNonBlank(strings.TrimSpace(stringValue(packet["follow_up_packet_id"])), strings.TrimSpace(stringValue(packet["packet_id"])), "primary")
+	state := firstNonBlank(strings.TrimSpace(stringValue(packet["state"])), "unknown")
+	summary := firstNonBlank(strings.TrimSpace(stringValue(packet["summary"])), strings.TrimSpace(stringValue(packet["required_follow_up"])), strings.TrimSpace(stringValue(packet["action"])), "No follow-up summary recorded.")
+	executionKind := firstNonBlank(strings.TrimSpace(stringValue(packet["execution_kind"])), "adopted_follow_up")
+	nextAction := firstNonBlank(strings.TrimSpace(stringValue(governingRun["next_expected_action"])), strings.TrimSpace(stringValue(invokingRun["next_expected_action"])), "Review the governing run before widening execution.")
+	leaderAction := "Continue governed execution only after the adopted follow-up state matches the desired outcome."
+	if state == "open" {
+		leaderAction = "Keep the governing run bounded on this reopened follow-up until it is resolved or deliberately cancelled."
+	} else if state == "done" {
+		leaderAction = "Use the refreshed run state to decide whether to complete, ship, or continue remaining bounded execution."
+	} else if state == "cancelled" {
+		leaderAction = "Realign the cancelled follow-up before widening execution or closing the governing run."
+	}
+	teammateAction := "No teammate owns this follow-up unless it was explicitly delegated."
+	if delegated {
+		owner := firstNonBlank(strings.TrimSpace(stringValue(invokingRun["owner_id"])), "teammate")
+		teammateAction = fmt.Sprintf("%s should report the %s follow-up state back to the leader.", owner, state)
+	}
+	councilAction := "Council work is not required unless this follow-up outcome changes the adopted decision."
+	if state == "cancelled" {
+		councilAction = "Use a decision protocol if cancellation invalidates the adopted council output or creates a new tradeoff."
+	}
+	lines := []string{
+		"Harness Follow-Up Resolution Briefing",
+		fmt.Sprintf("Run: %s", invokingRunID),
+		fmt.Sprintf("Governing Run: %s", governingRunID),
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf("Follow-Up: %s", packetID),
+		fmt.Sprintf("Resolution Scope: state=%s, delegated=%t, execution=%s.", state, delegated, executionKind),
+		"",
+		"Current:",
+		fmt.Sprintf("- Follow-up %s is now %s: %s", packetID, state, summary),
+		"",
+		"Why:",
+		"- This refreshes the adopted follow-up lifecycle on the governing run so scheduler, home, and doctor stop following stale council output.",
+		"",
+		"Next:",
+		"- " + nextAction,
+		"",
+		"Leader:",
+		"- " + leaderAction,
+		"",
+		"Teammate:",
+		"- " + teammateAction,
+		"",
+		"Council:",
+		"- " + councilAction,
+	}
+	return strings.Join(lines, "\n")
+}
+
 func cmdClaim(args []string) error {
 	mode, remaining, err := parseOutputModeFlagsOnly("claim", args)
 	if err != nil {
@@ -15933,17 +15988,21 @@ func cmdDrive(args []string) error {
 			})
 		})
 	case "resolve-follow-up":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive resolve-follow-up", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("drive resolve-follow-up requires RUN_ID [FOLLOW_UP_PACKET_ID] [STATE]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		followUpPacketID := ""
 		targetState := "done"
-		if len(args) > 2 {
-			followUpPacketID = strings.TrimSpace(args[2])
+		if len(remaining) > 1 {
+			followUpPacketID = strings.TrimSpace(remaining[1])
 		}
-		if len(args) > 3 {
-			targetState = strings.TrimSpace(args[3])
+		if len(remaining) > 2 {
+			targetState = strings.TrimSpace(remaining[2])
 		}
 		if targetState != "done" && targetState != "cancelled" && targetState != "open" {
 			return errors.New("drive resolve-follow-up state must be one of: open, done, cancelled")
@@ -16049,9 +16108,14 @@ func cmdDrive(args []string) error {
 				if index < 0 || governingRunIndex < 0 {
 					return errors.New("run not found after delegated follow-up update")
 				}
+				invokingRun, _ = toMap(toList(registry["runs"])[index])
+				governingRun, _ = toMap(toList(registry["runs"])[governingRunIndex])
+				if mode == outputModeText {
+					return printText(renderDriveFollowUpBrief(invokingRun, governingRun, updatedPacket, true))
+				}
 				return printJSON(map[string]any{
-					"run":                  toList(registry["runs"])[index],
-					"governing_run":        toList(registry["runs"])[governingRunIndex],
+					"run":                  invokingRun,
+					"governing_run":        governingRun,
 					"resolved_follow_up":   updatedPacket,
 					"delegated_resolution": true,
 				})
@@ -16060,7 +16124,11 @@ func cmdDrive(args []string) error {
 			if index < 0 {
 				return fmt.Errorf("run not found after follow-up update: %s", runID)
 			}
-			return printJSON(toList(registry["runs"])[index])
+			run, _ = toMap(toList(registry["runs"])[index])
+			if mode == outputModeText {
+				return printText(renderDriveFollowUpBrief(run, run, updatedPacket, false))
+			}
+			return printJSON(run)
 		})
 	case "reprovision":
 		if len(args) < 2 {

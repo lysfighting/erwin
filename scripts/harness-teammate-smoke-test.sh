@@ -845,6 +845,9 @@ refreshed_follow_up_run=$(run_in_repo bash scripts/harness-drive.sh report "$fol
 assert_json_field "$refreshed_follow_up_run" '"latest_summary": "Refresh stale delegated adopted follow-up after stale-monitor coverage."' "delegated teammate can refresh stale follow-up state after stale-monitor coverage"
 leader_refresh_follow_up=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
 assert_json_field "$leader_refresh_follow_up" '"follow_up_packet_id": "'"$decision_record_follow_up_packet_id"'"' "governing run can still address the delegated adopted follow-up packet directly"
+leader_refresh_follow_up_brief=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open --brief)
+assert_contains "$leader_refresh_follow_up_brief" 'Harness Follow-Up Resolution Briefing' "drive resolve-follow-up --brief emits a human-readable follow-up briefing"
+assert_contains "$leader_refresh_follow_up_brief" 'Resolution Scope: state=open, delegated=false' "drive resolve-follow-up --brief explains governing-run follow-up reopening"
 follow_up_run_after_leader_refresh=$(run_in_repo bash scripts/harness-teammates.sh get "$follow_up_run_id")
 assert_json_field "$follow_up_run_after_leader_refresh" '"delegated_follow_up_state": "open"' "delegated teammate run syncs open follow-up state when the governing run refreshes the packet"
 set +e
@@ -879,6 +882,9 @@ assert_json_field "$decision_record_resolve" '"delegated_resolution": true' "dri
 assert_json_field "$decision_record_resolve" '"delegated_follow_up_state": "done"' "delegated teammate run records follow-up completion state"
 assert_json_field "$decision_record_resolve" '"next_expected_action": "Report completion back to the leader or continue any remaining bounded execution."' "delegated teammate run advances into post-follow-up reporting guidance"
 assert_json_field "$decision_record_resolve" '"next_expected_action": "Continue governed execution after the adopted follow-up is complete."' "governing run guidance still advances after delegated follow-up resolution"
+decision_record_resolve_brief=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$follow_up_run_id" "$decision_record_follow_up_packet_id" done --brief)
+assert_contains "$decision_record_resolve_brief" 'Resolution Scope: state=done, delegated=true' "drive resolve-follow-up --brief explains delegated teammate follow-up closure"
+assert_contains "$decision_record_resolve_brief" 'worker-follow-up should report the done follow-up state back to the leader.' "drive resolve-follow-up --brief gives delegated teammate reporting guidance"
 leader_reopen_after_delegated_resolution=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
 assert_json_field "$leader_reopen_after_delegated_resolution" '"follow_up_packet_id": "'"$decision_record_follow_up_packet_id"'"' "governing run can reopen a delegated adopted follow-up after teammate-side resolution"
 assert_json_field "$leader_reopen_after_delegated_resolution" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "governing run restores follow-up guidance when the adopted follow-up reopens"

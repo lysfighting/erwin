@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-16
-- **Last Session**: 2026-04-16-B (Extended the human-facing leader layer into drive progress reports)
+- **Last Session**: 2026-04-16-C (Extended the human-facing leader layer into adopted follow-up resolution)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-16-C** — Extended the human-facing leader layer into `drive resolve-follow-up --brief`
+
+- **Adopted follow-up resolution now has a real human-facing leader entrypoint**: `bash scripts/harness-drive.sh resolve-follow-up RUN_ID [FOLLOW_UP_PACKET_ID] [STATE] --brief` now turns the same follow-up mutation into a readable handoff that names the invoking run, governing run, packet, target state, delegated-resolution status, and next leader/teammate/council boundary
+- **Follow-up resolution briefings stay on the same Go control plane**: the new layer is derived after the governing run, delegated teammate run, and meeting action state have been synchronized; default `drive resolve-follow-up` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary adopted follow-up closure**: teammate smoke proves governing-run reopen and delegated teammate closure briefings, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-16-B** — Extended the human-facing leader layer into `drive report --brief`
 

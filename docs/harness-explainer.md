@@ -486,6 +486,7 @@ Resolve follow-up directly:
 
 ```bash
 bash scripts/harness-drive.sh resolve-follow-up RUN_ID
+bash scripts/harness-drive.sh resolve-follow-up RUN_ID FOLLOW_UP_PACKET_ID done --brief
 ```
 
 Delegate adopted follow-up:
