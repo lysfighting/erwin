@@ -109,6 +109,8 @@ mission_graph_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/har
 mission_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh authority-audit issue-9101 --brief)
 mission_graph_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-missions.sh authority-audit --all --brief)
 run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+ship_status_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-ship.sh status "$run_id" --brief)
+rc_list_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-rc.sh list --brief)
 run_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.sh get "$run_id" --brief)
 run_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.sh authority-audit "$run_id" --brief)
 teammate_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh assign "$run_id" worker-packaged packaged-helper "Check packaged runtime teammate brief" --scope="packaged teammate" --owns=scope:packaged-teammate --report="progress|verification")
@@ -198,6 +200,10 @@ assert_contains "$run_brief_output" "Run: $run_id" "runs get --brief works via p
 assert_contains "$run_brief_output" 'This run is the current foreground scheduler run and still owns mission control for issue-9101.' "packaged run brief still follows scheduler truth without Go"
 assert_contains "$run_authority_brief_output" "Run: $run_id" "runs authority-audit --brief works via packaged binary without Go"
 assert_contains "$run_authority_brief_output" "Run $run_id is still progressing toward its desired state." "packaged run authority brief still follows desired-state progress truth without Go"
+assert_contains "$ship_status_brief_output" 'Harness Ship Status Briefing' "ship status --brief works via packaged binary without Go"
+assert_contains "$ship_status_brief_output" "Run: $run_id" "packaged ship status brief names the run without Go"
+assert_contains "$rc_list_brief_output" 'Harness RC List Briefing' "rc list --brief works via packaged binary without Go"
+assert_contains "$rc_list_brief_output" 'No RC is currently recorded for this scope.' "packaged rc list brief explains idle rc state without Go"
 assert_contains "$teammate_assign_brief_output" 'Harness Teammate Assignment Briefing' "teammates assign --brief works via packaged binary without Go"
 assert_contains "$teammate_assign_brief_output" 'Teammate: worker-packaged-brief' "packaged teammate assignment brief preserves the delegated owner without Go"
 assert_contains "$teammate_brief_output" 'Teammate: worker-packaged' "teammates get --brief works via packaged binary without Go"

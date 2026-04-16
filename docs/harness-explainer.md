@@ -519,7 +519,10 @@ Verify ship readiness:
 
 ```bash
 bash scripts/harness-ship.sh verify RUN_ID "targeted-check:pass"
+bash scripts/harness-ship.sh status RUN_ID --brief
 ```
+
+Use `ship status --brief` when a human needs to understand release gates without reading raw JSON: verification, PR review, checks, merge readiness, tracked PR/RC refs, and the next release action.
 
 Push and open PR flow:
 
@@ -543,10 +546,14 @@ bash scripts/harness-ship.sh cleanup RUN_ID --delete-branch
 RC lifecycle:
 
 ```bash
+bash scripts/harness-rc.sh list --brief
 bash scripts/harness-rc.sh create v1.2.3 RUN_ID
+bash scripts/harness-rc.sh get RC_ID --brief
 bash scripts/harness-rc.sh verify RC_ID "verification note"
 bash scripts/harness-rc.sh promote RC_ID "promotion note"
 ```
+
+Use `rc list --brief` and `rc get --brief` when a human needs the release-candidate state, staged verification status, branch target, included runs, and promote/fix/cancel next action before drilling into raw RC JSON.
 
 High-friction release handling:
 

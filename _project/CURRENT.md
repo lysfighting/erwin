@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-16
-- **Last Session**: 2026-04-16-J (Extended the human-facing leader layer into governed teammate links)
+- **Last Session**: 2026-04-16-K (Extended the human-facing leader layer into release status)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-16-K** — Extended the human-facing leader layer into `ship status --brief` and `rc list/get --brief`
+
+- **Release state now has real human-facing status entrypoints**: `bash scripts/harness-ship.sh status RUN_ID --brief`, `bash scripts/harness-rc.sh list --brief`, and `bash scripts/harness-rc.sh get RC_ID --brief` now turn ship gates and RC state into readable handoffs that name verification, review, checks, merge readiness, tracked PR/RC refs, RC branch/version/run membership, staged verification, and next release action
+- **Release briefings stay on the same Go control plane**: the new layer is derived from existing run ship state and RC records; default ship status and RC JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary release status**: release smoke proves source-runtime ship/RC status briefings, and runtime-distribution smoke proves packaged binaries can render the same status layer without Go in `PATH`
 
 **Session 2026-04-16-J** — Extended the human-facing leader layer into `teammates link --brief`
 

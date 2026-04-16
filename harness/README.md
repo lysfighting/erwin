@@ -52,11 +52,11 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 - `harness-runs.sh` — direct run inspection, `runs get/authority-audit --brief` leader summaries, desired-state mutation, bounded ownership transfer, and run-level authority audit
 - `harness-signals.sh` — active signal visibility, signal emission/state changes, and `signals active/adjudicate --brief` for human-readable control-signal guidance and repair
 - `harness-teammates.sh` — bounded teammate assignment, governed communication, meeting escalation, `teammates assign --brief` for a human-readable delegation handoff, `teammates link --brief` for a human-readable governed peer-link handoff, `teammates report --brief` for a human-readable teammate report handoff, `teammates message --brief` for a human-readable governed peer-communication handoff, `teammates escalate --brief` for a human-readable council escalation handoff, and `teammates get --brief` for a human-readable bounded execution object
-- `harness-ship.sh` — verification, PR lifecycle, review/check gates, deterministic merge, merge readiness
+- `harness-ship.sh` — verification, PR lifecycle, review/check gates, deterministic merge, merge readiness, and `ship status --brief` for human-readable release-gate state
 - `harness-ship.sh` also supports branch push and PR draft generation
 - `harness-ship.sh` can also open GitHub PRs directly when `gh` is authenticated
 - `harness-ship.sh` now also handles post-merge cleanup of worktrees and local branches
-- `harness-rc.sh` — release-candidate create/verify/promote/close plus surgical `fix`, `cancel`, `hotfix`, and `backport` flow
+- `harness-rc.sh` — release-candidate create/verify/promote/close plus surgical `fix`, `cancel`, `hotfix`, and `backport` flow, with `rc list/get --brief` for human-readable RC state
 - `harness-meetings.sh` — meeting inspection, `meetings summary/lock-decision/add-position/add-finding/add-action/resolve-action/orchestrate/authority-audit --brief` leader summaries, council orchestration, and council output mutation
 - `harness-maintenance.sh` — reconciliation + runtime normalization, including `maintenance reconcile/normalize --brief` repair and migration summaries
 - `harness-bootstrap.sh` — copy the harness adapter into another git repository

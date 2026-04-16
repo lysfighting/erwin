@@ -29,8 +29,8 @@ If you want the full human-readable explanation first, read:
 - `bash scripts/harness-claim.sh` (`--brief` for a human-readable claim handoff)
 - `bash scripts/harness-drive.sh` (`start|resume|wait|block|complete|meeting|meeting-close|adopt-meeting --brief` for human-readable action handoffs)
 - `bash scripts/harness-teammates.sh` (`assign|link|report|message|escalate|get --brief` for human-readable bounded delegation surfaces)
-- `bash scripts/harness-ship.sh`
-- `bash scripts/harness-rc.sh`
+- `bash scripts/harness-ship.sh` (`status --brief` for human-readable release-gate state)
+- `bash scripts/harness-rc.sh` (`list|get --brief` for human-readable release-candidate state)
 - `bash scripts/harness-meetings.sh`
 - `bash scripts/harness-maintenance.sh`
 
@@ -57,6 +57,8 @@ Use this when the model should act as the harness leader:
 - record governed teammate communication as a human-readable leader action through `teammates message SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY --brief` before drilling into raw message JSON
 - escalate bounded teammate uncertainty as a human-readable leader action through `teammates escalate TEAMMATE_RUN_ID QUESTION --brief` before drilling into raw escalation JSON
 - inspect one bounded teammate as a human-readable leader object through `teammates get TEAMMATE_RUN_ID --brief` before drilling into raw teammate JSON
+- inspect release gates as a human-readable leader object through `ship status RUN_ID --brief` before drilling into raw ship JSON
+- inspect release candidates as human-readable release objects through `rc list --brief` and `rc get RC_ID --brief` before drilling into raw RC JSON
 - inspect one active or closed council as a human-readable leader object through `meetings summary MEETING_ID --brief` before drilling into raw meeting JSON
 - lock council decision scope as a human-readable leader action through `meetings lock-decision MEETING_ID TEXT --brief` before drilling into raw meeting JSON
 - record council positions as a human-readable leader action through `meetings add-position MEETING_ID TEAMMATE_RUN_ID PHASE STANCE TEXT --brief` before drilling into raw meeting JSON
@@ -83,6 +85,7 @@ Use this when the model should act as the harness leader:
 - escalate teammate uncertainty with `teammates escalate --brief` when a human needs the emitted meeting signal, optional materialized council, decision protocol, and leader/teammate/council action before drilling into raw JSON
 - govern bounded teammate execution
 - transfer bounded ownership selectors formally when work changes hands
+- inspect ship/RC state with `ship status --brief`, `rc list --brief`, and `rc get --brief` before deciding whether to push, promote, fix, cancel, hotfix, or backport
 - copy bounded ownership selectors across explicitly shared runs when paired execution or review should retain the same governed boundary
 - express ownership with richer selector families such as `file:`, `dir:`, `module:`, `glob:`, `scope:`, and `interface:`
 - let semantic selector families govern the same boundary across `scope:` and `interface:` labels, including hierarchical prefixes like `scope:release` and `scope:release/notes`

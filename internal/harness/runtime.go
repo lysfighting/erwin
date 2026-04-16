@@ -16870,6 +16870,110 @@ func updateDriveRunState(runID, newState, summary, reason, action string, mode o
 	})
 }
 
+func shipStatusPacket(run map[string]any) map[string]any {
+	return map[string]any{
+		"run_id":               stringValue(run["run_id"]),
+		"mission_id":           stringValue(run["mission_id"]),
+		"verification_status":  firstNonBlank(stringValue(run["verification_status"]), "unknown"),
+		"verification_refs":    toList(run["verification_refs"]),
+		"review_status":        firstNonBlank(stringValue(run["review_status"]), "unknown"),
+		"review_refs":          toList(run["review_refs"]),
+		"checks_status":        firstNonBlank(stringValue(run["checks_status"]), "unknown"),
+		"checks_refs":          toList(run["checks_refs"]),
+		"ship_status":          firstNonBlank(stringValue(run["ship_status"]), "unstarted"),
+		"ship_refs":            toList(run["ship_refs"]),
+		"pr_ref":               stringValue(run["pr_ref"]),
+		"pr_url":               stringValue(run["pr_url"]),
+		"rc_id":                stringValue(run["rc_id"]),
+		"merge_ready":          mergeReady(run),
+		"next_expected_action": stringValue(run["next_expected_action"]),
+	}
+}
+
+func shipStatusCurrent(status map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(status["run_id"])), "unknown")
+	switch firstNonBlank(strings.TrimSpace(stringValue(status["ship_status"])), "unstarted") {
+	case "ready":
+		return fmt.Sprintf("Run %s is verified and ready for branch push or PR creation.", runID)
+	case "pushed":
+		return fmt.Sprintf("Run %s has pushed its branch and should move into PR review.", runID)
+	case "in_review":
+		return fmt.Sprintf("Run %s is in PR review and still depends on review/check gates.", runID)
+	case "approved":
+		if boolValue(status["merge_ready"]) {
+			return fmt.Sprintf("Run %s is merge-ready: review is approved and checks have passed.", runID)
+		}
+		return fmt.Sprintf("Run %s is approved but at least one merge gate is still not aligned.", runID)
+	case "merged":
+		return fmt.Sprintf("Run %s is merged and can feed RC or cleanup work.", runID)
+	default:
+		return fmt.Sprintf("Run %s has not fully entered the ship lifecycle yet.", runID)
+	}
+}
+
+func shipStatusLeaderAction(status map[string]any) string {
+	next := strings.TrimSpace(stringValue(status["next_expected_action"]))
+	if next != "" {
+		return next
+	}
+	switch firstNonBlank(strings.TrimSpace(stringValue(status["ship_status"])), "unstarted") {
+	case "ready":
+		return "Push the branch, then create or update the PR."
+	case "pushed":
+		return "Create or update the PR and start review/check tracking."
+	case "in_review":
+		return "Track review and checks until both gates are green."
+	case "approved":
+		if boolValue(status["merge_ready"]) {
+			return "Merge the PR, then run cleanup or include the run in an RC."
+		}
+		return "Wait for remaining review/check gates before merge."
+	case "merged":
+		return "Clean up delivered artifacts or include the run in the next RC."
+	default:
+		return "Record verification before marking this run ship-ready."
+	}
+}
+
+func renderShipStatusBrief(status map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(status["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(status["mission_id"])), "unknown")
+	prRef := firstNonBlank(strings.TrimSpace(stringValue(status["pr_ref"])), "none")
+	prURL := firstNonBlank(strings.TrimSpace(stringValue(status["pr_url"])), "none")
+	rcID := firstNonBlank(strings.TrimSpace(stringValue(status["rc_id"])), "none")
+	lines := []string{
+		"Harness Ship Status Briefing",
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf(
+			"Gates: ship=%s, verification=%s, review=%s, checks=%s, merge_ready=%t.",
+			firstNonBlank(strings.TrimSpace(stringValue(status["ship_status"])), "unstarted"),
+			firstNonBlank(strings.TrimSpace(stringValue(status["verification_status"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(status["review_status"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(status["checks_status"])), "unknown"),
+			boolValue(status["merge_ready"]),
+		),
+		fmt.Sprintf("PR: ref=%s, url=%s.", prRef, prURL),
+		fmt.Sprintf("RC: %s.", rcID),
+		"",
+		"Current:",
+		"- " + shipStatusCurrent(status),
+		"",
+		"Why:",
+		"- Ship state is gated by verification, PR review, checks, and merge readiness; the leader should not treat optimistic ship status as authoritative when gates disagree.",
+		"",
+		"Next:",
+		"- " + shipStatusLeaderAction(status),
+		"",
+		"Leader:",
+		"- " + shipStatusLeaderAction(status),
+		"",
+		"Release:",
+		"- Once merged, include this run in an RC or complete cleanup according to the release plan.",
+	}
+	return strings.Join(lines, "\n")
+}
+
 func cmdShip(args []string) error {
 	if len(args) < 1 {
 		return errors.New("ship requires a subcommand")
@@ -16880,32 +16984,24 @@ func cmdShip(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
 	case "status":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("ship status", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("ship status requires RUN_ID")
 		}
 		registry := readRegistry()
-		index := findRunIndex(registry, args[1])
+		index := findRunIndex(registry, remaining[0])
 		if index < 0 {
-			return fmt.Errorf("run not found: %s", args[1])
+			return fmt.Errorf("run not found: %s", remaining[0])
 		}
 		run, _ := toMap(toList(registry["runs"])[index])
-		return printJSON(map[string]any{
-			"run_id":               stringValue(run["run_id"]),
-			"mission_id":           stringValue(run["mission_id"]),
-			"verification_status":  firstNonBlank(stringValue(run["verification_status"]), "unknown"),
-			"verification_refs":    toList(run["verification_refs"]),
-			"review_status":        firstNonBlank(stringValue(run["review_status"]), "unknown"),
-			"review_refs":          toList(run["review_refs"]),
-			"checks_status":        firstNonBlank(stringValue(run["checks_status"]), "unknown"),
-			"checks_refs":          toList(run["checks_refs"]),
-			"ship_status":          firstNonBlank(stringValue(run["ship_status"]), "unstarted"),
-			"ship_refs":            toList(run["ship_refs"]),
-			"pr_ref":               stringValue(run["pr_ref"]),
-			"pr_url":               stringValue(run["pr_url"]),
-			"rc_id":                stringValue(run["rc_id"]),
-			"merge_ready":          mergeReady(run),
-			"next_expected_action": stringValue(run["next_expected_action"]),
-		})
+		status := shipStatusPacket(run)
+		if mode == outputModeText {
+			return printText(renderShipStatusBrief(status))
+		}
+		return printJSON(status)
 	case "verify":
 		if len(args) < 3 {
 			return errors.New("ship verify requires RUN_ID REF")
@@ -17424,6 +17520,134 @@ func cmdShipRemainder(args []string) error {
 	}
 }
 
+func rcBriefCurrent(rc map[string]any) string {
+	rcID := firstNonBlank(strings.TrimSpace(stringValue(rc["rc_id"])), "unknown")
+	version := firstNonBlank(strings.TrimSpace(stringValue(rc["version"])), "unknown")
+	switch firstNonBlank(strings.TrimSpace(stringValue(rc["state"])), "unknown") {
+	case "active":
+		if firstNonBlank(strings.TrimSpace(stringValue(rc["verification_status"])), "unknown") == "passed" {
+			return fmt.Sprintf("RC %s for %s is verified and ready for promotion or a final release decision.", rcID, version)
+		}
+		return fmt.Sprintf("RC %s for %s is active and still needs staged verification.", rcID, version)
+	case "promoted":
+		return fmt.Sprintf("RC %s for %s has been promoted and archived as release history.", rcID, version)
+	case "closed":
+		return fmt.Sprintf("RC %s for %s is closed; cut a fresh RC if release work still matters.", rcID, version)
+	default:
+		return fmt.Sprintf("RC %s for %s is recorded with state %s.", rcID, version, firstNonBlank(strings.TrimSpace(stringValue(rc["state"])), "unknown"))
+	}
+}
+
+func rcBriefLeaderAction(rc map[string]any) string {
+	switch firstNonBlank(strings.TrimSpace(stringValue(rc["state"])), "unknown") {
+	case "active":
+		if firstNonBlank(strings.TrimSpace(stringValue(rc["verification_status"])), "unknown") == "passed" {
+			return "Promote the RC if release criteria are satisfied, or apply a fix/cancel if staged evidence changed."
+		}
+		return "Record RC verification, then decide whether to promote, fix, hotfix, backport, or cancel."
+	case "promoted":
+		return "Treat the promoted RC as release history and continue post-release monitoring or cleanup."
+	case "closed":
+		return "Create a fresh RC from the corrected branch if the release still needs to proceed."
+	default:
+		return "Inspect the RC JSON or release notes before taking a release action."
+	}
+}
+
+func renderRCBrief(rc map[string]any) string {
+	rcID := firstNonBlank(strings.TrimSpace(stringValue(rc["rc_id"])), "unknown")
+	version := firstNonBlank(strings.TrimSpace(stringValue(rc["version"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(rc["state"])), "unknown")
+	branch := firstNonBlank(strings.TrimSpace(stringValue(rc["branch"])), "unknown")
+	baseBranch := firstNonBlank(strings.TrimSpace(stringValue(rc["base_branch"])), "unknown")
+	productionBranch := firstNonBlank(strings.TrimSpace(stringValue(rc["production_branch"])), "unknown")
+	runIDs := anyListToStrings(toList(rc["run_ids"]))
+	if len(runIDs) == 0 {
+		runIDs = []string{"none"}
+	}
+	verification := firstNonBlank(strings.TrimSpace(stringValue(rc["verification_status"])), "unknown")
+	lines := []string{
+		"Harness RC Briefing",
+		fmt.Sprintf("RC: %s", rcID),
+		fmt.Sprintf("Version: %s", version),
+		fmt.Sprintf("State: %s, verification=%s.", state, verification),
+		fmt.Sprintf("Branches: rc=%s, base=%s, production=%s.", branch, baseBranch, productionBranch),
+		fmt.Sprintf("Runs: %s.", strings.Join(runIDs, ", ")),
+		"",
+		"Current:",
+		"- " + rcBriefCurrent(rc),
+		"",
+		"Why:",
+		"- RC state is the release-control checkpoint after merged runs; it keeps staged verification, surgical fixes, promotion, cancellation, hotfix, and backport decisions explicit.",
+		"",
+		"Next:",
+		"- " + rcBriefLeaderAction(rc),
+		"",
+		"Leader:",
+		"- " + rcBriefLeaderAction(rc),
+		"",
+		"Release:",
+		"- Keep RC changes bounded to the recorded branch and use fix/hotfix/backport commands only when staged evidence justifies them.",
+	}
+	return strings.Join(lines, "\n")
+}
+
+func renderRCListBrief(rcs []any, includeArchived bool) string {
+	activeCount := 0
+	for _, item := range rcs {
+		rc, _ := toMap(item)
+		if strings.TrimSpace(stringValue(rc["state"])) == "active" {
+			activeCount++
+		}
+	}
+	scope := "active"
+	if includeArchived {
+		scope = "active and archived"
+	}
+	lines := []string{
+		"Harness RC List Briefing",
+		fmt.Sprintf("Scope: %s RCs.", scope),
+		fmt.Sprintf("Count: %s, %s.", countLabel(len(rcs), "RC", "RCs"), countLabel(activeCount, "active RC", "active RCs")),
+		"",
+		"Current:",
+	}
+	if len(rcs) == 0 {
+		lines = append(lines, "- No RC is currently recorded for this scope.")
+	} else {
+		limit := len(rcs)
+		if limit > 5 {
+			limit = 5
+		}
+		for _, item := range rcs[:limit] {
+			rc, _ := toMap(item)
+			lines = append(lines, "- "+fmt.Sprintf(
+				"%s version=%s state=%s verification=%s branch=%s.",
+				firstNonBlank(strings.TrimSpace(stringValue(rc["rc_id"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(rc["version"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(rc["state"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(rc["verification_status"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(rc["branch"])), "unknown"),
+			))
+		}
+		if len(rcs) > limit {
+			lines = append(lines, fmt.Sprintf("- %d more RC(s) remain in JSON output.", len(rcs)-limit))
+		}
+	}
+	next := "Create an RC from merged runs when a release candidate is needed."
+	if activeCount > 0 {
+		next = "Inspect the active RC with `bash scripts/harness-rc.sh get RC_ID --brief`, then verify, promote, fix, or cancel it."
+	}
+	lines = append(lines,
+		"",
+		"Why:",
+		"- RC listing shows whether release control is idle, actively staging, or relying on archived RC history.",
+		"",
+		"Next:",
+		"- "+next,
+	)
+	return strings.Join(lines, "\n")
+}
+
 func cmdRC(args []string) error {
 	if len(args) < 1 {
 		return errors.New("rc requires a subcommand")
@@ -17434,22 +17658,38 @@ func cmdRC(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
 	case "list":
+		mode, remaining, err := parseOutputModeFlagsOnly("rc list", args[1:])
+		if err != nil {
+			return err
+		}
 		includeArchived := false
-		for _, arg := range args[1:] {
+		for _, arg := range remaining {
 			if arg == "--all" {
 				includeArchived = true
 			}
 		}
-		return printJSON(listRCs(includeArchived))
+		rcs := listRCs(includeArchived)
+		if mode == outputModeText {
+			return printText(renderRCListBrief(rcs, includeArchived))
+		}
+		return printJSON(rcs)
 	case "get":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("rc get", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("rc get requires RC_ID")
 		}
-		data := readRC(args[1])
+		data := readRC(remaining[0])
 		if data == nil {
-			return fmt.Errorf("rc not found: %s", args[1])
+			return fmt.Errorf("rc not found: %s", remaining[0])
 		}
-		return printJSON(getKey(data, "rc", map[string]any{}))
+		rc, _ := toMap(getKey(data, "rc", map[string]any{}))
+		if mode == outputModeText {
+			return printText(renderRCBrief(rc))
+		}
+		return printJSON(rc)
 	default:
 		return cmdRCRemainder(args)
 	}
