@@ -268,6 +268,13 @@ assert_contains "$report_brief" 'Summary: Auth caller patch remains ready after 
 assert_contains "$report_brief" 'This teammate report is now a structured control-plane signal' "teammates report --brief explains report governance"
 assert_contains "$report_brief" 'Review the teammate progress report, keep the assignment bounded' "teammates report --brief tells the leader how to use the report"
 
+link_brief=$(run_in_repo bash scripts/harness-teammates.sh link "$run_a" "$run_b" "Allow auth and release-smoke teammates to coordinate on the interface handoff." --brief)
+assert_contains "$link_brief" 'Harness Teammate Link Briefing' "teammates link --brief emits a human-readable linkage briefing"
+assert_contains "$link_brief" "Source: worker-auth ($run_a)." "teammates link --brief names the source teammate"
+assert_contains "$link_brief" "Target: worker-ops ($run_b)." "teammates link --brief names the target teammate"
+assert_contains "$link_brief" 'Allow auth and release-smoke teammates to coordinate on the interface handoff.' "teammates link --brief preserves the leader-approved reason"
+assert_contains "$link_brief" 'without transferring ownership or mission authority' "teammates link --brief explains the governed communication boundary"
+
 message_output=$(run_in_repo bash scripts/harness-teammates.sh message "$run_a" "$run_b" interface_change "Caller signature now requires scope" --evidence=src/auth.ts)
 assert_json_field "$message_output" '"kind": "interface_change"' "teammate message emits sibling signal"
 assert_json_field "$message_output" "\"$run_b\"" "teammate message targets sibling run"

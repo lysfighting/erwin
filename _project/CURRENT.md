@@ -8,13 +8,19 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-16
-- **Last Session**: 2026-04-16-I (Extended the human-facing leader layer into council adoption)
+- **Last Session**: 2026-04-16-J (Extended the human-facing leader layer into governed teammate links)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-16-J** — Extended the human-facing leader layer into `teammates link --brief`
+
+- **Governed teammate link creation now has a real human-facing leader entrypoint**: `bash scripts/harness-teammates.sh link RUN_A RUN_B [REASON] --brief` now turns peer-link approval into a readable handoff that names both teammates, connected scopes, updated communication peers, leader-approved reason, and the boundary that permits governed messages without transferring ownership or mission authority
+- **Link briefings stay on the same Go control plane**: the new layer is derived after both run records are updated with sibling and communication peer state; default `teammates link` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary governed links**: teammate smoke proves source-runtime peer-link briefings, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-16-I** — Extended the human-facing leader layer into `meeting-close` / `adopt-meeting --brief`
 

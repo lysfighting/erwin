@@ -14180,6 +14180,57 @@ func renderTeammateMessageBrief(sourceRun, targetRun, mission, signal, registry 
 	return strings.Join(lines, "\n")
 }
 
+func renderTeammateLinkBrief(runA, runB map[string]any, reason string) string {
+	runAID := firstNonBlank(strings.TrimSpace(stringValue(runA["run_id"])), "unknown")
+	runBID := firstNonBlank(strings.TrimSpace(stringValue(runB["run_id"])), "unknown")
+	ownerA := firstNonBlank(strings.TrimSpace(stringValue(runA["owner_id"])), runAID)
+	ownerB := firstNonBlank(strings.TrimSpace(stringValue(runB["owner_id"])), runBID)
+	missionA := firstNonBlank(strings.TrimSpace(stringValue(runA["mission_id"])), "unknown")
+	missionB := firstNonBlank(strings.TrimSpace(stringValue(runB["mission_id"])), "unknown")
+	scopeA := firstNonBlank(strings.TrimSpace(stringValue(runA["assigned_scope"])), "unspecified")
+	scopeB := firstNonBlank(strings.TrimSpace(stringValue(runB["assigned_scope"])), "unspecified")
+	peersA := teammateBriefPeerIDs(runA)
+	if len(peersA) == 0 {
+		peersA = []string{"none"}
+	}
+	peersB := teammateBriefPeerIDs(runB)
+	if len(peersB) == 0 {
+		peersB = []string{"none"}
+	}
+	reason = firstNonBlank(strings.TrimSpace(reason), "Leader approved teammate coordination.")
+	lines := []string{
+		"Harness Teammate Link Briefing",
+		fmt.Sprintf("Source: %s (%s).", ownerA, runAID),
+		fmt.Sprintf("Target: %s (%s).", ownerB, runBID),
+		fmt.Sprintf("Link: mission_a=%s, mission_b=%s.", missionA, missionB),
+		fmt.Sprintf("Scopes: %s <-> %s.", scopeA, scopeB),
+		fmt.Sprintf("Peers: %s has %s; %s has %s.", ownerA, strings.Join(peersA, ", "), ownerB, strings.Join(peersB, ", ")),
+		fmt.Sprintf("Reason: %s", reason),
+		"",
+		"Current:",
+		"- " + fmt.Sprintf("Leader approved governed communication between %s and %s.", ownerA, ownerB),
+		"",
+		"Why:",
+		"- The link updates both runs' sibling and communication peer records so `teammates message` can emit governed peer signals without transferring ownership or mission authority.",
+		"",
+		"Next:",
+		"- " + fmt.Sprintf("Use `bash scripts/harness-teammates.sh message %s %s KIND SUMMARY --brief` for the concrete peer communication, or inspect each side with `teammates get --brief`.", runAID, runBID),
+		"",
+		"Leader:",
+		"- Treat later peer messages as signals for review, adoption, resolution, or council materialization; do not let the link itself widen either teammate's scope.",
+		"",
+		"Source Teammate:",
+		"- " + fmt.Sprintf("%s may communicate only inside the approved peer boundary and should keep ordinary progress reports fresh.", ownerA),
+		"",
+		"Target Teammate:",
+		"- " + fmt.Sprintf("%s may respond inside the approved peer boundary and should escalate if the message implies scope, ownership, or risk changes.", ownerB),
+		"",
+		"Council:",
+		"- No council is created by the link itself; open or materialize one only if the governed peer communication raises an ambiguous or high-risk decision.",
+	}
+	return strings.Join(lines, "\n")
+}
+
 func renderTeammateEscalationBrief(run, parentRun, mission, signal, meeting, registry map[string]any, materialized bool, requestedProtocol string) string {
 	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
 	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
@@ -20475,14 +20526,18 @@ func cmdTeammatesRemainder(args []string) error {
 			return printJSON(map[string]any{"run": teammateRun, "signal": assignmentSignal})
 		})
 	case "link":
-		if len(args) < 3 {
+		outputModeValue, linkArgs, err := parseOutputModeFlagsOnly("teammates link", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(linkArgs) < 2 {
 			return errors.New("teammates link requires RUN_A RUN_B [REASON]")
 		}
-		runAID := args[1]
-		runBID := args[2]
+		runAID := linkArgs[0]
+		runBID := linkArgs[1]
 		reason := "Leader approved teammate coordination."
-		if len(args) > 3 {
-			reason = strings.TrimSpace(strings.Join(args[3:], " "))
+		if len(linkArgs) > 2 {
+			reason = strings.TrimSpace(strings.Join(linkArgs[2:], " "))
 		}
 		return withHarnessLock(func() error {
 			registry := readRegistry()
@@ -20505,6 +20560,9 @@ func cmdTeammatesRemainder(args []string) error {
 			registry["runs"] = runs
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if outputModeValue == outputModeText {
+				return printText(renderTeammateLinkBrief(runA, runB, reason))
 			}
 			return printJSON(map[string]any{"linked": []any{runAID, runBID}, "reason": reason})
 		})

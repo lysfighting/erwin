@@ -119,6 +119,7 @@ teammate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-
 signals_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-signals.sh active issue-9101 --brief)
 signals_adjudicate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-signals.sh adjudicate --all --brief)
 teammate_report_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh report "$teammate_run_id" "Packaged teammate reported progress." --kind=progress --evidence=README.md --brief)
+teammate_link_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh link "$teammate_run_id" "$teammate_brief_run_id" "Allow packaged teammate peer review." --brief)
 teammate_message_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh message "$teammate_run_id" "$teammate_brief_run_id" interface_change "Packaged teammate shared governed interface context." --evidence=README.md --brief)
 teammate_escalate_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh escalate "$teammate_run_id" "Should packaged teammate escalate ambiguous release evidence?" --materialize --protocol=decision-record --brief)
 maintenance_reconcile_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-maintenance.sh reconcile --brief)
@@ -203,6 +204,8 @@ assert_contains "$teammate_brief_output" 'Teammate: worker-packaged' "teammates 
 assert_contains "$teammate_brief_output" "Assignment: mission=issue-9101, parent=$run_id, role=packaged-helper, state=ready" "packaged teammate brief still follows teammate assignment truth without Go"
 assert_contains "$teammate_report_brief_output" 'Harness Teammate Report Briefing' "teammates report --brief works via packaged binary without Go"
 assert_contains "$teammate_report_brief_output" 'Packaged teammate reported progress.' "packaged teammate report brief preserves reported progress without Go"
+assert_contains "$teammate_link_brief_output" 'Harness Teammate Link Briefing' "teammates link --brief works via packaged binary without Go"
+assert_contains "$teammate_link_brief_output" 'Allow packaged teammate peer review.' "packaged teammate link brief preserves leader-approved reason without Go"
 assert_contains "$teammate_message_brief_output" 'Harness Teammate Message Briefing' "teammates message --brief works via packaged binary without Go"
 assert_contains "$teammate_message_brief_output" 'Packaged teammate shared governed interface context.' "packaged teammate message brief preserves governed message content without Go"
 assert_contains "$teammate_escalate_brief_output" 'Harness Teammate Escalation Briefing' "teammates escalate --brief works via packaged binary without Go"
