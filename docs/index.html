@@ -347,6 +347,54 @@
       line-height: 1.55;
       color: var(--muted);
     }
+    .network-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.55fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+    .network-card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px;
+      background: rgba(255,255,255,0.74);
+    }
+    .network-card p {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .metric-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px dashed rgba(31, 36, 48, 0.12);
+      color: var(--muted);
+    }
+    .metric-line:last-child { border-bottom: none; }
+    .metric-line strong { color: var(--ink); }
+    .thread-list {
+      list-style: none;
+      padding: 0;
+      margin: 14px 0 0;
+      display: grid;
+      gap: 12px;
+    }
+    .thread-list li {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(31, 36, 48, 0.045);
+    }
+    .thread-list strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+    .thread-list span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
     .footer-note {
       margin-top: 18px;
       color: var(--muted);
@@ -359,7 +407,7 @@
         align-items: start;
         flex-direction: column;
       }
-      .hero-grid, .brief-grid, .split, .archive-grid, .layer-grid, .flow {
+      .hero-grid, .brief-grid, .split, .archive-grid, .layer-grid, .network-grid, .flow {
         grid-template-columns: 1fr;
       }
       .shell { width: min(100vw - 20px, 100%); }
@@ -375,6 +423,7 @@
         <a class="nav-pill" href="#briefing">Latest briefing</a>
         <a class="nav-pill" href="#interpretation">Interpretation</a>
         <a class="nav-pill" href="#architecture">Architecture</a>
+        <a class="nav-pill" href="#network">Knowledge network</a>
         <a class="nav-pill" href="#history">History</a>
       </nav>
     </div>
@@ -388,6 +437,8 @@
         <div class="stat-chip"><strong>25</strong><span>Durable notes indexed</span></div>
         <div class="stat-chip"><strong>3 streams</strong><span>Daily, weekly, trending</span></div>
         <div class="stat-chip"><strong>5 layers</strong><span>Radar to implementation</span></div>
+        <div class="stat-chip"><strong>86</strong><span>Network artifacts</span></div>
+        <div class="stat-chip"><strong>240</strong><span>Typed local links</span></div>
       </div>
       <div class="hero-grid">
         <div class="hero-panel">
@@ -490,11 +541,40 @@
         <p>Radar is only the intake layer. These directories define how external signal, internal usage pressure, durable synthesis, and reviewed proposals fit together.</p>
       </div>
       <div class="layer-grid">
-        <article class="layer-card"><h3><a href="radar/README.md">Radar</a></h3><p>External first-party signal, recurring notes, source policy, and the freshest field view.</p></article><article class="layer-card"><h3><a href="feedback/README.md">Feedback</a></h3><p>Structured Harness usage cases instead of raw session dumping.</p></article><article class="layer-card"><h3><a href="knowledge/README.md">Knowledge</a></h3><p>Durable synthesis, timelines, concept maps, and topic continuity.</p></article><article class="layer-card"><h3><a href="proposals/README.md">Proposals</a></h3><p>Selective reviewed change candidates after evidence is mature enough.</p></article><article class="layer-card"><h3><a href="research/README.md">Research</a></h3><p>One-off analysis and incubation, kept useful but out of the active lane.</p></article>
+        <article class="layer-card"><h3><a href="radar/README.md">Radar</a></h3><p>External first-party signal, recurring notes, source policy, and the freshest field view.</p></article><article class="layer-card"><h3><a href="feedback/README.md">Feedback</a></h3><p>Structured Harness, Codex, and repo-process usage cases instead of raw session dumping.</p></article><article class="layer-card"><h3><a href="knowledge/README.md">Knowledge</a></h3><p>Durable synthesis, active threads, timelines, concept maps, and topic continuity.</p></article><article class="layer-card"><h3><a href="proposals/README.md">Proposals</a></h3><p>Selective reviewed change candidates after evidence is mature enough.</p></article><article class="layer-card"><h3><a href="../README.md">Implementation</a></h3><p>Harness, Skills, evals, docs, automation, and surface changes made from reviewed pressure or explicit gaps.</p></article>
       </div>
       <p class="footer-note">
         Canonical behavior is defined in <a href="knowledge/operating-model.md"><code>docs/knowledge/operating-model.md</code></a> and linked back into the Harness learning loop at <a href="harness-learning-loop.md"><code>docs/harness-learning-loop.md</code></a>.
       </p>
+    </section>
+
+    <section class="section" id="network">
+      <div class="section-header">
+        <div>
+          <div class="eyebrow">Machine-Readable Network</div>
+          <h2>Do the systems know each other?</h2>
+        </div>
+        <p>The generated JSON now carries typed artifacts, local links, active knowledge threads, and proposal records so future agents and the cockpit prototype can navigate the repo as a connected system.</p>
+      </div>
+      <div class="network-grid">
+        <article class="network-card">
+          <h3>Network snapshot</h3>
+          <p>The graph is rebuilt from Markdown and selected implementation entrypoints. It is not a database; Markdown remains the source of truth.</p>
+          <div class="metric-line"><span>Artifacts</span><strong>86</strong></div>
+          <div class="metric-line"><span>Typed links</span><strong>240</strong></div>
+          <div class="metric-line"><span>Active threads</span><strong>5</strong></div>
+          <div class="metric-line"><span>Proposal records</span><strong>5</strong></div>
+          <div class="card-actions">
+            <a class="primary-link" href="knowledge/index.json">Open JSON index</a>
+            <a class="secondary-link" href="knowledge/active-threads.md">Open active threads</a>
+          </div>
+        </article>
+        <article class="network-card">
+          <h3>Active threads</h3>
+          <p>These are the durable interpretation threads that connect radar, feedback, proposals, and implementation pressure.</p>
+          <ul class="thread-list"><li><strong>erwin five-layer operating model</strong><span>`erwin` should operate as a five-layer knowledge-to-action loop: Radar and Feedback feed Knowledge, mature Knowledge feeds Proposals, reviewed Proposals feed Implementation, and Implementation results flow back into Feedback and Knowledge. Harness is the main implementation target and feedback source, not a shortcut around the loop.</span></li><li><strong>knowledge-system operating discipline</strong><span>The knowledge system must stay file-backed and proposal-gated: repeated usage pressure becomes feedback cases first, active durable understanding lives in `knowledge/`, and only mature threads should create proposal pressure.</span></li><li><strong>coding-agent self-iteration and paper intake</strong><span>OpenAI currently presents self-improvement as eval-backed research engineering, Anthropic presents it more as strong internal dogfooding and workflow automation, and the paper-watch archive now has recurring notes for self-correction, long-horizon degradation, context retrieval, and trajectory diagnosis instead of only one starter note.</span></li><li><strong>harness engineering as legibility + eval pressure</strong><span>The strongest immediate reusable lesson from recent field signal is not to widen `Harness` runtime blindly, but to keep repo-readable truth, traceability, eval integrity, bounded policy discipline, and monitorability ahead of speculative feature churn. Internal audits, runtime feedback, and newer external monitoring signal now sharpen that thread by showing where visible productization still outruns deeper governance maturity and observability.</span></li></ul>
+        </article>
+      </div>
     </section>
 
     <section class="section" id="history">

@@ -1,11 +1,15 @@
 {
   "surface_version": 1,
+  "knowledge_network_version": 1,
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
     "total_notes": 25,
     "stream_count": 3,
-    "layer_count": 5
+    "layer_count": 5,
+    "artifact_count": 86,
+    "link_count": 240,
+    "thread_count": 5
   },
   "canonical_paths": {
     "visual_surface": "index.html",
@@ -38,29 +42,34 @@
   ],
   "layers": [
     {
+      "id": "radar",
       "name": "Radar",
       "href": "radar/README.md",
       "description": "External first-party signal, recurring notes, source policy, and the freshest field view."
     },
     {
+      "id": "feedback",
       "name": "Feedback",
       "href": "feedback/README.md",
-      "description": "Structured Harness usage cases instead of raw session dumping."
+      "description": "Structured Harness, Codex, and repo-process usage cases instead of raw session dumping."
     },
     {
+      "id": "knowledge",
       "name": "Knowledge",
       "href": "knowledge/README.md",
-      "description": "Durable synthesis, timelines, concept maps, and topic continuity."
+      "description": "Durable synthesis, active threads, timelines, concept maps, and topic continuity."
     },
     {
+      "id": "proposals",
       "name": "Proposals",
       "href": "proposals/README.md",
       "description": "Selective reviewed change candidates after evidence is mature enough."
     },
     {
-      "name": "Research",
-      "href": "research/README.md",
-      "description": "One-off analysis and incubation, kept useful but out of the active lane."
+      "id": "implementation",
+      "name": "Implementation",
+      "href": "../README.md",
+      "description": "Harness, Skills, evals, docs, automation, and surface changes made from reviewed pressure or explicit gaps."
     }
   ],
   "streams": {
@@ -179,5 +188,4181 @@
     "Workspace manifests for Harness runs",
     "Effort and budget as explicit run policy",
     "Review agents as a named verification lane"
-  ]
+  ],
+  "knowledge_network": {
+    "schema_version": 1,
+    "contract": "Repo-owned typed node/edge snapshot generated from Markdown and selected implementation entrypoints. It is a navigation and handoff index, not a database or replacement source of truth.",
+    "layers": [
+      {
+        "id": "radar",
+        "name": "Radar",
+        "href": "radar/README.md",
+        "description": "External first-party signal, recurring notes, source policy, and the freshest field view."
+      },
+      {
+        "id": "feedback",
+        "name": "Feedback",
+        "href": "feedback/README.md",
+        "description": "Structured Harness, Codex, and repo-process usage cases instead of raw session dumping."
+      },
+      {
+        "id": "knowledge",
+        "name": "Knowledge",
+        "href": "knowledge/README.md",
+        "description": "Durable synthesis, active threads, timelines, concept maps, and topic continuity."
+      },
+      {
+        "id": "proposals",
+        "name": "Proposals",
+        "href": "proposals/README.md",
+        "description": "Selective reviewed change candidates after evidence is mature enough."
+      },
+      {
+        "id": "implementation",
+        "name": "Implementation",
+        "href": "../README.md",
+        "description": "Harness, Skills, evals, docs, automation, and surface changes made from reviewed pressure or explicit gaps."
+      }
+    ],
+    "counts": {
+      "artifact_count": 86,
+      "link_count": 240,
+      "thread_count": 5,
+      "proposal_record_count": 5,
+      "layer_counts": {
+        "radar": 35,
+        "feedback": 9,
+        "knowledge": 10,
+        "proposals": 14,
+        "implementation": 18
+      }
+    },
+    "artifacts": [
+      {
+        "id": "implementation:AGENTS.md",
+        "layer": "implementation",
+        "path": "AGENTS.md",
+        "title": "erwin — Project Context for Codex",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "coding agents"
+        ],
+        "summary": "`erwin` is an **AI/agent frontier exploration lab**.",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "implementation:CHANGELOG.md",
+        "layer": "implementation",
+        "path": "CHANGELOG.md",
+        "title": "Changelog",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "All notable changes to the **erwin** project will be documented in this file.",
+        "external_refs": [
+          "https://keepachangelog.com/en/1.1.0/",
+          "https://semver.org/spec/v2.0.0.html"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "implementation:README.md",
+        "layer": "implementation",
+        "path": "README.md",
+        "title": "erwin",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "`erwin` is an AI/agent frontier exploration lab.",
+        "external_refs": [],
+        "local_refs": [
+          "AGENTS.md",
+          "_project/CURRENT.md",
+          "docs/README.md",
+          "docs/index.html",
+          "docs/knowledge/briefing.md",
+          "docs/harness-explainer.md",
+          "docs/radar/README.md",
+          "docs/radar/sources.md",
+          "docs/radar/themes.md",
+          "docs/radar/weekly/README.md",
+          "docs/feedback/README.md",
+          "docs/knowledge/README.md",
+          "docs/proposals/README.md",
+          "harness/README.md",
+          "skills/harness/README.md",
+          "docs/harness-documentation-map.md",
+          "skills/README.md",
+          "skills/knowledge/README.md",
+          "skills/visual-test/README.md",
+          "archive/README.md",
+          "docs/archive/README.md",
+          "_project/archive/README.md"
+        ]
+      },
+      {
+        "id": "implementation:_project/CURRENT.md",
+        "layer": "implementation",
+        "path": "_project/CURRENT.md",
+        "title": "Current State",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents"
+        ],
+        "summary": "**Version**: 1.0.0 **Last Updated**: 2026-04-17 **Last Session**: 2026-04-17-C (knowledge network index added)",
+        "external_refs": [],
+        "local_refs": [
+          "_project/decisions/0013-harness-prototype-positioning.md",
+          "harness/adapter-manifest.yml",
+          "docs/harness-distribution-strategy.md",
+          "scripts/harness-package-runtime.sh",
+          "scripts/harness-runtime-package-smoke-test.sh",
+          "scripts/harness-missions.sh"
+        ]
+      },
+      {
+        "id": "implementation:_project/GOALS.md",
+        "layer": "implementation",
+        "path": "_project/GOALS.md",
+        "title": "Project Goals — erwin",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "**Vision**: Make `erwin` a durable working lab for advanced AI/agent systems — one that helps us notice frontier shifts early, test them against real implementation work, and turn the best ideas into reusable operatin...",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "knowledge:docs/README.md",
+        "layer": "knowledge",
+        "path": "docs/README.md",
+        "title": "docs/ — Technical Documentation Index",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "coding agents"
+        ],
+        "summary": "Open [index.html](index.html) when you want the human-facing knowledge surface rather than the raw markdown tree. Open [knowledge/briefing.md](knowledge/briefing.md) when you want the same surface in fast text form.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/index.html",
+          "docs/knowledge/briefing.md",
+          "docs/erwin-operating-model.md",
+          "docs/erwin-repositioning-2026-03-30.md",
+          "docs/radar/README.md",
+          "docs/harness-explainer.md",
+          "docs/knowledge/operating-model.md",
+          "docs/harness-learning-loop.md",
+          "docs/feedback/README.md",
+          "docs/knowledge/README.md",
+          "docs/proposals/README.md",
+          "docs/radar/sources.md",
+          "docs/radar/themes.md",
+          "docs/radar/daily/README.md",
+          "docs/radar/trending/README.md",
+          "docs/radar/papers/README.md",
+          "docs/radar/weekly/README.md",
+          "docs/radar/weekly/2026-03-30.md",
+          "docs/knowledge/index.json",
+          "docs/feedback/harness-usage-case-template.md",
+          "docs/knowledge/active-threads.md",
+          "docs/proposals/harness-review-gates.md",
+          "docs/proposals/harness-eval-candidate-ledger.md",
+          "docs/harness-distribution-strategy.md",
+          "docs/harness-documentation-map.md",
+          "docs/harness-architecture.md",
+          "docs/harness-operating-model.md",
+          "docs/proposals/harness-proposal-ledger.md",
+          "docs/harness-public-contract.md",
+          "docs/harness-release-criteria.md",
+          "docs/harness-session-handoff.md",
+          "docs/erwin-skills-incubator-architecture.md",
+          "docs/visual-encoding-standard.md",
+          "docs/version-management-architecture.md",
+          "docs/archive/README.md",
+          "docs/archive/teamwork-ai-manual.md",
+          "docs/archive/teamwork-design-constitution.md",
+          "docs/archive/team-doctor-design.md",
+          "docs/archive/drive-showcase-v2-architecture.md",
+          "docs/archive/git-model-v0.1.0.md",
+          "docs/research/drive-skill-analysis.md",
+          "docs/research/advanced-skills-research.md",
+          "docs/research/claude-code-agent-teams-community.md",
+          "docs/research/harness-decision-methodology-synthesis-2026-03-30.md"
+        ]
+      },
+      {
+        "id": "knowledge:docs/erwin-operating-model.md",
+        "layer": "knowledge",
+        "path": "docs/erwin-operating-model.md",
+        "title": "erwin Operating Model",
+        "date": "2026-04-17",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "coding agents"
+        ],
+        "summary": "define the repo-level knowledge-to-action loop for `erwin` so Radar, Feedback, Knowledge, Proposals, and Implementation sessions share one operating map.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/radar/README.md",
+          "docs/feedback/README.md",
+          "docs/knowledge/README.md",
+          "docs/proposals/README.md",
+          "docs/knowledge/index.json",
+          "docs/knowledge/active-threads.md",
+          "docs/proposals/harness-proposal-ledger.md",
+          "docs/radar/sources.md",
+          "docs/radar/themes.md",
+          "docs/feedback/harness-usage-case-template.md",
+          "docs/knowledge/operating-model.md",
+          "_project/CURRENT.md",
+          "docs/harness-documentation-map.md"
+        ]
+      },
+      {
+        "id": "feedback:docs/feedback/README.md",
+        "layer": "feedback",
+        "path": "docs/feedback/README.md",
+        "title": "Feedback Layer",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "orchestration"
+        ],
+        "summary": "`docs/feedback/` is the structured usage-feedback layer for `erwin`.",
+        "external_refs": [],
+        "local_refs": [
+          "_project/archive/sessions/README.md",
+          "docs/feedback/harness-usage-case-template.md",
+          "docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md",
+          "docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md",
+          "docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md",
+          "docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+          "docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md",
+          "docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md",
+          "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md"
+        ]
+      },
+      {
+        "id": "feedback:docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md",
+        "layer": "feedback",
+        "path": "docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md",
+        "title": "HU-001 — `docs/research/` became the default durable knowledge surface",
+        "date": "2026-04-02",
+        "status": "distilled-into-knowledge",
+        "themes": [
+          "harness"
+        ],
+        "summary": "durable knowledge, proposal-adjacent notes, and one-off research were mixed together, so fresh sessions had to rediscover canonical state by rereading large research piles",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "feedback:docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md",
+        "layer": "feedback",
+        "path": "docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md",
+        "title": "HU-002 — Proposal pressure arrived before knowledge matured",
+        "date": "2026-04-02",
+        "status": "distilled-into-knowledge",
+        "themes": [
+          "harness"
+        ],
+        "summary": "daily and weekly signal collection could produce proposal-shaped pressure before the repo had durable feedback cases or stable knowledge threads to justify that move",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "feedback:docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md",
+        "layer": "feedback",
+        "path": "docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md",
+        "title": "HU-003 — Session narrative carried knowledge state",
+        "date": "2026-04-02",
+        "status": "distilled-into-knowledge",
+        "themes": [
+          "harness"
+        ],
+        "summary": "fresh sessions could find the operating model, but still had to reconstruct which knowledge threads were active and what evidence had already converged by replaying session logs and recent commits",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "feedback:docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+        "layer": "feedback",
+        "path": "docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+        "title": "HU-004 — Productized surfaces outpaced deeper control-plane maturity",
+        "date": "2026-04-02",
+        "status": "distilled-into-knowledge",
+        "themes": [
+          "harness",
+          "orchestration"
+        ],
+        "summary": "the repo could look more complete than it really was because packaging, shell surfaces, and visible runtime shape matured faster than some of the hardest governance and control-plane commitments",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "feedback:docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md",
+        "layer": "feedback",
+        "path": "docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md",
+        "title": "HU-005 — Delegated follow-up needed bounded lifecycle objects",
+        "date": "2026-04-02",
+        "status": "distilled-into-knowledge",
+        "themes": [
+          "harness",
+          "agent evals",
+          "orchestration"
+        ],
+        "summary": "adopted follow-up work delegated to a teammate kept resurfacing as stale, cancelled, completed, or reopened state that generic run-level wording could not explain precisely enough",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "feedback:docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md",
+        "layer": "feedback",
+        "path": "docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md",
+        "title": "HU-006 — Active council needed current work visibility",
+        "date": "2026-04-02",
+        "status": "distilled-into-knowledge",
+        "themes": [
+          "harness",
+          "agent evals",
+          "orchestration"
+        ],
+        "summary": "leader-facing active-council surfaces were too abstract when they exposed only generic `next_requirement` or batch metadata instead of the current live packet and queued work",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "feedback:docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+        "layer": "feedback",
+        "path": "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+        "title": "HU-007 — Benchmark results needed eval-trust interpretation",
+        "date": "2026-04-09",
+        "status": "distilled-into-knowledge",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals"
+        ],
+        "summary": "external benchmark results were strong enough to influence knowledge and proposal posture, but the repo still lacked a durable habit of separating capability signal from benchmark-trust risk",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "feedback:docs/feedback/harness-usage-case-template.md",
+        "layer": "feedback",
+        "path": "docs/feedback/harness-usage-case-template.md",
+        "title": "Harness Usage Case Template",
+        "date": "2026-04-11",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "provide a durable template for turning raw `Harness` usage into structured feedback instead of vague retrospectives or chat-memory fragments.",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "implementation:docs/harness-architecture.md",
+        "layer": "implementation",
+        "path": "docs/harness-architecture.md",
+        "title": "Harness Architecture",
+        "date": "2026-03-29",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "define the single authoritative architecture narrative for `Harness`, consolidating the protocol lineage, control-plane model, runtime implementation, design influences, and remaining expansion areas into one durable...",
+        "external_refs": [],
+        "local_refs": [
+          "harness/adapter-manifest.yml",
+          "docs/harness-public-contract.md",
+          "docs/harness-documentation-map.md",
+          "_project/decisions/0013-harness-prototype-positioning.md",
+          "docs/harness-session-handoff.md",
+          "docs/harness-operating-model.md",
+          "docs/research/codex-native-orchestration-harness-analysis-2026-03-28.md",
+          "docs/research/codex-runtime-adapter-spec-2026-03-28.md",
+          "docs/archive/teamwork-ai-manual.md",
+          "docs/archive/teamwork-design-constitution.md",
+          "_project/decisions/0010-teamwork-v2-github-first.md",
+          "_project/decisions/0011-teamwork-closed-loop-design.md",
+          "docs/research/teamwork-vs-wing-analysis-2026-03-28.md",
+          "docs/research/parity-matrix-teamwork-wing-protocol-2026-03-28.md",
+          "_project/ideas/skills/tw2-architecture.md",
+          "docs/research/control-plane-spec-2026-03-28.md",
+          "reference/drive-skill/commands/drive.md",
+          "docs/research/drive-skill-analysis.md",
+          "docs/research/protocol-core-spec-2026-03-28.md",
+          "_project/archive/sessions/2026-03-13-AL.md",
+          "docs/research/cybernetics-kubernetes-arch-review-synthesis-2026-03-28.md",
+          "docs/research/harness-incubation-strategy-2026-03-28.md",
+          "docs/research/erwin-harness-incubation-blueprint-2026-03-28.md",
+          "skills/arch-review/arch-review/SKILL.md",
+          "docs/research/meeting-protocol-spec-2026-03-28.md",
+          "docs/research/state-authority-spec-2026-03-28.md",
+          "harness/profiles/erwin.yml",
+          "harness/README.md",
+          "cmd/harness-state/main.go",
+          "internal/harness/runtime.go",
+          "scripts/harness-runtime.sh",
+          "docs/harness-distribution-strategy.md",
+          "docs/research/leader-spec-2026-03-28.md",
+          "docs/research/teammate-spec-2026-03-28.md",
+          "docs/research/harness-decision-methodology-synthesis-2026-03-30.md",
+          "skills/harness/SKILL.md",
+          "docs/research/harness-gap-audit-2026-03-29.md",
+          "docs/research/harness-research-drift-audit-2026-03-29.md",
+          "AGENTS.md",
+          "_project/CURRENT.md"
+        ]
+      },
+      {
+        "id": "implementation:docs/harness-documentation-map.md",
+        "layer": "implementation",
+        "path": "docs/harness-documentation-map.md",
+        "title": "Harness Documentation Map",
+        "date": "2026-04-08",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "define the authoritative documentation system for `Harness` so future sessions can load the right design context without reconstructing architecture from scattered files or chat history.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/harness-explainer.md",
+          "docs/harness-architecture.md",
+          "docs/harness-public-contract.md",
+          "docs/harness-operating-model.md",
+          "docs/harness-session-handoff.md",
+          "docs/harness-distribution-strategy.md",
+          "docs/harness-learning-loop.md",
+          "docs/harness-proposal-ledger.md",
+          "docs/harness-release-criteria.md",
+          "harness/adapter-manifest.yml",
+          "internal/harness/runtime.go",
+          "cmd/harness-state/main.go",
+          "scripts/harness-runtime.sh",
+          "docs/research/protocol-core-spec-2026-03-28.md",
+          "docs/research/control-plane-spec-2026-03-28.md",
+          "docs/research/meeting-protocol-spec-2026-03-28.md",
+          "docs/research/state-authority-spec-2026-03-28.md",
+          "docs/research/cybernetics-kubernetes-arch-review-synthesis-2026-03-28.md",
+          "docs/research/harness-gap-audit-2026-03-29.md",
+          "docs/research/harness-research-drift-audit-2026-03-29.md",
+          "docs/research/teamwork-vs-wing-analysis-2026-03-28.md",
+          "docs/research/parity-matrix-teamwork-wing-protocol-2026-03-28.md",
+          "_project/ideas/skills/tw2-architecture.md",
+          "docs/erwin-operating-model.md",
+          "docs/knowledge/index.json",
+          "AGENTS.md",
+          "_project/CURRENT.md",
+          "docs/proposals/harness-proposal-ledger.md",
+          "scripts/harness-build-runtime.sh",
+          "scripts/harness-package-runtime.sh"
+        ]
+      },
+      {
+        "id": "implementation:docs/harness-explainer.md",
+        "layer": "implementation",
+        "path": "docs/harness-explainer.md",
+        "title": "Harness Explainer",
+        "date": "2026-04-09",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "provide one durable, human-readable explanation of what `Harness` is, how it is designed, and how to use it without requiring readers to reconstruct the system from architecture docs, runtime code, or chat history.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/harness-explainer.md",
+          "docs/harness-documentation-map.md",
+          "docs/harness-architecture.md",
+          "docs/harness-operating-model.md",
+          "docs/harness-public-contract.md",
+          "harness/README.md",
+          "skills/harness/README.md"
+        ]
+      },
+      {
+        "id": "implementation:docs/harness-learning-loop.md",
+        "layer": "implementation",
+        "path": "docs/harness-learning-loop.md",
+        "title": "Harness Learning Loop",
+        "date": "2026-03-31",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "define how `Harness` learns from field signals, real usage, and internal gaps without collapsing into cargo-cult adoption or automatic runtime churn.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/harness-proposal-ledger.md",
+          "docs/radar/weekly/README.md",
+          "docs/harness-architecture.md",
+          "docs/harness-operating-model.md",
+          "docs/harness-public-contract.md"
+        ]
+      },
+      {
+        "id": "implementation:docs/harness-operating-model.md",
+        "layer": "implementation",
+        "path": "docs/harness-operating-model.md",
+        "title": "Harness Operating Model",
+        "date": "2026-03-29",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "define how `Harness` operates as a leader-led orchestration system, especially the relationship between leader, teammates, councils, issue flow, authority, and governed communication.",
+        "external_refs": [],
+        "local_refs": [
+          "skills/arch-review/arch-review/SKILL.md"
+        ]
+      },
+      {
+        "id": "implementation:docs/harness-public-contract.md",
+        "layer": "implementation",
+        "path": "docs/harness-public-contract.md",
+        "title": "Codex-Native Harness Public Contract",
+        "date": "2026-04-09",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "This package is the current public contract for the Codex-native orchestration harness stable line.",
+        "external_refs": [],
+        "local_refs": [
+          "_project/decisions/0013-harness-prototype-positioning.md",
+          "docs/research/protocol-core-spec-2026-03-28.md",
+          "harness/README.md",
+          "harness/adapter-manifest.yml",
+          "docs/harness-release-criteria.md"
+        ]
+      },
+      {
+        "id": "implementation:docs/harness-release-criteria.md",
+        "layer": "implementation",
+        "path": "docs/harness-release-criteria.md",
+        "title": "Harness 1.0.0 Release Criteria",
+        "date": "2026-03-31",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "define the explicit bar that promoted `Harness` to `1.0.0` and now anchors the stable line.",
+        "external_refs": [],
+        "local_refs": [
+          "harness/adapter-manifest.yml",
+          "docs/harness-public-contract.md"
+        ]
+      },
+      {
+        "id": "implementation:docs/harness-session-handoff.md",
+        "layer": "implementation",
+        "path": "docs/harness-session-handoff.md",
+        "title": "Harness Session Handoff",
+        "date": "2026-04-10",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "provide a durable, file-backed starting point for fresh sessions so `Harness` work can resume from repository state instead of relying on chat-context memory.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/harness-explainer.md",
+          "AGENTS.md",
+          "_project/CURRENT.md",
+          "docs/harness-documentation-map.md",
+          "docs/harness-architecture.md",
+          "docs/harness-learning-loop.md",
+          "docs/harness-proposal-ledger.md",
+          "docs/harness-release-criteria.md",
+          "docs/harness-public-contract.md",
+          "_project/decisions/0013-harness-prototype-positioning.md",
+          "harness/profiles/erwin.yml",
+          "harness/README.md",
+          "cmd/harness-state/main.go",
+          "internal/harness/runtime.go",
+          "scripts/harness-runtime.sh",
+          "scripts/harness-claim.sh",
+          "scripts/harness-drive.sh",
+          "scripts/harness-teammates.sh",
+          "scripts/harness-meetings.sh",
+          "scripts/harness-ship.sh",
+          "scripts/harness-rc.sh",
+          "harness/adapter-manifest.yml",
+          "docs/research/harness-gap-audit-2026-03-29.md",
+          "docs/research/harness-research-drift-audit-2026-03-29.md",
+          "docs/harness-operating-model.md",
+          "_project/archive/sessions/2026-03-29-AL.md",
+          "_project/archive/sessions/2026-03-29-AM.md"
+        ]
+      },
+      {
+        "id": "knowledge:docs/knowledge/README.md",
+        "layer": "knowledge",
+        "path": "docs/knowledge/README.md",
+        "title": "Knowledge Layer",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "coding agents"
+        ],
+        "summary": "`docs/knowledge/` is the durable understanding layer for `erwin`.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/knowledge/operating-model.md",
+          "docs/knowledge/briefing.md",
+          "docs/knowledge/index.json",
+          "docs/knowledge/active-threads.md",
+          "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+          "docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+          "docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+          "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+          "docs/index.html",
+          "docs/proposals/harness-proposal-ledger.md"
+        ]
+      },
+      {
+        "id": "knowledge:docs/knowledge/active-threads.md",
+        "layer": "knowledge",
+        "path": "docs/knowledge/active-threads.md",
+        "title": "Active Knowledge Threads",
+        "date": "2026-04-02",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "keep the current durable knowledge threads, evidence coverage, and proposal linkage in one file-backed surface so fresh sessions do not have to reconstruct knowledge state from chat memory or scattered notes.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/erwin-operating-model.md",
+          "docs/knowledge/operating-model.md",
+          "docs/harness-learning-loop.md",
+          "docs/radar/README.md",
+          "docs/feedback/README.md",
+          "docs/proposals/README.md",
+          "docs/proposals/knowledge-surface-research-cockpit-v1.md",
+          "docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md",
+          "docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md",
+          "docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md",
+          "docs/proposals/harness-proposal-ledger.md",
+          "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+          "docs/radar/weekly/2026-03-30.md",
+          "docs/radar/weekly/2026-04-03.md",
+          "docs/radar/weekly/2026-04-10.md",
+          "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+          "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+          "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+          "docs/radar/sources.md",
+          "docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+          "docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+          "docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+          "docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md",
+          "docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md",
+          "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+          "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+          "docs/proposals/harness-eval-candidate-ledger.md"
+        ]
+      },
+      {
+        "id": "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "layer": "knowledge",
+        "path": "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "title": "Benchmark Integrity And Eval Awareness",
+        "date": "2026-04-09",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering"
+        ],
+        "summary": "turn the recent weekly signal about benchmark awareness, long-horizon degradation, and context-retrieval limits into a durable knowledge note that separates capability signal from evaluation-trust signal.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/radar/weekly/2026-04-03.md",
+          "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+          "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md"
+        ]
+      },
+      {
+        "id": "knowledge:docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+        "layer": "knowledge",
+        "path": "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+        "title": "Coding Agent Self-Iteration And Paper Intake",
+        "date": "2026-04-02",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "capture what current first-party evidence says about how Codex and Claude Code iterate on themselves, and explain why `erwin` should add a paper-aware knowledge intake lane instead of relying only on first-party engin...",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "knowledge:docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+        "layer": "knowledge",
+        "path": "docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+        "title": "Harness Engineering Vs Internal Gaps",
+        "date": "2026-04-02",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "compare the strongest recent external `harness engineering` signal with the repo's own gap and drift audits so `erwin` can decide what should become knowledge pressure, eval pressure, or proposal pressure without over...",
+        "external_refs": [],
+        "local_refs": [
+          "docs/radar/weekly/2026-03-30.md",
+          "docs/research/harness-gap-audit-2026-03-29.md",
+          "docs/research/harness-research-drift-audit-2026-03-29.md",
+          "docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md"
+        ]
+      },
+      {
+        "id": "knowledge:docs/knowledge/multi-mission-coordination-patterns-2026-04-16.md",
+        "layer": "knowledge",
+        "path": "docs/knowledge/multi-mission-coordination-patterns-2026-04-16.md",
+        "title": "Multi-Mission Coordination Patterns",
+        "date": "2026-04-16",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "capture the durable invariants that two April 2026 multi-mission AI-orchestration sessions taught the repo, without ossifying them into a dedicated skill before the evidence justifies one.",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "knowledge:docs/knowledge/operating-model.md",
+        "layer": "knowledge",
+        "path": "docs/knowledge/operating-model.md",
+        "title": "Knowledge System Operating Model",
+        "date": "2026-04-11",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals"
+        ],
+        "summary": "define how `erwin` turns external signal and real Harness usage into durable knowledge and selective proposals without collapsing back into `docs/research/` sprawl.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/radar/README.md",
+          "docs/index.html",
+          "docs/feedback/README.md",
+          "docs/feedback/harness-usage-case-template.md",
+          "docs/knowledge/README.md",
+          "docs/proposals/README.md",
+          "docs/research/README.md"
+        ]
+      },
+      {
+        "id": "knowledge:docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+        "layer": "knowledge",
+        "path": "docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+        "title": "Runtime Legibility Patterns",
+        "date": "2026-04-02",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "capture what recent `Harness` runtime work taught the repo about leader-facing legibility, especially for delegated follow-up lifecycle work and live council execution.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md",
+          "docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md"
+        ]
+      },
+      {
+        "id": "proposals:docs/proposals/README.md",
+        "layer": "proposals",
+        "path": "docs/proposals/README.md",
+        "title": "Proposal Layer",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability"
+        ],
+        "summary": "`docs/proposals/` is the action layer for repo change candidates.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/proposals/harness-proposal-ledger.md",
+          "docs/proposals/harness-eval-candidate-ledger.md",
+          "docs/proposals/harness-review-gates.md",
+          "docs/proposals/harness-benchmark-evidence-checklist.md",
+          "docs/proposals/harness-monitorability-review-checklist.md",
+          "docs/proposals/harness-monitorability-review-criterion.md",
+          "docs/proposals/knowledge-surface-research-cockpit-v1.md",
+          "docs/proposals/harness-proposal-review-template.md",
+          "docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+          "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+          "docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+          "docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md"
+        ]
+      },
+      {
+        "id": "proposals:docs/proposals/harness-benchmark-evidence-checklist.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-benchmark-evidence-checklist.md",
+        "title": "Harness Benchmark Evidence Checklist",
+        "date": "2026-04-09",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering"
+        ],
+        "summary": "turn benchmark-integrity review from a general rule into a reusable checklist whenever `Harness`-facing knowledge or proposal work relies on benchmark-heavy external evidence.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+          "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+          "docs/proposals/harness-eval-candidate-ledger.md",
+          "docs/proposals/harness-review-gates.md"
+        ]
+      },
+      {
+        "id": "proposals:docs/proposals/harness-eval-candidate-ledger.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-eval-candidate-ledger.md",
+        "title": "Harness Eval Candidate Ledger",
+        "date": "2026-04-02",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering"
+        ],
+        "summary": "turn `encode-as-eval` proposal posture into a concrete, reviewable queue of eval, audit, and review-surface candidates before implementation work starts.",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "proposals:docs/proposals/harness-monitorability-audit-2026-04-10.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-monitorability-audit-2026-04-10.md",
+        "title": "Harness Monitorability Audit — 2026-04-10",
+        "date": "2026-04-10",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "execute the monitorability review checklist against the 2026-04-10 weekly synthesis so `HEL-006` is not only encoded as a rule, but also exercised as a concrete review artifact.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/proposals/harness-monitorability-review-checklist.md",
+          "docs/radar/weekly/2026-04-10.md",
+          "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+          "docs/proposals/harness-monitorability-review-criterion.md"
+        ]
+      },
+      {
+        "id": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-monitorability-review-checklist.md",
+        "title": "Harness Monitorability Review Checklist",
+        "date": "2026-04-10",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "turn monitorability and trajectory-visibility review from a general concern into a reusable checklist whenever `Harness`-facing knowledge, proposal, or eval design depends on stage-level diagnosis or intermediate obse...",
+        "external_refs": [],
+        "local_refs": [
+          "docs/radar/weekly/2026-04-10.md",
+          "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+          "docs/knowledge/active-threads.md",
+          "docs/proposals/harness-monitorability-review-criterion.md",
+          "docs/proposals/harness-eval-candidate-ledger.md",
+          "docs/proposals/harness-review-gates.md"
+        ]
+      },
+      {
+        "id": "proposals:docs/proposals/harness-monitorability-review-criterion.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-monitorability-review-criterion.md",
+        "title": "Harness Monitorability Review Criterion",
+        "date": "2026-04-10",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "orchestration"
+        ],
+        "summary": "provide the smallest reusable review criterion derived from the monitorability checklist and first audit artifact so future `Harness`-facing eval or proposal work can be screened quickly.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/proposals/harness-monitorability-review-checklist.md",
+          "docs/proposals/harness-monitorability-audit-2026-04-10.md",
+          "docs/proposals/harness-review-gates.md"
+        ]
+      },
+      {
+        "id": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-proposal-ledger.md",
+        "title": "Harness Proposal Ledger",
+        "date": "2026-04-02",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "track reviewed `Harness` evolution proposals as durable control-plane records.",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "title": "Harness Proposal Review — HLP-003 — 2026-04-10",
+        "date": "2026-04-10",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering"
+        ],
+        "summary": "execute a concrete proposal review for `HLP-003` using the repo's encoded thread, benchmark-integrity, and monitorability review surfaces.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/proposals/harness-proposal-ledger.md",
+          "docs/radar/weekly/2026-04-10.md",
+          "docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+          "docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+          "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+          "docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+          "docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md",
+          "docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md",
+          "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md"
+        ]
+      },
+      {
+        "id": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "title": "Harness Proposal Review — HLP-004 — 2026-04-10",
+        "date": "2026-04-10",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering"
+        ],
+        "summary": "execute a concrete proposal review for `HLP-004` using the repo's paper-watch, thread-anchor, and proposal-gating surfaces.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/proposals/harness-proposal-ledger.md",
+          "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+          "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+          "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+          "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+          "docs/radar/weekly/2026-04-10.md",
+          "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md"
+        ]
+      },
+      {
+        "id": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "title": "Harness Proposal Review — HLP-005 — 2026-04-10",
+        "date": "2026-04-10",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering"
+        ],
+        "summary": "execute a concrete proposal review for `HLP-005` using the repo's paper-watch, benchmark-integrity, and monitorability review surfaces.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/proposals/harness-proposal-ledger.md",
+          "docs/radar/weekly/2026-04-10.md",
+          "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+          "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+          "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+          "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+          "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+          "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md"
+        ]
+      },
+      {
+        "id": "proposals:docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "title": "Harness Proposal Review — HLP-001 — 2026-04-11",
+        "date": "2026-04-11",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering"
+        ],
+        "summary": "execute a concrete proposal review for `HLP-001` so the proposal-review system also covers the repo's adopted learning-loop path rather than only pre-adoption dispositions.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/proposals/harness-proposal-ledger.md",
+          "docs/harness-learning-loop.md",
+          "docs/knowledge/operating-model.md",
+          "docs/knowledge/active-threads.md",
+          "docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md",
+          "docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md",
+          "docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md"
+        ]
+      },
+      {
+        "id": "proposals:docs/proposals/harness-proposal-review-template.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-proposal-review-template.md",
+        "title": "Harness Proposal Review Template",
+        "date": "2026-04-10",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability"
+        ],
+        "summary": "provide a canonical template for deeper file-backed proposal reviews when a ledger note is no longer enough.",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "proposals:docs/proposals/harness-review-gates.md",
+        "layer": "proposals",
+        "path": "docs/proposals/harness-review-gates.md",
+        "title": "Harness Review Gates",
+        "date": "2026-04-02",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "define the minimum review gates for `Harness`-facing proposals and adjacent knowledge claims so the repo keeps legibility, evidence density, and governance honesty ahead of runtime expansion.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/research/harness-gap-audit-2026-03-29.md",
+          "docs/research/harness-research-drift-audit-2026-03-29.md",
+          "docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+          "docs/proposals/harness-eval-candidate-ledger.md",
+          "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+          "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+          "docs/proposals/harness-benchmark-evidence-checklist.md",
+          "docs/radar/weekly/2026-04-10.md",
+          "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+          "docs/proposals/harness-monitorability-review-checklist.md",
+          "docs/proposals/harness-monitorability-review-criterion.md"
+        ]
+      },
+      {
+        "id": "proposals:docs/proposals/knowledge-surface-research-cockpit-v1.md",
+        "layer": "proposals",
+        "path": "docs/proposals/knowledge-surface-research-cockpit-v1.md",
+        "title": "Knowledge Surface Research Cockpit v1",
+        "date": "2026-04-17",
+        "status": "Ready for prototype",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "upgrade the current static `docs/index.html` briefing into a local knowledge-system entrypoint for `erwin`.",
+        "external_refs": [
+          "https://blog.google/technology/google-labs/notebooklm-new-features-december-2024/",
+          "https://readwise.io/read",
+          "https://linear.app/",
+          "https://www.raycast.com/",
+          "https://heptabase.com/",
+          "https://obsidian.md/canvas",
+          "https://capacities.io/",
+          "https://tana.inc/"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/README.md",
+        "layer": "radar",
+        "path": "docs/radar/README.md",
+        "title": "AI/Agent Radar",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "`docs/radar/` is the lightweight knowledge base behind the `erwin` field radar.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/radar/themes.md",
+          "docs/index.html",
+          "docs/radar/sources.md",
+          "docs/radar/daily/README.md",
+          "docs/radar/trending/README.md",
+          "docs/radar/papers/README.md",
+          "docs/radar/weekly/README.md",
+          "docs/knowledge/active-threads.md"
+        ]
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-04-02.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-02.md",
+        "title": "AI Agent Daily Radar - 2026-04-02",
+        "date": "2026-04-02",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Coverage window: 2026-03-27 to 2026-04-02",
+        "external_refs": [
+          "https://developers.googleblog.com/en/adk-go-10-arrives/",
+          "https://developers.googleblog.com/en/announcing-adk-for-java-100-building-the-future-of-ai-agents-in-java/",
+          "https://platform.claude.com/docs/en/release-notes/overview#march-30-2026",
+          "https://blog.google/intl/pt-pt/produtos/connect-communicate/a-pesquisa-live-expande-se-globalmente/",
+          "https://github.com/anthropics/claude-code",
+          "https://github.com/openai/codex",
+          "https://github.com/luongnv89/claude-howto",
+          "https://www.anthropic.com/engineering/claude-code-auto-mode",
+          "https://langfuse.com/docs",
+          "https://arize.com/docs/phoenix",
+          "https://docs.helicone.ai/",
+          "https://www.anthropic.com/engineering/harness-design-long-running-apps"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-04-03.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-03.md",
+        "title": "AI Agent Daily Radar — 2026-04-03",
+        "date": "2026-04-03",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-03-27 to 2026-04-03",
+        "external_refs": [
+          "https://openai.com/index/accelerating-the-next-phase-ai/",
+          "https://help.openai.com/en/articles/8266401-managing-members-seat-types-roles-and-access-in-chatgpt-enterprise",
+          "https://blog.google/innovation-and-ai/technology/ai/google-ai-updates-march-2026/",
+          "https://qwen.ai/",
+          "https://status.deepseek.com/incidents/lqrmk53rs6d3",
+          "https://status.deepseek.com/incidents/rjs0ljjlqhsw",
+          "https://github.com/Yeachan-Heo/oh-my-codex",
+          "https://github.com/asgeirtj/system_prompts_leaks",
+          "https://github.com/siddharthvaddem/openscreen",
+          "https://support.claude.com/en/articles/12138966-release-notes",
+          "https://www.minimax.io/news/minimax-m27-en"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-04-08.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-08.md",
+        "title": "AI Agent Daily Radar — 2026-04-08",
+        "date": "2026-04-08",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-01 to 2026-04-08",
+        "external_refs": [
+          "https://help.openai.com/en/articles/8266401-managing-members-seat-types-roles-and-access-in-chatgpt-enterprise",
+          "https://developers.googleblog.com/gemini-3-flash-is-now-available-in-gemini-cli/",
+          "https://developers.googleblog.com/bring-state-of-the-art-agentic-skills-to-the-edge-with-gemma-4/",
+          "https://status.deepseek.com/incidents/5d7vfs0fxnkl",
+          "https://github.com/google-ai-edge/gallery",
+          "https://github.com/google-ai-edge/LiteRT-LM",
+          "https://github.com/abhigyanpatwari/GitNexus",
+          "https://www.anthropic.com/engineering/claude-code-auto-mode",
+          "https://www.anthropic.com/engineering/harness-design-long-running-apps"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-04-09.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-09.md",
+        "title": "AI Agent Daily Radar — 2026-04-09",
+        "date": "2026-04-09",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-02 to 2026-04-09",
+        "external_refs": [
+          "https://claude.com/blog/harnessing-claudes-intelligence",
+          "https://www.anthropic.com/events/anthropic-at-google-cloud-next-2026",
+          "https://www.anthropic.com/glasswing",
+          "https://www.anthropic.com/research/emotion-concepts-function",
+          "https://help.openai.com/en/articles/8266401-managing-members-seat-types-roles-and-access-in-chatgpt-enterprise",
+          "https://help.openai.com/en/articles/20001106-codex-rate-card",
+          "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-flex-and-priority-inference/",
+          "https://github.com/obra/superpowers",
+          "https://github.com/abhigyanpatwari/GitNexus",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/google-ai-edge/gallery",
+          "https://langfuse.com/changelog/2026-04-08-boolean-llm-as-a-judge-scores"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-04-10.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-10.md",
+        "title": "AI Agent Daily Radar — 2026-04-10",
+        "date": "2026-04-10",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-03 to 2026-04-10",
+        "external_refs": [
+          "https://www.anthropic.com/research/trustworthy-agents",
+          "https://openai.com/index/next-phase-of-enterprise-ai/",
+          "https://www.anthropic.com/glasswing",
+          "https://claude.com/blog/how-and-when-to-use-subagents-in-claude-code",
+          "https://status.deepseek.com/",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/obra/superpowers",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/coleam00/Archon",
+          "https://www.anthropic.com/events/anthropic-at-google-cloud-next-2026",
+          "https://developers.googleblog.com/search/?technology_categories=AI",
+          "https://ai.google.dev/"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-04-13.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-13.md",
+        "title": "AI Agent Daily Radar - 2026-04-13",
+        "date": "2026-04-13",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-06 to 2026-04-13",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://platform.claude.com/docs/en/api/sdks/cli",
+          "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+          "https://openai.com/index/next-phase-of-enterprise-ai/",
+          "https://github.com/trending?since=daily",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/multica-ai/multica",
+          "https://github.com/coleam00/Archon",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/thedotmack/claude-mem"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-04-14.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-14.md",
+        "title": "AI Agent Daily Radar - 2026-04-14",
+        "date": "2026-04-14",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-08 to 2026-04-14",
+        "external_refs": [
+          "https://code.claude.com/docs/en/desktop-scheduled-tasks",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://www.anthropic.com/engineering/managed-agents",
+          "https://openai.com/index/cloudflare-openai-agent-cloud/",
+          "https://github.com/trending?since=daily",
+          "https://ossinsight.io/trending/ai",
+          "https://github.com/anthropics/claude-code",
+          "https://github.com/anomalyco/opencode",
+          "https://github.com/block/goose",
+          "https://github.com/openai/codex"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-04-15.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-15.md",
+        "title": "AI Agent Daily Radar - 2026-04-15",
+        "date": "2026-04-15",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-08 to 2026-04-15",
+        "external_refs": [
+          "https://code.claude.com/docs/en/changelog",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://www.anthropic.com/engineering/managed-agents",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://openai.com/index/cloudflare-openai-agent-cloud/",
+          "https://github.com/trending?since=daily",
+          "https://ossinsight.io/trending/ai",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/thedotmack/claude-mem",
+          "https://github.com/obra/superpowers",
+          "https://github.com/NousResearch/hermes-agent"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-04-16.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-16.md",
+        "title": "AI Agent Daily Radar - 2026-04-16",
+        "date": "2026-04-16",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-10 to 2026-04-16",
+        "external_refs": [
+          "https://openai.com/index/the-next-evolution-of-the-agents-sdk/",
+          "https://code.claude.com/docs/en/changelog",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://qwenlm.github.io/qwen-code-docs/en/developers/tools/task/",
+          "https://ossinsight.io/trending",
+          "https://ossinsight.io/trending/ai",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/JuliusBrussee/caveman",
+          "https://github.com/shanraisshan/claude-code-best-practice"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-04-17.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-17.md",
+        "title": "AI Agent Daily Radar - 2026-04-17",
+        "date": "2026-04-17",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-11 to 2026-04-17",
+        "external_refs": [
+          "https://www.anthropic.com/news/claude-opus-4-7",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://openai.com/index/the-next-evolution-of-the-agents-sdk/",
+          "https://developers.googleblog.com/en/search/?query=Gemini+CLI",
+          "https://www.minimax.io/news/minimax-at-humanx-2026",
+          "https://github.com/trending?since=daily",
+          "https://github.com/trending/python?since=daily",
+          "https://ossinsight.io/trending/ai",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/thedotmack/claude-mem",
+          "https://github.com/lsdefine/GenericAgent"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/README.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/README.md",
+        "title": "Daily Radar Notes",
+        "date": "",
+        "status": "",
+        "themes": [],
+        "summary": "`docs/radar/daily/` stores the durable daily AI/agent radar stream.",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "layer": "radar",
+        "path": "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "title": "Paper Watch — Coding-Agent Self-Iteration",
+        "date": "2026-04-02",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "coding agents"
+        ],
+        "summary": "create the first durable paper-watch surface for coding-agent self-iteration, self-correction, and benchmark tracking so this theme is no longer represented only by first-party engineering posts.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+          "docs/knowledge/active-threads.md"
+        ]
+      },
+      {
+        "id": "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "layer": "radar",
+        "path": "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "title": "Paper Watch — Long-Horizon Coding-Agent Benchmarks",
+        "date": "2026-04-03",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "coding agents"
+        ],
+        "summary": "track the recent benchmark signal around long-horizon coding quality and context retrieval so the repo's coding-agent thread is grounded in newer benchmark pressure, not only first-party engineering posts.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+          "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+          "docs/knowledge/active-threads.md"
+        ]
+      },
+      {
+        "id": "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "layer": "radar",
+        "path": "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "title": "Paper Watch — Trajectory Diagnosis And Observability",
+        "date": "2026-04-10",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents"
+        ],
+        "summary": "track the recent paper signal moving coding-agent evaluation beyond resolution rates toward trajectory diagnosis, intermediate observability, and mechanism-level failure analysis.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+          "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+          "docs/knowledge/active-threads.md"
+        ]
+      },
+      {
+        "id": "radar:docs/radar/papers/README.md",
+        "layer": "radar",
+        "path": "docs/radar/papers/README.md",
+        "title": "Paper Watch",
+        "date": "",
+        "status": "",
+        "themes": [
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "`docs/radar/papers/` is the durable paper-watch archive for the `erwin` radar.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+          "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+          "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md"
+        ]
+      },
+      {
+        "id": "radar:docs/radar/sources.md",
+        "layer": "radar",
+        "path": "docs/radar/sources.md",
+        "title": "Radar Sources",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "This file defines the authoritative and supporting surfaces used by the `erwin` AI/agent radar.",
+        "external_refs": [
+          "https://www.anthropic.com/engineering",
+          "https://www.anthropic.com/news",
+          "https://claude.com/blog/",
+          "https://docs.anthropic.com/",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/quickstart",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://docs.anthropic.com/en/docs/claude-code/overview",
+          "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+          "https://openai.com/index/",
+          "https://developers.openai.com/",
+          "https://developers.openai.com/resources"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/themes.md",
+        "layer": "radar",
+        "path": "docs/radar/themes.md",
+        "title": "Radar Themes",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "This is the active theme taxonomy for the `erwin` AI/agent radar.",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-02.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-02.md",
+        "title": "GitHub Trending — 2026-04-02",
+        "date": "2026-04-02",
+        "status": "",
+        "themes": [
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source board: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/ruvnet/claude-code-flow",
+          "https://github.com/anthropics/claude-code",
+          "https://github.com/virattt/ai-hedge-fund",
+          "https://github.com/inkeep/vibe-rules",
+          "https://github.com/mlabonne/llm-course",
+          "https://github.com/rolldown/rolldown",
+          "https://github.com/sherlock-project/sherlock",
+          "https://github.com/glanceapp/glance",
+          "https://github.com/mfontanini/presenterm",
+          "https://github.com/nvm-sh/nvm",
+          "https://github.com/cloudcommunity/Free-Certifications"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-03.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-03.md",
+        "title": "GitHub Trending — 2026-04-03",
+        "date": "2026-04-03",
+        "status": "",
+        "themes": [
+          "long-running agents",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-03. In this run, the default unfiltered global board rendered 4 repositories.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/siddharthvaddem/openscreen",
+          "https://github.com/Yeachan-Heo/oh-my-codex",
+          "https://github.com/asgeirtj/system_prompts_leaks",
+          "https://github.com/sherlock-project/sherlock"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-07.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-07.md",
+        "title": "GitHub Trending — 2026-04-07",
+        "date": "2026-04-07",
+        "status": "",
+        "themes": [
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-07. In this run, the default unfiltered global board rendered 14 repositories.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/abhigyanpatwari/GitNexus",
+          "https://github.com/google-ai-edge/gallery",
+          "https://github.com/aaif-goose/goose",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/KeygraphHQ/shannon",
+          "https://github.com/ollama/ollama",
+          "https://github.com/ggml-org/llama.cpp",
+          "https://github.com/siddharthvaddem/openscreen",
+          "https://github.com/kepano/obsidian-skills",
+          "https://github.com/google-ai-edge/LiteRT-LM"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-08.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-08.md",
+        "title": "GitHub Trending — 2026-04-08",
+        "date": "2026-04-08",
+        "status": "",
+        "themes": [
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-08. In this run, the default unfiltered global board rendered 9 repositories.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/google-ai-edge/gallery",
+          "https://github.com/google-ai-edge/LiteRT-LM",
+          "https://github.com/abhigyanpatwari/GitNexus",
+          "https://github.com/tobi/qmd",
+          "https://github.com/NVIDIA/personaplex",
+          "https://github.com/HKUDS/DeepTutor",
+          "https://github.com/TheCraigHewitt/seomachine",
+          "https://github.com/elebumm/RedditVideoMakerBot",
+          "https://github.com/forrestchang/andrej-karpathy-skills"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-09.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-09.md",
+        "title": "GitHub Trending — 2026-04-09",
+        "date": "2026-04-09",
+        "status": "",
+        "themes": [
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-09. This run used the default global trending page with no extra filters; the page rendered 11 repositories.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/TheCraigHewitt/seomachine",
+          "https://github.com/obra/superpowers",
+          "https://github.com/abhigyanpatwari/GitNexus",
+          "https://github.com/virattt/ai-hedge-fund",
+          "https://github.com/google-ai-edge/gallery",
+          "https://github.com/google-ai-edge/LiteRT-LM",
+          "https://github.com/NVIDIA/personaplex",
+          "https://github.com/elebumm/RedditVideoMakerBot",
+          "https://github.com/newton-physics/newton",
+          "https://github.com/goharbor/harbor"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-10.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-10.md",
+        "title": "GitHub Trending — 2026-04-10",
+        "date": "2026-04-10",
+        "status": "",
+        "themes": [
+          "tracing/observability",
+          "context engineering",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-10. This run used the default global trending page with no extra filters; the page rendered 10 repositories.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/landing-ai/vision-agent",
+          "https://github.com/mem0ai/mem0",
+          "https://github.com/enso-labs/enso",
+          "https://github.com/f/awesome-chatgpt-prompts",
+          "https://github.com/Byaidu/PDFMathTranslate",
+          "https://github.com/rust-unofficial/awesome-rust",
+          "https://github.com/krafton-ai/rust-fp",
+          "https://github.com/patchy631/ai-engineering-hub",
+          "https://github.com/tracel-ai/burn",
+          "https://github.com/microsoft/data-formulator"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-13.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-13.md",
+        "title": "GitHub Trending - 2026-04-13",
+        "date": "2026-04-13",
+        "status": "",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-13. This run used the default global trending page with no extra filters; the page rendered 14 repositories.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/shiyu-coder/Kronos",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/microsoft/markitdown",
+          "https://github.com/multica-ai/multica",
+          "https://github.com/rustfs/rustfs",
+          "https://github.com/TapXWorld/ChinaTextbook",
+          "https://github.com/shanraisshan/claude-code-best-practice",
+          "https://github.com/OpenBMB/VoxCPM",
+          "https://github.com/thedotmack/claude-mem",
+          "https://github.com/virattt/ai-hedge-fund"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-14.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-14.md",
+        "title": "GitHub Trending - 2026-04-14",
+        "date": "2026-04-14",
+        "status": "",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending?since=daily) as captured on 2026-04-14. This run used the default global trending page with no extra filters; the page rendered 16 repositories.",
+        "external_refs": [
+          "https://github.com/trending?since=daily",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/shiyu-coder/Kronos",
+          "https://github.com/thedotmack/claude-mem",
+          "https://github.com/microsoft/markitdown",
+          "https://github.com/multica-ai/multica",
+          "https://github.com/coleam00/Archon",
+          "https://github.com/snarktank/ralph",
+          "https://github.com/virattt/ai-hedge-fund",
+          "https://github.com/anthropics/claude-cookbooks",
+          "https://github.com/shanraisshan/claude-code-best-practice"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-15.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-15.md",
+        "title": "GitHub Trending - 2026-04-15",
+        "date": "2026-04-15",
+        "status": "",
+        "themes": [
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending?since=daily) as captured on 2026-04-15. This run used the default global trending page with no extra filters; the page rendered 12 repositories.",
+        "external_refs": [
+          "https://github.com/trending?since=daily",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/thedotmack/claude-mem",
+          "https://github.com/jamiepine/voicebox",
+          "https://github.com/pascalorg/editor",
+          "https://github.com/microsoft/markitdown",
+          "https://github.com/obra/superpowers",
+          "https://github.com/chrislgarry/Apollo-11",
+          "https://github.com/virattt/ai-hedge-fund",
+          "https://github.com/shiyu-coder/Kronos",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/anthropics/claude-cookbooks"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-16.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-16.md",
+        "title": "GitHub Trending - 2026-04-16",
+        "date": "2026-04-16",
+        "status": "",
+        "themes": [
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-16. This run used the default global trending page with no extra filters; the page rendered 13 repositories.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/thedotmack/claude-mem",
+          "https://github.com/obra/superpowers",
+          "https://github.com/pascalorg/editor",
+          "https://github.com/jamiepine/voicebox",
+          "https://github.com/virattt/ai-hedge-fund",
+          "https://github.com/chrislgarry/Apollo-11",
+          "https://github.com/public-apis/public-apis",
+          "https://github.com/Lordog/dive-into-llms",
+          "https://github.com/vercel-labs/open-agents",
+          "https://github.com/lsdefine/GenericAgent"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-17.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-17.md",
+        "title": "GitHub Trending - 2026-04-17",
+        "date": "2026-04-17",
+        "status": "",
+        "themes": [
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-17. This run used the default global trending page with no extra filters; the page rendered 14 repositories.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/forrestchang/andrej-karpathy-skills",
+          "https://github.com/thedotmack/claude-mem",
+          "https://github.com/Lordog/dive-into-llms",
+          "https://github.com/lsdefine/GenericAgent",
+          "https://github.com/EvoMap/evolver",
+          "https://github.com/jamiepine/voicebox",
+          "https://github.com/steipete/wacli",
+          "https://github.com/google/magika",
+          "https://github.com/vercel-labs/open-agents",
+          "https://github.com/topoteretes/cognee",
+          "https://github.com/z-lab/dflash"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/README.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/README.md",
+        "title": "GitHub Trending Notes",
+        "date": "",
+        "status": "",
+        "themes": [
+          "tracing/observability",
+          "context engineering",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "`docs/radar/trending/` stores the durable daily summary of the default GitHub Trending board.",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/weekly/2026-03-30.md",
+        "layer": "radar",
+        "path": "docs/radar/weekly/2026-03-30.md",
+        "title": "AI/Agent Weekly Synthesis — 2026-03-30",
+        "date": "2026-03-30",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "This is the kickoff weekly synthesis for the new radar system. It is a baseline note, not a full historical backfill.",
+        "external_refs": [
+          "https://openai.com/index/harness-engineering/",
+          "https://openai.com/index/equip-responses-api-computer-environment/",
+          "https://openai.com/index/unlocking-the-codex-harness/",
+          "https://developers.googleblog.com/a2a-a-new-era-of-agent-interoperability/",
+          "https://platform.moonshot.ai/blog/posts/Kimi_Founders_AMA_Recap",
+          "https://api-docs.deepseek.com/news/news250821",
+          "https://www.minimax.io/news/minimax-ceo-keynote-at-waic-2025-everyones-ai",
+          "https://langfuse.com/docs",
+          "https://arize.com/docs/phoenix",
+          "https://docs.helicone.ai/",
+          "https://opentelemetry.io/docs/"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/weekly/2026-04-03.md",
+        "layer": "radar",
+        "path": "docs/radar/weekly/2026-04-03.md",
+        "title": "AI/Agent Weekly Synthesis — 2026-04-03",
+        "date": "2026-04-03",
+        "status": "",
+        "themes": [
+          "long-running agents",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Coverage window: 2026-03-28 to 2026-04-03",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview#march-30-2026",
+          "https://www.anthropic.com/webinars/claude-code-for-semiconductor-teams",
+          "https://www.anthropic.com/webinars/ship-code-faster-with-claude-code-on-vertex-ai",
+          "https://developers.googleblog.com/en/announcing-adk-for-java-100-building-the-future-of-ai-agents-in-java/",
+          "https://developers.googleblog.com/en/adk-go-10-arrives/",
+          "https://developers.googleblog.com/developers-guide-to-building-adk-agents-with-skills/",
+          "https://developers.googleblog.com/",
+          "https://openai.com/index/accelerating-the-next-phase-ai/",
+          "https://help.openai.com/en/articles/8266401-managing-members-seat-types-roles-and-access-in-chatgpt-enterprise",
+          "https://status.deepseek.com/incidents/rjs0ljjlqhsw",
+          "https://status.deepseek.com/incidents/lqrmk53rs6d3",
+          "https://www.anthropic.com/engineering/harness-design-long-running-apps"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/weekly/2026-04-10.md",
+        "layer": "radar",
+        "path": "docs/radar/weekly/2026-04-10.md",
+        "title": "AI/Agent Weekly Synthesis — 2026-04-10",
+        "date": "2026-04-10",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "tracing/observability",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Coverage window: 2026-04-03 to 2026-04-10",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://platform.claude.com/cookbook/managed-agents-cma-operate-in-production",
+          "https://code.claude.com/docs/en/overview",
+          "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+          "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-flex-and-priority-inference/",
+          "https://developers.openai.com/api/docs/models",
+          "https://openai.com/index/next-phase-of-enterprise-ai/"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/weekly/2026-04-17.md",
+        "layer": "radar",
+        "path": "docs/radar/weekly/2026-04-17.md",
+        "title": "AI/Agent Weekly Synthesis — 2026-04-17",
+        "date": "2026-04-17",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use"
+        ],
+        "summary": "Coverage window: 2026-04-10 to 2026-04-17",
+        "external_refs": [
+          "https://openai.com/index/the-next-evolution-of-the-agents-sdk/",
+          "https://openai.com/index/codex-for-almost-everything/",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://www.anthropic.com/news/claude-opus-4-7",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://code.claude.com/docs/en/overview",
+          "https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md",
+          "https://github.blog/changelog/2026-04-14-model-selection-for-claude-and-codex-agents-on-github-com/",
+          "https://github.blog/changelog/2026-04-15-enable-copilot-cloud-agent-via-custom-properties/",
+          "https://github.blog/changelog/2026-04-16-manage-agent-skills-with-github-cli/",
+          "https://developers.googleblog.com/bring-state-of-the-art-agentic-skills-to-the-edge-with-gemma-4/"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/weekly/README.md",
+        "layer": "radar",
+        "path": "docs/radar/weekly/README.md",
+        "title": "Weekly Synthesis Guide",
+        "date": "2026-04-02",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering"
+        ],
+        "summary": "define the minimum structure and review gates for durable weekly radar syntheses so they strengthen active knowledge threads instead of becoming another narrative summary layer.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/proposals/harness-benchmark-evidence-checklist.md",
+          "docs/proposals/harness-monitorability-review-checklist.md",
+          "docs/proposals/harness-eval-candidate-ledger.md"
+        ]
+      },
+      {
+        "id": "implementation:harness/README.md",
+        "layer": "implementation",
+        "path": "harness/README.md",
+        "title": "Harness",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "This directory contains the committed definition layer for the emerging orchestration harness.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/harness-explainer.md",
+          "docs/harness-public-contract.md"
+        ]
+      },
+      {
+        "id": "implementation:scripts/build-knowledge-surface.py",
+        "layer": "implementation",
+        "path": "scripts/build-knowledge-surface.py",
+        "title": "build-knowledge-surface.py",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "from __future__ import annotations",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "implementation:skills/README.md",
+        "layer": "implementation",
+        "path": "skills/README.md",
+        "title": "erwin Skills",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Reusable Claude Code and Codex-native skills created and maintained by the erwin project.",
+        "external_refs": [],
+        "local_refs": [
+          "docs/harness-explainer.md",
+          "skills/erwin-init/README.md",
+          "skills/visual-test/README.md",
+          "skills/harness/README.md",
+          "skills/knowledge/README.md",
+          "skills/teamwork/README.md"
+        ]
+      },
+      {
+        "id": "implementation:skills/harness/SKILL.md",
+        "layer": "implementation",
+        "path": "skills/harness/SKILL.md",
+        "title": "Harness",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "context engineering",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Use this skill when you are operating the repository-local orchestration harness as the leader.",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
+        "id": "implementation:skills/knowledge/SKILL.md",
+        "layer": "implementation",
+        "path": "skills/knowledge/SKILL.md",
+        "title": "Knowledge",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability"
+        ],
+        "summary": "Use this skill when the repo needs durable knowledge work rather than direct runtime implementation.",
+        "external_refs": [],
+        "local_refs": []
+      }
+    ],
+    "links": [
+      {
+        "source": "implementation:README.md",
+        "target": "implementation:AGENTS.md",
+        "type": "references",
+        "source_path": "README.md",
+        "target_path": "AGENTS.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "implementation:_project/CURRENT.md",
+        "type": "references",
+        "source_path": "README.md",
+        "target_path": "_project/CURRENT.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "knowledge:docs/README.md",
+        "type": "reports_back",
+        "source_path": "README.md",
+        "target_path": "docs/README.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "implementation:docs/harness-explainer.md",
+        "type": "references",
+        "source_path": "README.md",
+        "target_path": "docs/harness-explainer.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "radar:docs/radar/README.md",
+        "type": "references",
+        "source_path": "README.md",
+        "target_path": "docs/radar/README.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "radar:docs/radar/sources.md",
+        "type": "references",
+        "source_path": "README.md",
+        "target_path": "docs/radar/sources.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "radar:docs/radar/themes.md",
+        "type": "references",
+        "source_path": "README.md",
+        "target_path": "docs/radar/themes.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "radar:docs/radar/weekly/README.md",
+        "type": "references",
+        "source_path": "README.md",
+        "target_path": "docs/radar/weekly/README.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "feedback:docs/feedback/README.md",
+        "type": "reports_back",
+        "source_path": "README.md",
+        "target_path": "docs/feedback/README.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "knowledge:docs/knowledge/README.md",
+        "type": "reports_back",
+        "source_path": "README.md",
+        "target_path": "docs/knowledge/README.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "proposals:docs/proposals/README.md",
+        "type": "reports_back",
+        "source_path": "README.md",
+        "target_path": "docs/proposals/README.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "implementation:harness/README.md",
+        "type": "references",
+        "source_path": "README.md",
+        "target_path": "harness/README.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "implementation:docs/harness-documentation-map.md",
+        "type": "references",
+        "source_path": "README.md",
+        "target_path": "docs/harness-documentation-map.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "implementation:skills/README.md",
+        "type": "references",
+        "source_path": "README.md",
+        "target_path": "skills/README.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "knowledge:docs/erwin-operating-model.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/erwin-operating-model.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "radar:docs/radar/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/README.md",
+        "target_path": "docs/radar/README.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "implementation:docs/harness-explainer.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/harness-explainer.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "knowledge:docs/knowledge/operating-model.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/knowledge/operating-model.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "implementation:docs/harness-learning-loop.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/harness-learning-loop.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "feedback:docs/feedback/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/README.md",
+        "target_path": "docs/feedback/README.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "knowledge:docs/knowledge/README.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/knowledge/README.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "proposals:docs/proposals/README.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/README.md",
+        "target_path": "docs/proposals/README.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "radar:docs/radar/sources.md",
+        "type": "cites_evidence",
+        "source_path": "docs/README.md",
+        "target_path": "docs/radar/sources.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "radar:docs/radar/themes.md",
+        "type": "cites_evidence",
+        "source_path": "docs/README.md",
+        "target_path": "docs/radar/themes.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "radar:docs/radar/daily/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/README.md",
+        "target_path": "docs/radar/daily/README.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "radar:docs/radar/trending/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/README.md",
+        "target_path": "docs/radar/trending/README.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "radar:docs/radar/papers/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/README.md",
+        "target_path": "docs/radar/papers/README.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "radar:docs/radar/weekly/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/README.md",
+        "target_path": "docs/radar/weekly/README.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "radar:docs/radar/weekly/2026-03-30.md",
+        "type": "cites_evidence",
+        "source_path": "docs/README.md",
+        "target_path": "docs/radar/weekly/2026-03-30.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "feedback:docs/feedback/harness-usage-case-template.md",
+        "type": "cites_evidence",
+        "source_path": "docs/README.md",
+        "target_path": "docs/feedback/harness-usage-case-template.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "knowledge:docs/knowledge/active-threads.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/knowledge/active-threads.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "proposals:docs/proposals/harness-review-gates.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/README.md",
+        "target_path": "docs/proposals/harness-review-gates.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "proposals:docs/proposals/harness-eval-candidate-ledger.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/README.md",
+        "target_path": "docs/proposals/harness-eval-candidate-ledger.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "implementation:docs/harness-documentation-map.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/harness-documentation-map.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "implementation:docs/harness-architecture.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/harness-architecture.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "implementation:docs/harness-operating-model.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/harness-operating-model.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/README.md",
+        "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "implementation:docs/harness-public-contract.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/harness-public-contract.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "implementation:docs/harness-release-criteria.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/harness-release-criteria.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "implementation:docs/harness-session-handoff.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/harness-session-handoff.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "radar:docs/radar/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/radar/README.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "feedback:docs/feedback/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/feedback/README.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "knowledge:docs/knowledge/README.md",
+        "type": "references",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/knowledge/README.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "proposals:docs/proposals/README.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/proposals/README.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "knowledge:docs/knowledge/active-threads.md",
+        "type": "references",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/knowledge/active-threads.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "radar:docs/radar/sources.md",
+        "type": "cites_evidence",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/radar/sources.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "radar:docs/radar/themes.md",
+        "type": "cites_evidence",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/radar/themes.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "feedback:docs/feedback/harness-usage-case-template.md",
+        "type": "cites_evidence",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/feedback/harness-usage-case-template.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "knowledge:docs/knowledge/operating-model.md",
+        "type": "references",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/knowledge/operating-model.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "implementation:_project/CURRENT.md",
+        "type": "references",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "_project/CURRENT.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "implementation:docs/harness-documentation-map.md",
+        "type": "references",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/harness-documentation-map.md"
+      },
+      {
+        "source": "feedback:docs/feedback/README.md",
+        "target": "feedback:docs/feedback/harness-usage-case-template.md",
+        "type": "references",
+        "source_path": "docs/feedback/README.md",
+        "target_path": "docs/feedback/harness-usage-case-template.md"
+      },
+      {
+        "source": "feedback:docs/feedback/README.md",
+        "target": "feedback:docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md",
+        "type": "references",
+        "source_path": "docs/feedback/README.md",
+        "target_path": "docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md"
+      },
+      {
+        "source": "feedback:docs/feedback/README.md",
+        "target": "feedback:docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md",
+        "type": "references",
+        "source_path": "docs/feedback/README.md",
+        "target_path": "docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md"
+      },
+      {
+        "source": "feedback:docs/feedback/README.md",
+        "target": "feedback:docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md",
+        "type": "references",
+        "source_path": "docs/feedback/README.md",
+        "target_path": "docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md"
+      },
+      {
+        "source": "feedback:docs/feedback/README.md",
+        "target": "feedback:docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+        "type": "references",
+        "source_path": "docs/feedback/README.md",
+        "target_path": "docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md"
+      },
+      {
+        "source": "feedback:docs/feedback/README.md",
+        "target": "feedback:docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md",
+        "type": "references",
+        "source_path": "docs/feedback/README.md",
+        "target_path": "docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md"
+      },
+      {
+        "source": "feedback:docs/feedback/README.md",
+        "target": "feedback:docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md",
+        "type": "references",
+        "source_path": "docs/feedback/README.md",
+        "target_path": "docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md"
+      },
+      {
+        "source": "feedback:docs/feedback/README.md",
+        "target": "feedback:docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+        "type": "references",
+        "source_path": "docs/feedback/README.md",
+        "target_path": "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md"
+      },
+      {
+        "source": "implementation:docs/harness-architecture.md",
+        "target": "implementation:docs/harness-public-contract.md",
+        "type": "references",
+        "source_path": "docs/harness-architecture.md",
+        "target_path": "docs/harness-public-contract.md"
+      },
+      {
+        "source": "implementation:docs/harness-architecture.md",
+        "target": "implementation:docs/harness-documentation-map.md",
+        "type": "references",
+        "source_path": "docs/harness-architecture.md",
+        "target_path": "docs/harness-documentation-map.md"
+      },
+      {
+        "source": "implementation:docs/harness-architecture.md",
+        "target": "implementation:docs/harness-session-handoff.md",
+        "type": "references",
+        "source_path": "docs/harness-architecture.md",
+        "target_path": "docs/harness-session-handoff.md"
+      },
+      {
+        "source": "implementation:docs/harness-architecture.md",
+        "target": "implementation:docs/harness-operating-model.md",
+        "type": "references",
+        "source_path": "docs/harness-architecture.md",
+        "target_path": "docs/harness-operating-model.md"
+      },
+      {
+        "source": "implementation:docs/harness-architecture.md",
+        "target": "implementation:harness/README.md",
+        "type": "references",
+        "source_path": "docs/harness-architecture.md",
+        "target_path": "harness/README.md"
+      },
+      {
+        "source": "implementation:docs/harness-architecture.md",
+        "target": "implementation:skills/harness/SKILL.md",
+        "type": "references",
+        "source_path": "docs/harness-architecture.md",
+        "target_path": "skills/harness/SKILL.md"
+      },
+      {
+        "source": "implementation:docs/harness-architecture.md",
+        "target": "implementation:AGENTS.md",
+        "type": "references",
+        "source_path": "docs/harness-architecture.md",
+        "target_path": "AGENTS.md"
+      },
+      {
+        "source": "implementation:docs/harness-architecture.md",
+        "target": "implementation:_project/CURRENT.md",
+        "type": "references",
+        "source_path": "docs/harness-architecture.md",
+        "target_path": "_project/CURRENT.md"
+      },
+      {
+        "source": "implementation:docs/harness-documentation-map.md",
+        "target": "implementation:docs/harness-explainer.md",
+        "type": "references",
+        "source_path": "docs/harness-documentation-map.md",
+        "target_path": "docs/harness-explainer.md"
+      },
+      {
+        "source": "implementation:docs/harness-documentation-map.md",
+        "target": "implementation:docs/harness-architecture.md",
+        "type": "references",
+        "source_path": "docs/harness-documentation-map.md",
+        "target_path": "docs/harness-architecture.md"
+      },
+      {
+        "source": "implementation:docs/harness-documentation-map.md",
+        "target": "implementation:docs/harness-public-contract.md",
+        "type": "references",
+        "source_path": "docs/harness-documentation-map.md",
+        "target_path": "docs/harness-public-contract.md"
+      },
+      {
+        "source": "implementation:docs/harness-documentation-map.md",
+        "target": "implementation:docs/harness-operating-model.md",
+        "type": "references",
+        "source_path": "docs/harness-documentation-map.md",
+        "target_path": "docs/harness-operating-model.md"
+      },
+      {
+        "source": "implementation:docs/harness-documentation-map.md",
+        "target": "implementation:docs/harness-session-handoff.md",
+        "type": "references",
+        "source_path": "docs/harness-documentation-map.md",
+        "target_path": "docs/harness-session-handoff.md"
+      },
+      {
+        "source": "implementation:docs/harness-documentation-map.md",
+        "target": "implementation:docs/harness-learning-loop.md",
+        "type": "references",
+        "source_path": "docs/harness-documentation-map.md",
+        "target_path": "docs/harness-learning-loop.md"
+      },
+      {
+        "source": "implementation:docs/harness-documentation-map.md",
+        "target": "implementation:docs/harness-release-criteria.md",
+        "type": "references",
+        "source_path": "docs/harness-documentation-map.md",
+        "target_path": "docs/harness-release-criteria.md"
+      },
+      {
+        "source": "implementation:docs/harness-documentation-map.md",
+        "target": "knowledge:docs/erwin-operating-model.md",
+        "type": "reports_back",
+        "source_path": "docs/harness-documentation-map.md",
+        "target_path": "docs/erwin-operating-model.md"
+      },
+      {
+        "source": "implementation:docs/harness-documentation-map.md",
+        "target": "implementation:AGENTS.md",
+        "type": "references",
+        "source_path": "docs/harness-documentation-map.md",
+        "target_path": "AGENTS.md"
+      },
+      {
+        "source": "implementation:docs/harness-documentation-map.md",
+        "target": "implementation:_project/CURRENT.md",
+        "type": "references",
+        "source_path": "docs/harness-documentation-map.md",
+        "target_path": "_project/CURRENT.md"
+      },
+      {
+        "source": "implementation:docs/harness-documentation-map.md",
+        "target": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "type": "reports_back",
+        "source_path": "docs/harness-documentation-map.md",
+        "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "implementation:docs/harness-explainer.md",
+        "target": "implementation:docs/harness-documentation-map.md",
+        "type": "references",
+        "source_path": "docs/harness-explainer.md",
+        "target_path": "docs/harness-documentation-map.md"
+      },
+      {
+        "source": "implementation:docs/harness-explainer.md",
+        "target": "implementation:docs/harness-architecture.md",
+        "type": "references",
+        "source_path": "docs/harness-explainer.md",
+        "target_path": "docs/harness-architecture.md"
+      },
+      {
+        "source": "implementation:docs/harness-explainer.md",
+        "target": "implementation:docs/harness-operating-model.md",
+        "type": "references",
+        "source_path": "docs/harness-explainer.md",
+        "target_path": "docs/harness-operating-model.md"
+      },
+      {
+        "source": "implementation:docs/harness-explainer.md",
+        "target": "implementation:docs/harness-public-contract.md",
+        "type": "references",
+        "source_path": "docs/harness-explainer.md",
+        "target_path": "docs/harness-public-contract.md"
+      },
+      {
+        "source": "implementation:docs/harness-explainer.md",
+        "target": "implementation:harness/README.md",
+        "type": "references",
+        "source_path": "docs/harness-explainer.md",
+        "target_path": "harness/README.md"
+      },
+      {
+        "source": "implementation:docs/harness-learning-loop.md",
+        "target": "radar:docs/radar/weekly/README.md",
+        "type": "references",
+        "source_path": "docs/harness-learning-loop.md",
+        "target_path": "docs/radar/weekly/README.md"
+      },
+      {
+        "source": "implementation:docs/harness-learning-loop.md",
+        "target": "implementation:docs/harness-architecture.md",
+        "type": "references",
+        "source_path": "docs/harness-learning-loop.md",
+        "target_path": "docs/harness-architecture.md"
+      },
+      {
+        "source": "implementation:docs/harness-learning-loop.md",
+        "target": "implementation:docs/harness-operating-model.md",
+        "type": "references",
+        "source_path": "docs/harness-learning-loop.md",
+        "target_path": "docs/harness-operating-model.md"
+      },
+      {
+        "source": "implementation:docs/harness-learning-loop.md",
+        "target": "implementation:docs/harness-public-contract.md",
+        "type": "references",
+        "source_path": "docs/harness-learning-loop.md",
+        "target_path": "docs/harness-public-contract.md"
+      },
+      {
+        "source": "implementation:docs/harness-public-contract.md",
+        "target": "implementation:harness/README.md",
+        "type": "references",
+        "source_path": "docs/harness-public-contract.md",
+        "target_path": "harness/README.md"
+      },
+      {
+        "source": "implementation:docs/harness-public-contract.md",
+        "target": "implementation:docs/harness-release-criteria.md",
+        "type": "references",
+        "source_path": "docs/harness-public-contract.md",
+        "target_path": "docs/harness-release-criteria.md"
+      },
+      {
+        "source": "implementation:docs/harness-release-criteria.md",
+        "target": "implementation:docs/harness-public-contract.md",
+        "type": "references",
+        "source_path": "docs/harness-release-criteria.md",
+        "target_path": "docs/harness-public-contract.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
+        "target": "implementation:docs/harness-explainer.md",
+        "type": "references",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "docs/harness-explainer.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
+        "target": "implementation:AGENTS.md",
+        "type": "references",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "AGENTS.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
+        "target": "implementation:_project/CURRENT.md",
+        "type": "references",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "_project/CURRENT.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
+        "target": "implementation:docs/harness-documentation-map.md",
+        "type": "references",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "docs/harness-documentation-map.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
+        "target": "implementation:docs/harness-architecture.md",
+        "type": "references",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "docs/harness-architecture.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
+        "target": "implementation:docs/harness-learning-loop.md",
+        "type": "references",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "docs/harness-learning-loop.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
+        "target": "implementation:docs/harness-release-criteria.md",
+        "type": "references",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "docs/harness-release-criteria.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
+        "target": "implementation:docs/harness-public-contract.md",
+        "type": "references",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "docs/harness-public-contract.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
+        "target": "implementation:harness/README.md",
+        "type": "references",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "harness/README.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
+        "target": "implementation:docs/harness-operating-model.md",
+        "type": "references",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "docs/harness-operating-model.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/README.md",
+        "target": "knowledge:docs/knowledge/operating-model.md",
+        "type": "references",
+        "source_path": "docs/knowledge/README.md",
+        "target_path": "docs/knowledge/operating-model.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/README.md",
+        "target": "knowledge:docs/knowledge/active-threads.md",
+        "type": "references",
+        "source_path": "docs/knowledge/README.md",
+        "target_path": "docs/knowledge/active-threads.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/README.md",
+        "target": "knowledge:docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+        "type": "references",
+        "source_path": "docs/knowledge/README.md",
+        "target_path": "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/README.md",
+        "target": "knowledge:docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+        "type": "references",
+        "source_path": "docs/knowledge/README.md",
+        "target_path": "docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/README.md",
+        "target": "knowledge:docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+        "type": "references",
+        "source_path": "docs/knowledge/README.md",
+        "target_path": "docs/knowledge/runtime-legibility-patterns-2026-04-02.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/README.md",
+        "target": "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "type": "references",
+        "source_path": "docs/knowledge/README.md",
+        "target_path": "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/README.md",
+        "target": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/knowledge/README.md",
+        "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "knowledge:docs/erwin-operating-model.md",
+        "type": "references",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/erwin-operating-model.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "knowledge:docs/knowledge/operating-model.md",
+        "type": "references",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/knowledge/operating-model.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "implementation:docs/harness-learning-loop.md",
+        "type": "references",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/harness-learning-loop.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "radar:docs/radar/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/radar/README.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "feedback:docs/feedback/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/feedback/README.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "proposals:docs/proposals/README.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/proposals/README.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "proposals:docs/proposals/knowledge-surface-research-cockpit-v1.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/proposals/knowledge-surface-research-cockpit-v1.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "feedback:docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "feedback:docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "feedback:docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "knowledge:docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+        "type": "references",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "radar:docs/radar/weekly/2026-03-30.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/radar/weekly/2026-03-30.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "radar:docs/radar/weekly/2026-04-03.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/radar/weekly/2026-04-03.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "radar:docs/radar/weekly/2026-04-10.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/radar/weekly/2026-04-10.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "radar:docs/radar/sources.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/radar/sources.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "knowledge:docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+        "type": "references",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "knowledge:docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+        "type": "references",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/knowledge/runtime-legibility-patterns-2026-04-02.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "feedback:docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "feedback:docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "feedback:docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "type": "references",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "feedback:docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/active-threads.md",
+        "target": "proposals:docs/proposals/harness-eval-candidate-ledger.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/knowledge/active-threads.md",
+        "target_path": "docs/proposals/harness-eval-candidate-ledger.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "target": "radar:docs/radar/weekly/2026-04-03.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "target_path": "docs/radar/weekly/2026-04-03.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "target": "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "target_path": "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "target": "knowledge:docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+        "type": "references",
+        "source_path": "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "target_path": "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+        "target": "radar:docs/radar/weekly/2026-03-30.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+        "target_path": "docs/radar/weekly/2026-03-30.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+        "target": "feedback:docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+        "target_path": "docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/operating-model.md",
+        "target": "radar:docs/radar/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/operating-model.md",
+        "target_path": "docs/radar/README.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/operating-model.md",
+        "target": "feedback:docs/feedback/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/operating-model.md",
+        "target_path": "docs/feedback/README.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/operating-model.md",
+        "target": "feedback:docs/feedback/harness-usage-case-template.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/operating-model.md",
+        "target_path": "docs/feedback/harness-usage-case-template.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/operating-model.md",
+        "target": "knowledge:docs/knowledge/README.md",
+        "type": "references",
+        "source_path": "docs/knowledge/operating-model.md",
+        "target_path": "docs/knowledge/README.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/operating-model.md",
+        "target": "proposals:docs/proposals/README.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/knowledge/operating-model.md",
+        "target_path": "docs/proposals/README.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+        "target": "feedback:docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+        "target_path": "docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md"
+      },
+      {
+        "source": "knowledge:docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+        "target": "feedback:docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md",
+        "type": "cites_evidence",
+        "source_path": "docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+        "target_path": "docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/harness-eval-candidate-ledger.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/harness-eval-candidate-ledger.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/harness-review-gates.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/harness-review-gates.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/harness-benchmark-evidence-checklist.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/harness-benchmark-evidence-checklist.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/harness-monitorability-review-checklist.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/harness-monitorability-review-criterion.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/harness-monitorability-review-criterion.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/knowledge-surface-research-cockpit-v1.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/knowledge-surface-research-cockpit-v1.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/harness-proposal-review-template.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/harness-proposal-review-template.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md"
+      },
+      {
+        "source": "proposals:docs/proposals/README.md",
+        "target": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "type": "references",
+        "source_path": "docs/proposals/README.md",
+        "target_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-benchmark-evidence-checklist.md",
+        "target": "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-benchmark-evidence-checklist.md",
+        "target_path": "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-benchmark-evidence-checklist.md",
+        "target": "feedback:docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-benchmark-evidence-checklist.md",
+        "target_path": "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-benchmark-evidence-checklist.md",
+        "target": "proposals:docs/proposals/harness-eval-candidate-ledger.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-benchmark-evidence-checklist.md",
+        "target_path": "docs/proposals/harness-eval-candidate-ledger.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-benchmark-evidence-checklist.md",
+        "target": "proposals:docs/proposals/harness-review-gates.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-benchmark-evidence-checklist.md",
+        "target_path": "docs/proposals/harness-review-gates.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-audit-2026-04-10.md",
+        "target": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-monitorability-audit-2026-04-10.md",
+        "target_path": "docs/proposals/harness-monitorability-review-checklist.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-audit-2026-04-10.md",
+        "target": "radar:docs/radar/weekly/2026-04-10.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-monitorability-audit-2026-04-10.md",
+        "target_path": "docs/radar/weekly/2026-04-10.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-audit-2026-04-10.md",
+        "target": "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-monitorability-audit-2026-04-10.md",
+        "target_path": "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-audit-2026-04-10.md",
+        "target": "proposals:docs/proposals/harness-monitorability-review-criterion.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-monitorability-audit-2026-04-10.md",
+        "target_path": "docs/proposals/harness-monitorability-review-criterion.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "target": "radar:docs/radar/weekly/2026-04-10.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-monitorability-review-checklist.md",
+        "target_path": "docs/radar/weekly/2026-04-10.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "target": "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-monitorability-review-checklist.md",
+        "target_path": "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "target": "knowledge:docs/knowledge/active-threads.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-monitorability-review-checklist.md",
+        "target_path": "docs/knowledge/active-threads.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "target": "proposals:docs/proposals/harness-monitorability-review-criterion.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-monitorability-review-checklist.md",
+        "target_path": "docs/proposals/harness-monitorability-review-criterion.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "target": "proposals:docs/proposals/harness-eval-candidate-ledger.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-monitorability-review-checklist.md",
+        "target_path": "docs/proposals/harness-eval-candidate-ledger.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "target": "proposals:docs/proposals/harness-review-gates.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-monitorability-review-checklist.md",
+        "target_path": "docs/proposals/harness-review-gates.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-review-criterion.md",
+        "target": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-monitorability-review-criterion.md",
+        "target_path": "docs/proposals/harness-monitorability-review-checklist.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-review-criterion.md",
+        "target": "proposals:docs/proposals/harness-monitorability-audit-2026-04-10.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-monitorability-review-criterion.md",
+        "target_path": "docs/proposals/harness-monitorability-audit-2026-04-10.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-monitorability-review-criterion.md",
+        "target": "proposals:docs/proposals/harness-review-gates.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-monitorability-review-criterion.md",
+        "target_path": "docs/proposals/harness-review-gates.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target": "radar:docs/radar/weekly/2026-04-10.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target_path": "docs/radar/weekly/2026-04-10.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target": "knowledge:docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target_path": "docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target": "knowledge:docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target_path": "docs/knowledge/runtime-legibility-patterns-2026-04-02.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target": "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target_path": "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target": "feedback:docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target_path": "docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target": "feedback:docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target_path": "docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target": "feedback:docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target_path": "docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target": "feedback:docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-003.md",
+        "target_path": "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target": "knowledge:docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target_path": "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target_path": "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target": "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target_path": "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target": "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target_path": "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target": "radar:docs/radar/weekly/2026-04-10.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target_path": "docs/radar/weekly/2026-04-10.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target": "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-004.md",
+        "target_path": "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target": "radar:docs/radar/weekly/2026-04-10.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target_path": "docs/radar/weekly/2026-04-10.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target": "knowledge:docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target_path": "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target": "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target_path": "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target_path": "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target": "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target_path": "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target": "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target_path": "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target": "feedback:docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-10-hlp-005.md",
+        "target_path": "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target": "implementation:docs/harness-learning-loop.md",
+        "type": "targets_implementation",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target_path": "docs/harness-learning-loop.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target": "knowledge:docs/knowledge/operating-model.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target_path": "docs/knowledge/operating-model.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target": "knowledge:docs/knowledge/active-threads.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target_path": "docs/knowledge/active-threads.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target": "feedback:docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target_path": "docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target": "feedback:docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target_path": "docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target": "feedback:docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-proposal-review-2026-04-11-hlp-001.md",
+        "target_path": "docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-review-gates.md",
+        "target": "feedback:docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-review-gates.md",
+        "target_path": "docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-review-gates.md",
+        "target": "proposals:docs/proposals/harness-eval-candidate-ledger.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-review-gates.md",
+        "target_path": "docs/proposals/harness-eval-candidate-ledger.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-review-gates.md",
+        "target": "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-review-gates.md",
+        "target_path": "docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-review-gates.md",
+        "target": "feedback:docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-review-gates.md",
+        "target_path": "docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-review-gates.md",
+        "target": "proposals:docs/proposals/harness-benchmark-evidence-checklist.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-review-gates.md",
+        "target_path": "docs/proposals/harness-benchmark-evidence-checklist.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-review-gates.md",
+        "target": "radar:docs/radar/weekly/2026-04-10.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-review-gates.md",
+        "target_path": "docs/radar/weekly/2026-04-10.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-review-gates.md",
+        "target": "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "type": "anchors_to_evidence",
+        "source_path": "docs/proposals/harness-review-gates.md",
+        "target_path": "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-review-gates.md",
+        "target": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-review-gates.md",
+        "target_path": "docs/proposals/harness-monitorability-review-checklist.md"
+      },
+      {
+        "source": "proposals:docs/proposals/harness-review-gates.md",
+        "target": "proposals:docs/proposals/harness-monitorability-review-criterion.md",
+        "type": "references",
+        "source_path": "docs/proposals/harness-review-gates.md",
+        "target_path": "docs/proposals/harness-monitorability-review-criterion.md"
+      },
+      {
+        "source": "radar:docs/radar/README.md",
+        "target": "radar:docs/radar/themes.md",
+        "type": "references",
+        "source_path": "docs/radar/README.md",
+        "target_path": "docs/radar/themes.md"
+      },
+      {
+        "source": "radar:docs/radar/README.md",
+        "target": "radar:docs/radar/sources.md",
+        "type": "references",
+        "source_path": "docs/radar/README.md",
+        "target_path": "docs/radar/sources.md"
+      },
+      {
+        "source": "radar:docs/radar/README.md",
+        "target": "radar:docs/radar/daily/README.md",
+        "type": "references",
+        "source_path": "docs/radar/README.md",
+        "target_path": "docs/radar/daily/README.md"
+      },
+      {
+        "source": "radar:docs/radar/README.md",
+        "target": "radar:docs/radar/trending/README.md",
+        "type": "references",
+        "source_path": "docs/radar/README.md",
+        "target_path": "docs/radar/trending/README.md"
+      },
+      {
+        "source": "radar:docs/radar/README.md",
+        "target": "radar:docs/radar/papers/README.md",
+        "type": "references",
+        "source_path": "docs/radar/README.md",
+        "target_path": "docs/radar/papers/README.md"
+      },
+      {
+        "source": "radar:docs/radar/README.md",
+        "target": "radar:docs/radar/weekly/README.md",
+        "type": "references",
+        "source_path": "docs/radar/README.md",
+        "target_path": "docs/radar/weekly/README.md"
+      },
+      {
+        "source": "radar:docs/radar/README.md",
+        "target": "knowledge:docs/knowledge/active-threads.md",
+        "type": "feeds",
+        "source_path": "docs/radar/README.md",
+        "target_path": "docs/knowledge/active-threads.md"
+      },
+      {
+        "source": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "target": "knowledge:docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+        "type": "feeds",
+        "source_path": "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "target_path": "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md"
+      },
+      {
+        "source": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "target": "knowledge:docs/knowledge/active-threads.md",
+        "type": "feeds",
+        "source_path": "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "target_path": "docs/knowledge/active-threads.md"
+      },
+      {
+        "source": "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "target": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "type": "references",
+        "source_path": "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "target_path": "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md"
+      },
+      {
+        "source": "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "target": "knowledge:docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+        "type": "feeds",
+        "source_path": "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "target_path": "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md"
+      },
+      {
+        "source": "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "target": "knowledge:docs/knowledge/active-threads.md",
+        "type": "feeds",
+        "source_path": "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "target_path": "docs/knowledge/active-threads.md"
+      },
+      {
+        "source": "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "target": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "type": "references",
+        "source_path": "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "target_path": "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md"
+      },
+      {
+        "source": "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "target": "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "type": "references",
+        "source_path": "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "target_path": "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md"
+      },
+      {
+        "source": "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "target": "knowledge:docs/knowledge/active-threads.md",
+        "type": "feeds",
+        "source_path": "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "target_path": "docs/knowledge/active-threads.md"
+      },
+      {
+        "source": "radar:docs/radar/papers/README.md",
+        "target": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+        "type": "references",
+        "source_path": "docs/radar/papers/README.md",
+        "target_path": "docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md"
+      },
+      {
+        "source": "radar:docs/radar/papers/README.md",
+        "target": "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+        "type": "references",
+        "source_path": "docs/radar/papers/README.md",
+        "target_path": "docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md"
+      },
+      {
+        "source": "radar:docs/radar/papers/README.md",
+        "target": "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+        "type": "references",
+        "source_path": "docs/radar/papers/README.md",
+        "target_path": "docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md"
+      },
+      {
+        "source": "radar:docs/radar/weekly/README.md",
+        "target": "proposals:docs/proposals/harness-benchmark-evidence-checklist.md",
+        "type": "references",
+        "source_path": "docs/radar/weekly/README.md",
+        "target_path": "docs/proposals/harness-benchmark-evidence-checklist.md"
+      },
+      {
+        "source": "radar:docs/radar/weekly/README.md",
+        "target": "proposals:docs/proposals/harness-monitorability-review-checklist.md",
+        "type": "references",
+        "source_path": "docs/radar/weekly/README.md",
+        "target_path": "docs/proposals/harness-monitorability-review-checklist.md"
+      },
+      {
+        "source": "radar:docs/radar/weekly/README.md",
+        "target": "proposals:docs/proposals/harness-eval-candidate-ledger.md",
+        "type": "references",
+        "source_path": "docs/radar/weekly/README.md",
+        "target_path": "docs/proposals/harness-eval-candidate-ledger.md"
+      },
+      {
+        "source": "implementation:harness/README.md",
+        "target": "implementation:docs/harness-explainer.md",
+        "type": "references",
+        "source_path": "harness/README.md",
+        "target_path": "docs/harness-explainer.md"
+      },
+      {
+        "source": "implementation:harness/README.md",
+        "target": "implementation:docs/harness-public-contract.md",
+        "type": "references",
+        "source_path": "harness/README.md",
+        "target_path": "docs/harness-public-contract.md"
+      },
+      {
+        "source": "implementation:skills/README.md",
+        "target": "implementation:docs/harness-explainer.md",
+        "type": "references",
+        "source_path": "skills/README.md",
+        "target_path": "docs/harness-explainer.md"
+      }
+    ],
+    "threads": [
+      {
+        "id": "thread:erwin-five-layer-operating-model",
+        "thread": "erwin five-layer operating model",
+        "artifact_path": "docs/knowledge/active-threads.md",
+        "core_question": "How do Radar, Feedback, Knowledge, Proposals, and Implementation stay connected across multiple sessions without treating Harness, radar automation, or the knowledge surface as isolated systems?",
+        "evidence_classes": [
+          "feedback",
+          "internal-gap",
+          "external"
+        ],
+        "current_view": "`erwin` should operate as a five-layer knowledge-to-action loop: Radar and Feedback feed Knowledge, mature Knowledge feeds Proposals, reviewed Proposals feed Implementation, and Implementation results flow back into Feedback and Knowledge. Harness is the main implementation target and feedback source, not a shortcut around the loop.",
+        "update_when": "cross-session handoff fails, stale guidance sends work to the wrong layer, or a new surface changes how the five layers interact",
+        "linked_proposals": [],
+        "anchor_artifact_ids": [
+          "knowledge:docs/erwin-operating-model.md",
+          "knowledge:docs/knowledge/operating-model.md",
+          "implementation:docs/harness-learning-loop.md",
+          "radar:docs/radar/README.md",
+          "feedback:docs/feedback/README.md",
+          "proposals:docs/proposals/README.md",
+          "proposals:docs/proposals/knowledge-surface-research-cockpit-v1.md"
+        ]
+      },
+      {
+        "id": "thread:knowledge-system-operating-discipline",
+        "thread": "knowledge-system operating discipline",
+        "artifact_path": "docs/knowledge/active-threads.md",
+        "core_question": "How does `erwin` keep durable knowledge legible instead of falling back into `docs/research/`, proposal spam, or session-memory dependence?",
+        "evidence_classes": [
+          "feedback",
+          "internal-gap",
+          "external"
+        ],
+        "current_view": "The knowledge system must stay file-backed and proposal-gated: repeated usage pressure becomes feedback cases first, active durable understanding lives in `knowledge/`, and only mature threads should create proposal pressure.",
+        "update_when": "a new case shows the loop being bypassed, or a weekly synthesis/proposal cannot be traced back to a durable thread",
+        "linked_proposals": [
+          "HLP-001",
+          "HLP-003"
+        ],
+        "anchor_artifact_ids": [
+          "knowledge:docs/knowledge/operating-model.md",
+          "feedback:docs/feedback/cases/HU-001-docs-research-became-default-knowledge-surface.md",
+          "feedback:docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md",
+          "feedback:docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md",
+          "implementation:docs/harness-learning-loop.md",
+          "proposals:docs/proposals/harness-proposal-ledger.md"
+        ]
+      },
+      {
+        "id": "thread:coding-agent-self-iteration-and-paper-intake",
+        "thread": "coding-agent self-iteration and paper intake",
+        "artifact_path": "docs/knowledge/active-threads.md",
+        "core_question": "What do first-party and paper evidence together imply about coding-agent self-improvement, and how should `erwin` watch that theme without cargo-culting vendors?",
+        "evidence_classes": [
+          "external",
+          "internal-gap"
+        ],
+        "current_view": "OpenAI currently presents self-improvement as eval-backed research engineering, Anthropic presents it more as strong internal dogfooding and workflow automation, and the paper-watch archive now has recurring notes for self-correction, long-horizon degradation, context retrieval, and trajectory diagnosis instead of only one starter note.",
+        "update_when": "a major benchmark shifts, or weekly synthesis finds stronger convergence between vendor claims and papers",
+        "linked_proposals": [
+          "HLP-004",
+          "HLP-005"
+        ],
+        "anchor_artifact_ids": [
+          "knowledge:docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+          "radar:docs/radar/weekly/2026-03-30.md",
+          "radar:docs/radar/weekly/2026-04-03.md",
+          "radar:docs/radar/weekly/2026-04-10.md",
+          "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
+          "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+          "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+          "radar:docs/radar/sources.md",
+          "proposals:docs/proposals/harness-proposal-ledger.md"
+        ]
+      },
+      {
+        "id": "thread:harness-engineering-as-legibility-eval-pressure",
+        "thread": "harness engineering as legibility + eval pressure",
+        "artifact_path": "docs/knowledge/active-threads.md",
+        "core_question": "Which outside signals should turn into eval/doc pressure rather than direct runtime expansion?",
+        "evidence_classes": [
+          "external",
+          "feedback",
+          "internal-gap"
+        ],
+        "current_view": "The strongest immediate reusable lesson from recent field signal is not to widen `Harness` runtime blindly, but to keep repo-readable truth, traceability, eval integrity, bounded policy discipline, and monitorability ahead of speculative feature churn. Internal audits, runtime feedback, and newer external monitoring signal now sharpen that thread by showing where visible productization still outruns deeper governance maturity and observability.",
+        "update_when": "repeated internal gaps show current docs/evals are not making the system legible enough, or new first-party evidence sharpens the eval pattern",
+        "linked_proposals": [
+          "HLP-003"
+        ],
+        "anchor_artifact_ids": [
+          "radar:docs/radar/weekly/2026-03-30.md",
+          "radar:docs/radar/weekly/2026-04-03.md",
+          "radar:docs/radar/weekly/2026-04-10.md",
+          "knowledge:docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+          "knowledge:docs/knowledge/runtime-legibility-patterns-2026-04-02.md",
+          "implementation:docs/harness-learning-loop.md",
+          "proposals:docs/proposals/harness-proposal-ledger.md",
+          "feedback:docs/feedback/cases/HU-002-proposals-were-emitted-before-knowledge-matured.md",
+          "feedback:docs/feedback/cases/HU-004-productized-surfaces-outpaced-control-plane-maturity.md",
+          "feedback:docs/feedback/cases/HU-005-delegated-follow-up-needed-bounded-lifecycle-objects.md",
+          "feedback:docs/feedback/cases/HU-006-active-council-needed-current-work-visibility.md"
+        ]
+      },
+      {
+        "id": "thread:benchmark-integrity-and-eval-awareness",
+        "thread": "benchmark integrity and eval awareness",
+        "artifact_path": "docs/knowledge/active-threads.md",
+        "core_question": "When benchmark-heavy external signal enters the repo, how should `erwin` separate capability signal from eval-trust signal before it sharpens proposal pressure?",
+        "evidence_classes": [
+          "external",
+          "feedback",
+          "internal-gap"
+        ],
+        "current_view": "Benchmark-rich signal is now strong enough that the repo needs a durable distinction between “this result highlights a real weakness” and “this benchmark remains a trustworthy measure,” especially when infrastructure setup and output-only reporting can distort what the score seems to mean.",
+        "update_when": "a weekly synthesis, paper-watch note, or proposal relies heavily on benchmark results that could carry contamination, infrastructure, or gameability risk",
+        "linked_proposals": [
+          "HLP-003",
+          "HLP-005"
+        ],
+        "anchor_artifact_ids": [
+          "knowledge:docs/knowledge/benchmark-integrity-and-eval-awareness-2026-04-09.md",
+          "feedback:docs/feedback/cases/HU-007-benchmark-results-needed-eval-trust-interpretation.md",
+          "radar:docs/radar/weekly/2026-04-03.md",
+          "radar:docs/radar/weekly/2026-04-10.md",
+          "radar:docs/radar/papers/2026-04-03-long-horizon-coding-agent-benchmarks.md",
+          "radar:docs/radar/papers/2026-04-10-trajectory-diagnosis-and-observability.md",
+          "proposals:docs/proposals/harness-eval-candidate-ledger.md"
+        ]
+      }
+    ],
+    "proposal_records": [
+      {
+        "id": "HLP-001",
+        "date": "2026-03-31",
+        "theme": "learning loop",
+        "origin": "internal-gap + field synthesis",
+        "source_ref": "docs/harness-learning-loop.md",
+        "target_layer": "automation/docs/eval",
+        "disposition": "adopt",
+        "status": "adopted",
+        "ledger_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "id": "HLP-002",
+        "date": "2026-03-31",
+        "theme": "long-running harness",
+        "origin": "Anthropic engineering",
+        "source_ref": "https://www.anthropic.com/engineering/harness-design-long-running-apps",
+        "target_layer": "docs/scheduler/council",
+        "disposition": "watch",
+        "status": "watching",
+        "ledger_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "id": "HLP-003",
+        "date": "2026-03-31",
+        "theme": "harness engineering",
+        "origin": "OpenAI engineering + internal gap audits",
+        "source_ref": "docs/knowledge/harness-engineering-vs-internal-gaps-2026-04-02.md",
+        "target_layer": "eval/docs/automation",
+        "disposition": "encode-as-eval",
+        "status": "queued-for-eval",
+        "ledger_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "id": "HLP-004",
+        "date": "2026-04-02",
+        "theme": "paper-aware radar",
+        "origin": "internal-gap + research scan",
+        "source_ref": "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+        "target_layer": "automation/docs",
+        "disposition": "prototype",
+        "status": "queued-for-prototype",
+        "ledger_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "id": "HLP-005",
+        "date": "2026-04-02",
+        "theme": "coding-agent self-iteration watch",
+        "origin": "OpenAI + Anthropic + papers",
+        "source_ref": "docs/knowledge/coding-agent-self-iteration-and-paper-intake-2026-04-02.md",
+        "target_layer": "eval/automation/docs",
+        "disposition": "watch",
+        "status": "watching",
+        "ledger_path": "docs/proposals/harness-proposal-ledger.md"
+      }
+    ],
+    "generated_from": [
+      "docs/radar/daily/latest.md",
+      "docs/radar/weekly/latest.md",
+      "docs/radar/trending/latest.md",
+      "docs/knowledge/active-threads.md",
+      "docs/proposals/harness-proposal-ledger.md"
+    ]
+  }
 }

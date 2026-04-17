@@ -84,6 +84,7 @@ erwin/
 - `_project/CURRENT.md` is the live operational handoff
 - `docs/erwin-operating-model.md` explains the five-layer knowledge-to-action loop
 - `docs/README.md` is the documentation map
+- `docs/knowledge/index.json` is the generated machine-readable knowledge network for cross-layer navigation
 - `docs/radar/` is the field-intelligence layer
 - `docs/feedback/`, `docs/knowledge/`, and `docs/proposals/` move signal toward reviewed action
 - `harness/`, `scripts/`, `cmd/`, and `internal/` are the main implementation surface
@@ -112,6 +113,7 @@ erwin/
 | Repo entrypoint | `README.md` |
 | Five-layer operating model | `docs/erwin-operating-model.md` |
 | Docs index | `docs/README.md` |
+| Knowledge network index | `docs/knowledge/index.json` |
 | Radar entrypoint | `docs/radar/README.md` |
 | Radar sources | `docs/radar/sources.md` |
 | Feedback entrypoint | `docs/feedback/README.md` |

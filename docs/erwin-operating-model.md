@@ -36,6 +36,25 @@ The core system is a five-layer loop:
 
 `Automations` are intake and refresh mechanisms. They write radar and surface data; they are not themselves the repo's reasoning layer.
 
+## Machine-Readable Knowledge Network
+
+The five-layer model also has a generated machine-readable snapshot:
+
+- [`docs/knowledge/index.json`](knowledge/index.json)
+  - `knowledge_network.artifacts`: repo-owned nodes for Radar, Feedback, Knowledge, Proposals, and selected Implementation entrypoints
+  - `knowledge_network.links`: typed local Markdown references between those artifacts
+  - `knowledge_network.threads`: parsed active knowledge threads from [`docs/knowledge/active-threads.md`](knowledge/active-threads.md), including evidence classes, linked proposals, and anchor artifacts
+  - `knowledge_network.proposal_records`: parsed proposal-ledger rows from [`docs/proposals/harness-proposal-ledger.md`](proposals/harness-proposal-ledger.md)
+
+This index is a navigation and handoff contract, not a database.
+Markdown remains the source of truth, and the index must be regenerated from repo files instead of edited by hand.
+
+When a session changes Radar notes, Feedback cases, active Knowledge threads, proposal ledgers, or implementation entrypoints that serve as canonical anchors, it should refresh the generated surface with:
+
+```bash
+python3 scripts/build-knowledge-surface.py
+```
+
 ## System Flow
 
 ```mermaid
