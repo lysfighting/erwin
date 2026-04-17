@@ -1,40 +1,37 @@
-# GitHub Trending - 2026-04-14
+# GitHub Trending - 2026-04-16
 
-Source: [GitHub Trending](https://github.com/trending?since=daily) as captured on 2026-04-14. This run used the default global trending page with no extra filters; the page rendered 16 repositories.
+Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-16. This run used the default global trending page with no extra filters; the page rendered 13 repositories.
 
 ## Trending Snapshot
 
-Today's board stayed heavily weighted toward AI coding, Claude Code operating patterns, agent harnesses, and applied AI tooling. The top visible projects were [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills), [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent), [shiyu-coder/Kronos](https://github.com/shiyu-coder/Kronos), [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem), and [microsoft/markitdown](https://github.com/microsoft/markitdown). Non-agent or less agent-specific entries included financial modeling, voice synthesis, media generation, textbook PDFs, and document conversion.
+Today's default board was strongly weighted toward AI coding agents, Claude Code practices, agent skills, and applied AI, with a smaller set of general software and cultural entries. The largest visible spikes were [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills), [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem), [obra/superpowers](https://github.com/obra/superpowers), [pascalorg/editor](https://github.com/pascalorg/editor), [jamiepine/voicebox](https://github.com/jamiepine/voicebox), and [virattt/ai-hedge-fund](https://github.com/virattt/ai-hedge-fund). Non-AI or broader developer-interest projects included [chrislgarry/Apollo-11](https://github.com/chrislgarry/Apollo-11), [public-apis/public-apis](https://github.com/public-apis/public-apis), and [pascalorg/editor](https://github.com/pascalorg/editor).
 
 ## Notable Projects
 
-- [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) - CLAUDE.md guidance distilled from LLM coding pitfalls. 5,733 stars today.
-- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) - adaptive AI agent project. Python. 11,289 stars today.
-- [shiyu-coder/Kronos](https://github.com/shiyu-coder/Kronos) - foundation model for financial-market language. Python. 1,554 stars today.
-- [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem) - Claude Code plugin for session capture, compression, and context reinjection. TypeScript. 3,175 stars today.
-- [microsoft/markitdown](https://github.com/microsoft/markitdown) - converts files and office documents to Markdown. Python. 2,808 stars today.
-- [multica-ai/multica](https://github.com/multica-ai/multica) - managed-agent platform for assigning work, tracking progress, and compounding skills. TypeScript. 1,715 stars today.
-- [coleam00/Archon](https://github.com/coleam00/Archon) - harness builder for deterministic AI coding. TypeScript. 677 stars today.
-- [snarktank/ralph](https://github.com/snarktank/ralph) - autonomous agent loop for completing PRD items. TypeScript. 691 stars today.
-- [virattt/ai-hedge-fund](https://github.com/virattt/ai-hedge-fund) - AI hedge-fund team simulation. Python. 783 stars today.
-- [anthropics/claude-cookbooks](https://github.com/anthropics/claude-cookbooks) - notebooks and recipes for using Claude. Jupyter Notebook. 1,012 stars today.
-- [shanraisshan/claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice) - Claude Code practice guide. HTML. 2,461 stars today.
-- [jamiepine/voicebox](https://github.com/jamiepine/voicebox) - open-source voice synthesis studio. TypeScript. 512 stars today.
-- [ahujasid/blender-mcp](https://github.com/ahujasid/blender-mcp) - Blender MCP project. Python. 339 stars today.
-- [hacksider/Deep-Live-Cam](https://github.com/hacksider/Deep-Live-Cam) - real-time face swap and one-click video deepfake tool. Python. 217 stars today.
-- [gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done) - Claude Code meta-prompting, context-engineering, and spec-driven development system. JavaScript. 655 stars today.
-- [TapXWorld/ChinaTextbook](https://github.com/TapXWorld/ChinaTextbook) - PDF textbook collection. Roff. 703 stars today.
+- [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) - a single `CLAUDE.md` file to improve Claude Code behavior, derived from Andrej Karpathy's observations on LLM coding pitfalls. 43,081 stars, 9,646 stars today.
+- [pascalorg/editor](https://github.com/pascalorg/editor) - tool for creating and sharing 3D architectural projects. TypeScript. 12,654 stars, 1,391 stars today.
+- [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem) - Claude Code plugin that captures coding sessions, compresses them with AI, and injects relevant context into future sessions. TypeScript. 57,857 stars, 2,305 stars today.
+- [Lordog/dive-into-llms](https://github.com/Lordog/dive-into-llms) - hands-on large-model programming practice tutorial. Jupyter Notebook. 29,447 stars, 941 stars today.
+- [virattt/ai-hedge-fund](https://github.com/virattt/ai-hedge-fund) - AI hedge fund team project. Python. 55,066 stars, 1,058 stars today.
+- [chrislgarry/Apollo-11](https://github.com/chrislgarry/Apollo-11) - original Apollo 11 guidance computer source code for command and lunar modules. Assembly. 66,807 stars, 606 stars today.
+- [obra/superpowers](https://github.com/obra/superpowers) - agentic skills framework and software-development methodology. Shell. 154,311 stars, 2,055 stars today.
+- [jamiepine/voicebox](https://github.com/jamiepine/voicebox) - open-source voice synthesis studio. TypeScript. 18,294 stars, 1,062 stars today.
+- [public-apis/public-apis](https://github.com/public-apis/public-apis) - collective list of free APIs. Python. 423,355 stars, 950 stars today.
+- [vercel-labs/open-agents](https://github.com/vercel-labs/open-agents) - open-source template for building cloud agents. TypeScript. 2,647 stars, 915 stars today.
+- [lsdefine/GenericAgent](https://github.com/lsdefine/GenericAgent) - self-evolving agent that grows a skill tree from a seed and emphasizes lower token consumption. Python. 1,945 stars, 446 stars today.
+- [google/magika](https://github.com/google/magika) - AI-powered file content type detection. Python. 13,794 stars, 768 stars today.
+- [Donchitos/Claude-Code-Game-Studios](https://github.com/Donchitos/Claude-Code-Game-Studios) - Claude Code game-development studio setup with many agents, workflow skills, and coordination structure. Shell. 10,463 stars, 612 stars today.
 
 ## Why They May Be Surfacing
 
-- Claude Code and coding-agent operations are the clearest cluster: [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills), [shanraisshan/claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice), [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem), [gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done), [multica-ai/multica](https://github.com/multica-ai/multica), [coleam00/Archon](https://github.com/coleam00/Archon), and [snarktank/ralph](https://github.com/snarktank/ralph) all address repeatable, stateful, or team-oriented AI coding workflows.
-- General AI and applied AI remained broad, spanning agent research, Claude examples, financial-market modeling, AI hedge-fund simulation, voice synthesis, Blender MCP, and deepfake media tooling.
-- Practical conversion and knowledge-resource projects also held visible positions through [microsoft/markitdown](https://github.com/microsoft/markitdown) and [TapXWorld/ChinaTextbook](https://github.com/TapXWorld/ChinaTextbook).
-- The same families seen in the prior run remain present, but today's ordering puts Claude Code guidance and memory/context tooling even more prominently near the top.
+- Claude Code behavior and memory remain a visible cluster: [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills), [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem), and [Donchitos/Claude-Code-Game-Studios](https://github.com/Donchitos/Claude-Code-Game-Studios) all package coding-agent operation into reusable repository artifacts.
+- Agent infrastructure is broader than prompt files: [obra/superpowers](https://github.com/obra/superpowers), [vercel-labs/open-agents](https://github.com/vercel-labs/open-agents), and [lsdefine/GenericAgent](https://github.com/lsdefine/GenericAgent) point at skills, cloud-agent templates, and self-evolving agents as concrete implementation surfaces.
+- Applied AI remains mixed across voice, finance, education, and file classification through [jamiepine/voicebox](https://github.com/jamiepine/voicebox), [virattt/ai-hedge-fund](https://github.com/virattt/ai-hedge-fund), [Lordog/dive-into-llms](https://github.com/Lordog/dive-into-llms), and [google/magika](https://github.com/google/magika).
+- The board is not AI-only: [chrislgarry/Apollo-11](https://github.com/chrislgarry/Apollo-11), [public-apis/public-apis](https://github.com/public-apis/public-apis), and [pascalorg/editor](https://github.com/pascalorg/editor) show the default global feed still mixes historical source-code interest, utility catalogs, and product/editor tooling.
 
 ## Watchlist
 
-- Watch whether Claude Code guidance and memory repos keep recurring near the top: [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills), [shanraisshan/claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice), [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem), and [gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done).
-- Track whether agent operations projects such as [multica-ai/multica](https://github.com/multica-ai/multica), [coleam00/Archon](https://github.com/coleam00/Archon), and [snarktank/ralph](https://github.com/snarktank/ralph) persist beyond a short spike.
-- Keep [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) in view because it again led the board by a wide margin.
-- Note whether media and voice tools such as [jamiepine/voicebox](https://github.com/jamiepine/voicebox), [ahujasid/blender-mcp](https://github.com/ahujasid/blender-mcp), and [hacksider/Deep-Live-Cam](https://github.com/hacksider/Deep-Live-Cam) continue as separate applied-AI signals.
+- Watch whether Claude Code operating artifacts keep dominating the top of the default board, especially [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills), [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem), and [Donchitos/Claude-Code-Game-Studios](https://github.com/Donchitos/Claude-Code-Game-Studios).
+- Track whether agent framework/template projects [obra/superpowers](https://github.com/obra/superpowers), [vercel-labs/open-agents](https://github.com/vercel-labs/open-agents), and [lsdefine/GenericAgent](https://github.com/lsdefine/GenericAgent) remain visible after the current spike.
+- Keep [google/magika](https://github.com/google/magika) in view as practical AI infrastructure rather than end-user agent UX.
+- Treat [public-apis/public-apis](https://github.com/public-apis/public-apis) and [chrislgarry/Apollo-11](https://github.com/chrislgarry/Apollo-11) as reminders that the global trending feed is a mixed signal, useful for context but not a pure AI radar.

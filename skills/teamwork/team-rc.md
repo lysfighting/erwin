@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.12.1"
+version: "3.13.0"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -913,6 +913,86 @@ options:
 If "中止" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
+### Step P4.5: Rebuild RC on Production (squash-only mode)
+
+**Why this exists**: In squash-only release repos (e.g., `pre-launch` → `main` where every release is a squash merge), `main` and the base branch re-diverge after every release. The merge-base between `rc/VERSION` and `main` stays rooted at the original fork point, so the release PR conflicts with every direct-to-main change in history. This step rebuilds `rc/VERSION` on top of `main` HEAD via `git commit-tree` so the PR becomes a clean fast-forward.
+
+**When this runs**: Only when BOTH:
+1. `BASE_BRANCH != PROD_BRANCH` (dual-branch mode), AND
+2. `config.yml` has `release.strategy: rebuild-on-prod` (explicit opt-in; default `cut-only` preserves legacy behavior for single-branch or develop→main repos)
+
+```bash
+REBUILD_STRATEGY=$(bash ~/.claude/commands/scripts/tw-config.sh release.strategy "cut-only")
+
+if [ "$BASE_BRANCH" = "$PROD_BRANCH" ] || [ "$REBUILD_STRATEGY" != "rebuild-on-prod" ]; then
+  echo "Rebuild step skipped (strategy=$REBUILD_STRATEGY, base=$BASE_BRANCH, prod=$PROD_BRANCH)"
+  # Jump to Step P5
+else
+  # Dry-run first to preview main-only files that would be deleted
+  DRY_OUTPUT=$(bash ~/.claude/commands/scripts/tw-git.sh rebuild-rc-on-prod \
+    "$RC_BRANCH" "$PROD_BRANCH" "$VERSION" --dry-run)
+fi
+```
+
+**Parse `DRY_OUTPUT`** (AI step, KV format):
+
+- `OLD_SHA=<sha>` — current `origin/$RC_BRANCH` sha
+- `NEW_SHA=<sha>` — sha of the rebuilt commit
+- `MAIN_ONLY_FILES<<EOF ... EOF` — heredoc-framed list of files present on `$PROD_BRANCH` but not on `$RC_BRANCH` (empty line `MAIN_ONLY_FILES=` if none)
+- `STATUS=<dry-run|already-fast-forwardable>`
+
+**If `STATUS=already-fast-forwardable`**: No rebuild needed — skip to Step P5.
+
+**Display preview**:
+
+**REBUILD RC** ── *{RC_BRANCH}* → *{PROD_BRANCH}* ────────────
+  Old rc SHA: `{OLD_SHA[0:12]}`
+  New rc SHA: `{NEW_SHA[0:12]}`
+  Main-only files to be deleted: `{count}`
+{if MAIN_ONLY_FILES non-empty, list each on its own indented line wrapped in backticks}
+────────────────────────────────────────────────────────────
+
+**If `MAIN_ONLY_FILES` is non-empty**, use `AskUserQuestion`:
+```
+question: "确认删除上述 main-only 文件并 rebuild？"
+options:
+  - label: "执行 rebuild"
+    description: "提交新 commit 到 rc 分支，这些 main-only 文件将从 rc 消失"
+  - label: "先 cherry-pick 再来"
+    description: "中止 promote，手工把这些文件 backport 到 rc 后重新 /team-rc promote"
+  - label: "中止"
+    description: "取消本次 promote"
+```
+
+If "先 cherry-pick 再来" or "中止" → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+**If `MAIN_ONLY_FILES` is empty OR user confirmed**, execute the real rebuild:
+
+```bash
+# Rollback hint — capture OLD_SHA so the user can restore if something goes wrong
+echo "  [rollback] If needed: git push origin $OLD_SHA:$RC_BRANCH --force-with-lease"
+
+REAL_OUTPUT=$(bash ~/.claude/commands/scripts/tw-git.sh rebuild-rc-on-prod \
+  "$RC_BRANCH" "$PROD_BRANCH" "$VERSION")
+
+# Verify STATUS=pushed (real run uses --force-with-lease internally)
+if ! echo "$REAL_OUTPUT" | grep -q "^STATUS=pushed$"; then
+  echo "ERROR: Rebuild did not complete"
+  # STOP
+fi
+
+# Parse NEW_SHA from REAL_OUTPUT (may differ from dry-run if prod advanced between runs)
+NEW_SHA=$(echo "$REAL_OUTPUT" | grep '^NEW_SHA=' | sed 's/^NEW_SHA=//')
+```
+
+Output: *{RC_BRANCH}* rebuilt on *{PROD_BRANCH}* at `{NEW_SHA[0:12]}` (rollback SHA: `{OLD_SHA[0:12]}`)
+
+If rebuild fails → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+{^ The real run re-fetches and recomputes OLD_SHA internally. If someone else pushed to RC between dry-run and this step, --force-with-lease aborts safely — no data loss.}
+
 ### Step P5: Generate Release Notes
 
 **Why not `--generate-notes`**: GitHub's auto-generate relies on PRs visible from `main`. After squash merge, `main` sees only the release PR itself — all original PR authors and links are lost. We reconstruct from the base branch's merged PR history instead.
@@ -926,7 +1006,14 @@ PREV_TAG=$(git tag --sort=-v:refname --list "${VERSION_PREFIX}*" \
   | grep -E "^$(echo "$VERSION_PREFIX" | sed 's/[.[\*^$()+?{|\\]/\\&/g')\.[0-9]+$" \
   | head -1)
 if [ -n "$PREV_TAG" ]; then
-  PREV_DATE=$(git log -1 --format='%aI' "$PREV_TAG" 2>/dev/null)
+  # IMPORTANT: normalize to UTC Z format. git log --format=%aI emits local-tz ISO
+  # like 2026-04-14T20:38:18+08:00; GitHub API mergedAt is always UTC Z like
+  # 2026-04-14T14:51:49Z. String-compare across the two formats silently drops
+  # PRs merged in the offset window (e.g. UTC 12:38–20:38 vanished in +08:00).
+  PREV_TS=$(git log -1 --format='%at' "$PREV_TAG" 2>/dev/null)
+  PREV_DATE=$(date -u -r "$PREV_TS" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null \
+             || date -u -d "@$PREV_TS" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null \
+             || echo "2000-01-01T00:00:00Z")
 else
   PREV_DATE="2000-01-01T00:00:00Z"
 fi
@@ -938,7 +1025,7 @@ PR_JSON=$(gh pr list --base "$BASE_BRANCH" --state merged \
 
 **Filter + categorize** (AI step — deterministic filtering, judgment-based categorization):
 
-1. **Filter by date**: From `PR_JSON`, include ONLY PRs where `mergedAt > PREV_DATE`. This is critical — without filtering, release notes would include all historical PRs, not just this release's.
+1. **Filter by date**: From `PR_JSON`, include ONLY PRs where `mergedAt > PREV_DATE`. Both values are UTC Z format (e.g. `2026-04-14T14:51:49Z`), so a direct string comparison is also a valid instant comparison. This is critical — without filtering, release notes would include all historical PRs, not just this release's.
 2. **Categorize by commit type prefix** in PR title: `feat:` → Features, `fix:` → Bug Fixes, everything else → Other Changes. PRs without a type prefix go to Other Changes.
 3. **Collect contributors**: unique authors with PR count.
 

@@ -114,6 +114,13 @@
 - **Meeting position briefings stay on the same Go control plane**: the new layer is derived from the existing `positions` meeting state plus live coverage/wave/debate calculations rather than inventing a separate council-progress model; default `meetings add-position` JSON remains unchanged for exact inspection and tooling
 - **Human-facing verification now covers source and packaged-binary council-position paths**: teammate smoke now proves `meetings add-position --brief` explains remaining independent-review coverage for a live council, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
+**Session 2026-04-17** — Knowledge Surface Research Cockpit v1 proposal landed
+
+- **Knowledge surface upgrade is now a formal proposal**: `docs/proposals/knowledge-surface-research-cockpit-v1.md` records the decision to evolve `docs/index.html` from a static briefing into a local Research Cockpit backed by Vite/React/TypeScript and a small Go read-only service
+- **Design benchmark evidence is captured in the repo**: the proposal records the specific patterns to borrow from NotebookLM, Readwise Reader, Linear, Raycast, Heptabase, Obsidian Canvas, Capacities, and Tana without turning v1 into a database, SaaS, or browser AI chat product
+- **Next implementation step is bounded**: future work should open a dedicated implementation worktree, strengthen `docs/knowledge/index.json`, add the Go API, add the frontend surface, and keep `docs/index.html` as a fallback launch/briefing page
+- **No UI prototype was implemented in this session**: this session intentionally landed the proposal artifact and navigation only, so the next session can build from a stable repo-backed plan instead of transient thread context
+
 **Session 2026-04-14** — Daily and trending radar stream entrypoints added
 
 - **Daily radar now has a directory-level contract**: `docs/radar/daily/README.md` documents dated files, `latest.md`, 7-day windows, first-party source priority, secondary ecosystem evidence, and knowledge-surface refresh expectations
