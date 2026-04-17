@@ -57,7 +57,7 @@ assert_contains() {
   local text="$1"
   local needle="$2"
   local label="$3"
-  if echo "$text" | grep -q "$needle"; then
+  if grep -Fq -- "$needle" <<<"$text"; then
     pass "$label"
   else
     fail "$label"
@@ -113,6 +113,18 @@ ship_status_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harne
 rc_list_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-rc.sh list --brief)
 run_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.sh get "$run_id" --brief)
 run_authority_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-runs.sh authority-audit "$run_id" --brief)
+rc_seed_merge_output=$(
+  cd "$TEST_REPO" &&
+    PATH="$NO_GO_PATH" ./scripts/harness-runs.sh update "$run_id" <<'EOF'
+{
+  "ship_status": "merged"
+}
+EOF
+)
+rc_create_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-rc.sh create v9.10.1 "$run_id")
+packaged_rc_id=$(printf '%s\n' "$rc_create_output" | sed -n 's/^[[:space:]]*"rc_id": "\(rc-[^"]*\)",$/\1/p' | head -n1)
+rc_active_list_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-rc.sh list --brief)
+rc_get_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-rc.sh get "$packaged_rc_id" --brief)
 teammate_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh assign "$run_id" worker-packaged packaged-helper "Check packaged runtime teammate brief" --scope="packaged teammate" --owns=scope:packaged-teammate --report="progress|verification")
 teammate_run_id=$(printf '%s\n' "$teammate_output" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
 teammate_assign_brief_output=$(cd "$TEST_REPO" && PATH="$NO_GO_PATH" ./scripts/harness-teammates.sh assign "$run_id" worker-packaged-brief packaged-helper "Check packaged runtime teammate assignment brief" --scope="packaged teammate brief" --owns=scope:packaged-teammate-brief --report="progress|verification" --brief)
@@ -204,6 +216,11 @@ assert_contains "$ship_status_brief_output" 'Harness Ship Status Briefing' "ship
 assert_contains "$ship_status_brief_output" "Run: $run_id" "packaged ship status brief names the run without Go"
 assert_contains "$rc_list_brief_output" 'Harness RC List Briefing' "rc list --brief works via packaged binary without Go"
 assert_contains "$rc_list_brief_output" 'No RC is currently recorded for this scope.' "packaged rc list brief explains idle rc state without Go"
+assert_contains "$rc_seed_merge_output" '"ship_status": "merged"' "packaged run can seed merged state for active RC coverage without Go"
+assert_contains "$rc_create_output" '"state": "active"' "rc create works via packaged binary without Go"
+assert_contains "$rc_active_list_brief_output" '1 active RC' "packaged rc list brief explains active rc state without Go"
+assert_contains "$rc_get_brief_output" 'Harness RC Briefing' "rc get --brief works via packaged binary without Go"
+assert_contains "$rc_get_brief_output" 'Version: v9.10.1' "packaged rc get brief preserves active rc version without Go"
 assert_contains "$teammate_assign_brief_output" 'Harness Teammate Assignment Briefing' "teammates assign --brief works via packaged binary without Go"
 assert_contains "$teammate_assign_brief_output" 'Teammate: worker-packaged-brief' "packaged teammate assignment brief preserves the delegated owner without Go"
 assert_contains "$teammate_brief_output" 'Teammate: worker-packaged' "teammates get --brief works via packaged binary without Go"

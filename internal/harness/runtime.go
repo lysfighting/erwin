@@ -16892,18 +16892,28 @@ func shipStatusPacket(run map[string]any) map[string]any {
 
 func shipStatusCurrent(status map[string]any) string {
 	runID := firstNonBlank(strings.TrimSpace(stringValue(status["run_id"])), "unknown")
-	switch firstNonBlank(strings.TrimSpace(stringValue(status["ship_status"])), "unstarted") {
+	shipStatus := firstNonBlank(strings.TrimSpace(stringValue(status["ship_status"])), "unstarted")
+	verificationStatus := firstNonBlank(strings.TrimSpace(stringValue(status["verification_status"])), "unknown")
+	reviewStatus := firstNonBlank(strings.TrimSpace(stringValue(status["review_status"])), "unknown")
+	checksStatus := firstNonBlank(strings.TrimSpace(stringValue(status["checks_status"])), "unknown")
+	switch shipStatus {
 	case "ready":
+		if verificationStatus != "passed" {
+			return fmt.Sprintf("Run %s is marked ready, but verification=%s; gate truth must be repaired before push or PR creation.", runID, verificationStatus)
+		}
 		return fmt.Sprintf("Run %s is verified and ready for branch push or PR creation.", runID)
 	case "pushed":
 		return fmt.Sprintf("Run %s has pushed its branch and should move into PR review.", runID)
 	case "in_review":
 		return fmt.Sprintf("Run %s is in PR review and still depends on review/check gates.", runID)
 	case "approved":
+		if verificationStatus != "passed" {
+			return fmt.Sprintf("Run %s is marked approved, but verification=%s; gate truth blocks merge.", runID, verificationStatus)
+		}
 		if boolValue(status["merge_ready"]) {
 			return fmt.Sprintf("Run %s is merge-ready: review is approved and checks have passed.", runID)
 		}
-		return fmt.Sprintf("Run %s is approved but at least one merge gate is still not aligned.", runID)
+		return fmt.Sprintf("Run %s is marked approved, but review=%s, checks=%s, merge_ready=false; gate truth blocks merge.", runID, reviewStatus, checksStatus)
 	case "merged":
 		return fmt.Sprintf("Run %s is merged and can feed RC or cleanup work.", runID)
 	default:
@@ -16911,7 +16921,36 @@ func shipStatusCurrent(status map[string]any) string {
 	}
 }
 
+func shipStatusGateAction(status map[string]any) string {
+	shipStatus := firstNonBlank(strings.TrimSpace(stringValue(status["ship_status"])), "unstarted")
+	verificationStatus := firstNonBlank(strings.TrimSpace(stringValue(status["verification_status"])), "unknown")
+	reviewStatus := firstNonBlank(strings.TrimSpace(stringValue(status["review_status"])), "unknown")
+	checksStatus := firstNonBlank(strings.TrimSpace(stringValue(status["checks_status"])), "unknown")
+	switch shipStatus {
+	case "ready", "pushed", "in_review", "approved":
+		if verificationStatus != "passed" {
+			return fmt.Sprintf("Record passing verification before advancing release status; current verification gate is %s.", verificationStatus)
+		}
+	}
+	if shipStatus == "approved" && !boolValue(status["merge_ready"]) {
+		switch {
+		case reviewStatus != "approved" && checksStatus != "passed":
+			return fmt.Sprintf("Hold merge until review and checks gates are green; current review=%s, checks=%s.", reviewStatus, checksStatus)
+		case reviewStatus != "approved":
+			return fmt.Sprintf("Hold merge until review is approved; current review gate is %s.", reviewStatus)
+		case checksStatus != "passed":
+			return fmt.Sprintf("Hold merge until checks pass; current checks gate is %s.", checksStatus)
+		default:
+			return "Wait for remaining review/check gates before merge."
+		}
+	}
+	return ""
+}
+
 func shipStatusLeaderAction(status map[string]any) string {
+	if gateAction := shipStatusGateAction(status); gateAction != "" {
+		return gateAction
+	}
 	next := strings.TrimSpace(stringValue(status["next_expected_action"]))
 	if next != "" {
 		return next

@@ -23,7 +23,7 @@ assert_contains() {
   local text="$1"
   local needle="$2"
   local label="$3"
-  if grep -q "$needle" <<<"$text"; then
+  if grep -Fq -- "$needle" <<<"$text"; then
     pass "$label"
   else
     fail "$label"

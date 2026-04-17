@@ -30,6 +30,7 @@ When a fresh session needs the fastest human-readable orientation before diving 
 Current human-direct entry stack:
 
 - `bash scripts/harness-home.sh --brief`
+- `bash scripts/harness-doctor.sh --brief`
 - `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE] --brief`
 - `bash scripts/harness-drive.sh start RUN_ID --brief`
 - `bash scripts/harness-drive.sh report RUN_ID "progress checkpoint" --brief`
@@ -37,6 +38,9 @@ Current human-direct entry stack:
 - `bash scripts/harness-drive.sh wait RUN_ID "reason" --brief`
 - `bash scripts/harness-drive.sh block RUN_ID "reason" --brief`
 - `bash scripts/harness-drive.sh complete RUN_ID "summary" --brief`
+- `bash scripts/harness-drive.sh meeting RUN_ID QUESTION --brief`
+- `bash scripts/harness-drive.sh meeting-close RUN_ID MEETING_ID [NOTE] --brief`
+- `bash scripts/harness-drive.sh adopt-meeting RUN_ID MEETING_ID --brief`
 - `bash scripts/harness-drive.sh resolve-follow-up RUN_ID [FOLLOW_UP_PACKET_ID] [STATE] --brief`
 - `bash scripts/harness-missions.sh schedule --brief`
 - `bash scripts/harness-missions.sh graph --brief`
@@ -47,7 +51,15 @@ Current human-direct entry stack:
 - `bash scripts/harness-runs.sh authority-audit RUN_ID --brief`
 - `bash scripts/harness-signals.sh active [MISSION_ID] --brief`
 - `bash scripts/harness-signals.sh adjudicate SIGNAL_ID|--all --brief`
+- `bash scripts/harness-teammates.sh assign PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE] --brief`
 - `bash scripts/harness-teammates.sh get TEAMMATE_RUN_ID --brief`
+- `bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID SUMMARY --brief`
+- `bash scripts/harness-teammates.sh link RUN_A RUN_B [REASON] --brief`
+- `bash scripts/harness-teammates.sh message SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY --brief`
+- `bash scripts/harness-teammates.sh escalate TEAMMATE_RUN_ID QUESTION --brief`
+- `bash scripts/harness-ship.sh status RUN_ID --brief`
+- `bash scripts/harness-rc.sh list --brief`
+- `bash scripts/harness-rc.sh get RC_ID --brief`
 - `bash scripts/harness-meetings.sh summary MEETING_ID --brief`
 - `bash scripts/harness-meetings.sh lock-decision MEETING_ID TEXT --brief`
 - `bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID PHASE STANCE TEXT --brief`

@@ -118,6 +118,8 @@ The manifest is allowed to evolve, but these categories are part of the durable 
 The adapter must expose first-class surfaces for:
 
 - `missions`
+- `runs`
+- `signals`
 - `issue`
 - `claim`
 - `drive`

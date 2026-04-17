@@ -7,14 +7,22 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-16
-- **Last Session**: 2026-04-16-K (Extended the human-facing leader layer into release status)
+- **Last Updated**: 2026-04-17
+- **Last Session**: 2026-04-17-A (Hardened release briefings and merge readiness)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-17-A** — Hardened release briefings and merge readiness
+
+- **Release status briefings now fail safe on gate drift**: `ship status --brief` now lets verification, review, checks, and merge readiness override stale `next_expected_action` text when ship state is optimistic but gates disagree
+- **Release verification now proves the preserved JSON contract**: release smoke asserts default JSON for `ship status`, `rc list`, and `rc get`, then proves the human briefing blocks merge guidance in an inconsistent gate state
+- **Packaged-runtime coverage now includes active RC detail**: runtime-distribution smoke creates an RC without Go in `PATH`, checks active `rc list --brief`, and checks `rc get RC_ID --brief`
+- **Canonical surfaces now match runtime**: `docs/harness-session-handoff.md` lists the full current human-direct `--brief` stack, and `docs/harness-public-contract.md` includes `runs` and `signals` among first-class surfaces
+- **Branch integration was advanced**: `codex/harness-100` was merged into `codex/harness-100-leader-briefing`, with journal conflicts resolved toward the newer human-briefing truth while preserving the explainer session history from the base Harness line
 
 **Session 2026-04-16-K** — Extended the human-facing leader layer into `ship status --brief` and `rc list/get --brief`
 
@@ -258,6 +266,19 @@
 - **OpenAI's strongest in-window move stayed operational rather than model-centric**: the radar note records OpenAI's April 2 `Codex` seat and rate-card update as further evidence that coding-agent execution is being sold and governed as its own runtime surface.
 - **Google drove the strongest product motion this week**: April 2 and April 7 posts were consolidated into a clearer read that Google is simultaneously lowering the cost of terminal agentic coding and making on-device agent workflows concrete through Gemma 4, AI Edge Gallery, and LiteRT-LM.
 - **Anthropic coverage remained deliberate even without an in-window launch**: the run explicitly checked Anthropic's public technical surfaces and recorded that the newest visible Engineering posts remain March 24 and March 25, keeping official-source silence visible instead of silently dropping Anthropic from the radar.
+
+**Session 2026-04-08-B** — Aligned fresh-session and skills entrypoints with the new Harness explainer
+
+- **Fresh-session start order now leads with the explainer**: `docs/harness-session-handoff.md` now treats `docs/harness-explainer.md` as the fastest human-readable orientation layer before the deeper architecture and package docs, and it no longer points readers at an obsolete release branch when asking them to inspect recent commits
+- **Top-level skills index now matches current Harness truth**: `skills/README.md` now describes `Harness` as a stable `1.0.0` leader-led orchestration surface instead of an older prototype, and it points readers to the explainer directly from the skills entrypoint
+- **Explainer discoverability is now cleaner across human entrypoints**: the repo now has a more consistent path from `README.md` -> `docs/harness-explainer.md` -> `docs/harness-session-handoff.md` / `skills/README.md`, so readers no longer need to infer whether they should start from a runtime-heavy handoff or an outdated skill index
+
+**Session 2026-04-08-A** — Added a durable human-readable Harness explainer and linked it from the main entrypoints
+
+- **Readable overview is now part of the canonical doc system**: `docs/harness-explainer.md` now explains what `Harness` is, what problem it solves, how it is designed, how the control plane works, and how to use it, instead of forcing readers to infer those answers from architecture and runtime docs alone
+- **The explainer is genuinely visual and durable**: the new doc includes Mermaid diagrams plus simplified ASCII fallbacks for the identity/layer model, operating model, and usage flow, so it remains readable both in rich Markdown renderers and plain text contexts
+- **Harness entrypoints now route people to the right place**: `README.md`, `docs/README.md`, `docs/harness-documentation-map.md`, `harness/README.md`, and `skills/harness/README.md` now all point to the explainer as the best first stop for humans who want to understand Harness before diving into the deeper canonical docs
+
 **Session 2026-04-03** — Daily radar captured Codex seat economics, Google agent surface convergence, and provider reliability pressure
 
 - **Daily radar note added for 2026-04-03**: `docs/radar/daily/2026-04-03.md` now records the 2026-03-27 to 2026-04-03 signal window with first-party sources from OpenAI, Google, Qwen, and DeepSeek plus a separate GitHub Trending snapshot

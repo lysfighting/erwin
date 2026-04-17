@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — Harness Human Interface
+- **Release status briefings now treat gate truth as authoritative**: `ship status --brief` now blocks stale push/merge guidance when verification, review, checks, or merge readiness disagree with an optimistic ship state.
+- **Release-status smoke now proves both human and machine contracts**: release smoke directly asserts default JSON for `ship status`, `rc list`, and `rc get`, plus the gate-conflict briefing path; runtime-distribution smoke now proves active `rc get --brief` through the packaged binary without Go in `PATH`.
+- **Canonical human-direct surfaces are now complete**: `docs/harness-session-handoff.md` lists the current `--brief` entry stack, and the public contract now includes `runs` and `signals` as first-class adapter surfaces.
+
 ### Added — Harness Human Interface
 - **Harness release state now has human-readable status entrypoints**: `bash scripts/harness-ship.sh status RUN_ID --brief`, `bash scripts/harness-rc.sh list --brief`, and `bash scripts/harness-rc.sh get RC_ID --brief` now project ship gates, tracked PR/RC refs, RC branch/version/run membership, staged verification state, and next release action directly from the same Go runtime state while leaving default ship/RC JSON unchanged.
 - **Harness teammate link creation now has a human-readable leader entrypoint**: `bash scripts/harness-teammates.sh link RUN_A RUN_B [REASON] --brief` now projects the approved peer link, connected scopes, updated communication peers, and the explicit no-ownership-transfer boundary directly from the same Go linkage mutation while leaving default link JSON unchanged.
