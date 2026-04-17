@@ -15,7 +15,7 @@
 
 - 💡 `intelligent-deferral` — 为 drive-skill 增加"智慧延迟"机制：当 Claude 判断某件事不适合在当前空间/session 中执行（上下文不对、scope 溢出、需要不同工具链、或当前任务优先级更高），不应该遗忘或草率处理，而应触发一个 **Deferral Protocol**，将意图完整捕获到 `_project/ideas/INBOX.md`（或指定目标文件）。捕获内容必须包含：(1) 要做什么（具体行动描述）；(2) 为什么要做（动机和预期价值）；(3) 为什么现在不做（触发延迟的判断理由）；(4) 最佳执行时机/条件；(5) 相关上下文（文件路径、代码片段、对话要点）。哲学锚点：**塞涅卡（Seneca）**"论生命之短促"——真正的时间智慧不是永远行动，而是在对的时机做对的事；结合 drive-skill 已有的 **知行合一（王阳明）**——知行合一的前提是「知」的完整保存，当行动时机未到，「知」必须被高保真地记录下来，否则延迟就变成了遗忘，遗忘就是认知损失。这个机制本质上是知行合一的补集：**知而暂不行，行需待时机，但知不可失。** — 2026-03-03
 
-- 💡 `team-fleet` — `/team fleet` sub-command for multi-mission teamwork orchestration: team-lead + feature-lead × N + persistent worktrees + Mode-A first-checkpoint gate. Fills the gap between `/team auto #N` (single-mission) and flat swarm dispatchers (claude-code-swarm, Anthropic Agent Teams) — nested lead hierarchy + contract discipline + checkpoint gate is the combination nobody else ships. n=1 validated on vi_agent #1298 / #1299 / #1302 (all merged, 2026-04-16). Sprout spec: `ideas/skills/team-fleet.md`; session evidence pack: `ideas/skills/team-fleet-appendix-session-2026-04-16.md`. — 2026-04-16
+- 💡 `team-fleet` — `/team fleet` sub-command for multi-mission teamwork orchestration: team-lead + feature-lead × N + persistent worktrees + Mode-A first-checkpoint gate. Fills the gap between `/team auto #N` (single-mission) and flat swarm dispatchers (claude-code-swarm, Anthropic Agent Teams) — nested lead hierarchy + contract discipline + checkpoint gate is the combination nobody else ships. n=1 validated on vi_agent #1298 / #1299 / #1302 (all merged, 2026-04-16). Sprout spec: `ideas/skills/team-fleet.md`; session evidence pack: `ideas/skills/team-fleet-appendix-session-2026-04-16.md`. — 2026-04-16 → **🔀 RELOCATED** (2026-04-17) to `docs/knowledge/multi-mission-coordination-patterns-2026-04-16.md`. Decision trail in `_project/archive/sessions/2026-04-17-B.md`.
 
 ---
 
@@ -24,3 +24,11 @@
 | Idea | Promoted To | Date |
 |------|------------|------|
 | version-management-skill | meta/project-management-template.md | 2026-03-02 |
+
+---
+
+## Relocated (Sprout explored → pattern absorbed into `docs/knowledge/`, not developed as skill)
+
+| Idea | Relocated To | Decision Trail | Date |
+|------|-------------|----------------|------|
+| team-fleet | `docs/knowledge/multi-mission-coordination-patterns-2026-04-16.md` | `_project/archive/sessions/2026-04-17-B.md` | 2026-04-17 |

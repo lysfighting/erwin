@@ -1,9 +1,15 @@
 # Idea: team-fleet — multi-mission teamwork orchestration
 
-- **Stage**: Sprout 🌿
+- **Stage**: 🔀 **RELOCATED** (2026-04-17) — pattern absorbed into [`docs/knowledge/multi-mission-coordination-patterns-2026-04-16.md`](../../../docs/knowledge/multi-mission-coordination-patterns-2026-04-16.md). This file preserved as **historical exploration**, not current truth.
 - **Created**: 2026-04-16
-- **ADR**: (pending Plant promotion — requires n≥2 pattern validation)
-- **Issue**: (pending build kickoff)
+- **ADR**: not written — RELOCATE decision per review session [`_project/archive/sessions/2026-04-17-B.md`](../../archive/sessions/2026-04-17-B.md)
+- **Issue**: not created
+
+> **Why RELOCATED, not PROMOTED**: 9 framing/integration/premise Gaps in this Sprout + 4 strong Plant-readiness dimensions missing (security / cost / auditability / concurrency) + n=1 evidence below the Sprout's own AC#1 threshold + `GOALS.md` designates teamwork as legacy. Session 2 data (`teammate-work-2`) also exposed that this Sprout's parallel-only framing is too narrow — the real pattern is a **mission DAG** with the team-lead as shared-context carrier. Relocating the invariants into `docs/knowledge/` preserves their value without encoding the narrow framing or violating the Skills-lane policy.
+>
+> **Current home of the pattern**: [`docs/knowledge/multi-mission-coordination-patterns-2026-04-16.md`](../../../docs/knowledge/multi-mission-coordination-patterns-2026-04-16.md). Read there for the current invariant list and honest caveats.
+>
+> **This file remains as-is below** because the Problem / Hypothesis / Key Questions / Acceptance Criteria / Integration Points content traces the original exploration. Do NOT use it as current design guidance — the RELOCATE decision supersedes it. If multi-mission orchestration ever tips back toward needing a skill, frame a **fresh idea entry around mission DAG execution**, not a revival of this fleet framing.
 
 ---
 
