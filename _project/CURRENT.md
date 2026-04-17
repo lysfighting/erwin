@@ -7,14 +7,21 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-14
-- **Last Session**: 2026-04-14 (daily and trending radar stream entrypoints added)
+- **Last Updated**: 2026-04-17
+- **Last Session**: 2026-04-17 (Knowledge Surface Research Cockpit v1 proposal landed)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-17** — Knowledge Surface Research Cockpit v1 proposal landed
+
+- **Knowledge surface upgrade is now a formal proposal**: `docs/proposals/knowledge-surface-research-cockpit-v1.md` records the decision to evolve `docs/index.html` from a static briefing into a local Research Cockpit backed by Vite/React/TypeScript and a small Go read-only service
+- **Design benchmark evidence is captured in the repo**: the proposal records the specific patterns to borrow from NotebookLM, Readwise Reader, Linear, Raycast, Heptabase, Obsidian Canvas, Capacities, and Tana without turning v1 into a database, SaaS, or browser AI chat product
+- **Next implementation step is bounded**: future work should open a dedicated implementation worktree, strengthen `docs/knowledge/index.json`, add the Go API, add the frontend surface, and keep `docs/index.html` as a fallback launch/briefing page
+- **No UI prototype was implemented in this session**: this session intentionally landed the proposal artifact and navigation only, so the next session can build from a stable repo-backed plan instead of transient thread context
 
 **Session 2026-04-14** — Daily and trending radar stream entrypoints added
 
