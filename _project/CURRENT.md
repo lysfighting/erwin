@@ -8,13 +8,21 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-17
-- **Last Session**: 2026-04-17-B (five-layer operating model added)
+- **Last Session**: 2026-04-17-C (knowledge network index added)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-17-C** — Knowledge network index added
+
+- **The five-layer system now has a machine-readable graph snapshot**: `docs/knowledge/index.json` includes `knowledge_network.artifacts`, `knowledge_network.links`, `knowledge_network.threads`, and `knowledge_network.proposal_records`
+- **The generated surface now shows network health**: `docs/index.html` and `docs/knowledge/briefing.md` display artifact, link, thread, and proposal-record counts so the system is visible without reading raw JSON first
+- **The graph stays repo-owned and Markdown-backed**: `scripts/build-knowledge-surface.py` derives nodes from Radar, Feedback, Knowledge, Proposals, and selected Implementation entrypoints; Markdown remains the source of truth
+- **Operating docs now name the contract**: `docs/erwin-operating-model.md`, `docs/knowledge/README.md`, and `docs/README.md` document the generated graph as the handoff interface for future agents and cockpit UI work
+- **Next sessions should consume the index instead of reconstructing cross-layer state from chat memory**: Knowledge Surface Cockpit work can read `docs/knowledge/index.json` as its local graph source, while Radar and Feedback sessions should rebuild it after changing stream or case files
 
 **Session 2026-04-17-B** — Five-layer operating model added
 

@@ -231,6 +231,7 @@ Use these when the question is about what was preserved, redesigned, or intentio
 ## Fresh Session Read Paths
 
 If the task involves radar signal, usage feedback, knowledge threads, proposal pressure, or cross-lane repo strategy, read [`docs/erwin-operating-model.md`](erwin-operating-model.md) before treating Harness as an isolated implementation system.
+For machine-readable cross-layer navigation, use [`docs/knowledge/index.json`](knowledge/index.json) and its `knowledge_network` section instead of reconstructing Radar / Feedback / Knowledge / Proposal relationships from chat memory.
 
 ### Path A: Continue Implementation Safely
 

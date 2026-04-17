@@ -59,6 +59,20 @@ The knowledge layer now exposes three coordinated reading surfaces:
 - [briefing.md](briefing.md) — fast text briefing
 - [index.json](index.json) — machine-readable state snapshot
 
+`index.json` now includes a lightweight typed knowledge network under `knowledge_network`:
+
+- `artifacts`
+  - file-backed nodes across `Radar`, `Feedback`, `Knowledge`, `Proposals`, and selected `Implementation` entrypoints
+- `links`
+  - typed local references extracted from Markdown links, such as evidence citation, proposal pressure, implementation targets, and ordinary references
+- `threads`
+  - parsed active knowledge threads from [active-threads.md](active-threads.md), including evidence classes, linked proposals, and anchor artifacts
+- `proposal_records`
+  - parsed rows from [../proposals/harness-proposal-ledger.md](../proposals/harness-proposal-ledger.md)
+
+The network is intentionally generated.
+Do not edit `index.json` directly; update the Markdown source or implementation anchor, then rebuild the surface.
+
 Rebuild them with:
 
 ```bash

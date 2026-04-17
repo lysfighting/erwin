@@ -45,7 +45,7 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 |----------|---------|
 | [index.html](index.html) | Visual knowledge surface for latest briefings and archive browsing |
 | [knowledge/briefing.md](knowledge/briefing.md) | Generated text-first briefing for the current knowledge surface |
-| [knowledge/index.json](knowledge/index.json) | Generated machine-readable knowledge index |
+| [knowledge/index.json](knowledge/index.json) | Generated machine-readable knowledge index, including typed artifacts, local links, active threads, and proposal records |
 | [feedback/README.md](feedback/README.md) | Structured Harness usage-feedback layer |
 | [feedback/harness-usage-case-template.md](feedback/harness-usage-case-template.md) | Canonical schema for normalized Harness usage cases |
 | [knowledge/README.md](knowledge/README.md) | Durable knowledge layer entrypoint |

@@ -11,6 +11,83 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DOCS_DIR = REPO_ROOT / "docs"
 RADAR_DIR = DOCS_DIR / "radar"
+FEEDBACK_DIR = DOCS_DIR / "feedback"
+KNOWLEDGE_DIR = DOCS_DIR / "knowledge"
+PROPOSALS_DIR = DOCS_DIR / "proposals"
+
+LAYER_DEFINITIONS = [
+    {
+        "id": "radar",
+        "name": "Radar",
+        "href": "radar/README.md",
+        "description": "External first-party signal, recurring notes, source policy, and the freshest field view.",
+    },
+    {
+        "id": "feedback",
+        "name": "Feedback",
+        "href": "feedback/README.md",
+        "description": "Structured Harness, Codex, and repo-process usage cases instead of raw session dumping.",
+    },
+    {
+        "id": "knowledge",
+        "name": "Knowledge",
+        "href": "knowledge/README.md",
+        "description": "Durable synthesis, active threads, timelines, concept maps, and topic continuity.",
+    },
+    {
+        "id": "proposals",
+        "name": "Proposals",
+        "href": "proposals/README.md",
+        "description": "Selective reviewed change candidates after evidence is mature enough.",
+    },
+    {
+        "id": "implementation",
+        "name": "Implementation",
+        "href": "../README.md",
+        "description": "Harness, Skills, evals, docs, automation, and surface changes made from reviewed pressure or explicit gaps.",
+    },
+]
+
+THEME_KEYWORDS = {
+    "harness": ["harness", "control plane", "leader", "teammate", "council"],
+    "long-running agents": ["long-running", "long running", "long-horizon", "long horizon"],
+    "agent evals": ["eval", "benchmark", "score", "review gate"],
+    "tracing/observability": ["trace", "tracing", "observability", "monitorability", "telemetry"],
+    "context engineering": ["context", "memory", "retrieval", "context window"],
+    "coding agents": ["coding agent", "codex", "claude code", "gemini cli", "developer agent"],
+    "tool use": ["tool use", "tools", "function call", "mcp", "adapter"],
+    "orchestration": ["orchestration", "scheduler", "workflow", "delegation", "multi-agent"],
+}
+
+GLOBAL_KNOWLEDGE_ARTIFACTS = [
+    "docs/README.md",
+    "docs/erwin-operating-model.md",
+]
+
+IMPLEMENTATION_ARTIFACTS = [
+    "AGENTS.md",
+    "README.md",
+    "CHANGELOG.md",
+    "_project/CURRENT.md",
+    "_project/GOALS.md",
+    "docs/harness-architecture.md",
+    "docs/harness-documentation-map.md",
+    "docs/harness-explainer.md",
+    "docs/harness-learning-loop.md",
+    "docs/harness-operating-model.md",
+    "docs/harness-public-contract.md",
+    "docs/harness-release-criteria.md",
+    "docs/harness-session-handoff.md",
+    "harness/README.md",
+    "skills/README.md",
+    "skills/harness/SKILL.md",
+    "skills/knowledge/SKILL.md",
+    "scripts/build-knowledge-surface.py",
+]
+
+GENERATED_MARKDOWN = {
+    "docs/knowledge/briefing.md",
+}
 
 
 def read_text(path: Path) -> str:
@@ -114,6 +191,417 @@ def count_files(directory: Path) -> int:
 
 def rel_path(path: Path) -> str:
     return path.relative_to(DOCS_DIR).as_posix()
+
+
+def repo_rel_path(path: Path) -> str:
+    return path.relative_to(REPO_ROOT).as_posix()
+
+
+def compact_text(value: str, limit: int = 220) -> str:
+    normalized = " ".join(value.split())
+    if len(normalized) <= limit:
+        return normalized
+    return normalized[: limit - 3].rstrip() + "..."
+
+
+def slugify(value: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    return slug or "untitled"
+
+
+def get_metadata_value(text: str, key: str) -> str:
+    patterns = [
+        rf"^\s*>\s*{re.escape(key)}\s*:\s*(.+?)\s*$",
+        rf"^\s*-\s*`?{re.escape(key)}`?\s*:\s*(.+?)\s*$",
+        rf"^\s*{re.escape(key)}\s*:\s*(.+?)\s*$",
+    ]
+    for line in text.splitlines():
+        for pattern in patterns:
+            match = re.match(pattern, line, flags=re.IGNORECASE)
+            if match:
+                return match.group(1).strip().strip("`").strip()
+    return ""
+
+
+def infer_date(path: Path, text: str) -> str:
+    filename_match = re.search(r"(20\d{2}-\d{2}-\d{2})", path.name)
+    if filename_match:
+        return filename_match.group(1)
+    return get_metadata_value(text, "date")
+
+
+def infer_layer(path: Path) -> str:
+    repo_path = repo_rel_path(path)
+    if repo_path.startswith("docs/radar/"):
+        return "radar"
+    if repo_path.startswith("docs/feedback/"):
+        return "feedback"
+    if repo_path.startswith("docs/proposals/"):
+        return "proposals"
+    if repo_path.startswith("docs/knowledge/") or repo_path in set(GLOBAL_KNOWLEDGE_ARTIFACTS):
+        return "knowledge"
+    return "implementation"
+
+
+def infer_themes(path: Path, text: str, title: str) -> list[str]:
+    haystack = f"{repo_rel_path(path)}\n{title}\n{text[:5000]}".lower()
+    themes: list[str] = []
+    for theme, keywords in THEME_KEYWORDS.items():
+        if any(keyword in haystack for keyword in keywords):
+            themes.append(theme)
+    return themes
+
+
+def artifact_summary(text: str) -> str:
+    for key in ("purpose", "symptom", "what_happened", "recommended_next_step"):
+        value = get_metadata_value(text, key)
+        if value:
+            return compact_text(value)
+
+    collected: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            if collected:
+                break
+            continue
+        if stripped.startswith(("#", ">", "|", "---")):
+            continue
+        if stripped.startswith("- `"):
+            continue
+        if stripped.startswith("- "):
+            stripped = stripped[2:].strip()
+        collected.append(stripped)
+        if len(" ".join(collected)) >= 220:
+            break
+    return compact_text(" ".join(collected))
+
+
+def normalize_local_ref(source_path: Path, href: str) -> str:
+    href = href.strip()
+    if not href or href.startswith("#"):
+        return ""
+    if re.match(r"^[a-z][a-z0-9+.-]*:", href, flags=re.IGNORECASE):
+        return ""
+
+    target_text = href.split("#", 1)[0].split("?", 1)[0]
+    if not target_text:
+        return ""
+
+    if target_text.startswith("/"):
+        absolute_candidate = Path(target_text)
+        try:
+            candidate = REPO_ROOT / absolute_candidate.relative_to(REPO_ROOT)
+        except ValueError:
+            parts = absolute_candidate.parts
+            if "erwin" in parts:
+                repo_index = parts.index("erwin")
+                candidate = REPO_ROOT / Path(*parts[repo_index + 1 :])
+            else:
+                candidate = absolute_candidate
+    else:
+        candidate = source_path.parent / target_text
+    candidate = candidate.resolve()
+
+    if candidate.is_dir():
+        readme_candidate = candidate / "README.md"
+        if not readme_candidate.exists():
+            return ""
+        candidate = readme_candidate
+    elif not candidate.exists():
+        readme_candidate = candidate / "README.md"
+        markdown_candidate = candidate.with_suffix(".md")
+        if readme_candidate.exists():
+            candidate = readme_candidate
+        elif candidate.suffix == "" and markdown_candidate.exists():
+            candidate = markdown_candidate
+        else:
+            return ""
+
+    try:
+        return repo_rel_path(candidate)
+    except ValueError:
+        return ""
+
+
+def extract_refs(path: Path, text: str) -> tuple[list[str], list[str]]:
+    external_refs: list[str] = []
+    local_refs: list[str] = []
+    for match in re.finditer(r"(?<!!)\[[^\]]+\]\(([^)]+)\)", text):
+        href = match.group(1).strip()
+        if href.startswith(("http://", "https://")):
+            if href not in external_refs:
+                external_refs.append(href)
+            continue
+        local_ref = normalize_local_ref(path, href)
+        if local_ref and local_ref not in local_refs:
+            local_refs.append(local_ref)
+    return external_refs[:12], local_refs
+
+
+def artifact_id(layer: str, repo_path: str) -> str:
+    return f"{layer}:{repo_path}"
+
+
+def scan_artifact_paths() -> list[Path]:
+    paths: list[Path] = []
+    for root in (RADAR_DIR, FEEDBACK_DIR, KNOWLEDGE_DIR, PROPOSALS_DIR):
+        if not root.exists():
+            continue
+        for path in sorted(root.rglob("*.md")):
+            repo_path = repo_rel_path(path)
+            if path.name == "latest.md" or repo_path in GENERATED_MARKDOWN:
+                continue
+            paths.append(path)
+
+    for repo_path in GLOBAL_KNOWLEDGE_ARTIFACTS + IMPLEMENTATION_ARTIFACTS:
+        path = REPO_ROOT / repo_path
+        if path.exists():
+            paths.append(path)
+
+    deduped = {repo_rel_path(path): path for path in paths}
+    return [deduped[key] for key in sorted(deduped)]
+
+
+def build_artifact(path: Path) -> dict[str, object]:
+    text = read_text(path)
+    title = get_title(text, path.stem.replace("-", " ").title()) if path.suffix == ".md" else path.name
+    layer = infer_layer(path)
+    external_refs, local_refs = extract_refs(path, text)
+    repo_path = repo_rel_path(path)
+    return {
+        "id": artifact_id(layer, repo_path),
+        "layer": layer,
+        "path": repo_path,
+        "title": title,
+        "date": infer_date(path, text),
+        "status": get_metadata_value(text, "status"),
+        "themes": infer_themes(path, text, title),
+        "summary": artifact_summary(text),
+        "external_refs": external_refs,
+        "local_refs": local_refs,
+    }
+
+
+def classify_link(source_layer: str, target_layer: str) -> str:
+    if source_layer == "knowledge" and target_layer in {"radar", "feedback"}:
+        return "cites_evidence"
+    if source_layer == "knowledge" and target_layer == "proposals":
+        return "links_proposal_pressure"
+    if source_layer == "feedback" and target_layer in {"knowledge", "proposals"}:
+        return "feeds"
+    if source_layer == "radar" and target_layer == "knowledge":
+        return "feeds"
+    if source_layer == "proposals" and target_layer in {"radar", "feedback", "knowledge"}:
+        return "anchors_to_evidence"
+    if source_layer == "proposals" and target_layer == "implementation":
+        return "targets_implementation"
+    if source_layer == "implementation" and target_layer in {"feedback", "knowledge", "proposals"}:
+        return "reports_back"
+    return "references"
+
+
+def build_links(artifacts: list[dict[str, object]]) -> list[dict[str, str]]:
+    path_to_artifact = {str(artifact["path"]): artifact for artifact in artifacts}
+    links: list[dict[str, str]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for source in artifacts:
+        for target_path in source["local_refs"]:
+            target = path_to_artifact.get(str(target_path))
+            if not target or target["id"] == source["id"]:
+                continue
+            link_type = classify_link(str(source["layer"]), str(target["layer"]))
+            key = (str(source["id"]), str(target["id"]), link_type)
+            if key in seen:
+                continue
+            seen.add(key)
+            links.append(
+                {
+                    "source": str(source["id"]),
+                    "target": str(target["id"]),
+                    "type": link_type,
+                    "source_path": str(source["path"]),
+                    "target_path": str(target["path"]),
+                }
+            )
+    return links
+
+
+def split_markdown_row(line: str) -> list[str]:
+    return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+
+def is_separator_row(cells: list[str]) -> bool:
+    return all(re.fullmatch(r":?-{3,}:?", cell or "") for cell in cells)
+
+
+def parse_table_after_heading(text: str, heading: str) -> list[dict[str, str]]:
+    lines = text.splitlines()
+    in_section = False
+    table_lines: list[str] = []
+    for line in lines:
+        if line.strip() == f"## {heading}":
+            in_section = True
+            continue
+        if in_section and line.startswith("## "):
+            break
+        if in_section and line.startswith("|"):
+            table_lines.append(line)
+        elif in_section and table_lines:
+            break
+    if len(table_lines) < 2:
+        return []
+
+    headers = split_markdown_row(table_lines[0])
+    rows: list[dict[str, str]] = []
+    for line in table_lines[1:]:
+        cells = split_markdown_row(line)
+        if is_separator_row(cells):
+            continue
+        if len(cells) != len(headers):
+            continue
+        rows.append(dict(zip(headers, cells)))
+    return rows
+
+
+def extract_thread_anchor_map(text: str, path_to_id: dict[str, str]) -> dict[str, list[str]]:
+    anchors: dict[str, list[str]] = {}
+    current_thread = ""
+    in_anchor_section = False
+    source_path = KNOWLEDGE_DIR / "active-threads.md"
+
+    for line in text.splitlines():
+        if line.strip() == "## Thread Anchors":
+            in_anchor_section = True
+            continue
+        if in_anchor_section and line.startswith("## "):
+            break
+        if not in_anchor_section:
+            continue
+        if line.startswith("### "):
+            current_thread = line[4:].strip().strip("`")
+            anchors.setdefault(current_thread, [])
+            continue
+        if not current_thread:
+            continue
+        for match in re.finditer(r"(?<!!)\[[^\]]+\]\(([^)]+)\)", line):
+            local_ref = normalize_local_ref(source_path, match.group(1))
+            artifact_ref = path_to_id.get(local_ref)
+            if artifact_ref and artifact_ref not in anchors[current_thread]:
+                anchors[current_thread].append(artifact_ref)
+
+    return anchors
+
+
+def parse_active_threads(path_to_id: dict[str, str]) -> list[dict[str, object]]:
+    path = KNOWLEDGE_DIR / "active-threads.md"
+    text = read_text(path)
+    rows = parse_table_after_heading(text, "Active Threads")
+    anchor_map = extract_thread_anchor_map(text, path_to_id)
+    threads: list[dict[str, object]] = []
+    for row in rows:
+        thread = row.get("Thread", "").strip().strip("`")
+        if not thread:
+            continue
+        evidence_classes = re.findall(r"`([^`]+)`", row.get("Evidence Classes", ""))
+        linked_proposals = re.findall(r"\b[A-Z]{2,}-\d+\b", row.get("Linked Proposals", ""))
+        threads.append(
+            {
+                "id": f"thread:{slugify(thread)}",
+                "thread": thread,
+                "artifact_path": repo_rel_path(path),
+                "core_question": row.get("Core Question", ""),
+                "evidence_classes": evidence_classes,
+                "current_view": row.get("Current Durable View", ""),
+                "update_when": row.get("Update When", ""),
+                "linked_proposals": linked_proposals,
+                "anchor_artifact_ids": anchor_map.get(thread, []),
+            }
+        )
+    return threads
+
+
+def parse_first_table_with_columns(text: str, required_columns: set[str]) -> list[dict[str, str]]:
+    lines = text.splitlines()
+    for idx, line in enumerate(lines):
+        if not line.startswith("|"):
+            continue
+        headers = split_markdown_row(line)
+        if not required_columns.issubset(set(headers)):
+            continue
+        table_lines = [line]
+        for next_line in lines[idx + 1 :]:
+            if not next_line.startswith("|"):
+                break
+            table_lines.append(next_line)
+        rows: list[dict[str, str]] = []
+        for row_line in table_lines[1:]:
+            cells = split_markdown_row(row_line)
+            if is_separator_row(cells) or len(cells) != len(headers):
+                continue
+            rows.append(dict(zip(headers, cells)))
+        return rows
+    return []
+
+
+def parse_proposal_records() -> list[dict[str, str]]:
+    path = PROPOSALS_DIR / "harness-proposal-ledger.md"
+    text = read_text(path)
+    rows = parse_first_table_with_columns(text, {"ID", "Date", "Theme", "Disposition", "Status"})
+    records: list[dict[str, str]] = []
+    for row in rows:
+        records.append(
+            {
+                "id": row.get("ID", ""),
+                "date": row.get("Date", ""),
+                "theme": row.get("Theme", "").strip("`"),
+                "origin": row.get("Origin", "").strip("`"),
+                "source_ref": row.get("Source Ref", "").strip("`"),
+                "target_layer": row.get("Target Layer", "").strip("`"),
+                "disposition": row.get("Disposition", "").strip("`"),
+                "status": row.get("Status", "").strip("`"),
+                "ledger_path": repo_rel_path(path),
+            }
+        )
+    return records
+
+
+def build_knowledge_network() -> dict[str, object]:
+    artifacts = [build_artifact(path) for path in scan_artifact_paths()]
+    path_to_id = {str(artifact["path"]): str(artifact["id"]) for artifact in artifacts}
+    links = build_links(artifacts)
+    threads = parse_active_threads(path_to_id)
+    proposal_records = parse_proposal_records()
+    layer_counts = {
+        layer["id"]: sum(1 for artifact in artifacts if artifact["layer"] == layer["id"])
+        for layer in LAYER_DEFINITIONS
+    }
+    return {
+        "schema_version": 1,
+        "contract": (
+            "Repo-owned typed node/edge snapshot generated from Markdown and selected implementation "
+            "entrypoints. It is a navigation and handoff index, not a database or replacement source of truth."
+        ),
+        "layers": LAYER_DEFINITIONS,
+        "counts": {
+            "artifact_count": len(artifacts),
+            "link_count": len(links),
+            "thread_count": len(threads),
+            "proposal_record_count": len(proposal_records),
+            "layer_counts": layer_counts,
+        },
+        "artifacts": artifacts,
+        "links": links,
+        "threads": threads,
+        "proposal_records": proposal_records,
+        "generated_from": [
+            "docs/radar/daily/latest.md",
+            "docs/radar/weekly/latest.md",
+            "docs/radar/trending/latest.md",
+            "docs/knowledge/active-threads.md",
+            "docs/proposals/harness-proposal-ledger.md",
+        ],
+    }
 
 
 def card_html(
@@ -236,13 +724,8 @@ def build_surface_data() -> dict[str, object]:
         {"name": "Proposals", "description": "Turn mature evidence into selective, reviewable change candidates."},
         {"name": "Implementation", "description": "Only reviewed proposals should feed Harness, Skills, or eval work."},
     ]
-    layers = [
-        {"name": "Radar", "href": "radar/README.md", "description": "External first-party signal, recurring notes, source policy, and the freshest field view."},
-        {"name": "Feedback", "href": "feedback/README.md", "description": "Structured Harness usage cases instead of raw session dumping."},
-        {"name": "Knowledge", "href": "knowledge/README.md", "description": "Durable synthesis, timelines, concept maps, and topic continuity."},
-        {"name": "Proposals", "href": "proposals/README.md", "description": "Selective reviewed change candidates after evidence is mature enough."},
-        {"name": "Research", "href": "research/README.md", "description": "One-off analysis and incubation, kept useful but out of the active lane."},
-    ]
+    layers = LAYER_DEFINITIONS
+    knowledge_network = build_knowledge_network()
     total_notes = int(weekly["count"]) + int(daily["count"]) + int(trending["count"])
     return {
         "hero_title": "Readable field intelligence instead of disappearing thread residue.",
@@ -255,6 +738,9 @@ def build_surface_data() -> dict[str, object]:
             "total_notes": total_notes,
             "stream_count": 3,
             "layer_count": 5,
+            "artifact_count": knowledge_network["counts"]["artifact_count"],
+            "link_count": knowledge_network["counts"]["link_count"],
+            "thread_count": knowledge_network["counts"]["thread_count"],
         },
         "streams": {
             "weekly": weekly,
@@ -272,6 +758,7 @@ def build_surface_data() -> dict[str, object]:
             "operating_model": "knowledge/operating-model.md",
             "learning_loop": "harness-learning-loop.md",
         },
+        "knowledge_network": knowledge_network,
     }
 
 
@@ -282,6 +769,8 @@ def build_page(data: dict[str, object]) -> str:
     trending = streams["trending"]
     counts = data["counts"]
     proposal_titles = data["proposal_candidates"]
+    knowledge_network = data["knowledge_network"]
+    network_counts = knowledge_network["counts"]
     proposal_chips = "".join(f"<li>{inline_markdown_to_html(title)}</li>" for title in proposal_titles)
     flow_steps = "".join(
         f'<div class="flow-step"><strong>{html.escape(step["name"])}</strong><p>{html.escape(step["description"])}</p></div>'
@@ -291,6 +780,10 @@ def build_page(data: dict[str, object]) -> str:
         f'<article class="layer-card"><h3><a href="{html.escape(layer["href"])}">{html.escape(layer["name"])}</a></h3><p>{html.escape(layer["description"])}</p></article>'
         for layer in data["layers"]
     )
+    thread_items = "".join(
+        f'<li><strong>{html.escape(thread["thread"])}</strong><span>{html.escape(thread["current_view"])}</span></li>'
+        for thread in knowledge_network["threads"][:4]
+    ) or '<li><strong>No active threads</strong><span>Open the knowledge layer to seed the first durable thread.</span></li>'
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -640,6 +1133,54 @@ def build_page(data: dict[str, object]) -> str:
       line-height: 1.55;
       color: var(--muted);
     }}
+    .network-grid {{
+      display: grid;
+      grid-template-columns: minmax(280px, 0.55fr) minmax(0, 1fr);
+      gap: 18px;
+    }}
+    .network-card {{
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px;
+      background: rgba(255,255,255,0.74);
+    }}
+    .network-card p {{
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }}
+    .metric-line {{
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px dashed rgba(31, 36, 48, 0.12);
+      color: var(--muted);
+    }}
+    .metric-line:last-child {{ border-bottom: none; }}
+    .metric-line strong {{ color: var(--ink); }}
+    .thread-list {{
+      list-style: none;
+      padding: 0;
+      margin: 14px 0 0;
+      display: grid;
+      gap: 12px;
+    }}
+    .thread-list li {{
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(31, 36, 48, 0.045);
+    }}
+    .thread-list strong {{
+      display: block;
+      margin-bottom: 6px;
+    }}
+    .thread-list span {{
+      display: block;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }}
     .footer-note {{
       margin-top: 18px;
       color: var(--muted);
@@ -652,7 +1193,7 @@ def build_page(data: dict[str, object]) -> str:
         align-items: start;
         flex-direction: column;
       }}
-      .hero-grid, .brief-grid, .split, .archive-grid, .layer-grid, .flow {{
+      .hero-grid, .brief-grid, .split, .archive-grid, .layer-grid, .network-grid, .flow {{
         grid-template-columns: 1fr;
       }}
       .shell {{ width: min(100vw - 20px, 100%); }}
@@ -668,6 +1209,7 @@ def build_page(data: dict[str, object]) -> str:
         <a class="nav-pill" href="#briefing">Latest briefing</a>
         <a class="nav-pill" href="#interpretation">Interpretation</a>
         <a class="nav-pill" href="#architecture">Architecture</a>
+        <a class="nav-pill" href="#network">Knowledge network</a>
         <a class="nav-pill" href="#history">History</a>
       </nav>
     </div>
@@ -681,6 +1223,8 @@ def build_page(data: dict[str, object]) -> str:
         <div class="stat-chip"><strong>{counts["total_notes"]}</strong><span>Durable notes indexed</span></div>
         <div class="stat-chip"><strong>{counts["stream_count"]} streams</strong><span>Daily, weekly, trending</span></div>
         <div class="stat-chip"><strong>{counts["layer_count"]} layers</strong><span>Radar to implementation</span></div>
+        <div class="stat-chip"><strong>{counts["artifact_count"]}</strong><span>Network artifacts</span></div>
+        <div class="stat-chip"><strong>{counts["link_count"]}</strong><span>Typed local links</span></div>
       </div>
       <div class="hero-grid">
         <div class="hero-panel">
@@ -757,6 +1301,35 @@ def build_page(data: dict[str, object]) -> str:
       </p>
     </section>
 
+    <section class="section" id="network">
+      <div class="section-header">
+        <div>
+          <div class="eyebrow">Machine-Readable Network</div>
+          <h2>Do the systems know each other?</h2>
+        </div>
+        <p>The generated JSON now carries typed artifacts, local links, active knowledge threads, and proposal records so future agents and the cockpit prototype can navigate the repo as a connected system.</p>
+      </div>
+      <div class="network-grid">
+        <article class="network-card">
+          <h3>Network snapshot</h3>
+          <p>The graph is rebuilt from Markdown and selected implementation entrypoints. It is not a database; Markdown remains the source of truth.</p>
+          <div class="metric-line"><span>Artifacts</span><strong>{network_counts["artifact_count"]}</strong></div>
+          <div class="metric-line"><span>Typed links</span><strong>{network_counts["link_count"]}</strong></div>
+          <div class="metric-line"><span>Active threads</span><strong>{network_counts["thread_count"]}</strong></div>
+          <div class="metric-line"><span>Proposal records</span><strong>{network_counts["proposal_record_count"]}</strong></div>
+          <div class="card-actions">
+            <a class="primary-link" href="{html.escape(data["canonical_paths"]["machine_index"])}">Open JSON index</a>
+            <a class="secondary-link" href="knowledge/active-threads.md">Open active threads</a>
+          </div>
+        </article>
+        <article class="network-card">
+          <h3>Active threads</h3>
+          <p>These are the durable interpretation threads that connect radar, feedback, proposals, and implementation pressure.</p>
+          <ul class="thread-list">{thread_items}</ul>
+        </article>
+      </div>
+    </section>
+
     <section class="section" id="history">
       <div class="section-header">
         <div>
@@ -783,6 +1356,8 @@ def build_briefing(data: dict[str, object]) -> str:
     daily = streams["daily"]
     trending = streams["trending"]
     proposal_titles = data["proposal_candidates"]
+    knowledge_network = data["knowledge_network"]
+    network_counts = knowledge_network["counts"]
 
     def render_bullets(items: list[str], empty: str) -> str:
         if not items:
@@ -801,6 +1376,13 @@ def build_briefing(data: dict[str, object]) -> str:
         proposal_titles,
         "No proposal candidates extracted from the latest weekly synthesis yet.",
     )
+    thread_block = render_bullets(
+        [
+            f"`{thread['thread']}` - {thread['current_view']}"
+            for thread in knowledge_network["threads"][:5]
+        ],
+        "No active knowledge threads are registered yet.",
+    )
 
     sections = [
         "# Current Knowledge Briefing",
@@ -817,6 +1399,7 @@ def build_briefing(data: dict[str, object]) -> str:
         "## At A Glance",
         "",
         f"- `{data['counts']['total_notes']}` durable notes are currently indexed across `{data['counts']['stream_count']}` recurring streams.",
+        f"- `{network_counts['artifact_count']}` knowledge-network artifacts, `{network_counts['link_count']}` typed local links, and `{network_counts['thread_count']}` active threads are available in `index.json`.",
         "- The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.",
         "- `radar` is intake only; this briefing is a convenience surface, not the canonical logic.",
         "",
@@ -849,6 +1432,12 @@ def build_briefing(data: dict[str, object]) -> str:
         "",
         proposal_block,
         "",
+        "## Knowledge Network",
+        "",
+        "The machine-readable index now includes `knowledge_network.artifacts`, `knowledge_network.links`, `knowledge_network.threads`, and `knowledge_network.proposal_records`.",
+        "",
+        thread_block,
+        "",
         "## Recent History",
         "",
         render_archive("Daily Radar", daily["recent"]),
@@ -864,6 +1453,7 @@ def build_briefing(data: dict[str, object]) -> str:
 def build_index_json(data: dict[str, object]) -> str:
     payload = {
         "surface_version": 1,
+        "knowledge_network_version": 1,
         "hero_title": data["hero_title"],
         "intro": data["intro"],
         "counts": data["counts"],
@@ -873,6 +1463,7 @@ def build_index_json(data: dict[str, object]) -> str:
         "streams": data["streams"],
         "deep_dive": data["deep_dive"],
         "proposal_candidates": data["proposal_candidates"],
+        "knowledge_network": data["knowledge_network"],
     }
     return json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
 
