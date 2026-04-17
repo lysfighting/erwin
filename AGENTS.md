@@ -8,11 +8,15 @@
 
 `erwin` is an **AI/agent frontier exploration lab**.
 
-The active lanes are:
+The active operating loop has five layers:
 
-1. **Radar** — authoritative AI/agent field intelligence, with `Harness` as one key theme
-2. **Harness** — Codex-native orchestration operating model and implementation
-3. **Skills** — reusable skills that still support the current agent-systems direction
+1. **Radar** — authoritative AI/agent field intelligence intake
+2. **Feedback** — normalized real Harness / Codex / repo usage pressure
+3. **Knowledge** — durable synthesis, active threads, and interpretation
+4. **Proposals** — reviewed change candidates
+5. **Implementation** — concrete Harness / Skills / eval / docs / automation changes
+
+`Harness` is the main implementation target and a major feedback source, not a separate shortcut around the knowledge loop. `Skills` remain useful reusable capabilities that support the current agent-systems direction.
 
 Historical teamwork artifacts still exist, but they are no longer the repo center.
 
@@ -37,7 +41,11 @@ erwin/
 │
 ├── docs/
 │   ├── README.md           ← Docs index
+│   ├── erwin-operating-model.md ← Five-layer operating model
 │   ├── radar/              ← AI/agent radar knowledge base
+│   ├── feedback/           ← Normalized usage feedback
+│   ├── knowledge/          ← Durable synthesis and active threads
+│   ├── proposals/          ← Reviewed change candidates
 │   ├── archive/            ← Doc archive boundary
 │   └── research/           ← One-time analysis and research reports
 │
@@ -74,15 +82,17 @@ erwin/
 
 - `README.md` explains the repo in 30 seconds
 - `_project/CURRENT.md` is the live operational handoff
+- `docs/erwin-operating-model.md` explains the five-layer knowledge-to-action loop
 - `docs/README.md` is the documentation map
 - `docs/radar/` is the field-intelligence layer
+- `docs/feedback/`, `docs/knowledge/`, and `docs/proposals/` move signal toward reviewed action
 - `harness/`, `scripts/`, `cmd/`, and `internal/` are the main implementation surface
 
 ---
 
 ## Session Protocol
 
-**Start**: read `AGENTS.md` → `_project/CURRENT.md` → `docs/README.md`
+**Start**: read `AGENTS.md` → `_project/CURRENT.md` → `docs/erwin-operating-model.md` → `docs/README.md`
 
 **End**:
 
@@ -100,9 +110,13 @@ erwin/
 | Live status | `_project/CURRENT.md` |
 | Mission / goals | `_project/GOALS.md` |
 | Repo entrypoint | `README.md` |
+| Five-layer operating model | `docs/erwin-operating-model.md` |
 | Docs index | `docs/README.md` |
 | Radar entrypoint | `docs/radar/README.md` |
 | Radar sources | `docs/radar/sources.md` |
+| Feedback entrypoint | `docs/feedback/README.md` |
+| Knowledge entrypoint | `docs/knowledge/README.md` |
+| Proposal entrypoint | `docs/proposals/README.md` |
 | Harness docs | `docs/harness-documentation-map.md` |
 | Harness package boundary | `harness/`, `scripts/`, `cmd/`, `internal/` |
 | Skills | `skills/` |
