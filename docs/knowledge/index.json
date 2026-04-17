@@ -3,7 +3,7 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 23,
+    "total_notes": 24,
     "stream_count": 3,
     "layer_count": 5
   },
@@ -93,16 +93,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-04-16",
-      "meta": "Window: 2026-04-10 to 2026-04-16",
+      "title": "AI Agent Daily Radar - 2026-04-17",
+      "meta": "Window: 2026-04-11 to 2026-04-17",
       "highlights": [
-        "**OpenAI turned the Agents SDK into a sandboxed harness surface.** OpenAI published [The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) on **April 15, 2026**, describing an updated SDK for agents that inspect files, run commands, edit code, and work across long-horizon tasks inside controlled sandbox environments. The high-signal shift is not another agent wrapper; it is first-party infrastructure for separating the agent loop from sandboxed compute, with support for routing subagents to isolated environments and parallelizing work across containers.",
-        "**Claude Code 2.1.110 made remote/headless operation and recovery more explicit.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) lists **April 15, 2026** version 2.1.110 with `/tui fullscreen`, push notifications, Remote Control support for `/autocompact`, `/context`, `/exit`, and `/reload-plugins`, scheduled-task resurrection on `--resume` and `--continue`, `TRACEPARENT`/`TRACESTATE` linking for SDK/headless sessions, MCP dropped-connection fixes, and stricter Bash timeout enforcement. This is a direct coding-agent operations signal: resumability, distributed tracing, mobile/web steering, and MCP failure handling are becoming product-level expectations.",
-        "**Claude Platform still anchors the managed-agent runtime signal.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) dated **April 8, 2026** launched Claude Managed Agents public beta, and the [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) describes a managed harness with agents, environments, sessions, persisted events, built-in tools, MCP servers, skills, secure containers, SSE streaming, interruption, and the `managed-agents-2026-04-01` beta header. I rechecked the Managed Agents docs surface this run; no newer dated Managed Agents item displaced the launch, but the runtime vocabulary remains highly relevant."
+        "**Anthropic shipped Claude Opus 4.7 with stronger long-running agent behavior.** Anthropic published [Introducing Claude Opus 4.7](https://www.anthropic.com/news/claude-opus-4-7) and the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) on **April 16, 2026**. The high-signal update is not just higher model quality: Anthropic explicitly calls out agentic coding, instruction-following literalness, better high-resolution vision for computer-use-style work, and improved file-system memory use. Harness implication: prompts and harnesses tuned for looser prior-model behavior may need stricter regression evals before upgrade.",
+        "**Claude Code 2.1.111/2.1.112 pushed Opus 4.7 into coding-agent operations.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) lists **April 16, 2026** releases adding Opus 4.7 `xhigh` effort, Max-subscriber Auto mode with Opus 4.7, `/ultrareview` for cloud multi-agent code review, `/less-permission-prompts`, fewer read-only Bash prompts, plugin diagnostics, OpenTelemetry raw API body logging, and a follow-up fix for Opus 4.7 auto-mode availability. This is a meaningful Claude Code update in-window: model upgrade, review delegation, permission ergonomics, and observability all moved together.",
+        "**OpenAI made the Agents SDK a more explicit sandboxed harness layer.** OpenAI published [The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) on **April 15, 2026**, describing an updated SDK for agents that inspect files, run commands, edit code, and work across long-horizon tasks in controlled sandbox environments. The first-party direction is clear: standardize the agent loop around workspace manifests, filesystem tools, shell/apply-patch tools, MCP, skills, sandbox-aware orchestration, and durability via snapshot/rehydration."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-04-17",
+          "path": "radar/daily/2026-04-17.md"
+        },
         {
           "name": "2026-04-16",
           "path": "radar/daily/2026-04-16.md"
@@ -122,13 +126,9 @@
         {
           "name": "2026-04-10",
           "path": "radar/daily/2026-04-10.md"
-        },
-        {
-          "name": "2026-04-09",
-          "path": "radar/daily/2026-04-09.md"
         }
       ],
-      "count": 9
+      "count": 10
     },
     "trending": {
       "label": "Trending",
