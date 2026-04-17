@@ -18,6 +18,7 @@ Only then should a proposal become a durable control-plane record.
 - [harness-benchmark-evidence-checklist.md](harness-benchmark-evidence-checklist.md)
 - [harness-monitorability-review-checklist.md](harness-monitorability-review-checklist.md)
 - [harness-monitorability-review-criterion.md](harness-monitorability-review-criterion.md)
+- [knowledge-surface-research-cockpit-v1.md](knowledge-surface-research-cockpit-v1.md)
 
 That ledger remains the reviewed proposal surface for `Harness`.
 
@@ -55,6 +56,10 @@ The quality bar is:
 ## Eval Bridge
 
 - [harness-eval-candidate-ledger.md](harness-eval-candidate-ledger.md) — bridge from reviewed `encode-as-eval` posture into concrete eval, audit, docs-gate, or review-criteria candidates
+
+## Knowledge Surface Proposals
+
+- [knowledge-surface-research-cockpit-v1.md](knowledge-surface-research-cockpit-v1.md) — proposal to upgrade the generated `docs/index.html` briefing into a local Research Cockpit using Vite/React/TypeScript plus a small Go read-only service, while keeping Markdown and `docs/knowledge/index.json` as repo-owned truth.
 
 ## Review Gates
 
