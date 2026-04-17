@@ -51,6 +51,7 @@ Parse `$ARGUMENTS`:
 - If `sync` → jump to **Operation Sync**
 - If starts with `share` → jump to **Operation Share**
 - If `wrap` → jump to **Operation Wrap**
+- If `fleet help` or `fleet -h` → jump to **Operation Fleet Help**
 - If starts with `fleet` → jump to **Operation Fleet**
 - If starts with `auto` → jump to **Operation Auto**
 - If empty → continue to **Step 0** (auto-detect init vs dashboard)
@@ -3759,6 +3760,50 @@ After merge: `/team-ship done` **#{issue}**
 - Label/comment/review operations fail → warn, continue (non-fatal)
 
 **On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+---
+
+## Operation Fleet Help
+
+Triggered by `/team fleet help` or `/team fleet -h`. Output the following and **STOP**:
+
+**`/team fleet` — Multi-Mission Orchestration (v1 parallel-only)**
+
+**USAGE**
+  `/team fleet` **#A #B #C**    Run N missions in parallel with Mode-A gate
+  `/team fleet help`             Show this guide
+
+**SHAPE**
+  1. Parse + validate N issues(2 ≤ N ≤ 5 recommended)
+  2. Per-mission **spawn-threshold**(≥3 files / ≥30 lines / 跨模块 → spawn teammate)
+  3. Batch **Contract generation**(`/team-claim --batch`,one approval gate)
+  4. Pre-provisioned **worktree** per mission(`tw-git.sh claim-setup`)
+  5. **TeamCreate** + spawn N feature-lead teammates with briefing template
+  6. **Mode-A first-checkpoint gate**: teammates stop before code, SendMessage structured deliverable
+  7. **Batch review** by team-lead(checkpoint reading + worktree-grep verification + AskUserQuestion per mission)
+  8. Approved teammates resume → test → `mission_done`
+  9. **Ship serially**(/team-ship one-at-a-time to avoid 11×N prompt flood)
+  10. Post-merge `/team-ship done` + TeamDelete
+
+**CHECKPOINT VOCABULARY**(`reference/checkpoint-schemas/`)
+  `design-note`        Implementation plan before code
+  `delta-table`        Current vs target quantitative gap
+  `research-result`    Discovery result(Case A / A-partial / B)
+  `risk-inventory`     Enumerated risk + mitigation
+  `ad-hoc`             Escape hatch(with explicit guardrails)
+
+**KNOWN DEBT**(documented not hidden — see CHANGELOG 3.14.0)
+- n=1 evidence base — invariants may shift with more data
+- Parallel-only;serial chain / DAG 请 defer 到 v2
+- No `/team-rc` × fleet concurrency
+- Attention scaling tested only to N=3;N>5 warn,N≥8 uncharted
+- Security / cost budget:user responsibility,skill 不 enforce
+
+**PRE-FLIGHT CHECK**
+Before your first `/team fleet` run:
+- `bash ~/.claude/commands/scripts/tw-fleet-smoke-test.sh` 应 40/40 绿
+- `ls ~/.claude/commands/reference/feature-lead-briefing-template.md` 应存在
+- `ls ~/.claude/commands/reference/checkpoint-schemas/` 应有 5 个 schema
 
 ---
 

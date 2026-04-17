@@ -181,6 +181,31 @@ install_skill() {
       echo -e "${GREEN}  📜 scripts/$script_name${NC}"
     done
   fi
+
+  # Install reference/ subdir if present (preserving nested directory structure).
+  # Needed for skills like teamwork 3.14.0 that ship a briefing template +
+  # checkpoint schemas under reference/checkpoint-schemas/. Without this,
+  # runtime lookups like `~/.claude/commands/reference/...` break.
+  if [[ -d "$skill_dir/reference" ]]; then
+    local ref_src="$skill_dir/reference"
+    local ref_dst="$TARGET_DIR/reference"
+    mkdir -p "$ref_dst"
+    local ref_count=0
+    # find -print0 + while-read -d '' handles spaces in filenames safely
+    while IFS= read -r -d '' src_file; do
+      local rel_path="${src_file#$ref_src/}"
+      local dst_file="$ref_dst/$rel_path"
+      mkdir -p "$(dirname "$dst_file")"
+      [[ -L "$dst_file" || -f "$dst_file" ]] && rm "$dst_file"
+      if [[ "$INSTALL_MODE" == "copy" ]]; then
+        cp "$src_file" "$dst_file"
+      else
+        ln -sf "$src_file" "$dst_file"
+      fi
+      ((ref_count++))
+    done < <(find "$ref_src" -type f -print0)
+    echo -e "${GREEN}  📚 reference/ ($ref_count files)${NC}"
+  fi
 }
 
 # ─── Modern skill suite installer (SKILL.md in subdirs → ~/.claude/skills/) ───
