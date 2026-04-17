@@ -26,7 +26,7 @@ Verify all three match. If any mismatch → **STOP** and SendMessage `team-lead`
 Read `{{CONTRACT_PATH}}` end-to-end. Specifically:
 - **Objective** and **Success Criteria** — these are immutable orders (WHAT). Non-negotiable unless you escalate.
 - **Sub-tasks** — a suggested route (HOW). Challenge, revise, or confirm. Not orders.
-- **AI Notes / Mode-A section** — the specific checkpoint type expected: **{{CHECKPOINT_TYPE}}**. See `reference/checkpoint-schemas/{{CHECKPOINT_TYPE}}.md` for the schema.
+- **AI Notes / Mode-A section** — the specific checkpoint type expected: **{{CHECKPOINT_TYPE}}**. See `~/.claude/commands/reference/checkpoint-schemas/{{CHECKPOINT_TYPE}}.md` for the schema.
 - **Non-Goals** — hard boundaries. Violating any counts as scope creep.
 
 ---
@@ -45,7 +45,7 @@ This is the fleet-specific form on top of /team-drive's already-present challeng
 
 ## Step 4: Your checkpoint deliverable
 
-Open `reference/checkpoint-schemas/{{CHECKPOINT_TYPE}}.md` for the exact structure. Fill every section. Be specific: cite file paths with line numbers, include exact function/variable names you grepped, show the evidence.
+Open `~/.claude/commands/reference/checkpoint-schemas/{{CHECKPOINT_TYPE}}.md` for the exact structure. Fill every section. Be specific: cite file paths with line numbers, include exact function/variable names you grepped, show the evidence.
 
 **Critical**: any factual claim you make — especially about system state, existing code, or Contract assumptions — must be backed by a grep or Read command the team-lead can reproduce **in this worktree**. "I believe the function is named X" without evidence will be rejected on verification.
 
