@@ -8,13 +8,21 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-17
-- **Last Session**: 2026-04-17-A (Hardened release briefings and merge readiness)
+- **Last Session**: 2026-04-17-B (five-layer operating model added)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-17-B** — Five-layer operating model added
+
+- **Repo-level cognition is now explicit**: `docs/erwin-operating-model.md` defines the five-layer loop `Radar + Feedback -> Knowledge -> Proposals -> Implementation -> Feedback / Knowledge`
+- **Harness is now framed in the loop correctly**: Harness is the main implementation target and feedback source, not a separate shortcut around Radar, Feedback, Knowledge, and proposal review
+- **Fresh sessions now have a global route before local docs**: `AGENTS.md`, `docs/README.md`, and `docs/harness-documentation-map.md` now point cross-lane work at the five-layer model before narrower Harness or Knowledge documents
+- **The knowledge thread map now tracks coordination itself**: `docs/knowledge/active-threads.md` carries `erwin five-layer operating model` as an active thread so future multi-session drift can flow back into durable knowledge
+- **Post-merge release gate was rerun on mainline truth**: after PR #10 landed the Harness leader-briefing line on `main`, `go test ./...` and `./scripts/harness-all-smoke-test.sh` both passed from a fresh `origin/main` worktree
 
 **Session 2026-04-17-A** — Hardened release briefings and merge readiness
 
@@ -807,18 +815,20 @@
 ## Next Session Should Start With
 
 1. Read this file
-2. **Radar next work**:
-   - A. Review the first real daily radar runs against Tier 1 publishers and compare the signal/noise ratio with the kickoff baseline
-   - B. Tighten `docs/radar/sources.md` only after observing a week of real output
-   - C. Adjust theme weighting only if the daily and weekly outputs drift away from first-party signal
-   - D. Validate that daily output produces proposal candidates without recommending direct runtime changes
-   - E. Validate that weekly synthesis produces a durable `Harness Evolution Proposals` section before adding more automation complexity
-3. **Harness next work**:
-   - A. Continue the human-direct collaboration layer beyond `home` / `doctor --brief`, especially mission/run/meeting views that still require too much raw JSON inspection for normal leader use
-   - B. Keep shell surfaces human-facing and derived from the Go control plane instead of expanding raw JSON first or drifting toward a separate GUI/product story
-   - C. Continue authority adjudication, council execution, and scheduler depth where it materially improves real leader-facing collaboration rather than merely adding more internal packet detail
-   - D. Use the proposal ledger before promoting field intelligence or real-usage patterns into runtime/backlog changes
-4. If starting fresh, read `AGENTS.md`, `_project/CURRENT.md`, `docs/README.md`, `docs/radar/README.md`, `docs/harness-documentation-map.md`, and then the current harness docs or weekly radar synthesis depending on the task
+2. Read `docs/erwin-operating-model.md` before deciding whether the work belongs to Radar, Feedback, Knowledge, Proposals, or Implementation
+3. **Radar next work**:
+   - A. Continue observing live daily / weekly / trending / paper-watch output against Tier 1 publisher quality
+   - B. Tune `docs/radar/sources.md` and theme weighting only when real output shows durable drift
+   - C. Keep radar as intake; do not recommend direct runtime changes from fresh signal
+4. **Knowledge / Feedback next work**:
+   - A. Add normalized feedback cases whenever real Harness, Codex, automation, or repo-process friction repeats
+   - B. Keep `docs/knowledge/active-threads.md` current when weekly synthesis, feedback, or proposals change durable understanding
+   - C. Use mature active threads before creating or widening proposals
+5. **Harness / Implementation next work**:
+   - A. Treat the human-readable `--brief` stack as delivered across the current Harness surfaces, not as a still-missing `home` / `doctor` starter layer
+   - B. Drive post-1.0 work from real usage feedback, learning-loop proposals, eval candidates, and explicit internal gaps
+   - C. Use the proposal ledger before promoting field intelligence or real-usage patterns into runtime/backlog changes
+6. If starting fresh, read `AGENTS.md`, `_project/CURRENT.md`, `docs/erwin-operating-model.md`, `docs/README.md`, and then the layer-specific docs for the task
 
 ## Implementation Roadmap
 
@@ -847,7 +857,7 @@
 
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, a formalized runtime distribution strategy, committed `1.0.0` release criteria, and new human-readable `home` / `doctor --brief` leader entrypoints; remaining work is post-1.0 expansion, especially richer human-direct collaboration beyond the top-level briefing layer
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, a formalized runtime distribution strategy, committed `1.0.0` release criteria, and a broad human-readable `--brief` stack across home, doctor, claim, drive, missions, runs, signals, teammates, ship, rc, meetings, and maintenance; remaining work is post-1.0 expansion driven through the five-layer learning loop
 
 ## File Locations
 

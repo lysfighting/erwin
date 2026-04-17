@@ -230,21 +230,24 @@ Use these when the question is about what was preserved, redesigned, or intentio
 
 ## Fresh Session Read Paths
 
+If the task involves radar signal, usage feedback, knowledge threads, proposal pressure, or cross-lane repo strategy, read [`docs/erwin-operating-model.md`](erwin-operating-model.md) before treating Harness as an isolated implementation system.
+
 ### Path A: Continue Implementation Safely
 
 1. [`AGENTS.md`](/Users/liyasong/Project/collov/erwin/AGENTS.md)
 2. [`_project/CURRENT.md`](/Users/liyasong/Project/collov/erwin/_project/CURRENT.md)
-3. this file
-4. [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
-5. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
-6. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
-7. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
-8. [`docs/harness-release-criteria.md`](/Users/liyasong/Project/collov/erwin/docs/harness-release-criteria.md)
-9. [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
-10. [`docs/harness-proposal-ledger.md`](/Users/liyasong/Project/collov/erwin/docs/harness-proposal-ledger.md)
-11. [`docs/harness-session-handoff.md`](/Users/liyasong/Project/collov/erwin/docs/harness-session-handoff.md)
-12. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
-13. targeted research and recent session logs as needed
+3. [`docs/erwin-operating-model.md`](erwin-operating-model.md) when the task crosses Radar / Feedback / Knowledge / Proposals / Implementation boundaries
+4. this file
+5. [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
+6. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
+7. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
+8. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
+9. [`docs/harness-release-criteria.md`](/Users/liyasong/Project/collov/erwin/docs/harness-release-criteria.md)
+10. [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
+11. [`docs/proposals/harness-proposal-ledger.md`](/Users/liyasong/Project/collov/erwin/docs/proposals/harness-proposal-ledger.md)
+12. [`docs/harness-session-handoff.md`](/Users/liyasong/Project/collov/erwin/docs/harness-session-handoff.md)
+13. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
+14. targeted research and recent session logs as needed
 
 ### Path B: Review / Drift Check
 

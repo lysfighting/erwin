@@ -43,6 +43,7 @@ The goal is to make evidence density visible before proposal pressure grows.
 
 | Thread | Core Question | Evidence Classes | Current Durable View | Update When | Linked Proposals |
 |--------|---------------|------------------|----------------------|-------------|------------------|
+| `erwin five-layer operating model` | How do Radar, Feedback, Knowledge, Proposals, and Implementation stay connected across multiple sessions without treating Harness, radar automation, or the knowledge surface as isolated systems? | `feedback`, `internal-gap`, `external` | `erwin` should operate as a five-layer knowledge-to-action loop: Radar and Feedback feed Knowledge, mature Knowledge feeds Proposals, reviewed Proposals feed Implementation, and Implementation results flow back into Feedback and Knowledge. Harness is the main implementation target and feedback source, not a shortcut around the loop. | cross-session handoff fails, stale guidance sends work to the wrong layer, or a new surface changes how the five layers interact | none yet |
 | `knowledge-system operating discipline` | How does `erwin` keep durable knowledge legible instead of falling back into `docs/research/`, proposal spam, or session-memory dependence? | `feedback`, `internal-gap`, `external` | The knowledge system must stay file-backed and proposal-gated: repeated usage pressure becomes feedback cases first, active durable understanding lives in `knowledge/`, and only mature threads should create proposal pressure. | a new case shows the loop being bypassed, or a weekly synthesis/proposal cannot be traced back to a durable thread | `HLP-001`, `HLP-003` |
 | `coding-agent self-iteration and paper intake` | What do first-party and paper evidence together imply about coding-agent self-improvement, and how should `erwin` watch that theme without cargo-culting vendors? | `external`, `internal-gap` | OpenAI currently presents self-improvement as eval-backed research engineering, Anthropic presents it more as strong internal dogfooding and workflow automation, and the paper-watch archive now has recurring notes for self-correction, long-horizon degradation, context retrieval, and trajectory diagnosis instead of only one starter note. | a major benchmark shifts, or weekly synthesis finds stronger convergence between vendor claims and papers | `HLP-004`, `HLP-005` |
 | `harness engineering as legibility + eval pressure` | Which outside signals should turn into eval/doc pressure rather than direct runtime expansion? | `external`, `feedback`, `internal-gap` | The strongest immediate reusable lesson from recent field signal is not to widen `Harness` runtime blindly, but to keep repo-readable truth, traceability, eval integrity, bounded policy discipline, and monitorability ahead of speculative feature churn. Internal audits, runtime feedback, and newer external monitoring signal now sharpen that thread by showing where visible productization still outruns deeper governance maturity and observability. | repeated internal gaps show current docs/evals are not making the system legible enough, or new first-party evidence sharpens the eval pattern | `HLP-003` |
@@ -51,6 +52,23 @@ The goal is to make evidence density visible before proposal pressure grows.
 ---
 
 ## Thread Anchors
+
+### `erwin five-layer operating model`
+
+Primary anchors:
+
+- [../erwin-operating-model.md](../erwin-operating-model.md)
+- [operating-model.md](operating-model.md)
+- [../harness-learning-loop.md](../harness-learning-loop.md)
+- [../radar/README.md](../radar/README.md)
+- [../feedback/README.md](../feedback/README.md)
+- [../proposals/README.md](../proposals/README.md)
+- [../proposals/knowledge-surface-research-cockpit-v1.md](../proposals/knowledge-surface-research-cockpit-v1.md)
+
+Current interpretation:
+
+- the repo needs a global routing model because Harness, Radar, Knowledge, Skills, automation, and the knowledge surface now interact as one system
+- the five-layer loop should prevent fresh radar signal from directly mutating runtime, while still making real Harness usage pressure visible enough to improve future proposals and implementations
 
 ### `knowledge-system operating discipline`
 

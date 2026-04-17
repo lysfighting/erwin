@@ -5,6 +5,7 @@ Open [knowledge/briefing.md](knowledge/briefing.md) when you want the same surfa
 
 ## Current Direction
 
+- [erwin-operating-model.md](erwin-operating-model.md) — repo-level five-layer operating model connecting `Radar`, `Feedback`, `Knowledge`, `Proposals`, and `Implementation`
 - [erwin-repositioning-2026-03-30.md](erwin-repositioning-2026-03-30.md) — proposed repo pivot from narrow skill incubator toward an AI/agent exploration lab, including slimming guidance and automation scope
 - [index.html](index.html) — visual front door for latest daily / weekly / trending outputs plus the full knowledge-system map
 - [radar/README.md](radar/README.md) — AI/agent field radar entrypoint, source policy, and weekly synthesis model
@@ -14,6 +15,16 @@ Open [knowledge/briefing.md](knowledge/briefing.md) when you want the same surfa
 
 The current center of gravity in this repository is `Harness` plus broader AI/agent research.
 Older `teamwork` materials remain available, while showcase-era material has been reduced to selected historical docs only.
+
+## Five-Layer Loop
+
+| Layer | Responsibility | Entry |
+|---|---|---|
+| `Radar` | Collect authoritative AI/agent field signal through daily, weekly, trending, and paper-watch streams. | [radar/README.md](radar/README.md) |
+| `Feedback` | Capture real Harness / Codex / repo friction as normalized usage evidence. | [feedback/README.md](feedback/README.md) |
+| `Knowledge` | Turn radar, feedback, papers, and internal gaps into durable active threads. | [knowledge/README.md](knowledge/README.md) |
+| `Proposals` | Hold reviewed change candidates only after knowledge has matured. | [proposals/README.md](proposals/README.md) |
+| `Implementation` | Change Harness, Skills, evals, docs, automation, or the knowledge surface from reviewed proposals or explicit internal gaps. | repo code and skills |
 
 ## Radar
 
@@ -48,6 +59,7 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 
 | Document | Purpose |
 |----------|---------|
+| [erwin-operating-model.md](erwin-operating-model.md) | Five-layer operating model and cross-session routing guide |
 | [harness-explainer.md](harness-explainer.md) | Best human-readable entrypoint for understanding what Harness is, how it works, and how to use it |
 | [harness-distribution-strategy.md](harness-distribution-strategy.md) | Distribution tiers and runtime bundle strategy for Harness |
 | [harness-documentation-map.md](harness-documentation-map.md) | Canonical document system and read paths for Harness |
