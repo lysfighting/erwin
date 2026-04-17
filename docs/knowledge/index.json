@@ -3,7 +3,7 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 22,
+    "total_notes": 23,
     "stream_count": 3,
     "layer_count": 5
   },
@@ -132,16 +132,20 @@
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-04-16",
-      "meta": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-16. This run used the default global trending page with no extra filters; the page rendered 13 repositories.",
+      "title": "GitHub Trending - 2026-04-17",
+      "meta": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-17. This run used the default global trending page with no extra filters; the page rendered 14 repositories.",
       "highlights": [
-        "[forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) - a single `CLAUDE.md` file to improve Claude Code behavior, derived from Andrej Karpathy's observations on LLM coding pitfalls. 43,081 stars, 9,646 stars today.",
-        "[pascalorg/editor](https://github.com/pascalorg/editor) - tool for creating and sharing 3D architectural projects. TypeScript. 12,654 stars, 1,391 stars today.",
-        "[thedotmack/claude-mem](https://github.com/thedotmack/claude-mem) - Claude Code plugin that captures coding sessions, compresses them with AI, and injects relevant context into future sessions. TypeScript. 57,857 stars, 2,305 stars today."
+        "[forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) - a single `CLAUDE.md` file to improve Claude Code behavior, derived from Andrej Karpathy's observations on LLM coding pitfalls. 49,971 stars, 7,959 stars today.",
+        "[thedotmack/claude-mem](https://github.com/thedotmack/claude-mem) - Claude Code plugin that captures coding sessions, compresses them with AI, and injects relevant context into future sessions. TypeScript. 59,780 stars, 1,897 stars today.",
+        "[lsdefine/GenericAgent](https://github.com/lsdefine/GenericAgent) - self-evolving agent that grows a skill tree from a seed and emphasizes reduced token consumption. Python. 2,787 stars, 872 stars today."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-04-17",
+          "path": "radar/trending/2026-04-17.md"
+        },
         {
           "name": "2026-04-16",
           "path": "radar/trending/2026-04-16.md"
@@ -161,13 +165,9 @@
         {
           "name": "2026-04-10",
           "path": "radar/trending/2026-04-10.md"
-        },
-        {
-          "name": "2026-04-09",
-          "path": "radar/trending/2026-04-09.md"
         }
       ],
-      "count": 10
+      "count": 11
     }
   },
   "deep_dive": "The durable theme this week is the productization of the agent control plane.",
