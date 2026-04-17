@@ -20,6 +20,7 @@ GitHub-first team coordination. Issues are tasks, PRs are delivery, Actions are 
 | `/team-ship sync` | Rebase on base branch | Keep branch up to date |
 | `/team sync` | Standalone rebase on base branch | Anytime branch sync (not just during ship) |
 | `/team share [#N]` | Cross-MC knowledge sharing | Share findings to sibling issue via comment |
+| `/team fleet #A #B #C` | Multi-mission orchestration (parallel, v1) | Run N missions in parallel with Mode-A first-checkpoint gate + batch review |
 | `/team-rc` | Release candidate lifecycle | Prepare, fix, hotfix, promote to production |
 
 ## Onboarding
@@ -122,5 +123,5 @@ Scripts in `scripts/` (Von Neumann separation: deterministic ops in scripts, LLM
 
 ## Version
 
-- Skill version: 3.13.0
+- Skill version: 3.14.0
 - Config schema: 3

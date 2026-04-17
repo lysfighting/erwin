@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.13.0"
+version: "3.14.0"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -32,6 +32,7 @@ version: "3.13.0"
 | `sync` | Rebase branch on latest base branch |
 | starts with `share` | Share knowledge to sibling MC |
 | `auto [#N]` | One-shot: claim → drive → ship (pick from queue or specify **#N**) |
+| starts with `fleet` | **Multi-mission**: claim+drive+ship N missions in parallel with Mode-A first-checkpoint gate (e.g. `/team fleet` **#1298 #1299 #1302**) |
 
 ---
 
@@ -50,6 +51,7 @@ Parse `$ARGUMENTS`:
 - If `sync` → jump to **Operation Sync**
 - If starts with `share` → jump to **Operation Share**
 - If `wrap` → jump to **Operation Wrap**
+- If starts with `fleet` → jump to **Operation Fleet**
 - If starts with `auto` → jump to **Operation Auto**
 - If empty → continue to **Step 0** (auto-detect init vs dashboard)
 
@@ -57,7 +59,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.13.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.14.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -89,8 +91,11 @@ Output the following guide directly to the user, then **STOP**:
   `/team-ship review`     AI code review on PR
 
 **ONE-SHOT**
-  `/team auto` **#042**   Claim → Drive → Ship in one command
-  `/team auto`            Pick from your assigned queue, then auto
+  `/team auto` **#042**         Claim → Drive → Ship in one command (single mission)
+  `/team auto`                  Pick from your assigned queue, then auto
+
+**MULTI-MISSION (FLEET)**
+  `/team fleet` **#A #B #C**    Claim → Drive (parallel) → Mode-A gate → batch review → Ship (serial)
 
 **RETROACTIVE**
   `/team wrap`            Code-first closure (auto-detects state, creates issue+PR)
@@ -137,7 +142,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.13.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.14.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -532,7 +537,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.13.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.14.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1092,7 +1097,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.13.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.14.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ✅ Config updated (merge mode — existing config preserved)
    schema_version → `3`
@@ -2279,7 +2284,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.13.0"
+SKILL_VERSION="3.14.0"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -3752,6 +3757,356 @@ After merge: `/team-ship done` **#{issue}**
 - Push fails after rebase → **STOP** at A5 (run `/team-ship sync`)
 - PR creation fails → **STOP** at A5 (branch is pushed, run `/team-ship` to create PR)
 - Label/comment/review operations fail → warn, continue (non-fatal)
+
+**On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+---
+
+## Operation Fleet
+
+> Triggered by `/team fleet #A #B #C`. Multi-mission forward closure: claim N Issues → drive in parallel with Mode-A first-checkpoint gate → batch approve → ship serially → post-merge cleanup. Mirrors `/team auto` (single-mission) but batches across N missions with an external batch-review gate. **Parallel-only in v1** (see Known Debt below for serial/DAG deferrals).
+
+> **You own this fleet.** Challenge the Contract batch before approving. A bad Contract approved across 3 missions is still 3 bad outcomes. Mode-A's batch gate is the leverage point — use it.
+
+**Visual Encoding** (apply to ALL fleet output): `**bold**` headers, `` `backtick` `` commands/paths, `*italic*` branches, `**#NNN**` Issues (3+ digits), `────` dividers.
+
+### F0: Prerequisites
+
+Same as Operation Auto A0 (auth, config, worktree mode, clean tree). Additionally:
+
+```bash
+# Generate a fleet session id for this invocation
+FLEET_SESSION=$(bash ~/.claude/commands/scripts/tw-fleet.sh new-session-id)
+echo "🚀 FLEET SESSION: $FLEET_SESSION"
+```
+
+If any prerequisite fails → **STOP**
+  💡 Something wrong? Run `/team doctor` to diagnose.
+
+### F1: Parse issue list
+
+```bash
+# $ARGUMENTS is like "fleet #1298 #1299 #1302" — strip the leading "fleet" and parse
+ARG_TAIL="${ARGUMENTS#fleet}"
+ISSUES=$(bash ~/.claude/commands/scripts/tw-fleet.sh parse-issues "$ARG_TAIL")
+ISSUE_COUNT=$(echo "$ISSUES" | wc -l | tr -d ' ')
+```
+
+- If `ISSUE_COUNT` < 2 → "**ERROR:** /team fleet requires at least 2 issues. For a single mission, use `/team auto` **#N**." → **STOP**
+- If `ISSUE_COUNT` > 5 → warn: "⚠️ N=$ISSUE_COUNT exceeds recommended fleet width of 5. Team-lead attention budget may overload. Proceed only if you've run N>5 fleets before." Use `AskUserQuestion`: `继续 / 缩小到 5 个 / 取消`.
+
+For the rest of Operation Fleet, treat `$ISSUES` as a newline-separated list of bare issue numbers.
+
+### F2: Validate each issue
+
+For each issue in `$ISSUES`, in parallel:
+
+```bash
+gh issue view {issue} --json number,title,state,labels,assignees,body
+```
+
+Per-issue checks:
+- State is `OPEN` (not closed)
+- Has mission label (`$MISSION_LABEL`)
+- Has assignee (auto-assign to `$GH_USER` if unassigned and confirm with AskUserQuestion once for the whole batch: "自动 assign to me for N missions? 是 / 否")
+- Not already having an active Contract (skip those and continue with the rest — warn but don't block)
+
+If any validation fails → report failed issues + **STOP** asking the user to fix them first.
+
+Compact result table (VE-compliant):
+
+**FLEET VALIDATION** ── session `{FLEET_SESSION[0:16]}` ────
+  Issue        Title                                   State   Claim-able
+  **#1298**    {title}                                 open    ✅
+  **#1299**    {title}                                 open    ✅
+  **#1302**    {title}                                 open    ✅
+────────────────────────────────────────────────────────
+
+### F3: Spawn-threshold decision per mission
+
+For each mission, estimate from the Issue body + any linked spec:
+- `FILES`: rough count of files expected to change
+- `LINES`: rough total line delta
+- `XMODULE`: yes/no — does the mission cross module/package boundaries?
+
+```bash
+DECISION=$(bash ~/.claude/commands/scripts/tw-fleet.sh spawn-threshold "$FILES" "$LINES" "$XMODULE")
+# DECISION is either "spawn" or "direct"
+```
+
+Present a pre-spawn decision table via `AskUserQuestion`:
+
+**SPAWN TABLE** ────────────────
+  **#1298**  files:~5  lines:~60  cross:no   → `spawn`
+  **#1299**  files:~6  lines:~800 cross:yes  → `spawn`
+  **#1302**  files:~8  lines:~200 cross:no   → `spawn`
+────────────────────────────────
+
+```
+question: "Confirm spawn decisions (can override per mission)?"
+options:
+  - label: "All spawn as shown"
+  - label: "Override per mission"
+  - label: "Cancel fleet"
+```
+
+If "Cancel" → cleanup `$FLEET_SESSION` dir (if created) → **STOP**.
+If "Override" → run sub-dialog to flip individual decisions.
+
+{^ Per session 2 wisdom: missions below threshold are faster done directly (worktree still mandatory), but fleet v1's multi-teammate coordination is designed around spawn-mode. If you mark any mission `direct`, team-lead will execute it in a worktree between F6 and F7 checkpoint barrier instead of spawning a teammate.}
+
+### F4: Contract generation in batch
+
+Initialize the fleet session directory first:
+
+```bash
+FLEET_DIR=$(bash ~/.claude/commands/scripts/tw-fleet.sh init-session "$FLEET_SESSION")
+```
+
+For each issue, invoke `/team-claim` in **batch mode** (new `--batch` flag — skips Step 4c individual AskUserQuestion). You can sequence them (simpler for a first Operation Fleet implementation) or parallelize via independent Skill invocations.
+
+Per mission, record:
+- Generated Contract path (`.teamwork/active/MISSION-<N>.md`, inside the worktree after F5)
+- AI stated position from `/team-claim --batch` output (AGREE+EXTEND / CHALLENGE+PROPOSE / REDIRECT)
+
+Present ONE batch approval gate covering all N contracts (KQ3 option 3):
+
+**CONTRACT BATCH REVIEW** ── N={ISSUE_COUNT} ─────
+For each mission, show:
+  **#NNNN** {title}  · AI position: `{position}`
+  Objective: {one-line Objective}
+  Sub-tasks: {count} (checkpoint: **{checkpoint_type}**)
+  Success Criteria: {count verifiable}
+  {If CHALLENGE or REDIRECT from AI:} ⚠️ AI raised concerns — review before approving
+────────────────────────────────────────────────
+
+```
+question: "Approve all {N} Contracts? (单 approval gate,避免 N×per-Contract prompt 洪流)"
+options:
+  - label: "Approve all"
+  - label: "Approve some"
+  - label: "Cancel fleet"
+```
+
+If "Cancel" → `tw-fleet.sh cleanup-session $FLEET_SESSION` → delete any generated Contracts → **STOP**.
+
+If "Approve some" → per-mission AskUserQuestion loop (degrades to Auto-like UX for missions where user wants individual control).
+
+### F5: Worktree + branch setup per mission
+
+For each approved mission, in parallel:
+
+```bash
+SETUP=$(bash ~/.claude/commands/scripts/tw-git.sh claim-setup \
+  "$ISSUE_NUMBER" "$SLUG" "$GH_USER" \
+  "$TEAMWORK_DIR" "$TEAMWORK_DIR/active/MISSION-$ISSUE_NUMBER.md")
+eval "$SETUP"  # MODE, BRANCH, STATUS, WORKTREE_PATH
+```
+
+{^ `claim-setup` is **concurrent-safe for distinct missions** — verified in `tw-fleet-smoke-test.sh` (Gap 5 spike, N=3 parallel runs produce 3 distinct worktrees with no race). Fleet relies on this; do NOT parallelize if smoke test is not green.}
+
+### F6: TeamCreate + spawn feature-lead teammates
+
+```
+TeamCreate:
+  team_name: "{FLEET_SESSION}"
+  agent_type: "team-lead"
+  description: "Fleet of {ISSUE_COUNT} missions: {comma-separated issue numbers}"
+```
+
+For each `spawn`-mode mission, render a briefing via:
+
+```bash
+# Write vars file for template rendering
+cat > /tmp/fleet-vars-{MISSION}.env <<EOF
+CONTRACT_PATH={WORKTREE_PATH}/.teamwork/active/MISSION-{MISSION}.md
+WORKTREE_PATH={WORKTREE_PATH}
+MISSION_NUMBER={MISSION}
+CHECKPOINT_TYPE={from-Contract-AI-Notes}
+TEAM_NAME={FLEET_SESSION}
+EOF
+
+BRIEFING=$(bash ~/.claude/commands/scripts/tw-fleet.sh render-briefing \
+  ~/.claude/commands/reference/feature-lead-briefing-template.md \
+  /tmp/fleet-vars-{MISSION}.env)
+```
+
+Then `Agent` spawn in parallel (single message, N tool calls):
+
+```
+subagent_type: "feature-lead"  (fallback: "general-purpose")
+team_name: "{FLEET_SESSION}"
+name: "lead-{MISSION}"
+model: "opus"
+mode: "bypassPermissions"
+run_in_background: true
+prompt: {BRIEFING content}
+# ⛔ DO NOT pass isolation:"worktree" — worktree is pre-provisioned, passing
+#    this would spawn a competing worktree. See MEMORY feedback_worktree_isolation_agents.
+```
+
+For `direct`-mode missions, team-lead will execute them in their own worktrees between F7 and F12 (carried in the running loop).
+
+### F7: Checkpoint barrier — wait for N teammates
+
+Each spawned teammate runs `/team-drive` per briefing Step 3, **stops at Mode-A first-checkpoint** (per briefing Step 3/4), and SendMessages a `{type: "checkpoint", checkpoint_type, content_path}` message.
+
+Team-lead collects:
+```bash
+# After each teammate SendMessages a checkpoint, persist it:
+bash ~/.claude/commands/scripts/tw-fleet.sh persist-checkpoint \
+  "$FLEET_SESSION" "$MISSION" "$CHECKPOINT_TYPE" "$CONTENT_PATH"
+```
+
+**Barrier condition**: all N `spawn`-mode teammates have sent a checkpoint AND team-lead has completed any `direct`-mode missions' own pre-code design notes to equivalent depth.
+
+### F8: Batch review — highest-leverage step
+
+List persisted checkpoints:
+```bash
+bash ~/.claude/commands/scripts/tw-fleet.sh list-checkpoints "$FLEET_SESSION"
+# MISSION:TYPE:PATH lines
+```
+
+For each checkpoint, team-lead:
+1. **READS** the content.
+2. **VERIFIES FACT CLAIMS BY GREPPING IN THAT MISSION'S WORKTREE** (session 2 lesson — do NOT grep in main checkout; different worktrees have different code state).
+   ```bash
+   cd {WORKTREE_PATH}
+   grep ... {cited file}
+   cd -
+   ```
+3. Forms a position: AGREE+EXTEND / CHALLENGE+PROPOSE / REDIRECT.
+
+Then present a cross-mission batch review dashboard:
+
+**CHECKPOINT BATCH REVIEW** ── session `{FLEET_SESSION[0:16]}` ────
+  **#1298** `design-note`     — position: `AGREE+EXTEND` (3 adjustments)
+  **#1299** `delta-table`     — position: `CHALLENGE+PROPOSE` (recipe gap)
+  **#1302** `design-note`     — position: `AGREE+EXTEND` (3 adjustments)
+────────────────────────────────────────────────────────────────
+
+For each mission, via AskUserQuestion (one round per mission):
+```
+question: "#{MISSION}: approve / revise / escalate?"
+options:
+  - label: "Approve (with adjustments if any)"
+  - label: "Revise — send Amendments back"
+  - label: "Escalate — mission pauses, user decides"
+```
+
+Persist each decision:
+```bash
+# Write the team-lead rationale/adjustments to a file, then:
+bash ~/.claude/commands/scripts/tw-fleet.sh persist-approval \
+  "$FLEET_SESSION" "$MISSION" "$DECISION" "$RATIONALE_PATH"
+```
+
+SendMessage each teammate the approve/revise/escalate outcome. **In the Amendment message, write it precisely — if the teammate pushes back (session 2 lesson: bidirectional pushback is protected), treat that as high-value signal.**
+
+### F9: Approved teammates resume and finish
+
+Each approved teammate applies the plan + any adjustments → runs tests → commits → SendMessages `{type: "mission_done"}`.
+
+`revise` teammates go back to F7 with a new checkpoint once the Amendment is addressed. `escalate` missions pause — team-lead brings user into the loop.
+
+Team-lead `direct`-mode missions: implement in their own worktrees at this stage (code + test + commit), then fold into F10.
+
+### F10: Pre-ship verification
+
+Before F11 ship gate, team-lead (running in main repo, not in any worktree):
+1. Per mission, `cd {WORKTREE_PATH}` and run the mission's test command; verify green.
+2. Rebase each mission branch onto `origin/{BASE_BRANCH}` (base may have advanced while fleet was in flight — late rebase per session 1 lesson #3).
+3. Per mission, verify `git diff --check` clean and `git log --oneline -1` shows expected final commit.
+
+### F11: Ship gate
+
+Present a pre-ship summary:
+
+**PRE-SHIP SUMMARY** ── session `{FLEET_SESSION[0:16]}` ────
+  **#1298** branch *mission/1298-{slug}* · commits: `2` · tests: `37 passed`
+  **#1299** branch *mission/1299-{slug}* · commits: `1` · tests: `36 passed`
+  **#1302** branch *mission/1302-{slug}* · commits: `2` · tests: `13 passed`
+  All rebased on *{BASE_BRANCH}* ({BASE_SHA[0:12]})
+────────────────────────────────────────────────────────────
+
+```
+question: "Ship all {N}? (serial /team-ship invocations)"
+options:
+  - label: "Ship all"
+  - label: "Ship some"
+  - label: "Hold — do not ship"
+```
+
+### F12: Per-mission `/team-ship` — SERIAL not parallel
+
+**Serial on purpose** (Gap 7a critical finding): `/team-ship` has 11 AskUserQuestion gates. N×11 concurrent prompts would flood the user. Run `/team-ship` **one mission at a time**.
+
+For each approved-to-ship mission, in sequence:
+
+```bash
+cd {WORKTREE_PATH}
+# Invoke /team-ship via Skill tool (user sees its normal prompts for THIS mission only)
+# If Contract's AI Notes has a custom PR-body marker, /team-ship picks it up automatically
+# (no --body param; body travels through Contract, not around /team-ship — review Gap 7b)
+```
+
+Wait for each PR to be created before moving to the next mission. Record the PR number.
+
+### F13: Post-merge `/team-ship done`
+
+User manually merges each PR (human in the loop for merge decision). After each merge, team-lead runs `/team-ship done` (serial) for that mission. This does:
+- `gh issue close` (if Contract's Sub-tasks all done and Closes link is present)
+- Label transition to `status:done`
+- Contract archive to `.teamwork/completed/`
+- Worktree cleanup (optional — depends on user's `teamwork.worktree-cleanup-on-done` preference)
+
+### F14: Shutdown + TeamDelete + Summary
+
+```
+SendMessage each teammate: {"type":"shutdown_request"}
+# wait for each shutdown_ack
+TeamDelete: team_name: "{FLEET_SESSION}"
+# Optional: cleanup fleet session dir if user approves (default: preserve for audit)
+```
+
+Output final summary:
+
+**FLEET COMPLETE** ── session `{FLEET_SESSION[0:16]}` ────
+  Missions shipped: **{N}**
+  PRs merged: {pr_number list with issue refs}
+  Checkpoints persisted: `{FLEET_DIR}/checkpoints/`
+  Approvals persisted: `{FLEET_DIR}/approvals/`
+  Team dismissed.
+────────────────────────────────────────────────────────
+NEXT: monitor merged PRs. If follow-up ops needed per Contract Sub-task `🔧 MANUAL`, handle per usual.
+
+### Known Debt (inherited from design review)
+
+Documented honestly rather than hidden:
+- **n=1 evidence**: fleet v1 ships on one real run + one partially-matching serial-chain session. Invariants may shift with more data.
+- **Parallel-only**: serial mission chains (session 2 pattern) are NOT supported by fleet v1. User must run separate fleets sequentially.
+- **No cross-mission dependency graph**: if mission B needs mission A merged first, user must chain two fleets.
+- **Single role (`feature-lead`)**: no researcher/reviewer/implementer differentiation.
+- **No `/team-rc × fleet` concurrency support**: do not run `/team-rc` operations during an active fleet session.
+- **Cost budget**: no enforced token cap. Rough estimate N×typical-mission-tokens. Monitor manually.
+- **Security**: sensitive Contract data (tokens, prod UIDs) isolation is user responsibility; skill does not enforce.
+- **Attention scaling unverified**: tested up to N=3. N≥5 warning, N≥8 uncharted.
+
+**If you hit any of these limits → pause, escalate, or fall back to `/team auto` serial.**
+
+### Error paths (STOP conditions)
+
+- F1 issue count invalid → STOP
+- F2 any validation fails → STOP
+- F3 user cancels spawn decision → cleanup session → STOP
+- F4 user cancels Contract batch → cleanup session + delete contracts → STOP
+- F5 claim-setup fails (race or other) → cleanup session + STOP
+- F6 Agent spawn fails on any teammate → SendMessage shutdown to partial set + TeamDelete + cleanup → STOP
+- F7 barrier times out (teammate stuck) → SendMessage team-lead intervention; last-resort shutdown + cleanup → STOP
+- F8 escalate chosen for any mission → pause that mission; continue or hold rest per user
+- F10 verification fails on any mission → fix in worktree or exclude from F11 ship gate
+- F12 `/team-ship` fails mid-fleet → stop at failed mission; remaining missions stay unshipped but their code is on branch (user runs `/team-ship` manually later)
 
 **On any STOP:** Always append: 💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 

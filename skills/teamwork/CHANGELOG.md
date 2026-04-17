@@ -2,6 +2,51 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.14.0] — 2026-04-17
+
+### Added — `/team fleet` multi-mission orchestration sub-command
+
+First v1 of fleet built on lys's explicit override of the review verdict in `_project/archive/sessions/2026-04-17-B.md`. REDIRECT-class gaps addressed in code; Gap 6 (n=2+ evidence) accumulates post-ship.
+
+- **`/team fleet` sub-command** (routed through `team.md`): multi-mission full automation, mirrors `/team auto` shape (single → N). F0-F14 state machine: parse → validate → spawn-threshold → Contract batch → worktree+branch setup → TeamCreate + feature-lead spawn → checkpoint barrier → batch review → approved teammates resume → pre-ship verify → ship gate → serial `/team-ship` per mission → post-merge cleanup → TeamDelete.
+- **Parallel-only v1** (Gap 9 path a): serial mission chains (session 2 pattern) explicitly deferred to v2. Parallel independent missions only. Mixed topologies require user-level sequencing of multiple fleets.
+- **New script**: `scripts/tw-fleet.sh` — orchestrator mechanisms per Constitution P11 (Von Neumann separation): `new-session-id`, `parse-issues`, `spawn-threshold`, `init-session`, `persist-checkpoint`, `list-checkpoints`, `show-checkpoint`, `persist-approval`, `render-briefing`, `cleanup-session`.
+- **New template**: `reference/feature-lead-briefing-template.md` — briefing skeleton with placeholders (CONTRACT_PATH / WORKTREE_PATH / MISSION_NUMBER / CHECKPOINT_TYPE / TEAM_NAME) rendered per teammate via `tw-fleet.sh render-briefing`. Built fresh from Sprout spec + session 1 appendix; the vi_agent templates cited in Sprout L275 were **never actually persisted** and are not a usable basis.
+- **New checkpoint vocabulary**: 5 seed schemas under `reference/checkpoint-schemas/`:
+  - `design-note.md` — implementation plan before code (session 1 mission #1298 precedent)
+  - `delta-table.md` — current vs target quantitative gap (session 1 mission #1299 precedent)
+  - `research-result.md` — discovery result classifying A / A-partial / B (session 1 mission #1302 precedent)
+  - `risk-inventory.md` — enumerated risk + mitigation (seed, not yet exercised)
+  - `ad-hoc.md` — escape hatch with explicit guardrails
+- **`/team-claim --batch` flag** (KQ3 option 3): skip Step 4c AskUserQuestion when invoked by fleet's F4 batch approval gate. Avoids N-fold per-Contract prompt flood. Teammate still states AGREE+EXTEND / CHALLENGE+PROPOSE / REDIRECT position as a single printed line so fleet's bulk-approval gate can aggregate.
+- **Mode-A first-checkpoint gate**: teammates stop after Plan Assessment and SendMessage structured deliverable; team-lead does batch review across all N before any mission enters code phase.
+- **Session 2 discipline absorbed**:
+  - Briefing explicitly instructs bidirectional pushback (teammate pushes back on team-lead's Amendments, not just on Contract errors)
+  - Team-lead verification discipline documented: grep **in the teammate's worktree** before approving fact claims (not in main checkout — different worktrees have different code state)
+  - Spawn threshold: ≥3 files / ≥30 lines / cross-module → spawn teammate; else team-lead direct in worktree (still isolated)
+- **Checkpoint + approval persistence**: `.teamwork/fleet/<session-id>/checkpoints/` and `/approvals/` preserve artifacts for post-hoc audit (Gap 3 auditability dim, KQ10).
+- **Cross-MC persistence reuses `/team share`** (Gap 1 review refinement): fleet does not invent new comment format; uses existing anti-plague safeguards.
+- **New smoke test**: `scripts/tw-fleet-smoke-test.sh` — 40 tests covering (1) all `tw-fleet.sh` subcommands, (2) **Gap 5 concurrency spike**: N=3 parallel `claim-setup` in worktree mode → verifies 3 distinct worktrees + 3 distinct branches + correct `.mission` markers, (3) briefing template rendering + all 5 checkpoint schemas present.
+- **Help and dashboard updates**: `team.md` argument table + route dispatch + ONE-SHOT help block entry for `/team fleet`.
+
+### Known Debt (ships documented, not hidden)
+
+Called out in Operation Fleet help text and the companion review session log:
+
+- **n=1 evidence**: fleet v1 is based on one full parallel run (vi_agent 2026-04-16 #1298/#1299/#1302) plus one partial-match serial-chain session (teammate-work-2). Invariants may shift with more data — treat fleet v1 as a strong hypothesis, not proof.
+- **Parallel-only (Gap 9 path a)**: serial mission chains and mixed DAG topologies are **not supported**. User must run separate fleets sequentially if missions depend on each other's output.
+- **Cross-mission dependency graph (KQ8)**: out of scope for v1.
+- **Single role (`feature-lead`)**: no `researcher` / `reviewer` / `implementer` differentiation.
+- **`/team-rc` × fleet concurrency**: **not supported**. User must complete one before starting the other.
+- **Token cost budget**: no enforced cap; rough estimate guidance only (~N × typical-mission-tokens).
+- **Security**: sensitive Contract data (prod tokens, real UIDs) isolation is user responsibility; skill does not enforce.
+- **Attention scaling**: tested at N=3. Soft warning at N>5; N≥8 uncharted.
+- **Strategic fit**: `GOALS.md` designates teamwork as legacy. Fleet v1 un-retires teamwork on lys's explicit override; attention-budget cost on Radar/Harness lanes remains a real ongoing concern.
+
+### Changed
+
+- `team.md` and `team-claim.md` updated for `/team fleet` routing and `--batch` flag. No changes to `/team-drive`, `/team-ship`, `/team-issue`, or `/team-rc`.
+
 ## [3.13.0] — 2026-04-16
 
 ### Added — RC rebuild on production for squash-only release patterns

@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "3.13.0"
+version: "3.14.0"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -21,6 +21,7 @@ version: "3.13.0"
 | Input | Action |
 |-------|--------|
 | `#N` or `N` | Claim specific assigned Issue |
+| `#N --batch` | Claim non-interactively (skip Step 4c confirmation, accept Contract as-generated) — for fleet orchestration |
 | `list` | Browse MY assigned mission Issues |
 | `help` or `-h` | Show usage guide |
 | (empty) | Show my assigned Issues and pick one |
@@ -30,15 +31,17 @@ If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 **`/team-claim`** — Claim an assigned GitHub Issue as your mission
 
 **USAGE**
-  `/team-claim`           Show your assigned Issues and pick one
-  `/team-claim` **#042**       Claim specific assigned Issue
-  `/team-claim list`      Browse your assigned missions
+  `/team-claim`              Show your assigned Issues and pick one
+  `/team-claim` **#042**         Claim specific assigned Issue
+  `/team-claim` **#042** `--batch`  Non-interactive claim (fleet mode — no Step 4c prompt)
+  `/team-claim list`         Browse your assigned missions
 
 **WHAT HAPPENS**
   `1.` Fetches Issue from GitHub
   `2.` Generates AI-enriched Mission Contract (`.teamwork/active/MISSION-N.md`)
      — scans project to discover relevant files (Context Files, standalone test)
   `3.` Confirms Contract (AI states position: agree/challenge/redirect)
+     — skipped when `--batch` flag is present (fleet mode)
   `4.` Creates branch: *mission/{issue}-{slug}-{user}*
   `5.` Posts claim comment on GitHub
 
@@ -318,7 +321,9 @@ Display the generated Contract summary (Objective, Sub-tasks, Success Criteria) 
 
 **Detail ≠ accuracy.** Before AGREE, try to falsify each concrete claim — especially factual assertions about system state (what's broken, what's missing, which environments are affected). A confident-sounding Issue with specific IPs and step counts can still be partially wrong. If you didn't independently verify a claim, you cannot AGREE with it.
 
-Use `AskUserQuestion`:
+**⚡ Batch mode exception**: if `$ARGUMENTS` contains `--batch` (invoked by `/team fleet` orchestrator at F4), **SKIP the AskUserQuestion below** and proceed directly to Step 5. The fleet orchestrator batches one bulk approval across all N Contracts in its own F4 gate, which is why per-claim confirmation here would pile up as N separate prompts. Still state your position (AGREE+EXTEND / CHALLENGE+PROPOSE / REDIRECT) as a single printed line — fleet's batch review aggregates those statements. **Do not silent-comply even in batch mode** — if you would have selected "Cancel" in interactive mode, print `POSITION: REDIRECT — <reason>` and exit non-zero so fleet's F4 bulk-approval gate catches it.
+
+**Interactive mode (default — no `--batch`)**, use `AskUserQuestion`:
 ```
 question: "Contract ready. Confirm to create branch?"
 options:

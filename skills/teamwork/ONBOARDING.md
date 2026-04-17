@@ -68,7 +68,7 @@ Then run:
 **After setup, running `/team` again shows the team dashboard:**
 
 **MY DASHBOARD** — your-org/your-project ──────────────────
-Teamwork v3.13.0 · **V1.0**  `████████░░`  30%  `3`/`10`
+Teamwork v3.14.0 · **V1.0**  `████████░░`  30%  `3`/`10`
 
 👥 **TEAM** (2 members)
   alice (tech-lead)
@@ -250,6 +250,7 @@ Once set up, the daily cycle is:
 | Done | Deliver PR | `/team-ship` |
 | After merge | Close Issue, clean up | `/team-ship done` |
 | Repeat | Next task | `/team-claim` |
+| Multi | Run N missions in parallel | `/team fleet` **#A #B #C** |
 | Release | Prepare + promote | `/team-rc` |
 
 ---
