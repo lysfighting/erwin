@@ -17,6 +17,7 @@ Historical teamwork/process material still exists, but it no longer defines the 
 - Read [docs/README.md](docs/README.md) for the documentation map
 - Open [docs/index.html](docs/index.html) for the visual knowledge surface
 - Open [docs/knowledge/briefing.md](docs/knowledge/briefing.md) for the text briefing
+- Read [docs/harness-explainer.md](docs/harness-explainer.md) for the durable human-readable Harness overview
 - Read [docs/radar/README.md](docs/radar/README.md) for the new field-radar layer
 
 ## Repo Lanes
@@ -38,6 +39,7 @@ Historical teamwork/process material still exists, but it no longer defines the 
 
 ### Harness
 
+- [docs/harness-explainer.md](docs/harness-explainer.md)
 - [harness/README.md](harness/README.md)
 - [skills/harness/README.md](skills/harness/README.md)
 - [docs/harness-documentation-map.md](docs/harness-documentation-map.md)

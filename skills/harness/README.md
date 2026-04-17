@@ -2,18 +2,35 @@
 
 Codex-native leader surface for the repository-local orchestration harness stable line.
 
+If you want the full human-readable explanation first, read:
+
+- [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
+
 ## What it wraps
 
 - `bash scripts/harness-adapter.sh`
+- `bash scripts/harness-missions.sh schedule --brief`
 - `bash scripts/harness-missions.sh`
-- `bash scripts/harness-home.sh`
-- `bash scripts/harness-doctor.sh`
+- `bash scripts/harness-missions.sh get issue-1234 --brief`
+- `bash scripts/harness-runs.sh get RUN_ID --brief`
+- `bash scripts/harness-signals.sh adjudicate --all --brief`
+- `bash scripts/harness-meetings.sh summary MEETING_ID --brief`
+- `bash scripts/harness-meetings.sh lock-decision MEETING_ID "Keep this council scoped to the concrete decision." --brief`
+- `bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID independent_review support "Bounded evidence summary." --brief`
+- `bash scripts/harness-meetings.sh add-finding MEETING_ID accepted "Bounded judgment summary." --brief`
+- `bash scripts/harness-meetings.sh add-action MEETING_ID "Bounded follow-up action." --brief`
+- `bash scripts/harness-meetings.sh resolve-action MEETING_ID ACTION_ID done --brief`
+- `bash scripts/harness-meetings.sh orchestrate MEETING_ID --brief`
+- `bash scripts/harness-maintenance.sh reconcile --brief`
+- `bash scripts/harness-maintenance.sh normalize --brief`
+- `bash scripts/harness-home.sh` (`--brief` for a human-readable leader briefing)
+- `bash scripts/harness-doctor.sh` (`--brief` for a human-readable health briefing)
 - `bash scripts/harness-issue.sh`
-- `bash scripts/harness-claim.sh`
-- `bash scripts/harness-drive.sh`
-- `bash scripts/harness-teammates.sh`
-- `bash scripts/harness-ship.sh`
-- `bash scripts/harness-rc.sh`
+- `bash scripts/harness-claim.sh` (`--brief` for a human-readable claim handoff)
+- `bash scripts/harness-drive.sh` (`start|resume|wait|block|complete|meeting|meeting-close|adopt-meeting --brief` for human-readable action handoffs)
+- `bash scripts/harness-teammates.sh` (`assign|link|report|message|escalate|get --brief` for human-readable bounded delegation surfaces)
+- `bash scripts/harness-ship.sh` (`status --brief` for human-readable release-gate state)
+- `bash scripts/harness-rc.sh` (`list|get --brief` for human-readable release-candidate state)
 - `bash scripts/harness-meetings.sh`
 - `bash scripts/harness-maintenance.sh`
 
@@ -22,15 +39,53 @@ Codex-native leader surface for the repository-local orchestration harness stabl
 Use this when the model should act as the harness leader:
 
 - validate adapter/package integrity before bootstrap or sync work
-- inspect governed state
+- inspect governed state, including a human-readable leader briefing before drilling into raw JSON
+- inspect the scheduler portfolio as a human-readable leader object through `missions schedule --brief` before drilling into raw scheduler JSON
+- inspect active mission topology as a human-readable leader object through `missions graph --brief` before drilling into raw graph JSON
+- inspect one mission as a human-readable leader object through `missions get MISSION_ID --brief` before drilling into raw mission JSON
+- inspect mission control drift as a human-readable leader object through `missions authority-audit MISSION_ID --brief` before drilling into raw mission-audit JSON
+- inspect mission graph drift as a human-readable leader object through `missions authority-audit --all --brief` before drilling into raw bundle-audit JSON
+- inspect one run as a human-readable leader object through `runs get RUN_ID --brief` before drilling into raw run JSON
+- inspect run drift as a human-readable leader object through `runs authority-audit RUN_ID --brief` before drilling into raw audit JSON
+- inspect active control signals as a human-readable leader object through `signals active [MISSION_ID] --brief` before drilling into raw signal JSON
+- inspect signal repair as a human-readable leader object through `signals adjudicate SIGNAL_ID|--all --brief` before drilling into raw adjudication JSON
+- open a bounded council as a human-readable leader action through `drive meeting RUN_ID QUESTION --brief` before drilling into raw meeting JSON
+- close or re-adopt a council outcome as a human-readable leader action through `drive meeting-close RUN_ID MEETING_ID [NOTE] --brief` or `drive adopt-meeting RUN_ID MEETING_ID --brief` before drilling into raw adoption JSON
+- assign bounded teammate execution as a human-readable leader action through `teammates assign PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE] --brief` before drilling into raw assignment JSON
+- approve governed teammate communication links as a human-readable leader action through `teammates link RUN_A RUN_B [REASON] --brief` before drilling into raw linkage JSON
+- record teammate progress as a human-readable leader action through `teammates report TEAMMATE_RUN_ID SUMMARY --brief` before drilling into raw report JSON
+- record governed teammate communication as a human-readable leader action through `teammates message SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY --brief` before drilling into raw message JSON
+- escalate bounded teammate uncertainty as a human-readable leader action through `teammates escalate TEAMMATE_RUN_ID QUESTION --brief` before drilling into raw escalation JSON
+- inspect one bounded teammate as a human-readable leader object through `teammates get TEAMMATE_RUN_ID --brief` before drilling into raw teammate JSON
+- inspect release gates as a human-readable leader object through `ship status RUN_ID --brief` before drilling into raw ship JSON
+- inspect release candidates as human-readable release objects through `rc list --brief` and `rc get RC_ID --brief` before drilling into raw RC JSON
+- inspect one active or closed council as a human-readable leader object through `meetings summary MEETING_ID --brief` before drilling into raw meeting JSON
+- lock council decision scope as a human-readable leader action through `meetings lock-decision MEETING_ID TEXT --brief` before drilling into raw meeting JSON
+- record council positions as a human-readable leader action through `meetings add-position MEETING_ID TEAMMATE_RUN_ID PHASE STANCE TEXT --brief` before drilling into raw meeting JSON
+- record council findings as a human-readable leader action through `meetings add-finding MEETING_ID accepted|rejected|unresolved TEXT --brief` before drilling into raw meeting JSON
+- record council action items as a human-readable leader action through `meetings add-action MEETING_ID TEXT --brief` before drilling into raw meeting JSON
+- resolve council action items as a human-readable leader action through `meetings resolve-action MEETING_ID ACTION_ID [STATE] --brief` before drilling into raw meeting JSON
+- advance or refresh council orchestration as a human-readable leader object through `meetings orchestrate MEETING_ID --brief` before drilling into raw orchestration JSON
+- inspect same-claim council authority as a human-readable leader object through `meetings authority-audit MEETING_ID --brief` before drilling into raw council-audit JSON
+- inspect runtime repair as a human-readable leader object through `maintenance reconcile --brief` before drilling into raw reconciliation JSON
+- inspect runtime migration as a human-readable leader object through `maintenance normalize --brief` before drilling into raw normalization JSON
 - inspect mission graph and mission-level desired state
 - inspect mission-level authority through `missions authority-audit` when the freshest teammate activity and the leader-governed control run should differ
 - inspect graph-level mission conflicts through `missions authority-audit --all` when active missions may be colliding across ownership boundaries
 - draft or create executable issues
-- claim work into execution
+- claim work into execution with `claim --brief` when a human needs the created mission/run/contract and next leader action before drilling into raw JSON
+- drive core run actions with `drive report|start|resume|wait|block|complete|resolve-follow-up --brief` when a human needs the progress report, state transition, emitted signal, adopted follow-up result, and next leader/teammate/council action before drilling into raw JSON
+- open councils with `drive meeting --brief` when a human needs the created meeting id, host run, protocol, backlog ref, and next `meetings summary/orchestrate --brief` path before drilling into raw JSON
+- close or re-adopt councils with `drive meeting-close --brief` / `drive adopt-meeting --brief` when a human needs the adopted outcome, output packet kind, follow-up counts, authority adoption, and next run action before drilling into raw JSON
 - convene and close councils
-- assign and govern bounded teammate execution
+- assign bounded teammate execution with `teammates assign --brief` when a human needs the created teammate run, contract, ownership boundary, assignment signal, and next leader/teammate/council action before drilling into raw JSON
+- approve governed teammate peer links with `teammates link --brief` when a human needs the linked scopes, leader-approved reason, communication boundary, and no-ownership-transfer guarantee before drilling into raw JSON
+- record teammate reports with `teammates report --brief` when a human needs the emitted signal, freshness, evidence, and leader/teammate/council action before drilling into raw JSON
+- record governed peer communication with `teammates message --brief` when a human needs the source, target, emitted signal, evidence, and leader/source/target/council action before drilling into raw JSON
+- escalate teammate uncertainty with `teammates escalate --brief` when a human needs the emitted meeting signal, optional materialized council, decision protocol, and leader/teammate/council action before drilling into raw JSON
+- govern bounded teammate execution
 - transfer bounded ownership selectors formally when work changes hands
+- inspect ship/RC state with `ship status --brief`, `rc list --brief`, and `rc get --brief` before deciding whether to push, promote, fix, cancel, hotfix, or backport
 - copy bounded ownership selectors across explicitly shared runs when paired execution or review should retain the same governed boundary
 - express ownership with richer selector families such as `file:`, `dir:`, `module:`, `glob:`, `scope:`, and `interface:`
 - let semantic selector families govern the same boundary across `scope:` and `interface:` labels, including hierarchical prefixes like `scope:release` and `scope:release/notes`

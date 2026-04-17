@@ -61,11 +61,23 @@ assert_json_field() {
   local json="$1"
   local needle="$2"
   local label="$3"
-  if echo "$json" | grep -q "$needle"; then
+  if grep -Fq -- "$needle" <<<"$json"; then
     pass "$label"
   else
     fail "$label"
     echo "$json"
+  fi
+}
+
+assert_contains() {
+  local text="$1"
+  local needle="$2"
+  local label="$3"
+  if grep -Fq -- "$needle" <<<"$text"; then
+    pass "$label"
+  else
+    fail "$label"
+    echo "$text"
   fi
 }
 
@@ -77,6 +89,14 @@ run_id=$(printf '%s\n' "$claim_output" | sed -n 's/^[[:space:]]*"run_id": "\(run
 section "Ship"
 verify_output=$(run_in_repo ./scripts/harness-ship.sh verify "$run_id" "targeted-test:pass")
 assert_json_field "$verify_output" '"verification_status": "passed"' "ship verify records verification"
+ship_status_json=$(run_in_repo ./scripts/harness-ship.sh status "$run_id")
+assert_json_field "$ship_status_json" '"run_id": "'"$run_id"'"' "ship status default JSON preserves run id"
+assert_json_field "$ship_status_json" '"verification_status": "passed"' "ship status default JSON preserves verification gate"
+assert_json_field "$ship_status_json" '"ship_status": "unstarted"' "ship status default JSON preserves ship state"
+ship_status_brief=$(run_in_repo ./scripts/harness-ship.sh status "$run_id" --brief)
+assert_contains "$ship_status_brief" 'Harness Ship Status Briefing' "ship status --brief emits a human-readable ship briefing"
+assert_contains "$ship_status_brief" 'verification=passed' "ship status --brief surfaces verification gate state"
+assert_contains "$ship_status_brief" 'Ship state is gated by verification, PR review, checks, and merge readiness' "ship status --brief explains release gates"
 
 ready_output=$(run_in_repo ./scripts/harness-ship.sh ready "$run_id" "Ready for PR")
 assert_json_field "$ready_output" '"ship_status": "ready"' "ship ready advances run"
@@ -123,6 +143,9 @@ assert_json_field "$inconsistent_ship_update" '"ship_status": "approved"' "relea
 gate_conflict_audit=$(run_in_repo ./scripts/harness-runs.sh authority-audit "$run_id")
 assert_json_field "$gate_conflict_audit" '"claim_ref": "review_status"' "run authority audit reports review gate overriding optimistic ship status"
 assert_json_field "$gate_conflict_audit" '"claim_ref": "checks_status"' "run authority audit reports checks gate overriding optimistic ship status"
+gate_conflict_brief=$(run_in_repo ./scripts/harness-ship.sh status "$run_id" --brief)
+assert_contains "$gate_conflict_brief" 'review=changes_requested, checks=failed, merge_ready=false' "ship status --brief exposes gate truth over optimistic ship state"
+assert_contains "$gate_conflict_brief" 'Hold merge until review and checks gates are green' "ship status --brief blocks stale merge guidance when gates fail"
 
 review_approved_output=$(run_in_repo ./scripts/harness-ship.sh review "$run_id" approved "Approved after fixes")
 assert_json_field "$review_approved_output" '"review_status": "approved"' "ship review tracks approval"
@@ -146,9 +169,24 @@ rc_create_output=$(run_in_repo ./scripts/harness-rc.sh create v1.2.3 "$run_id")
 assert_json_field "$rc_create_output" '"version": "v1.2.3"' "rc create records version"
 assert_json_field "$rc_create_output" '"state": "active"' "rc create opens active rc"
 rc_id=$(printf '%s\n' "$rc_create_output" | sed -n 's/^[[:space:]]*"rc_id": "\(rc-[^"]*\)",$/\1/p' | head -n1)
+rc_list_json=$(run_in_repo ./scripts/harness-rc.sh list)
+assert_json_field "$rc_list_json" '"rc_id": "'"$rc_id"'"' "rc list default JSON preserves active rc id"
+assert_json_field "$rc_list_json" '"version": "v1.2.3"' "rc list default JSON preserves active rc version"
+rc_get_json=$(run_in_repo ./scripts/harness-rc.sh get "$rc_id")
+assert_json_field "$rc_get_json" '"rc_id": "'"$rc_id"'"' "rc get default JSON preserves rc id"
+assert_json_field "$rc_get_json" '"version": "v1.2.3"' "rc get default JSON preserves rc version"
+rc_list_brief=$(run_in_repo ./scripts/harness-rc.sh list --brief)
+assert_contains "$rc_list_brief" 'Harness RC List Briefing' "rc list --brief emits a human-readable rc list briefing"
+assert_contains "$rc_list_brief" '1 active RC' "rc list --brief surfaces active rc count"
+rc_get_brief=$(run_in_repo ./scripts/harness-rc.sh get "$rc_id" --brief)
+assert_contains "$rc_get_brief" 'Harness RC Briefing' "rc get --brief emits a human-readable rc briefing"
+assert_contains "$rc_get_brief" 'Version: v1.2.3' "rc get --brief names the rc version"
+assert_contains "$rc_get_brief" 'still needs staged verification' "rc get --brief explains active unverified rc state"
 
 rc_verify_output=$(run_in_repo ./scripts/harness-rc.sh verify "$rc_id" "staging-smoke:pass")
 assert_json_field "$rc_verify_output" '"verification_status": "passed"' "rc verify records verification"
+rc_verified_brief=$(run_in_repo ./scripts/harness-rc.sh get "$rc_id" --brief)
+assert_contains "$rc_verified_brief" 'verified and ready for promotion' "rc get --brief explains verified rc state"
 
 rc_promote_output=$(run_in_repo ./scripts/harness-rc.sh promote "$rc_id" "Promoted after staging smoke")
 assert_json_field "$rc_promote_output" '"state": "promoted"' "rc promote archives promoted rc"

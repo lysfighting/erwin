@@ -2,7 +2,7 @@
 
 > Status: Active
 >
-> Date: 2026-03-29
+> Date: 2026-04-10
 >
 > Purpose: provide a durable, file-backed starting point for fresh sessions so `Harness` work can resume from repository state instead of relying on chat-context memory.
 
@@ -24,6 +24,52 @@ and only then any surviving conversation context.
 This is intentional state persistence, not incidental documentation.
 
 External field intelligence and real usage feedback should enter `Harness` through the proposal-first learning loop and proposal ledger, not by directly rewriting runtime behavior from fresh observations alone.
+
+When a fresh session needs the fastest human-readable orientation before diving into architecture and control-plane details, start with [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md).
+
+Current human-direct entry stack:
+
+- `bash scripts/harness-home.sh --brief`
+- `bash scripts/harness-doctor.sh --brief`
+- `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE] --brief`
+- `bash scripts/harness-drive.sh start RUN_ID --brief`
+- `bash scripts/harness-drive.sh report RUN_ID "progress checkpoint" --brief`
+- `bash scripts/harness-drive.sh resume RUN_ID --brief`
+- `bash scripts/harness-drive.sh wait RUN_ID "reason" --brief`
+- `bash scripts/harness-drive.sh block RUN_ID "reason" --brief`
+- `bash scripts/harness-drive.sh complete RUN_ID "summary" --brief`
+- `bash scripts/harness-drive.sh meeting RUN_ID QUESTION --brief`
+- `bash scripts/harness-drive.sh meeting-close RUN_ID MEETING_ID [NOTE] --brief`
+- `bash scripts/harness-drive.sh adopt-meeting RUN_ID MEETING_ID --brief`
+- `bash scripts/harness-drive.sh resolve-follow-up RUN_ID [FOLLOW_UP_PACKET_ID] [STATE] --brief`
+- `bash scripts/harness-missions.sh schedule --brief`
+- `bash scripts/harness-missions.sh graph --brief`
+- `bash scripts/harness-missions.sh get MISSION_ID --brief`
+- `bash scripts/harness-missions.sh authority-audit MISSION_ID --brief`
+- `bash scripts/harness-missions.sh authority-audit --all --brief`
+- `bash scripts/harness-runs.sh get RUN_ID --brief`
+- `bash scripts/harness-runs.sh authority-audit RUN_ID --brief`
+- `bash scripts/harness-signals.sh active [MISSION_ID] --brief`
+- `bash scripts/harness-signals.sh adjudicate SIGNAL_ID|--all --brief`
+- `bash scripts/harness-teammates.sh assign PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE] --brief`
+- `bash scripts/harness-teammates.sh get TEAMMATE_RUN_ID --brief`
+- `bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID SUMMARY --brief`
+- `bash scripts/harness-teammates.sh link RUN_A RUN_B [REASON] --brief`
+- `bash scripts/harness-teammates.sh message SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY --brief`
+- `bash scripts/harness-teammates.sh escalate TEAMMATE_RUN_ID QUESTION --brief`
+- `bash scripts/harness-ship.sh status RUN_ID --brief`
+- `bash scripts/harness-rc.sh list --brief`
+- `bash scripts/harness-rc.sh get RC_ID --brief`
+- `bash scripts/harness-meetings.sh summary MEETING_ID --brief`
+- `bash scripts/harness-meetings.sh lock-decision MEETING_ID TEXT --brief`
+- `bash scripts/harness-meetings.sh add-position MEETING_ID TEAMMATE_RUN_ID PHASE STANCE TEXT --brief`
+- `bash scripts/harness-meetings.sh add-finding MEETING_ID accepted|rejected|unresolved TEXT --brief`
+- `bash scripts/harness-meetings.sh add-action MEETING_ID TEXT --brief`
+- `bash scripts/harness-meetings.sh resolve-action MEETING_ID ACTION_ID [STATE] --brief`
+- `bash scripts/harness-meetings.sh orchestrate MEETING_ID --brief`
+- `bash scripts/harness-meetings.sh authority-audit MEETING_ID --brief`
+- `bash scripts/harness-maintenance.sh reconcile --brief`
+- `bash scripts/harness-maintenance.sh normalize --brief`
 
 ---
 
@@ -51,6 +97,7 @@ Authoritative references:
 
 - [`AGENTS.md`](/Users/liyasong/Project/collov/erwin/AGENTS.md)
 - [`_project/CURRENT.md`](/Users/liyasong/Project/collov/erwin/_project/CURRENT.md)
+- [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
 - [`docs/harness-documentation-map.md`](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md)
 - [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
 - [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
@@ -103,6 +150,10 @@ Shell entrypoints are intentionally thin:
 - [`scripts/harness-meetings.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-meetings.sh)
 - [`scripts/harness-ship.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-ship.sh)
 - [`scripts/harness-rc.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-rc.sh)
+
+Human-facing runtime note:
+
+- `home` and `doctor` now support `--brief` for leader-readable summaries derived directly from the same control-plane truth, and `claim --brief`, `drive report|start|resume|wait|block|complete --brief`, `drive meeting --brief`, `drive meeting-close --brief`, `drive adopt-meeting --brief`, `drive resolve-follow-up --brief`, `missions schedule --brief`, `missions graph --brief`, `missions get MISSION_ID --brief`, `missions authority-audit MISSION_ID --brief`, `missions authority-audit --all --brief`, `runs get RUN_ID --brief`, `runs authority-audit RUN_ID --brief`, `signals active [MISSION_ID] --brief`, `signals adjudicate SIGNAL_ID|--all --brief`, `teammates assign PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE] --brief`, `teammates link RUN_A RUN_B [REASON] --brief`, `teammates report TEAMMATE_RUN_ID SUMMARY --brief`, `teammates message SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY --brief`, `teammates escalate TEAMMATE_RUN_ID QUESTION --brief`, `teammates get TEAMMATE_RUN_ID --brief`, `ship status RUN_ID --brief`, `rc list --brief`, `rc get RC_ID --brief`, `meetings summary MEETING_ID --brief`, `meetings lock-decision MEETING_ID TEXT --brief`, `meetings add-position MEETING_ID TEAMMATE_RUN_ID PHASE STANCE TEXT --brief`, `meetings add-finding MEETING_ID accepted|rejected|unresolved TEXT --brief`, `meetings add-action MEETING_ID TEXT --brief`, `meetings resolve-action MEETING_ID ACTION_ID [STATE] --brief`, `meetings orchestrate MEETING_ID --brief`, `meetings authority-audit MEETING_ID --brief`, `maintenance reconcile --brief`, and `maintenance normalize --brief` now do the same across claim, drive, scheduler, mission, graph, run, signal, teammate, release, council, and maintenance-repair layers; the default output remains machine-readable JSON for audits, tooling, and exact state inspection
 
 Runtime selection order:
 
@@ -342,16 +393,17 @@ For a new session that needs enough context to work safely, start here:
 
 1. [`AGENTS.md`](/Users/liyasong/Project/collov/erwin/AGENTS.md)
 2. [`_project/CURRENT.md`](/Users/liyasong/Project/collov/erwin/_project/CURRENT.md)
-3. [`docs/harness-documentation-map.md`](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md)
-4. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
-5. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
-6. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
-7. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
-8. this file
-9. [`docs/research/harness-gap-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-gap-audit-2026-03-29.md)
-10. [`docs/research/harness-research-drift-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-research-drift-audit-2026-03-29.md)
-11. recent session logs
-12. recent commits on `codex/harness-release-lifecycle`
+3. [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
+4. [`docs/harness-documentation-map.md`](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md)
+5. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
+6. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
+7. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
+8. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
+9. this file
+10. [`docs/research/harness-gap-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-gap-audit-2026-03-29.md)
+11. [`docs/research/harness-research-drift-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-research-drift-audit-2026-03-29.md)
+12. recent session logs
+13. recent Harness commits on `main` or the active task branch
 
 Recommended recent session logs:
 

@@ -19,6 +19,18 @@ pass() { PASS=$((PASS + 1)); echo "  PASS  $1"; }
 fail() { FAIL=$((FAIL + 1)); echo "  FAIL  $1"; }
 section() { echo ""; echo "=== $1 ==="; }
 
+assert_contains() {
+  local text="$1"
+  local needle="$2"
+  local label="$3"
+  if grep -Fq -- "$needle" <<<"$text"; then
+    pass "$label"
+  else
+    fail "$label"
+    echo "$text"
+  fi
+}
+
 TEST_REPO="$TMPDIR_ROOT/repo"
 mkdir -p "$TEST_REPO/scripts" "$TEST_REPO/harness/profiles" "$TEST_REPO/harness/templates" "$TEST_REPO/harness/policies"
 registry_path="$TEST_REPO/.harness/runs/registry.yml"
@@ -95,9 +107,26 @@ section "Delegation"
 assign_a=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-auth implementation-verifier "Patch auth callers" --scope="auth callers" --owns="scope:auth-callers" --report="progress|blockers|verification")
 assert_json_field "$assign_a" '"owner_id": "worker-auth"' "first teammate assignment created"
 run_a=$(printf '%s\n' "$assign_a" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+assign_brief=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-ui implementation-verifier "Patch UI callers" --scope="ui callers" --owns="scope:ui-callers" --report="progress|blockers|verification" --brief)
+assert_contains "$assign_brief" 'Harness Teammate Assignment Briefing' "teammates assign --brief emits a human-readable assignment briefing"
+assert_contains "$assign_brief" 'Teammate: worker-ui' "teammates assign --brief names the bounded teammate owner"
+assert_contains "$assign_brief" "Assignment: mission=issue-33001, role=implementation-verifier, state=ready" "teammates assign --brief explains the created teammate run context"
+assert_contains "$assign_brief" 'Scope: ui callers, ownership=scope:ui-callers' "teammates assign --brief explains assignment scope and ownership"
+assert_contains "$assign_brief" 'Leader delegated a bounded execution unit' "teammates assign --brief explains why the delegation is bounded"
+assert_contains "$assign_brief" 'worker-ui should continue Patch UI callers and report progress, blockers, verification.' "teammates assign --brief tells the teammate what to do next"
 assign_b=$(run_in_repo bash scripts/harness-teammates.sh assign "$leader_run_id" worker-ops ops-simulator "Check release-facing auth flows" --scope="release auth smoke" --owns="scope:release-auth-smoke|file:CHANGELOG.md" --depends-on="$run_a" --report="progress|risk_raised|verification")
 assert_json_field "$assign_b" '"owner_id": "worker-ops"' "second teammate assignment created"
 run_b=$(printf '%s\n' "$assign_b" | sed -n 's/^[[:space:]]*"run_id": "\(run-[^"]*\)",$/\1/p' | head -n1)
+run_a_brief=$(run_in_repo bash scripts/harness-runs.sh get "$run_a" --brief)
+assert_contains "$run_a_brief" "This is a bounded teammate run under $leader_run_id." "runs get --brief explains teammate-run priority relative to the parent run"
+assert_contains "$run_a_brief" 'worker-auth owns this run; next report should cover progress, blockers.' "runs get --brief explains the teammate reporting expectation in human-readable form"
+teammate_a_brief=$(run_in_repo bash scripts/harness-teammates.sh get "$run_a" --brief)
+assert_contains "$teammate_a_brief" 'Teammate: worker-auth' "teammates get --brief names the bounded teammate owner"
+assert_contains "$teammate_a_brief" "Assignment: mission=issue-33001, parent=$leader_run_id, role=implementation-verifier, state=ready" "teammates get --brief explains the teammate assignment context"
+assert_contains "$teammate_a_brief" 'worker-auth should continue Patch auth callers and report progress, blockers, verification.' "teammates get --brief tells the teammate what to report next"
+teammate_b_brief=$(run_in_repo bash scripts/harness-teammates.sh get "$run_b" --brief)
+assert_contains "$teammate_b_brief" "worker-ops is waiting on unsatisfied dependencies: $run_a." "teammates get --brief explains dependency-blocked teammate state"
+assert_contains "$teammate_b_brief" "Leader should keep worker-ops bounded behind dependencies: $run_a." "teammates get --brief tells the leader how to handle dependency-blocked teammate work"
 
 list_output=$(run_in_repo bash scripts/harness-teammates.sh list "$leader_run_id")
 assert_json_field "$list_output" '"owner_id": "worker-auth"' "teammate list shows first delegated run"
@@ -232,11 +261,31 @@ section "Reporting and communication"
 report_output=$(run_in_repo bash scripts/harness-teammates.sh report "$run_a" "Auth caller patch is ready for sibling review" --kind=progress --evidence=src/auth.ts)
 assert_json_field "$report_output" '"kind": "progress"' "teammate report emits progress signal"
 assert_json_field "$report_output" '"latest_summary": "Auth caller patch is ready for sibling review"' "teammate report updates run summary"
+report_brief=$(run_in_repo bash scripts/harness-teammates.sh report "$run_a" "Auth caller patch remains ready after local verification" --kind=progress --evidence=src/auth.ts --brief)
+assert_contains "$report_brief" 'Harness Teammate Report Briefing' "teammates report --brief emits a human-readable report briefing"
+assert_contains "$report_brief" 'Report: kind=progress, signal=sig-' "teammates report --brief names the report signal"
+assert_contains "$report_brief" 'Summary: Auth caller patch remains ready after local verification' "teammates report --brief preserves the reported progress summary"
+assert_contains "$report_brief" 'This teammate report is now a structured control-plane signal' "teammates report --brief explains report governance"
+assert_contains "$report_brief" 'Review the teammate progress report, keep the assignment bounded' "teammates report --brief tells the leader how to use the report"
+
+link_brief=$(run_in_repo bash scripts/harness-teammates.sh link "$run_a" "$run_b" "Allow auth and release-smoke teammates to coordinate on the interface handoff." --brief)
+assert_contains "$link_brief" 'Harness Teammate Link Briefing' "teammates link --brief emits a human-readable linkage briefing"
+assert_contains "$link_brief" "Source: worker-auth ($run_a)." "teammates link --brief names the source teammate"
+assert_contains "$link_brief" "Target: worker-ops ($run_b)." "teammates link --brief names the target teammate"
+assert_contains "$link_brief" 'Allow auth and release-smoke teammates to coordinate on the interface handoff.' "teammates link --brief preserves the leader-approved reason"
+assert_contains "$link_brief" 'without transferring ownership or mission authority' "teammates link --brief explains the governed communication boundary"
 
 message_output=$(run_in_repo bash scripts/harness-teammates.sh message "$run_a" "$run_b" interface_change "Caller signature now requires scope" --evidence=src/auth.ts)
 assert_json_field "$message_output" '"kind": "interface_change"' "teammate message emits sibling signal"
 assert_json_field "$message_output" "\"$run_b\"" "teammate message targets sibling run"
 message_signal_id=$(printf '%s\n' "$message_output" | sed -n 's/^[[:space:]]*"signal_id": "\(sig-[^"]*\)",$/\1/p' | head -n1)
+message_brief=$(run_in_repo bash scripts/harness-teammates.sh message "$run_a" "$run_b" interface_change "Caller signature still requires scope for release note review" --evidence=src/auth.ts --brief)
+assert_contains "$message_brief" 'Harness Teammate Message Briefing' "teammates message --brief emits a human-readable message briefing"
+assert_contains "$message_brief" "Source: worker-auth ($run_a)." "teammates message --brief names the source teammate"
+assert_contains "$message_brief" "Target: worker-ops ($run_b)." "teammates message --brief names the target teammate"
+assert_contains "$message_brief" 'Message: kind=interface_change, signal=sig-' "teammates message --brief names the message signal"
+assert_contains "$message_brief" 'governed teammate-to-teammate communication' "teammates message --brief explains governed communication"
+assert_contains "$message_brief" 'Review the interface-change signal' "teammates message --brief tells the leader how to handle interface-change communication"
 
 section "Mission authority"
 mission_control_output=$(run_in_repo bash scripts/harness-missions.sh get issue-33001)
@@ -247,6 +296,9 @@ assert_json_field "$mission_authority_output" "\"authoritative_run_id\": \"$lead
 assert_json_field "$mission_authority_output" '"adjudication_count": 1' "mission authority audit records a leader-over-teammate adjudication"
 assert_json_field "$mission_authority_output" '"resolution_kind": "leader_run_controls_mission"' "mission authority audit explains that the leader run controls mission state"
 assert_json_field "$mission_authority_output" '"unresolved_conflict_count": 0' "mission authority audit reports no unresolved root-run conflict in the delegated case"
+mission_authority_brief_output=$(run_in_repo bash scripts/harness-missions.sh authority-audit issue-33001 --brief)
+assert_contains "$mission_authority_brief_output" "Mission issue-33001 remains governed by authoritative run $leader_run_id even though freshest activity is on" "missions authority-audit --brief explains leader-over-teammate control in human-readable form"
+assert_contains "$mission_authority_brief_output" "Leader should keep mission control anchored to authoritative run $leader_run_id and treat fresher sibling activity as execution evidence, not mission truth." "missions authority-audit --brief names the leader action for governed teammate activity"
 
 section "Meeting escalation"
 escalate_output=$(run_in_repo bash scripts/harness-teammates.sh escalate "$run_b" "Do we need a release-note update for auth scope?" --materialize)
@@ -254,6 +306,13 @@ assert_json_field "$escalate_output" '"kind": "requires_meeting"' "teammate esca
 assert_json_field "$escalate_output" '"state": "active"' "teammate escalation materializes active meeting"
 meeting_signal_id=$(printf '%s\n' "$escalate_output" | sed -n 's/^[[:space:]]*"signal_id": "\(sig-[^"]*\)",$/\1/p' | head -n1)
 meeting_id=$(printf '%s\n' "$escalate_output" | sed -n 's/^[[:space:]]*"meeting_id": "\(meeting-[^"]*\)",$/\1/p' | head -n1)
+escalate_brief=$(run_in_repo bash scripts/harness-teammates.sh escalate "$run_b" "Should release notes mention the scoped auth caller contract?" --materialize --protocol=decision-record --brief)
+assert_contains "$escalate_brief" 'Harness Teammate Escalation Briefing' "teammates escalate --brief emits a human-readable escalation briefing"
+assert_contains "$escalate_brief" "Teammate: worker-ops" "teammates escalate --brief names the escalating teammate"
+assert_contains "$escalate_brief" 'Escalation: kind=requires_meeting, signal=sig-' "teammates escalate --brief names the meeting signal"
+assert_contains "$escalate_brief" 'Meeting: meeting-' "teammates escalate --brief names the materialized council"
+assert_contains "$escalate_brief" 'Protocol: decision-record.' "teammates escalate --brief preserves explicit decision protocol"
+assert_contains "$escalate_brief" 'Open meeting-' "teammates escalate --brief tells the leader how to inspect the council"
 
 role_a=$(run_in_repo bash scripts/harness-meetings.sh add-role "$meeting_id" implementation-verifier --mission="Verify the scoped auth change against code and release notes." --allow="L1: live git state|L2: active runtime state|L3: committed harness definitions" --forbid="L4+: stale summaries")
 role_b=$(run_in_repo bash scripts/harness-meetings.sh add-role "$meeting_id" ops-simulator --mission="Simulate release-facing operator impact." --allow="L1: live git state|L2: active runtime state|L3: committed harness definitions" --forbid="Unverified memory")
@@ -263,8 +322,11 @@ assert_json_field "$role_b" '"ops-simulator"' "meeting keeps the second bounded 
 known_context=$(run_in_repo bash scripts/harness-meetings.sh add-known-context "$meeting_id" "Release notes currently mention auth callers but not required scope.")
 assert_json_field "$known_context" '"known_context"' "meeting records known context"
 
-locked_decision=$(run_in_repo bash scripts/harness-meetings.sh lock-decision "$meeting_id" "Do not widen teammate scope beyond auth-related release notes." --reason="Bounded council scope for this meeting." --authority="L2" --evidence=harness/profiles/erwin.yml)
-assert_json_field "$locked_decision" '"locked_decisions"' "meeting records locked decisions"
+locked_decision=$(run_in_repo bash scripts/harness-meetings.sh lock-decision "$meeting_id" "Do not widen brief scope beyond auth-related release notes." --reason="Bounded council scope for this meeting." --authority="L2" --evidence=harness/profiles/erwin.yml --brief)
+assert_contains "$locked_decision" 'Harness Meeting Decision Lock Briefing' "meetings lock-decision --brief emits a human-readable decision lock briefing"
+assert_contains "$locked_decision" "Meeting: $meeting_id" "meetings lock-decision --brief names the target council"
+assert_contains "$locked_decision" 'Decision: decision-' "meetings lock-decision --brief names the locked decision"
+assert_contains "$locked_decision" 'Leader should keep the council bounded to: Do not widen brief scope beyond auth-related release notes.' "meetings lock-decision --brief preserves free-text scope while telling the leader how to preserve council scope"
 
 participant_a=$(run_in_repo bash scripts/harness-meetings.sh add-participant "$meeting_id" "$run_a" implementation-verifier)
 participant_b=$(run_in_repo bash scripts/harness-meetings.sh add-participant "$meeting_id" "$run_b" ops-simulator)
@@ -299,8 +361,11 @@ accepted_finding=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$me
 assert_json_field "$accepted_finding" '"accepted"' "meeting records accepted findings"
 lower_authority_conflict=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$meeting_id" unresolved "Release notes might be optional for this scope change." --reason="Earlier hypothesis before cross-examination." --authority="L3" --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator --claim=release-note-scope --dimension=factual --supports="$position_b_id")
 assert_json_field "$lower_authority_conflict" '"unresolved"' "meeting records lower-authority conflicting finding"
-action_output=$(run_in_repo bash scripts/harness-meetings.sh add-action "$meeting_id" "Update release notes before merging the auth change.")
-assert_json_field "$action_output" '"action_items"' "meeting records action items"
+action_output=$(run_in_repo bash scripts/harness-meetings.sh add-action "$meeting_id" "Update release notes before merging the auth change." --brief)
+assert_contains "$action_output" 'Harness Meeting Action Briefing' "meetings add-action --brief explains the recorded council action in human-readable form"
+assert_contains "$action_output" "Meeting: $meeting_id" "meetings add-action --brief names the council that owns the action"
+assert_contains "$action_output" 'Action: action-' "meetings add-action --brief names the recorded action item"
+assert_contains "$action_output" 'No teammate was assigned by this meeting action itself' "meetings add-action --brief explains teammate assignment remains leader-owned"
 
 orchestrate_c=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$meeting_id")
 assert_json_field "$orchestrate_c" '"new_phase": "output"' "meeting orchestration can close directly to output once synthesis is already ready"
@@ -319,6 +384,9 @@ assert_json_field "$summary_output" '"open_route_action_count": 0' "meeting summ
 assert_json_field "$summary_output" '"unrouted_claim_count": 0' "meeting summary reports no unrouted conflict claim"
 authority_audit=$(run_in_repo bash scripts/harness-meetings.sh authority-audit "$meeting_id")
 assert_json_field "$authority_audit" '"resolution_kind": "authority_wins"' "authority audit explains higher-authority winner"
+authority_audit_brief=$(run_in_repo bash scripts/harness-meetings.sh authority-audit "$meeting_id" --brief)
+assert_contains "$authority_audit_brief" "Meeting $meeting_id already has an adjudicated higher-authority winner for its same-claim conflicts." "meetings authority-audit --brief explains adjudicated council authority in human-readable form"
+assert_contains "$authority_audit_brief" 'No additional authority repair is required; continue the council toward synthesis or output.' "meetings authority-audit --brief names the leader action once a higher-authority winner is established"
 
 section "Automated council synthesis"
 auto_meeting_output=$(run_in_repo bash scripts/harness-drive.sh meeting "$leader_run_id" "What should the council synthesize about auth release notes?")
@@ -486,7 +554,11 @@ incident_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrat
 assert_json_field "$incident_orchestrate_a" '"new_phase": "independent_review"' "incident-command meeting advances into independent review"
 assert_json_field "$incident_orchestrate_a" '"next_requirement": "Collect 2 bounded incident assessment(s)' "incident-command meeting uses protocol-specific independent-review guidance"
 
-run_in_repo bash scripts/harness-meetings.sh add-position "$incident_meeting_id" "$run_a" independent_review support "We should roll back immediately to reduce release blast radius." --claim=incident-rollback --dimension=operational --authority=L2 --evidence=CHANGELOG.md >/dev/null
+incident_position_brief=$(run_in_repo bash scripts/harness-meetings.sh add-position "$incident_meeting_id" "$run_a" independent_review support "We should roll back immediately to reduce release blast radius." --claim=incident-rollback --dimension=operational --authority=L2 --evidence=CHANGELOG.md --brief)
+assert_contains "$incident_position_brief" 'Harness Meeting Position Briefing' "meetings add-position --brief emits a human-readable council position briefing"
+assert_contains "$incident_position_brief" "Meeting: $incident_meeting_id" "meetings add-position --brief names the target council"
+assert_contains "$incident_position_brief" 'claim=incident-rollback/operational' "meetings add-position --brief preserves the governed claim scope"
+assert_contains "$incident_position_brief" 'Collect 1 remaining independent-review position' "meetings add-position --brief explains remaining council coverage"
 run_in_repo bash scripts/harness-meetings.sh add-position "$incident_meeting_id" "$run_b" independent_review challenge "We can hold the release if the operator note lands first." --claim=incident-rollback --dimension=operational --authority=L2 --evidence=docs/release.md >/dev/null
 
 incident_orchestrate_b=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$incident_meeting_id")
@@ -502,6 +574,10 @@ assert_json_field "$incident_output_summary" '"owner": "incident-commander"' "in
 assert_json_field "$incident_output_summary" '"output_follow_up_packet_count": 1' "incident-command output packet synthesizes one structured follow-up packet"
 assert_json_field "$incident_output_summary" '"execution_kind": "incident_checkpoint"' "incident-command follow-up packet keeps protocol-specific execution semantics visible"
 assert_json_field "$incident_output_summary" '"claim_ref": "incident-rollback"' "incident-command follow-up packet keeps the governed claim lane visible"
+incident_output_brief=$(run_in_repo bash scripts/harness-meetings.sh summary "$incident_meeting_id" --brief)
+assert_contains "$incident_output_brief" 'protocol=incident-command.' "meetings summary --brief preserves protocol-aware incident state"
+assert_contains "$incident_output_brief" "Meeting $incident_meeting_id has a provisional incident_command_output packet ready for adoption or close." "meetings summary --brief explains protocol-aware output readiness"
+assert_contains "$incident_output_brief" 'Current output packet is incident_command_output. 1 of 1 follow-up packet(s) remain open.' "meetings summary --brief explains protocol-aware follow-up output"
 
 run_in_repo bash scripts/harness-meetings.sh set-protocol "$incident_meeting_id" decision-record >/dev/null
 decision_record_summary=$(run_in_repo bash scripts/harness-meetings.sh summary "$incident_meeting_id")
@@ -564,7 +640,7 @@ assert_json_field "$aligned_summary" '"planned_route_count": 0' "aligned-review 
 section "Home and doctor"
 home_output=$(run_in_repo bash scripts/harness-home.sh)
 assert_json_field "$home_output" '"active_mission_count": 1' "home surfaces active mission count"
-assert_json_field "$home_output" '"active_teammate_count": 7' "home surfaces active teammate runs"
+assert_json_field "$home_output" '"active_teammate_count": 8' "home surfaces active teammate runs"
 assert_json_field "$home_output" '"coordination_signal_count":' "home surfaces coordination signal count"
 assert_json_field "$home_output" '"dependency_blocked_count": 1' "home surfaces dependency-blocked runs"
 assert_json_field "$home_output" '"ownership_overlap_count": 0' "home stays free of ownership overlap"
@@ -678,6 +754,9 @@ assert_json_field "$governance_orchestrate_a" 'missing authority hierarchy' "gov
 governance_summary_a=$(run_in_repo bash scripts/harness-meetings.sh summary "$governance_meeting_id")
 assert_json_field "$governance_summary_a" '"governance_gap_count": 1' "meeting summary surfaces one authority-hierarchy governance gap"
 assert_json_field "$governance_summary_a" 'missing authority hierarchy' "meeting summary names the authority-hierarchy governance gap"
+governance_brief_a=$(run_in_repo bash scripts/harness-meetings.sh summary "$governance_meeting_id" --brief)
+assert_contains "$governance_brief_a" "Meeting $governance_meeting_id is blocked in setup by governance policy gaps." "meetings summary --brief explains governance blocking in human-readable form"
+assert_contains "$governance_brief_a" 'missing authority hierarchy' "meetings summary --brief names the blocking governance gap"
 
 rewrite_json_in_file "$governance_meeting_file" 's~"authority_hierarchy": \[\]~"authority_hierarchy": ["L1: live git/GitHub state","L2: active runtime state","L3: committed harness definitions"]~s'
 run_in_repo bash scripts/harness-meetings.sh add-participant "$governance_meeting_id" "$run_a" implementation-verifier >/dev/null
@@ -699,7 +778,11 @@ rejected_reason_pos_a=$(run_in_repo bash scripts/harness-meetings.sh add-positio
 rejected_reason_pos_b=$(run_in_repo bash scripts/harness-meetings.sh add-position "$rejected_reason_meeting_id" "$run_b" independent_review support "Independent review agrees the broader rollout note would overstate impact." --claim=rejected-reason-scope --dimension=factual --authority=L2 --evidence=CHANGELOG.md)
 rejected_reason_pos_a_id=$(printf '%s\n' "$rejected_reason_pos_a" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
 rejected_reason_pos_b_id=$(printf '%s\n' "$rejected_reason_pos_b" | sed -n 's/^[[:space:]]*"position_id": "\(position-[^"]*\)",$/\1/p' | tail -n1)
-run_in_repo bash scripts/harness-meetings.sh add-finding "$rejected_reason_meeting_id" rejected "Reject broad rollout note." --authority=L2 --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator --claim=rejected-reason-scope --dimension=factual --supports="$rejected_reason_pos_a_id|$rejected_reason_pos_b_id" >/dev/null
+rejected_reason_finding_brief=$(run_in_repo bash scripts/harness-meetings.sh add-finding "$rejected_reason_meeting_id" rejected "Reject broad rollout note." --authority=L2 --evidence=CHANGELOG.md --run="$run_b" --role=ops-simulator --claim=rejected-reason-scope --dimension=factual --supports="$rejected_reason_pos_a_id|$rejected_reason_pos_b_id" --brief)
+assert_contains "$rejected_reason_finding_brief" 'Harness Meeting Finding Briefing' "meetings add-finding --brief emits a human-readable council finding briefing"
+assert_contains "$rejected_reason_finding_brief" "Meeting: $rejected_reason_meeting_id" "meetings add-finding --brief names the target council"
+assert_contains "$rejected_reason_finding_brief" 'kind=rejected' "meetings add-finding --brief preserves the finding kind"
+assert_contains "$rejected_reason_finding_brief" 'Record an explicit reason for rejected finding' "meetings add-finding --brief explains rejected-finding governance repair"
 run_in_repo bash scripts/harness-meetings.sh set-phase "$rejected_reason_meeting_id" synthesis >/dev/null
 
 rejected_reason_orchestrate_a=$(run_in_repo bash scripts/harness-meetings.sh orchestrate "$rejected_reason_meeting_id")
@@ -760,6 +843,11 @@ assert_json_field "$follow_up_assignment" "\"delegated_from_meeting_id\": \"$dec
 assert_json_field "$follow_up_assignment" "\"delegated_from_follow_up_execution_kind\": \"decision_record_follow_up\"" "teammate follow-up assignment preserves protocol-aware execution kind"
 assert_json_field "$follow_up_assignment" "\"objective\": \"$decision_record_follow_up_action\"" "teammate follow-up assignment derives its objective from adopted follow-up guidance"
 assert_json_field "$follow_up_assignment" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "teammate follow-up assignment starts from the adopted follow-up action text"
+follow_up_brief=$(run_in_repo bash scripts/harness-teammates.sh get "$follow_up_run_id" --brief)
+assert_contains "$follow_up_brief" 'Teammate: worker-follow-up' "teammates get --brief names the delegated follow-up owner"
+assert_contains "$follow_up_brief" "Delegated Follow-up: packet=$decision_record_follow_up_packet_id, state=open, meeting=$decision_record_meeting_id." "teammates get --brief explains delegated follow-up provenance"
+assert_contains "$follow_up_brief" "worker-follow-up should execute delegated follow-up $decision_record_follow_up_packet_id:" "teammates get --brief tells the delegated follow-up teammate what to do"
+assert_contains "$follow_up_brief" 'synthesis_must_record_tradeoff' "teammates get --brief preserves the delegated follow-up execution kind"
 schedule_after_follow_up_handoff=$(run_in_repo bash scripts/harness-missions.sh schedule)
 assert_json_field "$schedule_after_follow_up_handoff" "\"adopted_primary_follow_up_delegated_run_id\": \"$follow_up_run_id\"" "scheduler surfaces the delegated teammate run for the adopted follow-up"
 assert_json_field "$schedule_after_follow_up_handoff" "\"adopted_primary_follow_up_delegated_owner\": \"worker-follow-up\"" "scheduler surfaces the delegated teammate owner for the adopted follow-up"
@@ -791,6 +879,9 @@ refreshed_follow_up_run=$(run_in_repo bash scripts/harness-drive.sh report "$fol
 assert_json_field "$refreshed_follow_up_run" '"latest_summary": "Refresh stale delegated adopted follow-up after stale-monitor coverage."' "delegated teammate can refresh stale follow-up state after stale-monitor coverage"
 leader_refresh_follow_up=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
 assert_json_field "$leader_refresh_follow_up" '"follow_up_packet_id": "'"$decision_record_follow_up_packet_id"'"' "governing run can still address the delegated adopted follow-up packet directly"
+leader_refresh_follow_up_brief=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open --brief)
+assert_contains "$leader_refresh_follow_up_brief" 'Harness Follow-Up Resolution Briefing' "drive resolve-follow-up --brief emits a human-readable follow-up briefing"
+assert_contains "$leader_refresh_follow_up_brief" 'Resolution Scope: state=open, delegated=false' "drive resolve-follow-up --brief explains governing-run follow-up reopening"
 follow_up_run_after_leader_refresh=$(run_in_repo bash scripts/harness-teammates.sh get "$follow_up_run_id")
 assert_json_field "$follow_up_run_after_leader_refresh" '"delegated_follow_up_state": "open"' "delegated teammate run syncs open follow-up state when the governing run refreshes the packet"
 set +e
@@ -825,6 +916,9 @@ assert_json_field "$decision_record_resolve" '"delegated_resolution": true' "dri
 assert_json_field "$decision_record_resolve" '"delegated_follow_up_state": "done"' "delegated teammate run records follow-up completion state"
 assert_json_field "$decision_record_resolve" '"next_expected_action": "Report completion back to the leader or continue any remaining bounded execution."' "delegated teammate run advances into post-follow-up reporting guidance"
 assert_json_field "$decision_record_resolve" '"next_expected_action": "Continue governed execution after the adopted follow-up is complete."' "governing run guidance still advances after delegated follow-up resolution"
+decision_record_resolve_brief=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$follow_up_run_id" "$decision_record_follow_up_packet_id" done --brief)
+assert_contains "$decision_record_resolve_brief" 'Resolution Scope: state=done, delegated=true' "drive resolve-follow-up --brief explains delegated teammate follow-up closure"
+assert_contains "$decision_record_resolve_brief" 'worker-follow-up should report the done follow-up state back to the leader.' "drive resolve-follow-up --brief gives delegated teammate reporting guidance"
 leader_reopen_after_delegated_resolution=$(run_in_repo bash scripts/harness-drive.sh resolve-follow-up "$leader_run_id" "$decision_record_follow_up_packet_id" open)
 assert_json_field "$leader_reopen_after_delegated_resolution" '"follow_up_packet_id": "'"$decision_record_follow_up_packet_id"'"' "governing run can reopen a delegated adopted follow-up after teammate-side resolution"
 assert_json_field "$leader_reopen_after_delegated_resolution" "\"next_expected_action\": \"$decision_record_follow_up_action\"" "governing run restores follow-up guidance when the adopted follow-up reopens"

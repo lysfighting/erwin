@@ -8,6 +8,7 @@ Open [knowledge/briefing.md](knowledge/briefing.md) when you want the same surfa
 - [erwin-repositioning-2026-03-30.md](erwin-repositioning-2026-03-30.md) — proposed repo pivot from narrow skill incubator toward an AI/agent exploration lab, including slimming guidance and automation scope
 - [index.html](index.html) — visual front door for latest daily / weekly / trending outputs plus the full knowledge-system map
 - [radar/README.md](radar/README.md) — AI/agent field radar entrypoint, source policy, and weekly synthesis model
+- [harness-explainer.md](harness-explainer.md) — durable human-readable overview of what Harness is, how it is designed, and how to use it
 - [knowledge/operating-model.md](knowledge/operating-model.md) — canonical `radar -> feedback -> knowledge -> proposals -> implementation` operating model
 - [harness-learning-loop.md](harness-learning-loop.md) — proposal-first evolution model for turning field signal and real usage into reviewed Harness changes
 
@@ -47,6 +48,7 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 
 | Document | Purpose |
 |----------|---------|
+| [harness-explainer.md](harness-explainer.md) | Best human-readable entrypoint for understanding what Harness is, how it works, and how to use it |
 | [harness-distribution-strategy.md](harness-distribution-strategy.md) | Distribution tiers and runtime bundle strategy for Harness |
 | [harness-documentation-map.md](harness-documentation-map.md) | Canonical document system and read paths for Harness |
 | [harness-architecture.md](harness-architecture.md) | Single authoritative architecture narrative for Harness |

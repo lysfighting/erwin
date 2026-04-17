@@ -2,6 +2,10 @@
 
 This directory contains the committed definition layer for the emerging orchestration harness.
 
+If you want the human-readable overview first, read:
+
+- [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
+
 It is distinct from `.harness/`, which is reserved for local runtime state.
 
 ## Intended structure
@@ -39,21 +43,22 @@ If no packaged binary is available, the runtime falls back to building a local G
 That means normal harness use no longer requires `python3`, and repos can opt into a no-Go runtime path by shipping packaged binaries.
 
 - `harness-adapter.sh` — adapter manifest introspection and package validation
-- `harness-missions.sh` — mission registry inspection, mission graph view, and mission-level authority audit
-- `harness-home.sh` — leader home view
-- `harness-doctor.sh` — runtime diagnostics
+- `harness-missions.sh` — scheduler portfolio inspection, mission registry inspection, mission graph view, mission-level authority audit, and leader summaries for `missions schedule --brief`, `missions graph --brief`, `missions get --brief`, and `missions authority-audit --brief` including `--all` graph mode
+- `harness-home.sh` — leader home view, including `--brief` for a human-readable leader briefing
+- `harness-doctor.sh` — runtime diagnostics, including `--brief` for a human-readable health briefing
 - `harness-issue.sh` — structured issue drafting and creation
-- `harness-claim.sh` — mission claim + contract/run creation
-- `harness-drive.sh` — run-state control, dependency waiting, meetings, reprovision, outcome adoption
-- `harness-runs.sh` — direct run inspection, desired-state mutation, bounded ownership transfer, and run-level authority audit
-- `harness-teammates.sh` — bounded teammate assignment, governed communication, and meeting escalation
-- `harness-ship.sh` — verification, PR lifecycle, review/check gates, deterministic merge, merge readiness
+- `harness-claim.sh` — mission claim + contract/run creation, including `claim --brief` human-readable claim handoff
+- `harness-drive.sh` — run-state control, progress reporting, dependency waiting, meetings, reprovision, outcome adoption, adopted follow-up resolution, and `drive report/start/resume/wait/block/complete/meeting/meeting-close/adopt-meeting/resolve-follow-up --brief` action briefings
+- `harness-runs.sh` — direct run inspection, `runs get/authority-audit --brief` leader summaries, desired-state mutation, bounded ownership transfer, and run-level authority audit
+- `harness-signals.sh` — active signal visibility, signal emission/state changes, and `signals active/adjudicate --brief` for human-readable control-signal guidance and repair
+- `harness-teammates.sh` — bounded teammate assignment, governed communication, meeting escalation, `teammates assign --brief` for a human-readable delegation handoff, `teammates link --brief` for a human-readable governed peer-link handoff, `teammates report --brief` for a human-readable teammate report handoff, `teammates message --brief` for a human-readable governed peer-communication handoff, `teammates escalate --brief` for a human-readable council escalation handoff, and `teammates get --brief` for a human-readable bounded execution object
+- `harness-ship.sh` — verification, PR lifecycle, review/check gates, deterministic merge, merge readiness, and `ship status --brief` for human-readable release-gate state
 - `harness-ship.sh` also supports branch push and PR draft generation
 - `harness-ship.sh` can also open GitHub PRs directly when `gh` is authenticated
 - `harness-ship.sh` now also handles post-merge cleanup of worktrees and local branches
-- `harness-rc.sh` — release-candidate create/verify/promote/close plus surgical `fix`, `cancel`, `hotfix`, and `backport` flow
-- `harness-meetings.sh` — meeting inspection and council output mutation
-- `harness-maintenance.sh` — reconciliation + runtime normalization
+- `harness-rc.sh` — release-candidate create/verify/promote/close plus surgical `fix`, `cancel`, `hotfix`, and `backport` flow, with `rc list/get --brief` for human-readable RC state
+- `harness-meetings.sh` — meeting inspection, `meetings summary/lock-decision/add-position/add-finding/add-action/resolve-action/orchestrate/authority-audit --brief` leader summaries, council orchestration, and council output mutation
+- `harness-maintenance.sh` — reconciliation + runtime normalization, including `maintenance reconcile/normalize --brief` repair and migration summaries
 - `harness-bootstrap.sh` — copy the harness adapter into another git repository
 - `harness-sync.sh` — resync a bootstrapped adapter from its source repository
 
@@ -66,13 +71,15 @@ That means normal harness use no longer requires `python3`, and repos can opt in
 
 ## Core loop
 
-1. `home` shows the current governed state.
-2. `doctor` checks runtime health and drift.
-3. `claim` creates a run and contract from a mission.
-4. `drive` moves the run through execution, blocking, meeting, and completion states.
-5. `teammates` turns delegated work into first-class runtime state instead of implicit chat.
-6. `meetings` records council outputs.
-7. `maintenance` reconciles or normalizes runtime state.
+1. `home` shows the current governed state and can emit a leader-readable briefing with `--brief`.
+2. `doctor` checks runtime health and drift and can emit a human-readable repair briefing with `--brief`.
+3. `missions graph --brief` explains the active mission topology, `missions get MISSION_ID --brief` explains one mission's current state, `missions authority-audit MISSION_ID --brief` explains whether that durable mission record still matches authoritative run truth, and `missions authority-audit --all --brief` explains which connected mission bundle currently needs graph-level authority handling.
+4. `claim --brief` creates a run and contract from a mission and explains the post-claim leader boundary before raw JSON inspection.
+5. `drive report/start/resume/wait/block/complete/meeting/meeting-close/adopt-meeting/resolve-follow-up --brief` refreshes progress, moves the run through execution/blocking/completion states, opens councils, adopts council outcomes, and resolves adopted follow-up while explaining each mutation, next action, and whether teammates or councils are involved.
+6. `signals active [MISSION_ID] --brief` explains current active control signals before humans adopt, resolve, or materialize them into meetings; `signals adjudicate SIGNAL_ID|--all --brief` explains which signals were actually resolved as superseded and why.
+7. `teammates assign PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE] --brief` turns delegation creation into a readable handoff, `teammates report TEAMMATE_RUN_ID SUMMARY --brief` turns teammate status into a readable control-signal handoff, `teammates message SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY --brief` turns governed peer communication into a readable signal handoff, `teammates escalate TEAMMATE_RUN_ID QUESTION --brief` turns teammate uncertainty into a readable council escalation handoff, and `teammates get TEAMMATE_RUN_ID --brief` turns existing delegated work into a readable bounded execution object instead of implicit chat or raw teammate JSON.
+8. `meetings summary MEETING_ID --brief` explains the live council state, `meetings lock-decision MEETING_ID TEXT --brief` explains the bounded council decision scope just recorded, `meetings add-position MEETING_ID TEAMMATE_RUN_ID PHASE STANCE TEXT --brief` explains what a recorded council position changed, `meetings add-finding MEETING_ID accepted|rejected|unresolved TEXT --brief` explains what a recorded judgment changed, `meetings add-action MEETING_ID TEXT --brief` explains the recorded follow-up action and who must own it next, `meetings resolve-action MEETING_ID ACTION_ID [STATE] --brief` explains action closure and adopted follow-up synchronization, and `meetings orchestrate MEETING_ID --brief` explains what changed when council orchestration advances or holds.
+9. `maintenance reconcile --brief` explains what repair changed or why no repair was needed; `maintenance normalize --brief` explains what legacy runtime state was upgraded.
 
 The release side is no longer limited to the happy path.
 The harness now also covers the high-friction release scenarios that used to depend on legacy operator memory:

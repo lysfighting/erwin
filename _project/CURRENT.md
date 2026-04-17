@@ -8,13 +8,111 @@
 
 - **Version**: 1.0.0
 - **Last Updated**: 2026-04-17
-- **Last Session**: 2026-04-17 (Knowledge Surface Research Cockpit v1 proposal landed)
+- **Last Session**: 2026-04-17-A (Hardened release briefings and merge readiness)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-17-A** — Hardened release briefings and merge readiness
+
+- **Release status briefings now fail safe on gate drift**: `ship status --brief` now lets verification, review, checks, and merge readiness override stale `next_expected_action` text when ship state is optimistic but gates disagree
+- **Release verification now proves the preserved JSON contract**: release smoke asserts default JSON for `ship status`, `rc list`, and `rc get`, then proves the human briefing blocks merge guidance in an inconsistent gate state
+- **Packaged-runtime coverage now includes active RC detail**: runtime-distribution smoke creates an RC without Go in `PATH`, checks active `rc list --brief`, and checks `rc get RC_ID --brief`
+- **Canonical surfaces now match runtime**: `docs/harness-session-handoff.md` lists the full current human-direct `--brief` stack, and `docs/harness-public-contract.md` includes `runs` and `signals` among first-class surfaces
+- **Branch integration was advanced**: `codex/harness-100` was merged into `codex/harness-100-leader-briefing`, with journal conflicts resolved toward the newer human-briefing truth while preserving the explainer session history from the base Harness line
+
+**Session 2026-04-16-K** — Extended the human-facing leader layer into `ship status --brief` and `rc list/get --brief`
+
+- **Release state now has real human-facing status entrypoints**: `bash scripts/harness-ship.sh status RUN_ID --brief`, `bash scripts/harness-rc.sh list --brief`, and `bash scripts/harness-rc.sh get RC_ID --brief` now turn ship gates and RC state into readable handoffs that name verification, review, checks, merge readiness, tracked PR/RC refs, RC branch/version/run membership, staged verification, and next release action
+- **Release briefings stay on the same Go control plane**: the new layer is derived from existing run ship state and RC records; default ship status and RC JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary release status**: release smoke proves source-runtime ship/RC status briefings, and runtime-distribution smoke proves packaged binaries can render the same status layer without Go in `PATH`
+
+**Session 2026-04-16-J** — Extended the human-facing leader layer into `teammates link --brief`
+
+- **Governed teammate link creation now has a real human-facing leader entrypoint**: `bash scripts/harness-teammates.sh link RUN_A RUN_B [REASON] --brief` now turns peer-link approval into a readable handoff that names both teammates, connected scopes, updated communication peers, leader-approved reason, and the boundary that permits governed messages without transferring ownership or mission authority
+- **Link briefings stay on the same Go control plane**: the new layer is derived after both run records are updated with sibling and communication peer state; default `teammates link` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary governed links**: teammate smoke proves source-runtime peer-link briefings, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-16-I** — Extended the human-facing leader layer into `meeting-close` / `adopt-meeting --brief`
+
+- **Council adoption now has real human-facing leader entrypoints**: `bash scripts/harness-drive.sh meeting-close RUN_ID MEETING_ID [NOTE] --brief` and `bash scripts/harness-drive.sh adopt-meeting RUN_ID MEETING_ID --brief` now turn council closure or re-adoption into readable handoffs that name the council, run, outcome, output packet kind, follow-up counts, authority adoption, and next leader/council boundary
+- **Adoption briefings stay on the same Go control plane**: the new layer is derived after closed meeting state, backlog updates, authority adoption, and run adoption fields are persisted; default `meeting-close` and `adopt-meeting` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council adoption**: core smoke proves source-runtime close and re-adoption briefings, and runtime-distribution smoke proves the same surfaces work through the packaged binary without Go in `PATH`
+
+**Session 2026-04-16-H** — Extended the human-facing leader layer into `drive meeting --brief`
+
+- **Council creation now has a real human-facing leader entrypoint**: `bash scripts/harness-drive.sh meeting RUN_ID QUESTION --brief` now turns the same meeting materialization mutation into a readable handoff that names the created council, host run, mission, selected decision protocol, backlog ref, and exact `meetings summary/orchestrate --brief` follow-up path
+- **Meeting-open briefings stay on the same Go control plane**: the new layer is derived after the active meeting, maintenance backlog entry, and waiting run state are persisted; default `drive meeting` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council creation**: core smoke proves source-runtime meeting-open briefings with explicit protocol selection, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-16-G** — Extended the human-facing leader layer into `teammates escalate --brief`
+
+- **Teammate escalation now has a real human-facing leader entrypoint**: `bash scripts/harness-teammates.sh escalate TEAMMATE_RUN_ID QUESTION --brief` now turns the same teammate escalation mutation into a readable handoff that names the escalating teammate, emitted `requires_meeting` signal, optional materialized council, selected decision protocol, question, and next leader/teammate/council boundary
+- **Escalation briefings stay on the same Go control plane**: the new layer is derived after the escalation signal and optional council materialization are persisted; default `teammates escalate` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary teammate escalation**: teammate smoke proves source-runtime materialized escalation briefings with explicit protocol selection, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-16-F** — Extended the human-facing leader layer into `teammates message --brief`
+
+- **Governed teammate messaging now has a real human-facing leader entrypoint**: `bash scripts/harness-teammates.sh message SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY --brief` now turns the same governed peer-communication mutation into a readable handoff that names source and target teammates, emitted signal, summary, evidence, freshness, and next leader/source/target/council boundary
+- **Message briefings stay on the same Go control plane**: the new layer is derived after source/target run signal linkage and the sibling-scope signal are persisted; default `teammates message` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary teammate messaging**: teammate smoke proves source-runtime governed communication briefings, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-16-E** — Extended the human-facing leader layer into `teammates report --brief`
+
+- **Teammate reporting now has a real human-facing leader entrypoint**: `bash scripts/harness-teammates.sh report TEAMMATE_RUN_ID SUMMARY --brief` now turns the same teammate report mutation into a readable handoff that names the teammate run, emitted report signal, summary, evidence, freshness, and next leader/teammate/council boundary
+- **Report briefings stay on the same Go control plane**: the new layer is derived after the teammate run freshness/summary and active signal linkage are persisted; default `teammates report` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary teammate reports**: teammate smoke proves source-runtime progress report briefings, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-16-D** — Extended the human-facing leader layer into `teammates assign --brief`
+
+- **Teammate assignment now has a real human-facing leader entrypoint**: `bash scripts/harness-teammates.sh assign PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE] --brief` now turns the same bounded delegation mutation into a readable handoff that names the created teammate run, parent run, contract, ownership selectors, dependencies, governed communication peers, assignment signal, and next leader/teammate/council boundary
+- **Assignment briefings stay on the same Go control plane**: the new layer is derived after the teammate run, parent run update, contract, and assignment signal are persisted; default `teammates assign` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary teammate delegation creation**: teammate smoke proves ordinary assignment briefings from source runtime, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-16-C** — Extended the human-facing leader layer into `drive resolve-follow-up --brief`
+
+- **Adopted follow-up resolution now has a real human-facing leader entrypoint**: `bash scripts/harness-drive.sh resolve-follow-up RUN_ID [FOLLOW_UP_PACKET_ID] [STATE] --brief` now turns the same follow-up mutation into a readable handoff that names the invoking run, governing run, packet, target state, delegated-resolution status, and next leader/teammate/council boundary
+- **Follow-up resolution briefings stay on the same Go control plane**: the new layer is derived after the governing run, delegated teammate run, and meeting action state have been synchronized; default `drive resolve-follow-up` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary adopted follow-up closure**: teammate smoke proves governing-run reopen and delegated teammate closure briefings, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-16-B** — Extended the human-facing leader layer into `drive report --brief`
+
+- **Progress reporting now has a real human-facing leader entrypoint**: `bash scripts/harness-drive.sh report RUN_ID SUMMARY --brief` now turns the same report mutation into a readable handoff that names the run, mission, refreshed state, reported progress, and next leader/teammate/council boundary
+- **Report briefings stay on the same Go control plane**: the new layer is derived from the updated run record after `latest_summary`, `last_reported_at`, and `updated_at` are persisted; default `drive report` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary progress reporting**: core smoke proves report brief output on live runtime state, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-16-A** — Extended the human-facing leader layer into `claim --brief` and core `drive ... --brief` action handoffs
+
+- **Claiming work now has a real human-facing leader entrypoint**: `bash scripts/harness-claim.sh ISSUE_NUMBER [TITLE_OVERRIDE] --brief` now turns the same claim mutation into a readable handoff that names the created mission/run/branch, provisioning result, contract path, and post-claim leader/teammate/council boundary
+- **Core drive actions now explain their state mutations to humans**: `bash scripts/harness-drive.sh start|resume|wait|block|complete ... --brief` now renders the run state transition, current summary, next expected action, teammate boundary, council boundary, and emitted blocker signal when `block` creates one, while default drive JSON remains unchanged
+- **Human-facing verification now covers source and packaged-binary action handoffs**: core smoke proves claim/start/wait/block/resume/complete briefings on live runtime state, and runtime-distribution smoke proves the same surfaces work through the packaged binary without Go in `PATH`
+
+**Session 2026-04-15-B** — Extended the human-facing leader layer into `meetings resolve-action --brief`
+
+- **Council action closure now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh resolve-action MEETING_ID ACTION_ID [STATE] --brief` now turns the same action-resolution mutation into a readable briefing that tells a human which action was closed, cancelled, or reopened, what the remaining action backlog looks like, and what leader/teammate/council action comes next
+- **Meeting action-resolution briefings stay on the same Go control plane**: the new layer is derived from updated `action_items`, refreshed meeting output packets, and the same adopted follow-up lifecycle sync that already updates governing runs; default `meetings resolve-action` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary action lifecycle paths**: core smoke now proves done and cancelled action resolution explain adopted follow-up synchronization, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-15-A** — Extended the human-facing leader layer into `meetings add-action --brief`
+
+- **Council action recording now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh add-action MEETING_ID TEXT --brief` now turns the same action-recording mutation into a readable briefing that tells a human which council action item was added, what the open action backlog looks like, who owns the next step, and whether teammate assignment or adoption is still needed
+- **Meeting action briefings stay on the same Go control plane**: the new layer is derived from the existing `action_items` meeting state plus meeting summary and governance-gap calculations rather than inventing a separate follow-up model; default `meetings add-action` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council-action paths**: teammate smoke now proves `meetings add-action --brief` explains that teammate execution remains leader-owned, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-14-B** — Extended the human-facing leader layer into `meetings add-finding --brief`
+
+- **Council judgment recording now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh add-finding MEETING_ID accepted|rejected|unresolved TEXT --brief` now turns the same finding-recording mutation into a readable briefing that tells a human which council claim/dimension was judged, what kind of finding was recorded, what authority/evidence/position trace supports it, and what leader/teammate/council action comes next
+- **Meeting finding briefings stay on the same Go control plane**: the new layer is derived from the existing `findings` meeting state plus same-claim authority and governance-gap calculations rather than inventing a separate council-judgment model; default `meetings add-finding` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council-judgment paths**: teammate smoke now proves `meetings add-finding --brief` explains rejected-finding governance repair before output, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-14-A** — Extended the human-facing leader layer into `meetings add-position --brief`
+
+- **Council position recording now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh add-position MEETING_ID RUN_ID PHASE STANCE TEXT --brief` now turns the same position-recording mutation into a readable briefing that tells a human which council claim/dimension was affected, who contributed it, whether more independent review or debate is still owed, and what leader/teammate/council action comes next
+- **Meeting position briefings stay on the same Go control plane**: the new layer is derived from the existing `positions` meeting state plus live coverage/wave/debate calculations rather than inventing a separate council-progress model; default `meetings add-position` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council-position paths**: teammate smoke now proves `meetings add-position --brief` explains remaining independent-review coverage for a live council, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
 
 **Session 2026-04-17** — Knowledge Surface Research Cockpit v1 proposal landed
 
@@ -37,6 +135,120 @@
 - **Skill index and installer examples now mention cwork**: `README.md`, `AGENTS.md`, and `skills/README.md` list `/cwork` next to `/harness` and `/knowledge`, and `install-codex.sh` now documents `./install-codex.sh cwork`
 - **Offline claim smoke exposed and fixed a branch override bug**: `cwork-claim.sh --branch` now keeps the contract branch and actual Git branch aligned during claim setup
 - **No new session-log file was created**: this update is recorded in `CURRENT.md` and `CHANGELOG.md` to avoid adding more low-value session clutter
+
+**Session 2026-04-13-B** — Extended the human-facing leader layer into `meetings lock-decision --brief`
+
+- **Council scope locking now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh lock-decision MEETING_ID TEXT --brief` now turns the same locked-decision mutation into a readable briefing that tells a human which council decision was bounded, why that scope is authoritative, and what leader/teammate/council action comes next
+- **Meeting decision-lock briefings stay on the same Go control plane**: the new layer is derived from the existing `locked_decisions` meeting state and decision-lock arguments rather than inventing a separate council-scope model; default `meetings lock-decision` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers source and packaged-binary council-scope locks**: teammate smoke now proves `meetings lock-decision --brief` explains bounded decision scope for a live council, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-13-A** — Extended the human-facing leader layer into `maintenance normalize --brief`
+
+- **Runtime migration now has a real human-facing leader entrypoint**: `bash scripts/harness-maintenance.sh normalize --brief` now turns the same normalization mutation result into a readable migration briefing that tells a human which legacy run, signal, and contract records were upgraded, why no-op normalization did not change state, and what health-confirmation step comes next
+- **Maintenance normalization briefings stay on the same Go control plane**: the new layer is derived from the existing normalize result and run/signal/contract migration semantics rather than inventing a parallel migration model; default `maintenance normalize` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers migrated and packaged-binary normalization paths**: core smoke now proves `maintenance normalize --brief` explains legacy run/signal migration and still leaves default JSON available afterward, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-12-A** — Extended the human-facing leader layer into `maintenance reconcile --brief`
+
+- **Runtime repair now has a real human-facing leader entrypoint**: `bash scripts/harness-maintenance.sh reconcile --brief` now turns the same reconciliation mutation result into a readable repair briefing that tells a human which orphaned signals, superseded signals, and orphaned meetings were repaired, why no-op reconciliation did not change state, and what health-confirmation step comes next
+- **Maintenance reconciliation briefings stay on the same Go control plane**: the new layer is derived from the existing reconcile result and signal/meeting repair semantics rather than inventing a parallel repair model; default `maintenance reconcile` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers repaired and packaged-binary reconciliation paths**: core smoke now proves `maintenance reconcile --brief` explains a superseded-signal repair and still leaves default JSON available afterward, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-11-D** — Extended the human-facing leader layer into `meetings orchestrate --brief`
+
+- **Council orchestration now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh orchestrate MEETING_ID --brief` now turns the same orchestration mutation result into a readable council-chair briefing that tells a human whether the meeting advanced or held, why, what current wave/debate/output packet is live, and what leader/council action comes next
+- **Meeting orchestration briefings stay on the same Go control plane**: the new layer is derived from the existing meeting packet, orchestration state, wave/debate plans, synthesis audit, and auto-synthesis result rather than inventing a parallel council-progress model; default `meetings orchestrate` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers advancing and packaged-binary council orchestration paths**: core smoke now proves `meetings orchestrate --brief` explains setup-to-independent-review advancement and current independent-review work, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-11-C** — Extended the human-facing leader layer into `signals adjudicate --brief`
+
+- **Signal repair now has a real human-facing leader entrypoint**: `bash scripts/harness-signals.sh adjudicate SIGNAL_ID|--all --brief` now turns the same Go adjudication result into a readable signal-repair briefing that tells a human which signals were resolved as superseded, what fresher run or meeting truth won, why no-op adjudication did not change state, and what leader/teammate/council action remains
+- **Signal adjudication briefings stay on the same Go control plane**: the new layer is derived from the existing signal supersession logic and signal log mutation result rather than inventing a parallel repair model; default `signals adjudicate` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers no-op, superseded-signal, and packaged-binary adjudication paths**: core smoke now proves `signals adjudicate --brief` explains both a fresh active signal that is not superseded and a blocked signal superseded by fresher run state, while runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-11-B** — Extended the human-facing leader layer into `signals active --brief`
+
+- **Active control signals now have a real human-facing leader entrypoint**: `bash scripts/harness-signals.sh active [MISSION_ID] --brief` now turns the same active signal log, signal priority, freshness, scope, summary, and leader/teammate/council next actions into a readable signal-layer briefing instead of forcing direct raw signal JSON inspection
+- **Signal briefings stay on the same Go control plane**: the new signal layer is derived from the existing signal log, run registry, signal freshness windows, and teammate ownership truth rather than inventing a parallel signal state model; default `signals active` JSON remains unchanged for exact inspection and tooling, and signal mutation/adjudication semantics remain unchanged
+- **Human-facing verification now covers fresh coordination and packaged-binary teammate-signal paths**: core smoke now proves `signals active --brief` explains a fresh meeting-required signal and its leader action, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-11-A** — Extended the human-facing leader layer into `teammates get --brief`
+
+- **Teammate objects now have a real human-facing leader entrypoint**: `bash scripts/harness-teammates.sh get TEAMMATE_RUN_ID --brief` now turns the same bounded assignment scope, parent run linkage, dependency/report freshness state, delegated follow-up provenance, governed peer communication, and leader/teammate/council next actions into a readable teammate-layer briefing instead of forcing direct raw teammate JSON inspection
+- **Teammate briefings stay on the same Go control plane**: the new teammate layer is derived from the existing run registry, signal log, run authority audit, dependency truth, meeting coverage, and delegated follow-up monitor packet rather than inventing a parallel teammate state model; default `teammates get` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers ordinary, dependency-blocked, delegated follow-up, and packaged-binary teammate paths**: teammate smoke now proves `teammates get --brief` on ordinary bounded work, dependency-blocked sibling work, and adopted-follow-up handoff work, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-10-H** — Extended the human-facing leader layer into `missions graph --brief`
+
+- **Mission topology now has a real human-facing leader entrypoint**: `bash scripts/harness-missions.sh graph --brief` now turns the same active roots, dependency edges, graph-level next action, and teammate/council coverage into a readable topology-layer briefing instead of forcing direct raw mission-graph JSON inspection
+- **Mission topology briefings stay on the same Go control plane**: the new graph layer is derived from the existing mission registry topology, active run linkage, and live meeting coverage rather than inventing a parallel mission-graph summary model; default `missions graph` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers standalone, dependency-anchored, and packaged-binary graph-topology paths**: core smoke now proves both a single-root graph and a dependency-anchored graph read correctly in `missions graph --brief`, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-10-G** — Extended the human-facing leader layer into `missions authority-audit --all --brief`
+
+- **Mission graph bundles now have a real human-facing leader entrypoint**: `bash scripts/harness-missions.sh authority-audit --all --brief` now turns the same bundle graph, conflict/escalation/governed verdicts, candidate governors, and required action into a readable graph-layer briefing instead of forcing direct raw mission-graph JSON inspection
+- **Mission graph authority briefings stay on the same Go control plane**: the new graph-audit layer is derived from the existing mission graph authority audit, bundle governance notes, and candidate governor packets rather than inventing a parallel bundle-repair model; default `missions authority-audit --all` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers healthy, conflicted, escalation-required, and packaged-binary graph-authority paths**: core smoke now proves both a clean graph and two non-healthy bundle states read correctly in `missions authority-audit --all --brief`, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-10-F** — Extended the human-facing leader layer into `meetings authority-audit --brief`
+
+- **Council same-claim authority now has a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh authority-audit MEETING_ID --brief` now turns the same meeting authority audit, same-claim winner/tie verdicts, and next authority action into a readable council-repair briefing instead of forcing direct raw council-audit JSON inspection
+- **Meeting authority briefings stay on the same Go control plane**: the new council-audit layer is derived from the existing meeting authority audit, meeting packet state, and meeting summary packet rather than inventing a parallel council-repair model; default `meetings authority-audit` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers adjudicated and packaged-binary meeting-authority paths**: teammate smoke now proves a higher-authority winner reads correctly in `meetings authority-audit --brief`, and runtime-distribution smoke proves the same surface works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-10-E** — Extended the human-facing leader layer into `missions authority-audit --brief`
+
+- **Mission control drift now has a real human-facing leader entrypoint**: `bash scripts/harness-missions.sh authority-audit MISSION_ID --brief` now turns the same mission-record drift, leader-over-teammate control adjudication, and competing root-run authority truth into a readable mission-repair briefing instead of forcing direct raw mission-audit JSON inspection
+- **Mission authority briefings stay on the same Go control plane**: the new mission-audit layer is derived from the existing mission authority audit, mission registry state, run registry truth, and mission-level meeting activity counts rather than inventing a parallel mission-repair model; default `missions authority-audit` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers aligned, leader-over-teammate, and packaged-binary mission-authority paths**: core smoke now proves aligned mission authority brief output, teammate smoke proves the governed leader-over-teammate adjudication path, and runtime-distribution smoke proves `missions authority-audit --brief` works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-10-D** — Extended the human-facing leader layer into `runs authority-audit --brief`
+
+- **Run authority drift now has a real human-facing leader entrypoint**: `bash scripts/harness-runs.sh authority-audit RUN_ID --brief` now turns the same higher-authority conflicts, adoption drift, live-state drift, contract drift, and desired-state gaps into a readable audit-layer briefing instead of forcing direct raw authority JSON inspection
+- **Run authority briefings stay on the same Go control plane**: the new authority layer is derived from the existing run authority audit, live meeting linkage, teammate lineage, and audit evidence truth rather than inventing a parallel repair-summary model; default `runs authority-audit` JSON remains unchanged for exact inspection, tooling, and automation
+- **Human-facing verification now covers desired-state-progress, higher-authority-conflict, and packaged-binary authority paths**: core smoke now proves both an in-progress desired-state authority brief and a non-healthy higher-authority-conflict brief, and runtime-distribution smoke proves `runs authority-audit --brief` works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-10-C** — Extended the human-facing leader layer into `missions schedule --brief`
+
+- **Scheduler portfolios now have a real human-facing leader entrypoint**: `bash scripts/harness-missions.sh schedule --brief` now turns the same scheduler snapshot, primary control-plane packet, decision/maintenance queue, foreground batch admission, and reschedule backlog into a readable portfolio-layer briefing instead of forcing direct raw scheduler JSON inspection
+- **Scheduler briefings stay on the same Go control plane**: the new scheduler layer is derived from the existing scheduler summary and durable snapshot truth rather than inventing a parallel scheduler summary model; default `missions schedule` JSON remains unchanged for exact inspection, automation, and materialization
+- **Human-facing verification now covers foreground, active-council, and packaged-binary scheduler paths**: core smoke now proves scheduler brief output for an ordinary foreground mission and for an active-council primary control-plane packet that blocks foreground admission, and runtime-distribution smoke proves `missions schedule --brief` works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-10-B** — Extended the human-facing leader layer down to `meetings summary --brief`
+
+- **Meeting objects now have a real human-facing leader entrypoint**: `bash scripts/harness-meetings.sh summary MEETING_ID --brief` now turns the same live council state, phase, blocking reason, current work packet, protocol-aware output state, and leader/council next actions into a readable object-layer briefing instead of forcing direct raw meeting JSON inspection
+- **Meeting briefings stay on the same Go control plane**: the new meeting layer is derived from the existing meeting packet, orchestration state, authority audit, synthesis audit, and output packet truth instead of inventing a parallel council summary model; default `meetings summary` JSON remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers active, blocked, protocol-output, and packaged-binary meeting paths**: core smoke now proves meeting brief output for an active independent-review council, teammate smoke proves both governance-blocked and incident-command output paths, and runtime-distribution smoke proves `meetings summary --brief` works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-10-A** — Extended the human-facing leader layer down to `runs get --brief`
+
+- **Run objects now have a real human-facing leader entrypoint**: `bash scripts/harness-runs.sh get RUN_ID --brief` now turns the same Go run state, mission-control relationship, authority/adoption drift, dependency state, teammate ownership, and council context into a readable object-layer briefing instead of forcing direct raw run JSON inspection
+- **Run briefings preserve execution truth rather than replacing it**: the new run layer is derived from the existing run registry, mission registry, signal log, live meeting state, and `runs authority-audit` truth, while the default JSON surface remains unchanged for exact inspection and tooling
+- **Human-facing verification now covers foreground, active-council, teammate, and packaged-binary run paths**: core smoke now proves run brief output for a normal foreground run and a run under active council handling, teammate smoke proves the bounded teammate-run path, and runtime-distribution smoke proves `runs get --brief` works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-09-B** — Extended the human-facing leader layer down to `missions get --brief`
+
+- **Mission objects now have a real human-facing leader entrypoint**: `bash scripts/harness-missions.sh get MISSION_ID --brief` now turns the same scheduler mission-classification truth into a readable object-level briefing that tells a human the mission state, why it is blocked/deferred/selected, what the next action is, and what leader, teammate, and council roles need to do next
+- **Mission briefings stay on the same Go control plane**: the new mission layer is derived from the existing mission registry, run registry, signal log, and scheduler bundle/decision state instead of inventing a parallel summary store; JSON mission output remains the default unchanged public contract
+- **Human-facing verification now covers both foreground and live-council mission paths**: core smoke now proves mission brief output for a normal foreground mission and for an actively governed bundle-council mission, and runtime-distribution smoke proves `missions get --brief` still works through the packaged binary without Go in `PATH`
+
+**Session 2026-04-09-A** — Added leader-readable `home` / `doctor` briefings on top of the stable Harness control plane
+
+- **Human-facing collaboration now has a real first slice**: `harness-home.sh --brief` now turns the existing scheduler / mission / maintenance / council runtime truth into a leader-readable briefing that tells a human what is primary now, why it is primary, what to do next, what teammates need, and whether council work is active or required, instead of forcing direct raw-JSON reading for the first control-plane pass
+- **Diagnostics now have the same human-readable entry path**: `harness-doctor.sh --brief` now summarizes runtime health, next repair action, and the top drift issues in readable text while keeping the default machine-readable JSON contract intact for exact audit/tooling use
+- **The human layer is still derived from the same control-plane truth**: this did not add a parallel state system or move logic out of Go; smoke coverage now proves the briefing layer follows idle state, stale-maintenance escalation, active bundle-council guidance, and packaged-binary runtime execution from the real runtime payloads
+
+**Session 2026-04-08-B** — Aligned fresh-session and skills entrypoints with the new Harness explainer
+
+- **Fresh-session start order now leads with the explainer**: `docs/harness-session-handoff.md` now treats `docs/harness-explainer.md` as the fastest human-readable orientation layer before the deeper architecture and package docs, and it no longer points readers at an obsolete release branch when asking them to inspect recent commits
+- **Top-level skills index now matches current Harness truth**: `skills/README.md` now describes `Harness` as a stable `1.0.0` leader-led orchestration surface instead of an older prototype, and it points readers to the explainer directly from the skills entrypoint
+- **Explainer discoverability is now cleaner across human entrypoints**: the repo now has a more consistent path from `README.md` -> `docs/harness-explainer.md` -> `docs/harness-session-handoff.md` / `skills/README.md`, so readers no longer need to infer whether they should start from a runtime-heavy handoff or an outdated skill index
+
+**Session 2026-04-08-A** — Added a durable human-readable Harness explainer and linked it from the main entrypoints
+
+- **Readable overview is now part of the canonical doc system**: `docs/harness-explainer.md` now explains what `Harness` is, what problem it solves, how it is designed, how the control plane works, and how to use it, instead of forcing readers to infer those answers from architecture and runtime docs alone
+- **The explainer is genuinely visual and durable**: the new doc includes Mermaid diagrams plus simplified ASCII fallbacks for the identity/layer model, operating model, and usage flow, so it remains readable both in rich Markdown renderers and plain text contexts
+- **Harness entrypoints now route people to the right place**: `README.md`, `docs/README.md`, `docs/harness-documentation-map.md`, `harness/README.md`, and `skills/harness/README.md` now all point to the explainer as the best first stop for humans who want to understand Harness before diving into the deeper canonical docs
 
 **Session 2026-04-12** — Selective knowledge-refactor artifacts absorbed into the main knowledge system
 
@@ -61,6 +273,18 @@
 - **OpenAI's strongest in-window move stayed operational rather than model-centric**: the radar note records OpenAI's April 2 `Codex` seat and rate-card update as further evidence that coding-agent execution is being sold and governed as its own runtime surface.
 - **Google drove the strongest product motion this week**: April 2 and April 7 posts were consolidated into a clearer read that Google is simultaneously lowering the cost of terminal agentic coding and making on-device agent workflows concrete through Gemma 4, AI Edge Gallery, and LiteRT-LM.
 - **Anthropic coverage remained deliberate even without an in-window launch**: the run explicitly checked Anthropic's public technical surfaces and recorded that the newest visible Engineering posts remain March 24 and March 25, keeping official-source silence visible instead of silently dropping Anthropic from the radar.
+
+**Session 2026-04-08-B** — Aligned fresh-session and skills entrypoints with the new Harness explainer
+
+- **Fresh-session start order now leads with the explainer**: `docs/harness-session-handoff.md` now treats `docs/harness-explainer.md` as the fastest human-readable orientation layer before the deeper architecture and package docs, and it no longer points readers at an obsolete release branch when asking them to inspect recent commits
+- **Top-level skills index now matches current Harness truth**: `skills/README.md` now describes `Harness` as a stable `1.0.0` leader-led orchestration surface instead of an older prototype, and it points readers to the explainer directly from the skills entrypoint
+- **Explainer discoverability is now cleaner across human entrypoints**: the repo now has a more consistent path from `README.md` -> `docs/harness-explainer.md` -> `docs/harness-session-handoff.md` / `skills/README.md`, so readers no longer need to infer whether they should start from a runtime-heavy handoff or an outdated skill index
+
+**Session 2026-04-08-A** — Added a durable human-readable Harness explainer and linked it from the main entrypoints
+
+- **Readable overview is now part of the canonical doc system**: `docs/harness-explainer.md` now explains what `Harness` is, what problem it solves, how it is designed, how the control plane works, and how to use it, instead of forcing readers to infer those answers from architecture and runtime docs alone
+- **The explainer is genuinely visual and durable**: the new doc includes Mermaid diagrams plus simplified ASCII fallbacks for the identity/layer model, operating model, and usage flow, so it remains readable both in rich Markdown renderers and plain text contexts
+- **Harness entrypoints now route people to the right place**: `README.md`, `docs/README.md`, `docs/harness-documentation-map.md`, `harness/README.md`, and `skills/harness/README.md` now all point to the explainer as the best first stop for humans who want to understand Harness before diving into the deeper canonical docs
 
 **Session 2026-04-03** — Daily radar captured Codex seat economics, Google agent surface convergence, and provider reliability pressure
 
@@ -590,9 +814,9 @@
    - D. Validate that daily output produces proposal candidates without recommending direct runtime changes
    - E. Validate that weekly synthesis produces a durable `Harness Evolution Proposals` section before adding more automation complexity
 3. **Harness next work**:
-   - A. Continue authority adjudication into broader multi-mission bundle handling when no obvious governing dependency or single active council anchor exists
-   - B. Continue pushing council behavior from bounded orchestration toward fuller multi-lane automated debate execution
-   - C. Continue scheduler beyond the current snapshot/execution-mode plus bundle-aware deferral baseline into larger-portfolio admission, rescheduling, and execution-portfolio policy
+   - A. Continue the human-direct collaboration layer beyond `home` / `doctor --brief`, especially mission/run/meeting views that still require too much raw JSON inspection for normal leader use
+   - B. Keep shell surfaces human-facing and derived from the Go control plane instead of expanding raw JSON first or drifting toward a separate GUI/product story
+   - C. Continue authority adjudication, council execution, and scheduler depth where it materially improves real leader-facing collaboration rather than merely adding more internal packet detail
    - D. Use the proposal ledger before promoting field intelligence or real-usage patterns into runtime/backlog changes
 4. If starting fresh, read `AGENTS.md`, `_project/CURRENT.md`, `docs/README.md`, `docs/radar/README.md`, `docs/harness-documentation-map.md`, and then the current harness docs or weekly radar synthesis depending on the task
 
@@ -623,7 +847,7 @@
 
 - Wing scripts reference `${CLAUDE_SKILL_DIR}` which requires Anthropic skill infrastructure
 - skill-lint.sh ### header check has false positives (structural headings vs output templates)
-- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, and direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, and explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, a formalized runtime distribution strategy, and committed `1.0.0` release criteria; remaining work is post-1.0 expansion
+- Harness is now installed and validated in Codex via `install-codex.sh`, can bootstrap into another repo, has manifest-driven adapter validation/packaging, first-class mission state, a leader-facing scheduler baseline with durable snapshots, execution-mode selection, direct bundle-aware deferral/escalation, mission-level and graph-level authority adjudication including dependency-governed ownership verdicts, selector-specificity winners, council-governed bundle authority, bundle-aware grouping, explicit bundle governors, selector-aware ownership transfer with shared-copy and exclusion-aware split modes, artifact-aware authority adjudication, teammate runtime, council orchestration with phase history + synthesis audit semantics, a formalized runtime distribution strategy, committed `1.0.0` release criteria, and new human-readable `home` / `doctor --brief` leader entrypoints; remaining work is post-1.0 expansion, especially richer human-direct collaboration beyond the top-level briefing layer
 
 ## File Locations
 

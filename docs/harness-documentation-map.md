@@ -2,7 +2,7 @@
 
 > Status: Active
 >
-> Date: 2026-03-29
+> Date: 2026-04-08
 >
 > Purpose: define the authoritative documentation system for `Harness` so future sessions can load the right design context without reconstructing architecture from scattered files or chat history.
 
@@ -28,6 +28,19 @@ This file manages that set.
 ## Canonical Document Set
 
 These are the core documents that define `Harness`.
+
+### 0. Human Overview / Explainer
+
+- [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
+
+Use this for:
+
+- the best readable overview of what `Harness` is
+- the fastest way to understand what problem it solves
+- a dual-layer explanation for both newcomer intuition and engineering reality
+- practical workflow-oriented usage guidance before diving into deeper architecture docs
+
+If a human wants the system explained before reading the full architecture, this should be the first document.
 
 ### 1. Top-Level Architecture
 
@@ -222,15 +235,16 @@ Use these when the question is about what was preserved, redesigned, or intentio
 1. [`AGENTS.md`](/Users/liyasong/Project/collov/erwin/AGENTS.md)
 2. [`_project/CURRENT.md`](/Users/liyasong/Project/collov/erwin/_project/CURRENT.md)
 3. this file
-4. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
-5. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
-6. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
-7. [`docs/harness-release-criteria.md`](/Users/liyasong/Project/collov/erwin/docs/harness-release-criteria.md)
-8. [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
-9. [`docs/harness-proposal-ledger.md`](/Users/liyasong/Project/collov/erwin/docs/harness-proposal-ledger.md)
-10. [`docs/harness-session-handoff.md`](/Users/liyasong/Project/collov/erwin/docs/harness-session-handoff.md)
-11. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
-12. targeted research and recent session logs as needed
+4. [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
+5. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
+6. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
+7. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
+8. [`docs/harness-release-criteria.md`](/Users/liyasong/Project/collov/erwin/docs/harness-release-criteria.md)
+9. [`docs/harness-learning-loop.md`](/Users/liyasong/Project/collov/erwin/docs/harness-learning-loop.md)
+10. [`docs/harness-proposal-ledger.md`](/Users/liyasong/Project/collov/erwin/docs/harness-proposal-ledger.md)
+11. [`docs/harness-session-handoff.md`](/Users/liyasong/Project/collov/erwin/docs/harness-session-handoff.md)
+12. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
+13. targeted research and recent session logs as needed
 
 ### Path B: Review / Drift Check
 
@@ -239,7 +253,7 @@ Use these when the question is about what was preserved, redesigned, or intentio
 3. [`docs/research/harness-gap-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-gap-audit-2026-03-29.md)
 4. [`docs/research/harness-research-drift-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-research-drift-audit-2026-03-29.md)
 5. [`internal/harness/runtime.go`](/Users/liyasong/Project/collov/erwin/internal/harness/runtime.go)
-6. recent commits on `codex/harness-release-lifecycle`
+6. recent Harness commits on `main` or the active task branch
 
 ### Path C: Packaging / Distribution Work
 
@@ -250,7 +264,7 @@ Use these when the question is about what was preserved, redesigned, or intentio
 5. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
 6. [`scripts/harness-runtime.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-runtime.sh)
 7. [`scripts/harness-build-runtime.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-build-runtime.sh)
-6. [`scripts/harness-package-runtime.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-package-runtime.sh)
+8. [`scripts/harness-package-runtime.sh`](/Users/liyasong/Project/collov/erwin/scripts/harness-package-runtime.sh)
 
 ---
 

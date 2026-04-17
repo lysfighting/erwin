@@ -92,6 +92,67 @@ func printJSON(value any) error {
 	return nil
 }
 
+type outputMode string
+
+const (
+	outputModeJSON outputMode = "json"
+	outputModeText outputMode = "text"
+)
+
+func parseOutputMode(command string, args []string) (outputMode, []string, error) {
+	mode := outputModeJSON
+	remaining := []string{}
+	for _, arg := range args {
+		switch arg {
+		case "--brief", "--text", "brief", "text":
+			mode = outputModeText
+		case "--json", "json":
+			mode = outputModeJSON
+		case "--format=json":
+			mode = outputModeJSON
+		case "--format=text", "--format=brief":
+			mode = outputModeText
+		default:
+			if strings.HasPrefix(arg, "--format=") {
+				return "", nil, fmt.Errorf("%s output format must be one of: json, text", command)
+			}
+			remaining = append(remaining, arg)
+		}
+	}
+	return mode, remaining, nil
+}
+
+func parseOutputModeFlagsOnly(command string, args []string) (outputMode, []string, error) {
+	mode := outputModeJSON
+	remaining := []string{}
+	for _, arg := range args {
+		switch arg {
+		case "--brief", "--text":
+			mode = outputModeText
+		case "--json":
+			mode = outputModeJSON
+		case "--format=json":
+			mode = outputModeJSON
+		case "--format=text", "--format=brief":
+			mode = outputModeText
+		default:
+			if strings.HasPrefix(arg, "--format=") {
+				return "", nil, fmt.Errorf("%s output format must be one of: json, text", command)
+			}
+			remaining = append(remaining, arg)
+		}
+	}
+	return mode, remaining, nil
+}
+
+func printText(text string) error {
+	if !strings.HasSuffix(text, "\n") {
+		text += "\n"
+	}
+	fmt.Print(text)
+	return nil
+}
+
 func nowISO() string {
 	return time.Now().UTC().Format(time.RFC3339Nano)
 }
@@ -1037,6 +1098,27 @@ func listMissions() []any {
 		return stringValue(left["mission_id"]) < stringValue(right["mission_id"])
 	})
 	return missions
+}
+
+func missionGraphSnapshot() map[string]any {
+	graph := []any{}
+	for _, item := range listMissions() {
+		mission, _ := toMap(item)
+		graph = append(graph, map[string]any{
+			"mission_id":           stringValue(mission["mission_id"]),
+			"state":                stringValue(mission["state"]),
+			"depends_on":           cloneValue(toList(mission["depends_on"])),
+			"ownership_claims":     cloneValue(toList(mission["ownership_claims"])),
+			"active_run_ids":       cloneValue(toList(mission["active_run_ids"])),
+			"latest_run_id":        stringValue(mission["latest_run_id"]),
+			"authoritative_run_id": stringValue(mission["authoritative_run_id"]),
+			"next_expected_action": stringValue(mission["next_expected_action"]),
+		})
+	}
+	return map[string]any{
+		"mission_count": len(graph),
+		"missions":      graph,
+	}
 }
 
 func readActiveMeeting(meetingID string) map[string]any {
@@ -2590,9 +2672,9 @@ func delegatedFollowUpMonitorPacket(run map[string]any) map[string]any {
 	state := firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open")
 	lastReportedAt := strings.TrimSpace(stringValue(run["last_reported_at"]))
 	packet := map[string]any{
-		"run_id":  runID,
+		"run_id":   runID,
 		"owner_id": ownerID,
-		"state":   state,
+		"state":    state,
 	}
 	if lastReportedAt != "" {
 		packet["last_reported_at"] = lastReportedAt
@@ -8787,14 +8869,45 @@ func cmdMissions(args []string) error {
 		}
 		return printJSON(missions)
 	case "get":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("missions get", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("missions get requires MISSION_ID")
 		}
-		missionID := strings.TrimSpace(args[1])
+		missionID := strings.TrimSpace(remaining[0])
 		if missionID == "" {
 			return errors.New("missions get requires MISSION_ID")
 		}
+		renderBrief := func(mission map[string]any) error {
+			profile, _ := resolveProfile("")
+			runRegistry := readRegistry()
+			signals := readSignalLog()
+			scheduler := schedulerSummary(profile, registry, runRegistry, signals, true)
+			entry := schedulerMissionClassification(scheduler, missionID)
+			if len(entry) == 0 {
+				entry = map[string]any{
+					"mission_id":                missionID,
+					"mission_state":             stringValue(mission["state"]),
+					"classification":            "unknown",
+					"priority":                  stringValue(mission["priority"]),
+					"risk_level":                stringValue(mission["risk_level"]),
+					"authoritative_run_id":      stringValue(mission["authoritative_run_id"]),
+					"recommended_action":        stringValue(mission["next_expected_action"]),
+					"active_run_count":          len(dedupeStrings(anyListToStrings(toList(mission["active_run_ids"])))),
+					"teammate_run_count":        0,
+					"meeting_count":             0,
+					"open_meeting_action_count": 0,
+					"follow_up_signal_count":    0,
+				}
+			}
+			return printText(renderMissionBrief(mission, entry, scheduler))
+		}
 		if mission := readMission(missionID); mission != nil {
+			if mode == outputModeText {
+				return renderBrief(mission)
+			}
 			return printJSON(mission)
 		}
 		index := findMissionIndex(registry, missionID)
@@ -8802,29 +8915,31 @@ func cmdMissions(args []string) error {
 			return fmt.Errorf("mission not found: %s", missionID)
 		}
 		mission, _ := toMap(toList(registry["missions"])[index])
+		if mode == outputModeText {
+			return renderBrief(mission)
+		}
 		return printJSON(mission)
 	case "graph":
-		graph := []any{}
-		for _, item := range listMissions() {
-			mission, _ := toMap(item)
-			graph = append(graph, map[string]any{
-				"mission_id":           stringValue(mission["mission_id"]),
-				"state":                stringValue(mission["state"]),
-				"depends_on":           cloneValue(toList(mission["depends_on"])),
-				"ownership_claims":     cloneValue(toList(mission["ownership_claims"])),
-				"active_run_ids":       cloneValue(toList(mission["active_run_ids"])),
-				"latest_run_id":        stringValue(mission["latest_run_id"]),
-				"authoritative_run_id": stringValue(mission["authoritative_run_id"]),
-				"next_expected_action": stringValue(mission["next_expected_action"]),
-			})
+		mode, remaining, err := parseOutputMode("missions graph", args[1:])
+		if err != nil {
+			return err
 		}
-		return printJSON(map[string]any{
-			"mission_count": len(graph),
-			"missions":      graph,
-		})
+		if len(remaining) != 0 {
+			return errors.New("missions graph does not accept additional arguments")
+		}
+		graph := missionGraphSnapshot()
+		if mode == outputModeText {
+			activeMeetingCountByMission, _, _, _ := meetingActivityByMission(readRegistry())
+			return printText(renderMissionTopologyBrief(graph, readRegistry(), activeMeetingCountByMission))
+		}
+		return printJSON(graph)
 	case "schedule":
+		mode, remaining, err := parseOutputMode("missions schedule", args[1:])
+		if err != nil {
+			return err
+		}
 		includeAll := false
-		for _, arg := range args[1:] {
+		for _, arg := range remaining {
 			if arg == "--all" {
 				includeAll = true
 			}
@@ -8836,16 +8951,27 @@ func cmdMissions(args []string) error {
 			if err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderSchedulerBrief(written))
+			}
 			return printJSON(written)
 		})
 	case "authority-audit":
-		if len(args) >= 2 && args[1] == "--all" {
-			return printJSON(missionGraphAuthorityAudit(registry, readRegistry(), false))
+		mode, remaining, err := parseOutputMode("missions authority-audit", args[1:])
+		if err != nil {
+			return err
 		}
-		if len(args) < 2 {
+		if len(remaining) >= 1 && remaining[0] == "--all" {
+			graph := missionGraphAuthorityAudit(registry, readRegistry(), false)
+			if mode == outputModeText {
+				return printText(renderMissionGraphAuthorityAuditBrief(graph))
+			}
+			return printJSON(graph)
+		}
+		if len(remaining) != 1 {
 			return errors.New("missions authority-audit requires MISSION_ID or --all")
 		}
-		missionID := strings.TrimSpace(args[1])
+		missionID := strings.TrimSpace(remaining[0])
 		if missionID == "" {
 			return errors.New("missions authority-audit requires MISSION_ID or --all")
 		}
@@ -8857,7 +8983,18 @@ func cmdMissions(args []string) error {
 			}
 			mission, _ = toMap(toList(registry["missions"])[index])
 		}
-		return printJSON(missionAuthorityAudit(mission, readRegistry()))
+		runtimeRegistry := readRegistry()
+		audit := missionAuthorityAudit(mission, runtimeRegistry)
+		if mode == outputModeText {
+			activeMeetingCountByMission, openMeetingActionCountByMission, _, _ := meetingActivityByMission(runtimeRegistry)
+			return printText(renderMissionAuthorityAuditBrief(
+				mission,
+				audit,
+				activeMeetingCountByMission[missionID],
+				openMeetingActionCountByMission[missionID],
+			))
+		}
+		return printJSON(audit)
 	case "establish-governor":
 		if len(args) < 3 {
 			return errors.New("missions establish-governor requires BUNDLE_ID GOVERNING_MISSION_ID [NOTE]")
@@ -9001,24 +9138,59 @@ func cmdRuns(args []string) error {
 		}
 		return printJSON(runs)
 	case "get":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("runs get", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("runs get requires RUN_ID")
 		}
-		index := findRunIndex(registry, args[1])
-		if index < 0 {
-			return fmt.Errorf("run not found: %s", args[1])
+		runID := strings.TrimSpace(remaining[0])
+		if runID == "" {
+			return errors.New("runs get requires RUN_ID")
 		}
-		return printJSON(toList(registry["runs"])[index])
-	case "authority-audit":
-		if len(args) < 2 {
-			return errors.New("runs authority-audit requires RUN_ID")
-		}
-		index := findRunIndex(registry, args[1])
+		index := findRunIndex(registry, runID)
 		if index < 0 {
-			return fmt.Errorf("run not found: %s", args[1])
+			return fmt.Errorf("run not found: %s", runID)
 		}
 		run, _ := toMap(toList(registry["runs"])[index])
-		return printJSON(runAuthorityAudit(run, registry, readSignalLog()))
+		if mode == outputModeText {
+			mission := readMission(strings.TrimSpace(stringValue(run["mission_id"])))
+			signalLog := readSignalLog()
+			audit := runAuthorityAudit(run, registry, signalLog)
+			profile, _ := resolveProfile("")
+			scheduler := schedulerSummary(profile, readMissionRegistry(), registry, signalLog, true)
+			activeMeetings := activeMeetingsForRun(runID)
+			activeSignals := activeSignalsForRun(signalLog, runID)
+			openActions := openMeetingActionsForRun(runID)
+			unsatisfiedDeps := unsatisfiedDependencies(run, registry)
+			return printText(renderRunBrief(run, mission, audit, scheduler, registry, activeMeetings, activeSignals, openActions, unsatisfiedDeps))
+		}
+		return printJSON(run)
+	case "authority-audit":
+		mode, remaining, err := parseOutputMode("runs authority-audit", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
+			return errors.New("runs authority-audit requires RUN_ID")
+		}
+		runID := strings.TrimSpace(remaining[0])
+		if runID == "" {
+			return errors.New("runs authority-audit requires RUN_ID")
+		}
+		index := findRunIndex(registry, runID)
+		if index < 0 {
+			return fmt.Errorf("run not found: %s", runID)
+		}
+		run, _ := toMap(toList(registry["runs"])[index])
+		audit := runAuthorityAudit(run, registry, readSignalLog())
+		if mode == outputModeText {
+			activeMeetings := activeMeetingsForRun(runID)
+			openActions := openMeetingActionsForRun(runID)
+			return printText(renderRunAuthorityAuditBrief(run, audit, registry, activeMeetings, openActions))
+		}
+		return printJSON(audit)
 	case "add":
 		payload, err := readStdinJSON()
 		if err != nil {
@@ -9356,9 +9528,16 @@ func cmdSignals(args []string) error {
 	case "list":
 		return printJSON(log)
 	case "active":
+		mode, remaining, err := parseOutputMode("signals active", args[1:])
+		if err != nil {
+			return err
+		}
 		missionID := ""
-		if len(args) > 1 {
-			missionID = args[1]
+		if len(remaining) > 1 {
+			return errors.New("signals active accepts at most one optional MISSION_ID")
+		}
+		if len(remaining) == 1 {
+			missionID = strings.TrimSpace(remaining[0])
 		}
 		signals := []any{}
 		for _, item := range toList(log["signals"]) {
@@ -9366,6 +9545,9 @@ func cmdSignals(args []string) error {
 			if activeSignal(signal) && (missionID == "" || stringValue(signal["mission_id"]) == missionID) {
 				signals = append(signals, signal)
 			}
+		}
+		if mode == outputModeText {
+			return printText(renderActiveSignalsBrief(signals, missionID, readRegistry()))
 		}
 		return printJSON(signals)
 	case "emit":
@@ -9417,9 +9599,13 @@ func cmdSignals(args []string) error {
 			return printJSON(signal)
 		})
 	case "adjudicate":
+		mode, remaining, err := parseOutputMode("signals adjudicate", args[1:])
+		if err != nil {
+			return err
+		}
 		targetAll := false
 		signalID := ""
-		for _, arg := range args[1:] {
+		for _, arg := range remaining {
 			if arg == "--all" {
 				targetAll = true
 			} else if !strings.HasPrefix(arg, "--") && signalID == "" {
@@ -9460,10 +9646,14 @@ func cmdSignals(args []string) error {
 					return err
 				}
 			}
-			return printJSON(map[string]any{
+			result := map[string]any{
 				"resolved_count": len(resolved),
 				"signals":        resolved,
-			})
+			}
+			if mode == outputModeText {
+				return printText(renderSignalAdjudicationBrief(result, targetAll, signalID))
+			}
+			return printJSON(result)
 		})
 	default:
 		return fmt.Errorf("unknown signals subcommand: %s", subcommand)
@@ -11071,64 +11261,64 @@ func schedulerSummary(profile, missionRegistry, registry, signalLog map[string]a
 		}
 
 		entry := map[string]any{
-			"mission_id":                                 missionID,
-			"mission_state":                              stringValue(mission["state"]),
-			"classification":                             classification,
-			"priority":                                   stringValue(mission["priority"]),
-			"risk_level":                                 stringValue(mission["risk_level"]),
-			"parallel_justified":                         parallelJustified,
-			"parallel_justification":                     parallelJustification,
-			"effective_risk_level":                       effectiveRiskLevel,
-			"profile_high_risk":                          len(profileHighRiskScopeRefs) > 0,
-			"profile_high_risk_scope_refs":               stringListToAny(profileHighRiskScopeRefs),
-			"recommended_decision_surface":               recommendedDecisionSurface,
-			"recommended_decision_protocol":              recommendedDecisionProtocolValue,
-			"recommended_protocol_reason":                recommendedProtocolReason,
-			"meeting_trigger_refs":                       stringListToAny(meetingTriggerRefs),
-			"release_adjacent":                           releaseAdjacent,
-			"authoritative_run_id":                       authoritativeRunID,
-			"authoritative_run_state":                    authoritativeRunState,
-			"authoritative_run_mode":                     authoritativeRunMode,
-			"authoritative_execution_surface":            authoritativeRunSurface,
-			"adopted_output_packet_kind":                 adoptedOutputPacketKind,
-			"adopted_output_follow_up_packet_count":      adoptedOutputFollowUpPacketCount,
-			"adopted_output_open_follow_up_packet_count": adoptedOutputOpenFollowUpPacketCount,
-			"adopted_primary_follow_up_packet":           cloneValue(adoptedPrimaryFollowUpPacket),
-			"adopted_primary_follow_up_action":           adoptedPrimaryFollowUpAction,
-			"adopted_primary_follow_up_delegated_run_id": adoptedPrimaryFollowUpDelegatedRunID,
-			"adopted_primary_follow_up_delegated_owner":  adoptedPrimaryFollowUpDelegatedOwnerID,
-			"adopted_primary_follow_up_delegated_state":  adoptedPrimaryFollowUpDelegatedState,
+			"mission_id":                                           missionID,
+			"mission_state":                                        stringValue(mission["state"]),
+			"classification":                                       classification,
+			"priority":                                             stringValue(mission["priority"]),
+			"risk_level":                                           stringValue(mission["risk_level"]),
+			"parallel_justified":                                   parallelJustified,
+			"parallel_justification":                               parallelJustification,
+			"effective_risk_level":                                 effectiveRiskLevel,
+			"profile_high_risk":                                    len(profileHighRiskScopeRefs) > 0,
+			"profile_high_risk_scope_refs":                         stringListToAny(profileHighRiskScopeRefs),
+			"recommended_decision_surface":                         recommendedDecisionSurface,
+			"recommended_decision_protocol":                        recommendedDecisionProtocolValue,
+			"recommended_protocol_reason":                          recommendedProtocolReason,
+			"meeting_trigger_refs":                                 stringListToAny(meetingTriggerRefs),
+			"release_adjacent":                                     releaseAdjacent,
+			"authoritative_run_id":                                 authoritativeRunID,
+			"authoritative_run_state":                              authoritativeRunState,
+			"authoritative_run_mode":                               authoritativeRunMode,
+			"authoritative_execution_surface":                      authoritativeRunSurface,
+			"adopted_output_packet_kind":                           adoptedOutputPacketKind,
+			"adopted_output_follow_up_packet_count":                adoptedOutputFollowUpPacketCount,
+			"adopted_output_open_follow_up_packet_count":           adoptedOutputOpenFollowUpPacketCount,
+			"adopted_primary_follow_up_packet":                     cloneValue(adoptedPrimaryFollowUpPacket),
+			"adopted_primary_follow_up_action":                     adoptedPrimaryFollowUpAction,
+			"adopted_primary_follow_up_delegated_run_id":           adoptedPrimaryFollowUpDelegatedRunID,
+			"adopted_primary_follow_up_delegated_owner":            adoptedPrimaryFollowUpDelegatedOwnerID,
+			"adopted_primary_follow_up_delegated_state":            adoptedPrimaryFollowUpDelegatedState,
 			"adopted_primary_follow_up_delegated_last_reported_at": adoptedPrimaryFollowUpDelegatedLastReportedAt,
 			"adopted_primary_follow_up_delegated_age_hours":        adoptedPrimaryFollowUpDelegatedAgeHours,
 			"adopted_primary_follow_up_delegated_stale":            adoptedPrimaryFollowUpDelegatedStale,
-			"adopted_primary_follow_up_delegated_action": adoptedPrimaryFollowUpDelegatedAction,
-			"active_run_ids":                             stringListToAny(dedupeStrings(activeRunIDs)),
-			"active_run_count":                           len(dedupeStrings(activeRunIDs)),
-			"teammate_run_count":                         activeTeammateCount,
-			"unsatisfied_mission_dependencies":           stringListToAny(unsatisfiedMissionDeps),
-			"unsatisfied_run_dependencies":               stringListToAny(unsatisfiedRunDeps),
-			"meeting_count":                              activeMeetingCountByMission[missionID],
-			"open_meeting_action_count":                  openMeetingActionCountByMission[missionID],
-			"follow_up_signal_count":                     len(followUpSignalsByMission[missionID]),
-			"follow_up_signals":                          cloneValue(followUpSignalsByMission[missionID]),
-			"fresh_follow_up_signal_kinds":               stringListToAny(freshFollowUpSignalKinds),
-			"follow_up_signal_urgency_rank":              followUpSignalUrgencyRank,
-			"stale_follow_up_signal_count":               len(staleFollowUpSignalsByMission[missionID]),
-			"stale_follow_up_signals":                    cloneValue(staleFollowUpSignalsByMission[missionID]),
-			"bundle_id":                                  bundleID,
-			"bundle_state":                               bundleState,
-			"bundle_role":                                bundleRole,
-			"bundle_resolution_kind":                     bundleResolutionKind,
-			"bundle_governing_mission_id":                bundleGovernorID,
-			"bundle_governance_source_kind":              bundleGovernanceSourceKind,
-			"bundle_adopted_from_meeting_id":             bundleAdoptedFromMeetingID,
-			"bundle_required_action":                     bundleRequiredAction,
-			"candidate_governor_ids":                     stringListToAny(bundleCandidateGovernorIDs),
-			"candidate_governor_packets":                 cloneValue(bundleCandidateGovernorPackets),
-			"latest_summary":                             stringValue(mission["latest_summary"]),
-			"recommended_action":                         recommendedAction,
-			"reasons":                                    stringListToAny(dedupeStrings(reasons)),
-			"updated_at":                                 updatedAt,
+			"adopted_primary_follow_up_delegated_action":           adoptedPrimaryFollowUpDelegatedAction,
+			"active_run_ids":                                       stringListToAny(dedupeStrings(activeRunIDs)),
+			"active_run_count":                                     len(dedupeStrings(activeRunIDs)),
+			"teammate_run_count":                                   activeTeammateCount,
+			"unsatisfied_mission_dependencies":                     stringListToAny(unsatisfiedMissionDeps),
+			"unsatisfied_run_dependencies":                         stringListToAny(unsatisfiedRunDeps),
+			"meeting_count":                                        activeMeetingCountByMission[missionID],
+			"open_meeting_action_count":                            openMeetingActionCountByMission[missionID],
+			"follow_up_signal_count":                               len(followUpSignalsByMission[missionID]),
+			"follow_up_signals":                                    cloneValue(followUpSignalsByMission[missionID]),
+			"fresh_follow_up_signal_kinds":                         stringListToAny(freshFollowUpSignalKinds),
+			"follow_up_signal_urgency_rank":                        followUpSignalUrgencyRank,
+			"stale_follow_up_signal_count":                         len(staleFollowUpSignalsByMission[missionID]),
+			"stale_follow_up_signals":                              cloneValue(staleFollowUpSignalsByMission[missionID]),
+			"bundle_id":                                            bundleID,
+			"bundle_state":                                         bundleState,
+			"bundle_role":                                          bundleRole,
+			"bundle_resolution_kind":                               bundleResolutionKind,
+			"bundle_governing_mission_id":                          bundleGovernorID,
+			"bundle_governance_source_kind":                        bundleGovernanceSourceKind,
+			"bundle_adopted_from_meeting_id":                       bundleAdoptedFromMeetingID,
+			"bundle_required_action":                               bundleRequiredAction,
+			"candidate_governor_ids":                               stringListToAny(bundleCandidateGovernorIDs),
+			"candidate_governor_packets":                           cloneValue(bundleCandidateGovernorPackets),
+			"latest_summary":                                       stringValue(mission["latest_summary"]),
+			"recommended_action":                                   recommendedAction,
+			"reasons":                                              stringListToAny(dedupeStrings(reasons)),
+			"updated_at":                                           updatedAt,
 		}
 		entryByMission[missionID] = entry
 		missionOrder = append(missionOrder, missionID)
@@ -11874,8 +12064,3024 @@ func writeSchedulerSnapshot(snapshot map[string]any) (map[string]any, error) {
 	return snapshot, nil
 }
 
+func pluralize(count int, singular, plural string) string {
+	if count == 1 {
+		return singular
+	}
+	return plural
+}
+
+func countLabel(count int, singular, plural string) string {
+	return fmt.Sprintf("%d %s", count, pluralize(count, singular, plural))
+}
+
+func schedulerMissionClassification(scheduler map[string]any, missionID string) map[string]any {
+	for _, item := range toList(scheduler["mission_classifications"]) {
+		entry, _ := toMap(item)
+		if strings.TrimSpace(stringValue(entry["mission_id"])) == missionID {
+			return entry
+		}
+	}
+	return map[string]any{}
+}
+
+func controlPlaneTargetLabel(packet map[string]any) string {
+	if bundleID := strings.TrimSpace(stringValue(packet["bundle_id"])); bundleID != "" {
+		return "bundle " + bundleID
+	}
+	targetKind := strings.TrimSpace(stringValue(packet["target_kind"]))
+	targetID := firstNonBlank(strings.TrimSpace(stringValue(packet["target_id"])), strings.TrimSpace(stringValue(packet["decision_id"])))
+	if targetKind != "" && targetID != "" {
+		return fmt.Sprintf("%s %s", targetKind, targetID)
+	}
+	if missionID := strings.TrimSpace(stringValue(packet["mission_id"])); missionID != "" {
+		return "mission " + missionID
+	}
+	switch {
+	case targetID != "":
+		return targetID
+	default:
+		return "the current control-plane packet"
+	}
+}
+
+func homeBriefCurrentFocus(summary, scheduler map[string]any) string {
+	primaryKind := strings.TrimSpace(stringValue(summary["scheduler_primary_control_plane_kind"]))
+	primaryPacket, _ := toMap(summary["scheduler_primary_control_plane_packet"])
+	selectedMissionIDs := anyListToStrings(toList(summary["scheduler_selected_mission_ids"]))
+	switch primaryKind {
+	case "maintenance":
+		return fmt.Sprintf("Primary control-plane work is governance maintenance on %s.", controlPlaneTargetLabel(primaryPacket))
+	case "human-decision":
+		target := controlPlaneTargetLabel(primaryPacket)
+		switch firstNonBlank(strings.TrimSpace(stringValue(primaryPacket["recommended_decision_surface"])), "leader-decision") {
+		case "active-council":
+			return fmt.Sprintf("Primary control-plane work is an active council on %s.", target)
+		case "council":
+			return fmt.Sprintf("Primary control-plane work is a council-backed decision on %s.", target)
+		default:
+			return fmt.Sprintf("Primary control-plane work is a leader decision on %s.", target)
+		}
+	default:
+		switch {
+		case len(selectedMissionIDs) > 1:
+			return fmt.Sprintf("A bounded parallel batch is active across %s.", strings.Join(selectedMissionIDs, ", "))
+		case len(selectedMissionIDs) == 1:
+			selectedID := selectedMissionIDs[0]
+			entry := schedulerMissionClassification(scheduler, selectedID)
+			if latestSummary := strings.TrimSpace(stringValue(entry["latest_summary"])); latestSummary != "" {
+				return fmt.Sprintf("Foreground mission %s is active: %s.", selectedID, latestSummary)
+			}
+			return fmt.Sprintf("Foreground mission %s is currently selected.", selectedID)
+		case intValue(summary["active_run_count"]) == 0:
+			return "No active governed execution is in flight."
+		case intValue(summary["active_meeting_count"]) > 0:
+			return "Governed execution is currently centered on active council work."
+		case intValue(summary["blocked_run_count"]) > 0 || intValue(summary["dependency_blocked_count"]) > 0:
+			return "Governed execution exists, but the current work is blocked or waiting."
+		default:
+			return "Governed execution is active."
+		}
+	}
+}
+
+func homeBriefWhy(summary, scheduler map[string]any) string {
+	primaryPacket, _ := toMap(summary["scheduler_primary_control_plane_packet"])
+	switch {
+	case strings.TrimSpace(stringValue(primaryPacket["reason"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["reason"]))
+	case strings.TrimSpace(stringValue(primaryPacket["note"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["note"]))
+	case strings.TrimSpace(stringValue(primaryPacket["summary"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["summary"]))
+	}
+	selectedMissionIDs := anyListToStrings(toList(summary["scheduler_selected_mission_ids"]))
+	if len(selectedMissionIDs) > 0 {
+		entry := schedulerMissionClassification(scheduler, selectedMissionIDs[0])
+		reasons := anyListToStrings(toList(entry["reasons"]))
+		if len(reasons) > 0 {
+			limit := len(reasons)
+			if limit > 2 {
+				limit = 2
+			}
+			return strings.Join(reasons[:limit], " ")
+		}
+	}
+	if intValue(summary["scheduler_required_human_decision_count"]) == 0 &&
+		intValue(summary["scheduler_maintenance_action_count"]) == 0 &&
+		intValue(summary["active_run_count"]) == 0 {
+		return "The control plane has no selected mission, active council, or maintenance packet yet."
+	}
+	return "This is the highest-priority control-plane packet under the current scheduler, authority, and maintenance policy."
+}
+
+func homeBriefLeaderAction(summary, scheduler map[string]any) string {
+	nextAction := strings.TrimSpace(stringValue(summary["next_action"]))
+	if nextAction != "" {
+		if nextAction == "No active runs. Claim a mission." {
+			return "Claim a mission to enter governed execution."
+		}
+		return nextAction
+	}
+	selectedMissionIDs := anyListToStrings(toList(summary["scheduler_selected_mission_ids"]))
+	if len(selectedMissionIDs) > 0 {
+		entry := schedulerMissionClassification(scheduler, selectedMissionIDs[0])
+		if action := strings.TrimSpace(stringValue(entry["recommended_action"])); action != "" {
+			return action
+		}
+	}
+	return "Review the current control-plane state before changing governed execution."
+}
+
+func homeBriefTeammateAction(summary map[string]any) string {
+	if action := strings.TrimSpace(stringValue(summary["primary_adopted_follow_up_delegated_action"])); action != "" {
+		return action
+	}
+	activeTeammates := intValue(summary["active_teammate_count"])
+	switch {
+	case activeTeammates > 0:
+		return fmt.Sprintf("%s are active; keep reports fresh and preserve bounded ownership before changing leader truth.", countLabel(activeTeammates, "teammate run", "teammate runs"))
+	default:
+		return "No active teammate work is currently in flight."
+	}
+}
+
+func homeBriefCouncilAction(summary map[string]any) string {
+	activeMeetings := intValue(summary["active_meeting_count"])
+	councilDecisions := intValue(summary["scheduler_council_decision_count"])
+	primaryDecision, _ := toMap(summary["scheduler_primary_required_human_decision"])
+	decisionAction := strings.TrimSpace(stringValue(primaryDecision["recommended_action"]))
+	switch {
+	case activeMeetings > 0:
+		if decisionAction != "" {
+			return fmt.Sprintf("Yes. %s active. Current requirement: %s", countLabel(activeMeetings, "council", "councils"), decisionAction)
+		}
+		return fmt.Sprintf("Yes. %s active; keep council output current before changing governed truth.", countLabel(activeMeetings, "council", "councils"))
+	case councilDecisions > 0:
+		if decisionAction != "" {
+			return "Yes. A council should be opened or reviewed next: " + decisionAction
+		}
+		return "Yes. A council-backed decision is pending before execution should widen."
+	default:
+		return "No council is currently required."
+	}
+}
+
+func renderHomeBrief(summary, scheduler map[string]any) string {
+	lines := []string{
+		"Harness Leader Briefing",
+		fmt.Sprintf(
+			"Profile: %s",
+			firstNonBlank(strings.TrimSpace(stringValue(summary["profile_id"])), "unknown"),
+		),
+		fmt.Sprintf(
+			"State: %s, %s, %s, %s, %s.",
+			countLabel(intValue(summary["active_mission_count"]), "active mission", "active missions"),
+			countLabel(intValue(summary["active_run_count"]), "active run", "active runs"),
+			countLabel(intValue(summary["active_teammate_count"]), "active teammate", "active teammates"),
+			countLabel(intValue(summary["active_meeting_count"]), "active council", "active councils"),
+			countLabel(intValue(summary["active_signal_count"]), "active signal", "active signals"),
+		),
+		"",
+		"Current:",
+		"- " + homeBriefCurrentFocus(summary, scheduler),
+		"",
+		"Why:",
+		"- " + homeBriefWhy(summary, scheduler),
+		"",
+		"Next:",
+		"- " + firstNonBlank(strings.TrimSpace(stringValue(summary["next_action"])), "No immediate next action is recorded."),
+		"",
+		"Leader:",
+		"- " + homeBriefLeaderAction(summary, scheduler),
+		"",
+		"Teammates:",
+		"- " + homeBriefTeammateAction(summary),
+		"",
+		"Council:",
+		"- " + homeBriefCouncilAction(summary),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func doctorHealthLabel(report map[string]any) string {
+	switch {
+	case intValue(report["critical_count"]) > 0:
+		return "critical drift"
+	case intValue(report["warning_count"]) > 0:
+		return "warnings present"
+	default:
+		return "healthy"
+	}
+}
+
+func renderDoctorBrief(report map[string]any) string {
+	lines := []string{
+		"Harness Doctor Briefing",
+		fmt.Sprintf(
+			"Profile: %s",
+			firstNonBlank(strings.TrimSpace(stringValue(report["profile_id"])), "unknown"),
+		),
+		fmt.Sprintf(
+			"Health: %s (%d critical, %d warning, %d info).",
+			doctorHealthLabel(report),
+			intValue(report["critical_count"]),
+			intValue(report["warning_count"]),
+			intValue(report["info_count"]),
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %d open meeting action(s).",
+			countLabel(intValue(report["active_mission_count"]), "active mission", "active missions"),
+			countLabel(intValue(report["active_teammate_count"]), "active teammate", "active teammates"),
+			intValue(report["open_meeting_actions"]),
+		),
+		"",
+		"Next:",
+		"- " + firstNonBlank(strings.TrimSpace(stringValue(report["next_action"])), "No immediate repair action is recorded."),
+		"",
+		"Top issues:",
+	}
+	issues := toList(report["issues"])
+	if len(issues) == 0 {
+		lines = append(lines, "- None.")
+		return strings.Join(lines, "\n")
+	}
+	limit := len(issues)
+	if limit > 3 {
+		limit = 3
+	}
+	for _, item := range issues[:limit] {
+		issue, _ := toMap(item)
+		severity := strings.ToUpper(firstNonBlank(strings.TrimSpace(stringValue(issue["severity"])), "info"))
+		summary := firstNonBlank(strings.TrimSpace(stringValue(issue["summary"])), strings.TrimSpace(stringValue(issue["kind"])))
+		recommendation := strings.TrimSpace(stringValue(issue["recommendation"]))
+		ref := strings.TrimSpace(stringValue(issue["ref"]))
+		line := fmt.Sprintf("[%s] %s", severity, summary)
+		if recommendation != "" {
+			line += " Next: " + recommendation
+		}
+		if ref != "" {
+			line += " Ref: " + ref
+		}
+		lines = append(lines, "- "+line)
+	}
+	if len(issues) > limit {
+		lines = append(lines, fmt.Sprintf("- %d more issue(s) remain in the JSON report.", len(issues)-limit))
+	}
+	return strings.Join(lines, "\n")
+}
+
+func missionBriefDecisionMeetingIDs(entry map[string]any) []string {
+	return dedupeStrings(append(
+		anyListToStrings(toList(entry["active_decision_meeting_ids"])),
+		anyListToStrings(toList(entry["bundle_active_decision_meeting_ids"]))...,
+	))
+}
+
+func missionBriefWhy(entry map[string]any) string {
+	reasons := anyListToStrings(toList(entry["reasons"]))
+	if len(reasons) == 0 {
+		return "No additional blocking reason is recorded for this mission."
+	}
+	limit := len(reasons)
+	if limit > 3 {
+		limit = 3
+	}
+	return strings.Join(reasons[:limit], " ")
+}
+
+func missionBriefCurrent(mission, entry, scheduler map[string]any) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(entry["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])))
+	classification := firstNonBlank(strings.TrimSpace(stringValue(entry["classification"])), "unknown")
+	activeDecisionMeetingIDs := missionBriefDecisionMeetingIDs(entry)
+	switch {
+	case len(activeDecisionMeetingIDs) > 0:
+		return fmt.Sprintf("Mission %s is currently under active council control via %s.", missionID, strings.Join(activeDecisionMeetingIDs, ", "))
+	case boolValue(entry["selected"]) && intValue(scheduler["selected_mission_count"]) > 1:
+		return fmt.Sprintf("Mission %s is in the current bounded parallel batch.", missionID)
+	case boolValue(entry["selected"]):
+		return fmt.Sprintf("Mission %s is the current foreground mission.", missionID)
+	case classification == "needs-human-decision":
+		switch firstNonBlank(strings.TrimSpace(stringValue(entry["recommended_decision_surface"])), "leader-decision") {
+		case "council":
+			return fmt.Sprintf("Mission %s is waiting on a council-backed decision before execution widens.", missionID)
+		case "active-council":
+			return fmt.Sprintf("Mission %s is waiting on active council work before execution widens.", missionID)
+		default:
+			return fmt.Sprintf("Mission %s is waiting on a leader decision before execution widens.", missionID)
+		}
+	case classification == "blocked-by-dependency":
+		return fmt.Sprintf("Mission %s is blocked on dependency state.", missionID)
+	case classification == "blocked-by-policy":
+		return fmt.Sprintf("Mission %s is blocked by current policy or fresh control-plane signals.", missionID)
+	case classification == "blocked-by-overlap":
+		return fmt.Sprintf("Mission %s is blocked by cross-mission ownership overlap.", missionID)
+	case classification == "deferred" && strings.TrimSpace(stringValue(entry["bundle_governing_mission_id"])) != "":
+		return fmt.Sprintf("Mission %s is intentionally deferred behind governing mission %s.", missionID, strings.TrimSpace(stringValue(entry["bundle_governing_mission_id"])))
+	case classification == "deferred" && strings.TrimSpace(stringValue(entry["authoritative_run_state"])) != "":
+		return fmt.Sprintf("Mission %s is currently deferred with authoritative run state %s.", missionID, strings.TrimSpace(stringValue(entry["authoritative_run_state"])))
+	case classification == "completed":
+		return fmt.Sprintf("Mission %s is no longer active in the control plane.", missionID)
+	default:
+		return fmt.Sprintf("Mission %s is clear to continue under the current control-plane policy.", missionID)
+	}
+}
+
+func missionBriefPriority(mission, entry, scheduler map[string]any) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(entry["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])))
+	classification := firstNonBlank(strings.TrimSpace(stringValue(entry["classification"])), "unknown")
+	switch {
+	case classification == "completed":
+		return "This mission is outside the live scheduler portfolio because it is no longer active."
+	case boolValue(entry["selected"]) && intValue(scheduler["selected_mission_count"]) > 1:
+		return "Scheduler admitted this mission into the current bounded parallel batch."
+	case boolValue(entry["selected"]):
+		return "Scheduler currently selected this mission as the foreground mission."
+	case boolValue(entry["primary_human_decision"]):
+		return "This mission owns the current primary human-decision packet."
+	case intValue(entry["human_decision_queue_position"]) > 1 && strings.TrimSpace(stringValue(entry["deferred_by_primary_control_plane_kind"])) == "maintenance":
+		return fmt.Sprintf("This mission's human-decision packet is queue position %d and is currently deferred behind primary maintenance.", intValue(entry["human_decision_queue_position"]))
+	case intValue(entry["human_decision_queue_position"]) > 1:
+		return fmt.Sprintf("This mission's human-decision packet is queue position %d in the current scheduler portfolio.", intValue(entry["human_decision_queue_position"]))
+	case strings.TrimSpace(stringValue(entry["deferred_by_primary_control_plane_kind"])) == "maintenance":
+		primaryMaintenance, _ := toMap(scheduler["primary_maintenance_action"])
+		target := controlPlaneTargetLabel(primaryMaintenance)
+		actionKind := firstNonBlank(strings.TrimSpace(stringValue(primaryMaintenance["action_kind"])), "maintenance")
+		if target != "the current control-plane packet" {
+			return fmt.Sprintf("Higher-priority maintenance (%s on %s) currently outranks this mission.", actionKind, target)
+		}
+		return fmt.Sprintf("Higher-priority maintenance (%s) currently outranks this mission.", actionKind)
+	case intValue(entry["bundle_active_decision_meeting_count"]) > 0:
+		return fmt.Sprintf("This mission is being held behind live bundle council coverage on %s.", firstNonBlank(strings.TrimSpace(stringValue(entry["bundle_id"])), missionID))
+	case classification == "runnable" && intValue(scheduler["selected_mission_count"]) > 0:
+		selectedMissionIDs := anyListToStrings(toList(scheduler["selected_mission_ids"]))
+		if len(selectedMissionIDs) > 0 {
+			return fmt.Sprintf("This mission is runnable, but %s currently owns the foreground slot.", selectedMissionIDs[0])
+		}
+		return "This mission is runnable, but another governed mission currently owns the foreground slot."
+	default:
+		return "No separate higher-priority control-plane packet is currently recorded ahead of this mission."
+	}
+}
+
+func missionBriefLeaderAction(mission, entry map[string]any) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(entry["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])))
+	activeDecisionMeetingIDs := missionBriefDecisionMeetingIDs(entry)
+	recommendedAction := strings.TrimSpace(stringValue(entry["recommended_action"]))
+	switch {
+	case len(activeDecisionMeetingIDs) > 0:
+		if recommendedAction != "" {
+			return fmt.Sprintf("Review active council %s before widening execution. %s", strings.Join(activeDecisionMeetingIDs, ", "), recommendedAction)
+		}
+		return fmt.Sprintf("Review active council %s before widening execution.", strings.Join(activeDecisionMeetingIDs, ", "))
+	case strings.TrimSpace(stringValue(entry["recommended_decision_surface"])) == "council":
+		protocol := firstNonBlank(strings.TrimSpace(stringValue(entry["recommended_decision_protocol"])), "evidence-review")
+		if recommendedAction != "" {
+			return fmt.Sprintf("Open or materialize a %s council for %s. %s", protocol, missionID, recommendedAction)
+		}
+		return fmt.Sprintf("Open or materialize a %s council for %s before widening execution.", protocol, missionID)
+	case strings.TrimSpace(stringValue(entry["classification"])) == "needs-human-decision":
+		if recommendedAction != "" {
+			return recommendedAction
+		}
+		return fmt.Sprintf("Record the governing leader decision for %s before widening execution.", missionID)
+	case strings.TrimSpace(stringValue(entry["classification"])) == "runnable":
+		if next := strings.TrimSpace(stringValue(mission["next_expected_action"])); next != "" {
+			return next
+		}
+		if runID := strings.TrimSpace(stringValue(entry["authoritative_run_id"])); runID != "" {
+			return fmt.Sprintf("Advance authoritative run %s on %s.", runID, missionID)
+		}
+	}
+	if recommendedAction != "" {
+		return recommendedAction
+	}
+	return "Review the current mission control-plane state before changing governed execution."
+}
+
+func missionBriefTeammateAction(entry map[string]any) string {
+	if delegatedRunID := strings.TrimSpace(stringValue(entry["adopted_primary_follow_up_delegated_run_id"])); delegatedRunID != "" {
+		owner := firstNonBlank(strings.TrimSpace(stringValue(entry["adopted_primary_follow_up_delegated_owner"])), "The delegated owner")
+		state := firstNonBlank(strings.TrimSpace(stringValue(entry["adopted_primary_follow_up_delegated_state"])), "active")
+		if action := strings.TrimSpace(stringValue(entry["adopted_primary_follow_up_delegated_action"])); action != "" {
+			return fmt.Sprintf("%s currently owns delegated follow-up run %s (%s). %s", owner, delegatedRunID, state, action)
+		}
+		return fmt.Sprintf("%s currently owns delegated follow-up run %s (%s); keep that report fresh.", owner, delegatedRunID, state)
+	}
+	if count := intValue(entry["teammate_run_count"]); count > 0 {
+		return fmt.Sprintf("%s are active on this mission; keep reports fresh and bounded before changing leader truth.", countLabel(count, "teammate run", "teammate runs"))
+	}
+	return "No active teammate work is currently attached to this mission."
+}
+
+func missionBriefCouncilAction(entry map[string]any) string {
+	activeDecisionMeetingIDs := missionBriefDecisionMeetingIDs(entry)
+	if len(activeDecisionMeetingIDs) > 0 {
+		return fmt.Sprintf("Yes. Active council coverage: %s.", strings.Join(activeDecisionMeetingIDs, ", "))
+	}
+	if count := intValue(entry["meeting_count"]); count > 0 {
+		return fmt.Sprintf("Yes. %s are active on this mission.", countLabel(count, "council", "councils"))
+	}
+	switch firstNonBlank(strings.TrimSpace(stringValue(entry["recommended_decision_surface"])), "leader-decision") {
+	case "council":
+		protocol := firstNonBlank(strings.TrimSpace(stringValue(entry["recommended_decision_protocol"])), "evidence-review")
+		return fmt.Sprintf("Yes. Next human surface should be a %s council.", protocol)
+	case "active-council":
+		return "Yes. This mission is already under active council handling."
+	default:
+		return "No council is currently required."
+	}
+}
+
+func renderMissionBrief(mission, entry, scheduler map[string]any) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(entry["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	missionState := firstNonBlank(strings.TrimSpace(stringValue(entry["mission_state"])), strings.TrimSpace(stringValue(mission["state"])), "unknown")
+	classification := firstNonBlank(strings.TrimSpace(stringValue(entry["classification"])), "unknown")
+	priority := firstNonBlank(strings.TrimSpace(stringValue(entry["priority"])), strings.TrimSpace(stringValue(mission["priority"])), "unranked")
+	effectiveRisk := firstNonBlank(strings.TrimSpace(stringValue(entry["effective_risk_level"])), strings.TrimSpace(stringValue(entry["risk_level"])), strings.TrimSpace(stringValue(mission["risk_level"])), "default")
+	authoritativeRunID := firstNonBlank(strings.TrimSpace(stringValue(entry["authoritative_run_id"])), strings.TrimSpace(stringValue(mission["authoritative_run_id"])))
+	authoritativeRunState := strings.TrimSpace(stringValue(entry["authoritative_run_state"]))
+	activeCouncilCount := len(missionBriefDecisionMeetingIDs(entry))
+	if activeCouncilCount == 0 {
+		activeCouncilCount = intValue(entry["meeting_count"])
+	}
+	lines := []string{
+		"Harness Mission Briefing",
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf(
+			"State: mission=%s, classification=%s, priority=%s, effective risk=%s.",
+			missionState,
+			classification,
+			priority,
+			effectiveRisk,
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %s, %d open meeting action(s), %d fresh follow-up signal(s).",
+			countLabel(intValue(entry["active_run_count"]), "active run", "active runs"),
+			countLabel(intValue(entry["teammate_run_count"]), "teammate run", "teammate runs"),
+			countLabel(activeCouncilCount, "active council", "active councils"),
+			intValue(entry["open_meeting_action_count"]),
+			intValue(entry["follow_up_signal_count"]),
+		),
+	}
+	if authoritativeRunID != "" {
+		runLabel := authoritativeRunID
+		if authoritativeRunState != "" {
+			runLabel = fmt.Sprintf("%s (%s)", authoritativeRunID, authoritativeRunState)
+		}
+		lines = append(lines, "Control: authoritative run "+runLabel+".")
+	}
+	if bundleID := strings.TrimSpace(stringValue(entry["bundle_id"])); bundleID != "" {
+		bundleParts := []string{fmt.Sprintf("Bundle: %s", bundleID)}
+		if controlState := firstNonBlank(strings.TrimSpace(stringValue(entry["bundle_control_state"])), strings.TrimSpace(stringValue(entry["bundle_state"]))); controlState != "" {
+			bundleParts = append(bundleParts, "state "+controlState)
+		}
+		if governorID := strings.TrimSpace(stringValue(entry["bundle_governing_mission_id"])); governorID != "" {
+			bundleParts = append(bundleParts, "governor "+governorID)
+		}
+		lines = append(lines, strings.Join(bundleParts, ", ")+".")
+	}
+	lines = append(lines,
+		"",
+		"Priority:",
+		"- "+missionBriefPriority(mission, entry, scheduler),
+		"",
+		"Current:",
+		"- "+missionBriefCurrent(mission, entry, scheduler),
+		"",
+		"Why:",
+		"- "+missionBriefWhy(entry),
+		"",
+		"Next:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(entry["recommended_action"])), strings.TrimSpace(stringValue(mission["next_expected_action"])), "No immediate next action is recorded."),
+		"",
+		"Leader:",
+		"- "+missionBriefLeaderAction(mission, entry),
+		"",
+		"Teammates:",
+		"- "+missionBriefTeammateAction(entry),
+		"",
+		"Council:",
+		"- "+missionBriefCouncilAction(entry),
+	)
+	return strings.Join(lines, "\n")
+}
+
+func missionAuthorityAuditRepairNeeded(audit map[string]any) bool {
+	return intValue(audit["mission_gap_count"]) > 0 || intValue(audit["unresolved_conflict_count"]) > 0
+}
+
+func missionAuthorityAuditRunIDs(items []any) []string {
+	runIDs := []string{}
+	for _, item := range items {
+		record, _ := toMap(item)
+		for _, field := range []string{"source_ref", "winning_source", "losing_source"} {
+			value := strings.TrimSpace(stringValue(record[field]))
+			if strings.HasPrefix(value, "run:") {
+				runIDs = append(runIDs, strings.TrimPrefix(value, "run:"))
+			}
+		}
+	}
+	return dedupeStrings(runIDs)
+}
+
+func missionAuthorityAuditCurrent(mission, audit map[string]any) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	authoritativeRunID := strings.TrimSpace(stringValue(audit["authoritative_run_id"]))
+	latestRunID := strings.TrimSpace(stringValue(audit["latest_run_id"]))
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		return fmt.Sprintf("Mission %s currently has competing active root runs and is not yet a single trustworthy control surface.", missionID)
+	case intValue(audit["mission_gap_count"]) > 0:
+		return fmt.Sprintf("Mission %s record has drifted from its authoritative run-derived control plane.", missionID)
+	case intValue(audit["adjudication_count"]) > 0 && authoritativeRunID != "" && latestRunID != "" && authoritativeRunID != latestRunID:
+		return fmt.Sprintf("Mission %s remains governed by authoritative run %s even though freshest activity is on %s.", missionID, authoritativeRunID, latestRunID)
+	case intValue(audit["adjudication_count"]) > 0:
+		return fmt.Sprintf("Mission %s remains governed by its authoritative run despite fresher sibling activity.", missionID)
+	default:
+		return fmt.Sprintf("Mission %s is aligned with its authoritative run-derived control plane.", missionID)
+	}
+}
+
+func missionAuthorityAuditWhy(audit map[string]any) string {
+	if note := briefAuditNote(toList(audit["unresolved_conflicts"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["mission_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["adjudications"])); note != "" {
+		return note
+	}
+	return "No mission-record drift, authoritative-run adjudication, or competing root-run conflict is currently recorded."
+}
+
+func missionAuthorityAuditNext(mission, audit map[string]any) string {
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		conflictRunIDs := missionAuthorityAuditRunIDs(toList(audit["unresolved_conflicts"]))
+		if len(conflictRunIDs) > 0 {
+			return fmt.Sprintf("Close or merge competing root runs %s before widening mission control.", strings.Join(conflictRunIDs, ", "))
+		}
+		return "Close or merge the competing root runs before widening mission control."
+	case intValue(audit["mission_gap_count"]) > 0:
+		return "Regenerate the mission record from run truth before trusting leader surfaces."
+	}
+	if next := strings.TrimSpace(stringValue(mission["next_expected_action"])); next != "" {
+		return next
+	}
+	if authoritativeRunID := strings.TrimSpace(stringValue(audit["authoritative_run_id"])); authoritativeRunID != "" {
+		return fmt.Sprintf("Keep mission control anchored to authoritative run %s.", authoritativeRunID)
+	}
+	return "No immediate mission authority action is recorded."
+}
+
+func missionAuthorityAuditLeaderAction(mission, audit map[string]any) string {
+	authoritativeRunID := strings.TrimSpace(stringValue(audit["authoritative_run_id"]))
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		if authoritativeRunID != "" {
+			return fmt.Sprintf("Leader should close or merge competing root runs until only authoritative run %s remains in control.", authoritativeRunID)
+		}
+		return "Leader should close or merge competing root runs until only one non-teammate control run remains."
+	case intValue(audit["mission_gap_count"]) > 0:
+		return "Leader should regenerate mission state from authoritative run truth before changing mission control."
+	case intValue(audit["adjudication_count"]) > 0 && authoritativeRunID != "":
+		return fmt.Sprintf("Leader should keep mission control anchored to authoritative run %s and treat fresher sibling activity as execution evidence, not mission truth.", authoritativeRunID)
+	default:
+		return "No leader-side mission authority repair is currently required."
+	}
+}
+
+func missionAuthorityAuditTeammateAction(audit map[string]any) string {
+	teammateCount := intValue(audit["active_teammate_run_count"])
+	switch {
+	case teammateCount == 0:
+		return "No active teammate run is currently affecting mission control."
+	case missionAuthorityAuditRepairNeeded(audit):
+		return fmt.Sprintf("%s should keep reports fresh while leader repairs mission control drift.", countLabel(teammateCount, "teammate run", "teammate runs"))
+	case intValue(audit["adjudication_count"]) > 0:
+		return fmt.Sprintf("%s can continue bounded execution, but they do not currently own mission control.", countLabel(teammateCount, "teammate run", "teammate runs"))
+	default:
+		return fmt.Sprintf("%s are active on this mission; keep reports fresh before changing leader truth.", countLabel(teammateCount, "teammate run", "teammate runs"))
+	}
+}
+
+func missionAuthorityAuditCouncilAction(audit map[string]any, activeMeetingCount int, openMeetingActionCount int) string {
+	switch {
+	case activeMeetingCount > 0:
+		return fmt.Sprintf("Yes. %s are already active on this mission.", countLabel(activeMeetingCount, "council", "councils"))
+	case openMeetingActionCount > 0:
+		return fmt.Sprintf("No active council is open, but %s still remain on this mission.", countLabel(openMeetingActionCount, "open meeting action", "open meeting actions"))
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		return "No council is currently required by mission-authority audit alone; leader should resolve the competing root runs directly."
+	default:
+		return "No council action is currently required."
+	}
+}
+
+func missionAuthorityAuditEvidence(audit map[string]any) []string {
+	type bucket struct {
+		label string
+		items []any
+	}
+	buckets := []bucket{
+		{label: "Mission gap", items: toList(audit["mission_gaps"])},
+		{label: "Adjudication", items: toList(audit["adjudications"])},
+		{label: "Unresolved conflict", items: toList(audit["unresolved_conflicts"])},
+	}
+	lines := []string{}
+	for _, bucket := range buckets {
+		for _, item := range bucket.items {
+			record, _ := toMap(item)
+			claimRef := firstNonBlank(strings.TrimSpace(stringValue(record["claim_ref"])), "unknown-claim")
+			note := firstNonBlank(
+				strings.TrimSpace(stringValue(record["note"])),
+				strings.TrimSpace(stringValue(record["summary"])),
+				"No explanatory note recorded.",
+			)
+			lines = append(lines, fmt.Sprintf("%s on %s: %s", bucket.label, claimRef, note))
+			if len(lines) == 3 {
+				return lines
+			}
+		}
+	}
+	if len(lines) == 0 {
+		lines = append(lines, "No unresolved mission authority evidence is currently recorded.")
+	}
+	return lines
+}
+
+func renderMissionAuthorityAuditBrief(mission, audit map[string]any, activeMeetingCount int, openMeetingActionCount int) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	missionState := firstNonBlank(strings.TrimSpace(stringValue(mission["state"])), "unknown")
+	auditState := "aligned"
+	switch {
+	case missionAuthorityAuditRepairNeeded(audit):
+		auditState = "repair-needed"
+	case intValue(audit["adjudication_count"]) > 0:
+		auditState = "governed"
+	}
+	lines := []string{
+		"Harness Mission Authority Briefing",
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf(
+			"Authority: state=%s, audit=%s, authoritative=%s, latest=%s.",
+			missionState,
+			auditState,
+			firstNonBlank(strings.TrimSpace(stringValue(audit["authoritative_run_id"])), "none"),
+			firstNonBlank(strings.TrimSpace(stringValue(audit["latest_run_id"])), "none"),
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %s, %s, %s.",
+			countLabel(intValue(audit["active_root_run_count"]), "active root run", "active root runs"),
+			countLabel(intValue(audit["active_teammate_run_count"]), "active teammate run", "active teammate runs"),
+			countLabel(intValue(audit["mission_gap_count"]), "mission gap", "mission gaps"),
+			countLabel(intValue(audit["adjudication_count"]), "adjudication", "adjudications"),
+			countLabel(intValue(audit["unresolved_conflict_count"]), "unresolved conflict", "unresolved conflicts"),
+		),
+	}
+	if branch := strings.TrimSpace(stringValue(mission["branch"])); branch != "" {
+		location := "Location: branch=" + branch
+		if worktreePath := strings.TrimSpace(stringValue(mission["worktree_path"])); worktreePath != "" {
+			location += ", worktree=" + worktreePath
+		}
+		location += "."
+		lines = append(lines, location)
+	}
+	lines = append(lines,
+		"",
+		"Current:",
+		"- "+missionAuthorityAuditCurrent(mission, audit),
+		"",
+		"Why:",
+		"- "+missionAuthorityAuditWhy(audit),
+		"",
+		"Next:",
+		"- "+missionAuthorityAuditNext(mission, audit),
+		"",
+		"Leader:",
+		"- "+missionAuthorityAuditLeaderAction(mission, audit),
+		"",
+		"Teammates:",
+		"- "+missionAuthorityAuditTeammateAction(audit),
+		"",
+		"Council:",
+		"- "+missionAuthorityAuditCouncilAction(audit, activeMeetingCount, openMeetingActionCount),
+		"",
+		"Evidence:",
+	)
+	for _, line := range missionAuthorityAuditEvidence(audit) {
+		lines = append(lines, "- "+line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func missionGraphBundlePriority(bundle map[string]any) int {
+	switch strings.TrimSpace(stringValue(bundle["bundle_state"])) {
+	case "escalation-required":
+		return 3
+	case "conflicted":
+		return 2
+	case "governed":
+		return 1
+	default:
+		return 0
+	}
+}
+
+func missionGraphSortedBundles(graph map[string]any) []map[string]any {
+	bundles := []map[string]any{}
+	for _, item := range toList(graph["bundles"]) {
+		bundle, _ := toMap(item)
+		if len(bundle) == 0 {
+			continue
+		}
+		bundles = append(bundles, bundle)
+	}
+	sort.Slice(bundles, func(i, j int) bool {
+		left := bundles[i]
+		right := bundles[j]
+		leftPriority := missionGraphBundlePriority(left)
+		rightPriority := missionGraphBundlePriority(right)
+		if leftPriority != rightPriority {
+			return leftPriority > rightPriority
+		}
+		if intValue(left["conflict_count"]) != intValue(right["conflict_count"]) {
+			return intValue(left["conflict_count"]) > intValue(right["conflict_count"])
+		}
+		if intValue(left["adjudication_count"]) != intValue(right["adjudication_count"]) {
+			return intValue(left["adjudication_count"]) > intValue(right["adjudication_count"])
+		}
+		if intValue(left["mission_count"]) != intValue(right["mission_count"]) {
+			return intValue(left["mission_count"]) > intValue(right["mission_count"])
+		}
+		return strings.TrimSpace(stringValue(left["bundle_id"])) < strings.TrimSpace(stringValue(right["bundle_id"]))
+	})
+	return bundles
+}
+
+func missionGraphPrimaryBundle(graph map[string]any) map[string]any {
+	bundles := missionGraphSortedBundles(graph)
+	if len(bundles) == 0 {
+		return nil
+	}
+	return bundles[0]
+}
+
+func missionGraphBundleMissionIDs(bundle map[string]any) []string {
+	return anyListToStrings(toList(bundle["mission_ids"]))
+}
+
+func missionGraphCouncilAnchorMissionIDs(bundle map[string]any) []string {
+	ids := []string{}
+	for _, item := range toList(bundle["candidate_governor_packets"]) {
+		packet, _ := toMap(item)
+		if intValue(packet["active_meeting_count"]) > 0 || intValue(packet["open_meeting_actions"]) > 0 {
+			if missionID := strings.TrimSpace(stringValue(packet["mission_id"])); missionID != "" {
+				ids = append(ids, missionID)
+			}
+		}
+	}
+	return dedupeStrings(ids)
+}
+
+func missionGraphCurrent(graph map[string]any) string {
+	primary := missionGraphPrimaryBundle(graph)
+	if primary == nil {
+		return "No connected mission bundle currently needs graph-level authority handling."
+	}
+	bundleID := firstNonBlank(strings.TrimSpace(stringValue(primary["bundle_id"])), "unknown")
+	missionIDs := missionGraphBundleMissionIDs(primary)
+	switch strings.TrimSpace(stringValue(primary["bundle_state"])) {
+	case "escalation-required":
+		return fmt.Sprintf("Bundle %s still needs one governing mission across %s.", bundleID, strings.Join(missionIDs, ", "))
+	case "conflicted":
+		return fmt.Sprintf("Bundle %s has unresolved cross-mission ownership conflict across %s.", bundleID, strings.Join(missionIDs, ", "))
+	case "governed":
+		if governingMissionID := strings.TrimSpace(stringValue(primary["governing_mission_id"])); governingMissionID != "" {
+			return fmt.Sprintf("Bundle %s is currently governed by %s across %s.", bundleID, governingMissionID, strings.Join(missionIDs, ", "))
+		}
+		return fmt.Sprintf("Bundle %s is currently governed across %s.", bundleID, strings.Join(missionIDs, ", "))
+	default:
+		return fmt.Sprintf("Bundle %s links %s but does not currently outrank other graph work.", bundleID, strings.Join(missionIDs, ", "))
+	}
+}
+
+func missionGraphWhy(graph map[string]any) string {
+	primary := missionGraphPrimaryBundle(graph)
+	if primary != nil {
+		for _, item := range toList(primary["governance_notes"]) {
+			if note := strings.TrimSpace(stringValue(item)); note != "" {
+				return note
+			}
+		}
+		switch strings.TrimSpace(stringValue(primary["resolution_kind"])) {
+		case "bundle_conflict":
+			return "Multiple active missions still claim overlapping ownership without a governing dependency, explicit transfer, or council outcome."
+		case "bundle_governor_required", "multi_council_bundle_governor_required":
+			return "The graph has authority signals, but no single governing mission currently wins the bundle."
+		case "single_root_governed_bundle", "single_winner_governed_bundle", "bundle_governor_adjudicated", "explicit_bundle_governor", "council_adopted_bundle_governor", "council_governed_bundle":
+			if governingMissionID := strings.TrimSpace(stringValue(primary["governing_mission_id"])); governingMissionID != "" {
+				return fmt.Sprintf("Current bundle governance is anchored to %s under the existing mission-graph adjudication.", governingMissionID)
+			}
+		}
+	}
+	switch {
+	case intValue(graph["mission_gap_count"]) > 0 || intValue(graph["mission_unresolved_conflict_count"]) > 0:
+		return "No connected bundle currently needs graph-level repair, but mission-level authority drift still exists in the underlying audit set."
+	default:
+		return "No active mission pair currently overlaps or requires bundle-level governance."
+	}
+}
+
+func missionGraphNext(graph map[string]any) string {
+	primary := missionGraphPrimaryBundle(graph)
+	if primary == nil {
+		if intValue(graph["mission_gap_count"]) > 0 || intValue(graph["mission_unresolved_conflict_count"]) > 0 {
+			return "Review the mission-level authority briefs for any remaining non-graph drift."
+		}
+		return "No mission-graph authority repair is currently required."
+	}
+	return firstNonBlank(strings.TrimSpace(stringValue(primary["required_action"])), "No immediate graph-level action is recorded.")
+}
+
+func missionGraphLeaderAction(graph map[string]any) string {
+	primary := missionGraphPrimaryBundle(graph)
+	if primary == nil {
+		if intValue(graph["mission_gap_count"]) > 0 || intValue(graph["mission_unresolved_conflict_count"]) > 0 {
+			return "Leader should inspect mission-level authority briefs; graph-level bundle repair is not the blocking problem right now."
+		}
+		return "No graph-level leader action is currently required."
+	}
+	missionIDs := missionGraphBundleMissionIDs(primary)
+	switch strings.TrimSpace(stringValue(primary["bundle_state"])) {
+	case "escalation-required":
+		if candidateIDs := anyListToStrings(toList(primary["candidate_governor_ids"])); len(candidateIDs) > 0 {
+			return fmt.Sprintf("Leader should make or materialize a bundle-governor decision across %s before widening execution on %s.", strings.Join(candidateIDs, ", "), strings.Join(missionIDs, ", "))
+		}
+		return "Leader should establish one governing mission before widening execution on this bundle."
+	case "conflicted":
+		return "Leader should narrow selectors, serialize the missions, or open a governing council before widening execution."
+	case "governed":
+		if governingMissionID := strings.TrimSpace(stringValue(primary["governing_mission_id"])); governingMissionID != "" {
+			return fmt.Sprintf("Leader should keep bundle authority anchored to %s while all other overlapping missions stay bounded behind it.", governingMissionID)
+		}
+	}
+	return "Review the current mission graph before changing governed parallel execution."
+}
+
+func missionGraphCouncilAction(graph map[string]any) string {
+	primary := missionGraphPrimaryBundle(graph)
+	if primary == nil {
+		return "No bundle-scoped council is currently required."
+	}
+	if anchors := missionGraphCouncilAnchorMissionIDs(primary); len(anchors) > 0 {
+		return fmt.Sprintf("Council coverage already exists on %s.", strings.Join(anchors, ", "))
+	}
+	switch strings.TrimSpace(stringValue(primary["bundle_state"])) {
+	case "escalation-required", "conflicted":
+		return "A bundle-scoped council is the next human surface if leader judgment should not decide the overlap directly."
+	default:
+		return "No new council action is currently required for the primary bundle."
+	}
+}
+
+func missionGraphBundleSummary(bundle map[string]any) string {
+	state := firstNonBlank(strings.TrimSpace(stringValue(bundle["bundle_state"])), "unknown")
+	bundleID := firstNonBlank(strings.TrimSpace(stringValue(bundle["bundle_id"])), "unknown")
+	missionIDs := missionGraphBundleMissionIDs(bundle)
+	summary := fmt.Sprintf("[%s] %s: %s", state, bundleID, strings.Join(missionIDs, ", "))
+	if governingMissionID := strings.TrimSpace(stringValue(bundle["governing_mission_id"])); governingMissionID != "" {
+		summary += fmt.Sprintf(" (governor %s)", governingMissionID)
+	}
+	if state == "escalation-required" {
+		if candidates := anyListToStrings(toList(bundle["candidate_governor_ids"])); len(candidates) > 0 {
+			summary += fmt.Sprintf(" (candidates %s)", strings.Join(candidates, ", "))
+		}
+	}
+	if action := strings.TrimSpace(stringValue(bundle["required_action"])); action != "" {
+		summary += ". Next: " + action
+	}
+	return summary
+}
+
+func missionGraphEvidence(graph map[string]any) []string {
+	lines := []string{}
+	for _, bundle := range missionGraphSortedBundles(graph) {
+		for _, item := range toList(bundle["governance_notes"]) {
+			note := strings.TrimSpace(stringValue(item))
+			if note == "" {
+				continue
+			}
+			lines = append(lines, note)
+			if len(lines) == 3 {
+				return lines
+			}
+		}
+	}
+	type bucket struct {
+		label string
+		items []any
+	}
+	buckets := []bucket{
+		{label: "Cross-mission conflict", items: toList(graph["cross_mission_conflicts"])},
+		{label: "Cross-mission adjudication", items: toList(graph["cross_mission_adjudications"])},
+		{label: "Dependency adjudication", items: toList(graph["dependency_adjudications"])},
+	}
+	for _, bucket := range buckets {
+		for _, item := range bucket.items {
+			record, _ := toMap(item)
+			note := firstNonBlank(strings.TrimSpace(stringValue(record["note"])), "No explanatory note recorded.")
+			lines = append(lines, fmt.Sprintf("%s: %s", bucket.label, note))
+			if len(lines) == 3 {
+				return lines
+			}
+		}
+	}
+	if len(lines) == 0 {
+		lines = append(lines, "No graph-level authority evidence is currently recorded.")
+	}
+	return lines
+}
+
+func renderMissionGraphAuthorityAuditBrief(graph map[string]any) string {
+	graphState := "clear"
+	switch {
+	case intValue(graph["escalated_bundle_count"]) > 0 || intValue(graph["conflicted_bundle_count"]) > 0:
+		graphState = "repair-needed"
+	case intValue(graph["bundle_count"]) > 0:
+		graphState = "governed"
+	}
+	lines := []string{
+		"Harness Mission Graph Authority Briefing",
+		fmt.Sprintf(
+			"Graph: %s, %s, %s, %s, %s.",
+			countLabel(intValue(graph["mission_count"]), "mission", "missions"),
+			countLabel(intValue(graph["bundle_count"]), "connected bundle", "connected bundles"),
+			countLabel(intValue(graph["conflicted_bundle_count"]), "conflicted bundle", "conflicted bundles"),
+			countLabel(intValue(graph["governed_bundle_count"]), "governed bundle", "governed bundles"),
+			countLabel(intValue(graph["escalated_bundle_count"]), "escalation-required bundle", "escalation-required bundles"),
+		),
+		fmt.Sprintf(
+			"Authority: state=%s, %s, %s, %s.",
+			graphState,
+			countLabel(intValue(graph["mission_gap_count"]), "mission gap", "mission gaps"),
+			countLabel(intValue(graph["cross_mission_conflict_count"]), "cross-mission conflict", "cross-mission conflicts"),
+			countLabel(intValue(graph["cross_mission_adjudication_count"]), "cross-mission adjudication", "cross-mission adjudications"),
+		),
+		"",
+		"Current:",
+		"- " + missionGraphCurrent(graph),
+		"",
+		"Why:",
+		"- " + missionGraphWhy(graph),
+		"",
+		"Next:",
+		"- " + missionGraphNext(graph),
+		"",
+		"Leader:",
+		"- " + missionGraphLeaderAction(graph),
+		"",
+		"Council:",
+		"- " + missionGraphCouncilAction(graph),
+		"",
+		"Bundles:",
+	}
+	bundles := missionGraphSortedBundles(graph)
+	if len(bundles) == 0 {
+		lines = append(lines, "- None.")
+	} else {
+		limit := len(bundles)
+		if limit > 3 {
+			limit = 3
+		}
+		for _, bundle := range bundles[:limit] {
+			lines = append(lines, "- "+missionGraphBundleSummary(bundle))
+		}
+		if len(bundles) > limit {
+			lines = append(lines, fmt.Sprintf("- %d more bundle(s) remain in the JSON audit.", len(bundles)-limit))
+		}
+	}
+	lines = append(lines, "", "Evidence:")
+	for _, line := range missionGraphEvidence(graph) {
+		lines = append(lines, "- "+line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func missionTopologyMissions(graph map[string]any) []map[string]any {
+	missions := []map[string]any{}
+	for _, item := range toList(graph["missions"]) {
+		mission, _ := toMap(item)
+		if len(mission) > 0 {
+			missions = append(missions, mission)
+		}
+	}
+	return missions
+}
+
+func missionTopologyActiveMissionIDs(graph map[string]any) []string {
+	ids := []string{}
+	for _, mission := range missionTopologyMissions(graph) {
+		if activeMission(mission) {
+			if missionID := strings.TrimSpace(stringValue(mission["mission_id"])); missionID != "" {
+				ids = append(ids, missionID)
+			}
+		}
+	}
+	sort.Strings(ids)
+	return ids
+}
+
+func missionTopologyMissionByID(graph map[string]any) map[string]map[string]any {
+	byID := map[string]map[string]any{}
+	for _, mission := range missionTopologyMissions(graph) {
+		if missionID := strings.TrimSpace(stringValue(mission["mission_id"])); missionID != "" {
+			byID[missionID] = mission
+		}
+	}
+	return byID
+}
+
+func missionTopologyDependencyEdges(graph map[string]any) []string {
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	activeSet := map[string]bool{}
+	for _, missionID := range activeMissionIDs {
+		activeSet[missionID] = true
+	}
+	edges := []string{}
+	for _, mission := range missionTopologyMissions(graph) {
+		if !activeMission(mission) {
+			continue
+		}
+		missionID := strings.TrimSpace(stringValue(mission["mission_id"]))
+		for _, item := range toList(mission["depends_on"]) {
+			dependencyID := strings.TrimSpace(stringValue(item))
+			if dependencyID != "" && activeSet[dependencyID] {
+				edges = append(edges, fmt.Sprintf("%s -> %s", missionID, dependencyID))
+			}
+		}
+	}
+	sort.Strings(edges)
+	return dedupeStrings(edges)
+}
+
+func missionTopologyChildrenByMission(graph map[string]any) map[string][]string {
+	children := map[string][]string{}
+	for _, edge := range missionTopologyDependencyEdges(graph) {
+		parts := strings.Split(edge, " -> ")
+		if len(parts) != 2 {
+			continue
+		}
+		childID := strings.TrimSpace(parts[0])
+		parentID := strings.TrimSpace(parts[1])
+		children[parentID] = dedupeStrings(append(children[parentID], childID))
+	}
+	for missionID := range children {
+		sort.Strings(children[missionID])
+	}
+	return children
+}
+
+func missionTopologyRootMissionIDs(graph map[string]any) []string {
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	activeSet := map[string]bool{}
+	for _, missionID := range activeMissionIDs {
+		activeSet[missionID] = true
+	}
+	roots := []string{}
+	for _, mission := range missionTopologyMissions(graph) {
+		if !activeMission(mission) {
+			continue
+		}
+		missionID := strings.TrimSpace(stringValue(mission["mission_id"]))
+		hasActiveDependency := false
+		for _, item := range toList(mission["depends_on"]) {
+			dependencyID := strings.TrimSpace(stringValue(item))
+			if dependencyID != "" && activeSet[dependencyID] {
+				hasActiveDependency = true
+				break
+			}
+		}
+		if !hasActiveDependency {
+			roots = append(roots, missionID)
+		}
+	}
+	sort.Strings(roots)
+	return roots
+}
+
+func missionTopologyActiveTeammateCountByMission(registry map[string]any) map[string]int {
+	counts := map[string]int{}
+	for _, item := range toList(registry["runs"]) {
+		run, _ := toMap(item)
+		if !activeTeammateRun(run) {
+			continue
+		}
+		missionID := strings.TrimSpace(stringValue(run["mission_id"]))
+		if missionID == "" {
+			continue
+		}
+		counts[missionID]++
+	}
+	return counts
+}
+
+func missionTopologyCurrent(graph map[string]any) string {
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	if len(activeMissionIDs) == 0 {
+		if intValue(graph["mission_count"]) > 0 {
+			return "No active mission is currently present in the mission graph."
+		}
+		return "No mission has been claimed into the graph yet."
+	}
+	roots := missionTopologyRootMissionIDs(graph)
+	children := missionTopologyChildrenByMission(graph)
+	switch {
+	case len(activeMissionIDs) == 1 && len(children[activeMissionIDs[0]]) == 0:
+		return fmt.Sprintf("Topology currently has one standalone active mission: %s.", activeMissionIDs[0])
+	case len(roots) == 1 && len(children[roots[0]]) > 0:
+		return fmt.Sprintf("Active topology is anchored on root %s with dependent missions %s.", roots[0], strings.Join(children[roots[0]], ", "))
+	case len(roots) > 1:
+		return fmt.Sprintf("Active topology currently has %d root missions: %s.", len(roots), strings.Join(roots, ", "))
+	default:
+		return fmt.Sprintf("Active topology currently spans %d missions across %d dependency edge(s).", len(activeMissionIDs), len(missionTopologyDependencyEdges(graph)))
+	}
+}
+
+func missionTopologyWhy(graph map[string]any) string {
+	edges := missionTopologyDependencyEdges(graph)
+	if len(edges) > 0 {
+		limit := len(edges)
+		if limit > 3 {
+			limit = 3
+		}
+		return "Active dependency edges: " + strings.Join(edges[:limit], ", ") + "."
+	}
+	if len(missionTopologyActiveMissionIDs(graph)) > 0 {
+		return "No active dependency edge is currently recorded."
+	}
+	if intValue(graph["mission_count"]) > 0 {
+		return "Only inactive or completed missions remain in the graph."
+	}
+	return "No mission graph topology exists yet because no mission has been claimed."
+}
+
+func missionTopologyNext(graph map[string]any) string {
+	byID := missionTopologyMissionByID(graph)
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	if len(activeMissionIDs) == 0 {
+		return "Claim or reopen a mission if new governed work is needed."
+	}
+	roots := missionTopologyRootMissionIDs(graph)
+	children := missionTopologyChildrenByMission(graph)
+	if len(roots) == 1 {
+		rootMission := byID[roots[0]]
+		if nextAction := strings.TrimSpace(stringValue(rootMission["next_expected_action"])); nextAction != "" {
+			return nextAction
+		}
+		if len(children[roots[0]]) > 0 {
+			return fmt.Sprintf("Advance root mission %s so dependent missions can unblock.", roots[0])
+		}
+		return fmt.Sprintf("Advance root mission %s.", roots[0])
+	}
+	if len(roots) > 1 {
+		return "Inspect root mission next actions individually; the graph currently has multiple parallel roots."
+	}
+	firstMission := byID[activeMissionIDs[0]]
+	if nextAction := strings.TrimSpace(stringValue(firstMission["next_expected_action"])); nextAction != "" {
+		return nextAction
+	}
+	return "Review the active mission graph before changing governed execution."
+}
+
+func missionTopologyLeaderAction(graph map[string]any) string {
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	if len(activeMissionIDs) == 0 {
+		return "Leader should claim or reopen a mission if new governed work is needed."
+	}
+	roots := missionTopologyRootMissionIDs(graph)
+	children := missionTopologyChildrenByMission(graph)
+	switch {
+	case len(roots) == 1 && len(children[roots[0]]) > 0:
+		return fmt.Sprintf("Leader should keep execution anchored on root mission %s while dependent missions stay bounded behind it.", roots[0])
+	case len(roots) > 1:
+		return "Leader should review root missions individually and use `missions authority-audit --all --brief` if root boundaries overlap or need a governor."
+	default:
+		return "Leader should keep the active mission graph bounded and drive the current root mission forward."
+	}
+}
+
+func missionTopologyTeammateAction(graph map[string]any, registry map[string]any) string {
+	countByMission := missionTopologyActiveTeammateCountByMission(registry)
+	total := 0
+	for _, missionID := range missionTopologyActiveMissionIDs(graph) {
+		total += countByMission[missionID]
+	}
+	if total == 0 {
+		return "No active teammate run is currently attached to the active mission graph."
+	}
+	return fmt.Sprintf("%s are active across the current graph; keep their reports fresh while root missions advance.", countLabel(total, "teammate run", "teammate runs"))
+}
+
+func missionTopologyCouncilAction(graph map[string]any, activeMeetingCountByMission map[string]int) string {
+	anchored := []string{}
+	for _, missionID := range missionTopologyActiveMissionIDs(graph) {
+		if activeMeetingCountByMission[missionID] > 0 {
+			anchored = append(anchored, missionID)
+		}
+	}
+	if len(anchored) == 0 {
+		return "No active council is currently attached to the active mission graph."
+	}
+	sort.Strings(anchored)
+	return fmt.Sprintf("%s currently have active council coverage: %s.", countLabel(len(anchored), "mission", "missions"), strings.Join(anchored, ", "))
+}
+
+func missionTopologyNodeSummary(mission map[string]any, childrenByMission map[string][]string, activeSet map[string]bool) string {
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	deps := []string{}
+	for _, item := range toList(mission["depends_on"]) {
+		dependencyID := strings.TrimSpace(stringValue(item))
+		if dependencyID != "" && activeSet[dependencyID] {
+			deps = append(deps, dependencyID)
+		}
+	}
+	sort.Strings(deps)
+	parts := []string{}
+	if len(deps) == 0 {
+		parts = append(parts, "root")
+	} else {
+		parts = append(parts, "depends on "+strings.Join(deps, ", "))
+	}
+	if len(childrenByMission[missionID]) > 0 {
+		parts = append(parts, fmt.Sprintf("%d dependent mission(s)", len(childrenByMission[missionID])))
+	}
+	parts = append(parts, countLabel(len(anyListToStrings(toList(mission["active_run_ids"]))), "active run", "active runs"))
+	if nextAction := strings.TrimSpace(stringValue(mission["next_expected_action"])); nextAction != "" {
+		parts = append(parts, "next: "+nextAction)
+	}
+	return fmt.Sprintf("%s: %s.", missionID, strings.Join(parts, ", "))
+}
+
+func renderMissionTopologyBrief(graph map[string]any, registry map[string]any, activeMeetingCountByMission map[string]int) string {
+	missions := missionTopologyMissions(graph)
+	activeMissionIDs := missionTopologyActiveMissionIDs(graph)
+	roots := missionTopologyRootMissionIDs(graph)
+	edges := missionTopologyDependencyEdges(graph)
+	childrenByMission := missionTopologyChildrenByMission(graph)
+	activeSet := map[string]bool{}
+	for _, missionID := range activeMissionIDs {
+		activeSet[missionID] = true
+	}
+	lines := []string{
+		"Harness Mission Graph Briefing",
+		fmt.Sprintf(
+			"Graph: %s, %s, %s, %s.",
+			countLabel(intValue(graph["mission_count"]), "mission", "missions"),
+			countLabel(len(activeMissionIDs), "active mission", "active missions"),
+			countLabel(len(roots), "active root mission", "active root missions"),
+			countLabel(len(edges), "active dependency edge", "active dependency edges"),
+		),
+		"",
+		"Current:",
+		"- " + missionTopologyCurrent(graph),
+		"",
+		"Why:",
+		"- " + missionTopologyWhy(graph),
+		"",
+		"Next:",
+		"- " + missionTopologyNext(graph),
+		"",
+		"Leader:",
+		"- " + missionTopologyLeaderAction(graph),
+		"",
+		"Teammates:",
+		"- " + missionTopologyTeammateAction(graph, registry),
+		"",
+		"Council:",
+		"- " + missionTopologyCouncilAction(graph, activeMeetingCountByMission),
+		"",
+		"Topology:",
+	}
+	highlighted := []map[string]any{}
+	for _, mission := range missions {
+		if activeMission(mission) {
+			highlighted = append(highlighted, mission)
+		}
+	}
+	sort.Slice(highlighted, func(i, j int) bool {
+		left := highlighted[i]
+		right := highlighted[j]
+		leftID := strings.TrimSpace(stringValue(left["mission_id"]))
+		rightID := strings.TrimSpace(stringValue(right["mission_id"]))
+		if containsString(roots, leftID) != containsString(roots, rightID) {
+			return containsString(roots, leftID)
+		}
+		return leftID < rightID
+	})
+	if len(highlighted) == 0 {
+		lines = append(lines, "- None.")
+	} else {
+		limit := len(highlighted)
+		if limit > 3 {
+			limit = 3
+		}
+		for _, mission := range highlighted[:limit] {
+			lines = append(lines, "- "+missionTopologyNodeSummary(mission, childrenByMission, activeSet))
+		}
+		if len(highlighted) > limit {
+			lines = append(lines, fmt.Sprintf("- %d more mission(s) remain in the JSON graph.", len(highlighted)-limit))
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+func briefAuditNote(items []any) string {
+	for _, item := range items {
+		record, _ := toMap(item)
+		note := firstNonBlank(
+			strings.TrimSpace(stringValue(record["note"])),
+			strings.TrimSpace(stringValue(record["summary"])),
+		)
+		if note != "" {
+			return note
+		}
+	}
+	return ""
+}
+
+func activeMeetingsForRun(runID string) []map[string]any {
+	meetings := []map[string]any{}
+	for _, item := range listMeetings(false) {
+		meeting, _ := toMap(item)
+		if strings.TrimSpace(stringValue(meeting["run_id"])) != runID {
+			continue
+		}
+		if strings.TrimSpace(stringValue(meeting["state"])) != "active" {
+			continue
+		}
+		meetings = append(meetings, meeting)
+	}
+	sort.Slice(meetings, func(i, j int) bool {
+		left := firstNonBlank(strings.TrimSpace(stringValue(meetings[i]["updated_at"])), strings.TrimSpace(stringValue(meetings[i]["created_at"])))
+		right := firstNonBlank(strings.TrimSpace(stringValue(meetings[j]["updated_at"])), strings.TrimSpace(stringValue(meetings[j]["created_at"])))
+		if left != right {
+			return left > right
+		}
+		return strings.TrimSpace(stringValue(meetings[i]["meeting_id"])) < strings.TrimSpace(stringValue(meetings[j]["meeting_id"]))
+	})
+	return meetings
+}
+
+func openMeetingActionsForRun(runID string) []map[string]any {
+	actions := []map[string]any{}
+	for _, item := range openMeetingActions() {
+		action, _ := toMap(item)
+		if strings.TrimSpace(stringValue(action["run_id"])) != runID {
+			continue
+		}
+		actions = append(actions, action)
+	}
+	return actions
+}
+
+func meetingIDsFromRecords(meetings []map[string]any) []string {
+	ids := []string{}
+	for _, meeting := range meetings {
+		if meetingID := strings.TrimSpace(stringValue(meeting["meeting_id"])); meetingID != "" {
+			ids = append(ids, meetingID)
+		}
+	}
+	return dedupeStrings(ids)
+}
+
+func runBriefOwnerLabel(run map[string]any) string {
+	ownerType := firstNonBlank(strings.TrimSpace(stringValue(run["owner_type"])), "leader")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), strings.TrimSpace(stringValue(run["leader_id"])), "unknown")
+	label := ownerType + ":" + ownerID
+	if role := strings.TrimSpace(stringValue(run["role"])); role != "" {
+		label += " (" + role + ")"
+	}
+	return label
+}
+
+func runBriefNeedsMeeting(audit map[string]any) bool {
+	for _, item := range toList(audit["higher_authority_conflicts"]) {
+		record, _ := toMap(item)
+		if strings.TrimSpace(stringValue(record["resolution_kind"])) == "meeting_request_unadopted" {
+			return true
+		}
+		if strings.TrimSpace(stringValue(record["signal_kind"])) == "requires_meeting" {
+			return true
+		}
+	}
+	return false
+}
+
+func runBriefMeetingRequirement(meetings []map[string]any) string {
+	for _, meeting := range meetings {
+		orchestration, _ := toMap(meeting["orchestration"])
+		requirement := strings.TrimSpace(stringValue(orchestration["next_requirement"]))
+		if requirement != "" {
+			return requirement
+		}
+	}
+	return ""
+}
+
+func runBriefPriority(run, mission, scheduler map[string]any) string {
+	runID := strings.TrimSpace(stringValue(run["run_id"]))
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])))
+	selectedRunIDs := anyListToStrings(toList(scheduler["selected_run_ids"]))
+	authoritativeRunID := strings.TrimSpace(stringValue(mission["authoritative_run_id"]))
+	latestRunID := strings.TrimSpace(stringValue(mission["latest_run_id"]))
+	switch {
+	case containsString(selectedRunIDs, runID) && authoritativeRunID == runID:
+		return fmt.Sprintf("This run is the current foreground scheduler run and still owns mission control for %s.", firstNonBlank(missionID, "its mission"))
+	case containsString(selectedRunIDs, runID):
+		return fmt.Sprintf("This run is in the current scheduler foreground selection for %s.", firstNonBlank(missionID, "its mission"))
+	case activeTeammateRun(run):
+		return fmt.Sprintf("This is a bounded teammate run under %s.", firstNonBlank(strings.TrimSpace(stringValue(run["parent_run_id"])), "its parent run"))
+	case authoritativeRunID == runID && latestRunID == runID && missionID != "":
+		return fmt.Sprintf("This run is both the authoritative and freshest control run for %s.", missionID)
+	case authoritativeRunID == runID && missionID != "":
+		return fmt.Sprintf("This run still owns mission control for %s even though fresher activity exists.", missionID)
+	case latestRunID == runID && authoritativeRunID != "" && missionID != "":
+		return fmt.Sprintf("This is the freshest activity on %s, but mission control remains anchored to %s.", missionID, authoritativeRunID)
+	default:
+		return "This run is recorded in runtime state but is not the current mission-control foreground."
+	}
+}
+
+func runBriefCurrent(run, mission, audit map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string) string {
+	runID := strings.TrimSpace(stringValue(run["run_id"]))
+	switch {
+	case len(activeMeetings) > 0:
+		return fmt.Sprintf("Run %s is under active council control via %s.", runID, strings.Join(meetingIDsFromRecords(activeMeetings), ", "))
+	case intValue(audit["higher_authority_conflict_count"]) > 0:
+		return fmt.Sprintf("Run %s is out of sync with higher-authority signal state.", runID)
+	case intValue(audit["adoption_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s has closed-meeting adoption drift.", runID)
+	case intValue(audit["live_state_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s has live git/worktree drift.", runID)
+	case intValue(audit["contract_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s has contract drift against the active control plane.", runID)
+	case len(unsatisfiedDeps) > 0:
+		return fmt.Sprintf("Run %s is waiting on dependency state.", runID)
+	case mergeReady(run):
+		return fmt.Sprintf("Run %s is merge-ready.", runID)
+	case strings.TrimSpace(stringValue(run["review_status"])) == "pending" ||
+		strings.TrimSpace(stringValue(run["review_status"])) == "changes_requested" ||
+		strings.TrimSpace(stringValue(run["checks_status"])) == "failed":
+		return fmt.Sprintf("Run %s is in review/check gate handling.", runID)
+	case activeTeammateRun(run) &&
+		strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])) != "" &&
+		firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open") == "open":
+		return fmt.Sprintf("Run %s is a teammate-owned delegated follow-up execution unit.", runID)
+	case activeTeammateRun(run):
+		return fmt.Sprintf("Run %s is a teammate-owned bounded execution unit.", runID)
+	}
+	switch strings.TrimSpace(stringValue(run["state"])) {
+	case "blocked":
+		return fmt.Sprintf("Run %s is currently blocked.", runID)
+	case "waiting":
+		return fmt.Sprintf("Run %s is currently waiting.", runID)
+	case "paused":
+		return fmt.Sprintf("Run %s is currently paused.", runID)
+	case "executing":
+		return fmt.Sprintf("Run %s is actively executing.", runID)
+	case "ready":
+		return fmt.Sprintf("Run %s is ready to execute.", runID)
+	case "completed":
+		return fmt.Sprintf("Run %s is completed.", runID)
+	default:
+		return fmt.Sprintf("Run %s is currently in state %s.", runID, firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown"))
+	}
+}
+
+func runBriefWhy(run, audit map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string, activeSignals []map[string]any) string {
+	if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+		return requirement
+	}
+	if note := briefAuditNote(toList(audit["higher_authority_conflicts"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["adoption_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["live_state_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["contract_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["desired_state_gaps"])); note != "" {
+		return note
+	}
+	if len(unsatisfiedDeps) > 0 {
+		return fmt.Sprintf("Unsatisfied dependencies: %s.", strings.Join(dedupeStrings(unsatisfiedDeps), ", "))
+	}
+	if reason := strings.TrimSpace(stringValue(run["status_reason"])); reason != "" {
+		return reason
+	}
+	for _, signal := range activeSignals {
+		summary := strings.TrimSpace(stringValue(signal["summary"]))
+		if summary != "" {
+			return summary
+		}
+	}
+	if summary := strings.TrimSpace(stringValue(run["latest_summary"])); summary != "" {
+		return "Latest governed summary: " + summary
+	}
+	return "No higher-priority drift or blocking reason is currently recorded on this run."
+}
+
+func runBriefLeaderAction(run, audit map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string) string {
+	if len(activeMeetings) > 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Review active council %s before changing run state. %s", ids, requirement)
+		}
+		return fmt.Sprintf("Review active council %s before changing run state.", ids)
+	}
+	switch {
+	case intValue(audit["higher_authority_conflict_count"]) > 0:
+		return "Resolve or adopt the higher-authority signal conflict before continuing this run."
+	case intValue(audit["adoption_gap_count"]) > 0:
+		return "Adopt the governing closed-meeting outcome back into this run before trusting it."
+	case intValue(audit["live_state_gap_count"]) > 0:
+		return "Reconcile the live branch/worktree state before trusting this run."
+	case intValue(audit["contract_gap_count"]) > 0:
+		return "Refresh the contract snapshot so it matches the current run state."
+	case len(unsatisfiedDeps) > 0:
+		return "Wait for dependencies to satisfy their governed state before resuming this run."
+	case mergeReady(run):
+		return "Merge or advance ship state for this run."
+	case strings.TrimSpace(stringValue(run["review_status"])) == "pending" ||
+		strings.TrimSpace(stringValue(run["review_status"])) == "changes_requested" ||
+		strings.TrimSpace(stringValue(run["checks_status"])) == "failed":
+		return "Resolve review or checks before widening execution."
+	}
+	if next := strings.TrimSpace(stringValue(run["next_expected_action"])); next != "" {
+		return next
+	}
+	return "Review the current run state before changing governed execution."
+}
+
+func runBriefTeammateAction(run, registry map[string]any) string {
+	runID := strings.TrimSpace(stringValue(run["run_id"]))
+	if activeTeammateRun(run) {
+		ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+		reporting := anyListToStrings(toList(run["reporting_expectations"]))
+		if len(reporting) > 0 {
+			limit := len(reporting)
+			if limit > 2 {
+				limit = 2
+			}
+			return fmt.Sprintf("%s owns this run; next report should cover %s.", ownerID, strings.Join(reporting[:limit], ", "))
+		}
+		if next := strings.TrimSpace(stringValue(run["next_expected_action"])); next != "" {
+			return fmt.Sprintf("%s owns this run. %s", ownerID, next)
+		}
+		return fmt.Sprintf("%s owns this run; keep reports fresh and stay within the bounded assignment.", ownerID)
+	}
+	childRuns := childRunsForParent(registry, runID)
+	if len(childRuns) > 0 {
+		owners := []string{}
+		for _, child := range childRuns {
+			owners = append(owners, firstNonBlank(strings.TrimSpace(stringValue(child["owner_id"])), strings.TrimSpace(stringValue(child["run_id"]))))
+		}
+		owners = dedupeStrings(owners)
+		if len(owners) > 3 {
+			owners = owners[:3]
+		}
+		return fmt.Sprintf("%s are active beneath this run: %s. Keep their reports fresh before changing leader truth.", countLabel(len(childRuns), "teammate run", "teammate runs"), strings.Join(owners, ", "))
+	}
+	return "No active teammate execution is currently attached to this run."
+}
+
+func runBriefCouncilAction(audit map[string]any, activeMeetings []map[string]any, openMeetingActions []map[string]any) string {
+	if len(activeMeetings) > 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Yes. Active council coverage: %s. Current requirement: %s", ids, requirement)
+		}
+		return fmt.Sprintf("Yes. Active council coverage: %s.", ids)
+	}
+	if len(openMeetingActions) > 0 {
+		return fmt.Sprintf("No active council is open, but %s still remain to be adopted.", countLabel(len(openMeetingActions), "meeting action", "meeting actions"))
+	}
+	if runBriefNeedsMeeting(audit) {
+		return "Yes. A meeting-required signal is still unadopted for this run."
+	}
+	return "No council is currently required."
+}
+
+func renderRunBrief(run, mission, audit, scheduler map[string]any, registry map[string]any, activeMeetings, activeSignals, openMeetingActions []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	mode := firstNonBlank(strings.TrimSpace(stringValue(run["mode"])), "unknown")
+	surface := firstNonBlank(strings.TrimSpace(stringValue(run["execution_surface"])), "unspecified")
+	lines := []string{
+		"Harness Run Briefing",
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf(
+			"Execution: mission=%s, owner=%s, state=%s, mode=%s, surface=%s.",
+			missionID,
+			runBriefOwnerLabel(run),
+			state,
+			mode,
+			surface,
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %d active signal(s), %d authority conflict(s), %d adoption gap(s).",
+			countLabel(len(activeMeetings), "active council", "active councils"),
+			countLabel(len(openMeetingActions), "open meeting action", "open meeting actions"),
+			len(activeSignals),
+			intValue(audit["higher_authority_conflict_count"]),
+			intValue(audit["adoption_gap_count"]),
+		),
+	}
+	if branch := strings.TrimSpace(stringValue(run["branch"])); branch != "" {
+		location := "Location: branch=" + branch
+		if worktreePath := strings.TrimSpace(stringValue(run["worktree_path"])); worktreePath != "" {
+			location += ", worktree=" + worktreePath
+		}
+		location += "."
+		lines = append(lines, location)
+	}
+	lines = append(lines,
+		"",
+		"Priority:",
+		"- "+runBriefPriority(run, mission, scheduler),
+		"",
+		"Current:",
+		"- "+runBriefCurrent(run, mission, audit, activeMeetings, unsatisfiedDeps),
+		"",
+		"Why:",
+		"- "+runBriefWhy(run, audit, activeMeetings, unsatisfiedDeps, activeSignals),
+		"",
+		"Next:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), "No immediate next action is recorded."),
+		"",
+		"Leader:",
+		"- "+runBriefLeaderAction(run, audit, activeMeetings, unsatisfiedDeps),
+		"",
+		"Teammates:",
+		"- "+runBriefTeammateAction(run, registry),
+		"",
+		"Council:",
+		"- "+runBriefCouncilAction(audit, activeMeetings, openMeetingActions),
+	)
+	return strings.Join(lines, "\n")
+}
+
+func teammateReportFreshness(run map[string]any) (bool, string) {
+	lastReportedAt := strings.TrimSpace(stringValue(run["last_reported_at"]))
+	staleAfter := floatValue(policyValue("cleanup.stale_run_after_hours", 24))
+	if lastReportedAt == "" {
+		return true, "No last_reported_at is recorded, so the leader cannot trust this teammate's freshness."
+	}
+	age := ageHours(lastReportedAt)
+	if age == nil {
+		return true, fmt.Sprintf("Last report timestamp %s could not be parsed.", lastReportedAt)
+	}
+	if *age > staleAfter {
+		return true, fmt.Sprintf("Last report is %.2f hours old, beyond the %.2f-hour freshness policy.", *age, staleAfter)
+	}
+	return false, fmt.Sprintf("Last report is %.2f hours old, within the %.2f-hour freshness policy.", *age, staleAfter)
+}
+
+func teammateBriefPeerIDs(run map[string]any) []string {
+	return dedupeStrings(append(anyListToStrings(toList(run["communication_peers"])), anyListToStrings(toList(run["siblings"]))...))
+}
+
+func teammateBriefCurrent(run map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	if len(activeMeetings) > 0 {
+		return fmt.Sprintf("%s is under active council control via %s.", ownerID, strings.Join(meetingIDsFromRecords(activeMeetings), ", "))
+	}
+	if len(unsatisfiedDeps) > 0 {
+		return fmt.Sprintf("%s is waiting on unsatisfied dependencies: %s.", ownerID, strings.Join(dedupeStrings(unsatisfiedDeps), ", "))
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		followUpState := firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open")
+		return fmt.Sprintf("%s is bound to delegated adopted follow-up packet %s in state %s.", ownerID, packetID, followUpState)
+	}
+	objective := firstNonBlank(strings.TrimSpace(stringValue(run["objective"])), strings.TrimSpace(stringValue(run["assigned_scope"])), "its bounded assignment")
+	if activeRun(run) {
+		return fmt.Sprintf("%s is %s on bounded assignment: %s.", ownerID, state, objective)
+	}
+	return fmt.Sprintf("%s is recorded as %s on bounded assignment: %s.", ownerID, state, objective)
+}
+
+func teammateBriefWhy(run, audit map[string]any, activeMeetings, activeSignals []map[string]any, unsatisfiedDeps []string) string {
+	if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+		return requirement
+	}
+	if note := briefAuditNote(toList(audit["higher_authority_conflicts"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["adoption_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["live_state_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["contract_gaps"])); note != "" {
+		return note
+	}
+	if len(unsatisfiedDeps) > 0 {
+		return fmt.Sprintf("Dependencies have not reached their desired state yet: %s.", strings.Join(dedupeStrings(unsatisfiedDeps), ", "))
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		followUpState := firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open")
+		if summary := strings.TrimSpace(stringValue(run["delegated_from_follow_up_summary"])); summary != "" {
+			return fmt.Sprintf("Delegated follow-up %s is %s: %s", packetID, followUpState, summary)
+		}
+		return fmt.Sprintf("Delegated follow-up %s is %s and still governs this teammate assignment.", packetID, followUpState)
+	}
+	if reason := strings.TrimSpace(stringValue(run["status_reason"])); reason != "" {
+		return reason
+	}
+	for _, signal := range activeSignals {
+		if summary := strings.TrimSpace(stringValue(signal["summary"])); summary != "" {
+			return summary
+		}
+	}
+	if summary := strings.TrimSpace(stringValue(run["latest_summary"])); summary != "" {
+		return "Latest teammate report: " + summary
+	}
+	return "No blocker or higher-authority drift is currently recorded for this teammate assignment."
+}
+
+func teammateBriefLeaderAction(run, parentRun, audit map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	if len(parentRun) == 0 {
+		return fmt.Sprintf("Leader should repair the missing parent_run_id link before trusting %s as bounded teammate work.", runID)
+	}
+	if len(activeMeetings) > 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Leader should review active council %s before changing this teammate assignment. %s", ids, requirement)
+		}
+		return fmt.Sprintf("Leader should review active council %s before changing this teammate assignment.", ids)
+	}
+	if runAuthorityAuditRepairNeeded(audit) {
+		return runBriefLeaderAction(run, audit, activeMeetings, unsatisfiedDeps)
+	}
+	if len(unsatisfiedDeps) > 0 {
+		return fmt.Sprintf("Leader should keep %s bounded behind dependencies: %s.", ownerID, strings.Join(dedupeStrings(unsatisfiedDeps), ", "))
+	}
+	stale, reportLine := teammateReportFreshness(run)
+	if stale {
+		return fmt.Sprintf("Leader should request a fresh report from %s. %s", ownerID, reportLine)
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		if monitor := delegatedFollowUpMonitorPacket(run); len(monitor) > 0 {
+			return stringValue(monitor["action"])
+		}
+		return fmt.Sprintf("Leader should monitor delegated adopted follow-up packet %s until %s reports back.", packetID, ownerID)
+	}
+	parentRunID := firstNonBlank(strings.TrimSpace(stringValue(parentRun["run_id"])), strings.TrimSpace(stringValue(run["parent_run_id"])), "the parent run")
+	return fmt.Sprintf("Leader should monitor %s reports and keep parent run %s bounded until this assignment reports back.", ownerID, parentRunID)
+}
+
+func teammateBriefTeammateAction(run map[string]any, activeMeetings []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	if len(activeMeetings) > 0 {
+		return fmt.Sprintf("%s should participate in council %s with bounded evidence and role discipline.", ownerID, strings.Join(meetingIDsFromRecords(activeMeetings), ", "))
+	}
+	if len(unsatisfiedDeps) > 0 {
+		return fmt.Sprintf("%s should wait for dependencies to satisfy their desired state before widening local execution.", ownerID)
+	}
+	stale, _ := teammateReportFreshness(run)
+	if stale {
+		return fmt.Sprintf("%s should report fresh status, blockers, and verification evidence before leader widens execution.", ownerID)
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		if action := strings.TrimSpace(stringValue(run["delegated_from_follow_up_required_action"])); action != "" {
+			return fmt.Sprintf("%s should execute delegated follow-up %s: %s", ownerID, packetID, action)
+		}
+		return fmt.Sprintf("%s should execute delegated follow-up %s and report completion evidence.", ownerID, packetID)
+	}
+	objective := firstNonBlank(strings.TrimSpace(stringValue(run["objective"])), strings.TrimSpace(stringValue(run["assigned_scope"])), "the bounded assignment")
+	reporting := anyListToStrings(toList(run["reporting_expectations"]))
+	if len(reporting) > 0 {
+		return fmt.Sprintf("%s should continue %s and report %s.", ownerID, objective, strings.Join(reporting, ", "))
+	}
+	if next := strings.TrimSpace(stringValue(run["next_expected_action"])); next != "" {
+		return fmt.Sprintf("%s should %s", ownerID, strings.TrimSuffix(next, ".")+".")
+	}
+	return fmt.Sprintf("%s should continue the bounded assignment and report progress, blockers, and verification.", ownerID)
+}
+
+func teammateBriefCouncilAction(run, audit map[string]any, activeMeetings []map[string]any, openMeetingActions []map[string]any) string {
+	if len(activeMeetings) > 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Active council coverage exists via %s. Current requirement: %s", ids, requirement)
+		}
+		return fmt.Sprintf("Active council coverage exists via %s.", ids)
+	}
+	if runBriefNeedsMeeting(audit) {
+		return "Council is required next; a teammate meeting-request signal is still unadopted."
+	}
+	if len(openMeetingActions) > 0 {
+		return fmt.Sprintf("No live council is open, but %s still remain to be adopted.", countLabel(len(openMeetingActions), "meeting action", "meeting actions"))
+	}
+	return "No council action is currently required for this teammate assignment."
+}
+
+func teammateBriefCommunicationAction(run map[string]any) string {
+	peers := teammateBriefPeerIDs(run)
+	if len(peers) == 0 {
+		return "No governed teammate communication peer is currently linked."
+	}
+	limit := len(peers)
+	if limit > 3 {
+		limit = 3
+	}
+	message := fmt.Sprintf("Governed communication peers: %s.", strings.Join(peers[:limit], ", "))
+	if len(peers) > limit {
+		message += fmt.Sprintf(" %d more peer(s) remain in JSON.", len(peers)-limit)
+	}
+	return message
+}
+
+func renderTeammateBrief(run, parentRun, mission, audit map[string]any, activeMeetings, activeSignals, openMeetingActions []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	parentRunID := firstNonBlank(strings.TrimSpace(stringValue(run["parent_run_id"])), "missing")
+	role := firstNonBlank(strings.TrimSpace(stringValue(run["role"])), "unspecified")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	mode := firstNonBlank(strings.TrimSpace(stringValue(run["mode"])), "unknown")
+	surface := firstNonBlank(strings.TrimSpace(stringValue(run["execution_surface"])), "unspecified")
+	assignedScope := firstNonBlank(strings.TrimSpace(stringValue(run["assigned_scope"])), "unspecified")
+	claims := ownershipClaims(run)
+	if len(claims) == 0 {
+		claims = []string{"none"}
+	}
+	dependencies := dependencyTargets(run)
+	if len(dependencies) == 0 {
+		dependencies = []string{"none"}
+	}
+	_, reportLine := teammateReportFreshness(run)
+	lines := []string{
+		"Harness Teammate Briefing",
+		fmt.Sprintf("Teammate: %s", ownerID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf(
+			"Assignment: mission=%s, parent=%s, role=%s, state=%s, mode=%s, surface=%s.",
+			missionID,
+			parentRunID,
+			role,
+			state,
+			mode,
+			surface,
+		),
+		fmt.Sprintf(
+			"Scope: %s, ownership=%s, depends_on=%s.",
+			assignedScope,
+			strings.Join(claims, ", "),
+			strings.Join(dependencies, ", "),
+		),
+		fmt.Sprintf(
+			"Signals: %d active signal(s), %d authority conflict(s), %d active council(s).",
+			len(activeSignals),
+			intValue(audit["higher_authority_conflict_count"]),
+			len(activeMeetings),
+		),
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		lines = append(lines, fmt.Sprintf(
+			"Delegated Follow-up: packet=%s, state=%s, meeting=%s.",
+			packetID,
+			firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open"),
+			firstNonBlank(strings.TrimSpace(stringValue(run["delegated_from_meeting_id"])), "unknown"),
+		))
+	}
+	lines = append(lines,
+		"Report: "+reportLine,
+		"",
+		"Current:",
+		"- "+teammateBriefCurrent(run, activeMeetings, unsatisfiedDeps),
+		"",
+		"Why:",
+		"- "+teammateBriefWhy(run, audit, activeMeetings, activeSignals, unsatisfiedDeps),
+		"",
+		"Next:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), "No immediate next action is recorded."),
+		"",
+		"Leader:",
+		"- "+teammateBriefLeaderAction(run, parentRun, audit, activeMeetings, unsatisfiedDeps),
+		"",
+		"Teammate:",
+		"- "+teammateBriefTeammateAction(run, activeMeetings, unsatisfiedDeps),
+		"",
+		"Communication:",
+		"- "+teammateBriefCommunicationAction(run),
+		"",
+		"Council:",
+		"- "+teammateBriefCouncilAction(run, audit, activeMeetings, openMeetingActions),
+	)
+	return strings.Join(lines, "\n")
+}
+
+func renderTeammateAssignmentBrief(run, parentRun, mission, audit, assignmentSignal map[string]any, activeMeetings, activeSignals, openMeetingActions []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	parentRunID := firstNonBlank(strings.TrimSpace(stringValue(run["parent_run_id"])), firstNonBlank(strings.TrimSpace(stringValue(parentRun["run_id"])), "missing"))
+	role := firstNonBlank(strings.TrimSpace(stringValue(run["role"])), "unspecified")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	mode := firstNonBlank(strings.TrimSpace(stringValue(run["mode"])), "unknown")
+	surface := firstNonBlank(strings.TrimSpace(stringValue(run["execution_surface"])), "unspecified")
+	assignedScope := firstNonBlank(strings.TrimSpace(stringValue(run["assigned_scope"])), "unspecified")
+	contractRef := firstNonBlank(strings.TrimSpace(stringValue(run["contract_ref"])), "missing")
+	claims := ownershipClaims(run)
+	if len(claims) == 0 {
+		claims = []string{"none"}
+	}
+	dependencies := dependencyTargets(run)
+	if len(dependencies) == 0 {
+		dependencies = []string{"none"}
+	}
+	peers := teammateBriefPeerIDs(run)
+	if len(peers) == 0 {
+		peers = []string{"none"}
+	}
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(assignmentSignal["signal_id"])), "none")
+	signalKind := firstNonBlank(normalizeSignalKind(stringValue(assignmentSignal["kind"])), "progress")
+	signalFreshUntil := firstNonBlank(strings.TrimSpace(stringValue(assignmentSignal["fresh_until"])), "not recorded")
+	lines := []string{
+		"Harness Teammate Assignment Briefing",
+		fmt.Sprintf("Teammate: %s", ownerID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Parent: %s.", parentRunID),
+		fmt.Sprintf(
+			"Assignment: mission=%s, role=%s, state=%s, mode=%s, surface=%s.",
+			missionID,
+			role,
+			state,
+			mode,
+			surface,
+		),
+		fmt.Sprintf(
+			"Scope: %s, ownership=%s, depends_on=%s, peers=%s.",
+			assignedScope,
+			strings.Join(claims, ", "),
+			strings.Join(dependencies, ", "),
+			strings.Join(peers, ", "),
+		),
+		fmt.Sprintf("Contract: %s", contractRef),
+		fmt.Sprintf("Signal: %s (%s, fresh_until=%s).", signalID, signalKind, signalFreshUntil),
+	}
+	if packetID := strings.TrimSpace(stringValue(run["delegated_from_follow_up_packet_id"])); packetID != "" {
+		lines = append(lines, fmt.Sprintf(
+			"Delegated Follow-up: packet=%s, state=%s, meeting=%s, execution=%s.",
+			packetID,
+			firstNonBlank(strings.TrimSpace(stringValue(run["delegated_follow_up_state"])), "open"),
+			firstNonBlank(strings.TrimSpace(stringValue(run["delegated_from_meeting_id"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(run["delegated_from_follow_up_execution_kind"])), "unspecified"),
+		))
+	}
+	lines = append(lines,
+		"",
+		"Current:",
+		"- "+teammateBriefCurrent(run, activeMeetings, unsatisfiedDeps),
+		"",
+		"Why:",
+		"- Leader delegated a bounded execution unit; the teammate can act inside the recorded scope, ownership selectors, reporting contract, and governed communication peers.",
+		"",
+		"Next:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), "Acknowledge the assignment and report progress, blockers, and verification."),
+		"",
+		"Leader:",
+		"- "+teammateBriefLeaderAction(run, parentRun, audit, activeMeetings, unsatisfiedDeps),
+		"",
+		"Teammate:",
+		"- "+teammateBriefTeammateAction(run, activeMeetings, unsatisfiedDeps),
+		"",
+		"Communication:",
+		"- "+teammateBriefCommunicationAction(run),
+		"",
+		"Council:",
+		"- "+teammateBriefCouncilAction(run, audit, activeMeetings, openMeetingActions),
+	)
+	return strings.Join(lines, "\n")
+}
+
+func renderTeammateReportBrief(run, parentRun, mission, audit, signal, registry map[string]any, activeMeetings, activeSignals, openMeetingActions []map[string]any, unsatisfiedDeps []string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	parentRunID := firstNonBlank(strings.TrimSpace(stringValue(run["parent_run_id"])), firstNonBlank(strings.TrimSpace(stringValue(parentRun["run_id"])), "missing"))
+	role := firstNonBlank(strings.TrimSpace(stringValue(run["role"])), "unspecified")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	assignedScope := firstNonBlank(strings.TrimSpace(stringValue(run["assigned_scope"])), "unspecified")
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "none")
+	signalKind := firstNonBlank(normalizeSignalKind(stringValue(signal["kind"])), "progress")
+	signalSummary := firstNonBlank(strings.TrimSpace(stringValue(signal["summary"])), strings.TrimSpace(stringValue(run["latest_summary"])), "No summary recorded.")
+	signalFreshUntil := firstNonBlank(strings.TrimSpace(stringValue(signal["fresh_until"])), "not recorded")
+	evidence := anyListToStrings(toList(signal["evidence_refs"]))
+	if len(evidence) == 0 {
+		evidence = []string{"none"}
+	}
+	_, reportLine := teammateReportFreshness(run)
+	lines := []string{
+		"Harness Teammate Report Briefing",
+		fmt.Sprintf("Teammate: %s", ownerID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Parent: %s.", parentRunID),
+		fmt.Sprintf("Report: kind=%s, signal=%s, fresh_until=%s.", signalKind, signalID, signalFreshUntil),
+		fmt.Sprintf("Assignment: mission=%s, role=%s, state=%s, scope=%s.", missionID, role, state, assignedScope),
+		fmt.Sprintf("Summary: %s", signalSummary),
+		fmt.Sprintf("Evidence: %s.", strings.Join(evidence, ", ")),
+		"Report Freshness: " + reportLine,
+		"",
+		"Current:",
+		"- " + teammateBriefCurrent(run, activeMeetings, unsatisfiedDeps),
+		"",
+		"Why:",
+		"- This teammate report is now a structured control-plane signal for leader review, adoption, resolution, or council materialization when the signal kind warrants it.",
+		"",
+		"Next:",
+		"- " + firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), signalBriefLeaderAction(signal, registry)),
+		"",
+		"Leader:",
+		"- " + signalBriefLeaderAction(signal, registry),
+		"",
+		"Teammate:",
+		"- " + signalBriefTeammateAction(signal, registry),
+		"",
+		"Communication:",
+		"- " + teammateBriefCommunicationAction(run),
+		"",
+		"Council:",
+		"- " + signalBriefCouncilAction(signal),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func renderTeammateMessageBrief(sourceRun, targetRun, mission, signal, registry map[string]any) string {
+	sourceRunID := firstNonBlank(strings.TrimSpace(stringValue(sourceRun["run_id"])), "unknown")
+	targetRunID := firstNonBlank(strings.TrimSpace(stringValue(targetRun["run_id"])), "unknown")
+	sourceOwner := firstNonBlank(strings.TrimSpace(stringValue(sourceRun["owner_id"])), sourceRunID)
+	targetOwner := firstNonBlank(strings.TrimSpace(stringValue(targetRun["owner_id"])), targetRunID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(sourceRun["mission_id"])), strings.TrimSpace(stringValue(targetRun["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "none")
+	signalKind := firstNonBlank(normalizeSignalKind(stringValue(signal["kind"])), "unknown")
+	signalSummary := firstNonBlank(strings.TrimSpace(stringValue(signal["summary"])), "No summary recorded.")
+	signalFreshUntil := firstNonBlank(strings.TrimSpace(stringValue(signal["fresh_until"])), "not recorded")
+	evidence := anyListToStrings(toList(signal["evidence_refs"]))
+	if len(evidence) == 0 {
+		evidence = []string{"none"}
+	}
+	targetScope := firstNonBlank(strings.TrimSpace(stringValue(targetRun["assigned_scope"])), "unspecified")
+	lines := []string{
+		"Harness Teammate Message Briefing",
+		fmt.Sprintf("Source: %s (%s).", sourceOwner, sourceRunID),
+		fmt.Sprintf("Target: %s (%s).", targetOwner, targetRunID),
+		fmt.Sprintf("Message: kind=%s, signal=%s, fresh_until=%s.", signalKind, signalID, signalFreshUntil),
+		fmt.Sprintf("Scope: mission=%s, target_scope=%s.", missionID, targetScope),
+		fmt.Sprintf("Summary: %s", signalSummary),
+		fmt.Sprintf("Evidence: %s.", strings.Join(evidence, ", ")),
+		"",
+		"Current:",
+		"- " + signalBriefLine(signal),
+		"",
+		"Why:",
+		"- This is governed teammate-to-teammate communication: the source can notify a linked peer, but leader authority still decides whether the signal changes mission or run truth.",
+		"",
+		"Next:",
+		"- " + signalBriefLeaderAction(signal, registry),
+		"",
+		"Leader:",
+		"- " + signalBriefLeaderAction(signal, registry),
+		"",
+		"Source Teammate:",
+		"- " + signalBriefTeammateAction(signal, registry),
+		"",
+		"Target Teammate:",
+		"- " + fmt.Sprintf("%s should review the message inside %s and respond or report only if it changes bounded execution.", targetOwner, targetScope),
+		"",
+		"Council:",
+		"- " + signalBriefCouncilAction(signal),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func renderTeammateLinkBrief(runA, runB map[string]any, reason string) string {
+	runAID := firstNonBlank(strings.TrimSpace(stringValue(runA["run_id"])), "unknown")
+	runBID := firstNonBlank(strings.TrimSpace(stringValue(runB["run_id"])), "unknown")
+	ownerA := firstNonBlank(strings.TrimSpace(stringValue(runA["owner_id"])), runAID)
+	ownerB := firstNonBlank(strings.TrimSpace(stringValue(runB["owner_id"])), runBID)
+	missionA := firstNonBlank(strings.TrimSpace(stringValue(runA["mission_id"])), "unknown")
+	missionB := firstNonBlank(strings.TrimSpace(stringValue(runB["mission_id"])), "unknown")
+	scopeA := firstNonBlank(strings.TrimSpace(stringValue(runA["assigned_scope"])), "unspecified")
+	scopeB := firstNonBlank(strings.TrimSpace(stringValue(runB["assigned_scope"])), "unspecified")
+	peersA := teammateBriefPeerIDs(runA)
+	if len(peersA) == 0 {
+		peersA = []string{"none"}
+	}
+	peersB := teammateBriefPeerIDs(runB)
+	if len(peersB) == 0 {
+		peersB = []string{"none"}
+	}
+	reason = firstNonBlank(strings.TrimSpace(reason), "Leader approved teammate coordination.")
+	lines := []string{
+		"Harness Teammate Link Briefing",
+		fmt.Sprintf("Source: %s (%s).", ownerA, runAID),
+		fmt.Sprintf("Target: %s (%s).", ownerB, runBID),
+		fmt.Sprintf("Link: mission_a=%s, mission_b=%s.", missionA, missionB),
+		fmt.Sprintf("Scopes: %s <-> %s.", scopeA, scopeB),
+		fmt.Sprintf("Peers: %s has %s; %s has %s.", ownerA, strings.Join(peersA, ", "), ownerB, strings.Join(peersB, ", ")),
+		fmt.Sprintf("Reason: %s", reason),
+		"",
+		"Current:",
+		"- " + fmt.Sprintf("Leader approved governed communication between %s and %s.", ownerA, ownerB),
+		"",
+		"Why:",
+		"- The link updates both runs' sibling and communication peer records so `teammates message` can emit governed peer signals without transferring ownership or mission authority.",
+		"",
+		"Next:",
+		"- " + fmt.Sprintf("Use `bash scripts/harness-teammates.sh message %s %s KIND SUMMARY --brief` for the concrete peer communication, or inspect each side with `teammates get --brief`.", runAID, runBID),
+		"",
+		"Leader:",
+		"- Treat later peer messages as signals for review, adoption, resolution, or council materialization; do not let the link itself widen either teammate's scope.",
+		"",
+		"Source Teammate:",
+		"- " + fmt.Sprintf("%s may communicate only inside the approved peer boundary and should keep ordinary progress reports fresh.", ownerA),
+		"",
+		"Target Teammate:",
+		"- " + fmt.Sprintf("%s may respond inside the approved peer boundary and should escalate if the message implies scope, ownership, or risk changes.", ownerB),
+		"",
+		"Council:",
+		"- No council is created by the link itself; open or materialize one only if the governed peer communication raises an ambiguous or high-risk decision.",
+	}
+	return strings.Join(lines, "\n")
+}
+
+func renderTeammateEscalationBrief(run, parentRun, mission, signal, meeting, registry map[string]any, materialized bool, requestedProtocol string) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), strings.TrimSpace(stringValue(mission["mission_id"])), "unknown")
+	parentRunID := firstNonBlank(strings.TrimSpace(stringValue(run["parent_run_id"])), strings.TrimSpace(stringValue(parentRun["run_id"])), "missing")
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "none")
+	signalKind := firstNonBlank(normalizeSignalKind(stringValue(signal["kind"])), "requires_meeting")
+	signalFreshUntil := firstNonBlank(strings.TrimSpace(stringValue(signal["fresh_until"])), "not recorded")
+	question := firstNonBlank(strings.TrimSpace(stringValue(signal["summary"])), strings.TrimSpace(stringValue(run["status_reason"])), "No escalation question recorded.")
+	assignedScope := firstNonBlank(strings.TrimSpace(stringValue(run["assigned_scope"])), "unspecified")
+	contractRef := firstNonBlank(strings.TrimSpace(stringValue(run["contract_ref"])), "none")
+	protocol := ""
+	protocolReason := ""
+	meetingID := "not materialized"
+	if materialized && len(meeting) > 0 {
+		meetingID = firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+		protocol = firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+		protocolReason = strings.TrimSpace(stringValue(meeting["decision_protocol_reason"]))
+	} else {
+		protocol, protocolReason = inferMeetingDecisionProtocol(run, question, requestedProtocol)
+	}
+	materializedLabel := "no"
+	if materialized && len(meeting) > 0 {
+		materializedLabel = "yes"
+	}
+	next := signalBriefLeaderAction(signal, registry)
+	if materialized && len(meeting) > 0 {
+		next = fmt.Sprintf("Open %s with `bash scripts/harness-meetings.sh summary %s --brief`, then advance the council with `bash scripts/harness-meetings.sh orchestrate %s --brief`.", meetingID, meetingID, meetingID)
+	}
+	council := signalBriefCouncilAction(signal)
+	if materialized && len(meeting) > 0 {
+		council = fmt.Sprintf("Council %s is active under %s; keep the question bounded and convert output into leader-adopted run or mission state.", meetingID, protocol)
+	}
+	lines := []string{
+		"Harness Teammate Escalation Briefing",
+		fmt.Sprintf("Teammate: %s", ownerID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Parent: %s.", parentRunID),
+		fmt.Sprintf("Escalation: kind=%s, signal=%s, fresh_until=%s, materialized=%s.", signalKind, signalID, signalFreshUntil, materializedLabel),
+		fmt.Sprintf("Meeting: %s.", meetingID),
+		fmt.Sprintf("Protocol: %s.", protocol),
+		fmt.Sprintf("Scope: mission=%s, teammate_scope=%s, contract=%s.", missionID, assignedScope, contractRef),
+		fmt.Sprintf("Question: %s", question),
+	}
+	if protocolReason != "" {
+		lines = append(lines, fmt.Sprintf("Protocol Reason: %s", protocolReason))
+	}
+	lines = append(lines,
+		"",
+		"Current:",
+		"- "+signalBriefLine(signal),
+		"",
+		"Why:",
+		"- A bounded teammate is surfacing ambiguity or risk instead of widening its assignment implicitly; the leader must decide whether this becomes council work and what authority it can change.",
+		"",
+		"Next:",
+		"- "+next,
+		"",
+		"Leader:",
+		"- "+next,
+		"",
+		"Teammate:",
+		"- "+fmt.Sprintf("%s should pause scope-widening work, keep evidence fresh, and participate only inside the bounded question.", ownerID),
+		"",
+		"Council:",
+		"- "+council,
+	)
+	return strings.Join(lines, "\n")
+}
+
+func signalBriefKindRank(kind string) int {
+	switch normalizeSignalKind(kind) {
+	case "risk_raised":
+		return 1
+	case "requires_rebase":
+		return 2
+	case "blocked":
+		return 3
+	case "requires_meeting", "interface_change", "review_feedback", "priority_change", "dependency_discovered":
+		return 4
+	case "release_ready":
+		return 5
+	case "progress":
+		return 8
+	default:
+		return 9
+	}
+}
+
+func signalBriefExpired(signal map[string]any) bool {
+	freshUntil, err := parseISO(stringValue(signal["fresh_until"]))
+	return err == nil && freshUntil != nil && freshUntil.Before(nowTime())
+}
+
+func signalBriefRecords(signals []any) []map[string]any {
+	records := []map[string]any{}
+	for _, item := range signals {
+		signal, _ := toMap(item)
+		if len(signal) > 0 {
+			records = append(records, signal)
+		}
+	}
+	sort.Slice(records, func(i, j int) bool {
+		leftExpired := signalBriefExpired(records[i])
+		rightExpired := signalBriefExpired(records[j])
+		if leftExpired != rightExpired {
+			return leftExpired
+		}
+		leftRank := signalBriefKindRank(stringValue(records[i]["kind"]))
+		rightRank := signalBriefKindRank(stringValue(records[j]["kind"]))
+		if leftRank != rightRank {
+			return leftRank < rightRank
+		}
+		leftTime := firstNonBlank(stringValue(records[i]["emitted_at"]), stringValue(records[i]["updated_at"]))
+		rightTime := firstNonBlank(stringValue(records[j]["emitted_at"]), stringValue(records[j]["updated_at"]))
+		if leftTime != rightTime {
+			return isoAfter(leftTime, rightTime)
+		}
+		return stringValue(records[i]["signal_id"]) < stringValue(records[j]["signal_id"])
+	})
+	return records
+}
+
+func signalBriefScope(signal map[string]any) string {
+	parts := []string{}
+	if missionID := strings.TrimSpace(stringValue(signal["mission_id"])); missionID != "" {
+		parts = append(parts, "mission "+missionID)
+	}
+	if runID := strings.TrimSpace(stringValue(signal["run_id"])); runID != "" {
+		parts = append(parts, "run "+runID)
+	}
+	if len(parts) == 0 {
+		return "the control plane"
+	}
+	return strings.Join(parts, ", ")
+}
+
+func signalBriefFreshness(signal map[string]any) string {
+	if freshUntil := strings.TrimSpace(stringValue(signal["fresh_until"])); freshUntil != "" {
+		if signalBriefExpired(signal) {
+			return fmt.Sprintf("Freshness window expired at %s.", freshUntil)
+		}
+		return fmt.Sprintf("Fresh until %s.", freshUntil)
+	}
+	if emittedAt := strings.TrimSpace(stringValue(signal["emitted_at"])); emittedAt != "" {
+		if age := ageHours(emittedAt); age != nil {
+			return fmt.Sprintf("No fresh_until is recorded; emitted %.2f hours ago.", *age)
+		}
+	}
+	return "No freshness window is recorded."
+}
+
+func signalBriefLeaderAction(signal map[string]any, registry map[string]any) string {
+	kind := normalizeSignalKind(stringValue(signal["kind"]))
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "unknown")
+	if signalBriefExpired(signal) {
+		return fmt.Sprintf("Resolve or refresh expired signal %s before letting it steer scheduling.", signalID)
+	}
+	runID := strings.TrimSpace(stringValue(signal["run_id"]))
+	run := map[string]any{}
+	if runID != "" {
+		if index := findRunIndex(registry, runID); index >= 0 {
+			run, _ = toMap(toList(registry["runs"])[index])
+		}
+	}
+	switch kind {
+	case "blocked":
+		return "Adopt the blocker into run state or resolve the signal if fresher execution supersedes it."
+	case "requires_meeting":
+		return "Review the coordination signal and either adopt it into state or materialize the required meeting."
+	case "interface_change":
+		return "Review the interface-change signal and notify governed sibling work before widening execution."
+	case "review_feedback":
+		return "Review the feedback signal and adopt it into governed review state before widening execution."
+	case "priority_change":
+		return "Review the priority-change signal and adopt it into mission priority before widening execution."
+	case "risk_raised":
+		return "Review the risk-raised signal and either tighten policy or convene a governed decision before widening execution."
+	case "requires_rebase":
+		return "Rebase or refresh the governed run state before continuing this mission."
+	case "dependency_discovered":
+		return "Adopt the dependency signal into mission or run dependency state before continuing."
+	case "progress":
+		if stringValue(run["owner_type"]) == "teammate" {
+			return "Review the teammate progress report, keep the assignment bounded, and update leader truth only if the evidence warrants it."
+		}
+		return "Review the progress report and update run or mission state only if the evidence warrants it."
+	case "release_ready":
+		return "Verify release readiness through ship/RC gates before treating this signal as final."
+	default:
+		return fmt.Sprintf("Review signal %s and either adopt it into governed state or resolve it with evidence.", signalID)
+	}
+}
+
+func signalBriefTeammateAction(signal map[string]any, registry map[string]any) string {
+	runID := strings.TrimSpace(stringValue(signal["run_id"]))
+	if runID != "" {
+		if index := findRunIndex(registry, runID); index >= 0 {
+			run, _ := toMap(toList(registry["runs"])[index])
+			if stringValue(run["owner_type"]) == "teammate" {
+				ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+				return fmt.Sprintf("%s should keep the report fresh, stay within the bounded assignment, and provide evidence for leader adoption or resolution.", ownerID)
+			}
+		}
+	}
+	sourceType := strings.TrimSpace(stringValue(signal["source_type"]))
+	sourceID := strings.TrimSpace(stringValue(signal["source_id"]))
+	if sourceType == "teammate" || sourceType == "sibling" {
+		return fmt.Sprintf("%s should keep the signal fresh and provide bounded evidence.", firstNonBlank(sourceID, "The teammate source"))
+	}
+	return "No teammate-specific action is required unless this signal came from delegated work."
+}
+
+func signalBriefCouncilAction(signal map[string]any) string {
+	switch normalizeSignalKind(stringValue(signal["kind"])) {
+	case "requires_meeting":
+		return "Council may be required if no active meeting already covers this signal."
+	case "risk_raised", "interface_change", "review_feedback":
+		return "Council may be appropriate when the signal changes risk, interface boundaries, or contested review judgment."
+	default:
+		return "No council is required unless leader review finds contested or high-blast-radius evidence."
+	}
+}
+
+func signalBriefLine(signal map[string]any) string {
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "unknown")
+	kind := firstNonBlank(normalizeSignalKind(stringValue(signal["kind"])), "unknown")
+	summary := firstNonBlank(strings.TrimSpace(stringValue(signal["summary"])), strings.TrimSpace(stringValue(signal["title"])), "No summary recorded.")
+	return fmt.Sprintf("%s: %s on %s. %s", signalID, kind, signalBriefScope(signal), summary)
+}
+
+func renderActiveSignalsBrief(signals []any, missionID string, registry map[string]any) string {
+	records := signalBriefRecords(signals)
+	scope := "all missions"
+	if strings.TrimSpace(missionID) != "" {
+		scope = "mission " + strings.TrimSpace(missionID)
+	}
+	lines := []string{
+		"Harness Signal Briefing",
+		fmt.Sprintf("Scope: %s.", scope),
+		fmt.Sprintf("Signals: %s.", countLabel(len(records), "active signal", "active signals")),
+	}
+	if len(records) == 0 {
+		lines = append(lines,
+			"",
+			"Current:",
+			"- No active signal currently matches this scope.",
+			"",
+			"Next:",
+			"- Continue through scheduler, mission, run, teammate, or council briefings as needed.",
+		)
+		return strings.Join(lines, "\n")
+	}
+	primary := records[0]
+	primaryID := firstNonBlank(strings.TrimSpace(stringValue(primary["signal_id"])), "unknown")
+	primaryKind := firstNonBlank(normalizeSignalKind(stringValue(primary["kind"])), "unknown")
+	lines = append(lines,
+		fmt.Sprintf("Primary: %s signal %s is active on %s.", primaryKind, primaryID, signalBriefScope(primary)),
+		"Freshness: "+signalBriefFreshness(primary),
+		"",
+		"Current:",
+		"- "+signalBriefLine(primary),
+		"",
+		"Why:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(primary["summary"])), strings.TrimSpace(stringValue(primary["title"])), "No signal summary is recorded."),
+		"",
+		"Next:",
+		"- "+signalBriefLeaderAction(primary, registry),
+		"",
+		"Leader:",
+		"- "+signalBriefLeaderAction(primary, registry),
+		"",
+		"Teammate:",
+		"- "+signalBriefTeammateAction(primary, registry),
+		"",
+		"Council:",
+		"- "+signalBriefCouncilAction(primary),
+		"",
+		"Active Signals:",
+	)
+	limit := len(records)
+	if limit > 3 {
+		limit = 3
+	}
+	for _, signal := range records[:limit] {
+		lines = append(lines, "- "+signalBriefLine(signal))
+	}
+	if len(records) > limit {
+		lines = append(lines, fmt.Sprintf("- %d more signal(s) remain in the JSON signal log.", len(records)-limit))
+	}
+	return strings.Join(lines, "\n")
+}
+
+func signalAdjudicationResolutionLine(signal map[string]any) string {
+	signalID := firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "unknown")
+	kind := firstNonBlank(normalizeSignalKind(stringValue(signal["kind"])), "unknown")
+	resolutionKind := firstNonBlank(strings.TrimSpace(stringValue(signal["resolution_kind"])), "resolved")
+	note := firstNonBlank(strings.TrimSpace(stringValue(signal["resolution_note"])), "No resolution note is recorded.")
+	supersededBy := strings.TrimSpace(stringValue(signal["superseded_by"]))
+	if supersededBy != "" {
+		return fmt.Sprintf("%s: %s on %s resolved as %s by %s. %s", signalID, kind, signalBriefScope(signal), resolutionKind, supersededBy, note)
+	}
+	return fmt.Sprintf("%s: %s on %s resolved as %s. %s", signalID, kind, signalBriefScope(signal), resolutionKind, note)
+}
+
+func renderSignalAdjudicationBrief(result map[string]any, targetAll bool, signalID string) string {
+	records := signalBriefRecords(toList(result["signals"]))
+	target := "all active signals"
+	if !targetAll && strings.TrimSpace(signalID) != "" {
+		target = "signal " + strings.TrimSpace(signalID)
+	}
+	resolvedCount := intValue(result["resolved_count"])
+	lines := []string{
+		"Harness Signal Adjudication Briefing",
+		fmt.Sprintf("Target: %s.", target),
+		fmt.Sprintf("Resolved: %s.", countLabel(resolvedCount, "signal", "signals")),
+	}
+	if len(records) == 0 {
+		current := "No active signal was adjudicated as superseded."
+		why := "No currently active signal matched supersession rules against fresher run or meeting truth."
+		if !targetAll && strings.TrimSpace(signalID) != "" {
+			current = fmt.Sprintf("No active signal was adjudicated as superseded for signal %s.", strings.TrimSpace(signalID))
+			why = "The targeted signal is absent, already resolved, or still not superseded by fresher run or meeting truth."
+		}
+		lines = append(lines,
+			"",
+			"Current:",
+			"- "+current,
+			"",
+			"Why:",
+			"- "+why,
+			"",
+			"Next:",
+			"- Inspect `signals active --brief`, then adopt valid active signals into governed state, materialize required council, or resolve stale signals explicitly with evidence.",
+			"",
+			"Leader:",
+			"- Keep any still-active signal authoritative until a fresher runtime object supersedes it or leader resolves it directly.",
+			"",
+			"Teammate:",
+			"- No teammate action changed; source teammates should keep bounded evidence fresh while leader adjudicates.",
+			"",
+			"Council:",
+			"- Council is required only when a still-active signal asks for governed judgment or carries high-blast-radius evidence.",
+		)
+		return strings.Join(lines, "\n")
+	}
+	primary := records[0]
+	resolvedVerb := "were"
+	if resolvedCount == 1 {
+		resolvedVerb = "was"
+	}
+	lines = append(lines,
+		"Primary: "+signalAdjudicationResolutionLine(primary),
+		"",
+		"Current:",
+		"- "+fmt.Sprintf("%s %s resolved against fresher authority truth.", countLabel(resolvedCount, "signal", "signals"), resolvedVerb),
+		"",
+		"Why:",
+		"- "+firstNonBlank(strings.TrimSpace(stringValue(primary["resolution_note"])), "Fresher runtime truth superseded the active signal."),
+		"",
+		"Next:",
+		"- Re-run `signals active --brief` or `doctor --brief`, then continue the mission or run now that stale signal noise is cleared.",
+		"",
+		"Leader:",
+		"- Treat the resolved signals as history; do not let them steer scheduling unless new evidence reopens the issue.",
+		"",
+		"Teammate:",
+		"- Teammates can continue only within their existing bounded run or mission scope; adjudication did not assign new work.",
+		"",
+		"Council:",
+		"- No council is required for these resolved supersessions unless remaining active signals still call for one.",
+		"",
+		"Resolved Signals:",
+	)
+	limit := len(records)
+	if limit > 5 {
+		limit = 5
+	}
+	for _, signal := range records[:limit] {
+		lines = append(lines, "- "+signalAdjudicationResolutionLine(signal))
+	}
+	if len(records) > limit {
+		lines = append(lines, fmt.Sprintf("- %d more resolved signal(s) remain in the JSON adjudication result.", len(records)-limit))
+	}
+	return strings.Join(lines, "\n")
+}
+
+func runAuthorityAuditRepairNeeded(audit map[string]any) bool {
+	return intValue(audit["higher_authority_conflict_count"]) > 0 ||
+		intValue(audit["adoption_gap_count"]) > 0 ||
+		intValue(audit["live_state_gap_count"]) > 0 ||
+		intValue(audit["contract_gap_count"]) > 0
+}
+
+func runAuthorityAuditMeetingSources(items []any) []string {
+	ids := []string{}
+	for _, item := range items {
+		record, _ := toMap(item)
+		for _, field := range []string{"source_ref", "winning_source"} {
+			value := strings.TrimSpace(stringValue(record[field]))
+			if strings.HasPrefix(value, "meeting:") {
+				ids = append(ids, strings.TrimPrefix(value, "meeting:"))
+			}
+		}
+	}
+	return dedupeStrings(ids)
+}
+
+func runAuthorityAuditCurrent(run, audit map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	switch {
+	case intValue(audit["higher_authority_conflict_count"]) > 0:
+		return fmt.Sprintf("Run %s is currently out of sync with higher-authority signal state.", runID)
+	case intValue(audit["adoption_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s still has closed-council adoption drift.", runID)
+	case intValue(audit["live_state_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s is drifting against live git or worktree state.", runID)
+	case intValue(audit["contract_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s is drifting against a stale contract snapshot.", runID)
+	case intValue(audit["desired_state_gap_count"]) > 0:
+		return fmt.Sprintf("Run %s is still progressing toward its desired state.", runID)
+	default:
+		return fmt.Sprintf("Run %s is authority-aligned across signals, meetings, contract state, and live state.", runID)
+	}
+}
+
+func runAuthorityAuditWhy(audit map[string]any) string {
+	if note := briefAuditNote(toList(audit["higher_authority_conflicts"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["adoption_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["live_state_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["contract_gaps"])); note != "" {
+		return note
+	}
+	if note := briefAuditNote(toList(audit["desired_state_gaps"])); note != "" {
+		return note
+	}
+	if intValue(audit["superseded_signal_count"]) > 0 {
+		return fmt.Sprintf("%s are already superseded by fresher authority and no longer create unresolved drift.", countLabel(intValue(audit["superseded_signal_count"]), "signal", "signals"))
+	}
+	return "No higher-authority, adoption, live-state, contract, or desired-state gaps are currently recorded."
+}
+
+func runAuthorityAuditLiveAction(audit map[string]any) string {
+	for _, item := range toList(audit["live_state_gaps"]) {
+		record, _ := toMap(item)
+		switch strings.TrimSpace(stringValue(record["claim_ref"])) {
+		case "live_worktree_missing":
+			return "Reprovision the missing worktree or repair the run's provisioning record before trusting execution."
+		case "live_branch":
+			return "Repair the run branch record or switch the live worktree back so governed execution agrees again."
+		case "live_dirty":
+			return "Clean the live worktree before governed verification, handoff, or ship-state widening."
+		}
+	}
+	return "Reconcile the live worktree state before trusting this run."
+}
+
+func runAuthorityAuditNext(audit map[string]any) string {
+	switch {
+	case intValue(audit["higher_authority_conflict_count"]) > 0:
+		for _, item := range toList(audit["higher_authority_conflicts"]) {
+			record, _ := toMap(item)
+			if strings.TrimSpace(stringValue(record["resolution_kind"])) == "meeting_request_unadopted" {
+				return "Open or resume the required meeting before trusting this run."
+			}
+		}
+		return "Resolve or explicitly adopt the higher-authority signal that currently overrides this run."
+	case intValue(audit["adoption_gap_count"]) > 0:
+		if meetingIDs := runAuthorityAuditMeetingSources(toList(audit["adoption_gaps"])); len(meetingIDs) > 0 {
+			return fmt.Sprintf("Adopt the closed council output from %s back into this run.", strings.Join(meetingIDs, ", "))
+		}
+		return "Adopt the governing closed-meeting output back into this run."
+	case intValue(audit["live_state_gap_count"]) > 0:
+		return runAuthorityAuditLiveAction(audit)
+	case intValue(audit["contract_gap_count"]) > 0:
+		return "Refresh the contract snapshot so it matches the active run control plane."
+	case intValue(audit["desired_state_gap_count"]) > 0:
+		return "Advance the run toward its desired state or explicitly relax the desired-state contract."
+	default:
+		return "No authority-repair action is currently required."
+	}
+}
+
+func runAuthorityAuditLeaderAction(audit map[string]any, activeMeetings []map[string]any) string {
+	if len(activeMeetings) > 0 && intValue(audit["higher_authority_conflict_count"]) == 0 && intValue(audit["adoption_gap_count"]) == 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Keep active council %s moving. Current requirement: %s", ids, requirement)
+		}
+		return fmt.Sprintf("Keep active council %s moving before changing governed execution.", ids)
+	}
+	if intValue(audit["higher_authority_conflict_count"]) > 0 {
+		for _, item := range toList(audit["higher_authority_conflicts"]) {
+			record, _ := toMap(item)
+			if strings.TrimSpace(stringValue(record["resolution_kind"])) == "meeting_request_unadopted" {
+				return "Leader should open or resume the required meeting and hold run state until that council coverage exists."
+			}
+			if signalID := strings.TrimSpace(stringValue(record["signal_id"])); signalID != "" {
+				return fmt.Sprintf("Leader should inspect signal %s and either adopt it into run state or resolve it explicitly.", signalID)
+			}
+		}
+		return "Leader should resolve or adopt the higher-authority signal conflict before widening execution."
+	}
+	if intValue(audit["adoption_gap_count"]) > 0 {
+		if meetingIDs := runAuthorityAuditMeetingSources(toList(audit["adoption_gaps"])); len(meetingIDs) > 0 {
+			return fmt.Sprintf("Leader should adopt the closed council record from %s before trusting this run again.", strings.Join(meetingIDs, ", "))
+		}
+		return "Leader should adopt the governing closed-meeting output before trusting this run again."
+	}
+	if intValue(audit["live_state_gap_count"]) > 0 {
+		return runAuthorityAuditLiveAction(audit)
+	}
+	if intValue(audit["contract_gap_count"]) > 0 {
+		return "Leader should refresh the contract snapshot so planning truth matches the active run."
+	}
+	if intValue(audit["desired_state_gap_count"]) > 0 {
+		return "Leader should either drive the run to the desired state or update the desired-state contract."
+	}
+	return "No leader-side authority repair is currently required."
+}
+
+func runAuthorityAuditTeammateAction(run, registry, audit map[string]any) string {
+	runID := strings.TrimSpace(stringValue(run["run_id"]))
+	hasIssues := runAuthorityAuditRepairNeeded(audit)
+	if activeTeammateRun(run) {
+		ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), runID)
+		if hasIssues {
+			return fmt.Sprintf("%s should keep the bounded assignment stable and keep reports fresh while leader repairs authority drift.", ownerID)
+		}
+		return fmt.Sprintf("%s can continue within the bounded assignment; no teammate-specific authority repair is currently required.", ownerID)
+	}
+	childRuns := childRunsForParent(registry, runID)
+	if len(childRuns) > 0 {
+		if hasIssues {
+			return fmt.Sprintf("%s beneath this run should hold their current boundary until authority drift is repaired.", countLabel(len(childRuns), "teammate run", "teammate runs"))
+		}
+		return fmt.Sprintf("%s beneath this run can continue while authority remains aligned.", countLabel(len(childRuns), "teammate run", "teammate runs"))
+	}
+	return "No teammate-specific authority repair is implied by the current audit."
+}
+
+func runAuthorityAuditCouncilAction(audit map[string]any, activeMeetings, openMeetingActions []map[string]any) string {
+	if len(activeMeetings) > 0 {
+		ids := strings.Join(meetingIDsFromRecords(activeMeetings), ", ")
+		if requirement := runBriefMeetingRequirement(activeMeetings); requirement != "" {
+			return fmt.Sprintf("Active council coverage exists via %s. Current requirement: %s", ids, requirement)
+		}
+		return fmt.Sprintf("Active council coverage exists via %s.", ids)
+	}
+	if runBriefNeedsMeeting(audit) {
+		return "Council is required next; a meeting-request signal is still unadopted on this run."
+	}
+	if len(openMeetingActions) > 0 {
+		return fmt.Sprintf("No live council is open, but %s still remain to be adopted.", countLabel(len(openMeetingActions), "meeting action", "meeting actions"))
+	}
+	if meetingIDs := runAuthorityAuditMeetingSources(toList(audit["adoption_gaps"])); len(meetingIDs) > 0 {
+		return fmt.Sprintf("No live council is open, but closed council output from %s still needs adoption.", strings.Join(meetingIDs, ", "))
+	}
+	return "No council action is currently required."
+}
+
+func runAuthorityAuditEvidence(audit map[string]any) []string {
+	type bucket struct {
+		label string
+		items []any
+	}
+	buckets := []bucket{
+		{label: "Higher-authority conflict", items: toList(audit["higher_authority_conflicts"])},
+		{label: "Adoption gap", items: toList(audit["adoption_gaps"])},
+		{label: "Live-state gap", items: toList(audit["live_state_gaps"])},
+		{label: "Contract gap", items: toList(audit["contract_gaps"])},
+		{label: "Desired-state gap", items: toList(audit["desired_state_gaps"])},
+	}
+	lines := []string{}
+	for _, bucket := range buckets {
+		for _, item := range bucket.items {
+			record, _ := toMap(item)
+			claimRef := firstNonBlank(strings.TrimSpace(stringValue(record["claim_ref"])), "unknown-claim")
+			note := firstNonBlank(
+				strings.TrimSpace(stringValue(record["note"])),
+				strings.TrimSpace(stringValue(record["summary"])),
+				"No explanatory note recorded.",
+			)
+			lines = append(lines, fmt.Sprintf("%s on %s: %s", bucket.label, claimRef, note))
+			if len(lines) == 3 {
+				return lines
+			}
+		}
+	}
+	if len(lines) == 0 && intValue(audit["superseded_signal_count"]) > 0 {
+		lines = append(lines, fmt.Sprintf("%s are already superseded by fresher authority.", countLabel(intValue(audit["superseded_signal_count"]), "signal", "signals")))
+	}
+	if len(lines) == 0 {
+		lines = append(lines, "No unresolved authority evidence is currently recorded.")
+	}
+	return lines
+}
+
+func renderRunAuthorityAuditBrief(run, audit, registry map[string]any, activeMeetings, openMeetingActions []map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	auditState := "aligned"
+	switch {
+	case runAuthorityAuditRepairNeeded(audit):
+		auditState = "repair-needed"
+	case intValue(audit["desired_state_gap_count"]) > 0:
+		auditState = "in-progress"
+	}
+	lines := []string{
+		"Harness Run Authority Briefing",
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf(
+			"Authority: mission=%s, owner=%s, state=%s, audit=%s.",
+			missionID,
+			runBriefOwnerLabel(run),
+			state,
+			auditState,
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %s, %s, %s, %s.",
+			countLabel(intValue(audit["higher_authority_conflict_count"]), "higher-authority conflict", "higher-authority conflicts"),
+			countLabel(intValue(audit["adoption_gap_count"]), "adoption gap", "adoption gaps"),
+			countLabel(intValue(audit["live_state_gap_count"]), "live-state gap", "live-state gaps"),
+			countLabel(intValue(audit["contract_gap_count"]), "contract gap", "contract gaps"),
+			countLabel(intValue(audit["desired_state_gap_count"]), "desired-state gap", "desired-state gaps"),
+			countLabel(intValue(audit["superseded_signal_count"]), "superseded signal", "superseded signals"),
+		),
+	}
+	if branch := strings.TrimSpace(stringValue(run["branch"])); branch != "" {
+		location := "Location: branch=" + branch
+		if worktreePath := strings.TrimSpace(stringValue(run["worktree_path"])); worktreePath != "" {
+			location += ", worktree=" + worktreePath
+		}
+		location += "."
+		lines = append(lines, location)
+	}
+	lines = append(lines,
+		"",
+		"Current:",
+		"- "+runAuthorityAuditCurrent(run, audit),
+		"",
+		"Why:",
+		"- "+runAuthorityAuditWhy(audit),
+		"",
+		"Next:",
+		"- "+runAuthorityAuditNext(audit),
+		"",
+		"Leader:",
+		"- "+runAuthorityAuditLeaderAction(audit, activeMeetings),
+		"",
+		"Teammates:",
+		"- "+runAuthorityAuditTeammateAction(run, registry, audit),
+		"",
+		"Council:",
+		"- "+runAuthorityAuditCouncilAction(audit, activeMeetings, openMeetingActions),
+		"",
+		"Evidence:",
+	)
+	for _, line := range runAuthorityAuditEvidence(audit) {
+		lines = append(lines, "- "+line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func schedulerBriefCurrent(scheduler map[string]any) string {
+	primaryKind := strings.TrimSpace(stringValue(scheduler["primary_control_plane_kind"]))
+	primaryPacket, _ := toMap(scheduler["primary_control_plane_packet"])
+	selectedMissionIDs := anyListToStrings(toList(scheduler["selected_mission_ids"]))
+	switch primaryKind {
+	case "maintenance":
+		return fmt.Sprintf("Primary control-plane work is governance maintenance on %s.", controlPlaneTargetLabel(primaryPacket))
+	case "human-decision":
+		target := controlPlaneTargetLabel(primaryPacket)
+		switch firstNonBlank(strings.TrimSpace(stringValue(primaryPacket["recommended_decision_surface"])), "leader-decision") {
+		case "active-council":
+			return fmt.Sprintf("Primary control-plane work is an active council on %s.", target)
+		case "council":
+			return fmt.Sprintf("Primary control-plane work is a council-backed decision on %s.", target)
+		default:
+			return fmt.Sprintf("Primary control-plane work is a leader decision on %s.", target)
+		}
+	default:
+		switch {
+		case len(selectedMissionIDs) > 1:
+			return fmt.Sprintf("Foreground execution is a bounded parallel batch across %s.", strings.Join(selectedMissionIDs, ", "))
+		case len(selectedMissionIDs) == 1:
+			return fmt.Sprintf("Foreground execution is currently centered on mission %s.", selectedMissionIDs[0])
+		case intValue(scheduler["mission_count"]) == 0:
+			return "No mission is currently present in the scheduler portfolio."
+		default:
+			return "No foreground batch is currently admitted."
+		}
+	}
+}
+
+func schedulerBriefWhy(scheduler map[string]any) string {
+	primaryPacket, _ := toMap(scheduler["primary_control_plane_packet"])
+	switch {
+	case strings.TrimSpace(stringValue(primaryPacket["reason"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["reason"]))
+	case strings.TrimSpace(stringValue(primaryPacket["note"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["note"]))
+	case strings.TrimSpace(stringValue(primaryPacket["summary"])) != "":
+		return strings.TrimSpace(stringValue(primaryPacket["summary"]))
+	}
+	selectedMissionIDs := anyListToStrings(toList(scheduler["selected_mission_ids"]))
+	if len(selectedMissionIDs) > 0 {
+		entry := schedulerMissionClassification(scheduler, selectedMissionIDs[0])
+		reasons := anyListToStrings(toList(entry["reasons"]))
+		if len(reasons) > 0 {
+			limit := len(reasons)
+			if limit > 2 {
+				limit = 2
+			}
+			return strings.Join(reasons[:limit], " ")
+		}
+	}
+	if intValue(scheduler["required_human_decision_count"]) == 0 &&
+		intValue(scheduler["maintenance_action_count"]) == 0 &&
+		intValue(scheduler["selected_mission_count"]) == 0 {
+		return "The scheduler currently has no selected mission, queued human decision, or maintenance packet."
+	}
+	return "This is the highest-priority scheduler packet under the current authority, maintenance, and admission policy."
+}
+
+func schedulerBriefLeaderAction(scheduler map[string]any) string {
+	if nextAction := strings.TrimSpace(stringValue(scheduler["next_action"])); nextAction != "" {
+		return nextAction
+	}
+	if len(anyListToStrings(toList(scheduler["selected_mission_ids"]))) > 0 {
+		entry := schedulerMissionClassification(scheduler, anyListToStrings(toList(scheduler["selected_mission_ids"]))[0])
+		if action := strings.TrimSpace(stringValue(entry["recommended_action"])); action != "" {
+			return action
+		}
+	}
+	return "Review the current scheduler portfolio before changing governed execution."
+}
+
+func schedulerBriefQueue(scheduler map[string]any) string {
+	requiredDecisions := intValue(scheduler["required_human_decision_count"])
+	maintenanceActions := intValue(scheduler["maintenance_action_count"])
+	primaryKind := strings.TrimSpace(stringValue(scheduler["primary_control_plane_kind"]))
+	primaryPacket, _ := toMap(scheduler["primary_control_plane_packet"])
+	parts := []string{}
+	switch primaryKind {
+	case "human-decision":
+		parts = append(parts, fmt.Sprintf("Decision queue has %d packet(s); primary target is %s.", requiredDecisions, controlPlaneTargetLabel(primaryPacket)))
+		if deferred := intValue(scheduler["deferred_human_decision_count"]); deferred > 0 {
+			parts = append(parts, fmt.Sprintf("%d decision packet(s) remain deferred behind it.", deferred))
+		}
+		if maintenanceActions > 0 {
+			parts = append(parts, fmt.Sprintf("%d maintenance packet(s) remain visible behind the decision queue.", maintenanceActions))
+		}
+	case "maintenance":
+		parts = append(parts, fmt.Sprintf("Maintenance queue has %d packet(s); primary target is %s.", maintenanceActions, controlPlaneTargetLabel(primaryPacket)))
+		if deferred := intValue(scheduler["deferred_maintenance_action_count"]); deferred > 0 {
+			parts = append(parts, fmt.Sprintf("%d maintenance packet(s) remain deferred behind it.", deferred))
+		}
+		if requiredDecisions > 0 {
+			parts = append(parts, fmt.Sprintf("%d human decision packet(s) remain visible behind maintenance.", requiredDecisions))
+		}
+	default:
+		if requiredDecisions > 0 || maintenanceActions > 0 {
+			parts = append(parts, fmt.Sprintf("Background queue still holds %d human decision packet(s) and %d maintenance packet(s).", requiredDecisions, maintenanceActions))
+		} else {
+			parts = append(parts, "No human-decision or maintenance queue currently outranks foreground execution.")
+		}
+	}
+	if intValue(scheduler["active_council_bundle_count"]) > 0 {
+		parts = append(parts, fmt.Sprintf("%s already carry active council governance.", countLabel(intValue(scheduler["active_council_bundle_count"]), "bundle", "bundles")))
+	}
+	return strings.Join(parts, " ")
+}
+
+func schedulerBriefForeground(scheduler map[string]any) string {
+	selectedMissionIDs := anyListToStrings(toList(scheduler["selected_mission_ids"]))
+	switch {
+	case len(selectedMissionIDs) > 1:
+		return fmt.Sprintf("Foreground batch is %s under %s mode.", strings.Join(selectedMissionIDs, ", "), firstNonBlank(strings.TrimSpace(stringValue(scheduler["execution_mode"])), "unknown"))
+	case len(selectedMissionIDs) == 1:
+		return fmt.Sprintf("Foreground batch is %s under %s mode.", selectedMissionIDs[0], firstNonBlank(strings.TrimSpace(stringValue(scheduler["execution_mode"])), "unknown"))
+	default:
+		return "No foreground mission batch is currently admitted."
+	}
+}
+
+func schedulerBriefReschedule(scheduler map[string]any) string {
+	count := intValue(scheduler["reschedule_action_count"])
+	if count == 0 {
+		return "No reschedule action is currently pending."
+	}
+	for _, item := range toList(scheduler["reschedule_actions"]) {
+		action, _ := toMap(item)
+		if text := firstNonBlank(strings.TrimSpace(stringValue(action["recommended_action"])), strings.TrimSpace(stringValue(action["reason"]))); text != "" {
+			return fmt.Sprintf("%s %d total reschedule action(s) remain queued.", text, count)
+		}
+	}
+	return fmt.Sprintf("%d reschedule action(s) remain queued.", count)
+}
+
+func renderSchedulerBrief(scheduler map[string]any) string {
+	lines := []string{
+		"Harness Scheduler Briefing",
+		fmt.Sprintf("Snapshot: %s", firstNonBlank(strings.TrimSpace(stringValue(scheduler["snapshot_id"])), "unknown")),
+		fmt.Sprintf(
+			"Portfolio: %s, %s, %s, %s.",
+			countLabel(intValue(scheduler["mission_count"]), "mission", "missions"),
+			countLabel(intValue(scheduler["selected_mission_count"]), "selected mission", "selected missions"),
+			countLabel(intValue(scheduler["required_human_decision_count"]), "human decision", "human decisions"),
+			countLabel(intValue(scheduler["maintenance_action_count"]), "maintenance packet", "maintenance packets"),
+		),
+		"",
+		"Current:",
+		"- " + schedulerBriefCurrent(scheduler),
+		"",
+		"Why:",
+		"- " + schedulerBriefWhy(scheduler),
+		"",
+		"Next:",
+		"- " + firstNonBlank(strings.TrimSpace(stringValue(scheduler["next_action"])), "No immediate next action is recorded."),
+		"",
+		"Leader:",
+		"- " + schedulerBriefLeaderAction(scheduler),
+		"",
+		"Queue:",
+		"- " + schedulerBriefQueue(scheduler),
+		"",
+		"Foreground:",
+		"- " + schedulerBriefForeground(scheduler),
+		"",
+		"Reschedule:",
+		"- " + schedulerBriefReschedule(scheduler),
+	}
+	return strings.Join(lines, "\n")
+}
+
 func cmdHome(args []string) error {
-	_ = args
+	mode, remaining, err := parseOutputMode("home", args)
+	if err != nil {
+		return err
+	}
+	if len(remaining) > 0 {
+		return errors.New("home does not accept positional arguments")
+	}
 	if err := ensureRuntimeDirs(); err != nil {
 		return err
 	}
@@ -12139,6 +15345,12 @@ func cmdHome(args []string) error {
 	switch {
 	case len(orphanSignals) > 0 || len(orphanMeetings) > 0:
 		nextAction = "Reconcile orphaned runtime objects before proceeding."
+	case stringValue(scheduler["primary_control_plane_kind"]) == "maintenance":
+		nextAction = firstNonBlank(
+			stringValue(scheduler["next_action"]),
+			stringValue(getKey(scheduler, "primary_maintenance_action.recommended_action", "")),
+			nextAction,
+		)
 	case intValue(scheduler["required_human_decision_count"]) > 0:
 		nextAction = stringValue(scheduler["next_action"])
 	case intValue(graphAuthorityAudit["cross_mission_conflict_count"]) > 0:
@@ -12181,89 +15393,93 @@ func cmdHome(args []string) error {
 	case len(waitingRuns) > 0:
 		nextAction = "Review waiting runs and dependency state."
 	}
-	return printJSON(map[string]any{
-		"profile_id":                                       stringValue(getKey(profile, "profile.profile_id", "")),
-		"active_mission_count":                             len(activeMissions),
-		"blocked_mission_count":                            len(blockedMissions),
-		"review_mission_count":                             len(reviewMissions),
-		"dependency_mission_count":                         len(dependencyBlockedMissions),
-		"mission_graph_edge_count":                         missionGraphEdges,
-		"mission_bundle_count":                             intValue(graphAuthorityAudit["bundle_count"]),
-		"mission_conflicted_bundle_count":                  intValue(graphAuthorityAudit["conflicted_bundle_count"]),
-		"mission_governed_bundle_count":                    intValue(graphAuthorityAudit["governed_bundle_count"]),
-		"mission_escalated_bundle_count":                   intValue(graphAuthorityAudit["escalated_bundle_count"]),
-		"mission_graph_conflict_count":                     intValue(graphAuthorityAudit["cross_mission_conflict_count"]),
-		"mission_dependency_adjudication_count":            intValue(graphAuthorityAudit["dependency_adjudication_count"]),
-		"active_run_count":                                 len(activeRuns),
-		"active_teammate_count":                            len(activeTeammates),
-		"blocked_run_count":                                len(blockedRuns),
-		"dependency_blocked_count":                         len(dependencyBlockedRuns),
-		"review_blocked_count":                             len(reviewBlockedRuns),
-		"checks_failed_count":                              len(checksFailedRuns),
-		"merge_ready_count":                                len(mergeReadyRuns),
-		"ownership_overlap_count":                          len(overlappingClaims),
-		"active_signal_count":                              len(activeSignals),
-		"coordination_signal_count":                        len(coordinationSignals),
-		"active_meeting_count":                             len(meetings),
-		"active_rc_count":                                  boolToInt(activeRCRecord != nil),
-		"open_meeting_action_count":                        len(meetingActions),
-		"orphan_signal_count":                              len(orphanSignals),
-		"orphan_meeting_count":                             len(orphanMeetings),
-		"missions":                                         activeMissions,
-		"dependency_blocked_missions":                      dependencyBlockedMissions,
-		"mission_authority_audit":                          graphAuthorityAudit,
-		"runs":                                             activeRuns,
-		"dependency_blocked_runs":                          dependencyBlockedRuns,
-		"signals":                                          activeSignals,
-		"meetings":                                         meetings,
-		"overlapping_claims":                               overlappingClaims,
-		"active_rc":                                        mapOrEmpty(activeRCRecord),
-		"meeting_actions":                                  meetingActions,
-		"orphan_signals":                                   orphanSignals,
-		"orphan_meetings":                                  orphanMeetings,
-		"scheduler_execution_mode":                         stringValue(scheduler["execution_mode"]),
-		"scheduler_selected_mission_count":                 intValue(scheduler["selected_mission_count"]),
-		"scheduler_required_human_decision_count":          intValue(scheduler["required_human_decision_count"]),
-		"scheduler_deferred_human_decision_count":          intValue(scheduler["deferred_human_decision_count"]),
-		"scheduler_council_decision_count":                 intValue(scheduler["council_decision_count"]),
-		"scheduler_maintenance_action_count":               intValue(scheduler["maintenance_action_count"]),
-		"scheduler_deferred_maintenance_action_count":      intValue(scheduler["deferred_maintenance_action_count"]),
-		"scheduler_reschedule_action_count":                intValue(scheduler["reschedule_action_count"]),
-		"scheduler_tally":                                  cloneValue(getKey(scheduler, "classification_tally", map[string]any{})),
-		"scheduler_bundle_role_tally":                      cloneValue(getKey(scheduler, "bundle_role_tally", map[string]any{})),
-		"scheduler_active_council_bundle_count":            intValue(scheduler["active_council_bundle_count"]),
-		"scheduler_active_council_bundle_ids":              cloneValue(getKey(scheduler, "active_council_bundle_ids", []any{})),
-		"scheduler_required_human_decision_scope_tally":    cloneValue(getKey(scheduler, "required_human_decision_scope_tally", map[string]any{})),
-		"scheduler_required_human_decision_surface_tally":  cloneValue(getKey(scheduler, "required_human_decision_surface_tally", map[string]any{})),
-		"scheduler_decision_selection_policy":              stringValue(scheduler["decision_selection_policy"]),
-		"scheduler_previous_primary_human_decision_key":    stringValue(scheduler["previous_primary_human_decision_key"]),
-		"scheduler_primary_required_human_decision":        cloneValue(getKey(scheduler, "primary_required_human_decision", map[string]any{})),
-		"scheduler_maintenance_selection_policy":           stringValue(scheduler["maintenance_selection_policy"]),
-		"scheduler_previous_primary_maintenance_key":       stringValue(scheduler["previous_primary_maintenance_key"]),
-		"scheduler_primary_maintenance_action":             cloneValue(getKey(scheduler, "primary_maintenance_action", map[string]any{})),
-		"scheduler_primary_control_plane_kind":             stringValue(scheduler["primary_control_plane_kind"]),
-		"scheduler_primary_control_plane_selection_policy": stringValue(scheduler["primary_control_plane_selection_policy"]),
-		"scheduler_primary_control_plane_packet":           cloneValue(getKey(scheduler, "primary_control_plane_packet", map[string]any{})),
-		"scheduler_deferred_control_plane_packet_count":    intValue(scheduler["deferred_control_plane_packet_count"]),
-		"scheduler_maintenance_action_tally":               cloneValue(getKey(scheduler, "maintenance_action_tally", map[string]any{})),
-		"scheduler_previous_selected_mission_ids":          cloneValue(toList(scheduler["previous_selected_mission_ids"])),
-		"scheduler_selected_mission_ids":                   cloneValue(toList(scheduler["selected_mission_ids"])),
-		"scheduler_next_action":                            stringValue(scheduler["next_action"]),
-		"adopted_output_run_count":                         adoptedOutputRunCount,
-		"adopted_output_follow_up_packet_count":            adoptedOutputFollowUpPacketCount,
-		"adopted_output_open_follow_up_packet_count":       adoptedOutputOpenFollowUpPacketCount,
-		"primary_adopted_output_run_id":                    primaryAdoptedOutputRunID,
-		"primary_adopted_output_packet_kind":               primaryAdoptedOutputPacketKind,
-		"primary_adopted_follow_up_packet":                 cloneValue(primaryAdoptedFollowUpPacket),
-		"primary_adopted_follow_up_delegated_run_id":       primaryAdoptedFollowUpDelegatedRunID,
-		"primary_adopted_follow_up_delegated_owner":        primaryAdoptedFollowUpDelegatedOwnerID,
-		"primary_adopted_follow_up_delegated_state":        primaryAdoptedFollowUpDelegatedState,
+	summary := map[string]any{
+		"profile_id":                                           stringValue(getKey(profile, "profile.profile_id", "")),
+		"active_mission_count":                                 len(activeMissions),
+		"blocked_mission_count":                                len(blockedMissions),
+		"review_mission_count":                                 len(reviewMissions),
+		"dependency_mission_count":                             len(dependencyBlockedMissions),
+		"mission_graph_edge_count":                             missionGraphEdges,
+		"mission_bundle_count":                                 intValue(graphAuthorityAudit["bundle_count"]),
+		"mission_conflicted_bundle_count":                      intValue(graphAuthorityAudit["conflicted_bundle_count"]),
+		"mission_governed_bundle_count":                        intValue(graphAuthorityAudit["governed_bundle_count"]),
+		"mission_escalated_bundle_count":                       intValue(graphAuthorityAudit["escalated_bundle_count"]),
+		"mission_graph_conflict_count":                         intValue(graphAuthorityAudit["cross_mission_conflict_count"]),
+		"mission_dependency_adjudication_count":                intValue(graphAuthorityAudit["dependency_adjudication_count"]),
+		"active_run_count":                                     len(activeRuns),
+		"active_teammate_count":                                len(activeTeammates),
+		"blocked_run_count":                                    len(blockedRuns),
+		"dependency_blocked_count":                             len(dependencyBlockedRuns),
+		"review_blocked_count":                                 len(reviewBlockedRuns),
+		"checks_failed_count":                                  len(checksFailedRuns),
+		"merge_ready_count":                                    len(mergeReadyRuns),
+		"ownership_overlap_count":                              len(overlappingClaims),
+		"active_signal_count":                                  len(activeSignals),
+		"coordination_signal_count":                            len(coordinationSignals),
+		"active_meeting_count":                                 len(meetings),
+		"active_rc_count":                                      boolToInt(activeRCRecord != nil),
+		"open_meeting_action_count":                            len(meetingActions),
+		"orphan_signal_count":                                  len(orphanSignals),
+		"orphan_meeting_count":                                 len(orphanMeetings),
+		"missions":                                             activeMissions,
+		"dependency_blocked_missions":                          dependencyBlockedMissions,
+		"mission_authority_audit":                              graphAuthorityAudit,
+		"runs":                                                 activeRuns,
+		"dependency_blocked_runs":                              dependencyBlockedRuns,
+		"signals":                                              activeSignals,
+		"meetings":                                             meetings,
+		"overlapping_claims":                                   overlappingClaims,
+		"active_rc":                                            mapOrEmpty(activeRCRecord),
+		"meeting_actions":                                      meetingActions,
+		"orphan_signals":                                       orphanSignals,
+		"orphan_meetings":                                      orphanMeetings,
+		"scheduler_execution_mode":                             stringValue(scheduler["execution_mode"]),
+		"scheduler_selected_mission_count":                     intValue(scheduler["selected_mission_count"]),
+		"scheduler_required_human_decision_count":              intValue(scheduler["required_human_decision_count"]),
+		"scheduler_deferred_human_decision_count":              intValue(scheduler["deferred_human_decision_count"]),
+		"scheduler_council_decision_count":                     intValue(scheduler["council_decision_count"]),
+		"scheduler_maintenance_action_count":                   intValue(scheduler["maintenance_action_count"]),
+		"scheduler_deferred_maintenance_action_count":          intValue(scheduler["deferred_maintenance_action_count"]),
+		"scheduler_reschedule_action_count":                    intValue(scheduler["reschedule_action_count"]),
+		"scheduler_tally":                                      cloneValue(getKey(scheduler, "classification_tally", map[string]any{})),
+		"scheduler_bundle_role_tally":                          cloneValue(getKey(scheduler, "bundle_role_tally", map[string]any{})),
+		"scheduler_active_council_bundle_count":                intValue(scheduler["active_council_bundle_count"]),
+		"scheduler_active_council_bundle_ids":                  cloneValue(getKey(scheduler, "active_council_bundle_ids", []any{})),
+		"scheduler_required_human_decision_scope_tally":        cloneValue(getKey(scheduler, "required_human_decision_scope_tally", map[string]any{})),
+		"scheduler_required_human_decision_surface_tally":      cloneValue(getKey(scheduler, "required_human_decision_surface_tally", map[string]any{})),
+		"scheduler_decision_selection_policy":                  stringValue(scheduler["decision_selection_policy"]),
+		"scheduler_previous_primary_human_decision_key":        stringValue(scheduler["previous_primary_human_decision_key"]),
+		"scheduler_primary_required_human_decision":            cloneValue(getKey(scheduler, "primary_required_human_decision", map[string]any{})),
+		"scheduler_maintenance_selection_policy":               stringValue(scheduler["maintenance_selection_policy"]),
+		"scheduler_previous_primary_maintenance_key":           stringValue(scheduler["previous_primary_maintenance_key"]),
+		"scheduler_primary_maintenance_action":                 cloneValue(getKey(scheduler, "primary_maintenance_action", map[string]any{})),
+		"scheduler_primary_control_plane_kind":                 stringValue(scheduler["primary_control_plane_kind"]),
+		"scheduler_primary_control_plane_selection_policy":     stringValue(scheduler["primary_control_plane_selection_policy"]),
+		"scheduler_primary_control_plane_packet":               cloneValue(getKey(scheduler, "primary_control_plane_packet", map[string]any{})),
+		"scheduler_deferred_control_plane_packet_count":        intValue(scheduler["deferred_control_plane_packet_count"]),
+		"scheduler_maintenance_action_tally":                   cloneValue(getKey(scheduler, "maintenance_action_tally", map[string]any{})),
+		"scheduler_previous_selected_mission_ids":              cloneValue(toList(scheduler["previous_selected_mission_ids"])),
+		"scheduler_selected_mission_ids":                       cloneValue(toList(scheduler["selected_mission_ids"])),
+		"scheduler_next_action":                                stringValue(scheduler["next_action"]),
+		"adopted_output_run_count":                             adoptedOutputRunCount,
+		"adopted_output_follow_up_packet_count":                adoptedOutputFollowUpPacketCount,
+		"adopted_output_open_follow_up_packet_count":           adoptedOutputOpenFollowUpPacketCount,
+		"primary_adopted_output_run_id":                        primaryAdoptedOutputRunID,
+		"primary_adopted_output_packet_kind":                   primaryAdoptedOutputPacketKind,
+		"primary_adopted_follow_up_packet":                     cloneValue(primaryAdoptedFollowUpPacket),
+		"primary_adopted_follow_up_delegated_run_id":           primaryAdoptedFollowUpDelegatedRunID,
+		"primary_adopted_follow_up_delegated_owner":            primaryAdoptedFollowUpDelegatedOwnerID,
+		"primary_adopted_follow_up_delegated_state":            primaryAdoptedFollowUpDelegatedState,
 		"primary_adopted_follow_up_delegated_last_reported_at": primaryAdoptedFollowUpDelegatedLastReportedAt,
 		"primary_adopted_follow_up_delegated_age_hours":        primaryAdoptedFollowUpDelegatedAgeHours,
 		"primary_adopted_follow_up_delegated_stale":            primaryAdoptedFollowUpDelegatedStale,
-		"primary_adopted_follow_up_delegated_action":       primaryAdoptedFollowUpDelegatedAction,
-		"next_action":                                      nextAction,
-	})
+		"primary_adopted_follow_up_delegated_action":           primaryAdoptedFollowUpDelegatedAction,
+		"next_action":                                          nextAction,
+	}
+	if mode == outputModeText {
+		return printText(renderHomeBrief(summary, scheduler))
+	}
+	return printJSON(summary)
 }
 
 func boolToInt(value bool) int {
@@ -12281,8 +15497,18 @@ func mapOrEmpty(value map[string]any) map[string]any {
 }
 
 func cmdDoctor(args []string) error {
-	_ = args
-	return printJSON(doctorReport())
+	mode, remaining, err := parseOutputMode("doctor", args)
+	if err != nil {
+		return err
+	}
+	if len(remaining) > 0 {
+		return errors.New("doctor does not accept positional arguments")
+	}
+	report := doctorReport()
+	if mode == outputModeText {
+		return printText(renderDoctorBrief(report))
+	}
+	return printJSON(report)
 }
 
 func cmdIssue(args []string) error {
@@ -12387,8 +15613,340 @@ func ternaryString(condition bool, whenTrue, whenFalse string) string {
 	return whenFalse
 }
 
+func renderClaimBrief(summary map[string]any) string {
+	provisioning, _ := toMap(summary["provisioning"])
+	mode := firstNonBlank(strings.TrimSpace(stringValue(provisioning["mode"])), "none")
+	applied := boolValue(provisioning["applied"])
+	applyRequested := boolValue(provisioning["apply_requested"])
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(summary["mission_id"])), "unknown")
+	runID := firstNonBlank(strings.TrimSpace(stringValue(summary["run_id"])), "unknown")
+	title := firstNonBlank(strings.TrimSpace(stringValue(summary["title"])), "Untitled mission")
+	branch := firstNonBlank(strings.TrimSpace(stringValue(summary["branch"])), "unknown")
+	contractPath := firstNonBlank(strings.TrimSpace(stringValue(summary["contract_path"])), "unknown")
+	nextAction := firstNonBlank(strings.TrimSpace(stringValue(summary["next_action"])), "Start drive flow and run the narrowest useful verification.")
+	lines := []string{
+		"Harness Claim Briefing",
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Branch: %s", branch),
+		fmt.Sprintf("Provisioning: mode=%s, apply_requested=%t, applied=%t.", mode, applyRequested, applied),
+		"",
+		"Current:",
+		fmt.Sprintf("- Claimed %s as %s and created the leader run %s.", title, missionID, runID),
+		"",
+		"Why:",
+		fmt.Sprintf("- This turns the issue into durable Harness control-plane state: mission, run, and contract at %s.", contractPath),
+		"",
+		"Next:",
+		"- " + nextAction,
+		"",
+		"Leader:",
+		fmt.Sprintf("- Run `drive start %s --brief` when you are ready to begin governed execution.", runID),
+		"",
+		"Teammates:",
+		"- No teammate was assigned by this claim; delegate only after the leader defines bounded ownership.",
+		"",
+		"Council:",
+		"- No council is opened by this claim; use a meeting only if ambiguity or blast radius requires governed decision work.",
+	}
+	return strings.Join(lines, "\n")
+}
+
+func driveActionWhy(action string) string {
+	switch action {
+	case "report":
+		return "Reporting progress refreshes durable run truth so the scheduler, doctor, and leader stop depending on chat memory."
+	case "start":
+		return "Starting a run makes the leader's execution intent explicit instead of relying on chat momentum."
+	case "resume":
+		return "Resuming a run records that the leader has cleared the hold or blocker enough for governed execution to continue."
+	case "wait":
+		return "Waiting records dependency ownership and keeps execution paused until the required runs satisfy their desired state."
+	case "block":
+		return "Blocking a run records an active control signal so the scheduler, doctor, and leader can see the obstruction."
+	case "complete":
+		return "Completing a run records execution closure after adopted follow-up and delegated follow-up gates have cleared."
+	default:
+		return "This drive action updates the run through the same durable Go control plane used by JSON automation."
+	}
+}
+
+func driveActionLeaderAction(action string, run, signal map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "RUN_ID")
+	switch action {
+	case "report":
+		return fmt.Sprintf("Use the refreshed report on %s to choose whether to continue, delegate, hold, or ship.", runID)
+	case "start":
+		return "Keep the work inside the recorded ownership boundary and report material progress before widening scope."
+	case "resume":
+		return "Confirm the reason for the previous hold is resolved, then continue with the narrowest useful verification."
+	case "wait":
+		deps := dependencyTargets(run)
+		if len(deps) > 0 {
+			return fmt.Sprintf("Monitor %s before resuming %s.", strings.Join(deps, ", "), runID)
+		}
+		return fmt.Sprintf("Keep %s paused until the dependency condition is explicit enough to resume safely.", runID)
+	case "block":
+		signalID := strings.TrimSpace(stringValue(signal["signal_id"]))
+		if signalID != "" {
+			return fmt.Sprintf("Inspect or resolve signal %s before resuming %s.", signalID, runID)
+		}
+		return fmt.Sprintf("Resolve the blocker before resuming %s.", runID)
+	case "complete":
+		return "Move to ship, review, release, or cleanup only after verification and authority checks match the desired state."
+	default:
+		return firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), "Review the run before changing state again.")
+	}
+}
+
+func driveActionTeammateAction(action string, run map[string]any) string {
+	ownerType := firstNonBlank(strings.TrimSpace(stringValue(run["owner_type"])), "leader")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), "leader-main")
+	if ownerType == "teammate" {
+		switch action {
+		case "report":
+			return fmt.Sprintf("%s refreshed their bounded execution state; the leader should monitor whether follow-up is still needed.", ownerID)
+		case "complete":
+			return fmt.Sprintf("%s should report completion evidence back to the leader before the parent run widens.", ownerID)
+		case "wait":
+			return fmt.Sprintf("%s should stay inside the bounded assignment while dependencies remain unresolved.", ownerID)
+		case "block":
+			return fmt.Sprintf("%s should keep the blocker evidence current and avoid unrelated work until the leader realigns scope.", ownerID)
+		default:
+			return fmt.Sprintf("%s owns this bounded execution unit and should keep reports fresh.", ownerID)
+		}
+	}
+	return "No teammate is automatically assigned by this drive action; delegation still requires an explicit teammate run."
+}
+
+func driveActionCouncilAction(action string, run map[string]any) string {
+	switch action {
+	case "report":
+		return "Council work is not required unless this report raises ambiguity, risk, or conflicting evidence."
+	case "block":
+		return "Open or materialize a council only if the blocker is an ambiguous decision rather than a direct execution issue."
+	case "wait":
+		return "Council work is not required unless dependency resolution needs governed judgment."
+	case "complete":
+		return "Council work is not required unless completion contradicts active meeting, signal, or authority state."
+	default:
+		return "No council is opened by this drive action."
+	}
+}
+
+func renderDriveActionBrief(action, previousState string, run, signal map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(run["mission_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
+	ownerType := firstNonBlank(strings.TrimSpace(stringValue(run["owner_type"])), "leader")
+	ownerID := firstNonBlank(strings.TrimSpace(stringValue(run["owner_id"])), "leader-main")
+	summary := firstNonBlank(strings.TrimSpace(stringValue(run["latest_summary"])), strings.TrimSpace(stringValue(run["status_reason"])), "No run summary recorded.")
+	if state == "waiting" || state == "blocked" {
+		summary = firstNonBlank(strings.TrimSpace(stringValue(run["status_reason"])), strings.TrimSpace(stringValue(run["latest_summary"])), "No run summary recorded.")
+	}
+	nextAction := firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), "Inspect the run before changing state again.")
+	lines := []string{
+		"Harness Drive Action Briefing",
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf("Action: %s", action),
+		fmt.Sprintf("State: %s -> %s, owner=%s/%s.", firstNonBlank(strings.TrimSpace(previousState), "unknown"), state, ownerType, ownerID),
+		"",
+		"Current:",
+		fmt.Sprintf("- Run %s is now %s: %s", runID, state, summary),
+		"",
+		"Why:",
+		"- " + driveActionWhy(action),
+		"",
+		"Next:",
+		"- " + nextAction,
+		"",
+		"Leader:",
+		"- " + driveActionLeaderAction(action, run, signal),
+		"",
+		"Teammate:",
+		"- " + driveActionTeammateAction(action, run),
+		"",
+		"Council:",
+		"- " + driveActionCouncilAction(action, run),
+	}
+	if len(signal) > 0 {
+		lines = append(lines,
+			"",
+			fmt.Sprintf(
+				"Signal: %s (%s, state=%s, authority=%s).",
+				firstNonBlank(strings.TrimSpace(stringValue(signal["signal_id"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(signal["kind"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(signal["state"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(signal["authority_level"])), "unknown"),
+			),
+		)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func renderDriveMeetingBrief(meeting, backlogEntry, run map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	synthesis, _ := toMap(meetingSynthesisAudit(meeting))
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), strings.TrimSpace(stringValue(run["mission_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "active")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	question := firstNonBlank(strings.TrimSpace(stringValue(meeting["question"])), "No council question recorded.")
+	backlogRef := firstNonBlank(strings.TrimSpace(stringValue(backlogEntry["meeting_ref"])), meetingPath(meetingID, false))
+	next := fmt.Sprintf("Open %s with `bash scripts/harness-meetings.sh summary %s --brief`, then advance it with `bash scripts/harness-meetings.sh orchestrate %s --brief` once packet and participants are ready.", meetingID, meetingID, meetingID)
+	lines := []string{
+		"Harness Meeting Open Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Council: mission=%s, state=%s, phase=%s, protocol=%s.", missionID, state, phase, protocol),
+		fmt.Sprintf("Protocol: %s.", protocol),
+		fmt.Sprintf("Question: %s", question),
+		fmt.Sprintf("Backlog: %s.", backlogRef),
+		"",
+		"Current:",
+		"- " + fmt.Sprintf("Meeting %s is active in %s and attached to run %s.", meetingID, phase, runID),
+		"",
+		"Why:",
+		"- Leader opened a bounded council instead of letting ambiguity widen the run implicitly; conclusions still need explicit adoption back into run or mission state.",
+		"",
+		"Next:",
+		"- " + next,
+		"",
+		"Leader:",
+		"- " + meetingBriefLeaderAction(meeting, summary, synthesis, governanceGaps),
+		"",
+		"Council:",
+		"- " + meetingBriefCouncilAction(summary),
+		"",
+		"Output:",
+		"- " + meetingBriefOutput(summary),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func renderDriveMeetingAdoptionBrief(action string, run, meeting, authorityAdoption map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	runID := firstNonBlank(strings.TrimSpace(stringValue(run["run_id"])), strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), strings.TrimSpace(stringValue(run["mission_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "closed")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "output")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	outcomeSummary := firstNonBlank(strings.TrimSpace(stringValue(summary["outcome_summary"])), strings.TrimSpace(stringValue(meeting["resolution_note"])), "No outcome summary recorded.")
+	nextAction := firstNonBlank(strings.TrimSpace(stringValue(run["next_expected_action"])), strings.TrimSpace(stringValue(summary["next_action"])), "Review the adopted meeting outcome before widening execution.")
+	outputKind := firstNonBlank(strings.TrimSpace(stringValue(summary["output_packet_kind"])), "none")
+	followUpCount := intValue(summary["output_follow_up_packet_count"])
+	openFollowUpCount := intValue(summary["output_open_follow_up_packet_count"])
+	authorityLine := "No bundle-governor authority signal was adopted from this meeting."
+	if len(authorityAdoption) > 0 {
+		authorityLine = fmt.Sprintf(
+			"%s adopted for bundle %s with signal %s.",
+			firstNonBlank(strings.TrimSpace(stringValue(authorityAdoption["governing_mission_id"])), "Unknown governor"),
+			firstNonBlank(strings.TrimSpace(stringValue(authorityAdoption["bundle_id"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(authorityAdoption["signal_id"])), "unknown"),
+		)
+	}
+	leaderAction := "Continue governed execution using the adopted meeting outcome."
+	if openFollowUpCount > 0 {
+		leaderAction = "Resolve or delegate the adopted follow-up packets before widening or completing this run."
+	}
+	lines := []string{
+		"Harness Meeting Adoption Briefing",
+		fmt.Sprintf("Action: %s", action),
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Council: mission=%s, state=%s, phase=%s, protocol=%s.", missionID, state, phase, protocol),
+		fmt.Sprintf("Outcome: %s", outcomeSummary),
+		fmt.Sprintf("Adoption: output=%s, follow_up=%d, open_follow_up=%d.", outputKind, followUpCount, openFollowUpCount),
+		"",
+		"Current:",
+		"- " + fmt.Sprintf("Meeting %s is closed and its outcome is adopted onto run %s.", meetingID, runID),
+		"",
+		"Why:",
+		"- Closing or adopting a council writes the governed output back into run state so scheduler, home, doctor, and authority audits follow durable truth instead of stale meeting JSON.",
+		"",
+		"Next:",
+		"- " + nextAction,
+		"",
+		"Leader:",
+		"- " + leaderAction,
+		"",
+		"Council:",
+		"- Inspect the closed council record or reopen only if the governed decision changed.",
+		"",
+		"Authority:",
+		"- " + authorityLine,
+	}
+	return strings.Join(lines, "\n")
+}
+
+func renderDriveFollowUpBrief(invokingRun, governingRun, packet map[string]any, delegated bool) string {
+	invokingRunID := firstNonBlank(strings.TrimSpace(stringValue(invokingRun["run_id"])), "unknown")
+	governingRunID := firstNonBlank(strings.TrimSpace(stringValue(governingRun["run_id"])), invokingRunID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(governingRun["mission_id"])), strings.TrimSpace(stringValue(invokingRun["mission_id"])), "unknown")
+	packetID := firstNonBlank(strings.TrimSpace(stringValue(packet["follow_up_packet_id"])), strings.TrimSpace(stringValue(packet["packet_id"])), "primary")
+	state := firstNonBlank(strings.TrimSpace(stringValue(packet["state"])), "unknown")
+	summary := firstNonBlank(strings.TrimSpace(stringValue(packet["summary"])), strings.TrimSpace(stringValue(packet["required_follow_up"])), strings.TrimSpace(stringValue(packet["action"])), "No follow-up summary recorded.")
+	executionKind := firstNonBlank(strings.TrimSpace(stringValue(packet["execution_kind"])), "adopted_follow_up")
+	nextAction := firstNonBlank(strings.TrimSpace(stringValue(governingRun["next_expected_action"])), strings.TrimSpace(stringValue(invokingRun["next_expected_action"])), "Review the governing run before widening execution.")
+	leaderAction := "Continue governed execution only after the adopted follow-up state matches the desired outcome."
+	if state == "open" {
+		leaderAction = "Keep the governing run bounded on this reopened follow-up until it is resolved or deliberately cancelled."
+	} else if state == "done" {
+		leaderAction = "Use the refreshed run state to decide whether to complete, ship, or continue remaining bounded execution."
+	} else if state == "cancelled" {
+		leaderAction = "Realign the cancelled follow-up before widening execution or closing the governing run."
+	}
+	teammateAction := "No teammate owns this follow-up unless it was explicitly delegated."
+	if delegated {
+		owner := firstNonBlank(strings.TrimSpace(stringValue(invokingRun["owner_id"])), "teammate")
+		teammateAction = fmt.Sprintf("%s should report the %s follow-up state back to the leader.", owner, state)
+	}
+	councilAction := "Council work is not required unless this follow-up outcome changes the adopted decision."
+	if state == "cancelled" {
+		councilAction = "Use a decision protocol if cancellation invalidates the adopted council output or creates a new tradeoff."
+	}
+	lines := []string{
+		"Harness Follow-Up Resolution Briefing",
+		fmt.Sprintf("Run: %s", invokingRunID),
+		fmt.Sprintf("Governing Run: %s", governingRunID),
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf("Follow-Up: %s", packetID),
+		fmt.Sprintf("Resolution Scope: state=%s, delegated=%t, execution=%s.", state, delegated, executionKind),
+		"",
+		"Current:",
+		fmt.Sprintf("- Follow-up %s is now %s: %s", packetID, state, summary),
+		"",
+		"Why:",
+		"- This refreshes the adopted follow-up lifecycle on the governing run so scheduler, home, and doctor stop following stale council output.",
+		"",
+		"Next:",
+		"- " + nextAction,
+		"",
+		"Leader:",
+		"- " + leaderAction,
+		"",
+		"Teammate:",
+		"- " + teammateAction,
+		"",
+		"Council:",
+		"- " + councilAction,
+	}
+	return strings.Join(lines, "\n")
+}
+
 func cmdClaim(args []string) error {
-	if len(args) < 1 {
+	mode, remaining, err := parseOutputModeFlagsOnly("claim", args)
+	if err != nil {
+		return err
+	}
+	if len(remaining) < 1 {
 		return errors.New("claim requires ISSUE_NUMBER [TITLE_OVERRIDE]")
 	}
 	if err := ensureRuntimeDirs(); err != nil {
@@ -12400,7 +15958,7 @@ func cmdClaim(args []string) error {
 	ownershipClaimsInput := []string{}
 	overlapPolicyValue := "exclusive"
 	positionals := []string{}
-	for _, arg := range args {
+	for _, arg := range remaining {
 		switch {
 		case strings.HasPrefix(arg, "--provision="):
 			provisionMode = strings.TrimPrefix(arg, "--provision=")
@@ -12445,7 +16003,7 @@ func cmdClaim(args []string) error {
 	}
 
 	var summary map[string]any
-	err := withHarnessLock(func() error {
+	err = withHarnessLock(func() error {
 		registry := readRegistry()
 		missionID := "issue-" + issueNumber
 		for _, item := range toList(registry["runs"]) {
@@ -12628,6 +16186,9 @@ func cmdClaim(args []string) error {
 	if err != nil {
 		return err
 	}
+	if mode == outputModeText {
+		return printText(renderClaimBrief(summary))
+	}
 	return printJSON(summary)
 }
 
@@ -12641,11 +16202,15 @@ func cmdDrive(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
 	case "report":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive report", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("drive report requires RUN_ID SUMMARY")
 		}
-		runID := args[1]
-		summary := strings.TrimSpace(strings.Join(args[2:], " "))
+		runID := remaining[0]
+		summary := strings.TrimSpace(strings.Join(remaining[1:], " "))
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			index := findRunIndex(registry, runID)
@@ -12654,6 +16219,7 @@ func cmdDrive(args []string) error {
 			}
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
+			previousState := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
 			run["latest_summary"] = summary
 			run["last_reported_at"] = nowISO()
 			run["updated_at"] = nowISO()
@@ -12662,36 +16228,51 @@ func cmdDrive(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderDriveActionBrief("report", previousState, run, nil))
+			}
 			return printJSON(run)
 		})
 	case "start":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive start", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("drive start requires RUN_ID [SUMMARY]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		summary := "Execution started"
-		if len(args) > 2 {
-			summary = strings.TrimSpace(strings.Join(args[2:], " "))
+		if len(remaining) > 1 {
+			summary = strings.TrimSpace(strings.Join(remaining[1:], " "))
 		}
-		return updateDriveRunState(runID, "executing", summary, "")
+		return updateDriveRunState(runID, "executing", summary, "", "start", mode)
 	case "resume":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive resume", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("drive resume requires RUN_ID [SUMMARY]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		summary := "Execution resumed"
-		if len(args) > 2 {
-			summary = strings.TrimSpace(strings.Join(args[2:], " "))
+		if len(remaining) > 1 {
+			summary = strings.TrimSpace(strings.Join(remaining[1:], " "))
 		}
-		return updateDriveRunState(runID, "ready", summary, "")
+		return updateDriveRunState(runID, "ready", summary, "", "resume", mode)
 	case "wait":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive wait", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("drive wait requires RUN_ID [REASON] [--on=RUN_ID|RUN_ID]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		reasonTokens := []string{}
 		dependsOn := []string{}
-		for _, arg := range args[2:] {
+		for _, arg := range remaining[1:] {
 			switch {
 			case strings.HasPrefix(arg, "--on="):
 				dependsOn = append(dependsOn, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--on=")))...)
@@ -12711,6 +16292,7 @@ func cmdDrive(args []string) error {
 			}
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
+			previousState := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
 			if err := validateRunTransition(run, "waiting"); err != nil {
 				return err
 			}
@@ -12727,16 +16309,23 @@ func cmdDrive(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderDriveActionBrief("wait", previousState, run, nil))
+			}
 			return printJSON(run)
 		})
 	case "complete":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive complete", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("drive complete requires RUN_ID [SUMMARY]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		summary := "Execution completed"
-		if len(args) > 2 {
-			summary = strings.TrimSpace(strings.Join(args[2:], " "))
+		if len(remaining) > 1 {
+			summary = strings.TrimSpace(strings.Join(remaining[1:], " "))
 		}
 		return withHarnessLock(func() error {
 			registry := readRegistry()
@@ -12746,6 +16335,7 @@ func cmdDrive(args []string) error {
 			}
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
+			previousState := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
 			if err := validateRunTransition(run, "completed"); err != nil {
 				return err
 			}
@@ -12760,14 +16350,21 @@ func cmdDrive(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderDriveActionBrief("complete", previousState, run, nil))
+			}
 			return printJSON(run)
 		})
 	case "adopt-meeting":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive adopt-meeting", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("drive adopt-meeting requires RUN_ID MEETING_ID")
 		}
-		runID := args[1]
-		meetingID := args[2]
+		runID := remaining[0]
+		meetingID := remaining[1]
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			index := findRunIndex(registry, runID)
@@ -12792,6 +16389,9 @@ func cmdDrive(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderDriveMeetingAdoptionBrief("adopt-meeting", run, meeting, nil))
+			}
 			return printJSON(map[string]any{
 				"run": run,
 				"meeting": map[string]any{
@@ -12801,17 +16401,21 @@ func cmdDrive(args []string) error {
 			})
 		})
 	case "resolve-follow-up":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive resolve-follow-up", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("drive resolve-follow-up requires RUN_ID [FOLLOW_UP_PACKET_ID] [STATE]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		followUpPacketID := ""
 		targetState := "done"
-		if len(args) > 2 {
-			followUpPacketID = strings.TrimSpace(args[2])
+		if len(remaining) > 1 {
+			followUpPacketID = strings.TrimSpace(remaining[1])
 		}
-		if len(args) > 3 {
-			targetState = strings.TrimSpace(args[3])
+		if len(remaining) > 2 {
+			targetState = strings.TrimSpace(remaining[2])
 		}
 		if targetState != "done" && targetState != "cancelled" && targetState != "open" {
 			return errors.New("drive resolve-follow-up state must be one of: open, done, cancelled")
@@ -12917,9 +16521,14 @@ func cmdDrive(args []string) error {
 				if index < 0 || governingRunIndex < 0 {
 					return errors.New("run not found after delegated follow-up update")
 				}
+				invokingRun, _ = toMap(toList(registry["runs"])[index])
+				governingRun, _ = toMap(toList(registry["runs"])[governingRunIndex])
+				if mode == outputModeText {
+					return printText(renderDriveFollowUpBrief(invokingRun, governingRun, updatedPacket, true))
+				}
 				return printJSON(map[string]any{
-					"run":                  toList(registry["runs"])[index],
-					"governing_run":        toList(registry["runs"])[governingRunIndex],
+					"run":                  invokingRun,
+					"governing_run":        governingRun,
 					"resolved_follow_up":   updatedPacket,
 					"delegated_resolution": true,
 				})
@@ -12928,7 +16537,11 @@ func cmdDrive(args []string) error {
 			if index < 0 {
 				return fmt.Errorf("run not found after follow-up update: %s", runID)
 			}
-			return printJSON(toList(registry["runs"])[index])
+			run, _ = toMap(toList(registry["runs"])[index])
+			if mode == outputModeText {
+				return printText(renderDriveFollowUpBrief(run, run, updatedPacket, false))
+			}
+			return printJSON(run)
 		})
 	case "reprovision":
 		if len(args) < 2 {
@@ -13018,11 +16631,15 @@ func cmdDrive(args []string) error {
 			return printJSON(run)
 		})
 	case "block":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive block", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("drive block requires RUN_ID REASON")
 		}
-		runID := args[1]
-		reason := strings.TrimSpace(strings.Join(args[2:], " "))
+		runID := remaining[0]
+		reason := strings.TrimSpace(strings.Join(remaining[1:], " "))
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			index := findRunIndex(registry, runID)
@@ -13031,6 +16648,7 @@ func cmdDrive(args []string) error {
 			}
 			runs := toList(registry["runs"])
 			run, _ := toMap(runs[index])
+			previousState := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
 			if err := validateRunTransition(run, "blocked"); err != nil {
 				return err
 			}
@@ -13067,16 +16685,23 @@ func cmdDrive(args []string) error {
 			if err := writeSignalLog(log); err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderDriveActionBrief("block", previousState, run, signal))
+			}
 			return printJSON(map[string]any{"run": run, "signal": signal})
 		})
 	case "meeting":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive meeting", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("drive meeting requires RUN_ID QUESTION [--protocol=evidence-review|incident-command|decision-record]")
 		}
-		runID := args[1]
+		runID := remaining[0]
 		protocol := ""
 		questionTokens := []string{}
-		for _, arg := range args[2:] {
+		for _, arg := range remaining[1:] {
 			if strings.HasPrefix(arg, "--protocol=") {
 				protocol = strings.TrimSpace(strings.TrimPrefix(arg, "--protocol="))
 			} else {
@@ -13124,17 +16749,24 @@ func cmdDrive(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderDriveMeetingBrief(meeting, entry, run))
+			}
 			return printJSON(map[string]any{"meeting": meeting, "backlog_entry": entry, "run": run})
 		})
 	case "meeting-close":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("drive meeting-close", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("drive meeting-close requires RUN_ID MEETING_ID [NOTE]")
 		}
-		runID := args[1]
-		meetingID := args[2]
+		runID := remaining[0]
+		meetingID := remaining[1]
 		note := "Meeting closed"
-		if len(args) > 3 {
-			note = strings.TrimSpace(strings.Join(args[3:], " "))
+		if len(remaining) > 2 {
+			note = strings.TrimSpace(strings.Join(remaining[2:], " "))
 		}
 		return withHarnessLock(func() error {
 			registry := readRegistry()
@@ -13194,6 +16826,9 @@ func cmdDrive(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderDriveMeetingAdoptionBrief("meeting-close", run, meeting, authorityAdoption))
+			}
 			return printJSON(map[string]any{
 				"meeting":            meeting,
 				"run":                run,
@@ -13205,7 +16840,7 @@ func cmdDrive(args []string) error {
 	}
 }
 
-func updateDriveRunState(runID, newState, summary, reason string) error {
+func updateDriveRunState(runID, newState, summary, reason, action string, mode outputMode) error {
 	return withHarnessLock(func() error {
 		registry := readRegistry()
 		index := findRunIndex(registry, runID)
@@ -13214,6 +16849,7 @@ func updateDriveRunState(runID, newState, summary, reason string) error {
 		}
 		runs := toList(registry["runs"])
 		run, _ := toMap(runs[index])
+		previousState := firstNonBlank(strings.TrimSpace(stringValue(run["state"])), "unknown")
 		if err := validateRunTransition(run, newState); err != nil {
 			return err
 		}
@@ -13227,8 +16863,154 @@ func updateDriveRunState(runID, newState, summary, reason string) error {
 		if err := writeRegistry(registry); err != nil {
 			return err
 		}
+		if mode == outputModeText {
+			return printText(renderDriveActionBrief(action, previousState, run, nil))
+		}
 		return printJSON(run)
 	})
+}
+
+func shipStatusPacket(run map[string]any) map[string]any {
+	return map[string]any{
+		"run_id":               stringValue(run["run_id"]),
+		"mission_id":           stringValue(run["mission_id"]),
+		"verification_status":  firstNonBlank(stringValue(run["verification_status"]), "unknown"),
+		"verification_refs":    toList(run["verification_refs"]),
+		"review_status":        firstNonBlank(stringValue(run["review_status"]), "unknown"),
+		"review_refs":          toList(run["review_refs"]),
+		"checks_status":        firstNonBlank(stringValue(run["checks_status"]), "unknown"),
+		"checks_refs":          toList(run["checks_refs"]),
+		"ship_status":          firstNonBlank(stringValue(run["ship_status"]), "unstarted"),
+		"ship_refs":            toList(run["ship_refs"]),
+		"pr_ref":               stringValue(run["pr_ref"]),
+		"pr_url":               stringValue(run["pr_url"]),
+		"rc_id":                stringValue(run["rc_id"]),
+		"merge_ready":          mergeReady(run),
+		"next_expected_action": stringValue(run["next_expected_action"]),
+	}
+}
+
+func shipStatusCurrent(status map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(status["run_id"])), "unknown")
+	shipStatus := firstNonBlank(strings.TrimSpace(stringValue(status["ship_status"])), "unstarted")
+	verificationStatus := firstNonBlank(strings.TrimSpace(stringValue(status["verification_status"])), "unknown")
+	reviewStatus := firstNonBlank(strings.TrimSpace(stringValue(status["review_status"])), "unknown")
+	checksStatus := firstNonBlank(strings.TrimSpace(stringValue(status["checks_status"])), "unknown")
+	switch shipStatus {
+	case "ready":
+		if verificationStatus != "passed" {
+			return fmt.Sprintf("Run %s is marked ready, but verification=%s; gate truth must be repaired before push or PR creation.", runID, verificationStatus)
+		}
+		return fmt.Sprintf("Run %s is verified and ready for branch push or PR creation.", runID)
+	case "pushed":
+		return fmt.Sprintf("Run %s has pushed its branch and should move into PR review.", runID)
+	case "in_review":
+		return fmt.Sprintf("Run %s is in PR review and still depends on review/check gates.", runID)
+	case "approved":
+		if verificationStatus != "passed" {
+			return fmt.Sprintf("Run %s is marked approved, but verification=%s; gate truth blocks merge.", runID, verificationStatus)
+		}
+		if boolValue(status["merge_ready"]) {
+			return fmt.Sprintf("Run %s is merge-ready: review is approved and checks have passed.", runID)
+		}
+		return fmt.Sprintf("Run %s is marked approved, but review=%s, checks=%s, merge_ready=false; gate truth blocks merge.", runID, reviewStatus, checksStatus)
+	case "merged":
+		return fmt.Sprintf("Run %s is merged and can feed RC or cleanup work.", runID)
+	default:
+		return fmt.Sprintf("Run %s has not fully entered the ship lifecycle yet.", runID)
+	}
+}
+
+func shipStatusGateAction(status map[string]any) string {
+	shipStatus := firstNonBlank(strings.TrimSpace(stringValue(status["ship_status"])), "unstarted")
+	verificationStatus := firstNonBlank(strings.TrimSpace(stringValue(status["verification_status"])), "unknown")
+	reviewStatus := firstNonBlank(strings.TrimSpace(stringValue(status["review_status"])), "unknown")
+	checksStatus := firstNonBlank(strings.TrimSpace(stringValue(status["checks_status"])), "unknown")
+	switch shipStatus {
+	case "ready", "pushed", "in_review", "approved":
+		if verificationStatus != "passed" {
+			return fmt.Sprintf("Record passing verification before advancing release status; current verification gate is %s.", verificationStatus)
+		}
+	}
+	if shipStatus == "approved" && !boolValue(status["merge_ready"]) {
+		switch {
+		case reviewStatus != "approved" && checksStatus != "passed":
+			return fmt.Sprintf("Hold merge until review and checks gates are green; current review=%s, checks=%s.", reviewStatus, checksStatus)
+		case reviewStatus != "approved":
+			return fmt.Sprintf("Hold merge until review is approved; current review gate is %s.", reviewStatus)
+		case checksStatus != "passed":
+			return fmt.Sprintf("Hold merge until checks pass; current checks gate is %s.", checksStatus)
+		default:
+			return "Wait for remaining review/check gates before merge."
+		}
+	}
+	return ""
+}
+
+func shipStatusLeaderAction(status map[string]any) string {
+	if gateAction := shipStatusGateAction(status); gateAction != "" {
+		return gateAction
+	}
+	next := strings.TrimSpace(stringValue(status["next_expected_action"]))
+	if next != "" {
+		return next
+	}
+	switch firstNonBlank(strings.TrimSpace(stringValue(status["ship_status"])), "unstarted") {
+	case "ready":
+		return "Push the branch, then create or update the PR."
+	case "pushed":
+		return "Create or update the PR and start review/check tracking."
+	case "in_review":
+		return "Track review and checks until both gates are green."
+	case "approved":
+		if boolValue(status["merge_ready"]) {
+			return "Merge the PR, then run cleanup or include the run in an RC."
+		}
+		return "Wait for remaining review/check gates before merge."
+	case "merged":
+		return "Clean up delivered artifacts or include the run in the next RC."
+	default:
+		return "Record verification before marking this run ship-ready."
+	}
+}
+
+func renderShipStatusBrief(status map[string]any) string {
+	runID := firstNonBlank(strings.TrimSpace(stringValue(status["run_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(status["mission_id"])), "unknown")
+	prRef := firstNonBlank(strings.TrimSpace(stringValue(status["pr_ref"])), "none")
+	prURL := firstNonBlank(strings.TrimSpace(stringValue(status["pr_url"])), "none")
+	rcID := firstNonBlank(strings.TrimSpace(stringValue(status["rc_id"])), "none")
+	lines := []string{
+		"Harness Ship Status Briefing",
+		fmt.Sprintf("Run: %s", runID),
+		fmt.Sprintf("Mission: %s", missionID),
+		fmt.Sprintf(
+			"Gates: ship=%s, verification=%s, review=%s, checks=%s, merge_ready=%t.",
+			firstNonBlank(strings.TrimSpace(stringValue(status["ship_status"])), "unstarted"),
+			firstNonBlank(strings.TrimSpace(stringValue(status["verification_status"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(status["review_status"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(status["checks_status"])), "unknown"),
+			boolValue(status["merge_ready"]),
+		),
+		fmt.Sprintf("PR: ref=%s, url=%s.", prRef, prURL),
+		fmt.Sprintf("RC: %s.", rcID),
+		"",
+		"Current:",
+		"- " + shipStatusCurrent(status),
+		"",
+		"Why:",
+		"- Ship state is gated by verification, PR review, checks, and merge readiness; the leader should not treat optimistic ship status as authoritative when gates disagree.",
+		"",
+		"Next:",
+		"- " + shipStatusLeaderAction(status),
+		"",
+		"Leader:",
+		"- " + shipStatusLeaderAction(status),
+		"",
+		"Release:",
+		"- Once merged, include this run in an RC or complete cleanup according to the release plan.",
+	}
+	return strings.Join(lines, "\n")
 }
 
 func cmdShip(args []string) error {
@@ -13241,32 +17023,24 @@ func cmdShip(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
 	case "status":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("ship status", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("ship status requires RUN_ID")
 		}
 		registry := readRegistry()
-		index := findRunIndex(registry, args[1])
+		index := findRunIndex(registry, remaining[0])
 		if index < 0 {
-			return fmt.Errorf("run not found: %s", args[1])
+			return fmt.Errorf("run not found: %s", remaining[0])
 		}
 		run, _ := toMap(toList(registry["runs"])[index])
-		return printJSON(map[string]any{
-			"run_id":               stringValue(run["run_id"]),
-			"mission_id":           stringValue(run["mission_id"]),
-			"verification_status":  firstNonBlank(stringValue(run["verification_status"]), "unknown"),
-			"verification_refs":    toList(run["verification_refs"]),
-			"review_status":        firstNonBlank(stringValue(run["review_status"]), "unknown"),
-			"review_refs":          toList(run["review_refs"]),
-			"checks_status":        firstNonBlank(stringValue(run["checks_status"]), "unknown"),
-			"checks_refs":          toList(run["checks_refs"]),
-			"ship_status":          firstNonBlank(stringValue(run["ship_status"]), "unstarted"),
-			"ship_refs":            toList(run["ship_refs"]),
-			"pr_ref":               stringValue(run["pr_ref"]),
-			"pr_url":               stringValue(run["pr_url"]),
-			"rc_id":                stringValue(run["rc_id"]),
-			"merge_ready":          mergeReady(run),
-			"next_expected_action": stringValue(run["next_expected_action"]),
-		})
+		status := shipStatusPacket(run)
+		if mode == outputModeText {
+			return printText(renderShipStatusBrief(status))
+		}
+		return printJSON(status)
 	case "verify":
 		if len(args) < 3 {
 			return errors.New("ship verify requires RUN_ID REF")
@@ -13785,6 +17559,134 @@ func cmdShipRemainder(args []string) error {
 	}
 }
 
+func rcBriefCurrent(rc map[string]any) string {
+	rcID := firstNonBlank(strings.TrimSpace(stringValue(rc["rc_id"])), "unknown")
+	version := firstNonBlank(strings.TrimSpace(stringValue(rc["version"])), "unknown")
+	switch firstNonBlank(strings.TrimSpace(stringValue(rc["state"])), "unknown") {
+	case "active":
+		if firstNonBlank(strings.TrimSpace(stringValue(rc["verification_status"])), "unknown") == "passed" {
+			return fmt.Sprintf("RC %s for %s is verified and ready for promotion or a final release decision.", rcID, version)
+		}
+		return fmt.Sprintf("RC %s for %s is active and still needs staged verification.", rcID, version)
+	case "promoted":
+		return fmt.Sprintf("RC %s for %s has been promoted and archived as release history.", rcID, version)
+	case "closed":
+		return fmt.Sprintf("RC %s for %s is closed; cut a fresh RC if release work still matters.", rcID, version)
+	default:
+		return fmt.Sprintf("RC %s for %s is recorded with state %s.", rcID, version, firstNonBlank(strings.TrimSpace(stringValue(rc["state"])), "unknown"))
+	}
+}
+
+func rcBriefLeaderAction(rc map[string]any) string {
+	switch firstNonBlank(strings.TrimSpace(stringValue(rc["state"])), "unknown") {
+	case "active":
+		if firstNonBlank(strings.TrimSpace(stringValue(rc["verification_status"])), "unknown") == "passed" {
+			return "Promote the RC if release criteria are satisfied, or apply a fix/cancel if staged evidence changed."
+		}
+		return "Record RC verification, then decide whether to promote, fix, hotfix, backport, or cancel."
+	case "promoted":
+		return "Treat the promoted RC as release history and continue post-release monitoring or cleanup."
+	case "closed":
+		return "Create a fresh RC from the corrected branch if the release still needs to proceed."
+	default:
+		return "Inspect the RC JSON or release notes before taking a release action."
+	}
+}
+
+func renderRCBrief(rc map[string]any) string {
+	rcID := firstNonBlank(strings.TrimSpace(stringValue(rc["rc_id"])), "unknown")
+	version := firstNonBlank(strings.TrimSpace(stringValue(rc["version"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(rc["state"])), "unknown")
+	branch := firstNonBlank(strings.TrimSpace(stringValue(rc["branch"])), "unknown")
+	baseBranch := firstNonBlank(strings.TrimSpace(stringValue(rc["base_branch"])), "unknown")
+	productionBranch := firstNonBlank(strings.TrimSpace(stringValue(rc["production_branch"])), "unknown")
+	runIDs := anyListToStrings(toList(rc["run_ids"]))
+	if len(runIDs) == 0 {
+		runIDs = []string{"none"}
+	}
+	verification := firstNonBlank(strings.TrimSpace(stringValue(rc["verification_status"])), "unknown")
+	lines := []string{
+		"Harness RC Briefing",
+		fmt.Sprintf("RC: %s", rcID),
+		fmt.Sprintf("Version: %s", version),
+		fmt.Sprintf("State: %s, verification=%s.", state, verification),
+		fmt.Sprintf("Branches: rc=%s, base=%s, production=%s.", branch, baseBranch, productionBranch),
+		fmt.Sprintf("Runs: %s.", strings.Join(runIDs, ", ")),
+		"",
+		"Current:",
+		"- " + rcBriefCurrent(rc),
+		"",
+		"Why:",
+		"- RC state is the release-control checkpoint after merged runs; it keeps staged verification, surgical fixes, promotion, cancellation, hotfix, and backport decisions explicit.",
+		"",
+		"Next:",
+		"- " + rcBriefLeaderAction(rc),
+		"",
+		"Leader:",
+		"- " + rcBriefLeaderAction(rc),
+		"",
+		"Release:",
+		"- Keep RC changes bounded to the recorded branch and use fix/hotfix/backport commands only when staged evidence justifies them.",
+	}
+	return strings.Join(lines, "\n")
+}
+
+func renderRCListBrief(rcs []any, includeArchived bool) string {
+	activeCount := 0
+	for _, item := range rcs {
+		rc, _ := toMap(item)
+		if strings.TrimSpace(stringValue(rc["state"])) == "active" {
+			activeCount++
+		}
+	}
+	scope := "active"
+	if includeArchived {
+		scope = "active and archived"
+	}
+	lines := []string{
+		"Harness RC List Briefing",
+		fmt.Sprintf("Scope: %s RCs.", scope),
+		fmt.Sprintf("Count: %s, %s.", countLabel(len(rcs), "RC", "RCs"), countLabel(activeCount, "active RC", "active RCs")),
+		"",
+		"Current:",
+	}
+	if len(rcs) == 0 {
+		lines = append(lines, "- No RC is currently recorded for this scope.")
+	} else {
+		limit := len(rcs)
+		if limit > 5 {
+			limit = 5
+		}
+		for _, item := range rcs[:limit] {
+			rc, _ := toMap(item)
+			lines = append(lines, "- "+fmt.Sprintf(
+				"%s version=%s state=%s verification=%s branch=%s.",
+				firstNonBlank(strings.TrimSpace(stringValue(rc["rc_id"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(rc["version"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(rc["state"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(rc["verification_status"])), "unknown"),
+				firstNonBlank(strings.TrimSpace(stringValue(rc["branch"])), "unknown"),
+			))
+		}
+		if len(rcs) > limit {
+			lines = append(lines, fmt.Sprintf("- %d more RC(s) remain in JSON output.", len(rcs)-limit))
+		}
+	}
+	next := "Create an RC from merged runs when a release candidate is needed."
+	if activeCount > 0 {
+		next = "Inspect the active RC with `bash scripts/harness-rc.sh get RC_ID --brief`, then verify, promote, fix, or cancel it."
+	}
+	lines = append(lines,
+		"",
+		"Why:",
+		"- RC listing shows whether release control is idle, actively staging, or relying on archived RC history.",
+		"",
+		"Next:",
+		"- "+next,
+	)
+	return strings.Join(lines, "\n")
+}
+
 func cmdRC(args []string) error {
 	if len(args) < 1 {
 		return errors.New("rc requires a subcommand")
@@ -13795,22 +17697,38 @@ func cmdRC(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
 	case "list":
+		mode, remaining, err := parseOutputModeFlagsOnly("rc list", args[1:])
+		if err != nil {
+			return err
+		}
 		includeArchived := false
-		for _, arg := range args[1:] {
+		for _, arg := range remaining {
 			if arg == "--all" {
 				includeArchived = true
 			}
 		}
-		return printJSON(listRCs(includeArchived))
+		rcs := listRCs(includeArchived)
+		if mode == outputModeText {
+			return printText(renderRCListBrief(rcs, includeArchived))
+		}
+		return printJSON(rcs)
 	case "get":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputModeFlagsOnly("rc get", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 1 {
 			return errors.New("rc get requires RC_ID")
 		}
-		data := readRC(args[1])
+		data := readRC(remaining[0])
 		if data == nil {
-			return fmt.Errorf("rc not found: %s", args[1])
+			return fmt.Errorf("rc not found: %s", remaining[0])
 		}
-		return printJSON(getKey(data, "rc", map[string]any{}))
+		rc, _ := toMap(getKey(data, "rc", map[string]any{}))
+		if mode == outputModeText {
+			return printText(renderRCBrief(rc))
+		}
+		return printJSON(rc)
 	default:
 		return cmdRCRemainder(args)
 	}
@@ -14274,119 +18192,45 @@ func cmdMeetings(args []string) error {
 		}
 		return printJSON(getKey(data, "meeting", map[string]any{}))
 	case "summary":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("meetings summary", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("meetings summary requires MEETING_ID")
 		}
-		data := readMeeting(args[1])
+		data := readMeeting(remaining[0])
 		if data == nil {
-			return fmt.Errorf("meeting not found: %s", args[1])
+			return fmt.Errorf("meeting not found: %s", remaining[0])
 		}
 		meeting, _ := toMap(data["meeting"])
-		ensureMeetingGovernanceState(meeting)
-		outcome := meetingOutcome(meeting)
-		openActionCount := 0
-		for _, item := range toList(meeting["action_items"]) {
-			mapping, ok := toMap(item)
-			if !ok || stringValue(mapping["state"]) == "" || stringValue(mapping["state"]) == "open" {
-				openActionCount++
-			}
+		summary := meetingSummaryPacket(meeting)
+		if mode == outputModeText {
+			return printText(renderMeetingBrief(meeting, summary))
 		}
-		findings, _ := toMap(meeting["findings"])
-		orchestration, _ := toMap(meeting["orchestration"])
-		synthesis, _ := toMap(orchestration["synthesis"])
-		autoSynthesis, _ := toMap(orchestration["auto_synthesis"])
-		debatePlan, _ := toMap(orchestration["debate_plan"])
-		wavePlan, _ := toMap(orchestration["wave_plan"])
-		outputPacket, _ := toMap(orchestration["output_packet"])
-		currentWaveBatch := meetingCurrentWaveBatch(wavePlan, debatePlan)
-		currentWaveActions := meetingCurrentWaveActions(wavePlan, debatePlan)
-		blockedWaveBatches := meetingBlockedWaveBatchSummaries(debatePlan)
-		authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
-		governanceGaps := meetingGovernancePolicyGaps(meeting)
-		return printJSON(map[string]any{
-			"meeting_id":                               stringValue(meeting["meeting_id"]),
-			"state":                                    stringValue(meeting["state"]),
-			"decision_protocol":                        stringValue(meeting["decision_protocol"]),
-			"decision_protocol_reason":                 stringValue(meeting["decision_protocol_reason"]),
-			"question":                                 stringValue(meeting["question"]),
-			"outcome_summary":                          outcome["summary"],
-			"next_action":                              outcome["next_action"],
-			"phase_history_count":                      len(toList(meeting["phase_history"])),
-			"governance_gap_count":                     len(governanceGaps),
-			"governance_gaps":                          stringListToAny(governanceGaps),
-			"debate_round":                             intValue(orchestration["debate_round"]),
-			"synthesis_status":                         stringValue(synthesis["status"]),
-			"blocking_gap_count":                       len(toList(synthesis["blocking_gaps"])),
-			"coverage_note_count":                      len(toList(synthesis["coverage_notes"])),
-			"authority_conflict_count":                 intValue(authorityAudit["conflict_count"]),
-			"unresolved_authority_conflict_count":      intValue(authorityAudit["unresolved_conflict_count"]),
-			"role_spec_count":                          len(toList(meeting["role_specs"])),
-			"locked_decisions":                         len(toList(meeting["locked_decisions"])),
-			"accepted_count":                           len(toList(findings["accepted"])),
-			"rejected_count":                           len(toList(findings["rejected"])),
-			"unresolved_count":                         len(toList(findings["unresolved"])),
-			"traced_finding_count":                     intValue(getKey(synthesis, "tally.traced_findings", 0)),
-			"untraced_finding_count":                   intValue(getKey(synthesis, "tally.untraced_findings", 0)),
-			"auto_generated_finding_count":             intValue(autoSynthesis["generated_finding_count"]),
-			"auto_generated_action_count":              intValue(autoSynthesis["generated_action_count"]),
-			"auto_generated_claim_count":               intValue(autoSynthesis["generated_claim_count"]),
-			"planned_route_count":                      intValue(debatePlan["planned_route_count"]),
-			"resolved_route_count":                     intValue(debatePlan["resolved_route_count"]),
-			"open_route_action_count":                  intValue(debatePlan["open_route_action_count"]),
-			"resolved_without_cross_examination_count": intValue(debatePlan["resolved_without_cross_examination_count"]),
-			"authority_resolved_route_count":           intValue(debatePlan["authority_resolved_route_count"]),
-			"protocol_deferred_route_count":            intValue(debatePlan["protocol_deferred_route_count"]),
-			"protocol_bound_route_count":               intValue(debatePlan["protocol_bound_route_count"]),
-			"planned_round_count":                      intValue(debatePlan["planned_round_count"]),
-			"resolved_round_count":                     intValue(debatePlan["resolved_round_count"]),
-			"open_round_action_count":                  intValue(debatePlan["open_round_action_count"]),
-			"wave_batch_count":                         intValue(debatePlan["wave_batch_count"]),
-			"open_wave_batch_count":                    intValue(debatePlan["open_wave_batch_count"]),
-			"ready_wave_batch_count":                   intValue(debatePlan["ready_wave_batch_count"]),
-			"blocked_wave_batch_count":                 intValue(debatePlan["blocked_wave_batch_count"]),
-			"resolved_wave_batch_count":                intValue(debatePlan["resolved_wave_batch_count"]),
-			"batch_selection_policy":                   stringValue(debatePlan["batch_selection_policy"]),
-			"previous_current_wave_batch_id":           stringValue(debatePlan["previous_current_wave_batch_id"]),
-			"current_wave_batch_id":                    stringValue(debatePlan["current_wave_batch_id"]),
-			"current_wave_batch_summary":               stringValue(debatePlan["current_wave_batch_summary"]),
-			"current_wave_batch_lane_count":            intValue(debatePlan["current_wave_batch_lane_count"]),
-			"current_wave_batch_assigned_role":         stringValue(getKey(currentWaveBatch, "assigned_role", "")),
-			"current_wave_batch_assigned_run_id":       stringValue(getKey(currentWaveBatch, "assigned_run_id", "")),
-			"current_wave_batch_phase":                 stringValue(getKey(currentWaveBatch, "expected_phase", "")),
-			"current_wave_batch_round_number":          intValue(getKey(currentWaveBatch, "round_number", 0)),
-			"current_wave_batch_action_count":          intValue(getKey(currentWaveBatch, "action_count", 0)),
-			"current_wave_batch_claim_refs":            cloneValue(getKey(currentWaveBatch, "claim_refs", []any{})),
-			"current_wave_actions":                     currentWaveActions,
-			"blocked_wave_batches":                     blockedWaveBatches,
-			"output_packet_kind":                       stringValue(getKey(outputPacket, "output_packet_kind", "")),
-			"output_packet_completion_gap_count":       intValue(getKey(outputPacket, "completion_gap_count", 0)),
-			"output_packet":                            cloneValue(outputPacket),
-			"output_debate_lane_count":                 intValue(getKey(outputPacket, "debate_lane_count", 0)),
-			"output_accepted_debate_lane_count":        intValue(getKey(outputPacket, "accepted_debate_lane_count", 0)),
-			"output_rejected_debate_lane_count":        intValue(getKey(outputPacket, "rejected_debate_lane_count", 0)),
-			"output_unresolved_debate_lane_count":      intValue(getKey(outputPacket, "unresolved_debate_lane_count", 0)),
-			"output_open_debate_lane_count":            intValue(getKey(outputPacket, "open_debate_lane_count", 0)),
-			"output_debate_lane_packets":               cloneValue(getKey(outputPacket, "debate_lane_packets", []any{})),
-			"output_follow_up_packet_count":            intValue(getKey(outputPacket, "follow_up_packet_count", 0)),
-			"output_open_follow_up_packet_count":       intValue(getKey(outputPacket, "open_follow_up_packet_count", 0)),
-			"output_follow_up_packets":                 cloneValue(getKey(outputPacket, "follow_up_packets", []any{})),
-			"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),
-			"max_wave_lane_count":                      intValue(debatePlan["max_wave_lane_count"]),
-			"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),
-			"open_wave_action_count":                   intValue(wavePlan["open_wave_action_count"]),
-			"unrouted_claim_count":                     intValue(debatePlan["unrouted_claim_count"]),
-			"open_action_count":                        openActionCount,
-		})
+		return printJSON(summary)
 	case "authority-audit":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("meetings authority-audit", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("meetings authority-audit requires MEETING_ID")
 		}
-		data := readMeeting(args[1])
+		meetingID := strings.TrimSpace(remaining[0])
+		if meetingID == "" {
+			return errors.New("meetings authority-audit requires MEETING_ID")
+		}
+		data := readMeeting(meetingID)
 		if data == nil {
-			return fmt.Errorf("meeting not found: %s", args[1])
+			return fmt.Errorf("meeting not found: %s", meetingID)
 		}
 		meeting, _ := toMap(data["meeting"])
-		return printJSON(meetingAuthorityAudit(meeting))
+		audit := meetingAuthorityAudit(meeting)
+		if mode == outputModeText {
+			return printText(renderMeetingAuthorityAuditBrief(meeting, audit, meetingSummaryPacket(meeting)))
+		}
+		return printJSON(audit)
 	case "materialize-primary-decision":
 		requestedMissionID := ""
 		for _, arg := range args[1:] {
@@ -14419,6 +18263,1301 @@ func cmdMeetings(args []string) error {
 	default:
 		return cmdMeetingsRemainder(args)
 	}
+}
+
+func meetingSummaryPacket(meeting map[string]any) map[string]any {
+	ensureMeetingGovernanceState(meeting)
+	outcome := meetingOutcome(meeting)
+	openActionCount := 0
+	for _, item := range toList(meeting["action_items"]) {
+		mapping, ok := toMap(item)
+		if !ok || stringValue(mapping["state"]) == "" || stringValue(mapping["state"]) == "open" {
+			openActionCount++
+		}
+	}
+	findings, _ := toMap(meeting["findings"])
+	orchestration, _ := toMap(meeting["orchestration"])
+	synthesis, _ := toMap(orchestration["synthesis"])
+	autoSynthesis, _ := toMap(orchestration["auto_synthesis"])
+	debatePlan, _ := toMap(orchestration["debate_plan"])
+	wavePlan, _ := toMap(orchestration["wave_plan"])
+	outputPacket, _ := toMap(orchestration["output_packet"])
+	currentWaveBatch := meetingCurrentWaveBatch(wavePlan, debatePlan)
+	currentWaveActions := meetingCurrentWaveActions(wavePlan, debatePlan)
+	blockedWaveBatches := meetingBlockedWaveBatchSummaries(debatePlan)
+	authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	return map[string]any{
+		"meeting_id":                               stringValue(meeting["meeting_id"]),
+		"state":                                    stringValue(meeting["state"]),
+		"decision_protocol":                        stringValue(meeting["decision_protocol"]),
+		"decision_protocol_reason":                 stringValue(meeting["decision_protocol_reason"]),
+		"question":                                 stringValue(meeting["question"]),
+		"outcome_summary":                          outcome["summary"],
+		"next_action":                              outcome["next_action"],
+		"phase_history_count":                      len(toList(meeting["phase_history"])),
+		"governance_gap_count":                     len(governanceGaps),
+		"governance_gaps":                          stringListToAny(governanceGaps),
+		"debate_round":                             intValue(orchestration["debate_round"]),
+		"synthesis_status":                         stringValue(synthesis["status"]),
+		"blocking_gap_count":                       len(toList(synthesis["blocking_gaps"])),
+		"coverage_note_count":                      len(toList(synthesis["coverage_notes"])),
+		"authority_conflict_count":                 intValue(authorityAudit["conflict_count"]),
+		"unresolved_authority_conflict_count":      intValue(authorityAudit["unresolved_conflict_count"]),
+		"role_spec_count":                          len(toList(meeting["role_specs"])),
+		"locked_decisions":                         len(toList(meeting["locked_decisions"])),
+		"accepted_count":                           len(toList(findings["accepted"])),
+		"rejected_count":                           len(toList(findings["rejected"])),
+		"unresolved_count":                         len(toList(findings["unresolved"])),
+		"traced_finding_count":                     intValue(getKey(synthesis, "tally.traced_findings", 0)),
+		"untraced_finding_count":                   intValue(getKey(synthesis, "tally.untraced_findings", 0)),
+		"auto_generated_finding_count":             intValue(autoSynthesis["generated_finding_count"]),
+		"auto_generated_action_count":              intValue(autoSynthesis["generated_action_count"]),
+		"auto_generated_claim_count":               intValue(autoSynthesis["generated_claim_count"]),
+		"planned_route_count":                      intValue(debatePlan["planned_route_count"]),
+		"resolved_route_count":                     intValue(debatePlan["resolved_route_count"]),
+		"open_route_action_count":                  intValue(debatePlan["open_route_action_count"]),
+		"resolved_without_cross_examination_count": intValue(debatePlan["resolved_without_cross_examination_count"]),
+		"authority_resolved_route_count":           intValue(debatePlan["authority_resolved_route_count"]),
+		"protocol_deferred_route_count":            intValue(debatePlan["protocol_deferred_route_count"]),
+		"protocol_bound_route_count":               intValue(debatePlan["protocol_bound_route_count"]),
+		"planned_round_count":                      intValue(debatePlan["planned_round_count"]),
+		"resolved_round_count":                     intValue(debatePlan["resolved_round_count"]),
+		"open_round_action_count":                  intValue(debatePlan["open_round_action_count"]),
+		"wave_batch_count":                         intValue(debatePlan["wave_batch_count"]),
+		"open_wave_batch_count":                    intValue(debatePlan["open_wave_batch_count"]),
+		"ready_wave_batch_count":                   intValue(debatePlan["ready_wave_batch_count"]),
+		"blocked_wave_batch_count":                 intValue(debatePlan["blocked_wave_batch_count"]),
+		"resolved_wave_batch_count":                intValue(debatePlan["resolved_wave_batch_count"]),
+		"batch_selection_policy":                   stringValue(debatePlan["batch_selection_policy"]),
+		"previous_current_wave_batch_id":           stringValue(debatePlan["previous_current_wave_batch_id"]),
+		"current_wave_batch_id":                    stringValue(debatePlan["current_wave_batch_id"]),
+		"current_wave_batch_summary":               stringValue(debatePlan["current_wave_batch_summary"]),
+		"current_wave_batch_lane_count":            intValue(debatePlan["current_wave_batch_lane_count"]),
+		"current_wave_batch_assigned_role":         stringValue(getKey(currentWaveBatch, "assigned_role", "")),
+		"current_wave_batch_assigned_run_id":       stringValue(getKey(currentWaveBatch, "assigned_run_id", "")),
+		"current_wave_batch_phase":                 stringValue(getKey(currentWaveBatch, "expected_phase", "")),
+		"current_wave_batch_round_number":          intValue(getKey(currentWaveBatch, "round_number", 0)),
+		"current_wave_batch_action_count":          intValue(getKey(currentWaveBatch, "action_count", 0)),
+		"current_wave_batch_claim_refs":            cloneValue(getKey(currentWaveBatch, "claim_refs", []any{})),
+		"current_wave_actions":                     currentWaveActions,
+		"blocked_wave_batches":                     blockedWaveBatches,
+		"output_packet_kind":                       stringValue(getKey(outputPacket, "output_packet_kind", "")),
+		"output_packet_completion_gap_count":       intValue(getKey(outputPacket, "completion_gap_count", 0)),
+		"output_packet":                            cloneValue(outputPacket),
+		"output_debate_lane_count":                 intValue(getKey(outputPacket, "debate_lane_count", 0)),
+		"output_accepted_debate_lane_count":        intValue(getKey(outputPacket, "accepted_debate_lane_count", 0)),
+		"output_rejected_debate_lane_count":        intValue(getKey(outputPacket, "rejected_debate_lane_count", 0)),
+		"output_unresolved_debate_lane_count":      intValue(getKey(outputPacket, "unresolved_debate_lane_count", 0)),
+		"output_open_debate_lane_count":            intValue(getKey(outputPacket, "open_debate_lane_count", 0)),
+		"output_debate_lane_packets":               cloneValue(getKey(outputPacket, "debate_lane_packets", []any{})),
+		"output_follow_up_packet_count":            intValue(getKey(outputPacket, "follow_up_packet_count", 0)),
+		"output_open_follow_up_packet_count":       intValue(getKey(outputPacket, "open_follow_up_packet_count", 0)),
+		"output_follow_up_packets":                 cloneValue(getKey(outputPacket, "follow_up_packets", []any{})),
+		"multi_lane_batch_count":                   intValue(debatePlan["multi_lane_batch_count"]),
+		"max_wave_lane_count":                      intValue(debatePlan["max_wave_lane_count"]),
+		"max_debate_rounds":                        intValue(debatePlan["max_debate_rounds"]),
+		"open_wave_action_count":                   intValue(wavePlan["open_wave_action_count"]),
+		"unrouted_claim_count":                     intValue(debatePlan["unrouted_claim_count"]),
+		"open_action_count":                        openActionCount,
+	}
+}
+
+func meetingBriefTargetLabel(meeting map[string]any) string {
+	if missionID := strings.TrimSpace(stringValue(meeting["mission_id"])); missionID != "" {
+		return missionID
+	}
+	if runID := strings.TrimSpace(stringValue(meeting["run_id"])); runID != "" {
+		return runID
+	}
+	return "this decision surface"
+}
+
+func meetingNextRequirement(meeting map[string]any) string {
+	return strings.TrimSpace(stringValue(getKey(meeting, "orchestration.next_requirement", "")))
+}
+
+func meetingBriefPriority(meeting map[string]any) string {
+	target := meetingBriefTargetLabel(meeting)
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	if state == "closed" {
+		return fmt.Sprintf("This council is closed and now acts as a durable decision record for %s.", target)
+	}
+	switch phase {
+	case "output":
+		return fmt.Sprintf("This active council is at the output/adoption edge for %s.", target)
+	case "synthesis":
+		return fmt.Sprintf("This active council is synthesizing governed judgment for %s.", target)
+	default:
+		return fmt.Sprintf("This active council is the live governance object for %s.", target)
+	}
+}
+
+func meetingBriefCurrent(meeting, summary, synthesis map[string]any, governanceGaps []string) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	if state == "closed" {
+		return fmt.Sprintf("Meeting %s is closed.", meetingID)
+	}
+	if len(governanceGaps) > 0 {
+		return fmt.Sprintf("Meeting %s is blocked in %s by governance policy gaps.", meetingID, phase)
+	}
+	switch phase {
+	case "setup":
+		return fmt.Sprintf("Meeting %s is still in setup.", meetingID)
+	case "independent_review":
+		openWaveActions := intValue(summary["open_wave_action_count"])
+		if openWaveActions > 0 {
+			return fmt.Sprintf("Meeting %s is collecting %d bounded independent-review assessment(s).", meetingID, openWaveActions)
+		}
+		return fmt.Sprintf("Meeting %s is waiting for enough independent-review coverage to move forward.", meetingID)
+	case "cross_examination":
+		if batchSummary := strings.TrimSpace(stringValue(summary["current_wave_batch_summary"])); batchSummary != "" {
+			return fmt.Sprintf("Meeting %s is in live cross-examination: %s", meetingID, batchSummary)
+		}
+		if intValue(summary["open_route_action_count"]) > 0 {
+			return fmt.Sprintf("Meeting %s still has open cross-examination route obligations.", meetingID)
+		}
+		if intValue(summary["open_round_action_count"]) > 0 {
+			return fmt.Sprintf("Meeting %s still has open follow-up debate rounds.", meetingID)
+		}
+		return fmt.Sprintf("Meeting %s is in cross-examination.", meetingID)
+	case "synthesis":
+		switch strings.TrimSpace(stringValue(summary["synthesis_status"])) {
+		case "blocked":
+			return fmt.Sprintf("Meeting %s is blocked in synthesis.", meetingID)
+		case "needs_supplement":
+			return fmt.Sprintf("Meeting %s needs synthesis supplementation before output.", meetingID)
+		default:
+			return fmt.Sprintf("Meeting %s is synthesizing the council record.", meetingID)
+		}
+	case "output":
+		if packetKind := strings.TrimSpace(stringValue(summary["output_packet_kind"])); packetKind != "" {
+			return fmt.Sprintf("Meeting %s has a provisional %s packet ready for adoption or close.", meetingID, packetKind)
+		}
+		return fmt.Sprintf("Meeting %s is in output.", meetingID)
+	}
+	if len(toList(synthesis["blocking_gaps"])) > 0 {
+		return fmt.Sprintf("Meeting %s still has synthesis blocking gaps.", meetingID)
+	}
+	return fmt.Sprintf("Meeting %s is currently in phase %s.", meetingID, phase)
+}
+
+func meetingBriefFirstConflictNote(authorityAudit map[string]any) string {
+	for _, item := range toList(authorityAudit["conflicts"]) {
+		conflict, _ := toMap(item)
+		if note := strings.TrimSpace(stringValue(conflict["note"])); note != "" {
+			return note
+		}
+	}
+	return ""
+}
+
+func meetingBriefWhy(meeting, summary, synthesis, authorityAudit map[string]any, governanceGaps []string) string {
+	if len(governanceGaps) > 0 {
+		return governanceGaps[0]
+	}
+	if batchSummary := strings.TrimSpace(stringValue(summary["current_wave_batch_summary"])); batchSummary != "" {
+		return batchSummary
+	}
+	if intValue(summary["unresolved_authority_conflict_count"]) > 0 {
+		if note := meetingBriefFirstConflictNote(authorityAudit); note != "" {
+			return note
+		}
+		return "Same-authority findings still disagree on at least one governed claim."
+	}
+	for _, item := range toList(synthesis["blocking_gaps"]) {
+		if text := strings.TrimSpace(stringValue(item)); text != "" {
+			return text
+		}
+	}
+	if nextRequirement := meetingNextRequirement(meeting); nextRequirement != "" {
+		return nextRequirement
+	}
+	if summaryText := strings.TrimSpace(stringValue(getKey(summary, "output_packet.summary", ""))); summaryText != "" {
+		return summaryText
+	}
+	if outcomeSummary := strings.TrimSpace(stringValue(summary["outcome_summary"])); outcomeSummary != "" {
+		return outcomeSummary
+	}
+	return firstNonBlank(strings.TrimSpace(stringValue(meeting["question"])), "No higher-priority council constraint is currently recorded.")
+}
+
+func meetingBriefNext(meeting, summary map[string]any) string {
+	if strings.TrimSpace(stringValue(meeting["state"])) != "closed" {
+		if nextRequirement := meetingNextRequirement(meeting); nextRequirement != "" {
+			return nextRequirement
+		}
+	}
+	if nextAction := strings.TrimSpace(stringValue(summary["next_action"])); nextAction != "" {
+		return nextAction
+	}
+	return "No immediate next action is recorded."
+}
+
+func meetingBriefLeaderAction(meeting, summary, synthesis map[string]any, governanceGaps []string) string {
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	nextRequirement := meetingNextRequirement(meeting)
+	if state == "closed" {
+		return "Inspect the closed council record or reopen only if the governed decision changed."
+	}
+	if len(governanceGaps) > 0 {
+		return "Repair council governance prerequisites before advancing this meeting."
+	}
+	switch phase {
+	case "setup":
+		return firstNonBlank(nextRequirement, "Add packet/participant prerequisites before independent review.")
+	case "independent_review":
+		if intValue(summary["open_wave_action_count"]) > 0 {
+			return fmt.Sprintf("Collect the remaining %d independent-review assessment(s) before cross-examination.", intValue(summary["open_wave_action_count"]))
+		}
+		return firstNonBlank(nextRequirement, "Confirm independent-review coverage before advancing.")
+	case "cross_examination":
+		if intValue(summary["current_wave_batch_action_count"]) > 0 {
+			return "Keep the current debate batch moving before synthesis."
+		}
+		if intValue(summary["open_route_action_count"]) > 0 {
+			return "Record the remaining cross-examination positions before synthesis."
+		}
+		if intValue(summary["open_round_action_count"]) > 0 {
+			return "Collect the remaining follow-up debate responses before synthesis."
+		}
+		return firstNonBlank(nextRequirement, "Review cross-examination coverage before synthesis.")
+	case "synthesis":
+		switch strings.TrimSpace(stringValue(summary["synthesis_status"])) {
+		case "blocked":
+			return "Resolve synthesis blocking gaps before output."
+		case "needs_supplement":
+			return "Supplement synthesis evidence before output."
+		default:
+			return firstNonBlank(nextRequirement, "Review the synthesized council record and advance to output when ready.")
+		}
+	case "output":
+		return "Adopt or close the meeting outcome once the output packet looks correct."
+	}
+	if len(toList(synthesis["blocking_gaps"])) > 0 {
+		return "Resolve synthesis blocking gaps before treating this council as ready."
+	}
+	return firstNonBlank(nextRequirement, "Review the current council state before changing governance.")
+}
+
+func meetingBriefCurrentAssignee(summary map[string]any) string {
+	role := strings.TrimSpace(stringValue(summary["current_wave_batch_assigned_role"]))
+	runID := strings.TrimSpace(stringValue(summary["current_wave_batch_assigned_run_id"]))
+	switch {
+	case role != "" && runID != "":
+		return fmt.Sprintf("%s on %s", role, runID)
+	case role != "":
+		return role
+	case runID != "":
+		return runID
+	default:
+		return ""
+	}
+}
+
+func meetingBriefCouncilAction(summary map[string]any) string {
+	if intValue(summary["current_wave_batch_action_count"]) > 0 {
+		if assignee := meetingBriefCurrentAssignee(summary); assignee != "" {
+			return fmt.Sprintf("Current live council work is assigned to %s for %d action(s).", assignee, intValue(summary["current_wave_batch_action_count"]))
+		}
+		return fmt.Sprintf("Current live council work still has %d action(s) queued in the active batch.", intValue(summary["current_wave_batch_action_count"]))
+	}
+	if intValue(summary["open_wave_action_count"]) > 0 {
+		return fmt.Sprintf("%d bounded independent-review assessment(s) are still owed by council participants.", intValue(summary["open_wave_action_count"]))
+	}
+	if intValue(summary["open_route_action_count"]) > 0 {
+		return fmt.Sprintf("%d cross-examination route obligation(s) are still open.", intValue(summary["open_route_action_count"]))
+	}
+	if intValue(summary["open_round_action_count"]) > 0 {
+		return fmt.Sprintf("%d follow-up debate round obligation(s) are still open.", intValue(summary["open_round_action_count"]))
+	}
+	if intValue(summary["output_follow_up_packet_count"]) > 0 {
+		return fmt.Sprintf("The council has produced %d follow-up packet(s); %d remain open after adoption.", intValue(summary["output_follow_up_packet_count"]), intValue(summary["output_open_follow_up_packet_count"]))
+	}
+	if intValue(summary["open_action_count"]) > 0 {
+		return fmt.Sprintf("%d meeting action item(s) remain open.", intValue(summary["open_action_count"]))
+	}
+	return "No live council action is currently outstanding."
+}
+
+func meetingBriefOutput(summary map[string]any) string {
+	packetKind := strings.TrimSpace(stringValue(summary["output_packet_kind"]))
+	if packetKind == "" {
+		return "No provisional output packet is recorded yet."
+	}
+	parts := []string{fmt.Sprintf("Current output packet is %s.", packetKind)}
+	if followUpCount := intValue(summary["output_follow_up_packet_count"]); followUpCount > 0 {
+		parts = append(parts, fmt.Sprintf("%d of %d follow-up packet(s) remain open.", intValue(summary["output_open_follow_up_packet_count"]), followUpCount))
+	}
+	if laneCount := intValue(summary["output_debate_lane_count"]); laneCount > 0 {
+		parts = append(parts, fmt.Sprintf("Debate lanes: %d accepted, %d rejected, %d unresolved.", intValue(summary["output_accepted_debate_lane_count"]), intValue(summary["output_rejected_debate_lane_count"]), intValue(summary["output_unresolved_debate_lane_count"])))
+	}
+	return strings.Join(parts, " ")
+}
+
+func meetingOrchestrationCurrent(meeting map[string]any, oldPhase, newPhase string, gaps []any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	if oldPhase != newPhase {
+		return fmt.Sprintf("Meeting %s advanced from %s to %s.", meetingID, oldPhase, newPhase)
+	}
+	if len(gaps) > 0 {
+		return fmt.Sprintf("Meeting %s stayed in %s with %s blocking advancement.", meetingID, newPhase, countLabel(len(gaps), "gap", "gaps"))
+	}
+	return fmt.Sprintf("Meeting %s stayed in %s while orchestration refreshed the current work packet and next requirement.", meetingID, newPhase)
+}
+
+func meetingOrchestrationWhy(gaps []any, nextRequirement string, autoSynthesis map[string]any) string {
+	for _, item := range gaps {
+		if gap := strings.TrimSpace(stringValue(item)); gap != "" {
+			return gap
+		}
+	}
+	if strings.TrimSpace(stringValue(autoSynthesis["status"])) == "generated" {
+		parts := []string{}
+		if count := intValue(autoSynthesis["generated_finding_count"]); count > 0 {
+			parts = append(parts, countLabel(count, "finding", "findings"))
+		}
+		if count := intValue(autoSynthesis["generated_action_count"]); count > 0 {
+			parts = append(parts, countLabel(count, "action", "actions"))
+		}
+		if count := intValue(autoSynthesis["generated_locked_decision_count"]); count > 0 {
+			parts = append(parts, countLabel(count, "locked decision", "locked decisions"))
+		}
+		if len(parts) > 0 {
+			return "Auto-synthesis generated " + strings.Join(parts, ", ") + " from the governed council record."
+		}
+		return "Auto-synthesis generated a provisional output packet from the governed council record."
+	}
+	return firstNonBlank(strings.TrimSpace(nextRequirement), "No additional orchestration reason is recorded.")
+}
+
+func renderMeetingOrchestrationBrief(result map[string]any) string {
+	meeting, _ := toMap(result["meeting"])
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	synthesis, _ := toMap(meetingSynthesisAudit(meeting))
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	autoSynthesis, _ := toMap(result["auto_synthesis"])
+	oldPhase := firstNonBlank(strings.TrimSpace(stringValue(result["old_phase"])), "setup")
+	newPhase := firstNonBlank(strings.TrimSpace(stringValue(result["new_phase"])), strings.TrimSpace(stringValue(meeting["phase"])), oldPhase)
+	nextRequirement := firstNonBlank(strings.TrimSpace(stringValue(result["next_requirement"])), meetingNextRequirement(meeting))
+	gaps := toList(result["gaps"])
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	lines := []string{
+		"Harness Meeting Orchestration Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Transition: %s -> %s.", oldPhase, newPhase),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, protocol=%s.", missionID, hostRunID, state, protocol),
+		fmt.Sprintf(
+			"Work Packet: phase=%s, open_wave=%d, open_routes=%d, open_rounds=%d, output=%s.",
+			firstNonBlank(strings.TrimSpace(stringValue(summary["current_wave_batch_phase"])), newPhase),
+			intValue(summary["open_wave_action_count"]),
+			intValue(summary["open_route_action_count"]),
+			intValue(summary["open_round_action_count"]),
+			firstNonBlank(strings.TrimSpace(stringValue(summary["output_packet_kind"])), "none"),
+		),
+		"",
+		"Current:",
+		"- " + meetingOrchestrationCurrent(meeting, oldPhase, newPhase, gaps),
+		"",
+		"Why:",
+		"- " + meetingOrchestrationWhy(gaps, nextRequirement, autoSynthesis),
+		"",
+		"Next:",
+		"- " + firstNonBlank(nextRequirement, meetingBriefNext(meeting, summary)),
+		"",
+		"Leader:",
+		"- " + meetingBriefLeaderAction(meeting, summary, synthesis, governanceGaps),
+		"",
+		"Council:",
+		"- " + meetingBriefCouncilAction(summary),
+		"",
+		"Output:",
+		"- " + meetingBriefOutput(summary),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func renderMeetingBrief(meeting, summary map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
+	synthesis, _ := toMap(meetingSynthesisAudit(meeting))
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	lines := []string{
+		"Harness Meeting Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf("Question: %s", firstNonBlank(strings.TrimSpace(stringValue(meeting["question"])), "No council question recorded.")),
+		fmt.Sprintf(
+			"Scope: %d participant(s), %d role spec(s), %d governance gap(s), %d unresolved authority conflict(s), %d open action(s).",
+			len(toList(meeting["participants"])),
+			len(toList(meeting["role_specs"])),
+			intValue(summary["governance_gap_count"]),
+			intValue(summary["unresolved_authority_conflict_count"]),
+			intValue(summary["open_action_count"]),
+		),
+		"",
+		"Priority:",
+		"- " + meetingBriefPriority(meeting),
+		"",
+		"Current:",
+		"- " + meetingBriefCurrent(meeting, summary, synthesis, governanceGaps),
+		"",
+		"Why:",
+		"- " + meetingBriefWhy(meeting, summary, synthesis, authorityAudit, governanceGaps),
+		"",
+		"Next:",
+		"- " + meetingBriefNext(meeting, summary),
+		"",
+		"Leader:",
+		"- " + meetingBriefLeaderAction(meeting, summary, synthesis, governanceGaps),
+		"",
+		"Council:",
+		"- " + meetingBriefCouncilAction(summary),
+		"",
+		"Output:",
+		"- " + meetingBriefOutput(summary),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func meetingAuthorityAuditRepairNeeded(audit map[string]any) bool {
+	return intValue(audit["unresolved_conflict_count"]) > 0
+}
+
+func meetingAuthorityAuditCurrent(meeting, audit map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		return fmt.Sprintf("Meeting %s still has same-authority findings that need explicit judgment.", meetingID)
+	case intValue(audit["conflict_count"]) > 0:
+		return fmt.Sprintf("Meeting %s already has an adjudicated higher-authority winner for its same-claim conflicts.", meetingID)
+	default:
+		return fmt.Sprintf("No same-claim authority conflict is currently recorded on meeting %s.", meetingID)
+	}
+}
+
+func meetingAuthorityAuditWhy(audit map[string]any) string {
+	if note := meetingBriefFirstConflictNote(audit); note != "" {
+		return note
+	}
+	return "No same-claim authority conflict note is currently recorded."
+}
+
+func meetingAuthorityAuditNext(meeting, audit, summary map[string]any) string {
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		return "Record explicit synthesis judgment or add higher-authority evidence before output."
+	case intValue(audit["conflict_count"]) > 0:
+		return firstNonBlank(
+			strings.TrimSpace(stringValue(summary["next_action"])),
+			meetingNextRequirement(meeting),
+			"Continue the council toward synthesis or output; the current same-claim winner is already established.",
+		)
+	default:
+		return firstNonBlank(
+			strings.TrimSpace(stringValue(summary["next_action"])),
+			meetingNextRequirement(meeting),
+			"No immediate meeting-authority action is recorded.",
+		)
+	}
+}
+
+func meetingAuthorityAuditLeaderAction(meeting, audit, summary map[string]any) string {
+	if strings.TrimSpace(stringValue(meeting["state"])) == "closed" {
+		return "Inspect the closed council record and reopen only if the governed claim changed."
+	}
+	if intValue(audit["unresolved_conflict_count"]) > 0 {
+		return "Leader should record explicit synthesis judgment or add higher-authority evidence for the tied claim before output."
+	}
+	if intValue(audit["conflict_count"]) > 0 {
+		return "No additional authority repair is required; continue the council toward synthesis or output."
+	}
+	return firstNonBlank(
+		strings.TrimSpace(stringValue(summary["next_action"])),
+		meetingNextRequirement(meeting),
+		"No leader-side meeting authority repair is currently required.",
+	)
+}
+
+func meetingAuthorityAuditCouncilAction(audit map[string]any) string {
+	switch {
+	case intValue(audit["unresolved_conflict_count"]) > 0:
+		return "Yes. This council still needs live judgment on a same-claim authority tie."
+	case intValue(audit["conflict_count"]) > 0:
+		return "No additional council authority repair is required; a higher-authority winner is already established."
+	default:
+		return "No same-claim council authority conflict is currently active."
+	}
+}
+
+func meetingAuthorityAuditEvidence(audit map[string]any) []string {
+	lines := []string{}
+	for _, item := range toList(audit["conflicts"]) {
+		conflict, _ := toMap(item)
+		claimRef := firstNonBlank(strings.TrimSpace(stringValue(conflict["claim_ref"])), "unknown-claim")
+		dimension := firstNonBlank(strings.TrimSpace(stringValue(conflict["dimension"])), "factual")
+		note := firstNonBlank(strings.TrimSpace(stringValue(conflict["note"])), "No explanatory note recorded.")
+		lines = append(lines, fmt.Sprintf("Conflict on %s (%s): %s", claimRef, dimension, note))
+		if len(lines) == 3 {
+			return lines
+		}
+	}
+	if len(lines) == 0 {
+		lines = append(lines, "No same-claim authority conflict evidence is currently recorded.")
+	}
+	return lines
+}
+
+func renderMeetingAuthorityAuditBrief(meeting, audit, summary map[string]any) string {
+	findings, _ := toMap(meeting["findings"])
+	totalFindings := len(toList(findings["accepted"])) + len(toList(findings["rejected"])) + len(toList(findings["unresolved"]))
+	auditState := "aligned"
+	switch {
+	case meetingAuthorityAuditRepairNeeded(audit):
+		auditState = "repair-needed"
+	case intValue(audit["conflict_count"]) > 0:
+		auditState = "governed"
+	}
+	lines := []string{
+		"Harness Meeting Authority Briefing",
+		fmt.Sprintf("Meeting: %s", firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")),
+		fmt.Sprintf(
+			"Authority: target=%s, state=%s, phase=%s, protocol=%s, audit=%s.",
+			meetingBriefTargetLabel(meeting),
+			firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup"),
+			firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review"),
+			auditState,
+		),
+		fmt.Sprintf(
+			"Scope: %s, %s, %s.",
+			countLabel(intValue(audit["conflict_count"]), "authority conflict", "authority conflicts"),
+			countLabel(intValue(audit["unresolved_conflict_count"]), "unresolved conflict", "unresolved conflicts"),
+			countLabel(totalFindings, "finding", "findings"),
+		),
+		"",
+		"Current:",
+		"- " + meetingAuthorityAuditCurrent(meeting, audit),
+		"",
+		"Why:",
+		"- " + meetingAuthorityAuditWhy(audit),
+		"",
+		"Next:",
+		"- " + meetingAuthorityAuditNext(meeting, audit, summary),
+		"",
+		"Leader:",
+		"- " + meetingAuthorityAuditLeaderAction(meeting, audit, summary),
+		"",
+		"Council:",
+		"- " + meetingAuthorityAuditCouncilAction(audit),
+		"",
+		"Evidence:",
+	}
+	for _, line := range meetingAuthorityAuditEvidence(audit) {
+		lines = append(lines, "- "+line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func meetingDecisionLockTarget(meeting, lockedDecision map[string]any) string {
+	parts := []string{}
+	if bundleID := strings.TrimSpace(stringValue(lockedDecision["bundle_id"])); bundleID != "" {
+		parts = append(parts, "bundle="+bundleID)
+	}
+	if governingMissionID := strings.TrimSpace(stringValue(lockedDecision["governing_mission_id"])); governingMissionID != "" {
+		parts = append(parts, "governing_mission="+governingMissionID)
+	}
+	if len(parts) > 0 {
+		return strings.Join(parts, ", ")
+	}
+	return meetingBriefTargetLabel(meeting)
+}
+
+func meetingDecisionLockWhy(lockedDecision map[string]any) string {
+	return firstNonBlank(
+		strings.TrimSpace(stringValue(lockedDecision["reason"])),
+		"No explicit reason was recorded; the locked text itself is the bounded council scope.",
+	)
+}
+
+func meetingDecisionLockNext(meeting, summary map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "MEETING_ID")
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	if len(governanceGaps) > 0 {
+		return fmt.Sprintf("Repair council governance gaps (%s), then run `meetings orchestrate %s --brief`.", strings.Join(governanceGaps, "; "), meetingID)
+	}
+	if len(toList(meeting["role_specs"])) == 0 {
+		return fmt.Sprintf("Add bounded council role specs, then add participants and run `meetings orchestrate %s --brief`.", meetingID)
+	}
+	if len(toList(meeting["participants"])) == 0 {
+		return fmt.Sprintf("Add bounded council participants, then run `meetings orchestrate %s --brief`.", meetingID)
+	}
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	if phase == "setup" {
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` to move the locked council into independent review when prerequisites are present.", meetingID)
+	}
+	return firstNonBlank(
+		meetingNextRequirement(meeting),
+		strings.TrimSpace(stringValue(summary["next_action"])),
+		fmt.Sprintf("Continue council work through `meetings orchestrate %s --brief`.", meetingID),
+	)
+}
+
+func renderMeetingDecisionLockBrief(meeting, lockedDecision map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	decisionID := firstNonBlank(strings.TrimSpace(stringValue(lockedDecision["decision_id"])), "unknown")
+	decisionSummary := firstNonBlank(strings.TrimSpace(stringValue(lockedDecision["summary"])), "No locked decision text recorded.")
+	authorityLevel := firstNonBlank(strings.TrimSpace(stringValue(lockedDecision["authority_level"])), "L2")
+	evidenceRefs := anyListToStrings(toList(lockedDecision["evidence_refs"]))
+	lockedCount := len(toList(meeting["locked_decisions"]))
+	lines := []string{
+		"Harness Meeting Decision Lock Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Decision: %s", decisionID),
+		fmt.Sprintf("Council: target=%s, mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", meetingDecisionLockTarget(meeting, lockedDecision), missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf("Scope: authority=%s, evidence=%s, locked_decisions=%d.", authorityLevel, countLabel(len(evidenceRefs), "reference", "references"), lockedCount),
+		"",
+		"Current:",
+		fmt.Sprintf("- Meeting %s now has locked decision %s: %s", meetingID, decisionID, decisionSummary),
+		"",
+		"Why:",
+		"- " + meetingDecisionLockWhy(lockedDecision),
+		"",
+		"Next:",
+		"- " + meetingDecisionLockNext(meeting, summary),
+		"",
+		"Leader:",
+		"- Leader should keep the council bounded to: " + decisionSummary,
+		"",
+		"Teammate:",
+		"- Teammates should provide evidence and positions only inside the locked decision scope; if their assignment would widen it, escalate before proceeding.",
+		"",
+		"Council:",
+		"- Yes. This meeting is now the governed council surface for the locked decision; advance it only through the configured decision protocol.",
+		"",
+		"Evidence:",
+	}
+	if len(evidenceRefs) == 0 {
+		lines = append(lines, "- No evidence references were attached to this lock.")
+	} else {
+		for _, ref := range evidenceRefs {
+			lines = append(lines, "- "+ref)
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+func meetingPositionClaimLabel(position map[string]any) string {
+	claimRef := firstNonBlank(strings.TrimSpace(stringValue(position["claim_ref"])), "unspecified-claim")
+	dimension := firstNonBlank(strings.TrimSpace(stringValue(position["dimension"])), "factual")
+	return fmt.Sprintf("%s/%s", claimRef, dimension)
+}
+
+func meetingPositionActorLabel(position map[string]any) string {
+	role := strings.TrimSpace(stringValue(position["role"]))
+	runID := strings.TrimSpace(stringValue(position["run_id"]))
+	ownerID := strings.TrimSpace(stringValue(position["owner_id"]))
+	switch {
+	case role != "" && runID != "":
+		return fmt.Sprintf("%s on %s", role, runID)
+	case runID != "":
+		return runID
+	case ownerID != "":
+		return ownerID
+	default:
+		return "unknown participant"
+	}
+}
+
+func meetingPositionResponseLabel(position map[string]any) string {
+	parts := []string{}
+	if respondsToRunID := strings.TrimSpace(stringValue(position["responds_to_run_id"])); respondsToRunID != "" {
+		parts = append(parts, "run="+respondsToRunID)
+	}
+	if respondsToRole := strings.TrimSpace(stringValue(position["responds_to_role"])); respondsToRole != "" {
+		parts = append(parts, "role="+respondsToRole)
+	}
+	if respondsToPositionID := strings.TrimSpace(stringValue(position["responds_to_position_id"])); respondsToPositionID != "" {
+		parts = append(parts, "position="+respondsToPositionID)
+	}
+	if len(parts) == 0 {
+		return "none"
+	}
+	return strings.Join(parts, ", ")
+}
+
+func meetingPositionWhy(position map[string]any) string {
+	phase := strings.TrimSpace(stringValue(position["phase"]))
+	stance := firstNonBlank(strings.TrimSpace(stringValue(position["stance"])), "position")
+	claim := meetingPositionClaimLabel(position)
+	switch phase {
+	case "independent_review":
+		return fmt.Sprintf("This records a bounded %s independent-review position on %s before debate or synthesis can be trusted.", stance, claim)
+	case "cross_examination":
+		if meetingPositionResponseLabel(position) != "none" {
+			return fmt.Sprintf("This records a linked %s cross-examination response on %s against %s.", stance, claim, meetingPositionResponseLabel(position))
+		}
+		return fmt.Sprintf("This records a %s cross-examination position on %s, but no explicit response target was attached.", stance, claim)
+	case "synthesis":
+		return fmt.Sprintf("This records a synthesis-phase %s position on %s for final council judgment.", stance, claim)
+	default:
+		return fmt.Sprintf("This records a %s position on %s.", stance, claim)
+	}
+}
+
+func meetingPositionNext(meeting, position, wavePlan, debatePlan map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "MEETING_ID")
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	if len(governanceGaps) > 0 {
+		return fmt.Sprintf("Repair council governance gaps (%s), then run `meetings orchestrate %s --brief`.", strings.Join(governanceGaps, "; "), meetingID)
+	}
+	switch strings.TrimSpace(stringValue(position["phase"])) {
+	case "independent_review":
+		if count := intValue(wavePlan["open_wave_action_count"]); count > 0 {
+			return fmt.Sprintf("Collect %s, then run `meetings orchestrate %s --brief`.", countLabel(count, "remaining independent-review position", "remaining independent-review positions"), meetingID)
+		}
+		if count := intValue(debatePlan["open_route_action_count"]); count > 0 {
+			return fmt.Sprintf("Run `meetings orchestrate %s --brief` to advance or refresh %s for the contested claim lane.", meetingID, countLabel(count, "cross-examination route", "cross-examination routes"))
+		}
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` to advance the council from recorded independent review toward synthesis or output.", meetingID)
+	case "cross_examination":
+		if meetingPositionResponseLabel(position) == "none" {
+			return "Record an explicit `--responds-to-run`, `--responds-to-role`, or `--responds-to-position` if this cross-examination is meant to satisfy a routed debate obligation."
+		}
+		if count := intValue(debatePlan["open_round_action_count"]); count > 0 {
+			return fmt.Sprintf("Collect %s, then run `meetings orchestrate %s --brief`.", countLabel(count, "remaining follow-up debate response", "remaining follow-up debate responses"), meetingID)
+		}
+		if count := intValue(debatePlan["open_route_action_count"]); count > 0 {
+			return fmt.Sprintf("Record %s, then run `meetings orchestrate %s --brief`.", countLabel(count, "remaining cross-examination route response", "remaining cross-examination route responses"), meetingID)
+		}
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` to refresh debate state and move toward synthesis when the lane is covered.", meetingID)
+	case "synthesis":
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` to refresh synthesis/output readiness after this synthesis position.", meetingID)
+	default:
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` to refresh council state after this position.", meetingID)
+	}
+}
+
+func meetingPositionCouncilAction(position, wavePlan, debatePlan map[string]any) string {
+	switch {
+	case intValue(wavePlan["open_wave_action_count"]) > 0:
+		return fmt.Sprintf("%s still owed before the council should move out of independent review.", countLabel(intValue(wavePlan["open_wave_action_count"]), "independent-review position is", "independent-review positions are"))
+	case intValue(debatePlan["open_route_action_count"]) > 0:
+		return fmt.Sprintf("%s still open before synthesis should be trusted.", countLabel(intValue(debatePlan["open_route_action_count"]), "cross-examination route is", "cross-examination routes are"))
+	case intValue(debatePlan["open_round_action_count"]) > 0:
+		return fmt.Sprintf("%s still open before synthesis should be trusted.", countLabel(intValue(debatePlan["open_round_action_count"]), "follow-up debate round is", "follow-up debate rounds are"))
+	case strings.TrimSpace(stringValue(position["phase"])) == "synthesis":
+		return "Council should review whether this synthesis position closes the governed claim or leaves follow-up work."
+	default:
+		return "Council position coverage is recorded; use orchestration to decide whether to advance, debate, synthesize, or output."
+	}
+}
+
+func renderMeetingPositionBrief(meeting, position map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	coverageAudit, _ := toMap(meetingCoverageAudit(meeting))
+	wavePlan, _ := toMap(meetingWavePlan(meeting, coverageAudit))
+	debatePlan, _ := toMap(meetingDebatePlan(meeting))
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	positionID := firstNonBlank(strings.TrimSpace(stringValue(position["position_id"])), "unknown")
+	evidenceRefs := anyListToStrings(toList(position["evidence_refs"]))
+	lines := []string{
+		"Harness Meeting Position Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Position: %s", positionID),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf(
+			"Position Scope: actor=%s, stance=%s, phase=%s, claim=%s, authority=%s, evidence=%s.",
+			meetingPositionActorLabel(position),
+			firstNonBlank(strings.TrimSpace(stringValue(position["stance"])), "unknown"),
+			firstNonBlank(strings.TrimSpace(stringValue(position["phase"])), "unknown"),
+			meetingPositionClaimLabel(position),
+			firstNonBlank(strings.TrimSpace(stringValue(position["authority_level"])), "L2"),
+			countLabel(len(evidenceRefs), "reference", "references"),
+		),
+		"",
+		"Current:",
+		fmt.Sprintf("- Meeting %s now includes position %s from %s: %s", meetingID, positionID, meetingPositionActorLabel(position), firstNonBlank(strings.TrimSpace(stringValue(position["summary"])), "No position summary recorded.")),
+		"",
+		"Why:",
+		"- " + meetingPositionWhy(position),
+		"",
+		"Next:",
+		"- " + meetingPositionNext(meeting, position, wavePlan, debatePlan),
+		"",
+		"Leader:",
+		fmt.Sprintf("- Leader should keep this position inside %s and use `meetings orchestrate %s --brief` before trusting phase advancement.", meetingPositionClaimLabel(position), meetingID),
+		"",
+		"Teammate:",
+		fmt.Sprintf("- %s should continue only inside the recorded council role and claim scope; other teammates should wait for orchestration or leader direction.", meetingPositionActorLabel(position)),
+		"",
+		"Council:",
+		"- " + meetingPositionCouncilAction(position, wavePlan, debatePlan),
+		"",
+		"Evidence:",
+	}
+	if len(evidenceRefs) == 0 {
+		lines = append(lines, "- No evidence references were attached to this position.")
+	} else {
+		for _, ref := range evidenceRefs {
+			lines = append(lines, "- "+ref)
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+func meetingFindingActorLabel(finding map[string]any) string {
+	role := strings.TrimSpace(stringValue(finding["source_role"]))
+	runID := strings.TrimSpace(stringValue(finding["source_run_id"]))
+	switch {
+	case role != "" && runID != "":
+		return fmt.Sprintf("%s on %s", role, runID)
+	case runID != "":
+		return runID
+	case role != "":
+		return role
+	default:
+		return "council record"
+	}
+}
+
+func meetingFindingTraceLabel(finding map[string]any) string {
+	supportingCount := len(toList(finding["supporting_position_ids"]))
+	challengingCount := len(toList(finding["challenging_position_ids"]))
+	parts := []string{
+		countLabel(supportingCount, "supporting position", "supporting positions"),
+		countLabel(challengingCount, "challenging position", "challenging positions"),
+	}
+	return strings.Join(parts, ", ")
+}
+
+func meetingFindingWhy(kind string, finding map[string]any) string {
+	reason := strings.TrimSpace(stringValue(finding["reason"]))
+	if reason != "" {
+		return reason
+	}
+	claim := meetingPositionClaimLabel(finding)
+	switch kind {
+	case "accepted":
+		return fmt.Sprintf("This accepts the governed claim %s from the recorded council evidence.", claim)
+	case "rejected":
+		return fmt.Sprintf("This rejects the governed claim %s, but no explicit reason was recorded yet.", claim)
+	case "unresolved":
+		return fmt.Sprintf("This keeps the governed claim %s unresolved for explicit follow-up or higher-authority evidence.", claim)
+	default:
+		return fmt.Sprintf("This records council judgment on %s.", claim)
+	}
+}
+
+func meetingFindingNext(meeting map[string]any, kind string, finding map[string]any, authorityAudit map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "MEETING_ID")
+	if kind == "rejected" && strings.TrimSpace(stringValue(finding["reason"])) == "" {
+		return fmt.Sprintf("Record an explicit reason for rejected finding %s before output, then run `meetings orchestrate %s --brief`.", firstNonBlank(strings.TrimSpace(stringValue(finding["finding_id"])), "FINDING_ID"), meetingID)
+	}
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	if len(governanceGaps) > 0 {
+		return fmt.Sprintf("Repair council governance gaps (%s), then run `meetings orchestrate %s --brief`.", strings.Join(governanceGaps, "; "), meetingID)
+	}
+	if intValue(authorityAudit["unresolved_conflict_count"]) > 0 {
+		return fmt.Sprintf("Run `meetings authority-audit %s --brief` and record explicit judgment or higher-authority evidence before output.", meetingID)
+	}
+	if kind == "unresolved" {
+		return fmt.Sprintf("Keep the unresolved claim visible as follow-up or add more evidence, then run `meetings orchestrate %s --brief`.", meetingID)
+	}
+	return fmt.Sprintf("Run `meetings orchestrate %s --brief` to refresh synthesis/output readiness from the updated council judgment.", meetingID)
+}
+
+func meetingFindingLeaderAction(meeting map[string]any, kind string, finding map[string]any, authorityAudit map[string]any) string {
+	if kind == "rejected" && strings.TrimSpace(stringValue(finding["reason"])) == "" {
+		return "Leader should add a clear rejection reason before treating this council as ready for output."
+	}
+	if intValue(authorityAudit["unresolved_conflict_count"]) > 0 {
+		return "Leader should adjudicate same-claim finding conflicts before adoption or close."
+	}
+	if kind == "unresolved" {
+		return "Leader should preserve this unresolved judgment as explicit follow-up or collect stronger evidence before adoption."
+	}
+	return fmt.Sprintf("Leader should keep this finding inside %s and refresh council readiness before adoption.", meetingPositionClaimLabel(finding))
+}
+
+func meetingFindingCouncilAction(kind string, finding map[string]any, authorityAudit map[string]any) string {
+	if kind == "rejected" && strings.TrimSpace(stringValue(finding["reason"])) == "" {
+		return "Council cannot treat this rejection as output-ready until the rejection reason is recorded."
+	}
+	if intValue(authorityAudit["unresolved_conflict_count"]) > 0 {
+		return "Council still has same-claim authority conflict to resolve."
+	}
+	if kind == "unresolved" {
+		return "Council should carry this unresolved lane into output follow-up rather than silently closing it."
+	}
+	return "Council judgment is recorded; orchestration should decide whether synthesis or output is now ready."
+}
+
+func renderMeetingFindingBrief(meeting map[string]any, kind string, finding map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	authorityAudit, _ := toMap(meetingAuthorityAudit(meeting))
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	findingID := firstNonBlank(strings.TrimSpace(stringValue(finding["finding_id"])), "unknown")
+	evidenceRefs := anyListToStrings(toList(finding["evidence_refs"]))
+	lines := []string{
+		"Harness Meeting Finding Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Finding: %s", findingID),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf(
+			"Finding Scope: kind=%s, actor=%s, claim=%s, authority=%s, evidence=%s, trace=%s.",
+			kind,
+			meetingFindingActorLabel(finding),
+			meetingPositionClaimLabel(finding),
+			firstNonBlank(strings.TrimSpace(stringValue(finding["authority_level"])), "L2"),
+			countLabel(len(evidenceRefs), "reference", "references"),
+			meetingFindingTraceLabel(finding),
+		),
+		"",
+		"Current:",
+		fmt.Sprintf("- Meeting %s now records a %s finding %s: %s", meetingID, kind, findingID, firstNonBlank(strings.TrimSpace(stringValue(finding["summary"])), "No finding summary recorded.")),
+		"",
+		"Why:",
+		"- " + meetingFindingWhy(kind, finding),
+		"",
+		"Next:",
+		"- " + meetingFindingNext(meeting, kind, finding, authorityAudit),
+		"",
+		"Leader:",
+		"- " + meetingFindingLeaderAction(meeting, kind, finding, authorityAudit),
+		"",
+		"Teammate:",
+		fmt.Sprintf("- %s should keep any follow-up evidence inside %s unless the leader widens council scope.", meetingFindingActorLabel(finding), meetingPositionClaimLabel(finding)),
+		"",
+		"Council:",
+		"- " + meetingFindingCouncilAction(kind, finding, authorityAudit),
+		"",
+		"Evidence:",
+	}
+	if len(evidenceRefs) == 0 {
+		lines = append(lines, "- No evidence references were attached to this finding.")
+	} else {
+		for _, ref := range evidenceRefs {
+			lines = append(lines, "- "+ref)
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+func meetingActionNext(meeting, action, summary map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "MEETING_ID")
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	switch actionState {
+	case "done":
+		return fmt.Sprintf("Run `meetings summary %s --brief` to confirm adopted follow-up and open-action counts are clear.", meetingID)
+	case "cancelled":
+		return fmt.Sprintf("Run `meetings summary %s --brief` to confirm cancellation realignment before widening execution.", meetingID)
+	}
+	governanceGaps := meetingGovernancePolicyGaps(meeting)
+	if len(governanceGaps) > 0 {
+		return fmt.Sprintf("Repair council governance gaps (%s), then run `meetings orchestrate %s --brief`.", strings.Join(governanceGaps, "; "), meetingID)
+	}
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	switch phase {
+	case "output":
+		return fmt.Sprintf("Adopt or close meeting %s after confirming this action item is represented in the output/follow-up plan.", meetingID)
+	case "synthesis":
+		return fmt.Sprintf("Run `meetings orchestrate %s --brief` so synthesis/output readiness reflects this action item.", meetingID)
+	}
+	if intValue(summary["open_wave_action_count"]) > 0 || intValue(summary["open_route_action_count"]) > 0 || intValue(summary["open_round_action_count"]) > 0 {
+		return fmt.Sprintf("Keep council work moving through `meetings orchestrate %s --brief`; this action should not replace still-open review or debate obligations.", meetingID)
+	}
+	return fmt.Sprintf("Run `meetings summary %s --brief` or `meetings orchestrate %s --brief` before adoption to confirm where this action belongs.", meetingID, meetingID)
+}
+
+func meetingActionLeaderAction(meeting, action, summary map[string]any) string {
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	if actionState == "open" {
+		if strings.TrimSpace(stringValue(meeting["phase"])) == "output" {
+			return "Leader should adopt or close the meeting only after this action is owned by the output/follow-up plan."
+		}
+		return "Leader should keep this action visible as council follow-up and avoid widening execution until ownership is clear."
+	}
+	if actionState == "cancelled" {
+		return "Leader should confirm the cancellation was intentional and any replacement follow-up is explicit."
+	}
+	return "Leader should confirm completed action state has propagated to adopted follow-up counts if the meeting was already adopted."
+}
+
+func meetingActionCouncilAction(meeting, action, summary map[string]any) string {
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	if actionState != "open" {
+		return fmt.Sprintf("Action is %s; council should only reopen it if the governed decision changed.", actionState)
+	}
+	if intValue(summary["output_follow_up_packet_count"]) > 0 {
+		return fmt.Sprintf("Council output already has %s; ensure this action is not duplicate follow-up before adoption.", countLabel(intValue(summary["output_follow_up_packet_count"]), "follow-up packet", "follow-up packets"))
+	}
+	if intValue(summary["open_action_count"]) > 0 {
+		return fmt.Sprintf("Council backlog now includes %s; keep ownership explicit before adoption.", countLabel(intValue(summary["open_action_count"]), "open action item", "open action items"))
+	}
+	return "Council should keep this action visible until it is adopted, resolved, cancelled, or delegated."
+}
+
+func renderMeetingActionBrief(meeting, action map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	actionID := firstNonBlank(strings.TrimSpace(stringValue(action["action_id"])), "unknown")
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	lines := []string{
+		"Harness Meeting Action Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Action: %s", actionID),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf(
+			"Action Scope: state=%s, open_actions=%d, output_follow_up=%d.",
+			actionState,
+			intValue(summary["open_action_count"]),
+			intValue(summary["output_follow_up_packet_count"]),
+		),
+		"",
+		"Current:",
+		fmt.Sprintf("- Meeting %s now records action %s: %s", meetingID, actionID, firstNonBlank(strings.TrimSpace(stringValue(action["summary"])), "No action summary recorded.")),
+		"",
+		"Why:",
+		"- This turns council follow-up into an explicit action item instead of leaving it implicit in raw meeting state.",
+		"",
+		"Next:",
+		"- " + meetingActionNext(meeting, action, summary),
+		"",
+		"Leader:",
+		"- " + meetingActionLeaderAction(meeting, action, summary),
+		"",
+		"Teammate:",
+		"- No teammate was assigned by this meeting action itself; teammates should only execute it after the leader assigns or adopts it into a bounded run/follow-up scope.",
+		"",
+		"Council:",
+		"- " + meetingActionCouncilAction(meeting, action, summary),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func meetingActionResolutionSyncSummary(registry map[string]any, meetingID string) map[string]any {
+	runIDs := []string{}
+	nextActions := []string{}
+	packetCount := 0
+	openPacketCount := 0
+	donePacketCount := 0
+	cancelledPacketCount := 0
+	for _, item := range toList(registry["runs"]) {
+		run, ok := toMap(item)
+		if !ok || strings.TrimSpace(stringValue(run["adopted_from_meeting_id"])) != meetingID {
+			continue
+		}
+		runID := strings.TrimSpace(stringValue(run["run_id"]))
+		if runID != "" {
+			runIDs = append(runIDs, runID)
+		}
+		if nextAction := strings.TrimSpace(stringValue(run["next_expected_action"])); nextAction != "" {
+			nextActions = append(nextActions, nextAction)
+		}
+		packets := toList(run["adopted_output_follow_up_packets"])
+		packetCount += len(packets)
+		openPacketCount += followUpPacketOpenCount(packets)
+		for _, packetItem := range packets {
+			packet, ok := toMap(packetItem)
+			if !ok {
+				continue
+			}
+			switch firstNonBlank(strings.TrimSpace(stringValue(packet["state"])), "open") {
+			case "done":
+				donePacketCount++
+			case "cancelled":
+				cancelledPacketCount++
+			}
+		}
+	}
+	return map[string]any{
+		"adopted_run_count":                    len(runIDs),
+		"adopted_run_ids":                      stringListToAny(dedupeStrings(runIDs)),
+		"adopted_follow_up_packet_count":       packetCount,
+		"adopted_open_follow_up_packet_count":  openPacketCount,
+		"adopted_done_follow_up_packet_count":  donePacketCount,
+		"adopted_cancelled_follow_up_count":    cancelledPacketCount,
+		"adopted_run_next_expected_actions":    stringListToAny(dedupeStrings(nextActions)),
+		"adopted_primary_next_expected_action": firstNonBlank(dedupeStrings(nextActions)...),
+	}
+}
+
+func meetingActionResolutionNext(meeting, action, summary, syncSummary map[string]any) string {
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "MEETING_ID")
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	adoptedRunCount := intValue(syncSummary["adopted_run_count"])
+	adoptedOpenFollowUpCount := intValue(syncSummary["adopted_open_follow_up_packet_count"])
+	switch actionState {
+	case "open":
+		if adoptedRunCount > 0 {
+			return "Inspect the adopted run with `runs get RUN_ID --brief` and confirm the reopened follow-up is owned before widening execution."
+		}
+		return fmt.Sprintf("Keep meeting %s open or adopt it only after this reopened action has explicit owner scope.", meetingID)
+	case "cancelled":
+		if adoptedRunCount > 0 {
+			return "Run `missions schedule --brief` or `home --brief`; cancelled adopted follow-up may require leader realignment before execution widens."
+		}
+		return fmt.Sprintf("Confirm the cancellation rationale is explicit before closing or adopting meeting %s.", meetingID)
+	case "done":
+		if intValue(summary["open_action_count"]) > 0 {
+			return fmt.Sprintf("Resolve or delegate the remaining %s before treating meeting %s as follow-up-clean.", countLabel(intValue(summary["open_action_count"]), "open council action", "open council actions"), meetingID)
+		}
+		if adoptedRunCount > 0 && adoptedOpenFollowUpCount == 0 {
+			return "Run `home --brief` or `missions schedule --brief` to confirm adopted follow-up counts cleared from leader-facing execution."
+		}
+		return fmt.Sprintf("Run `meetings summary %s --brief` to confirm output/adoption readiness after this action closure.", meetingID)
+	default:
+		return fmt.Sprintf("Run `meetings summary %s --brief` to inspect current council action state.", meetingID)
+	}
+}
+
+func meetingActionResolutionLeaderAction(action, syncSummary map[string]any) string {
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	adoptedRunCount := intValue(syncSummary["adopted_run_count"])
+	switch actionState {
+	case "done":
+		if adoptedRunCount > 0 {
+			return "Leader should confirm the adopted run no longer carries this follow-up as open work before completing the run."
+		}
+		return "Leader should decide whether the meeting can now move toward output, close, or adoption."
+	case "cancelled":
+		if adoptedRunCount > 0 {
+			return "Leader should realign the cancelled adopted follow-up before widening execution or marking the run complete."
+		}
+		return "Leader should record replacement work or explicit cancellation rationale if this action still affects the decision."
+	default:
+		return "Leader should assign, delegate, or adopt this reopened action into a bounded execution scope."
+	}
+}
+
+func meetingActionResolutionTeammateAction(action map[string]any) string {
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	switch actionState {
+	case "done":
+		return "No new teammate work is created by this resolution; any teammate that owned the work should report evidence through its bounded run."
+	case "cancelled":
+		return "Teammates should stop work on this action unless the leader issues a replacement bounded assignment."
+	default:
+		return "No teammate is automatically assigned by reopening this action; execution still requires leader-owned delegation or adoption."
+	}
+}
+
+func meetingActionResolutionCouncilAction(action, summary map[string]any) string {
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	switch actionState {
+	case "done":
+		if intValue(summary["open_action_count"]) > 0 {
+			return fmt.Sprintf("Council still has %s to account for before follow-up can be considered clean.", countLabel(intValue(summary["open_action_count"]), "open action", "open actions"))
+		}
+		return "Council action backlog is clear; output/adoption readiness should now depend on remaining synthesis or authority checks."
+	case "cancelled":
+		return "Council should preserve the cancellation as a governed follow-up decision rather than silently dropping the obligation."
+	default:
+		return "Council should treat this action as open follow-up until it is resolved, cancelled, delegated, or adopted."
+	}
+}
+
+func renderMeetingActionResolutionBrief(meeting, action, registry map[string]any) string {
+	ensureMeetingGovernanceState(meeting)
+	summary := meetingSummaryPacket(meeting)
+	meetingID := firstNonBlank(strings.TrimSpace(stringValue(meeting["meeting_id"])), "unknown")
+	syncSummary := meetingActionResolutionSyncSummary(registry, meetingID)
+	missionID := firstNonBlank(strings.TrimSpace(stringValue(meeting["mission_id"])), "unknown")
+	hostRunID := firstNonBlank(strings.TrimSpace(stringValue(meeting["run_id"])), "unknown")
+	state := firstNonBlank(strings.TrimSpace(stringValue(meeting["state"])), "unknown")
+	phase := firstNonBlank(strings.TrimSpace(stringValue(meeting["phase"])), "setup")
+	protocol := firstNonBlank(strings.TrimSpace(stringValue(meeting["decision_protocol"])), "evidence-review")
+	actionID := firstNonBlank(strings.TrimSpace(stringValue(action["action_id"])), "unknown")
+	actionState := firstNonBlank(strings.TrimSpace(stringValue(action["state"])), "open")
+	adoptedRunIDs := anyListToStrings(toList(syncSummary["adopted_run_ids"]))
+	lines := []string{
+		"Harness Meeting Action Resolution Briefing",
+		fmt.Sprintf("Meeting: %s", meetingID),
+		fmt.Sprintf("Action: %s", actionID),
+		fmt.Sprintf("Council: mission=%s, host_run=%s, state=%s, phase=%s, protocol=%s.", missionID, hostRunID, state, phase, protocol),
+		fmt.Sprintf(
+			"Resolution Scope: state=%s, open_actions=%d, adopted_runs=%d, adopted_open_follow_up=%d.",
+			actionState,
+			intValue(summary["open_action_count"]),
+			intValue(syncSummary["adopted_run_count"]),
+			intValue(syncSummary["adopted_open_follow_up_packet_count"]),
+		),
+		"",
+		"Current:",
+		fmt.Sprintf("- Meeting %s now has action %s marked %s: %s", meetingID, actionID, actionState, firstNonBlank(strings.TrimSpace(stringValue(action["summary"])), "No action summary recorded.")),
+		"",
+		"Why:",
+		"- Resolving a council action refreshes meeting output follow-up and syncs any already-adopted run state from the same runtime truth.",
+		"",
+		"Next:",
+		"- " + meetingActionResolutionNext(meeting, action, summary, syncSummary),
+		"",
+		"Leader:",
+		"- " + meetingActionResolutionLeaderAction(action, syncSummary),
+		"",
+		"Teammate:",
+		"- " + meetingActionResolutionTeammateAction(action),
+		"",
+		"Council:",
+		"- " + meetingActionResolutionCouncilAction(action, summary),
+		"",
+		"Adopted Follow-up:",
+	}
+	if len(adoptedRunIDs) == 0 {
+		lines = append(lines, "- No adopted run currently mirrors this meeting; this resolution affects meeting truth until close/adoption.")
+	} else {
+		lines = append(lines, fmt.Sprintf(
+			"- Synced to adopted run(s): %s. packets=%d, open=%d, done=%d, cancelled=%d.",
+			strings.Join(adoptedRunIDs, ", "),
+			intValue(syncSummary["adopted_follow_up_packet_count"]),
+			intValue(syncSummary["adopted_open_follow_up_packet_count"]),
+			intValue(syncSummary["adopted_done_follow_up_packet_count"]),
+			intValue(syncSummary["adopted_cancelled_follow_up_count"]),
+		))
+		if nextAction := strings.TrimSpace(stringValue(syncSummary["adopted_primary_next_expected_action"])); nextAction != "" {
+			lines = append(lines, "- Adopted run guidance: "+nextAction)
+		}
+	}
+	return strings.Join(lines, "\n")
 }
 
 func cmdMeetingsRemainder(args []string) error {
@@ -14550,10 +19689,14 @@ func cmdMeetingsRemainder(args []string) error {
 			return printJSON(meeting)
 		})
 	case "orchestrate":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("meetings orchestrate", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("meetings orchestrate requires MEETING_ID")
 		}
-		meetingID := args[1]
+		meetingID := remaining[0]
 		return withHarnessLock(func() error {
 			data := readActiveMeeting(meetingID)
 			if data == nil {
@@ -14772,7 +19915,7 @@ func cmdMeetingsRemainder(args []string) error {
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}
-			return printJSON(map[string]any{
+			result := map[string]any{
 				"meeting":          meeting,
 				"old_phase":        oldPhase,
 				"new_phase":        firstNonBlank(stringValue(meeting["phase"]), newPhase),
@@ -14780,7 +19923,11 @@ func cmdMeetingsRemainder(args []string) error {
 				"next_requirement": nextRequirement,
 				"auto_synthesis":   autoSynthesis,
 				"orchestration":    meeting["orchestration"],
-			})
+			}
+			if mode == outputModeText {
+				return printText(renderMeetingOrchestrationBrief(result))
+			}
+			return printJSON(result)
 		})
 	case "add-participant":
 		if len(args) < 4 {
@@ -14884,17 +20031,21 @@ func cmdMeetingsRemainder(args []string) error {
 			return printJSON(meeting)
 		})
 	case "lock-decision":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("meetings lock-decision", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("meetings lock-decision requires MEETING_ID TEXT")
 		}
-		meetingID := args[1]
+		meetingID := remaining[0]
 		textTokens := []string{}
 		reason := ""
 		authorityLevel := "L2"
 		evidenceRefs := []string{}
 		governingMissionID := ""
 		bundleID := ""
-		for _, arg := range args[2:] {
+		for _, arg := range remaining[1:] {
 			switch {
 			case strings.HasPrefix(arg, "--reason="):
 				reason = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--reason=")), reason)
@@ -14939,16 +20090,23 @@ func cmdMeetingsRemainder(args []string) error {
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderMeetingDecisionLockBrief(meeting, lockedDecision))
+			}
 			return printJSON(meeting)
 		})
 	case "add-position":
-		if len(args) < 5 {
+		mode, remaining, err := parseOutputModeFlagsOnly("meetings add-position", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 4 {
 			return errors.New("meetings add-position requires MEETING_ID RUN_ID PHASE STANCE TEXT")
 		}
-		meetingID := args[1]
-		runID := args[2]
-		phase := args[3]
-		stance := args[4]
+		meetingID := remaining[0]
+		runID := remaining[1]
+		phase := remaining[2]
+		stance := remaining[3]
 		positionTokens := []string{}
 		evidenceRefs := []string{}
 		authorityLevel := "L2"
@@ -14957,7 +20115,7 @@ func cmdMeetingsRemainder(args []string) error {
 		respondsToRunID := ""
 		respondsToRole := ""
 		respondsToPositionID := ""
-		for _, arg := range args[5:] {
+		for _, arg := range remaining[4:] {
 			switch {
 			case strings.HasPrefix(arg, "--evidence="):
 				evidenceRefs = append(evidenceRefs, parsePipeList(strings.TrimSpace(strings.TrimPrefix(arg, "--evidence=")))...)
@@ -15020,7 +20178,7 @@ func cmdMeetingsRemainder(args []string) error {
 			}
 			meeting["participants"] = participants
 			positions := toList(meeting["positions"])
-			positions = append(positions, map[string]any{
+			position := map[string]any{
 				"position_id":             "position-" + nowTime().UTC().Format("20060102150405"),
 				"run_id":                  runID,
 				"owner_id":                stringValue(run["owner_id"]),
@@ -15036,11 +20194,15 @@ func cmdMeetingsRemainder(args []string) error {
 				"responds_to_role":        respondsToRole,
 				"responds_to_position_id": respondsToPositionID,
 				"recorded_at":             nowISO(),
-			})
+			}
+			positions = append(positions, position)
 			meeting["positions"] = positions
 			setMeetingPhase(meeting, phase, fmt.Sprintf("position recorded by %s", runID))
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderMeetingPositionBrief(meeting, position))
 			}
 			return printJSON(meeting)
 		})
@@ -15068,11 +20230,15 @@ func cmdMeetingsRemainder(args []string) error {
 			return printJSON(meeting)
 		})
 	case "add-finding":
-		if len(args) < 4 {
+		mode, remaining, err := parseOutputModeFlagsOnly("meetings add-finding", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 3 {
 			return errors.New("meetings add-finding requires MEETING_ID accepted|rejected|unresolved TEXT")
 		}
-		meetingID := args[1]
-		findingKind := args[2]
+		meetingID := remaining[0]
+		findingKind := remaining[1]
 		if findingKind != "accepted" && findingKind != "rejected" && findingKind != "unresolved" {
 			return errors.New("meetings add-finding kind must be accepted, rejected, or unresolved")
 		}
@@ -15086,7 +20252,7 @@ func cmdMeetingsRemainder(args []string) error {
 		dimension := "factual"
 		supportingPositionIDs := []string{}
 		challengingPositionIDs := []string{}
-		for _, arg := range args[3:] {
+		for _, arg := range remaining[2:] {
 			switch {
 			case strings.HasPrefix(arg, "--reason="):
 				reason = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--reason=")), reason)
@@ -15127,7 +20293,7 @@ func cmdMeetingsRemainder(args []string) error {
 			if findings == nil {
 				findings = map[string]any{}
 			}
-			bucket := append(toList(findings[findingKind]), map[string]any{
+			finding := map[string]any{
 				"finding_id":               "finding-" + nowTime().UTC().Format("20060102150405"),
 				"summary":                  summary,
 				"reason":                   reason,
@@ -15140,47 +20306,66 @@ func cmdMeetingsRemainder(args []string) error {
 				"supporting_position_ids":  stringListToAny(dedupeStrings(supportingPositionIDs)),
 				"challenging_position_ids": stringListToAny(dedupeStrings(challengingPositionIDs)),
 				"recorded_at":              nowISO(),
-			})
+			}
+			bucket := append(toList(findings[findingKind]), finding)
 			findings[findingKind] = bucket
 			meeting["findings"] = findings
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderMeetingFindingBrief(meeting, findingKind, finding))
+			}
 			return printJSON(meeting)
 		})
 	case "add-action":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("meetings add-action", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("meetings add-action requires MEETING_ID TEXT")
 		}
-		meetingID := args[1]
-		actionText := strings.TrimSpace(strings.Join(args[2:], " "))
+		meetingID := remaining[0]
+		actionText := strings.TrimSpace(strings.Join(remaining[1:], " "))
+		if actionText == "" {
+			return errors.New("meetings add-action requires TEXT")
+		}
 		return withHarnessLock(func() error {
 			data := readActiveMeeting(meetingID)
 			if data == nil {
 				return fmt.Errorf("active meeting not found: %s", meetingID)
 			}
 			meeting, _ := toMap(data["meeting"])
-			actions := append(toList(meeting["action_items"]), map[string]any{
+			action := map[string]any{
 				"action_id":   "action-" + nowTime().UTC().Format("20060102150405"),
 				"summary":     actionText,
 				"recorded_at": nowISO(),
 				"state":       "open",
-			})
+			}
+			actions := append(toList(meeting["action_items"]), action)
 			meeting["action_items"] = actions
 			if err := writeActiveMeeting(meeting); err != nil {
 				return err
 			}
+			if mode == outputModeText {
+				return printText(renderMeetingActionBrief(meeting, action))
+			}
 			return printJSON(meeting)
 		})
 	case "resolve-action":
-		if len(args) < 3 {
+		mode, remaining, err := parseOutputModeFlagsOnly("meetings resolve-action", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) < 2 {
 			return errors.New("meetings resolve-action requires MEETING_ID ACTION_ID [STATE]")
 		}
-		meetingID := args[1]
-		actionID := args[2]
+		meetingID := remaining[0]
+		actionID := remaining[1]
 		actionState := "done"
-		if len(args) > 3 {
-			actionState = args[3]
+		if len(remaining) > 2 {
+			actionState = remaining[2]
 		}
 		if actionState != "done" && actionState != "cancelled" && actionState != "open" {
 			return errors.New("meetings resolve-action state must be one of: open, done, cancelled")
@@ -15193,6 +20378,7 @@ func cmdMeetingsRemainder(args []string) error {
 			meeting, _ := toMap(data["meeting"])
 			actions := toList(meeting["action_items"])
 			found := false
+			resolvedAction := map[string]any{}
 			for index, item := range actions {
 				action, ok := toMap(item)
 				if ok && stringValue(action["action_id"]) == actionID {
@@ -15202,6 +20388,7 @@ func cmdMeetingsRemainder(args []string) error {
 						action["closed_at"] = nowISO()
 					}
 					actions[index] = action
+					resolvedAction = action
 					found = true
 					break
 				}
@@ -15225,6 +20412,9 @@ func cmdMeetingsRemainder(args []string) error {
 			registry = syncAdoptedFollowUpLifecycleForMeeting(registry, meeting)
 			if err := writeRegistry(registry); err != nil {
 				return err
+			}
+			if mode == outputModeText {
+				return printText(renderMeetingActionResolutionBrief(meeting, resolvedAction, registry))
 			}
 			return printJSON(meeting)
 		})
@@ -15269,16 +20459,43 @@ func cmdTeammates(args []string) error {
 		}
 		return printJSON(runs)
 	case "get":
-		if len(args) < 2 {
+		mode, remaining, err := parseOutputMode("teammates get", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 1 {
 			return errors.New("teammates get requires RUN_ID")
 		}
-		index := findRunIndex(registry, args[1])
+		runID := strings.TrimSpace(remaining[0])
+		if runID == "" {
+			return errors.New("teammates get requires RUN_ID")
+		}
+		index := findRunIndex(registry, runID)
 		if index < 0 {
-			return fmt.Errorf("teammate run not found: %s", args[1])
+			return fmt.Errorf("teammate run not found: %s", runID)
 		}
 		run, _ := toMap(toList(registry["runs"])[index])
 		if stringValue(run["owner_type"]) != "teammate" {
-			return fmt.Errorf("teammate run not found: %s", args[1])
+			return fmt.Errorf("teammate run not found: %s", runID)
+		}
+		if mode == outputModeText {
+			parentRun := map[string]any{}
+			if parentRunID := strings.TrimSpace(stringValue(run["parent_run_id"])); parentRunID != "" {
+				if parentIndex := findRunIndex(registry, parentRunID); parentIndex >= 0 {
+					parentRun, _ = toMap(toList(registry["runs"])[parentIndex])
+				}
+			}
+			mission := readMission(strings.TrimSpace(stringValue(run["mission_id"])))
+			if mission == nil {
+				mission = map[string]any{}
+			}
+			signalLog := readSignalLog()
+			audit := runAuthorityAudit(run, registry, signalLog)
+			activeMeetings := activeMeetingsForRun(runID)
+			activeSignals := activeSignalsForRun(signalLog, runID)
+			openActions := openMeetingActionsForRun(runID)
+			unsatisfiedDeps := unsatisfiedDependencies(run, registry)
+			return printText(renderTeammateBrief(run, parentRun, mission, audit, activeMeetings, activeSignals, openActions, unsatisfiedDeps))
 		}
 		return printJSON(run)
 	default:
@@ -15290,12 +20507,16 @@ func cmdTeammatesRemainder(args []string) error {
 	subcommand := args[0]
 	switch subcommand {
 	case "assign":
-		if len(args) < 4 {
+		outputModeValue, assignArgs, err := parseOutputModeFlagsOnly("teammates assign", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(assignArgs) < 3 {
 			return errors.New("teammates assign requires PARENT_RUN_ID TEAMMATE_ID ROLE [OBJECTIVE]")
 		}
-		parentRunID := args[1]
-		teammateID := args[2]
-		role := args[3]
+		parentRunID := assignArgs[0]
+		teammateID := assignArgs[1]
+		role := assignArgs[2]
 		positionals := []string{}
 		assignedScope := ""
 		executionSurface := "worktree-thread"
@@ -15309,7 +20530,7 @@ func cmdTeammatesRemainder(args []string) error {
 		reportingExpectations := []string{}
 		delegateAdoptedFollowUp := false
 		adoptedFollowUpPacketID := ""
-		for _, arg := range args[4:] {
+		for _, arg := range assignArgs[3:] {
 			switch {
 			case strings.HasPrefix(arg, "--scope="):
 				assignedScope = strings.TrimSpace(strings.TrimPrefix(arg, "--scope="))
@@ -15454,7 +20675,7 @@ func cmdTeammatesRemainder(args []string) error {
 				"worktree_path":         stringValue(parentRun["worktree_path"]),
 				"context_files":         stringListToAny(dedupeStrings(authorityRefs)),
 				"verification_commands": []any{},
-				"notes":                assignmentNotes,
+				"notes":                 assignmentNotes,
 			}))
 			setOwnershipSelectors(contractPayload, dedupeStrings(append([]string{"scope:" + slugify(firstNonBlank(assignedScope, objective))}, ownershipClaimsInput...)))
 			freshness, _ := toMap(contractPayload["freshness"])
@@ -15568,17 +20789,34 @@ func cmdTeammatesRemainder(args []string) error {
 			if err != nil {
 				return err
 			}
+			if outputModeValue == outputModeText {
+				signalLog := readSignalLog()
+				mission := readMission(strings.TrimSpace(stringValue(teammateRun["mission_id"])))
+				if mission == nil {
+					mission = map[string]any{}
+				}
+				audit := runAuthorityAudit(teammateRun, registry, signalLog)
+				activeMeetings := activeMeetingsForRun(teammateRunID)
+				activeSignals := activeSignalsForRun(signalLog, teammateRunID)
+				openActions := openMeetingActionsForRun(teammateRunID)
+				unsatisfiedDeps := unsatisfiedDependencies(teammateRun, registry)
+				return printText(renderTeammateAssignmentBrief(teammateRun, parentRun, mission, audit, assignmentSignal, activeMeetings, activeSignals, openActions, unsatisfiedDeps))
+			}
 			return printJSON(map[string]any{"run": teammateRun, "signal": assignmentSignal})
 		})
 	case "link":
-		if len(args) < 3 {
+		outputModeValue, linkArgs, err := parseOutputModeFlagsOnly("teammates link", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(linkArgs) < 2 {
 			return errors.New("teammates link requires RUN_A RUN_B [REASON]")
 		}
-		runAID := args[1]
-		runBID := args[2]
+		runAID := linkArgs[0]
+		runBID := linkArgs[1]
 		reason := "Leader approved teammate coordination."
-		if len(args) > 3 {
-			reason = strings.TrimSpace(strings.Join(args[3:], " "))
+		if len(linkArgs) > 2 {
+			reason = strings.TrimSpace(strings.Join(linkArgs[2:], " "))
 		}
 		return withHarnessLock(func() error {
 			registry := readRegistry()
@@ -15602,13 +20840,20 @@ func cmdTeammatesRemainder(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
+			if outputModeValue == outputModeText {
+				return printText(renderTeammateLinkBrief(runA, runB, reason))
+			}
 			return printJSON(map[string]any{"linked": []any{runAID, runBID}, "reason": reason})
 		})
 	case "report":
-		if len(args) < 3 {
+		outputModeValue, reportArgs, err := parseOutputModeFlagsOnly("teammates report", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(reportArgs) < 2 {
 			return errors.New("teammates report requires RUN_ID SUMMARY")
 		}
-		runID := args[1]
+		runID := reportArgs[0]
 		kind := "progress"
 		title := ""
 		confidence := "medium"
@@ -15619,7 +20864,7 @@ func cmdTeammatesRemainder(args []string) error {
 		appliesTo := []string{}
 		nextAction := ""
 		summaryTokens := []string{}
-		for _, arg := range args[2:] {
+		for _, arg := range reportArgs[1:] {
 			switch {
 			case strings.HasPrefix(arg, "--kind="):
 				kind = firstNonBlank(strings.TrimSpace(strings.TrimPrefix(arg, "--kind=")), kind)
@@ -15678,22 +20923,45 @@ func cmdTeammatesRemainder(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
+			if outputModeValue == outputModeText {
+				signalLog := readSignalLog()
+				parentRun := map[string]any{}
+				if parentRunID := strings.TrimSpace(stringValue(run["parent_run_id"])); parentRunID != "" {
+					if parentIndex := findRunIndex(registry, parentRunID); parentIndex >= 0 {
+						parentRun, _ = toMap(toList(registry["runs"])[parentIndex])
+					}
+				}
+				mission := readMission(strings.TrimSpace(stringValue(run["mission_id"])))
+				if mission == nil {
+					mission = map[string]any{}
+				}
+				audit := runAuthorityAudit(run, registry, signalLog)
+				activeMeetings := activeMeetingsForRun(runID)
+				activeSignals := activeSignalsForRun(signalLog, runID)
+				openActions := openMeetingActionsForRun(runID)
+				unsatisfiedDeps := unsatisfiedDependencies(run, registry)
+				return printText(renderTeammateReportBrief(run, parentRun, mission, audit, signal, registry, activeMeetings, activeSignals, openActions, unsatisfiedDeps))
+			}
 			return printJSON(map[string]any{"run": run, "signal": signal})
 		})
 	case "message":
-		if len(args) < 5 {
+		outputModeValue, messageArgs, err := parseOutputModeFlagsOnly("teammates message", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(messageArgs) < 4 {
 			return errors.New("teammates message requires SOURCE_RUN_ID TARGET_RUN_ID KIND SUMMARY")
 		}
-		sourceRunID := args[1]
-		targetRunID := args[2]
-		kind := args[3]
+		sourceRunID := messageArgs[0]
+		targetRunID := messageArgs[1]
+		kind := messageArgs[2]
 		title := ""
 		confidence := "medium"
 		authorityLevel := "L2"
 		freshHours := 6.0
 		evidenceRefs := []string{}
 		summaryTokens := []string{}
-		for _, arg := range args[4:] {
+		for _, arg := range messageArgs[3:] {
 			switch {
 			case strings.HasPrefix(arg, "--title="):
 				title = strings.TrimSpace(strings.TrimPrefix(arg, "--title="))
@@ -15747,17 +21015,28 @@ func cmdTeammatesRemainder(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
+			if outputModeValue == outputModeText {
+				mission := readMission(strings.TrimSpace(stringValue(sourceRun["mission_id"])))
+				if mission == nil {
+					mission = map[string]any{}
+				}
+				return printText(renderTeammateMessageBrief(sourceRun, targetRun, mission, signal, registry))
+			}
 			return printJSON(map[string]any{"signal": signal, "source_run": sourceRun, "target_run": targetRun})
 		})
 	case "escalate":
-		if len(args) < 3 {
+		outputModeValue, escalateArgs, err := parseOutputModeFlagsOnly("teammates escalate", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(escalateArgs) < 2 {
 			return errors.New("teammates escalate requires RUN_ID QUESTION [--materialize] [--protocol=evidence-review|incident-command|decision-record]")
 		}
-		runID := args[1]
+		runID := escalateArgs[0]
 		materialize := false
 		protocol := ""
 		questionTokens := []string{}
-		for _, arg := range args[2:] {
+		for _, arg := range escalateArgs[1:] {
 			if arg == "--materialize" {
 				materialize = true
 			} else if strings.HasPrefix(arg, "--protocol=") {
@@ -15787,9 +21066,10 @@ func cmdTeammatesRemainder(args []string) error {
 			run["updated_at"] = nowISO()
 			run["active_signals"] = appendUniqueText(toList(run["active_signals"]), stringValue(signal["signal_id"]))
 			payload := map[string]any{"signal": signal, "run": run}
+			meeting := map[string]any{}
 			if materialize {
 				meetingID := newMeetingID(stringValue(run["mission_id"]))
-				meeting, err := materializeMeeting(meetingID, run, question, stringValue(run["owner_id"]), protocol)
+				meeting, err = materializeMeeting(meetingID, run, question, stringValue(run["owner_id"]), protocol)
 				if err != nil {
 					return err
 				}
@@ -15807,11 +21087,189 @@ func cmdTeammatesRemainder(args []string) error {
 			if err := writeRegistry(registry); err != nil {
 				return err
 			}
+			if outputModeValue == outputModeText {
+				parentRun := map[string]any{}
+				if parentRunID := strings.TrimSpace(stringValue(run["parent_run_id"])); parentRunID != "" {
+					if parentIndex := findRunIndex(registry, parentRunID); parentIndex >= 0 {
+						parentRun, _ = toMap(toList(registry["runs"])[parentIndex])
+					}
+				}
+				mission := readMission(strings.TrimSpace(stringValue(run["mission_id"])))
+				if mission == nil {
+					mission = map[string]any{}
+				}
+				return printText(renderTeammateEscalationBrief(run, parentRun, mission, signal, meeting, registry, materialize, protocol))
+			}
 			return printJSON(payload)
 		})
 	default:
 		return fmt.Errorf("unknown teammates subcommand: %s", subcommand)
 	}
+}
+
+func maintenanceReconcileIDs(result map[string]any, key string) []string {
+	return anyListToStrings(toList(result[key]))
+}
+
+func maintenanceBriefIDLine(label string, ids []string) string {
+	if len(ids) == 0 {
+		return label + ": none."
+	}
+	limit := len(ids)
+	if limit > 5 {
+		limit = 5
+	}
+	line := fmt.Sprintf("%s: %s.", label, strings.Join(ids[:limit], ", "))
+	if len(ids) > limit {
+		line = fmt.Sprintf("%s %d more item(s) remain in the JSON result.", line, len(ids)-limit)
+	}
+	return line
+}
+
+func maintenanceReconcileWhy(reconciledSignals, adjudicatedSignals, reconciledMeetings []string) string {
+	switch {
+	case len(reconciledSignals) > 0:
+		return "Orphaned active signals were resolved because their referenced run is missing or no longer active."
+	case len(adjudicatedSignals) > 0:
+		return "Superseded active signals were resolved because fresher run or meeting truth already overtook them."
+	case len(reconciledMeetings) > 0:
+		return "Orphaned active meetings were closed because their referenced run is missing or no longer active."
+	default:
+		return "No active orphaned signal, superseded signal, or orphaned meeting matched the reconciliation rules."
+	}
+}
+
+func renderMaintenanceReconcileBrief(result map[string]any) string {
+	reconciledSignals := maintenanceReconcileIDs(result, "reconciled_signal_ids")
+	adjudicatedSignals := maintenanceReconcileIDs(result, "adjudicated_signal_ids")
+	reconciledMeetings := maintenanceReconcileIDs(result, "reconciled_meeting_ids")
+	signalCount := intValue(result["signal_count"])
+	meetingCount := intValue(result["meeting_count"])
+	total := signalCount + meetingCount
+	status := "no-op"
+	if total > 0 {
+		status = "repaired"
+	}
+	current := "No runtime repair was needed."
+	next := "Continue with `doctor --brief`, scheduler, mission, run, teammate, signal, or council briefings as needed."
+	leader := "No leader repair action is required from this reconciliation result."
+	council := "No council is required unless another active decision surface still calls for governed judgment."
+	if total > 0 {
+		current = fmt.Sprintf(
+			"Reconciliation repaired %s and %s.",
+			countLabel(signalCount, "signal", "signals"),
+			countLabel(meetingCount, "meeting", "meetings"),
+		)
+		next = "Run `doctor --brief` to confirm the control plane is healthy, then continue from scheduler or object-level briefings."
+		leader = "Treat repaired signals and closed orphaned meetings as history; do not let them steer scheduling unless new evidence reopens the issue."
+		council = "No council is required for deterministic reconciliation, but remaining active decision signals may still need governed handling."
+	}
+	lines := []string{
+		"Harness Maintenance Reconcile Briefing",
+		fmt.Sprintf("Result: %s.", status),
+		fmt.Sprintf("Signals: %s repaired (%d orphaned, %d superseded).", countLabel(signalCount, "signal", "signals"), len(reconciledSignals), len(adjudicatedSignals)),
+		fmt.Sprintf("Meetings: %s closed.", countLabel(meetingCount, "meeting", "meetings")),
+		"",
+		"Current:",
+		"- " + current,
+		"",
+		"Why:",
+		"- " + maintenanceReconcileWhy(reconciledSignals, adjudicatedSignals, reconciledMeetings),
+		"",
+		"Next:",
+		"- " + next,
+		"",
+		"Leader:",
+		"- " + leader,
+		"",
+		"Teammate:",
+		"- No teammate work was assigned by reconciliation; teammates should continue only inside existing bounded run scopes.",
+		"",
+		"Council:",
+		"- " + council,
+		"",
+		"Repaired Objects:",
+		"- " + maintenanceBriefIDLine("Reconciled signals", reconciledSignals),
+		"- " + maintenanceBriefIDLine("Adjudicated signals", adjudicatedSignals),
+		"- " + maintenanceBriefIDLine("Reconciled meetings", reconciledMeetings),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func maintenanceNormalizeIDs(result map[string]any, key string) []string {
+	return anyListToStrings(toList(result[key]))
+}
+
+func maintenanceNormalizeWhy(runIDs, signalIDs, contractIDs []string) string {
+	switch {
+	case len(runIDs) > 0:
+		return "Older run records were missing current runtime fields such as timestamps, ownership selectors, desired state, or dependency policy."
+	case len(signalIDs) > 0:
+		return "Older signal records were missing canonical kind or emitted-at fields required by current signal semantics."
+	case len(contractIDs) > 0:
+		return "Historical contract snapshots were stale against current run control-plane fields."
+	default:
+		return "No legacy run, signal, or contract record required normalization."
+	}
+}
+
+func renderMaintenanceNormalizeBrief(result map[string]any) string {
+	runIDs := maintenanceNormalizeIDs(result, "normalized_run_ids")
+	signalIDs := maintenanceNormalizeIDs(result, "normalized_signal_ids")
+	contractIDs := maintenanceNormalizeIDs(result, "normalized_contracts")
+	runCount := intValue(result["run_count"])
+	signalCount := intValue(result["signal_count"])
+	contractCount := intValue(result["contract_count"])
+	total := runCount + signalCount + contractCount
+	status := "no-op"
+	if total > 0 {
+		status = "normalized"
+	}
+	current := "No runtime normalization was needed."
+	next := "Continue with `doctor --brief`, scheduler, mission, run, signal, teammate, or council briefings as needed."
+	leader := "No leader migration action is required from this normalization result."
+	council := "No council is required for deterministic schema normalization."
+	if total > 0 {
+		current = fmt.Sprintf(
+			"Normalization upgraded %s, %s, and %s.",
+			countLabel(runCount, "run", "runs"),
+			countLabel(signalCount, "signal", "signals"),
+			countLabel(contractCount, "contract", "contracts"),
+		)
+		next = "Run `doctor --brief` to confirm the upgraded runtime state is healthy, then continue from the relevant object briefing."
+		leader = "Treat normalized records as current runtime truth; inspect raw JSON only if a follow-up doctor issue remains."
+	}
+	lines := []string{
+		"Harness Maintenance Normalize Briefing",
+		fmt.Sprintf("Result: %s.", status),
+		fmt.Sprintf("Runs: %s normalized.", countLabel(runCount, "run", "runs")),
+		fmt.Sprintf("Signals: %s normalized.", countLabel(signalCount, "signal", "signals")),
+		fmt.Sprintf("Contracts: %s refreshed.", countLabel(contractCount, "contract", "contracts")),
+		"",
+		"Current:",
+		"- " + current,
+		"",
+		"Why:",
+		"- " + maintenanceNormalizeWhy(runIDs, signalIDs, contractIDs),
+		"",
+		"Next:",
+		"- " + next,
+		"",
+		"Leader:",
+		"- " + leader,
+		"",
+		"Teammate:",
+		"- No teammate work was assigned by normalization; teammates should continue only inside existing bounded run scopes.",
+		"",
+		"Council:",
+		"- " + council,
+		"",
+		"Normalized Objects:",
+		"- " + maintenanceBriefIDLine("Runs", runIDs),
+		"- " + maintenanceBriefIDLine("Signals", signalIDs),
+		"- " + maintenanceBriefIDLine("Contracts", contractIDs),
+	}
+	return strings.Join(lines, "\n")
 }
 
 func cmdMaintenance(args []string) error {
@@ -15823,6 +21281,13 @@ func cmdMaintenance(args []string) error {
 	}
 	switch args[0] {
 	case "normalize":
+		mode, remaining, err := parseOutputMode("maintenance normalize", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 0 {
+			return errors.New("maintenance normalize does not accept positional arguments")
+		}
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			missionRegistry := readMissionRegistry()
@@ -15925,16 +21390,27 @@ func cmdMaintenance(args []string) error {
 					return err
 				}
 			}
-			return printJSON(map[string]any{
+			result := map[string]any{
 				"normalized_run_ids":    stringListToAny(normalizedRuns),
 				"normalized_signal_ids": stringListToAny(normalizedSignals),
 				"normalized_contracts":  stringListToAny(dedupeStrings(normalizedContracts)),
 				"run_count":             len(normalizedRuns),
 				"signal_count":          len(normalizedSignals),
 				"contract_count":        len(dedupeStrings(normalizedContracts)),
-			})
+			}
+			if mode == outputModeText {
+				return printText(renderMaintenanceNormalizeBrief(result))
+			}
+			return printJSON(result)
 		})
 	case "reconcile":
+		mode, remaining, err := parseOutputMode("maintenance reconcile", args[1:])
+		if err != nil {
+			return err
+		}
+		if len(remaining) != 0 {
+			return errors.New("maintenance reconcile does not accept positional arguments")
+		}
 		return withHarnessLock(func() error {
 			registry := readRegistry()
 			log := readSignalLog()
@@ -16006,13 +21482,17 @@ func cmdMaintenance(args []string) error {
 					return err
 				}
 			}
-			return printJSON(map[string]any{
+			result := map[string]any{
 				"reconciled_signal_ids":  stringListToAny(reconciledSignals),
 				"adjudicated_signal_ids": stringListToAny(adjudicatedSignals),
 				"reconciled_meeting_ids": stringListToAny(reconciledMeetings),
 				"signal_count":           len(reconciledSignals) + len(adjudicatedSignals),
 				"meeting_count":          len(reconciledMeetings),
-			})
+			}
+			if mode == outputModeText {
+				return printText(renderMaintenanceReconcileBrief(result))
+			}
+			return printJSON(result)
 		})
 	default:
 		return fmt.Errorf("unknown maintenance subcommand: %s", args[0])
