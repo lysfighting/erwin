@@ -11,18 +11,18 @@
 
 ## At A Glance
 
-- `24` durable notes are currently indexed across `3` recurring streams.
+- `25` durable notes are currently indexed across `3` recurring streams.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
 ## Weekly Lead
 
-### AI/Agent Weekly Synthesis — 2026-04-10
+### AI/Agent Weekly Synthesis — 2026-04-17
 
-- Metadata: `Coverage window: 2026-04-03 to 2026-04-10`
-- Anthropic had the strongest first-party in-window platform signal by a wide margin. The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) show **Claude Managed Agents** entering public beta on **April 8, 2026**, the new **`ant` CLI** launching the same day, the **advisor tool** entering public beta on **April 9, 2026**, and the Bedrock-compatible `/anthropic/v1/messages` shape entering research preview on **April 7, 2026**. Taken together, that is not a routine docs refresh. It is Anthropic turning agent orchestration, planning quality, and operator ergonomics into a product surface.
-- Anthropic's Claude Platform substreams were explicitly checked as required. The new [Advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) describe a planner/executor split in which a cheaper executor can consult a stronger advisor model mid-generation, while the new [Managed Agents production tutorial](https://platform.claude.com/cookbook/managed-agents-cma-operate-in-production) published on **April 8, 2026** makes vault-backed credentials, webhook-driven human-in-the-loop, MCP toolsets, and session lifecycle management look like the default production pattern rather than an advanced custom build.
-- Anthropic's Claude Code surface was also explicitly checked. The current [Claude Code docs overview](https://code.claude.com/docs/en/overview) now foregrounds agent teams, the Agent SDK, cloud scheduled tasks, remote control, and cross-surface continuity. The public [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md) currently tops at `2.1.98`, adding a Monitor tool, git-worktree awareness, OTEL `TRACEPARENT` propagation, and several subagent / permission / cleanup fixes. The rendered changelog page does not expose a publish date for `2.1.98`, so the safe reading is: Claude Code continues to broaden materially as an operational agent surface, but we should avoid overstating which specific changelog items landed inside this exact week.
+- Metadata: `Coverage window: 2026-04-10 to 2026-04-17`
+- The week’s durable field signal is that frontier agent products are converging on **controlled computer/workspace execution** as a platform primitive. OpenAI’s [The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) published on **April 15, 2026** explicitly introduces a model-native harness, native sandbox execution, workspace manifests, shell/file-edit tools, MCP, skills, `AGENTS.md`, checkpointing, rehydration, and separation between harness state and compute. OpenAI then broadened the Codex product surface in [Codex for (almost) everything](https://openai.com/index/codex-for-almost-everything/) on **April 16, 2026**, positioning Codex as a persistent, computer-operating development partner rather than only a coding assistant.
+- Anthropic remained a high-signal first-party stream. The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) show [Claude Opus 4.7](https://www.anthropic.com/news/claude-opus-4-7) launching on **April 16, 2026** with stronger long-running coding, agent, vision, instruction-following, file-system memory, and verification behavior. The same release added `xhigh` effort for Opus 4.7, task budgets in public beta on the Claude Platform API, and Claude Code’s `/ultrareview` review command.
+- Anthropic’s required substreams were explicitly checked. The Claude Platform release notes, [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code docs overview](https://code.claude.com/docs/en/overview), and [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md) were reviewed. I found no new Managed Agents launch comparable to the **April 8, 2026** public beta from last week, but Claude Code changed materially this week: the changelog now tops at `2.1.112`, with `2.1.111` adding Opus 4.7 `xhigh`, `/ultrareview`, `/less-permission-prompts`, skill token sorting, improved provider setup, and OpenTelemetry raw API body logging for debugging.
 
 ## Daily Signal Snapshot
 
@@ -44,13 +44,13 @@
 
 ## Durable Interpretation
 
-The durable theme this week is the productization of the agent control plane.
+The theme this week is **agent execution becoming a governed workspace contract**.
 
 ## Current Proposal Candidates
 
-- Planner / executor split as a first-class Harness primitive
-- Managed runtime profiles for long-running agent jobs
-- Trace-native subagent operations
+- Workspace manifests for Harness runs
+- Effort and budget as explicit run policy
+- Review agents as a named verification lane
 
 ## Recent History
 
@@ -65,6 +65,7 @@ The durable theme this week is the productization of the agent control plane.
 
 ### Weekly Synthesis
 
+- [2026-04-17](../radar/weekly/2026-04-17.md)
 - [2026-04-10](../radar/weekly/2026-04-10.md)
 - [2026-04-03](../radar/weekly/2026-04-03.md)
 - [2026-03-30](../radar/weekly/2026-03-30.md)
