@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `25` durable notes are currently indexed across `3` recurring streams.
-- `86` knowledge-network artifacts, `240` typed local links, and `5` active threads are available in `index.json`.
+- `26` durable notes are currently indexed across `3` recurring streams.
+- `87` knowledge-network artifacts, `240` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,12 +27,12 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-04-17
+### AI Agent Daily Radar - 2026-04-18
 
-- Metadata: `Window: 2026-04-11 to 2026-04-17`
-- **Anthropic shipped Claude Opus 4.7 with stronger long-running agent behavior.** Anthropic published [Introducing Claude Opus 4.7](https://www.anthropic.com/news/claude-opus-4-7) and the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) on **April 16, 2026**. The high-signal update is not just higher model quality: Anthropic explicitly calls out agentic coding, instruction-following literalness, better high-resolution vision for computer-use-style work, and improved file-system memory use. Harness implication: prompts and harnesses tuned for looser prior-model behavior may need stricter regression evals before upgrade.
-- **Claude Code 2.1.111/2.1.112 pushed Opus 4.7 into coding-agent operations.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) lists **April 16, 2026** releases adding Opus 4.7 `xhigh` effort, Max-subscriber Auto mode with Opus 4.7, `/ultrareview` for cloud multi-agent code review, `/less-permission-prompts`, fewer read-only Bash prompts, plugin diagnostics, OpenTelemetry raw API body logging, and a follow-up fix for Opus 4.7 auto-mode availability. This is a meaningful Claude Code update in-window: model upgrade, review delegation, permission ergonomics, and observability all moved together.
-- **OpenAI made the Agents SDK a more explicit sandboxed harness layer.** OpenAI published [The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) on **April 15, 2026**, describing an updated SDK for agents that inspect files, run commands, edit code, and work across long-horizon tasks in controlled sandbox environments. The first-party direction is clear: standardize the agent loop around workspace manifests, filesystem tools, shell/apply-patch tools, MCP, skills, sandbox-aware orchestration, and durability via snapshot/rehydration.
+- Metadata: `Window: 2026-04-12 to 2026-04-18`
+- **Anthropic's April 16 Opus 4.7 launch is an agent-harness upgrade, not just a model bump.** Anthropic published [Introducing Claude Opus 4.7](https://www.anthropic.com/news/claude-opus-4-7) on **April 16, 2026**. The official notes emphasize advanced software engineering, long-running task consistency, stricter instruction following, higher-resolution vision for computer-use-style work, file-system memory, `xhigh` effort, API task budgets, and Claude Code `/ultrareview`. Harness implication: model upgrades now change prompt literalness, token economics, review delegation, permission cadence, and verification behavior together.
+- **Claude Code continued the April 12-18 runtime-hardening stream.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) lists in-window releases through **April 15, 2026** with 1-hour prompt-cache controls, `/recap`, built-in slash-command discovery through the Skill tool, `EnterWorktree(path)`, PreCompact hooks, plugin background monitors, stalled-stream fallback, and clearer network/session recovery. This is a meaningful Claude Code update in-window even without a newer Managed Agents/advisor launch: the coding-agent surface is becoming more resumable, hookable, and long-run tolerant.
+- **OpenAI paired a sandboxed Agents SDK with a broader Codex desktop agent surface.** OpenAI published [The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) on **April 15, 2026** and [Codex for (almost) everything](https://openai.com/index/codex-for-almost-everything/) on **April 16, 2026**. Collapsed takeaway: OpenAI is standardizing both ends of the agent loop - SDK-side workspace manifests, sandbox execution, filesystem/shell/apply-patch tools, MCP, skills, snapshot/rehydration, and app-side computer use, plugins, memory, automations, PR review, browser, and multi-terminal workflows.
 
 ## Trending Snapshot
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-04-18](../radar/daily/2026-04-18.md)
 - [2026-04-17](../radar/daily/2026-04-17.md)
 - [2026-04-16](../radar/daily/2026-04-16.md)
 - [2026-04-15](../radar/daily/2026-04-15.md)
 - [2026-04-14](../radar/daily/2026-04-14.md)
 - [2026-04-13](../radar/daily/2026-04-13.md)
-- [2026-04-10](../radar/daily/2026-04-10.md)
 
 ### Weekly Synthesis
 

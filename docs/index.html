@@ -434,10 +434,10 @@
         This page is the human-facing front door for the repository&#x27;s knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.
       </p>
       <div class="hero-stats">
-        <div class="stat-chip"><strong>25</strong><span>Durable notes indexed</span></div>
+        <div class="stat-chip"><strong>26</strong><span>Durable notes indexed</span></div>
         <div class="stat-chip"><strong>3 streams</strong><span>Daily, weekly, trending</span></div>
         <div class="stat-chip"><strong>5 layers</strong><span>Radar to implementation</span></div>
-        <div class="stat-chip"><strong>86</strong><span>Network artifacts</span></div>
+        <div class="stat-chip"><strong>87</strong><span>Network artifacts</span></div>
         <div class="stat-chip"><strong>240</strong><span>Typed local links</span></div>
       </div>
       <div class="hero-grid">
@@ -487,9 +487,9 @@
 
     <article class="brief-card cool">
       <div class="eyebrow">Daily</div>
-      <h3>AI Agent Daily Radar - 2026-04-17</h3>
-      <p class="meta">Window: 2026-04-11 to 2026-04-17</p>
-      <ul><li><strong>Anthropic shipped Claude Opus 4.7 with stronger long-running agent behavior.</strong> Anthropic published <a href="https://www.anthropic.com/news/claude-opus-4-7">Introducing Claude Opus 4.7</a> and the <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a> on <strong>April 16, 2026</strong>. The high-signal update is not just higher model quality: Anthropic explicitly calls out agentic coding, instruction-following literalness, better high-resolution vision for computer-use-style work, and improved file-system memory use. Harness implication: prompts and harnesses tuned for looser prior-model behavior may need stricter regression evals before upgrade.</li><li><strong>Claude Code 2.1.111/2.1.112 pushed Opus 4.7 into coding-agent operations.</strong> The official <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a> lists <strong>April 16, 2026</strong> releases adding Opus 4.7 <code>xhigh</code> effort, Max-subscriber Auto mode with Opus 4.7, <code>/ultrareview</code> for cloud multi-agent code review, <code>/less-permission-prompts</code>, fewer read-only Bash prompts, plugin diagnostics, OpenTelemetry raw API body logging, and a follow-up fix for Opus 4.7 auto-mode availability. This is a meaningful Claude Code update in-window: model upgrade, review delegation, permission ergonomics, and observability all moved together.</li><li><strong>OpenAI made the Agents SDK a more explicit sandboxed harness layer.</strong> OpenAI published <a href="https://openai.com/index/the-next-evolution-of-the-agents-sdk/">The next evolution of the Agents SDK</a> on <strong>April 15, 2026</strong>, describing an updated SDK for agents that inspect files, run commands, edit code, and work across long-horizon tasks in controlled sandbox environments. The first-party direction is clear: standardize the agent loop around workspace manifests, filesystem tools, shell/apply-patch tools, MCP, skills, sandbox-aware orchestration, and durability via snapshot/rehydration.</li></ul>
+      <h3>AI Agent Daily Radar - 2026-04-18</h3>
+      <p class="meta">Window: 2026-04-12 to 2026-04-18</p>
+      <ul><li><strong>Anthropic's April 16 Opus 4.7 launch is an agent-harness upgrade, not just a model bump.</strong> Anthropic published <a href="https://www.anthropic.com/news/claude-opus-4-7">Introducing Claude Opus 4.7</a> on <strong>April 16, 2026</strong>. The official notes emphasize advanced software engineering, long-running task consistency, stricter instruction following, higher-resolution vision for computer-use-style work, file-system memory, <code>xhigh</code> effort, API task budgets, and Claude Code <code>/ultrareview</code>. Harness implication: model upgrades now change prompt literalness, token economics, review delegation, permission cadence, and verification behavior together.</li><li><strong>Claude Code continued the April 12-18 runtime-hardening stream.</strong> The official <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a> lists in-window releases through <strong>April 15, 2026</strong> with 1-hour prompt-cache controls, <code>/recap</code>, built-in slash-command discovery through the Skill tool, <code>EnterWorktree(path)</code>, PreCompact hooks, plugin background monitors, stalled-stream fallback, and clearer network/session recovery. This is a meaningful Claude Code update in-window even without a newer Managed Agents/advisor launch: the coding-agent surface is becoming more resumable, hookable, and long-run tolerant.</li><li><strong>OpenAI paired a sandboxed Agents SDK with a broader Codex desktop agent surface.</strong> OpenAI published <a href="https://openai.com/index/the-next-evolution-of-the-agents-sdk/">The next evolution of the Agents SDK</a> on <strong>April 15, 2026</strong> and <a href="https://openai.com/index/codex-for-almost-everything/">Codex for (almost) everything</a> on <strong>April 16, 2026</strong>. Collapsed takeaway: OpenAI is standardizing both ends of the agent loop - SDK-side workspace manifests, sandbox execution, filesystem/shell/apply-patch tools, MCP, skills, snapshot/rehydration, and app-side computer use, plugins, memory, automations, PR review, browser, and multi-terminal workflows.</li></ul>
       <div class="card-actions">
         <a class="primary-link" href="radar/daily/latest.md">Open latest</a>
         <a class="secondary-link" href="radar/daily/">Browse archive</a>
@@ -560,7 +560,7 @@
         <article class="network-card">
           <h3>Network snapshot</h3>
           <p>The graph is rebuilt from Markdown and selected implementation entrypoints. It is not a database; Markdown remains the source of truth.</p>
-          <div class="metric-line"><span>Artifacts</span><strong>86</strong></div>
+          <div class="metric-line"><span>Artifacts</span><strong>87</strong></div>
           <div class="metric-line"><span>Typed links</span><strong>240</strong></div>
           <div class="metric-line"><span>Active threads</span><strong>5</strong></div>
           <div class="metric-line"><span>Proposal records</span><strong>5</strong></div>
@@ -589,7 +589,7 @@
 
     <section class="archive-column">
       <h4>Daily Radar</h4>
-      <ul><li><a href="radar/daily/2026-04-17.md">2026-04-17</a></li><li><a href="radar/daily/2026-04-16.md">2026-04-16</a></li><li><a href="radar/daily/2026-04-15.md">2026-04-15</a></li><li><a href="radar/daily/2026-04-14.md">2026-04-14</a></li><li><a href="radar/daily/2026-04-13.md">2026-04-13</a></li><li><a href="radar/daily/2026-04-10.md">2026-04-10</a></li></ul>
+      <ul><li><a href="radar/daily/2026-04-18.md">2026-04-18</a></li><li><a href="radar/daily/2026-04-17.md">2026-04-17</a></li><li><a href="radar/daily/2026-04-16.md">2026-04-16</a></li><li><a href="radar/daily/2026-04-15.md">2026-04-15</a></li><li><a href="radar/daily/2026-04-14.md">2026-04-14</a></li><li><a href="radar/daily/2026-04-13.md">2026-04-13</a></li></ul>
     </section>
 
 
