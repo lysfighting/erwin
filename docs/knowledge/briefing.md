@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `26` durable notes are currently indexed across `3` recurring streams.
-- `87` knowledge-network artifacts, `240` typed local links, and `5` active threads are available in `index.json`.
+- `27` durable notes are currently indexed across `3` recurring streams.
+- `88` knowledge-network artifacts, `240` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -36,12 +36,12 @@
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-04-17
+### GitHub Trending - 2026-04-18
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-17. This run used the default global trending page with no extra filters; the page rendered 14 repositories.`
-- [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) - a single `CLAUDE.md` file to improve Claude Code behavior, derived from Andrej Karpathy's observations on LLM coding pitfalls. 49,971 stars, 7,959 stars today.
-- [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem) - Claude Code plugin that captures coding sessions, compresses them with AI, and injects relevant context into future sessions. TypeScript. 59,780 stars, 1,897 stars today.
-- [lsdefine/GenericAgent](https://github.com/lsdefine/GenericAgent) - self-evolving agent that grows a skill tree from a seed and emphasizes reduced token consumption. Python. 2,787 stars, 872 stars today.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-18. This run used the default global trending page with no extra filters; the page rendered 14 repositories.`
+- [obra/superpowers](https://github.com/obra/superpowers) - agentic skills framework and software development methodology. Shell. 157,780 stars, 1,713 stars today.
+- [Lordog/dive-into-llms](https://github.com/Lordog/dive-into-llms) - hands-on large-model programming practice tutorial. Jupyter Notebook. 31,532 stars, 944 stars today.
+- [google/magika](https://github.com/google/magika) - AI-powered file content type detection. Python. 15,474 stars, 956 stars today.
 
 ## Durable Interpretation
 
@@ -83,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-04-18](../radar/trending/2026-04-18.md)
 - [2026-04-17](../radar/trending/2026-04-17.md)
 - [2026-04-16](../radar/trending/2026-04-16.md)
 - [2026-04-15](../radar/trending/2026-04-15.md)
 - [2026-04-14](../radar/trending/2026-04-14.md)
 - [2026-04-13](../radar/trending/2026-04-13.md)
-- [2026-04-10](../radar/trending/2026-04-10.md)
