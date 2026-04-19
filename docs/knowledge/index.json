@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 28,
+    "total_notes": 29,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 89,
+    "artifact_count": 90,
     "link_count": 240,
     "thread_count": 5
   },
@@ -106,16 +106,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-04-18",
-      "meta": "Window: 2026-04-12 to 2026-04-18",
+      "title": "AI Agent Daily Radar - 2026-04-19",
+      "meta": "Window: 2026-04-13 to 2026-04-19",
       "highlights": [
-        "**Anthropic's April 16 Opus 4.7 launch is an agent-harness upgrade, not just a model bump.** Anthropic published [Introducing Claude Opus 4.7](https://www.anthropic.com/news/claude-opus-4-7) on **April 16, 2026**. The official notes emphasize advanced software engineering, long-running task consistency, stricter instruction following, higher-resolution vision for computer-use-style work, file-system memory, `xhigh` effort, API task budgets, and Claude Code `/ultrareview`. Harness implication: model upgrades now change prompt literalness, token economics, review delegation, permission cadence, and verification behavior together.",
-        "**Claude Code continued the April 12-18 runtime-hardening stream.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) lists in-window releases through **April 15, 2026** with 1-hour prompt-cache controls, `/recap`, built-in slash-command discovery through the Skill tool, `EnterWorktree(path)`, PreCompact hooks, plugin background monitors, stalled-stream fallback, and clearer network/session recovery. This is a meaningful Claude Code update in-window even without a newer Managed Agents/advisor launch: the coding-agent surface is becoming more resumable, hookable, and long-run tolerant.",
-        "**OpenAI paired a sandboxed Agents SDK with a broader Codex desktop agent surface.** OpenAI published [The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) on **April 15, 2026** and [Codex for (almost) everything](https://openai.com/index/codex-for-almost-everything/) on **April 16, 2026**. Collapsed takeaway: OpenAI is standardizing both ends of the agent loop - SDK-side workspace manifests, sandbox execution, filesystem/shell/apply-patch tools, MCP, skills, snapshot/rehydration, and app-side computer use, plugins, memory, automations, PR review, browser, and multi-terminal workflows."
+        "**Anthropic turned the April agent stack into a concrete platform surface.** Anthropic's [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) list **April 16, 2026** for Claude Opus 4.7, **April 14, 2026** for Sonnet 4 / Opus 4 model deprecations, **April 9, 2026** for the public-beta [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), and **April 8, 2026** for [Claude Managed Agents](https://platform.claude.com/docs/en/managed-agents/overview). Collapsed takeaway: Anthropic is packaging stronger agentic coding models together with managed harness APIs, executor/advisor model pairing, migration pressure, and cloud deployment channels.",
+        "**Claude Code shipped another runtime-hardening wave inside the window.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) lists **2.1.114 on April 18, 2026** and **2.1.113 on April 17, 2026**, including native binary spawning, domain-deny sandbox controls, `/loop` clarity, `/ultrareview` launch improvements, stalled-subagent timeout errors, MCP concurrent-call timeout fixes, and security tightening for Bash permissions. Harness implication: coding-agent CLIs are moving from \"prompt plus tools\" toward managed runtime safety, delegation observability, and long-run failure surfacing.",
+        "**OpenAI made sandboxed agent infrastructure a first-party Agents SDK primitive.** OpenAI published [The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) on **April 15, 2026**, describing a model-native harness for agents that work across files and tools plus native sandbox execution. Its [ChatGPT release notes](https://help.openai.com/en/articles/6825453-chatgpt-release-notes) also list **April 9, 2026** Pro plan changes specifically tied to longer, higher-intensity Codex sessions and Codex usage allocation. Collapsed takeaway: OpenAI is aligning SDK-side controlled workspaces with product-side demand for longer coding-agent sessions."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-04-19",
+          "path": "radar/daily/2026-04-19.md"
+        },
         {
           "name": "2026-04-18",
           "path": "radar/daily/2026-04-18.md"
@@ -135,13 +139,9 @@
         {
           "name": "2026-04-14",
           "path": "radar/daily/2026-04-14.md"
-        },
-        {
-          "name": "2026-04-13",
-          "path": "radar/daily/2026-04-13.md"
         }
       ],
-      "count": 11
+      "count": 12
     },
     "trending": {
       "label": "Trending",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 89,
+      "artifact_count": 90,
       "link_count": 240,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 38,
+        "radar": 39,
         "feedback": 9,
         "knowledge": 10,
         "proposals": 14,
@@ -1787,6 +1787,38 @@
           "https://github.com/thedotmack/claude-mem",
           "https://github.com/lsdefine/GenericAgent",
           "https://github.com/vercel-labs/open-agents"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-04-19.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-19.md",
+        "title": "AI Agent Daily Radar - 2026-04-19",
+        "date": "2026-04-19",
+        "status": "",
+        "themes": [
+          "harness",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-13 to 2026-04-19",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://openai.com/index/the-next-evolution-of-the-agents-sdk/",
+          "https://help.openai.com/en/articles/6825453-chatgpt-release-notes",
+          "https://developers.googleblog.com/subagents-have-arrived-in-gemini-cli/",
+          "https://moonshotai.github.io/kimi-cli/en/release-notes/changelog.html",
+          "https://github.com/trending",
+          "https://github.com/EvoMap/evolver",
+          "https://github.com/lsdefine/GenericAgent",
+          "https://github.com/SimoneAvogadro/android-reverse-engineering-skill"
         ],
         "local_refs": []
       },
