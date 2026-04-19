@@ -61,11 +61,13 @@ THEME_KEYWORDS = {
 
 GLOBAL_KNOWLEDGE_ARTIFACTS = [
     "docs/README.md",
+    "docs/agent-continuity-guide.md",
     "docs/erwin-operating-model.md",
 ]
 
 IMPLEMENTATION_ARTIFACTS = [
     "AGENTS.md",
+    "CLAUDE.md",
     "README.md",
     "CHANGELOG.md",
     "_project/CURRENT.md",

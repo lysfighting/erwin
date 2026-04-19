@@ -7,8 +7,8 @@
     "total_notes": 29,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 90,
-    "link_count": 240,
+    "artifact_count": 92,
+    "link_count": 267,
     "thread_count": 5
   },
   "canonical_paths": {
@@ -225,16 +225,16 @@
       }
     ],
     "counts": {
-      "artifact_count": 90,
-      "link_count": 240,
+      "artifact_count": 92,
+      "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
         "radar": 39,
         "feedback": 9,
-        "knowledge": 10,
+        "knowledge": 11,
         "proposals": 14,
-        "implementation": 18
+        "implementation": 19
       }
     },
     "artifacts": [
@@ -275,6 +275,23 @@
         "local_refs": []
       },
       {
+        "id": "implementation:CLAUDE.md",
+        "layer": "implementation",
+        "path": "CLAUDE.md",
+        "title": "erwin — Project Context for Claude",
+        "date": "",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "coding agents"
+        ],
+        "summary": "`erwin` is an **AI/agent frontier exploration lab**.",
+        "external_refs": [],
+        "local_refs": []
+      },
+      {
         "id": "implementation:README.md",
         "layer": "implementation",
         "path": "README.md",
@@ -283,20 +300,24 @@
         "status": "",
         "themes": [
           "harness",
+          "agent evals",
           "context engineering",
-          "coding agents",
-          "orchestration"
+          "coding agents"
         ],
         "summary": "`erwin` is an AI/agent frontier exploration lab.",
         "external_refs": [],
         "local_refs": [
           "AGENTS.md",
+          "CLAUDE.md",
           "_project/CURRENT.md",
+          "docs/agent-continuity-guide.md",
+          "docs/erwin-operating-model.md",
           "docs/README.md",
           "docs/index.html",
           "docs/knowledge/briefing.md",
           "docs/harness-explainer.md",
           "docs/radar/README.md",
+          "docs/knowledge/index.json",
           "docs/radar/sources.md",
           "docs/radar/themes.md",
           "docs/radar/weekly/README.md",
@@ -308,7 +329,10 @@
           "docs/harness-documentation-map.md",
           "skills/README.md",
           "skills/knowledge/README.md",
+          "skills/cwork/SKILL.md",
+          "skills/arch-review/arch-review/SKILL.md",
           "skills/visual-test/README.md",
+          "skills/session-record/session-record.md",
           "archive/README.md",
           "docs/archive/README.md",
           "_project/archive/README.md"
@@ -326,7 +350,7 @@
           "context engineering",
           "coding agents"
         ],
-        "summary": "**Version**: 1.0.0 **Last Updated**: 2026-04-17 **Last Session**: 2026-04-17-C (knowledge network index added)",
+        "summary": "**Version**: 1.0.0 **Last Updated**: 2026-04-19 **Last Session**: 2026-04-19-A (cross-agent continuity guide added)",
         "external_refs": [],
         "local_refs": [
           "_project/decisions/0013-harness-prototype-positioning.md",
@@ -371,6 +395,7 @@
         "local_refs": [
           "docs/index.html",
           "docs/knowledge/briefing.md",
+          "docs/agent-continuity-guide.md",
           "docs/erwin-operating-model.md",
           "docs/erwin-repositioning-2026-03-30.md",
           "docs/radar/README.md",
@@ -416,6 +441,48 @@
         ]
       },
       {
+        "id": "knowledge:docs/agent-continuity-guide.md",
+        "layer": "knowledge",
+        "path": "docs/agent-continuity-guide.md",
+        "title": "Agent Continuity Guide",
+        "date": "2026-04-19",
+        "status": "Active",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use"
+        ],
+        "summary": "provide a vendor-neutral continuity contract so Codex, Claude, or another agent can restart work from repository files instead of chat memory.",
+        "external_refs": [],
+        "local_refs": [
+          "AGENTS.md",
+          "CLAUDE.md",
+          "_project/CURRENT.md",
+          "docs/erwin-operating-model.md",
+          "docs/README.md",
+          "docs/knowledge/index.json",
+          "docs/knowledge/active-threads.md",
+          "docs/harness-documentation-map.md",
+          "docs/harness-session-handoff.md",
+          "docs/radar/README.md",
+          "docs/feedback/README.md",
+          "docs/knowledge/README.md",
+          "docs/proposals/README.md",
+          "harness/adapter-manifest.yml",
+          "internal/harness/runtime.go",
+          "docs/proposals/harness-proposal-ledger.md",
+          "docs/proposals/harness-review-gates.md",
+          "docs/harness-explainer.md",
+          "docs/harness-learning-loop.md",
+          "docs/proposals/harness-eval-candidate-ledger.md",
+          "docs/index.html",
+          "docs/knowledge/briefing.md",
+          "CHANGELOG.md"
+        ]
+      },
+      {
         "id": "knowledge:docs/erwin-operating-model.md",
         "layer": "knowledge",
         "path": "docs/erwin-operating-model.md",
@@ -438,6 +505,9 @@
           "docs/knowledge/index.json",
           "docs/knowledge/active-threads.md",
           "docs/proposals/harness-proposal-ledger.md",
+          "docs/agent-continuity-guide.md",
+          "AGENTS.md",
+          "CLAUDE.md",
           "docs/radar/sources.md",
           "docs/radar/themes.md",
           "docs/feedback/harness-usage-case-template.md",
@@ -836,6 +906,7 @@
         "summary": "provide a durable, file-backed starting point for fresh sessions so `Harness` work can resume from repository state instead of relying on chat-context memory.",
         "external_refs": [],
         "local_refs": [
+          "docs/agent-continuity-guide.md",
           "docs/harness-explainer.md",
           "AGENTS.md",
           "_project/CURRENT.md",
@@ -860,6 +931,7 @@
           "harness/adapter-manifest.yml",
           "docs/research/harness-gap-audit-2026-03-29.md",
           "docs/research/harness-research-drift-audit-2026-03-29.md",
+          "CLAUDE.md",
           "docs/harness-operating-model.md",
           "_project/archive/sessions/2026-03-29-AL.md",
           "_project/archive/sessions/2026-03-29-AM.md"
@@ -2619,10 +2691,31 @@
       },
       {
         "source": "implementation:README.md",
+        "target": "implementation:CLAUDE.md",
+        "type": "references",
+        "source_path": "README.md",
+        "target_path": "CLAUDE.md"
+      },
+      {
+        "source": "implementation:README.md",
         "target": "implementation:_project/CURRENT.md",
         "type": "references",
         "source_path": "README.md",
         "target_path": "_project/CURRENT.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "knowledge:docs/agent-continuity-guide.md",
+        "type": "reports_back",
+        "source_path": "README.md",
+        "target_path": "docs/agent-continuity-guide.md"
+      },
+      {
+        "source": "implementation:README.md",
+        "target": "knowledge:docs/erwin-operating-model.md",
+        "type": "reports_back",
+        "source_path": "README.md",
+        "target_path": "docs/erwin-operating-model.md"
       },
       {
         "source": "implementation:README.md",
@@ -2707,6 +2800,13 @@
         "type": "references",
         "source_path": "README.md",
         "target_path": "skills/README.md"
+      },
+      {
+        "source": "knowledge:docs/README.md",
+        "target": "knowledge:docs/agent-continuity-guide.md",
+        "type": "references",
+        "source_path": "docs/README.md",
+        "target_path": "docs/agent-continuity-guide.md"
       },
       {
         "source": "knowledge:docs/README.md",
@@ -2891,6 +2991,132 @@
         "target_path": "docs/harness-session-handoff.md"
       },
       {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "implementation:AGENTS.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "AGENTS.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "implementation:CLAUDE.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "CLAUDE.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "implementation:_project/CURRENT.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "_project/CURRENT.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "knowledge:docs/erwin-operating-model.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/erwin-operating-model.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "knowledge:docs/README.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/README.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "knowledge:docs/knowledge/active-threads.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/knowledge/active-threads.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "implementation:docs/harness-documentation-map.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/harness-documentation-map.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "implementation:docs/harness-session-handoff.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/harness-session-handoff.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "radar:docs/radar/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/radar/README.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "feedback:docs/feedback/README.md",
+        "type": "cites_evidence",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/feedback/README.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "knowledge:docs/knowledge/README.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/knowledge/README.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "proposals:docs/proposals/README.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/proposals/README.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "proposals:docs/proposals/harness-proposal-ledger.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "proposals:docs/proposals/harness-review-gates.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/proposals/harness-review-gates.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "implementation:docs/harness-explainer.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/harness-explainer.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "implementation:docs/harness-learning-loop.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/harness-learning-loop.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "proposals:docs/proposals/harness-eval-candidate-ledger.md",
+        "type": "links_proposal_pressure",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "docs/proposals/harness-eval-candidate-ledger.md"
+      },
+      {
+        "source": "knowledge:docs/agent-continuity-guide.md",
+        "target": "implementation:CHANGELOG.md",
+        "type": "references",
+        "source_path": "docs/agent-continuity-guide.md",
+        "target_path": "CHANGELOG.md"
+      },
+      {
         "source": "knowledge:docs/erwin-operating-model.md",
         "target": "radar:docs/radar/README.md",
         "type": "cites_evidence",
@@ -2931,6 +3157,27 @@
         "type": "links_proposal_pressure",
         "source_path": "docs/erwin-operating-model.md",
         "target_path": "docs/proposals/harness-proposal-ledger.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "knowledge:docs/agent-continuity-guide.md",
+        "type": "references",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "docs/agent-continuity-guide.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "implementation:AGENTS.md",
+        "type": "references",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "AGENTS.md"
+      },
+      {
+        "source": "knowledge:docs/erwin-operating-model.md",
+        "target": "implementation:CLAUDE.md",
+        "type": "references",
+        "source_path": "docs/erwin-operating-model.md",
+        "target_path": "CLAUDE.md"
       },
       {
         "source": "knowledge:docs/erwin-operating-model.md",
@@ -3249,6 +3496,13 @@
       },
       {
         "source": "implementation:docs/harness-session-handoff.md",
+        "target": "knowledge:docs/agent-continuity-guide.md",
+        "type": "reports_back",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "docs/agent-continuity-guide.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
         "target": "implementation:docs/harness-explainer.md",
         "type": "references",
         "source_path": "docs/harness-session-handoff.md",
@@ -3309,6 +3563,13 @@
         "type": "references",
         "source_path": "docs/harness-session-handoff.md",
         "target_path": "harness/README.md"
+      },
+      {
+        "source": "implementation:docs/harness-session-handoff.md",
+        "target": "implementation:CLAUDE.md",
+        "type": "references",
+        "source_path": "docs/harness-session-handoff.md",
+        "target_path": "CLAUDE.md"
       },
       {
         "source": "implementation:docs/harness-session-handoff.md",

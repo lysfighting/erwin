@@ -12,7 +12,7 @@
 ## At A Glance
 
 - `29` durable notes are currently indexed across `3` recurring streams.
-- `90` knowledge-network artifacts, `240` typed local links, and `5` active threads are available in `index.json`.
+- `92` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
