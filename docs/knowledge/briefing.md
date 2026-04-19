@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `27` durable notes are currently indexed across `3` recurring streams.
-- `88` knowledge-network artifacts, `240` typed local links, and `5` active threads are available in `index.json`.
+- `28` durable notes are currently indexed across `3` recurring streams.
+- `89` knowledge-network artifacts, `240` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -36,12 +36,12 @@
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-04-18
+### GitHub Trending - 2026-04-19
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-18. This run used the default global trending page with no extra filters; the page rendered 14 repositories.`
-- [obra/superpowers](https://github.com/obra/superpowers) - agentic skills framework and software development methodology. Shell. 157,780 stars, 1,713 stars today.
-- [Lordog/dive-into-llms](https://github.com/Lordog/dive-into-llms) - hands-on large-model programming practice tutorial. Jupyter Notebook. 31,532 stars, 944 stars today.
-- [google/magika](https://github.com/google/magika) - AI-powered file content type detection. Python. 15,474 stars, 956 stars today.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-19. This run used the default global trending page with no extra filters; the page rendered 10 repositories.`
+- [EvoMap/evolver](https://github.com/EvoMap/evolver) - GEP-powered self-evolution engine for AI agents. JavaScript. 5,017 stars, 1,131 stars today.
+- [BasedHardware/omi](https://github.com/BasedHardware/omi) - AI that sees screen context, listens to conversations, and suggests actions. Dart. 10,470 stars, 609 stars today.
+- [Lordog/dive-into-llms](https://github.com/Lordog/dive-into-llms) - hands-on large-model programming practice tutorial. Jupyter Notebook. 32,029 stars, 547 stars today.
 
 ## Durable Interpretation
 
@@ -83,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-04-19](../radar/trending/2026-04-19.md)
 - [2026-04-18](../radar/trending/2026-04-18.md)
 - [2026-04-17](../radar/trending/2026-04-17.md)
 - [2026-04-16](../radar/trending/2026-04-16.md)
 - [2026-04-15](../radar/trending/2026-04-15.md)
 - [2026-04-14](../radar/trending/2026-04-14.md)
-- [2026-04-13](../radar/trending/2026-04-13.md)

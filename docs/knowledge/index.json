@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 27,
+    "total_notes": 28,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 88,
+    "artifact_count": 89,
     "link_count": 240,
     "thread_count": 5
   },
@@ -145,16 +145,20 @@
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-04-18",
-      "meta": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-18. This run used the default global trending page with no extra filters; the page rendered 14 repositories.",
+      "title": "GitHub Trending - 2026-04-19",
+      "meta": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-19. This run used the default global trending page with no extra filters; the page rendered 10 repositories.",
       "highlights": [
-        "[obra/superpowers](https://github.com/obra/superpowers) - agentic skills framework and software development methodology. Shell. 157,780 stars, 1,713 stars today.",
-        "[Lordog/dive-into-llms](https://github.com/Lordog/dive-into-llms) - hands-on large-model programming practice tutorial. Jupyter Notebook. 31,532 stars, 944 stars today.",
-        "[google/magika](https://github.com/google/magika) - AI-powered file content type detection. Python. 15,474 stars, 956 stars today."
+        "[EvoMap/evolver](https://github.com/EvoMap/evolver) - GEP-powered self-evolution engine for AI agents. JavaScript. 5,017 stars, 1,131 stars today.",
+        "[BasedHardware/omi](https://github.com/BasedHardware/omi) - AI that sees screen context, listens to conversations, and suggests actions. Dart. 10,470 stars, 609 stars today.",
+        "[Lordog/dive-into-llms](https://github.com/Lordog/dive-into-llms) - hands-on large-model programming practice tutorial. Jupyter Notebook. 32,029 stars, 547 stars today."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-04-19",
+          "path": "radar/trending/2026-04-19.md"
+        },
         {
           "name": "2026-04-18",
           "path": "radar/trending/2026-04-18.md"
@@ -174,13 +178,9 @@
         {
           "name": "2026-04-14",
           "path": "radar/trending/2026-04-14.md"
-        },
-        {
-          "name": "2026-04-13",
-          "path": "radar/trending/2026-04-13.md"
         }
       ],
-      "count": 12
+      "count": 13
     }
   },
   "deep_dive": "The theme this week is **agent execution becoming a governed workspace contract**.",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 88,
+      "artifact_count": 89,
       "link_count": 240,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 37,
+        "radar": 38,
         "feedback": 9,
         "knowledge": 10,
         "proposals": 14,
@@ -2284,6 +2284,34 @@
           "https://github.com/SimoneAvogadro/android-reverse-engineering-skill",
           "https://github.com/Donchitos/Claude-Code-Game-Studios",
           "https://github.com/z-lab/dflash"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-19.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-19.md",
+        "title": "GitHub Trending - 2026-04-19",
+        "date": "2026-04-19",
+        "status": "",
+        "themes": [
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-19. This run used the default global trending page with no extra filters; the page rendered 10 repositories.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/EvoMap/evolver",
+          "https://github.com/BasedHardware/omi",
+          "https://github.com/Lordog/dive-into-llms",
+          "https://github.com/openai/openai-agents-python",
+          "https://github.com/thunderbird/thunderbolt",
+          "https://github.com/rustdesk/rustdesk",
+          "https://github.com/tractorjuice/arc-kit",
+          "https://github.com/SimoneAvogadro/android-reverse-engineering-skill",
+          "https://github.com/aaddrick/claude-desktop-debian",
+          "https://github.com/deepseek-ai/DeepGEMM"
         ],
         "local_refs": []
       },
