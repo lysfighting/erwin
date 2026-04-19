@@ -23,6 +23,9 @@ and only then any surviving conversation context.
 
 This is intentional state persistence, not incidental documentation.
 
+For repo-wide cross-agent restart behavior, first read [`docs/agent-continuity-guide.md`](agent-continuity-guide.md).
+This Harness handoff is the Harness-specific continuation layer beneath that global contract.
+
 External field intelligence and real usage feedback should enter `Harness` through the proposal-first learning loop and proposal ledger, not by directly rewriting runtime behavior from fresh observations alone.
 
 When a fresh session needs the fastest human-readable orientation before diving into architecture and control-plane details, start with [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md).
@@ -391,19 +394,20 @@ Those areas were partially overtaken by later 2026-03-29 sessions and by:
 
 For a new session that needs enough context to work safely, start here:
 
-1. [`AGENTS.md`](/Users/liyasong/Project/collov/erwin/AGENTS.md)
+1. Agent-specific entrypoint: [`AGENTS.md`](/Users/liyasong/Project/collov/erwin/AGENTS.md) for Codex or [`CLAUDE.md`](/Users/liyasong/Project/collov/erwin/CLAUDE.md) for Claude
 2. [`_project/CURRENT.md`](/Users/liyasong/Project/collov/erwin/_project/CURRENT.md)
-3. [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
-4. [`docs/harness-documentation-map.md`](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md)
-5. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
-6. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
-7. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
-8. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
-9. this file
-10. [`docs/research/harness-gap-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-gap-audit-2026-03-29.md)
-11. [`docs/research/harness-research-drift-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-research-drift-audit-2026-03-29.md)
-12. recent session logs
-13. recent Harness commits on `main` or the active task branch
+3. [`docs/agent-continuity-guide.md`](agent-continuity-guide.md)
+4. [`docs/harness-explainer.md`](/Users/liyasong/Project/collov/erwin/docs/harness-explainer.md)
+5. [`docs/harness-documentation-map.md`](/Users/liyasong/Project/collov/erwin/docs/harness-documentation-map.md)
+6. [`docs/harness-architecture.md`](/Users/liyasong/Project/collov/erwin/docs/harness-architecture.md)
+7. [`docs/harness-operating-model.md`](/Users/liyasong/Project/collov/erwin/docs/harness-operating-model.md)
+8. [`docs/harness-public-contract.md`](/Users/liyasong/Project/collov/erwin/docs/harness-public-contract.md)
+9. [`harness/adapter-manifest.yml`](/Users/liyasong/Project/collov/erwin/harness/adapter-manifest.yml)
+10. this file
+11. [`docs/research/harness-gap-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-gap-audit-2026-03-29.md)
+12. [`docs/research/harness-research-drift-audit-2026-03-29.md`](/Users/liyasong/Project/collov/erwin/docs/research/harness-research-drift-audit-2026-03-29.md)
+13. recent session logs
+14. recent Harness commits on `main` or the active task branch
 
 Recommended recent session logs:
 

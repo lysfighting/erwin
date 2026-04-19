@@ -41,6 +41,7 @@ erwin/
 │
 ├── docs/
 │   ├── README.md           ← Docs index
+│   ├── agent-continuity-guide.md ← Cross-agent continuity contract
 │   ├── erwin-operating-model.md ← Five-layer operating model
 │   ├── radar/              ← AI/agent radar knowledge base
 │   ├── feedback/           ← Normalized usage feedback
@@ -82,6 +83,7 @@ erwin/
 
 - `README.md` explains the repo in 30 seconds
 - `_project/CURRENT.md` is the live operational handoff
+- `docs/agent-continuity-guide.md` is the vendor-neutral cross-agent restart contract
 - `docs/erwin-operating-model.md` explains the five-layer knowledge-to-action loop
 - `docs/README.md` is the documentation map
 - `docs/knowledge/index.json` is the generated machine-readable knowledge network for cross-layer navigation
@@ -93,7 +95,7 @@ erwin/
 
 ## Session Protocol
 
-**Start**: read `AGENTS.md` → `_project/CURRENT.md` → `docs/erwin-operating-model.md` → `docs/README.md`
+**Start**: read `AGENTS.md` → `_project/CURRENT.md` → `docs/agent-continuity-guide.md` → `docs/erwin-operating-model.md` → `docs/README.md`
 
 **End**:
 
@@ -111,6 +113,7 @@ erwin/
 | Live status | `_project/CURRENT.md` |
 | Mission / goals | `_project/GOALS.md` |
 | Repo entrypoint | `README.md` |
+| Cross-agent continuity | `docs/agent-continuity-guide.md` |
 | Five-layer operating model | `docs/erwin-operating-model.md` |
 | Docs index | `docs/README.md` |
 | Knowledge network index | `docs/knowledge/index.json` |

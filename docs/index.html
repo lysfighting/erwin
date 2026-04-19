@@ -434,11 +434,11 @@
         This page is the human-facing front door for the repository&#x27;s knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.
       </p>
       <div class="hero-stats">
-        <div class="stat-chip"><strong>25</strong><span>Durable notes indexed</span></div>
+        <div class="stat-chip"><strong>29</strong><span>Durable notes indexed</span></div>
         <div class="stat-chip"><strong>3 streams</strong><span>Daily, weekly, trending</span></div>
         <div class="stat-chip"><strong>5 layers</strong><span>Radar to implementation</span></div>
-        <div class="stat-chip"><strong>86</strong><span>Network artifacts</span></div>
-        <div class="stat-chip"><strong>240</strong><span>Typed local links</span></div>
+        <div class="stat-chip"><strong>92</strong><span>Network artifacts</span></div>
+        <div class="stat-chip"><strong>267</strong><span>Typed local links</span></div>
       </div>
       <div class="hero-grid">
         <div class="hero-panel">
@@ -487,9 +487,9 @@
 
     <article class="brief-card cool">
       <div class="eyebrow">Daily</div>
-      <h3>AI Agent Daily Radar - 2026-04-17</h3>
-      <p class="meta">Window: 2026-04-11 to 2026-04-17</p>
-      <ul><li><strong>Anthropic shipped Claude Opus 4.7 with stronger long-running agent behavior.</strong> Anthropic published <a href="https://www.anthropic.com/news/claude-opus-4-7">Introducing Claude Opus 4.7</a> and the <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a> on <strong>April 16, 2026</strong>. The high-signal update is not just higher model quality: Anthropic explicitly calls out agentic coding, instruction-following literalness, better high-resolution vision for computer-use-style work, and improved file-system memory use. Harness implication: prompts and harnesses tuned for looser prior-model behavior may need stricter regression evals before upgrade.</li><li><strong>Claude Code 2.1.111/2.1.112 pushed Opus 4.7 into coding-agent operations.</strong> The official <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a> lists <strong>April 16, 2026</strong> releases adding Opus 4.7 <code>xhigh</code> effort, Max-subscriber Auto mode with Opus 4.7, <code>/ultrareview</code> for cloud multi-agent code review, <code>/less-permission-prompts</code>, fewer read-only Bash prompts, plugin diagnostics, OpenTelemetry raw API body logging, and a follow-up fix for Opus 4.7 auto-mode availability. This is a meaningful Claude Code update in-window: model upgrade, review delegation, permission ergonomics, and observability all moved together.</li><li><strong>OpenAI made the Agents SDK a more explicit sandboxed harness layer.</strong> OpenAI published <a href="https://openai.com/index/the-next-evolution-of-the-agents-sdk/">The next evolution of the Agents SDK</a> on <strong>April 15, 2026</strong>, describing an updated SDK for agents that inspect files, run commands, edit code, and work across long-horizon tasks in controlled sandbox environments. The first-party direction is clear: standardize the agent loop around workspace manifests, filesystem tools, shell/apply-patch tools, MCP, skills, sandbox-aware orchestration, and durability via snapshot/rehydration.</li></ul>
+      <h3>AI Agent Daily Radar - 2026-04-19</h3>
+      <p class="meta">Window: 2026-04-13 to 2026-04-19</p>
+      <ul><li><strong>Anthropic turned the April agent stack into a concrete platform surface.</strong> Anthropic's <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a> list <strong>April 16, 2026</strong> for Claude Opus 4.7, <strong>April 14, 2026</strong> for Sonnet 4 / Opus 4 model deprecations, <strong>April 9, 2026</strong> for the public-beta <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool">advisor tool</a>, and <strong>April 8, 2026</strong> for <a href="https://platform.claude.com/docs/en/managed-agents/overview">Claude Managed Agents</a>. Collapsed takeaway: Anthropic is packaging stronger agentic coding models together with managed harness APIs, executor/advisor model pairing, migration pressure, and cloud deployment channels.</li><li><strong>Claude Code shipped another runtime-hardening wave inside the window.</strong> The official <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a> lists <strong>2.1.114 on April 18, 2026</strong> and <strong>2.1.113 on April 17, 2026</strong>, including native binary spawning, domain-deny sandbox controls, <code>/loop</code> clarity, <code>/ultrareview</code> launch improvements, stalled-subagent timeout errors, MCP concurrent-call timeout fixes, and security tightening for Bash permissions. Harness implication: coding-agent CLIs are moving from "prompt plus tools" toward managed runtime safety, delegation observability, and long-run failure surfacing.</li><li><strong>OpenAI made sandboxed agent infrastructure a first-party Agents SDK primitive.</strong> OpenAI published <a href="https://openai.com/index/the-next-evolution-of-the-agents-sdk/">The next evolution of the Agents SDK</a> on <strong>April 15, 2026</strong>, describing a model-native harness for agents that work across files and tools plus native sandbox execution. Its <a href="https://help.openai.com/en/articles/6825453-chatgpt-release-notes">ChatGPT release notes</a> also list <strong>April 9, 2026</strong> Pro plan changes specifically tied to longer, higher-intensity Codex sessions and Codex usage allocation. Collapsed takeaway: OpenAI is aligning SDK-side controlled workspaces with product-side demand for longer coding-agent sessions.</li></ul>
       <div class="card-actions">
         <a class="primary-link" href="radar/daily/latest.md">Open latest</a>
         <a class="secondary-link" href="radar/daily/">Browse archive</a>
@@ -499,9 +499,9 @@
 
     <article class="brief-card violet">
       <div class="eyebrow">Trending</div>
-      <h3>GitHub Trending - 2026-04-17</h3>
-      <p class="meta">Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-17. This run used the default global trending page with no extra filters; the page rendered 14 repositories.</p>
-      <ul><li><a href="https://github.com/forrestchang/andrej-karpathy-skills">forrestchang/andrej-karpathy-skills</a> - a single <code>CLAUDE.md</code> file to improve Claude Code behavior, derived from Andrej Karpathy's observations on LLM coding pitfalls. 49,971 stars, 7,959 stars today.</li><li><a href="https://github.com/thedotmack/claude-mem">thedotmack/claude-mem</a> - Claude Code plugin that captures coding sessions, compresses them with AI, and injects relevant context into future sessions. TypeScript. 59,780 stars, 1,897 stars today.</li><li><a href="https://github.com/lsdefine/GenericAgent">lsdefine/GenericAgent</a> - self-evolving agent that grows a skill tree from a seed and emphasizes reduced token consumption. Python. 2,787 stars, 872 stars today.</li></ul>
+      <h3>GitHub Trending - 2026-04-19</h3>
+      <p class="meta">Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-19. This run used the default global trending page with no extra filters; the page rendered 10 repositories.</p>
+      <ul><li><a href="https://github.com/EvoMap/evolver">EvoMap/evolver</a> - GEP-powered self-evolution engine for AI agents. JavaScript. 5,017 stars, 1,131 stars today.</li><li><a href="https://github.com/BasedHardware/omi">BasedHardware/omi</a> - AI that sees screen context, listens to conversations, and suggests actions. Dart. 10,470 stars, 609 stars today.</li><li><a href="https://github.com/Lordog/dive-into-llms">Lordog/dive-into-llms</a> - hands-on large-model programming practice tutorial. Jupyter Notebook. 32,029 stars, 547 stars today.</li></ul>
       <div class="card-actions">
         <a class="primary-link" href="radar/trending/latest.md">Open latest</a>
         <a class="secondary-link" href="radar/trending/">Browse archive</a>
@@ -560,8 +560,8 @@
         <article class="network-card">
           <h3>Network snapshot</h3>
           <p>The graph is rebuilt from Markdown and selected implementation entrypoints. It is not a database; Markdown remains the source of truth.</p>
-          <div class="metric-line"><span>Artifacts</span><strong>86</strong></div>
-          <div class="metric-line"><span>Typed links</span><strong>240</strong></div>
+          <div class="metric-line"><span>Artifacts</span><strong>92</strong></div>
+          <div class="metric-line"><span>Typed links</span><strong>267</strong></div>
           <div class="metric-line"><span>Active threads</span><strong>5</strong></div>
           <div class="metric-line"><span>Proposal records</span><strong>5</strong></div>
           <div class="card-actions">
@@ -589,7 +589,7 @@
 
     <section class="archive-column">
       <h4>Daily Radar</h4>
-      <ul><li><a href="radar/daily/2026-04-17.md">2026-04-17</a></li><li><a href="radar/daily/2026-04-16.md">2026-04-16</a></li><li><a href="radar/daily/2026-04-15.md">2026-04-15</a></li><li><a href="radar/daily/2026-04-14.md">2026-04-14</a></li><li><a href="radar/daily/2026-04-13.md">2026-04-13</a></li><li><a href="radar/daily/2026-04-10.md">2026-04-10</a></li></ul>
+      <ul><li><a href="radar/daily/2026-04-19.md">2026-04-19</a></li><li><a href="radar/daily/2026-04-18.md">2026-04-18</a></li><li><a href="radar/daily/2026-04-17.md">2026-04-17</a></li><li><a href="radar/daily/2026-04-16.md">2026-04-16</a></li><li><a href="radar/daily/2026-04-15.md">2026-04-15</a></li><li><a href="radar/daily/2026-04-14.md">2026-04-14</a></li></ul>
     </section>
 
 
@@ -601,7 +601,7 @@
 
     <section class="archive-column">
       <h4>GitHub Trending</h4>
-      <ul><li><a href="radar/trending/2026-04-17.md">2026-04-17</a></li><li><a href="radar/trending/2026-04-16.md">2026-04-16</a></li><li><a href="radar/trending/2026-04-15.md">2026-04-15</a></li><li><a href="radar/trending/2026-04-14.md">2026-04-14</a></li><li><a href="radar/trending/2026-04-13.md">2026-04-13</a></li><li><a href="radar/trending/2026-04-10.md">2026-04-10</a></li></ul>
+      <ul><li><a href="radar/trending/2026-04-19.md">2026-04-19</a></li><li><a href="radar/trending/2026-04-18.md">2026-04-18</a></li><li><a href="radar/trending/2026-04-17.md">2026-04-17</a></li><li><a href="radar/trending/2026-04-16.md">2026-04-16</a></li><li><a href="radar/trending/2026-04-15.md">2026-04-15</a></li><li><a href="radar/trending/2026-04-14.md">2026-04-14</a></li></ul>
     </section>
 
       </div>

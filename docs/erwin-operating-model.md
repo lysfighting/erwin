@@ -55,6 +55,9 @@ When a session changes Radar notes, Feedback cases, active Knowledge threads, pr
 python3 scripts/build-knowledge-surface.py
 ```
 
+For cross-agent restart and handoff behavior, read [`docs/agent-continuity-guide.md`](agent-continuity-guide.md).
+Agent-specific entrypoints such as [`AGENTS.md`](../AGENTS.md) and [`CLAUDE.md`](../CLAUDE.md) should stay thin and aligned with that guide.
+
 ## System Flow
 
 ```mermaid

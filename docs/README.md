@@ -5,6 +5,7 @@ Open [knowledge/briefing.md](knowledge/briefing.md) when you want the same surfa
 
 ## Current Direction
 
+- [agent-continuity-guide.md](agent-continuity-guide.md) — vendor-neutral restart and handoff contract for Codex, Claude, and future agents
 - [erwin-operating-model.md](erwin-operating-model.md) — repo-level five-layer operating model connecting `Radar`, `Feedback`, `Knowledge`, `Proposals`, and `Implementation`
 - [erwin-repositioning-2026-03-30.md](erwin-repositioning-2026-03-30.md) — proposed repo pivot from narrow skill incubator toward an AI/agent exploration lab, including slimming guidance and automation scope
 - [index.html](index.html) — visual front door for latest daily / weekly / trending outputs plus the full knowledge-system map
@@ -43,6 +44,7 @@ Older `teamwork` materials remain available, while showcase-era material has bee
 
 | Document | Purpose |
 |----------|---------|
+| [agent-continuity-guide.md](agent-continuity-guide.md) | Cross-agent continuity contract, start protocol, task routing, trust order, and end protocol |
 | [index.html](index.html) | Visual knowledge surface for latest briefings and archive browsing |
 | [knowledge/briefing.md](knowledge/briefing.md) | Generated text-first briefing for the current knowledge surface |
 | [knowledge/index.json](knowledge/index.json) | Generated machine-readable knowledge index, including typed artifacts, local links, active threads, and proposal records |

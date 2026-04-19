@@ -7,14 +7,22 @@
 ## Project Status
 
 - **Version**: 1.0.0
-- **Last Updated**: 2026-04-17
-- **Last Session**: 2026-04-17-C (knowledge network index added)
+- **Last Updated**: 2026-04-19
+- **Last Session**: 2026-04-19-A (cross-agent continuity guide added)
 
 ## Current Phase
 
 **Phase**: AI/agent frontier exploration lab with active Radar, Knowledge, and Codex-native Harness tracks
 
 ## What Was Just Completed
+
+**Session 2026-04-19-A** — Cross-agent continuity guide added
+
+- **Cross-agent restart is now a first-class contract**: `docs/agent-continuity-guide.md` defines the vendor-neutral start protocol, task routing, trust order, Harness evolution rule, knowledge-network contract, and end protocol for Codex, Claude, and future agents
+- **Claude no longer starts from stale repo cognition**: `CLAUDE.md` now matches the five-layer `Radar / Feedback / Knowledge / Proposals / Implementation` model instead of the old three-lane summary
+- **Entrypoints now converge on the same durable truth**: `README.md`, `AGENTS.md`, `docs/README.md`, `docs/erwin-operating-model.md`, and `docs/harness-session-handoff.md` all route fresh work through the continuity guide before local subsystem docs
+- **The knowledge network now indexes continuity artifacts**: `scripts/build-knowledge-surface.py` includes `docs/agent-continuity-guide.md` and `CLAUDE.md` in the generated cross-layer graph
+- **Next sessions should not depend on old Codex or Claude thread memory**: start from the agent-specific entrypoint, then `_project/CURRENT.md`, `docs/agent-continuity-guide.md`, `docs/erwin-operating-model.md`, and `docs/README.md`
 
 **Session 2026-04-17-C** — Knowledge network index added
 

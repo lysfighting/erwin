@@ -2,18 +2,22 @@
 
 `erwin` is an AI/agent frontier exploration lab.
 
-The repository now centers on three active lanes:
+The repository now centers on a five-layer knowledge-to-action loop:
 
 - `Radar` — recurring intelligence on high-signal AI/agent developments from authoritative publishers
-- `Harness` — a Codex-native orchestration operating model and implementation proving ground
-- `Skills` — reusable skills that still matter to the current agent-systems direction
+- `Feedback` — normalized real Harness / Claude / Codex / repo usage pressure
+- `Knowledge` — durable synthesis, active threads, and interpretation
+- `Proposals` — reviewed change candidates
+- `Implementation` — Harness / Skills / eval / docs / automation changes
 
 Historical teamwork/process material still exists, but it no longer defines the repo.
 
 ## Start Here
 
-- Read [AGENTS.md](AGENTS.md) for repo context
+- Read [AGENTS.md](AGENTS.md) for Codex context or [CLAUDE.md](CLAUDE.md) for Claude context
 - Read [_project/CURRENT.md](_project/CURRENT.md) for live status
+- Read [docs/agent-continuity-guide.md](docs/agent-continuity-guide.md) for the cross-agent restart contract
+- Read [docs/erwin-operating-model.md](docs/erwin-operating-model.md) for the five-layer operating model
 - Read [docs/README.md](docs/README.md) for the documentation map
 - Open [docs/index.html](docs/index.html) for the visual knowledge surface
 - Open [docs/knowledge/briefing.md](docs/knowledge/briefing.md) for the text briefing
@@ -21,6 +25,13 @@ Historical teamwork/process material still exists, but it no longer defines the 
 - Read [docs/radar/README.md](docs/radar/README.md) for the new field-radar layer
 
 ## Repo Lanes
+
+### Continuity
+
+- [docs/agent-continuity-guide.md](docs/agent-continuity-guide.md)
+- [_project/CURRENT.md](_project/CURRENT.md)
+- [docs/erwin-operating-model.md](docs/erwin-operating-model.md)
+- [docs/knowledge/index.json](docs/knowledge/index.json)
 
 ### Radar
 
@@ -48,10 +59,10 @@ Historical teamwork/process material still exists, but it no longer defines the 
 
 - [skills/README.md](skills/README.md)
 - [skills/knowledge/](skills/knowledge)
-- [skills/cwork/](skills/cwork)
-- [skills/arch-review/](skills/arch-review)
+- [skills/cwork/](skills/cwork/SKILL.md)
+- [skills/arch-review/](skills/arch-review/arch-review/SKILL.md)
 - [skills/visual-test/](skills/visual-test)
-- [skills/session-record/](skills/session-record)
+- [skills/session-record/](skills/session-record/session-record.md)
 
 ## Historical Material
 
