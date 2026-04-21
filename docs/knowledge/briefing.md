@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `32` durable notes are currently indexed across `3` recurring streams.
-- `95` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `33` durable notes are currently indexed across `3` recurring streams.
+- `96` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,12 +27,12 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-04-20
+### AI Agent Daily Radar - 2026-04-21
 
-- Metadata: `Window: 2026-04-14 to 2026-04-20`
-- **Anthropic moved its agent platform forward with Opus 4.7 and Claude Code runtime changes.** Anthropic's [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) list **April 16, 2026** for Claude Opus 4.7, positioning it for complex reasoning and agentic coding, plus same-window Bedrock availability and **April 14, 2026** deprecation pressure for older Claude 4 models. The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) then shows Opus 4.7 support and runtime hardening across **April 16-18, 2026**, including `xhigh` effort, native binary spawning, network deny-list controls, stalled-subagent failure surfacing, MCP timeout fixes, and security tightening around Bash permissions. Collapsed takeaway: Anthropic is combining stronger model upgrades with sharper agent-runtime policy, observability, and failure behavior.
-- **Claude Managed Agents and the advisor tool remain the key Anthropic platform betas to track.** The required Anthropic surface check found no newer dated doc than the platform notes: [Claude Managed Agents](https://platform.claude.com/docs/en/managed-agents/overview) remains the **April 8, 2026** public beta for a managed autonomous-agent harness with sandboxing, built-in tools, and SSE streaming; the [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) remains the **April 9, 2026** public beta for pairing a faster executor model with a higher-intelligence advisor model. These are not new today, but they remain in-window and directly shape harness planning/execution separation.
-- **OpenAI made Codex and the Agents SDK more explicitly harness-native.** OpenAI published [The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) on **April 15, 2026**, adding a model-native harness, native sandbox execution, portable workspace manifests, filesystem/shell/apply-patch tools, MCP, skills, memory, snapshotting, and rehydration. OpenAI then published [Codex for (almost) everything](https://openai.com/index/codex-for-almost-everything/) on **April 16, 2026**, adding desktop computer use, an in-app browser, expanded plugins, SSH/devbox support, memory preview, and automations that can reuse existing conversation threads. Collapsed takeaway: OpenAI is pushing the same agent loop into both SDK infrastructure and end-user developer workflow.
+- Metadata: `Window: 2026-04-14 to 2026-04-21`
+- **Anthropic tightened model migration pressure while expanding top-end coding capability.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) list **April 16, 2026** for [Claude Opus 4.7](https://www.anthropic.com/news/claude-opus-4-7), including API breaking changes and self-serve Amazon Bedrock availability, **April 14, 2026** for deprecating older Claude 4 model IDs ahead of a **June 15, 2026** retirement, and **April 20, 2026** for the final retirement of Claude Haiku 3. Collapsed takeaway: Anthropic is pairing frontier-model improvement with fast migration pressure on older IDs.
+- **Claude Code moved in-window on recap, prompt caching, hooks, and worktree-aware agent control.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **v2.1.105 on April 13, 2026** adding `EnterWorktree`, pre-compact hooks, background monitors, and better stalled-stream handling; **v2.1.108 on April 14, 2026** adding one-hour prompt-cache env vars, `/recap`, and built-in slash-command discovery via the Skill tool; and **v2.1.109 on April 15, 2026** improving the extended-thinking indicator. Collapsed takeaway: Anthropic is still hardening the agent runtime around resumability, policy hooks, context reuse, and multi-worktree execution.
+- **OpenAI pushed the agent loop deeper into both SDK infrastructure and end-user workflow.** OpenAI published [The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) on **April 15, 2026**, adding a model-native harness, native sandbox execution, portable manifests, filesystem and patch tools, MCP, skills, memory, snapshotting, and rehydration. OpenAI followed with [Codex for (almost) everything](https://openai.com/index/codex-for-almost-everything/) on **April 16, 2026**, extending Codex with desktop computer use, an in-app browser, more plugins, SSH/devbox support, reusable automations, and memory preview. Collapsed takeaway: OpenAI is collapsing SDK and product into the same long-horizon agent operating pattern.
 
 ## Trending Snapshot
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-04-21](../radar/daily/2026-04-21.md)
 - [2026-04-20](../radar/daily/2026-04-20.md)
 - [2026-04-19](../radar/daily/2026-04-19.md)
 - [2026-04-18](../radar/daily/2026-04-18.md)
 - [2026-04-17](../radar/daily/2026-04-17.md)
 - [2026-04-16](../radar/daily/2026-04-16.md)
-- [2026-04-15](../radar/daily/2026-04-15.md)
 
 ### Weekly Synthesis
 
