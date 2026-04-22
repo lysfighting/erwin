@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 34,
+    "total_notes": 35,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 97,
+    "artifact_count": 98,
     "link_count": 267,
     "thread_count": 5
   },
@@ -145,16 +145,20 @@
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-04-21",
-      "meta": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-21. This run used the default global trending page with no extra filters; the page rendered 10 repositories.",
+      "title": "GitHub Trending - 2026-04-22",
+      "meta": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-22. This run used the default global trending page with no extra filters; the page rendered 9 repositories.",
       "highlights": [
-        "[Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) - finance application for market analytics, investment research, and economic data tools. Python. 9,618 stars, 3,109 stars today.",
-        "[ruvnet/RuView](https://github.com/ruvnet/RuView) - WiFi-based pose estimation, vital-sign monitoring, and presence detection without camera video. Rust. 48,233 stars, 713 stars today.",
-        "[thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt) - AI stack emphasizing model choice, local control, and reduced vendor lock-in. TypeScript. 2,834 stars, 675 stars today."
+        "[Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) - finance application for market analytics, investment research, and economic data exploration. Python. 11,679 stars, 2,548 stars today.",
+        "[thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt) - AI stack focused on model choice, local ownership, and avoiding vendor lock-in. TypeScript. 3,490 stars, 596 stars today.",
+        "[zilliztech/claude-context](https://github.com/zilliztech/claude-context) - MCP-based code search layer for Claude Code and other coding agents. TypeScript. 6,637 stars, 169 stars today."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-04-22",
+          "path": "radar/trending/2026-04-22.md"
+        },
         {
           "name": "2026-04-21",
           "path": "radar/trending/2026-04-21.md"
@@ -174,13 +178,9 @@
         {
           "name": "2026-04-17",
           "path": "radar/trending/2026-04-17.md"
-        },
-        {
-          "name": "2026-04-16",
-          "path": "radar/trending/2026-04-16.md"
         }
       ],
-      "count": 15
+      "count": 16
     }
   },
   "deep_dive": "The theme this week is **agent execution becoming a governed workspace contract**.",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 97,
+      "artifact_count": 98,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 44,
+        "radar": 45,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2568,6 +2568,35 @@
           "https://github.com/tractorjuice/arc-kit",
           "https://github.com/pi-hole/pi-hole",
           "https://github.com/XTLS/Xray-core"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-22.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-22.md",
+        "title": "GitHub Trending - 2026-04-22",
+        "date": "2026-04-22",
+        "status": "",
+        "themes": [
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-22. This run used the default global trending page with no extra filters; the page rendered 9 repositories.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/Fincept-Corporation/FinceptTerminal",
+          "https://github.com/thunderbird/thunderbolt",
+          "https://github.com/zilliztech/claude-context",
+          "https://github.com/microsoft/ai-agents-for-beginners",
+          "https://github.com/HKUDS/RAG-Anything",
+          "https://github.com/VoltAgent/awesome-agent-skills",
+          "https://github.com/ruvnet/RuView",
+          "https://github.com/dayanch96/YTLite",
+          "https://github.com/sansan0/TrendRadar"
         ],
         "local_refs": []
       },

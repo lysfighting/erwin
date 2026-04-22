@@ -1,34 +1,33 @@
-# GitHub Trending - 2026-04-21
+# GitHub Trending - 2026-04-22
 
-Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-21. This run used the default global trending page with no extra filters; the page rendered 10 repositories.
+Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-22. This run used the default global trending page with no extra filters; the page rendered 9 repositories.
 
 ## Trending Snapshot
 
-Today's default board mixes AI tooling, finance/research applications, privacy and networking infrastructure, and practical self-hosted software. AI- and developer-adjacent projects are prominent through [openai/openai-agents-python](https://github.com/openai/openai-agents-python), [thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt), [koala73/worldmonitor](https://github.com/koala73/worldmonitor), and [deepseek-ai/DeepGEMM](https://github.com/deepseek-ai/DeepGEMM), but the biggest visible daily spike belongs to [Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) at 3,109 stars today.
+Today's default board leans heavily toward AI, agent, and developer-tooling projects, but it still includes broader consumer and sensing software. The largest visible daily spike belongs to [Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) at 2,548 stars today, while AI- and coding-adjacent repos such as [thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt), [zilliztech/claude-context](https://github.com/zilliztech/claude-context), [microsoft/ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners), [HKUDS/RAG-Anything](https://github.com/HKUDS/RAG-Anything), and [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) make the board's center of gravity clear.
 
 ## Notable Projects
 
-- [Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) - finance application for market analytics, investment research, and economic data tools. Python. 9,618 stars, 3,109 stars today.
-- [ruvnet/RuView](https://github.com/ruvnet/RuView) - WiFi-based pose estimation, vital-sign monitoring, and presence detection without camera video. Rust. 48,233 stars, 713 stars today.
-- [thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt) - AI stack emphasizing model choice, local control, and reduced vendor lock-in. TypeScript. 2,834 stars, 675 stars today.
-- [paperless-ngx/paperless-ngx](https://github.com/paperless-ngx/paperless-ngx) - document management system for scanning, indexing, and archiving documents. Python. 39,440 stars, 606 stars today.
-- [tractorjuice/arc-kit](https://github.com/tractorjuice/arc-kit) - enterprise architecture governance and vendor procurement toolkit. HTML. 1,351 stars, 329 stars today.
-- [koala73/worldmonitor](https://github.com/koala73/worldmonitor) - real-time global intelligence dashboard with AI-assisted aggregation and monitoring. TypeScript. 50,151 stars, 316 stars today.
-- [openai/openai-agents-python](https://github.com/openai/openai-agents-python) - framework for multi-agent workflows. Python. 23,959 stars, 905 stars today.
-- [deepseek-ai/DeepGEMM](https://github.com/deepseek-ai/DeepGEMM) - FP8 GEMM kernels with fine-grained scaling. Cuda. 6,833 stars, 109 stars today.
-- [pi-hole/pi-hole](https://github.com/pi-hole/pi-hole) - network-level ad blocking. Shell. 57,191 stars, 196 stars today.
-- [XTLS/Xray-core](https://github.com/XTLS/Xray-core) - network transport and proxy core for varied routing use cases. Go. 37,466 stars, 78 stars today.
+- [Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) - finance application for market analytics, investment research, and economic data exploration. Python. 11,679 stars, 2,548 stars today.
+- [thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt) - AI stack focused on model choice, local ownership, and avoiding vendor lock-in. TypeScript. 3,490 stars, 596 stars today.
+- [zilliztech/claude-context](https://github.com/zilliztech/claude-context) - MCP-based code search layer for Claude Code and other coding agents. TypeScript. 6,637 stars, 169 stars today.
+- [ruvnet/RuView](https://github.com/ruvnet/RuView) - WiFi-based pose estimation and vital-sign sensing without camera video. Rust. 48,913 stars, 824 stars today.
+- [microsoft/ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners) - lesson-driven starter course for building AI agents. Jupyter Notebook. 57,746 stars, 200 stars today.
+- [dayanch96/YTLite](https://github.com/dayanch96/YTLite) - iOS YouTube enhancement project. Logos. 4,843 stars, 55 stars today.
+- [HKUDS/RAG-Anything](https://github.com/HKUDS/RAG-Anything) - all-in-one RAG framework. Python. 16,921 stars, 162 stars today.
+- [sansan0/TrendRadar](https://github.com/sansan0/TrendRadar) - AI-assisted trend and public-opinion monitoring system with multi-platform aggregation and alerting. Python. 53,686 stars, 534 stars today.
+- [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) - curated collection of agent skills compatible with multiple coding-agent environments. 16,757 stars, 139 stars today.
 
 ## Why They May Be Surfacing
 
-- [Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) and [koala73/worldmonitor](https://github.com/koala73/worldmonitor) package analysis-heavy workflows into polished operator-facing products, which likely helps them travel beyond a narrow developer audience.
-- [openai/openai-agents-python](https://github.com/openai/openai-agents-python) and [thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt) sit directly in the current agent/build-with-models lane, but with different emphasis: orchestration versus ownership/control.
-- [deepseek-ai/DeepGEMM](https://github.com/deepseek-ai/DeepGEMM) adds infrastructure-level AI signal rather than app-layer signal, pointing to continued interest in inference and training performance primitives.
-- [paperless-ngx/paperless-ngx](https://github.com/paperless-ngx/paperless-ngx), [pi-hole/pi-hole](https://github.com/pi-hole/pi-hole), and [XTLS/Xray-core](https://github.com/XTLS/Xray-core) show the board is not only AI-driven; durable self-hosted and network utility software still draws broad attention.
+- [Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) combines finance analytics with a polished exploration UI, which likely broadens its reach beyond a narrow quant audience.
+- [thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt), [zilliztech/claude-context](https://github.com/zilliztech/claude-context), and [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) sit directly in the current coding-agent toolchain lane: control surfaces, context plumbing, and reusable skill catalogs.
+- [microsoft/ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners) and [HKUDS/RAG-Anything](https://github.com/HKUDS/RAG-Anything) reflect continued demand for educational and framework-level AI building blocks rather than only end-user apps.
+- [ruvnet/RuView](https://github.com/ruvnet/RuView) and [dayanch96/YTLite](https://github.com/dayanch96/YTLite) show the board is not exclusively agent-focused; unusual hardware sensing and consumer customization projects still break through when the concept is legible and broadly shareable.
 
 ## Watchlist
 
-- Track whether [Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) holds its unusually large one-day spike or falls back after the initial burst.
-- Keep [openai/openai-agents-python](https://github.com/openai/openai-agents-python), [thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt), and [koala73/worldmonitor](https://github.com/koala73/worldmonitor) on the AI/agent/productivity watchlist.
-- Watch [deepseek-ai/DeepGEMM](https://github.com/deepseek-ai/DeepGEMM) as a useful signal for low-level model infrastructure surfacing on the mainstream board.
-- Treat [paperless-ngx/paperless-ngx](https://github.com/paperless-ngx/paperless-ngx), [pi-hole/pi-hole](https://github.com/pi-hole/pi-hole), and [XTLS/Xray-core](https://github.com/XTLS/Xray-core) as non-AI durability signals when they recur.
+- Track whether [Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) sustains this outsized daily surge or settles after a first-wave spike.
+- Keep [thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt), [zilliztech/claude-context](https://github.com/zilliztech/claude-context), [microsoft/ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners), and [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) on the agent/coding workflow watchlist.
+- Watch [HKUDS/RAG-Anything](https://github.com/HKUDS/RAG-Anything) and [sansan0/TrendRadar](https://github.com/sansan0/TrendRadar) as signals for continuing appetite around packaged AI retrieval and monitoring systems.
+- Treat [ruvnet/RuView](https://github.com/ruvnet/RuView) as a reminder to monitor non-software-only sensing interfaces when they surface on the mainstream board.

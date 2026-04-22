@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `34` durable notes are currently indexed across `3` recurring streams.
-- `97` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `35` durable notes are currently indexed across `3` recurring streams.
+- `98` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -36,12 +36,12 @@
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-04-21
+### GitHub Trending - 2026-04-22
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-21. This run used the default global trending page with no extra filters; the page rendered 10 repositories.`
-- [Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) - finance application for market analytics, investment research, and economic data tools. Python. 9,618 stars, 3,109 stars today.
-- [ruvnet/RuView](https://github.com/ruvnet/RuView) - WiFi-based pose estimation, vital-sign monitoring, and presence detection without camera video. Rust. 48,233 stars, 713 stars today.
-- [thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt) - AI stack emphasizing model choice, local control, and reduced vendor lock-in. TypeScript. 2,834 stars, 675 stars today.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-22. This run used the default global trending page with no extra filters; the page rendered 9 repositories.`
+- [Fincept-Corporation/FinceptTerminal](https://github.com/Fincept-Corporation/FinceptTerminal) - finance application for market analytics, investment research, and economic data exploration. Python. 11,679 stars, 2,548 stars today.
+- [thunderbird/thunderbolt](https://github.com/thunderbird/thunderbolt) - AI stack focused on model choice, local ownership, and avoiding vendor lock-in. TypeScript. 3,490 stars, 596 stars today.
+- [zilliztech/claude-context](https://github.com/zilliztech/claude-context) - MCP-based code search layer for Claude Code and other coding agents. TypeScript. 6,637 stars, 169 stars today.
 
 ## Durable Interpretation
 
@@ -83,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-04-22](../radar/trending/2026-04-22.md)
 - [2026-04-21](../radar/trending/2026-04-21.md)
 - [2026-04-20](../radar/trending/2026-04-20.md)
 - [2026-04-19](../radar/trending/2026-04-19.md)
 - [2026-04-18](../radar/trending/2026-04-18.md)
 - [2026-04-17](../radar/trending/2026-04-17.md)
-- [2026-04-16](../radar/trending/2026-04-16.md)
