@@ -123,5 +123,5 @@ Scripts in `scripts/` (Von Neumann separation: deterministic ops in scripts, LLM
 
 ## Version
 
-- Skill version: 3.14.0
+- Skill version: 3.15.0
 - Config schema: 3

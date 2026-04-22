@@ -1,6 +1,6 @@
 ---
 description: "Create mission Issue from natural language. Try: /team-issue help"
-version: "3.14.0"
+version: "3.15.0"
 ---
 
 # /team-issue — Mission Contract Issue Manager
@@ -31,7 +31,7 @@ version: "3.14.0"
 
 If `$ARGUMENTS` is `help` or `-h`, output the following and **STOP**:
 
-**`/team-issue` — Mission Contract Issue Manager** (`v3.14.0`)
+**`/team-issue` — Mission Contract Issue Manager** (`v3.15.0`)
 
 **USAGE**
   `/team-issue <description>`                    Create MC (solo: self-assign; team: prompt)

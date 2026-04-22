@@ -2,6 +2,76 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.15.0] — 2026-04-22
+
+### Added — 飞书 release announcement + changelog helper
+
+`/team-rc` Prepare and Promote now emit a 飞书-ready markdown block that
+the user can copy-paste into the team channel. Changelog is generated
+deterministically (not AI-interpreted) from conventional-commit PR titles,
+so the same command produces the same output.
+
+- **`tw-pr.sh merged-since`** (new subcommand): shared deterministic changelog
+  generator. Encapsulates the 3.13.0 UTC-Z timezone fix (`%at` +
+  `date -u -r/-d`), `gh pr list`, jq filter by `mergedAt > prev_tag_date`,
+  and category by conventional-commit prefix (`feat(x)?!?:` → Features,
+  `fix(x)?!?:` → Bug Fixes, else → Other Changes). Three output formats:
+  `json` (structured for post-processing), `markdown` (GitHub release
+  notes shape, same as pre-3.15.0 Step P5 output), `feishu` (rich-text
+  block with header emoji, metadata, categorized PRs, contributors, total).
+- **`/team-rc` Prepare Step 7**: after the RC-prepared dashboard, emits a
+  divider-bounded 飞书 announcement block with staging version, timestamp
+  (`+08:00` timezone explicit), RC branch, base SHA, compare URL, and the
+  changelog categorized by conventional-commit prefix. Copy-paste into
+  飞书 rich text renders as formatted MD.
+- **`/team-rc promote` Step P11**: Summary now embeds the same 飞书
+  announcement block with production emoji (🎉), GitHub Release URL,
+  Release PR number, tag merge SHA, and diff link. The summary's
+  `Release: ...` line also shows the URL prominently (previously only
+  the placeholder was present — see P8 fix below).
+
+### Fixed — P8 RELEASE_URL was lost on fresh-create path
+
+- **`/team-rc promote` Step P8**: `RELEASE_URL=$(gh release view ...)` was
+  only captured in the idempotent re-entry branch. On a normal first-run
+  promote where the release is newly created, `RELEASE_URL` ended up
+  empty and the P11 `{release_url}` placeholder rendered as blank.
+  Now `RELEASE_URL` is captured unconditionally after either branch
+  (with `2>/dev/null || echo ""` fallback so the flow continues if the
+  `gh release view` call still fails post-create).
+
+### Changed — Step P5 refactor (DRY)
+
+- **`/team-rc promote` Step P5**: inline 30-line changelog generation
+  block replaced with a single call to `tw-pr.sh merged-since --format markdown`.
+  Output format unchanged (same `## What's in this release` / `### Features` /
+  `### Contributors` / `**Full Changelog**` shape), so release notes on
+  GitHub look identical to pre-3.15.0. The DRY win: Prepare Step 7 +
+  Promote Step P5 + Promote Step P11 all go through the same helper,
+  and future timezone or categorization fixes land in one place.
+
+### Tests
+
+- `tw-unit-test.sh` adds 5 tests covering `merged-since`:
+  usage rejection (no base), bad `--format` rejection, markdown renderer
+  (header + categories + author citations + contributor count), feishu
+  renderer (header emoji + metadata lines + category emojis + total), and
+  production-path feishu (🎉 header + release URL + PR number).
+- All renderer tests use a PATH-shimmed `gh` stub (no network, no auth).
+- Full suite: 59/59 passing (54 pre-existing + 5 new).
+
+### Known Limitations
+
+- Category matching is by conventional-commit prefix only; PRs like
+  `"Merge features/xxl_dev into pre-launch"` fall into Other Changes
+  (correct, but noisy for teams that rebase-merge feature branches via
+  the GitHub UI).
+- No `--max-per-category N` truncation — long release windows can
+  produce a 100-line 飞书 block. Acceptable for v1; add truncation if
+  feedback shows it's needed.
+- Feishu assumes rich-text rendering. Plain-text mode still displays
+  readable content but without bold / emoji styling.
+
 ## [3.14.0] — 2026-04-17
 
 ### Added — `/team fleet` multi-mission orchestration sub-command

@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.14.0"
+version: "3.15.0"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -287,6 +287,40 @@ Staging:  {triggered / deploy manually}
   3. 验证通过 → `/team-rc promote`
 
 ────────────────────────────────────────────
+
+**Generate 飞书 announcement**:
+
+```bash
+# Pick previous clean version tag as the date boundary
+PREV_TAG=$(git tag --sort=-v:refname --list "${VERSION_PREFIX}*" \
+  | grep -E "^$(echo "$VERSION_PREFIX" | sed 's/[.[\*^$()+?{|\\]/\\&/g')\.[0-9]+$" \
+  | head -1)
+
+# Base sha for the metadata block
+BASE_SHA=$(git rev-parse "origin/$BASE_BRANCH" 2>/dev/null)
+
+# Emit the 飞书-ready markdown block (uses shared tw-pr.sh merged-since)
+FEISHU_BLOCK=$(bash ~/.claude/commands/scripts/tw-pr.sh merged-since \
+  "$BASE_BRANCH" "$PREV_TAG" \
+  --repo "$REPO" \
+  --format feishu \
+  --version "$NEXT_VERSION" \
+  --base-sha "$BASE_SHA" \
+  --env staging)
+```
+
+Then output the announcement block between dividers so user can copy-paste:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📣 **飞书发布通知 — 复制下方内容**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{$FEISHU_BLOCK content}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{^ If PREV_TAG is empty (first release), merged-since returns all PRs back to repo start; the output still works, just shows "Initial release" marker instead of a diff link.}
+{^ If merged-since fails (no gh auth, no network, no base branch on origin) → warn "FEISHU block skipped" but do NOT block the flow; the RC cut has already happened and is the critical work.}
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
@@ -995,66 +1029,30 @@ If rebuild fails → **STOP**
 
 ### Step P5: Generate Release Notes
 
-**Why not `--generate-notes`**: GitHub's auto-generate relies on PRs visible from `main`. After squash merge, `main` sees only the release PR itself — all original PR authors and links are lost. We reconstruct from the base branch's merged PR history instead.
+**Why not `--generate-notes`**: GitHub's auto-generate relies on PRs visible from `main`. After squash merge, `main` sees only the release PR itself — all original PR authors and links are lost. We reconstruct from the base branch's merged PR history via the shared `tw-pr.sh merged-since` helper(deterministic filter + categorize, same mechanism reused by `/team-rc` Prepare's 飞书 block).
 
 ```bash
-# Find previous tag as time boundary (current version is NOT yet tagged — that happens at P7)
-# IMPORTANT: Filter to only clean version tags (PREFIX.N) — exclude hotfix tags (PREFIX.N-hotfix.M)
-# which are more recent but represent patches, not full releases. Including them would
-# narrow the date window and miss changes between the last RC release and the hotfix.
+# Find previous clean version tag as time boundary (current version is NOT yet tagged — that happens at P7).
+# Filter to only clean version tags (PREFIX.N) — exclude hotfix tags (PREFIX.N-hotfix.M).
 PREV_TAG=$(git tag --sort=-v:refname --list "${VERSION_PREFIX}*" \
   | grep -E "^$(echo "$VERSION_PREFIX" | sed 's/[.[\*^$()+?{|\\]/\\&/g')\.[0-9]+$" \
   | head -1)
-if [ -n "$PREV_TAG" ]; then
-  # IMPORTANT: normalize to UTC Z format. git log --format=%aI emits local-tz ISO
-  # like 2026-04-14T20:38:18+08:00; GitHub API mergedAt is always UTC Z like
-  # 2026-04-14T14:51:49Z. String-compare across the two formats silently drops
-  # PRs merged in the offset window (e.g. UTC 12:38–20:38 vanished in +08:00).
-  PREV_TS=$(git log -1 --format='%at' "$PREV_TAG" 2>/dev/null)
-  PREV_DATE=$(date -u -r "$PREV_TS" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null \
-             || date -u -d "@$PREV_TS" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null \
-             || echo "2000-01-01T00:00:00Z")
-else
-  PREV_DATE="2000-01-01T00:00:00Z"
-fi
 
-# Fetch merged PRs from base branch since last tag
-PR_JSON=$(gh pr list --base "$BASE_BRANCH" --state merged \
-  --json number,title,author,mergedAt,url --limit 300 --repo "$REPO")
+# Generate release notes via shared helper. It handles UTC Z timezone normalization
+# (3.13.0 fix — %aI local-tz bug silently dropped PRs merged in the offset window),
+# gh pr list, jq filter (mergedAt > prev_tag_date), and category by conventional-commit prefix.
+RELEASE_BODY=$(bash ~/.claude/commands/scripts/tw-pr.sh merged-since \
+  "$BASE_BRANCH" "$PREV_TAG" \
+  --repo "$REPO" \
+  --format markdown \
+  --version "$VERSION")
 ```
 
-**Filter + categorize** (AI step — deterministic filtering, judgment-based categorization):
+{^ Output shape: `## What's in this release` → `### Features` / `### Bug Fixes` / `### Other Changes` → `### Contributors` → `**Full Changelog**: {PREV_TAG}...{VERSION}` (or "Initial release" if PREV_TAG empty). Empty categories auto-omitted. This matches the format shipped pre-3.15.0 — refactor is pure deduplication with Step 7 Prepare, no format change.}
 
-1. **Filter by date**: From `PR_JSON`, include ONLY PRs where `mergedAt > PREV_DATE`. Both values are UTC Z format (e.g. `2026-04-14T14:51:49Z`), so a direct string comparison is also a valid instant comparison. This is critical — without filtering, release notes would include all historical PRs, not just this release's.
-2. **Categorize by commit type prefix** in PR title: `feat:` → Features, `fix:` → Bug Fixes, everything else → Other Changes. PRs without a type prefix go to Other Changes.
-3. **Collect contributors**: unique authors with PR count.
+{^ Categorization is by PR title conventional-commit prefix: `feat(scope)?!?:` → Features, `fix(scope)?!?:` → Bug Fixes, everything else → Other Changes.}
 
-Format as `$RELEASE_BODY`:
-
-```
-## What's in this release
-
-### Features
-* feat: user login system by @alice in {url} (**#042**)
-* feat: permission management by @bob in {url} (**#045**)
-
-### Bug Fixes
-* fix: API timeout by @alice in {url} (**#048**)
-
-### Other Changes
-* refactor: clean up auth module by @carol in {url} (**#051**)
-
-### Contributors
-@alice (3) · @bob (1) · @carol (1)
-
-**Full Changelog**: {PREV_TAG}...{VERSION}
-```
-
-{^ Issue numbers use plain #NNN (no bold) — these render on GitHub where #NNN auto-links natively}
-{^ If PREV_TAG is empty (first release), omit the Full Changelog line and add "Initial release" instead}
-{^ Omit empty sections (e.g., no Features? skip that header)}
-
-Store the formatted body in `$RELEASE_BODY` for use in P6 and P8.
+Store the resulting markdown in `$RELEASE_BODY` for use in P6 and P8. `$PREV_TAG` is reused in P11 for the 飞书 announcement block.
 
 ### Step P6: Create PR and Squash Merge
 
@@ -1144,19 +1142,22 @@ Output: Tag **{VERSION}** pushed (or "already exists" on re-entry)
 # Idempotency: skip if release already exists (re-entry after partial failure)
 if gh release view "$VERSION" --repo "$REPO" >/dev/null 2>&1; then
   echo "Release $VERSION already exists — skipping"
-  RELEASE_URL=$(gh release view "$VERSION" --repo "$REPO" --json url --jq '.url')
 else
   gh release create "$VERSION" \
     --notes-file <(echo "$RELEASE_BODY") \
     --title "$VERSION" \
     --repo "$REPO"
 fi
+
+# ALWAYS capture RELEASE_URL after either branch — P11 summary + 飞书 block both rely on it.
+# Pre-3.15.0 this was only set in the idempotent branch; fresh-create releases lost the URL.
+RELEASE_URL=$(gh release view "$VERSION" --repo "$REPO" --json url --jq '.url' 2>/dev/null || echo "")
 ```
 {^ --notes-file avoids shell escaping issues when PR titles contain quotes or special characters}
 
-Capture and output the release URL.
+Capture and output the release URL. Required by P11 summary + the 飞书 announcement block.
 
-If fails → warn but continue (tag exists, release can be created manually via `gh release create`).
+If fails → warn but continue (tag exists, release can be created manually via `gh release create`). If `RELEASE_URL` ends up empty, P11 will fall back to a placeholder and flag the gap for manual fill-in.
 
 ### Step P8b: Notification
 
@@ -1237,12 +1238,41 @@ gh workflow run "$PROD_WORKFLOW" --ref "$VERSION" -f environment=production -f v
 **PROMOTED ── {VERSION}** ────────────────────
 Tag: **{VERSION}** (on *{PROD_BRANCH}*)
 PR:  **#{PR_NUMBER}** (squash merged)
-Release: {release_url}
+Release: {$RELEASE_URL or ⚠️ "not captured — run `gh release view $VERSION` manually"}
 RC Branch:  *{RC_BRANCH}* (deleted)
 Milestone:  **{MILESTONE_FULL}** — {status}
 Deploy:  {🚀 triggered `{PROD_WORKFLOW}` / 🚀 deploy manually}
 
 ────────────────────────────────────────────
+
+**Generate 飞书 announcement**(reuses changelog from P5 + release metadata from P6-P8):
+
+```bash
+# PREV_TAG already derived in P5; reuse it
+FEISHU_BLOCK=$(bash ~/.claude/commands/scripts/tw-pr.sh merged-since \
+  "$BASE_BRANCH" "$PREV_TAG" \
+  --repo "$REPO" \
+  --format feishu \
+  --version "$VERSION" \
+  --env production \
+  --release-url "$RELEASE_URL" \
+  --pr-number "$PR_NUMBER" \
+  --tag-sha "$MERGE_SHA")
+```
+
+Output between dividers for copy-paste:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📣 **飞书发布通知 — 复制下方内容**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{$FEISHU_BLOCK content}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{^ If `RELEASE_URL` is empty(P8 capture failed), feishu block still renders but omits the GitHub Release line — warn the user.}
+{^ If `merged-since` fails → fall back to printing `$RELEASE_BODY` from P5 bounded by the same dividers. The old behavior is the worst case, not a regression.}
+
 `/team-rc` to prepare next RC
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}

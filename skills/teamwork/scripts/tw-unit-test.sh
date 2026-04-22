@@ -806,6 +806,132 @@ test_next_version_with_tags
 test_next_version_ignores_prerelease
 test_next_version_no_args
 
+# ─── PR — MERGED-SINCE renderers ──────────────────────────────
+test_merged_since_rejects_no_base() {
+  local out exit_code
+  out=$(bash "$SCRIPT_DIR/tw-pr.sh" merged-since 2>&1) && exit_code=0 || exit_code=$?
+  if [ "$exit_code" -eq 1 ] && echo "$out" | grep -q "requires BASE"; then
+    pass "merged-since: no BASE → exit 1"
+  else
+    fail "merged-since: expected exit 1 'requires BASE', got exit $exit_code: $out"
+  fi
+}
+
+test_merged_since_rejects_bad_format() {
+  local out exit_code
+  out=$(bash "$SCRIPT_DIR/tw-pr.sh" merged-since pre-launch --format bogus --repo x/y 2>&1) && exit_code=0 || exit_code=$?
+  if [ "$exit_code" -eq 1 ] && echo "$out" | grep -q "format must be"; then
+    pass "merged-since: bad --format → exit 1"
+  else
+    fail "merged-since: bad format expected exit 1, got $exit_code: $out"
+  fi
+}
+
+test_merged_since_markdown_renderer() {
+  # Install a tiny stub `gh` on PATH that returns fixture JSON for `gh pr list ...`.
+  local stubdir="$TMPDIR_ROOT/stub-$$"
+  mkdir -p "$stubdir"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+if [ "$1" = "pr" ] && [ "$2" = "list" ]; then
+  cat <<'JSON'
+[
+  {"number": 100, "title": "feat(foo): add bar", "author":{"login":"alice"}, "mergedAt":"2030-01-02T10:00:00Z", "url":"https://example/100"},
+  {"number": 101, "title": "fix(baz): patch qux", "author":{"login":"bob"}, "mergedAt":"2030-01-03T10:00:00Z", "url":"https://example/101"},
+  {"number": 102, "title": "docs: update README", "author":{"login":"alice"}, "mergedAt":"2030-01-04T10:00:00Z", "url":"https://example/102"},
+  {"number": 99,  "title": "feat: old feature", "author":{"login":"carol"}, "mergedAt":"2029-12-01T10:00:00Z", "url":"https://example/99"}
+]
+JSON
+  exit 0
+elif [ "$1" = "repo" ] && [ "$2" = "view" ]; then
+  echo "stub/repo"
+  exit 0
+fi
+echo "stub-gh: unknown invocation: $*" >&2; exit 1
+EOF
+  chmod +x "$stubdir/gh"
+
+  # Prev-tag argument is empty → no git log; PREV_DATE defaults to 2000 → all 4 PRs pass filter.
+  local out
+  out=$(PATH="$stubdir:$PATH" bash "$SCRIPT_DIR/tw-pr.sh" merged-since pre-launch "" --repo stub/repo --format markdown --version "V0.1.20" 2>&1)
+
+  local ok=1
+  echo "$out" | grep -q "^## What's in this release" || { fail "markdown: missing header"; ok=0; }
+  echo "$out" | grep -q "^### Features" || { fail "markdown: missing Features"; ok=0; }
+  echo "$out" | grep -q "^### Bug Fixes" || { fail "markdown: missing Bug Fixes"; ok=0; }
+  echo "$out" | grep -q "^### Other Changes" || { fail "markdown: missing Other Changes"; ok=0; }
+  echo "$out" | grep -q "feat(foo): add bar.*@alice" || { fail "markdown: feat line wrong: $(echo "$out" | grep feat)"; ok=0; }
+  echo "$out" | grep -q "fix(baz): patch qux.*@bob" || { fail "markdown: fix line wrong"; ok=0; }
+  echo "$out" | grep -q "docs: update README.*@alice" || { fail "markdown: other line wrong"; ok=0; }
+  echo "$out" | grep -q "@alice (2)" || { fail "markdown: contributor count wrong"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "merged-since --format markdown renders categories + contributors"
+}
+
+test_merged_since_feishu_renderer() {
+  local stubdir="$TMPDIR_ROOT/stub-f-$$"
+  mkdir -p "$stubdir"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+if [ "$1" = "pr" ] && [ "$2" = "list" ]; then
+  cat <<'JSON'
+[
+  {"number": 200, "title": "feat(x): a", "author":{"login":"alice"}, "mergedAt":"2030-01-01T00:00:00Z", "url":"https://example/200"},
+  {"number": 201, "title": "fix(y): b", "author":{"login":"bob"}, "mergedAt":"2030-01-02T00:00:00Z", "url":"https://example/201"}
+]
+JSON
+  exit 0
+fi
+exit 1
+EOF
+  chmod +x "$stubdir/gh"
+
+  local out
+  out=$(PATH="$stubdir:$PATH" bash "$SCRIPT_DIR/tw-pr.sh" merged-since pre-launch "" --repo stub/repo --format feishu --version "V0.1.20" --env staging 2>&1)
+
+  local ok=1
+  echo "$out" | grep -q "^# 🚀 V0.1.20 Staging Release" || { fail "feishu: missing header/emoji"; ok=0; }
+  echo "$out" | grep -q "^\*\*环境\*\*: \`staging\`" || { fail "feishu: missing 环境 line"; ok=0; }
+  echo "$out" | grep -q "^\*\*时间\*\*:" || { fail "feishu: missing 时间 line"; ok=0; }
+  echo "$out" | grep -q "^\*\*分支\*\*: \`rc/V0.1.20\` ← \`pre-launch\`" || { fail "feishu: missing 分支 line"; ok=0; }
+  echo "$out" | grep -q "^### ✨ Features" || { fail "feishu: missing Features emoji"; ok=0; }
+  echo "$out" | grep -q "^### 🐛 Bug Fixes" || { fail "feishu: missing Bug Fixes emoji"; ok=0; }
+  echo "$out" | grep -q "^### 👥 Contributors" || { fail "feishu: missing Contributors"; ok=0; }
+  echo "$out" | grep -q "合计 \*\*2\*\* PR" || { fail "feishu: missing total count"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "merged-since --format feishu renders header + metadata + categories + total"
+}
+
+test_merged_since_feishu_production_emoji() {
+  local stubdir="$TMPDIR_ROOT/stub-p-$$"
+  mkdir -p "$stubdir"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+if [ "$1" = "pr" ] && [ "$2" = "list" ]; then
+  echo '[{"number":300,"title":"feat: x","author":{"login":"a"},"mergedAt":"2030-01-01T00:00:00Z","url":"u"}]'
+  exit 0
+fi
+exit 1
+EOF
+  chmod +x "$stubdir/gh"
+
+  local out
+  out=$(PATH="$stubdir:$PATH" bash "$SCRIPT_DIR/tw-pr.sh" merged-since main "" --repo x/y --format feishu --version "V1.0.0" --env production --release-url "https://github.com/x/y/releases/tag/V1.0.0" --pr-number 999 2>&1)
+
+  local ok=1
+  echo "$out" | grep -q "^# 🎉 V1.0.0 Production Release" || { fail "prod feishu: missing 🎉 header"; ok=0; }
+  echo "$out" | grep -q "Release PR.*999" || { fail "prod feishu: missing PR number"; ok=0; }
+  echo "$out" | grep -q "GitHub Release.*releases/tag/V1.0.0" || { fail "prod feishu: missing release URL"; ok=0; }
+  [ "$ok" -eq 1 ] && pass "merged-since --format feishu production path renders release URL + PR number"
+}
+
+section "PR — MERGED-SINCE"
+test_merged_since_rejects_no_base
+test_merged_since_rejects_bad_format
+test_merged_since_markdown_renderer
+test_merged_since_feishu_renderer
+test_merged_since_feishu_production_emoji
+
 # ─── Summary ────────────────────────────────────────────
 section "SUMMARY"
 TOTAL=$((PASS + FAIL + SKIP))
