@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `35` durable notes are currently indexed across `3` recurring streams.
-- `98` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `36` durable notes are currently indexed across `3` recurring streams.
+- `99` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,12 +27,12 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-04-22
+### AI Agent Daily Radar - 2026-04-23
 
-- Metadata: `Window: 2026-04-15 to 2026-04-22`
-- **Anthropic combined frontier-model launch, app-surface expansion, and API retirement pressure in the same week.** The official [Anthropic newsroom](https://www.anthropic.com/news) and [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) show [Claude Opus 4.7](https://www.anthropic.com/news/claude-opus-4-7) on **2026-04-16**, [Claude Design by Anthropic Labs](https://support.claude.com/en/articles/12138966-release-notes) on **2026-04-17**, and Claude Haiku 3 retirement on **2026-04-20**, alongside the earlier **2026-04-14** deprecation notice for older Claude 4 model IDs. Collapsed takeaway: Anthropic is tightening the upgrade loop while broadening higher-end agent and output surfaces.
-- **Claude Code kept shipping runtime hardening aimed at long-running, multi-agent operator workflows.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **v2.1.113 on 2026-04-17** adding a native binary path, domain-deny sandbox controls, `/ultrareview` launch improvements, better `/loop`, and clearer subagent stall failure handling, followed by **v2.1.114 on 2026-04-18** with a teammate-permission crash fix. Collapsed takeaway: Anthropic is still investing directly in coding-agent durability, isolation policy, and delegated-run recovery.
-- **OpenAI pushed the same harness pattern through both the developer SDK and the end-user Codex product.** OpenAI published [The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) on **2026-04-15**, adding configurable memory, sandbox-aware orchestration, Codex-like filesystem tools, MCP, skills, and `AGENTS.md` support, then followed with [Codex for (almost) everything](https://openai.com/index/codex-for-almost-everything/) on **2026-04-16**, extending Codex with computer use, parallel agents on-device, SSH/devbox support, browser access, memory, and reusable automations. Collapsed takeaway: OpenAI is converging product and SDK around one durable agent operating model.
+- Metadata: `Window: 2026-04-16 to 2026-04-23`
+- **Anthropic tightened the Claude Platform upgrade loop while pushing newer model IDs into the default path.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) show [Claude Opus 4.7](https://www.anthropic.com/news/claude-opus-4-7) launching on **2026-04-16** with migration guidance and API breaking changes, followed by Claude Haiku 3 retirement on **2026-04-20**. Collapsed takeaway: Anthropic is compressing model adoption pressure into the platform release channel, not leaving old IDs in place for long.
+- **Claude Code shipped fresh operator-surface updates this week, including forked subagents, MCP loading, and hook-to-tool plumbing.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **v2.1.117 on 2026-04-22** adding externally enabled forked subagents and main-thread `mcpServers`, and **v2.1.118 on 2026-04-23** adding hook-driven MCP tool invocation plus more MCP/OAuth reliability fixes. Collapsed takeaway: Anthropic is still investing directly in delegated-run ergonomics, tool wiring, and session durability.
+- **OpenAI expanded Codex from a coding surface into a broader multi-tool, multi-agent desktop harness.** OpenAI’s official post [Codex for (almost) everything](https://openai.com/index/codex-for-almost-everything/) was published on **2026-04-16** and adds computer use, an in-app browser, image generation, SSH/devbox support, memory, and reusable automations. Collapsed takeaway: OpenAI is converging product UX around the same longer-horizon agent loop it has been exposing to developers.
 
 ## Trending Snapshot
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-04-23](../radar/daily/2026-04-23.md)
 - [2026-04-22](../radar/daily/2026-04-22.md)
 - [2026-04-21](../radar/daily/2026-04-21.md)
 - [2026-04-20](../radar/daily/2026-04-20.md)
 - [2026-04-19](../radar/daily/2026-04-19.md)
 - [2026-04-18](../radar/daily/2026-04-18.md)
-- [2026-04-17](../radar/daily/2026-04-17.md)
 
 ### Weekly Synthesis
 
