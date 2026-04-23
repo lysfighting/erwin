@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drive Eval Viewer</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --pass: #3fb950; --fail: #f85149; --warn: #d29922;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.3rem; margin: 2rem 0 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+  .verdict { display: inline-block; padding: 0.3rem 1rem; border-radius: 6px; font-weight: 700; font-size: 1.2rem; }
+  .verdict.pass { background: rgba(63,185,80,0.15); color: var(--pass); border: 1px solid var(--pass); }
+  .verdict.fail { background: rgba(248,81,73,0.15); color: var(--fail); border: 1px solid var(--fail); }
+  .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  th, td { padding: 0.6rem 1rem; text-align: left; border: 1px solid var(--border); }
+  th { background: var(--surface); color: var(--muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { background: var(--bg); }
+  .score { font-weight: 700; font-size: 1.1rem; }
+  .score.good { color: var(--pass); }
+  .score.ok { color: var(--warn); }
+  .score.bad { color: var(--fail); }
+  .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+  .badge.pass { background: rgba(63,185,80,0.15); color: var(--pass); }
+  .badge.fail { background: rgba(248,81,73,0.15); color: var(--fail); }
+  .evidence-list { list-style: none; }
+  .evidence-list li { padding: 0.4rem 0; border-bottom: 1px solid var(--border); }
+  .evidence-list li:last-child { border-bottom: none; }
+  .evidence-name { color: var(--accent); font-family: monospace; font-size: 0.9rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem; margin: 1rem 0; }
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+  .tab { padding: 0.6rem 1.2rem; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .text-content { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; max-height: 400px; overflow-y: auto; margin: 0.5rem 0; }
+  .img-preview { max-width: 100%; border-radius: 6px; border: 1px solid var(--border); margin: 0.5rem 0; }
+  .trend-chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; margin: 0.5rem 0; }
+  .trend-bar { flex: 1; min-width: 20px; background: var(--accent); border-radius: 3px 3px 0 0; transition: height 0.3s; position: relative; }
+  .trend-bar .label { position: absolute; top: -1.2rem; left: 50%; transform: translateX(-50%); font-size: 0.7rem; color: var(--muted); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+  .empty { color: var(--muted); font-style: italic; padding: 2rem; text-align: center; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/*__EMBEDDED_DATA__*/
+
+function $(sel, ctx) { return (ctx || document).querySelector(sel); }
+function $$(sel, ctx) { return [...(ctx || document).querySelectorAll(sel)]; }
+function el(tag, attrs, ...children) {
+  const e = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k,v]) => {
+    if (k === 'className') e.className = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), v);
+    else e.setAttribute(k, v);
+  });
+  children.flat().forEach(c => {
+    if (c == null) return;
+    e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return e;
+}
+
+function scoreClass(score, threshold) {
+  if (score >= threshold) return 'good';
+  if (score >= threshold - 1) return 'ok';
+  return 'bad';
+}
+
+function renderHeader(data) {
+  const ed = data.eval_data || {};
+  const verdict = (ed.verdict || 'UNKNOWN').toUpperCase();
+  const vClass = verdict === 'PASS' ? 'pass' : 'fail';
+  return el('div', null,
+    el('h1', null, `Evaluation — ${data.mission_name || 'Unknown'}`),
+    el('div', {className: 'meta'},
+      `Version: ${ed.version || '?'} | Iteration: ${ed.iteration || '?'} | ${ed.timestamp || ''}`
+    ),
+    el('span', {className: `verdict ${vClass}`}, `${verdict === 'PASS' ? '✅' : '❌'} ${verdict}`),
+    ed.verdict_reason ? el('p', {className: 'meta', style: 'margin-top:0.5rem'}, ed.verdict_reason) : null
+  );
+}
+
+function renderQuality(dims) {
+  if (!dims || !dims.length) return el('div', {className:'empty'}, 'No quality dimensions');
+  const rows = dims.map(d => {
+    const sc = scoreClass(d.score, d.threshold);
+    const pass = d.score >= d.threshold;
+    return el('tr', null,
+      el('td', null, d.name || '?'),
+      el('td', null, el('span', {className:`score ${sc}`}, `${d.score}/10`)),
+      el('td', null, `≥${d.threshold}`),
+      el('td', null, el('span', {className:`badge ${pass?'pass':'fail'}`}, pass?'PASS':'FAIL')),
+      el('td', null, d.evidence || '')
+    );
+  });
+  return el('table', null,
+    el('thead', null, el('tr', null, ...['Dimension','Score','Threshold','Status','Evidence'].map(h => el('th', null, h)))),
+    el('tbody', null, ...rows)
+  );
+}
+
+function renderFeatures(features) {
+  if (!features || !features.length) return el('div', {className:'empty'}, 'No features');
+  const rows = features.map(f => {
+    const pass = f.passed;
+    return el('tr', null,
+      el('td', null, el('strong', null, f.id || '?')),
+      el('td', null, f.title || ''),
+      el('td', null, el('span', {className:`badge ${pass?'pass':'fail'}`}, pass?'PASS':'FAIL')),
+      el('td', null, f.evidence || '')
+    );
+  });
+  return el('table', null,
+    el('thead', null, el('tr', null, ...['ID','Title','Status','Evidence'].map(h => el('th', null, h)))),
+    el('tbody', null, ...rows)
+  );
+}
+
+function renderScenarios(scenarios) {
+  if (!scenarios || !scenarios.length) return el('div', {className:'empty'}, 'No scenarios');
+  const rows = scenarios.map(s => {
+    const pass = s.status === 'pass';
+    return el('tr', null,
+      el('td', null, s.name || '?'),
+      el('td', null, el('span', {className:`badge ${pass?'pass':'fail'}`}, pass?'PASS':'FAIL')),
+      el('td', null, s.notes || ''),
+      el('td', null, s.evidence || '')
+    );
+  });
+  return el('table', null,
+    el('thead', null, el('tr', null, ...['Scenario','Status','Notes','Evidence'].map(h => el('th', null, h)))),
+    el('tbody', null, ...rows)
+  );
+}
+
+function renderEvidence(files) {
+  if (!files || !files.length) return el('div', {className:'empty'}, 'No evidence files');
+  return el('ul', {className:'evidence-list'}, ...files.map(f => {
+    if (f.type === 'text') {
+      return el('li', null,
+        el('span', {className:'evidence-name'}, f.name),
+        el('div', {className:'text-content'}, f.content)
+      );
+    } else if (f.type === 'image') {
+      return el('li', null,
+        el('span', {className:'evidence-name'}, f.name),
+        el('img', {className:'img-preview', src: f.data_uri, alt: f.name})
+      );
+    }
+    return el('li', null, el('span', {className:'evidence-name'}, f.name), ' (binary)');
+  }));
+}
+
+function renderComparison(comp) {
+  if (!comp || comp.iteration_count < 2) return el('div', {className:'empty'}, 'Need ≥2 iterations for comparison');
+  const iters = comp.iterations || [];
+  const delta = comp.delta || {};
+  const dTrend = comp.dimension_trend || {};
+  const dThresh = comp.dimension_thresholds || {};
+
+  const parts = [];
+
+  // Verdict progression
+  const flow = iters.map(it => `Iter ${it.iteration}: ${it.verdict}`).join(' → ');
+  parts.push(el('p', null, el('strong', null, 'Verdict: '), flow));
+
+  // Dimension trends
+  if (Object.keys(dTrend).length) {
+    parts.push(el('h3', null, 'Quality Trend'));
+    Object.entries(dTrend).forEach(([name, scores]) => {
+      const max = 10;
+      const thresh = dThresh[name] || 7;
+      parts.push(el('div', {className:'card'},
+        el('strong', null, `${name} (threshold: ≥${thresh})`),
+        el('div', {className:'trend-chart'},
+          ...scores.map((s, i) => {
+            const h = s != null ? (s / max * 100) : 0;
+            const bar = el('div', {className:'trend-bar', style:`height:${h}%;background:${s>=thresh?'var(--pass)':s!=null?'var(--fail)':'var(--border)'}`});
+            const label = el('span', {className:'label'}, s != null ? String(s) : '—');
+            bar.appendChild(label);
+            return bar;
+          })
+        )
+      ));
+    });
+  }
+
+  // Delta summary
+  if (delta.verdict) {
+    parts.push(el('h3', null, 'Latest Delta'));
+    const items = [];
+    if (delta.verdict) items.push(`Verdict: ${delta.verdict}`);
+    if (delta.features_passed) items.push(`Features: ${delta.features_passed}`);
+    const flipped = delta.features_flipped_to_pass || [];
+    const regressed = delta.features_flipped_to_fail || [];
+    if (flipped.length) items.push(`Newly passing: ${flipped.join(', ')}`);
+    if (regressed.length) items.push(`Regressions: ${regressed.join(', ')}`);
+    parts.push(el('div', {className:'card'}, el('ul', null, ...items.map(i => el('li', null, i)))));
+  }
+
+  return el('div', null, ...parts);
+}
+
+function renderReports(reports) {
+  if (!reports || !reports.length) return el('div', {className:'empty'}, 'No eval reports');
+  return el('div', null, ...reports.map(r =>
+    el('div', {className:'card'},
+      el('h3', null, r.name),
+      el('div', {className:'text-content'}, r.content)
+    )
+  ));
+}
+
+function render(data) {
+  const app = $('#app');
+  app.innerHTML = '';
+  if (!data || !data.eval_data) {
+    app.appendChild(el('div', {className:'empty'}, 'No eval data found'));
+    return;
+  }
+  const ed = data.eval_data;
+
+  app.appendChild(renderHeader(data));
+
+  // Tabs
+  const tabDefs = [
+    {id:'quality', label:'Quality Scores'},
+    {id:'features', label:'Features'},
+    {id:'scenarios', label:'Scenarios'},
+    {id:'evidence', label:'Evidence'},
+    {id:'comparison', label:'Comparison'},
+    {id:'reports', label:'Reports'},
+  ];
+
+  const tabs = el('div', {className:'tabs'});
+  const contents = el('div');
+
+  tabDefs.forEach((t, i) => {
+    const tab = el('div', {className:`tab${i===0?' active':''}`, 'data-tab': t.id, onClick: () => {
+      $$('.tab', tabs).forEach(x => x.classList.remove('active'));
+      tab.classList.add('active');
+      $$('.tab-content', contents).forEach(x => x.classList.remove('active'));
+      $(`.tab-content[data-tab="${t.id}"]`, contents).classList.add('active');
+    }}, t.label);
+    tabs.appendChild(tab);
+
+    let content;
+    switch(t.id) {
+      case 'quality': content = renderQuality(ed.quality_dimensions); break;
+      case 'features': content = renderFeatures(ed.features); break;
+      case 'scenarios': content = renderScenarios(ed.scenarios); break;
+      case 'evidence': content = renderEvidence([...(data.evidence||[]), ...(data.screenshots||[])]); break;
+      case 'comparison': content = renderComparison(data.comparison); break;
+      case 'reports': content = renderReports(data.reports); break;
+    }
+
+    const panel = el('div', {className:`tab-content${i===0?' active':''}`, 'data-tab': t.id}, content);
+    contents.appendChild(panel);
+  });
+
+  app.appendChild(tabs);
+  app.appendChild(contents);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof EMBEDDED_DATA !== 'undefined') {
+    render(EMBEDDED_DATA);
+  } else {
+    $('#app').appendChild(el('div', {className:'empty'}, 'No embedded data. Use generate_eval.py to generate.'));
+  }
+});
+</script>
+</body>
+</html>
