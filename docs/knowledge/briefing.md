@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `38` durable notes are currently indexed across `3` recurring streams.
-- `101` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `39` durable notes are currently indexed across `3` recurring streams.
+- `102` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,12 +27,12 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-04-23
+### AI Agent Daily Radar - 2026-04-24
 
-- Metadata: `Window: 2026-04-16 to 2026-04-23`
-- **Anthropic tightened the Claude Platform upgrade loop while pushing newer model IDs into the default path.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) show [Claude Opus 4.7](https://www.anthropic.com/news/claude-opus-4-7) launching on **2026-04-16** with migration guidance and API breaking changes, followed by Claude Haiku 3 retirement on **2026-04-20**. Collapsed takeaway: Anthropic is compressing model adoption pressure into the platform release channel, not leaving old IDs in place for long.
-- **Claude Code shipped fresh operator-surface updates this week, including forked subagents, MCP loading, and hook-to-tool plumbing.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **v2.1.117 on 2026-04-22** adding externally enabled forked subagents and main-thread `mcpServers`, and **v2.1.118 on 2026-04-23** adding hook-driven MCP tool invocation plus more MCP/OAuth reliability fixes. Collapsed takeaway: Anthropic is still investing directly in delegated-run ergonomics, tool wiring, and session durability.
-- **OpenAI expanded Codex from a coding surface into a broader multi-tool, multi-agent desktop harness.** OpenAI’s official post [Codex for (almost) everything](https://openai.com/index/codex-for-almost-everything/) was published on **2026-04-16** and adds computer use, an in-app browser, image generation, SSH/devbox support, memory, and reusable automations. Collapsed takeaway: OpenAI is converging product UX around the same longer-horizon agent loop it has been exposing to developers.
+- Metadata: `Window: 2026-04-17 to 2026-04-24`
+- **Anthropic advanced both the managed-agent API and the Claude Code operator surface this week.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) show **Claude Managed Agents memory** entering public beta on **2026-04-23**, while the official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **v2.1.117 on 2026-04-22** adding forked subagents, main-thread `mcpServers`, and advisor-tool fixes. Collapsed takeaway: Anthropic is tightening the loop between managed runtime primitives and local operator ergonomics.
+- **OpenAI pushed its frontier coding stack forward with GPT-5.5, then widened the enterprise Codex go-to-market motion.** Official OpenAI posts show [GPT-5.5](https://openai.com/index/introducing-gpt-5-5/) on **2026-04-23** with stronger agentic coding, computer use, and knowledge-work benchmarks, and [Scaling Codex to enterprises worldwide](https://openai.com/index/scaling-codex-to-enterprises-worldwide/) on **2026-04-21** with Codex Labs plus GSI rollout. Collapsed takeaway: OpenAI is pairing model gains with a faster enterprise deployment channel.
+- **OpenAI also released a deployable privacy primitive instead of only another assistant feature.** [OpenAI Privacy Filter](https://openai.com/index/introducing-openai-privacy-filter/) was published on **2026-04-22** as an open-weight PII masking model designed for local, high-throughput privacy workflows. Collapsed takeaway: safety/privacy infrastructure is becoming part of the practical agent stack, not just policy framing.
 
 ## Trending Snapshot
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-04-24](../radar/daily/2026-04-24.md)
 - [2026-04-23](../radar/daily/2026-04-23.md)
 - [2026-04-22](../radar/daily/2026-04-22.md)
 - [2026-04-21](../radar/daily/2026-04-21.md)
 - [2026-04-20](../radar/daily/2026-04-20.md)
 - [2026-04-19](../radar/daily/2026-04-19.md)
-- [2026-04-18](../radar/daily/2026-04-18.md)
 
 ### Weekly Synthesis
 
