@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `37` durable notes are currently indexed across `3` recurring streams.
-- `100` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `38` durable notes are currently indexed across `3` recurring streams.
+- `101` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -36,12 +36,12 @@
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-04-23
+### GitHub Trending - 2026-04-24
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-23. This run used the default global trending page with no extra filters; the page rendered 9 repositories.`
-- [langfuse/langfuse](https://github.com/langfuse/langfuse) - open-source LLM engineering and observability platform. TypeScript. 25,577 stars, 2,594 stars today.
-- [KeygraphHQ/shannon](https://github.com/KeygraphHQ/shannon) - autonomous white-box AI pentester for web apps and APIs. TypeScript. 39,539 stars, 4,362 stars today.
-- [open-metadata/OpenMetadata](https://github.com/open-metadata/OpenMetadata) - unified metadata platform for discovery, observability, and governance. TypeScript. 12,139 stars, 1,990 stars today.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-24 from the default global repositories page with no extra filters. The visible board was led by AI/agent tooling, open-source ML resources, and a smaller set of security, metadata, shell, and runtime infrastructure projects.`
+- [huggingface/ml-intern](https://github.com/huggingface/ml-intern) - open-source ML engineer workflow that reads papers, trains models, and ships models. Python. 3,297 stars, 284 today.
+- [zilliztech/claude-context](https://github.com/zilliztech/claude-context) - code-search MCP server for Claude Code and other coding agents. TypeScript. 8,418 stars, 662 today.
+- [HKUDS/RAG-Anything](https://github.com/HKUDS/RAG-Anything) - all-in-one RAG framework. Python. 18,152 stars, 2,099 today.
 
 ## Durable Interpretation
 
@@ -83,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-04-24](../radar/trending/2026-04-24.md)
 - [2026-04-23](../radar/trending/2026-04-23.md)
 - [2026-04-22](../radar/trending/2026-04-22.md)
 - [2026-04-21](../radar/trending/2026-04-21.md)
 - [2026-04-20](../radar/trending/2026-04-20.md)
 - [2026-04-19](../radar/trending/2026-04-19.md)
-- [2026-04-18](../radar/trending/2026-04-18.md)

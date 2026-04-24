@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 37,
+    "total_notes": 38,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 100,
+    "artifact_count": 101,
     "link_count": 267,
     "thread_count": 5
   },
@@ -145,16 +145,20 @@
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-04-23",
-      "meta": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-23. This run used the default global trending page with no extra filters; the page rendered 9 repositories.",
+      "title": "GitHub Trending - 2026-04-24",
+      "meta": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-24 from the default global repositories page with no extra filters. The visible board was led by AI/agent tooling, open-source ML resources, and a smaller set of security, metadata, shell, and runtime infrastructure projects.",
       "highlights": [
-        "[langfuse/langfuse](https://github.com/langfuse/langfuse) - open-source LLM engineering and observability platform. TypeScript. 25,577 stars, 2,594 stars today.",
-        "[KeygraphHQ/shannon](https://github.com/KeygraphHQ/shannon) - autonomous white-box AI pentester for web apps and APIs. TypeScript. 39,539 stars, 4,362 stars today.",
-        "[open-metadata/OpenMetadata](https://github.com/open-metadata/OpenMetadata) - unified metadata platform for discovery, observability, and governance. TypeScript. 12,139 stars, 1,990 stars today."
+        "[huggingface/ml-intern](https://github.com/huggingface/ml-intern) - open-source ML engineer workflow that reads papers, trains models, and ships models. Python. 3,297 stars, 284 today.",
+        "[zilliztech/claude-context](https://github.com/zilliztech/claude-context) - code-search MCP server for Claude Code and other coding agents. TypeScript. 8,418 stars, 662 today.",
+        "[HKUDS/RAG-Anything](https://github.com/HKUDS/RAG-Anything) - all-in-one RAG framework. Python. 18,152 stars, 2,099 today."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-04-24",
+          "path": "radar/trending/2026-04-24.md"
+        },
         {
           "name": "2026-04-23",
           "path": "radar/trending/2026-04-23.md"
@@ -174,13 +178,9 @@
         {
           "name": "2026-04-19",
           "path": "radar/trending/2026-04-19.md"
-        },
-        {
-          "name": "2026-04-18",
-          "path": "radar/trending/2026-04-18.md"
         }
       ],
-      "count": 17
+      "count": 18
     }
   },
   "deep_dive": "The theme this week is **agent execution becoming a governed workspace contract**.",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 100,
+      "artifact_count": 101,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 47,
+        "radar": 48,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -698,7 +698,6 @@
           "docs/research/parity-matrix-teamwork-wing-protocol-2026-03-28.md",
           "_project/ideas/skills/tw2-architecture.md",
           "docs/research/control-plane-spec-2026-03-28.md",
-          "reference/drive-skill/commands/drive.md",
           "docs/research/drive-skill-analysis.md",
           "docs/research/protocol-core-spec-2026-03-28.md",
           "_project/archive/sessions/2026-03-13-AL.md",
@@ -2659,6 +2658,38 @@
           "https://github.com/vercel-labs/skills",
           "https://github.com/open-metadata/OpenMetadata",
           "https://github.com/AIDC-AI/Pixelle-Video"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-24.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-24.md",
+        "title": "GitHub Trending - 2026-04-24",
+        "date": "2026-04-24",
+        "status": "",
+        "themes": [
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-24 from the default global repositories page with no extra filters. The visible board was led by AI/agent tooling, open-source ML resources...",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/huggingface/ml-intern",
+          "https://github.com/zilliztech/claude-context",
+          "https://github.com/cline/cline",
+          "https://github.com/mksglu/context-mode",
+          "https://github.com/VoltAgent/awesome-agent-skills",
+          "https://github.com/microsoft/ai-agents-for-beginners",
+          "https://github.com/open-metadata/OpenMetadata",
+          "https://github.com/microsoft/onnxruntime",
+          "https://github.com/PowerShell/PowerShell",
+          "https://github.com/Z4nzu/hackingtool",
+          "https://github.com/ruvnet/RuView"
         ],
         "local_refs": []
       },
