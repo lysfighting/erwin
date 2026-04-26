@@ -2,6 +2,63 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.16.0] — 2026-04-26
+
+### Added — Optional Evaluator Gate (`/team-drive`)
+
+Ported from drive-skill v2.3.0's `agents/evaluator.md` pattern, adapted for teamwork's single-mission scope. Decision trail in `_project/archive/sessions/` review of drive v2.3 absorption (Category A1 — only A1 absorbed; B and C explicitly out of scope, see plan file at the time of merge).
+
+**Why it exists**: Self-Adversarial Review is still self-review — same context, same rationalizations. A fresh evaluator agent that never saw the execution thread catches the class of failure where "executor convinced themselves it's done." Real-usage hypothesis: 5–10% of high-stakes missions ship a detectable miss that self-review rationalized past.
+
+**Trigger logic** (in this order, see `team-drive.md` Optional Evaluator Gate section):
+1. Contract AI Notes `evaluator: required` → run unconditionally
+2. Contract AI Notes `evaluator: skip` → skip silently
+3. `/team-drive --evaluator-gate` → run for this invocation
+4. `/team-drive --no-evaluator-gate` → skip for this invocation
+5. Otherwise **auto mode** (default): run iff `priority=P0` OR `size=XL` OR any `🔧 MANUAL` task body matches `prod|production|deploy|release`
+
+**Mechanism**: spawns `Explore` subagent with fresh context. Evaluator reads only Contract + full mission diff + fresh test output (re-runs `$TEST_COMMAND`, does not trust prior "tests passed" claims). Audits each Success Criterion (VERIFIED / NOT VERIFIED / PARTIAL with file:line evidence), checks scope creep against Sub-tasks, scans for Non-Goal violations, audits `[side-effect]` AI Notes for irreversible-action intentionality, flags quality issues (secrets, debug artifacts, dead code, untested edges).
+
+**Output** (verdict + evidence) persisted to `.teamwork/active/MISSION-{N}.evaluator.md` as durable audit trail.
+
+**Verdict handling**:
+- `PASS` → proceed to Mission Delivery
+- `PARTIAL` → user choice via AskUserQuestion (Address all / Accept partial / Dispute)
+- `FAIL` → return to Execution Loop with evaluator's RECOMMENDATION as fresh sub-tasks; gate re-runs after fix
+
+**Dispute path**: when executor + user agree the evaluator is wrong (it sometimes lacks context the executor has), the override is recorded in AI Notes (`[evaluator-dispute] <verdict> — overridden because <reason>`); the `.evaluator.md` file stays on disk as the honest audit trail.
+
+### Added — `evaluator:` field in Contract template (`/team-claim`)
+
+`/team-claim` Step 4 Contract template now includes optional `evaluator: auto|required|skip` field in AI Notes. Default is `auto`. Documented in `team-claim.md` with guidance on when to use each value.
+
+### Why no `harness.md` separate file (B1 deferred)
+
+Drive v2.3 separates WHAT (contract) from HOW TO VERIFY (harness.md). Teamwork keeps Success Criteria inline in Contract for now — simpler. The drive-v2.3 harness pattern was reviewed (plan file Category B1) and explicitly **deferred**: introducing a sibling `MISSION-{N}.harness.md` adds real complexity (new file, new claim branch, new schema) without proven value pre-A1-data. If 5+ missions use the new Evaluator Gate and users ask for more structured rubrics, revisit then.
+
+### Why no other drive-v2.3 absorptions
+
+Reviewed and explicitly **NOT absorbed** (plan file Categories B2 + C):
+- **"Orchestrator = pure enforcement" posture** (drive v2.3 line 40-44): teamwork's sized execution mode (1–3 solo / 4–7 parallel / 8+ team) is a better-calibrated variant for typical mission size; pure dispatch is overhead for small missions.
+- **Leader Team (3-agent recon/dialogue/eval-architect)**: teamwork already does this upstream via `/team-issue` + `/team-claim`.
+- **6 task-type harness templates**: teamwork is code-centric in a GitHub repo; 5 of 6 templates don't apply.
+- **eval-viewer dashboard**: no portfolio construct in mission-at-a-time teamwork.
+- **Directory-skill restructure**: would break install.sh + vi_agent sync for months; pure aesthetic.
+- **3+1 document model** (contract / harness / plan / grading): GitHub-first principle (Constitution P12) — Issue + PR + commits are already the system of record; adding `plan.md` + `grading/` is shadow state.
+
+### Tests
+
+- `tw-unit-test.sh` 59/59 (regression — no script changes).
+- `tw-fleet-smoke-test.sh` 40/40 (regression — fleet unaffected).
+- Evaluator Gate is LLM-interpreted (no script logic), so no new unit tests added. Real validation accumulates from the next 2–3 P0/XL missions.
+
+### Known Limitations
+
+- **n=0 evidence**: no real mission has run through the gate yet. Trigger calibration (P0/XL/MANUAL-prod heuristic) is hypothesis, not validated.
+- **Evaluator may lack context**: evaluator reads only Contract + diff + tests; for missions where domain knowledge from the execution thread is load-bearing, evaluator may FAIL legitimate work. The Dispute path exists for this case.
+- **No iteration cap on FAIL → re-run loop**: if evaluator keeps finding new gaps, mission can iterate indefinitely. Mitigation: user can override via Dispute path. Future: consider hard cap at 3 iterations.
+- **Single-mission only**: no cross-mission learning yet (drive v2.3's eval-viewer aggregates across missions; teamwork doesn't have a portfolio surface to put that against).
+
 ## [3.15.0] — 2026-04-22
 
 ### Added — 飞书 release announcement + changelog helper

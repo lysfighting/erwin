@@ -1,6 +1,6 @@
 ---
 description: "Execute mission from Contract. Try: /team-drive help"
-version: "3.15.0"
+version: "3.16.0"
 ---
 
 # /team-drive — Execute Mission
@@ -1035,6 +1035,94 @@ Before declaring done, actively look for gaps:
 - Test thought about but not written? → Write now.
 - Code not 100% confident in? → Fix now.
 - Can you think of ANY improvement within scope? → Do it NOW.
+
+### Optional Evaluator Gate — fresh-context independent verification
+
+**Why**: Self-Adversarial Review is still self-review — same context, same rationalizations. A fresh evaluator agent that never saw the execution thread catches the class of failure where "executor convinced themselves it's done." Ported from drive-skill v2.3.0's `agents/evaluator.md` pattern,adapted for teamwork's single-mission scope.
+
+**Trigger decision** (in this order):
+
+1. If Contract AI Notes has **`evaluator: required`** → **run**
+2. Else if Contract AI Notes has **`evaluator: skip`** → **skip silently**
+3. Else if `$ARGUMENTS` contains **`--evaluator-gate`** flag → **run**
+4. Else if `$ARGUMENTS` contains **`--no-evaluator-gate`** flag → **skip**
+5. Else **auto mode** (default):
+   - Read Contract frontmatter `priority` and `size` fields via `tw-contract.sh read-field`
+   - **Run** if `priority=P0` OR `size=XL` OR AI Notes section contains any `🔧 MANUAL` task with the word `prod`/`production`/`deploy`/`release` (production-side effect)
+   - **Skip** otherwise
+
+**If running — dispatch Explore agent with this contract**:
+
+```
+subagent_type: "Explore"
+description: "Evaluator — verify mission #N"
+prompt: |
+  You are an independent Evaluator for mission #{ISSUE} on branch {BRANCH}.
+  You have NEVER seen the execution thread. You read only these files and
+  produce a fresh verdict. Do NOT trust the executor's self-assessment.
+
+  Required reads:
+  1. Contract at `.teamwork/active/MISSION-{ISSUE}.md` — Objective + Sub-tasks + Success Criteria + Non-Goals + AI Notes
+  2. Full mission diff: `git diff origin/{BASE_BRANCH}...HEAD` + `git log --oneline origin/{BASE_BRANCH}..HEAD`
+  3. Test output — run `{TEST_COMMAND}` fresh; do NOT trust prior "tests passed" claims
+
+  For each Success Criterion in the Contract, answer:
+    - VERIFIED ✓ / NOT VERIFIED ✗ / PARTIAL 🟡
+    - Evidence: file:line citation or exact command output
+    - If NOT VERIFIED: what specifically is missing?
+
+  Also check:
+    - Are there changes in the diff that are NOT covered by any Sub-task? (scope creep)
+    - Are any Non-Goals violated?
+    - Any `[side-effect]` AI Notes entries that actually execute irreversible changes (prod deploy, DB migration, remote write)? If so, were they intentional per Contract?
+    - Obvious code quality issues (exposed secrets, debug artifacts, dead code, TODO comments, untested edge cases)?
+
+  Output in this exact shape:
+
+  ```
+  VERDICT: PASS | FAIL | PARTIAL
+  CONFIDENCE: high | medium | low
+
+  SUCCESS CRITERIA AUDIT:
+  [criterion 1]: VERIFIED | NOT VERIFIED | PARTIAL — <evidence or gap>
+  ...
+
+  SCOPE CHECK:
+  - scope creep: none | <list>
+  - non-goal violations: none | <list>
+
+  SIDE-EFFECT AUDIT:
+  - irreversible actions: none | <list with intentionality judgment>
+
+  QUALITY FINDINGS:
+  - <list of concrete issues, or "none found">
+
+  RECOMMENDATION:
+  <what executor should do next — empty if PASS, specific fix list if FAIL/PARTIAL>
+  ```
+
+  Be adversarial: the executor is NOT your peer — they are the subject of the audit. 
+  "Looks reasonable" is NOT evidence. Every claim needs a file:line or command output.
+```
+
+**Persist verdict** to `.teamwork/active/MISSION-{ISSUE}.evaluator.md` alongside the Contract. This is the audit trail.
+
+**Handle verdict**:
+
+- **PASS** → proceed to `Post completion comment to Issue` below.
+- **PARTIAL** (some criteria verified, some gaps) → print evaluator's RECOMMENDATION, use `AskUserQuestion`:
+  ```
+  question: "Evaluator found gaps. How to proceed?"
+  options:
+    - "Address all — return to Execution Loop with evaluator's fix list as new sub-tasks"
+    - "Accept partial — proceed to Mission Delivery (document gaps in AI Notes)"
+    - "Dispute — team-lead reviews verdict, may override with justification in AI Notes"
+  ```
+- **FAIL** → return to **Execution Loop** with the evaluator's RECOMMENDATION list as fresh sub-tasks. Re-run the loop on those. After fixing, the Evaluator Gate runs again (no loop cap — keep iterating until PASS or user overrides via the Dispute path above).
+
+**Dispute path**: if executor + user jointly decide the evaluator is wrong (happens — evaluator doesn't always have full context), record the dispute in AI Notes with reasoning (`[evaluator-dispute] <verdict> — overridden because <reason>`). Mission can proceed. The evaluator.md file stays on disk as honest audit trail.
+
+**Why not a fully dedicated `evaluator` subagent_type**: keeps the blast radius small — `Explore` already has fresh-context semantics and read/grep/bash. Defining a new subagent_type would require rolling out via Claude Code config, which is out of scope for this skill.
 
 ### Post completion comment to Issue
 

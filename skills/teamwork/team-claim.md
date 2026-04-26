@@ -1,6 +1,6 @@
 ---
 description: "Claim Issue → Contract → Branch. Try: /team-claim help"
-version: "3.15.0"
+version: "3.16.0"
 ---
 
 # /team-claim — Claim Issue → Contract → Branch
@@ -270,7 +270,16 @@ Example:
 
 ## AI Notes
 (populated during /team-drive execution)
+
+evaluator: auto
 ```
+
+**`evaluator:` field**(3.16.0+):controls `/team-drive`'s **Optional Evaluator Gate**(fresh-context independent verification before Mission Delivery,ported from drive-skill v2.3 evaluator concept)。Three values:
+- **`auto`**(default):evaluator runs when `priority=P0` OR `size=XL` OR a `🔧 MANUAL` task touches prod/deploy/release;skips otherwise. Best for most missions.
+- **`required`**:evaluator always runs regardless of priority/size。Use for high-blast-radius missions(e.g. config that affects all users,security-adjacent code,migrations)where the priority label alone doesn't capture risk.
+- **`skip`**:evaluator never runs。Use for trivial / experimental / WIP missions where iteration speed matters more than verdict rigor。
+
+If unsure → leave `auto`。You can override per-invocation via `/team-drive --evaluator-gate` / `--no-evaluator-gate` flags too(those override the field for one run)。
 
 **Standalone Test**: Re-read the generated Contract as if you never saw the Issue. Can someone who has never seen the Issue execute from this Contract alone? If not, add what's missing.
 
