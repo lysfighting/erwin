@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 39,
+    "total_notes": 41,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 102,
+    "artifact_count": 104,
     "link_count": 267,
     "thread_count": 5
   },
@@ -106,16 +106,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-04-24",
-      "meta": "Window: 2026-04-17 to 2026-04-24",
+      "title": "AI Agent Daily Radar - 2026-04-26",
+      "meta": "Window: 2026-04-19 to 2026-04-26",
       "highlights": [
-        "**Anthropic advanced both the managed-agent API and the Claude Code operator surface this week.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) show **Claude Managed Agents memory** entering public beta on **2026-04-23**, while the official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **v2.1.117 on 2026-04-22** adding forked subagents, main-thread `mcpServers`, and advisor-tool fixes. Collapsed takeaway: Anthropic is tightening the loop between managed runtime primitives and local operator ergonomics.",
-        "**OpenAI pushed its frontier coding stack forward with GPT-5.5, then widened the enterprise Codex go-to-market motion.** Official OpenAI posts show [GPT-5.5](https://openai.com/index/introducing-gpt-5-5/) on **2026-04-23** with stronger agentic coding, computer use, and knowledge-work benchmarks, and [Scaling Codex to enterprises worldwide](https://openai.com/index/scaling-codex-to-enterprises-worldwide/) on **2026-04-21** with Codex Labs plus GSI rollout. Collapsed takeaway: OpenAI is pairing model gains with a faster enterprise deployment channel.",
-        "**OpenAI also released a deployable privacy primitive instead of only another assistant feature.** [OpenAI Privacy Filter](https://openai.com/index/introducing-openai-privacy-filter/) was published on **2026-04-22** as an open-weight PII masking model designed for local, high-throughput privacy workflows. Collapsed takeaway: safety/privacy infrastructure is becoming part of the practical agent stack, not just policy framing."
+        "**Anthropic shipped a tightly connected control-plane update across Claude Platform and Claude Code.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added the [Rate Limits API](https://platform.claude.com/docs/en/release-notes/overview) on **2026-04-24** and put [memory for Claude Managed Agents](https://platform.claude.com/docs/en/release-notes/overview) into public beta on **2026-04-23**. In parallel, the official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **v2.1.117 on 2026-04-22** adding forked subagents and main-thread `mcpServers`, and **v2.1.119 on 2026-04-23** adding persistent `/config` settings. Collapsed takeaway: Anthropic is still deepening the operator/runtime layer, not just the base model layer.",
+        "**OpenAI’s biggest in-window signal was frontier coding capability paired with faster deployment.** [GPT-5.5](https://openai.com/index/introducing-gpt-5-5/) was published on **2026-04-23**, with an explicit **2026-04-24** update noting API availability, while [Scaling Codex to enterprises worldwide](https://openai.com/index/scaling-codex-to-enterprises-worldwide/) landed on **2026-04-21** with Codex Labs and GSI rollout. Collapsed takeaway: OpenAI is selling agentic coding gains and enterprise activation as one package.",
+        "**OpenAI also shipped a reusable privacy primitive instead of only another assistant surface.** [OpenAI Privacy Filter](https://openai.com/index/introducing-openai-privacy-filter/) was published on **2026-04-22** as an open-weight PII masking model for local, high-throughput privacy workflows. Collapsed takeaway: safety and privacy infrastructure is becoming part of the practical agent stack."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-04-26",
+          "path": "radar/daily/2026-04-26.md"
+        },
         {
           "name": "2026-04-24",
           "path": "radar/daily/2026-04-24.md"
@@ -135,26 +139,26 @@
         {
           "name": "2026-04-20",
           "path": "radar/daily/2026-04-20.md"
-        },
-        {
-          "name": "2026-04-19",
-          "path": "radar/daily/2026-04-19.md"
         }
       ],
-      "count": 17
+      "count": 18
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-04-24",
-      "meta": "Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-24 from the default global repositories page with no extra filters. The visible board was led by AI/agent tooling, open-source ML resources, and a smaller set of security, metadata, shell, and runtime infrastructure projects.",
+      "title": "GitHub Trending - 2026-04-26",
+      "meta": "Source: [GitHub Trending](https://github.com/trending) as captured on **2026-04-26** from the default global repositories page with no extra filters. The visible board mixes AI and coding-agent projects with broader security, developer-platform, infrastructure, and learning resources.",
       "highlights": [
-        "[huggingface/ml-intern](https://github.com/huggingface/ml-intern) - open-source ML engineer workflow that reads papers, trains models, and ships models. Python. 3,297 stars, 284 today.",
-        "[zilliztech/claude-context](https://github.com/zilliztech/claude-context) - code-search MCP server for Claude Code and other coding agents. TypeScript. 8,418 stars, 662 today.",
-        "[HKUDS/RAG-Anything](https://github.com/HKUDS/RAG-Anything) - all-in-one RAG framework. Python. 18,152 stars, 2,099 today."
+        "[Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code) - wrapper/access project for Claude Code usage. Python. 11,274 stars, 3,975 today.",
+        "[mattpocock/skills](https://github.com/mattpocock/skills) - personal skills directory straight from a `.claude` setup. Shell. 19,615 stars, 857 today.",
+        "[PostHog/posthog](https://github.com/PostHog/posthog) - developer platform spanning analytics, experimentation, replay, data, and an AI assistant. Python. 33,424 stars, 469 today."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-04-26",
+          "path": "radar/trending/2026-04-26.md"
+        },
         {
           "name": "2026-04-24",
           "path": "radar/trending/2026-04-24.md"
@@ -174,13 +178,9 @@
         {
           "name": "2026-04-20",
           "path": "radar/trending/2026-04-20.md"
-        },
-        {
-          "name": "2026-04-19",
-          "path": "radar/trending/2026-04-19.md"
         }
       ],
-      "count": 18
+      "count": 19
     }
   },
   "deep_dive": "The theme this week is **agent execution becoming a governed workspace contract**.",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 102,
+      "artifact_count": 104,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 49,
+        "radar": 51,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2057,6 +2057,39 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-04-26.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-04-26.md",
+        "title": "AI Agent Daily Radar - 2026-04-26",
+        "date": "2026-04-26",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-19 to 2026-04-26",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://openai.com/index/introducing-gpt-5-5/",
+          "https://openai.com/index/scaling-codex-to-enterprises-worldwide/",
+          "https://openai.com/index/introducing-openai-privacy-filter/",
+          "https://developers.googleblog.com/agents-cli-in-agent-platform-create-to-production-in-one-cli/",
+          "https://developers.googleblog.com/production-ready-ai-agents-5-lessons-from-refactoring-a-monolith/",
+          "https://api-docs.deepseek.com/updates/",
+          "https://qwen.ai/blog?id=qwen3.6-27b",
+          "https://www.moonshot.ai/",
+          "https://platform.moonshot.ai/",
+          "https://platform.minimax.io/docs/guides/models-intro"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -2723,6 +2756,35 @@
           "https://github.com/PowerShell/PowerShell",
           "https://github.com/Z4nzu/hackingtool",
           "https://github.com/ruvnet/RuView"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-04-26.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-04-26.md",
+        "title": "GitHub Trending - 2026-04-26",
+        "date": "2026-04-26",
+        "status": "",
+        "themes": [
+          "tracing/observability",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as captured on **2026-04-26** from the default global repositories page with no extra filters. The visible board mixes AI and coding-agent projects with broader s...",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/Alishahryar1/free-claude-code",
+          "https://github.com/mattpocock/skills",
+          "https://github.com/Z4nzu/hackingtool",
+          "https://github.com/PostHog/posthog",
+          "https://github.com/davila7/claude-code-templates",
+          "https://github.com/deepseek-ai/DeepEP",
+          "https://github.com/PowerShell/PowerShell",
+          "https://github.com/RooCodeInc/Roo-Code",
+          "https://github.com/huggingface/ml-intern",
+          "https://github.com/codecrafters-io/build-your-own-x",
+          "https://github.com/CJackHwang/ds2api"
         ],
         "local_refs": []
       },

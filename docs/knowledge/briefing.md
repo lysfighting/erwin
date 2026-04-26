@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `39` durable notes are currently indexed across `3` recurring streams.
-- `102` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `41` durable notes are currently indexed across `3` recurring streams.
+- `104` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-04-24
+### AI Agent Daily Radar - 2026-04-26
 
-- Metadata: `Window: 2026-04-17 to 2026-04-24`
-- **Anthropic advanced both the managed-agent API and the Claude Code operator surface this week.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) show **Claude Managed Agents memory** entering public beta on **2026-04-23**, while the official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **v2.1.117 on 2026-04-22** adding forked subagents, main-thread `mcpServers`, and advisor-tool fixes. Collapsed takeaway: Anthropic is tightening the loop between managed runtime primitives and local operator ergonomics.
-- **OpenAI pushed its frontier coding stack forward with GPT-5.5, then widened the enterprise Codex go-to-market motion.** Official OpenAI posts show [GPT-5.5](https://openai.com/index/introducing-gpt-5-5/) on **2026-04-23** with stronger agentic coding, computer use, and knowledge-work benchmarks, and [Scaling Codex to enterprises worldwide](https://openai.com/index/scaling-codex-to-enterprises-worldwide/) on **2026-04-21** with Codex Labs plus GSI rollout. Collapsed takeaway: OpenAI is pairing model gains with a faster enterprise deployment channel.
-- **OpenAI also released a deployable privacy primitive instead of only another assistant feature.** [OpenAI Privacy Filter](https://openai.com/index/introducing-openai-privacy-filter/) was published on **2026-04-22** as an open-weight PII masking model designed for local, high-throughput privacy workflows. Collapsed takeaway: safety/privacy infrastructure is becoming part of the practical agent stack, not just policy framing.
+- Metadata: `Window: 2026-04-19 to 2026-04-26`
+- **Anthropic shipped a tightly connected control-plane update across Claude Platform and Claude Code.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added the [Rate Limits API](https://platform.claude.com/docs/en/release-notes/overview) on **2026-04-24** and put [memory for Claude Managed Agents](https://platform.claude.com/docs/en/release-notes/overview) into public beta on **2026-04-23**. In parallel, the official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **v2.1.117 on 2026-04-22** adding forked subagents and main-thread `mcpServers`, and **v2.1.119 on 2026-04-23** adding persistent `/config` settings. Collapsed takeaway: Anthropic is still deepening the operator/runtime layer, not just the base model layer.
+- **OpenAI’s biggest in-window signal was frontier coding capability paired with faster deployment.** [GPT-5.5](https://openai.com/index/introducing-gpt-5-5/) was published on **2026-04-23**, with an explicit **2026-04-24** update noting API availability, while [Scaling Codex to enterprises worldwide](https://openai.com/index/scaling-codex-to-enterprises-worldwide/) landed on **2026-04-21** with Codex Labs and GSI rollout. Collapsed takeaway: OpenAI is selling agentic coding gains and enterprise activation as one package.
+- **OpenAI also shipped a reusable privacy primitive instead of only another assistant surface.** [OpenAI Privacy Filter](https://openai.com/index/introducing-openai-privacy-filter/) was published on **2026-04-22** as an open-weight PII masking model for local, high-throughput privacy workflows. Collapsed takeaway: safety and privacy infrastructure is becoming part of the practical agent stack.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-04-24
+### GitHub Trending - 2026-04-26
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on 2026-04-24 from the default global repositories page with no extra filters. The visible board was led by AI/agent tooling, open-source ML resources, and a smaller set of security, metadata, shell, and runtime infrastructure projects.`
-- [huggingface/ml-intern](https://github.com/huggingface/ml-intern) - open-source ML engineer workflow that reads papers, trains models, and ships models. Python. 3,297 stars, 284 today.
-- [zilliztech/claude-context](https://github.com/zilliztech/claude-context) - code-search MCP server for Claude Code and other coding agents. TypeScript. 8,418 stars, 662 today.
-- [HKUDS/RAG-Anything](https://github.com/HKUDS/RAG-Anything) - all-in-one RAG framework. Python. 18,152 stars, 2,099 today.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as captured on **2026-04-26** from the default global repositories page with no extra filters. The visible board mixes AI and coding-agent projects with broader security, developer-platform, infrastructure, and learning resources.`
+- [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code) - wrapper/access project for Claude Code usage. Python. 11,274 stars, 3,975 today.
+- [mattpocock/skills](https://github.com/mattpocock/skills) - personal skills directory straight from a `.claude` setup. Shell. 19,615 stars, 857 today.
+- [PostHog/posthog](https://github.com/PostHog/posthog) - developer platform spanning analytics, experimentation, replay, data, and an AI assistant. Python. 33,424 stars, 469 today.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-04-26](../radar/daily/2026-04-26.md)
 - [2026-04-24](../radar/daily/2026-04-24.md)
 - [2026-04-23](../radar/daily/2026-04-23.md)
 - [2026-04-22](../radar/daily/2026-04-22.md)
 - [2026-04-21](../radar/daily/2026-04-21.md)
 - [2026-04-20](../radar/daily/2026-04-20.md)
-- [2026-04-19](../radar/daily/2026-04-19.md)
 
 ### Weekly Synthesis
 
@@ -83,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-04-26](../radar/trending/2026-04-26.md)
 - [2026-04-24](../radar/trending/2026-04-24.md)
 - [2026-04-23](../radar/trending/2026-04-23.md)
 - [2026-04-22](../radar/trending/2026-04-22.md)
 - [2026-04-21](../radar/trending/2026-04-21.md)
 - [2026-04-20](../radar/trending/2026-04-20.md)
-- [2026-04-19](../radar/trending/2026-04-19.md)
