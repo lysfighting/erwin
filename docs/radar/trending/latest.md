@@ -1,32 +1,28 @@
-# GitHub Trending - 2026-04-26
+# GitHub Trending - 2026-04-27
 
-Source: [GitHub Trending](https://github.com/trending) as captured on **2026-04-26** from the default global repositories page with no extra filters. The visible board mixes AI and coding-agent projects with broader security, developer-platform, infrastructure, and learning resources.
+Source: [GitHub Trending](https://github.com/trending) as captured on **2026-04-27** from the default global repositories page with no extra filters. The visible board mixes coding-agent infrastructure with broader developer, systems, and general-interest repositories.
 
 ## Trending Snapshot
 
-Today’s board is still unusually saturated with coding-agent and skill-layer repositories, but it is not AI-only. The top visible entries include [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code), [mattpocock/skills](https://github.com/mattpocock/skills), [Z4nzu/hackingtool](https://github.com/Z4nzu/hackingtool), [PostHog/posthog](https://github.com/PostHog/posthog), [davila7/claude-code-templates](https://github.com/davila7/claude-code-templates), [deepseek-ai/DeepEP](https://github.com/deepseek-ai/DeepEP), [PowerShell/PowerShell](https://github.com/PowerShell/PowerShell), [RooCodeInc/Roo-Code](https://github.com/RooCodeInc/Roo-Code), [huggingface/ml-intern](https://github.com/huggingface/ml-intern), [codecrafters-io/build-your-own-x](https://github.com/codecrafters-io/build-your-own-x), [CJackHwang/ds2api](https://github.com/CJackHwang/ds2api), [Universal-Commerce-Protocol/ucp](https://github.com/Universal-Commerce-Protocol/ucp), and [ComposioHQ/awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills).
+Today’s board is not AI-only, but agent and coding-adjacent infrastructure is still highly visible. The top visible entries include [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code), [trycua/cua](https://github.com/trycua/cua), [gastownhall/beads](https://github.com/gastownhall/beads), [curl/curl](https://github.com/curl/curl), [home-assistant/core](https://github.com/home-assistant/core), and [codecrafters-io/build-your-own-x](https://github.com/codecrafters-io/build-your-own-x).
 
 ## Notable Projects
 
-- [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code) - wrapper/access project for Claude Code usage. Python. 11,274 stars, 3,975 today.
-- [mattpocock/skills](https://github.com/mattpocock/skills) - personal skills directory straight from a `.claude` setup. Shell. 19,615 stars, 857 today.
-- [PostHog/posthog](https://github.com/PostHog/posthog) - developer platform spanning analytics, experimentation, replay, data, and an AI assistant. Python. 33,424 stars, 469 today.
-- [davila7/claude-code-templates](https://github.com/davila7/claude-code-templates) - configuration and monitoring tooling for Claude Code. Python. 25,295 stars, 78 today.
-- [deepseek-ai/DeepEP](https://github.com/deepseek-ai/DeepEP) - expert-parallel communication library. Cuda. 9,470 stars, 189 today.
-- [RooCodeInc/Roo-Code](https://github.com/RooCodeInc/Roo-Code) - multi-agent coding experience inside the editor. TypeScript. 23,475 stars, 55 today.
-- [huggingface/ml-intern](https://github.com/huggingface/ml-intern) - open-source ML engineer workflow that reads papers, trains models, and ships models. Python. 6,136 stars, 1,236 today.
-- [ComposioHQ/awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills) - curated Codex skills collection. Python. 1,404 stars, 174 today.
+- [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code) - Claude-adjacent wrapper/access project. Python. 13,242 stars, 1,694 today.
+- [trycua/cua](https://github.com/trycua/cua) - computer-use-agent infrastructure with sandboxes, SDKs, and benchmarks. HTML. 14,320 stars, 200 today.
+- [gastownhall/beads](https://github.com/gastownhall/beads) - memory upgrade layer for coding agents. Go. 21,606 stars, 133 today.
+- [curl/curl](https://github.com/curl/curl) - long-running systems utility still surfacing on the default board. C. 41,497 stars, 50 today.
+- [home-assistant/core](https://github.com/home-assistant/core) - privacy-first home automation platform. Python. 86,435 stars, 52 today.
+- [codecrafters-io/build-your-own-x](https://github.com/codecrafters-io/build-your-own-x) - broad learning resource rather than an AI-specific repo. Markdown. 496,691 stars, 1,074 today.
 
 ## Why They May Be Surfacing
 
-- The board shows continuing demand for practical coding-agent surfaces rather than abstract agent discussion: [free-claude-code](https://github.com/Alishahryar1/free-claude-code), [claude-code-templates](https://github.com/davila7/claude-code-templates), [Roo-Code](https://github.com/RooCodeInc/Roo-Code), and [awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills).
-- Skill packaging is still a live ecosystem layer, visible through both [mattpocock/skills](https://github.com/mattpocock/skills) and [ComposioHQ/awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills).
-- The board is broader than AI alone: [Z4nzu/hackingtool](https://github.com/Z4nzu/hackingtool), [PowerShell/PowerShell](https://github.com/PowerShell/PowerShell), [codecrafters-io/build-your-own-x](https://github.com/codecrafters-io/build-your-own-x), and [Universal-Commerce-Protocol/ucp](https://github.com/Universal-Commerce-Protocol/ucp) show security, shell/runtime, education, and protocol interest sharing the same page.
-- [PostHog/posthog](https://github.com/PostHog/posthog) and [deepseek-ai/DeepEP](https://github.com/deepseek-ai/DeepEP) indicate that observability/product platforms and inference infrastructure still coexist with agent UX projects on the default board.
+- The board still rewards practical agent-operator surfaces over abstract discussion: [free-claude-code](https://github.com/Alishahryar1/free-claude-code), [cua](https://github.com/trycua/cua), and [beads](https://github.com/gastownhall/beads) all sit at the execution, memory, or infrastructure layer.
+- Computer-use and memory remain durable themes. [cua](https://github.com/trycua/cua) focuses on desktop-control agents, while [beads](https://github.com/gastownhall/beads) focuses on memory augmentation for coding agents.
+- The board is still broader than AI alone: [curl](https://github.com/curl/curl), [home-assistant/core](https://github.com/home-assistant/core), and [build-your-own-x](https://github.com/codecrafters-io/build-your-own-x) show systems software, privacy/local-control software, and general programming education sharing the same default surface.
 
 ## Watchlist
 
-- Watch whether [free-claude-code](https://github.com/Alishahryar1/free-claude-code), [claude-code-templates](https://github.com/davila7/claude-code-templates), and [Roo-Code](https://github.com/RooCodeInc/Roo-Code) stay visible, because that would reinforce persistent demand for Claude-adjacent coding-agent operator tooling.
-- Keep [mattpocock/skills](https://github.com/mattpocock/skills) and [awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills) on the watchlist as evidence that reusable skill distribution remains a strong abstraction layer.
-- Track [PostHog/posthog](https://github.com/PostHog/posthog) and [deepseek-ai/DeepEP](https://github.com/deepseek-ai/DeepEP) as infrastructure indicators rather than novelty spikes.
-- Treat [Z4nzu/hackingtool](https://github.com/Z4nzu/hackingtool), [PowerShell/PowerShell](https://github.com/PowerShell/PowerShell), and [codecrafters-io/build-your-own-x](https://github.com/codecrafters-io/build-your-own-x) as a reminder that the default global board is still a mixed developer-interest surface, not an AI-only feed.
+- Watch whether [free-claude-code](https://github.com/Alishahryar1/free-claude-code), [cua](https://github.com/trycua/cua), and [beads](https://github.com/gastownhall/beads) remain visible, because that would reinforce persistent demand for operator tooling around coding and computer-use agents.
+- Keep [home-assistant/core](https://github.com/home-assistant/core) on the board-level watchlist as a reminder that privacy-first local software still resonates even when AI repos dominate attention.
+- Treat [curl](https://github.com/curl/curl) and [build-your-own-x](https://github.com/codecrafters-io/build-your-own-x) as evidence that the default global trending page remains a mixed developer-interest surface rather than a clean AI trendline.
