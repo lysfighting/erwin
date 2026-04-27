@@ -2,6 +2,49 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.17.0] — 2026-04-27
+
+### Fixed — Hotfix Divergence Guard for `/team-rc promote` (HIGH severity)
+
+**The bug**: 3.13.0's `rebuild-rc-on-prod` strategy uses `git commit-tree RC.tree -p prod_sha` — semantically "RC's tree wins entirely, prod becomes ancestry-only". When prod has a hotfix that the RC branch contains a manually-backported version of (different commit, different patch shape), the rebuild silently keeps RC's version and discards prod's. The release ships with the wrong fix; nobody notices until prod regresses.
+
+**Real incident**: vi_agent V0.1.27 promote (PR #1690) hit CONFLICTING/DIRTY with 154 file conflicts. Diagnosis: prod and pre-launch had diverged across many files including hotfix-touched ones. The pre-existing `--diff-filter=A` safety check in P4.5 only caught added files — modify-only divergence was silent.
+
+**The fix — two layers**:
+
+1. **NEW Step P4.4: Hotfix Divergence Guard** (in `team-rc.md`) — runs before P4.5 in dual-branch + `release.strategy: rebuild-on-prod` mode. Calls a new script subcommand to detect hotfix commits on `$PROD_BRANCH` whose SHAs aren't ancestors of `origin/$RC_BRANCH`. On hits, displays the missing list and asks via `AskUserQuestion`:
+   - **Reconcile** (recommended) → STOP. User runs Option A recipe (merge `$PROD_BRANCH` into `$BASE_BRANCH` with merge commit, cancel + re-cut RC).
+   - **Force** → user has manually verified RC contains equivalent content under a different SHA; promote continues to P4.5.
+   - **Abort** → STOP, retry later.
+
+2. **NEW `tw-git.sh hotfix-divergence-check RC PROD VERSION_PREFIX` subcommand** — two-tier hotfix detection: (1) primary: `${VERSION_PREFIX}.*-hotfix.*` tags newer than `LAST_CLEAN_TAG`, time-filtered via `git log -1 --format=%ct` to scope to the current release cycle; (2) fallback: commits in `(LAST_CLEAN_TAG..origin/$PROD]` with subject prefix `hotfix(` to catch manual hotfixes that didn't go through the skill flow. Outputs KV format with heredoc-framed multi-line fields. Squash-only-aware: SHA-not-ancestor → `MISSING`, even when content is equivalent (false positive is preferable to silent overwrite; user's Force option resolves).
+
+3. **`cmd_rebuild_rc_on_prod` extended diff filter** — `--diff-filter=A` (added-only) split into `ADDED_ON_PROD` + `MODIFIED_ON_PROD` (using `--diff-filter=M` separately). P4.5's confirmation gate now fires on either non-empty list. The MODIFIED_ON_PROD class is the silent-overwrite case the diff-filter=A blind spot missed.
+
+### New §Hotfix Divergence Guard reference section in `team-rc.md`
+
+Document the divergence pattern (what + why-conservative + Option A recipe step-by-step + how to avoid in future). Linked from P4.4 as the resolution recipe when user picks "Reconcile". Squash-only caveat: the reconciliation PR MUST be a true merge commit (not squash) so prod's hotfix SHAs land in `$BASE_BRANCH`'s ancestry — otherwise the next promote's P4.4 fires again.
+
+### Tests
+
+- `tw-unit-test.sh` extended with 4 new scenarios (per spec §7):
+  1. Clean path — no hotfix tags → `STATUS=clean`.
+  2. Hotfix on prod, no backport on RC → `STATUS=missing`.
+  3. Manual backport with different content → `STATUS=missing` (correct alarm).
+  4. `git cherry-pick -x` backport — same logical fix, different SHA → `STATUS=missing` (conservative false positive; user resolves via Force).
+- All 63 tests pass (59 prior + 4 new).
+- No new fleet test regressions.
+
+### Schema change
+
+`rebuild-rc-on-prod` output now emits `ADDED_ON_PROD` and `MODIFIED_ON_PROD` instead of `MAIN_ONLY_FILES`. Callers parsing the old field name need updating; `team-rc.md` Step P4.5 is the only known caller and is updated in this same release. No backwards-compat shim — the field rename is a deliberate signal that the safety semantics changed.
+
+### Known Limitations
+
+- **Conservative by design**: cherry-pick-x and other equivalent-content paths still trigger `STATUS=missing`. The Force option exists for these. There is no plan to "improve" detection by content-diffing — the cost of a false negative (silent prod regression) dwarfs the cost of an extra confirmation prompt.
+- **vi_agent NOT auto-synced this release**: install via `./install.sh --copy` from `vi_agent/` after pulling erwin's 3.17.0. PR #1690 is rescued manually via §Hotfix Divergence Guard Option A.
+- **Time-based filter assumption**: hotfix tags are scoped to "newer than LAST_CLEAN_TAG" via committer time. If a release is created retroactively (tag pointing to an older commit), the time filter may misclassify. In practice this hasn't happened — release tags always point to current HEAD.
+
 ## [3.16.0] — 2026-04-26
 
 ### Added — Optional Evaluator Gate (`/team-drive`)

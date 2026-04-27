@@ -932,6 +932,165 @@ test_merged_since_markdown_renderer
 test_merged_since_feishu_renderer
 test_merged_since_feishu_production_emoji
 
+# ─── GIT — HOTFIX-DIVERGENCE-CHECK ──────────────────────
+# Builds tiny git repos with a "prod" and "rc" branch, applies the four
+# canonical divergence scenarios, asserts STATUS field + presence of
+# expected entries. No GitHub auth, no remote — runs as `origin` of itself
+# via a bare repo.
+
+_setup_hotfix_repo() {
+  # Create: bare "origin" + working clone with main + rc/V0.1.99 branches,
+  # and a clean V0.1.27 release tag on main. Returns repo path on stdout.
+  local repo="$TMPDIR_ROOT/hotfix-$$-$RANDOM"
+  local bare="$repo.git"
+  rm -rf "$repo" "$bare"
+
+  git init --quiet --bare "$bare"
+  git init --quiet "$repo"
+  (
+    cd "$repo"
+    git config user.email "test@test.test"
+    git config user.name "test"
+    git config commit.gpgsign false
+    git remote add origin "$bare"
+
+    # Initial commit on main.
+    echo "v0" > app.txt
+    git add app.txt
+    git commit --quiet -m "init"
+    git branch -M main
+    git push --quiet -u origin main
+
+    # Tag a clean release V0.1.27 on main.
+    git tag V0.1.27
+    git push --quiet origin V0.1.27
+
+    # Cut rc/V0.1.99 from main.
+    git checkout --quiet -b rc/V0.1.99
+    git push --quiet -u origin rc/V0.1.99
+
+    git checkout --quiet main
+  )
+  echo "$repo"
+}
+
+test_hotfix_divergence_clean_path() {
+  # Scenario 4: prod at last_clean_tag, no hotfixes. STATUS=clean.
+  local repo
+  repo=$(_setup_hotfix_repo)
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-git.sh" hotfix-divergence-check rc/V0.1.99 main V0.1 2>&1)
+
+  local ok=1
+  echo "$out" | grep -q "^LAST_CLEAN_TAG=V0.1.27$"   || { fail "hotfix-divergence: clean — wrong LAST_CLEAN_TAG"; ok=0; }
+  echo "$out" | grep -q "^HOTFIX_TAGS=$"              || { fail "hotfix-divergence: clean — HOTFIX_TAGS should be empty"; ok=0; }
+  echo "$out" | grep -q "^MISSING_HOTFIXES=$"         || { fail "hotfix-divergence: clean — MISSING_HOTFIXES should be empty"; ok=0; }
+  echo "$out" | grep -q "^STATUS=clean$"              || { fail "hotfix-divergence: clean — wrong STATUS"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "hotfix-divergence: clean path (no hotfix tags) → STATUS=clean"
+}
+
+test_hotfix_divergence_no_backport() {
+  # Scenario 3: prod has hotfix tag, RC never got it. STATUS=missing.
+  local repo
+  repo=$(_setup_hotfix_repo)
+  (
+    cd "$repo"
+    # Apply a hotfix on main: change app.txt and tag.
+    sleep 1  # ensure commit time > V0.1.27
+    echo "v0-prod-hotfix" > app.txt
+    git add app.txt
+    git commit --quiet -m "hotfix(app): patch on prod"
+    git tag V0.1.27-hotfix.1
+    git push --quiet origin main V0.1.27-hotfix.1
+  )
+
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-git.sh" hotfix-divergence-check rc/V0.1.99 main V0.1 2>&1)
+
+  local ok=1
+  echo "$out" | grep -q "^STATUS=missing$"                                  || { fail "hotfix-divergence: no-backport — wrong STATUS"; ok=0; }
+  echo "$out" | grep -q "^HOTFIX_TAGS<<EOF$"                                || { fail "hotfix-divergence: no-backport — HOTFIX_TAGS should be heredoc"; ok=0; }
+  echo "$out" | grep -q "V0.1.27-hotfix.1 .* hotfix(app): patch on prod"    || { fail "hotfix-divergence: no-backport — expected tag entry not found"; ok=0; }
+  echo "$out" | grep -q "^MISSING_HOTFIXES<<EOF$"                           || { fail "hotfix-divergence: no-backport — MISSING_HOTFIXES should be heredoc"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "hotfix-divergence: hotfix on prod, no backport on rc → STATUS=missing"
+}
+
+test_hotfix_divergence_manual_backport_different_content() {
+  # Scenario 1: prod has hotfix.1 with patch A, RC has a manual fix with patch B (different content). STATUS=missing.
+  local repo
+  repo=$(_setup_hotfix_repo)
+  (
+    cd "$repo"
+    sleep 1  # commit time after V0.1.27
+    # Prod hotfix:
+    echo "v0-prod-version" > app.txt
+    git add app.txt
+    git commit --quiet -m "hotfix(app): prod-side fix"
+    git tag V0.1.27-hotfix.1
+    git push --quiet origin main V0.1.27-hotfix.1
+
+    # RC manual backport with DIFFERENT content (different SHA, different patch):
+    git checkout --quiet rc/V0.1.99
+    echo "v0-rc-version" > app.txt
+    git add app.txt
+    git commit --quiet -m "fix(app): rc-side manual backport"
+    git push --quiet origin rc/V0.1.99
+    git checkout --quiet main
+  )
+
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-git.sh" hotfix-divergence-check rc/V0.1.99 main V0.1 2>&1)
+
+  local ok=1
+  echo "$out" | grep -q "^STATUS=missing$"                              || { fail "hotfix-divergence: manual-backport-diff — wrong STATUS"; ok=0; }
+  echo "$out" | grep -q "V0.1.27-hotfix.1 .* hotfix(app): prod-side fix" || { fail "hotfix-divergence: manual-backport-diff — expected tag entry not found"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "hotfix-divergence: manual backport with different content → STATUS=missing (correct alarm)"
+}
+
+test_hotfix_divergence_cherry_pick_backport() {
+  # Scenario 2: prod has hotfix.1, RC `cherry-pick -x` the SAME commit. SHAs differ.
+  # Expected: STATUS=missing (conservative false positive — guard fires; user picks Force).
+  local repo
+  repo=$(_setup_hotfix_repo)
+  (
+    cd "$repo"
+    sleep 1
+    echo "v0-shared-fix" > app.txt
+    git add app.txt
+    git commit --quiet -m "hotfix(app): shared fix"
+    local hotfix_sha
+    hotfix_sha=$(git rev-parse HEAD)
+    git tag V0.1.27-hotfix.1
+    git push --quiet origin main V0.1.27-hotfix.1
+
+    # RC cherry-picks the same commit; -x records source SHA in trailer.
+    git checkout --quiet rc/V0.1.99
+    git cherry-pick -x "$hotfix_sha" --quiet >/dev/null 2>&1
+    git push --quiet origin rc/V0.1.99
+    git checkout --quiet main
+  )
+
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-git.sh" hotfix-divergence-check rc/V0.1.99 main V0.1 2>&1)
+
+  local ok=1
+  # Cherry-pick of same commit: original SHA still not in RC ancestry → guard fires.
+  # This is the documented conservative behavior.
+  echo "$out" | grep -q "^STATUS=missing$"                            || { fail "hotfix-divergence: cherry-pick — wrong STATUS (expected conservative missing)"; ok=0; }
+  echo "$out" | grep -q "V0.1.27-hotfix.1 .* hotfix(app): shared fix"  || { fail "hotfix-divergence: cherry-pick — expected tag entry not found"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "hotfix-divergence: cherry-pick -x backport → STATUS=missing (conservative; user resolves via Force)"
+}
+
+section "GIT — HOTFIX-DIVERGENCE-CHECK"
+test_hotfix_divergence_clean_path
+test_hotfix_divergence_no_backport
+test_hotfix_divergence_manual_backport_different_content
+test_hotfix_divergence_cherry_pick_backport
+
 # ─── Summary ────────────────────────────────────────────
 section "SUMMARY"
 TOTAL=$((PASS + FAIL + SKIP))

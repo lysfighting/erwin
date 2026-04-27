@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.16.0"
+version: "3.17.0"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -947,6 +947,60 @@ options:
 If "中止" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
+### Step P4.4: Hotfix Divergence Guard (squash-only mode)
+
+**Why this exists**: When a hotfix lands on `$PROD_BRANCH` (via `/team-rc hotfix` or manual squash) and the RC branch contains a manually-backported version of the same fix with **different content** (different commit message, different patch shape, conflict-resolution drift), Step P4.5's `git commit-tree` rebuild silently keeps the RC's version and discards the prod version's tree. The release ships with the wrong fix and nobody notices until prod regresses. This step detects the SHA-level divergence BEFORE rebuild and asks the user to reconcile.
+
+**When this runs**: Same trigger as P4.5 (dual-branch + `release.strategy: rebuild-on-prod`). For single-branch or `cut-only` repos, this step is a no-op.
+
+```bash
+if [ "$BASE_BRANCH" = "$PROD_BRANCH" ] || [ "$REBUILD_STRATEGY" != "rebuild-on-prod" ]; then
+  echo "Hotfix divergence check skipped (single-branch or cut-only strategy)"
+  # Jump to Step P4.5
+else
+  HOTFIX_OUTPUT=$(bash ~/.claude/commands/scripts/tw-git.sh hotfix-divergence-check \
+    "$RC_BRANCH" "$PROD_BRANCH" "$VERSION_PREFIX")
+fi
+```
+
+**Parse `HOTFIX_OUTPUT`** (AI step, KV format):
+
+- `LAST_CLEAN_TAG=<tag>` — most recent clean release tag (e.g., `V0.1.27`); empty if no prior release
+- `HOTFIX_TAGS<<EOF ... EOF` — heredoc list of `TAG SHA SUBJECT` for hotfix tags newer than `LAST_CLEAN_TAG` (or `HOTFIX_TAGS=` if none)
+- `HOTFIX_COMMITS<<EOF ... EOF` — heredoc list of `SHA SUBJECT` for untagged hotfix-prefixed commits in `(LAST_CLEAN_TAG..origin/$PROD_BRANCH]` (fallback signal; or `HOTFIX_COMMITS=` if none)
+- `MISSING_HOTFIXES<<EOF ... EOF` — heredoc list of `TAG SHA SUBJECT` for hotfixes whose SHA is NOT an ancestor of `origin/$RC_BRANCH` (TAG=`(untagged)` for fallback hits; or `MISSING_HOTFIXES=` if none)
+- `STATUS=clean | missing | no-prior-release`
+
+**If `STATUS=clean` or `STATUS=no-prior-release`**: No divergence detected — skip to Step P4.5.
+
+**If `STATUS=missing`**, display the warning:
+
+⚠️ **HOTFIX DIVERGENCE** ── *{RC_BRANCH}* missing fixes from *{PROD_BRANCH}*
+  Last clean release: **{LAST_CLEAN_TAG}**
+  Missing on RC ({count} hotfix{es}):
+{for each line in MISSING_HOTFIXES: indented `{TAG}` `{SHA[0:12]}` — *{SUBJECT}*}
+
+**Why dangerous**: Step P4.5 rebuilds RC tree on prod's parent. RC's tree wins entirely — any prod-only changes (including these hotfix patches) get silently overwritten. False positives are possible (squash-only repos: same content, different SHAs) — but a false positive blocks ship; a missed divergence ships broken code.
+────────────────────────────────────────────────────────────
+
+Use `AskUserQuestion`:
+```
+question: "RC 缺少 prod 上的 hotfix。继续 promote 会用 RC 的 tree 覆盖这些 fix。如何处理？"
+options:
+  - label: "Reconcile (推荐)"
+    description: "中止 promote。手工把 prod hotfix 合回 main / RC（参考 §Hotfix Divergence Guard），重新 cut RC 后再 promote。"
+  - label: "Force (确认 RC 已含等价内容)"
+    description: "我已核对每个 missing hotfix，RC 用不同 SHA 包含等价修改。确认强制继续到 P4.5。"
+  - label: "Abort"
+    description: "取消本次 promote，稍后处理。"
+```
+
+If "Reconcile" or "Abort" → **STOP**
+  💡 Reconcile recipe → 见 §Hotfix Divergence Guard 章节 Option A。
+  💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
+
+If "Force" → record decision (the user has manually verified equivalence; downstream P4.5 still runs full file-level diff and asks separately about ADDED/MODIFIED).
+
 ### Step P4.5: Rebuild RC on Production (squash-only mode)
 
 **Why this exists**: In squash-only release repos (e.g., `pre-launch` → `main` where every release is a squash merge), `main` and the base branch re-diverge after every release. The merge-base between `rc/VERSION` and `main` stays rooted at the original fork point, so the release PR conflicts with every direct-to-main change in history. This step rebuilds `rc/VERSION` on top of `main` HEAD via `git commit-tree` so the PR becomes a clean fast-forward.
@@ -972,7 +1026,8 @@ fi
 
 - `OLD_SHA=<sha>` — current `origin/$RC_BRANCH` sha
 - `NEW_SHA=<sha>` — sha of the rebuilt commit
-- `MAIN_ONLY_FILES<<EOF ... EOF` — heredoc-framed list of files present on `$PROD_BRANCH` but not on `$RC_BRANCH` (empty line `MAIN_ONLY_FILES=` if none)
+- `ADDED_ON_PROD<<EOF ... EOF` — heredoc list of files present on `$PROD_BRANCH` but not on `$RC_BRANCH`; rebuild deletes them from RC (empty line `ADDED_ON_PROD=` if none)
+- `MODIFIED_ON_PROD<<EOF ... EOF` — heredoc list of files with **different content** on prod vs RC; rebuild overwrites prod's version with RC's (empty line `MODIFIED_ON_PROD=` if none) — **3.17.0 fix**: this case is the silent hotfix-overwrite class. Step P4.4 should have already gated obvious cases; this is the file-level safety net.
 - `STATUS=<dry-run|already-fast-forwardable>`
 
 **If `STATUS=already-fast-forwardable`**: No rebuild needed — skip to Step P5.
@@ -982,18 +1037,20 @@ fi
 **REBUILD RC** ── *{RC_BRANCH}* → *{PROD_BRANCH}* ────────────
   Old rc SHA: `{OLD_SHA[0:12]}`
   New rc SHA: `{NEW_SHA[0:12]}`
-  Main-only files to be deleted: `{count}`
-{if MAIN_ONLY_FILES non-empty, list each on its own indented line wrapped in backticks}
+  Files prod-only (will be deleted): `{added_count}`
+{if ADDED_ON_PROD non-empty, list each on its own indented line wrapped in backticks}
+  Files diverged (RC content wins, prod content lost): `{modified_count}`
+{if MODIFIED_ON_PROD non-empty, list each on its own indented line wrapped in backticks}
 ────────────────────────────────────────────────────────────
 
-**If `MAIN_ONLY_FILES` is non-empty**, use `AskUserQuestion`:
+**If `ADDED_ON_PROD` is non-empty OR `MODIFIED_ON_PROD` is non-empty**, use `AskUserQuestion`:
 ```
-question: "确认删除上述 main-only 文件并 rebuild？"
+question: "确认 rebuild？上方列出的 prod-only 文件会从 rc 删除；diverged 文件会被 rc 的版本覆盖（prod 上的版本丢失）。"
 options:
   - label: "执行 rebuild"
-    description: "提交新 commit 到 rc 分支，这些 main-only 文件将从 rc 消失"
+    description: "提交新 commit 到 rc 分支，prod-only 文件消失、diverged 文件采用 rc 版本"
   - label: "先 cherry-pick 再来"
-    description: "中止 promote，手工把这些文件 backport 到 rc 后重新 /team-rc promote"
+    description: "中止 promote，手工把缺失内容 backport 到 rc 后重新 /team-rc promote"
   - label: "中止"
     description: "取消本次 promote"
 ```
@@ -1001,7 +1058,7 @@ options:
 If "先 cherry-pick 再来" or "中止" → **STOP**
   💡 Something wrong? Run `/team doctor` to diagnose, or `/team doctor fix` to auto-repair.
 
-**If `MAIN_ONLY_FILES` is empty OR user confirmed**, execute the real rebuild:
+**If both lists are empty OR user confirmed**, execute the real rebuild:
 
 ```bash
 # Rollback hint — capture OLD_SHA so the user can restore if something goes wrong
@@ -1399,3 +1456,85 @@ Output the following and **STOP**:
 **BACKPORT CONFLICTS**
   If the cherry-pick to *{BASE_BRANCH}* has conflicts, you'll be guided through resolution.
   The hotfix is already on *{PROD_BRANCH}* — backport can be retried manually if needed.
+
+---
+
+## Hotfix Divergence Guard
+
+> Reference for Step P4.4. Read this when the guard fires `STATUS=missing`.
+
+### What's the divergence
+
+In dual-branch repos with squash-only releases (`pre-launch` → `main`, every release is squash-merged), a hotfix lands on `$PROD_BRANCH` as a new commit. If the team also lands an equivalent fix on `$BASE_BRANCH` — typically as a manual backport that's NOT a `cherry-pick -x` of the prod commit — then:
+
+- **Same problem solved twice**, with different commit metadata, different patch shape, possibly different conflict resolution.
+- The two SHAs are unrelated in git's ancestry graph.
+- When `/team-rc promote` runs Step P4.5, `git commit-tree RC.tree -p prod_sha` writes a commit whose tree is RC's tree wholesale. Prod's hotfix tree gets overwritten silently. Whatever differences existed (line drift, missed edge case, wrong import) ship to production.
+
+### Why we treat false positives as acceptable
+
+In squash-only repos, even a clean `git cherry-pick -x` produces a different SHA on RC than on prod. The guard cannot tell "different SHA, same content" apart from "different SHA, different content" without doing a per-file diff (which Step P4.5's `MODIFIED_ON_PROD` does). So the guard fires on **any** prod hotfix not present in RC's ancestry, even when content is equivalent.
+
+The cost asymmetry justifies this:
+
+- **False positive** (content equivalent, guard fires): one AskUserQuestion round; user picks "Force"; promote continues. Minor friction.
+- **False negative** (content diverged, guard misses): hotfix silently overwritten; production regresses; incident.
+
+Pick friction over regression.
+
+### Option A — Reconciliation recipe
+
+When `STATUS=missing` and you choose "Reconcile", do this:
+
+**1. Cancel the current RC** (do NOT promote):
+```bash
+/team-rc cancel
+```
+
+**2. Open a pre-launch reconciliation PR**:
+```bash
+git fetch origin "$PROD_BRANCH" "$BASE_BRANCH"
+git checkout -b "reconcile/${VERSION_PREFIX}.merge-prod-hotfix" "origin/$BASE_BRANCH"
+git merge "origin/$PROD_BRANCH" --no-ff -m "merge: reconcile ${PROD_BRANCH} hotfixes into ${BASE_BRANCH}"
+# Resolve any conflicts — your manual backport vs prod hotfix.
+# Choose the version that's actually correct (usually prod's tested version).
+git push -u origin HEAD
+gh pr create --base "$BASE_BRANCH" --title "merge: reconcile ${PROD_BRANCH} hotfixes" \
+  --body "Merges prod hotfixes back into ${BASE_BRANCH} so that ${BASE_BRANCH}'s tree contains every fix currently on ${PROD_BRANCH}. Required pre-flight before next /team-rc promote."
+```
+
+**3. Merge with merge commit (NOT squash)**: This preserves prod's hotfix SHAs in `$BASE_BRANCH`'s ancestry. After merge, `git merge-base --is-ancestor <prod-hotfix-sha> origin/$BASE_BRANCH` returns true → next RC's divergence check sees `STATUS=clean`.
+
+> ⛔ **Squash here would defeat the purpose.** A squash on the reconciliation PR collapses prod's hotfix SHAs into a single new SHA — the divergence guard would still fire on the next promote. This is the one PR in the lifecycle that MUST be a true merge commit.
+
+**4. Verify reconciliation took**:
+```bash
+git fetch --tags origin "$BASE_BRANCH"
+bash ~/.claude/commands/scripts/tw-git.sh hotfix-divergence-check \
+  "(any rc branch name; doesn't need to exist yet — just probes prod tags)" \
+  "$PROD_BRANCH" "$VERSION_PREFIX"
+# STATUS should now be 'clean' for any RC cut from $BASE_BRANCH.
+```
+
+**5. Re-cut RC and resume promote**:
+```bash
+/team-rc            # cuts new rc/{version} from base — now contains prod's hotfix SHAs
+# verify staging, then:
+/team-rc promote    # P4.4 should pass clean
+```
+
+### Why this works
+
+The reconciliation merge brings prod's hotfix commit SHAs into `$BASE_BRANCH`'s commit graph (as ancestors via the merge commit). When the next RC is cut from `$BASE_BRANCH`, those SHAs are reachable from RC. Step P4.4's `merge-base --is-ancestor` returns true → no missing entries → `STATUS=clean`.
+
+The merge also reconciles content: any file modified by both the manual backport and the prod hotfix surfaces as a conflict, forcing the team to pick the right version (usually prod's, since it's been validated in production).
+
+### Avoiding this in future
+
+Best practice for hotfixes that need to land on both branches:
+
+1. **Use `/team-rc hotfix`**: It backports via `git cherry-pick -x` (records source SHA in commit message). Squash-only release still rewrites the SHA on `$BASE_BRANCH`, but the `(cherry picked from commit ...)` trailer makes intent auditable.
+2. **OR backport via merge commit, not squash**: Open a backport PR with merge-commit strategy so prod's hotfix SHA stays in `$BASE_BRANCH`'s history.
+3. **OR backport, then immediately reconcile-merge prod**: Same effect as Option A, done preemptively.
+
+Squash-only repos amplify this risk — the cost of doing nothing is silent overwrite. The guard exists because the cost of doing it wrong is too high to leave to vigilance alone.

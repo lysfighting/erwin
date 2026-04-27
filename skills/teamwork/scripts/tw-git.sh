@@ -21,6 +21,7 @@
 #   bash tw-git.sh log-since [BASE]                     # Show commits + diff stat since base
 #   bash tw-git.sh cut-release VERSION                  # Cut rc/VERSION from base (remote-only, no checkout)
 #   bash tw-git.sh rebuild-rc-on-prod RC PROD VERSION [--dry-run]  # Rebuild rc/VERSION on top of PROD via commit-tree
+#   bash tw-git.sh hotfix-divergence-check RC PROD PREFIX  # Detect prod hotfixes missing from RC (run before rebuild)
 #   bash tw-git.sh slugify TITLE                         # Slugify title for branch names
 #   bash tw-git.sh find-rc                               # Find active RC branch (exit 1=none, 3=multiple)
 #   bash tw-git.sh next-version PREFIX                   # Derive next patch version from tags
@@ -75,7 +76,8 @@ usage() {
   echo "             rebase, tag, commit, worktree-guard, claim-setup," >&2
   echo "             worktree-add, worktree-remove," >&2
   echo "             worktree-main-repo, worktree-find-by-branch, log-since," >&2
-  echo "             cut-release, rebuild-rc-on-prod, slugify, find-rc, next-version," >&2
+  echo "             cut-release, rebuild-rc-on-prod, hotfix-divergence-check," >&2
+  echo "             slugify, find-rc, next-version," >&2
   echo "             list-merged-branches, milestone-resolve" >&2
   exit 1
 }
@@ -327,14 +329,16 @@ cmd_rebuild_rc_on_prod() {
   # fast-forward, avoiding the squash-only release conflict pattern where RC
   # diverges from prod since the original fork point.
   #
-  # Main-only files (present on prod but not on rc) are implicitly deleted by
-  # the new commit. They are reported on stdout so the caller can confirm
-  # before pushing.
+  # Files diverged on prod (added OR modified relative to rc) are implicitly
+  # overwritten by the new commit. They are reported on stdout so the caller
+  # can confirm before pushing — modify-only divergence (typically hotfix vs
+  # backport) is the silent-overwrite class fixed in 3.17.0.
   #
-  # Stdout (key=value, newline-separated; MAIN_ONLY_FILES uses heredoc framing):
+  # Stdout (key=value, newline-separated; ADDED_ON_PROD/MODIFIED_ON_PROD use heredoc framing):
   #   OLD_SHA=<previous origin/RC_BRANCH sha>
   #   NEW_SHA=<commit-tree result>
-  #   MAIN_ONLY_FILES<<EOF / ...paths.../ EOF   (or MAIN_ONLY_FILES= if none)
+  #   ADDED_ON_PROD<<EOF / ...paths.../ EOF      (files present on prod but not rc)
+  #   MODIFIED_ON_PROD<<EOF / ...paths.../ EOF   (files with different content on prod vs rc)
   #   STATUS=dry-run | pushed | already-fast-forwardable
   #
   # Progress/errors go to stderr.
@@ -369,16 +373,22 @@ cmd_rebuild_rc_on_prod() {
   if git merge-base --is-ancestor "$prod_sha" "$old_sha" 2>/dev/null; then
     echo "OLD_SHA=$old_sha"
     echo "NEW_SHA=$old_sha"
-    echo "MAIN_ONLY_FILES="
+    echo "ADDED_ON_PROD="
+    echo "MODIFIED_ON_PROD="
     echo "STATUS=already-fast-forwardable"
     return 0
   fi
 
-  # Files added in prod relative to rc = present on prod but not on rc.
-  # After rebuild the new commit has rc's tree, so these files effectively
-  # disappear from the rc branch — caller must confirm this is intentional.
-  local main_only_files
-  main_only_files=$(git diff --name-only --diff-filter=A \
+  # Files diverged on prod relative to rc:
+  #   ADDED_ON_PROD     — present on prod but not on rc (will be deleted by rebuild)
+  #   MODIFIED_ON_PROD  — different content on prod vs rc (will be overwritten by rebuild)
+  # The latter is the silent-overwrite class — typically a hotfix-on-prod where
+  # the RC has a manually-backported version with different content. Caller MUST
+  # confirm before pushing; gate this with hotfix-divergence-check upstream.
+  local added_on_prod modified_on_prod
+  added_on_prod=$(git diff --name-only --diff-filter=A \
+    "origin/$rc_branch..origin/$prod_branch" 2>/dev/null || true)
+  modified_on_prod=$(git diff --name-only --diff-filter=M \
     "origin/$rc_branch..origin/$prod_branch" 2>/dev/null || true)
 
   local new_sha
@@ -389,12 +399,19 @@ cmd_rebuild_rc_on_prod() {
 
   echo "OLD_SHA=$old_sha"
   echo "NEW_SHA=$new_sha"
-  if [ -n "$main_only_files" ]; then
-    echo "MAIN_ONLY_FILES<<EOF"
-    printf '%s\n' "$main_only_files"
+  if [ -n "$added_on_prod" ]; then
+    echo "ADDED_ON_PROD<<EOF"
+    printf '%s\n' "$added_on_prod"
     echo "EOF"
   else
-    echo "MAIN_ONLY_FILES="
+    echo "ADDED_ON_PROD="
+  fi
+  if [ -n "$modified_on_prod" ]; then
+    echo "MODIFIED_ON_PROD<<EOF"
+    printf '%s\n' "$modified_on_prod"
+    echo "EOF"
+  else
+    echo "MODIFIED_ON_PROD="
   fi
 
   if [ $dry_run -eq 1 ]; then
@@ -410,6 +427,171 @@ cmd_rebuild_rc_on_prod() {
   else
     echo "ERROR: force-push of rebuilt $rc_branch failed (lease violation or network error)" >&2
     exit 2
+  fi
+}
+
+cmd_hotfix_divergence_check() {
+  # USAGE: hotfix-divergence-check RC_BRANCH PROD_BRANCH VERSION_PREFIX
+  #
+  # Detects hotfix commits on PROD_BRANCH that are NOT yet present in RC_BRANCH.
+  # If any such hotfixes exist, rebuilding RC on top of prod via commit-tree
+  # (which uses RC's tree wholesale) would silently overwrite them. This check
+  # catches the divergence BEFORE rebuild — promote then asks user how to
+  # reconcile rather than silently eating production fixes.
+  #
+  # Hotfix detection — two-tier:
+  #   1. Primary: tags matching ${VERSION_PREFIX}.*-hotfix.* (created by /team-rc
+  #      hotfix flow — first-class state).
+  #   2. Fallback: commits since LAST_CLEAN_TAG with subject starting "hotfix("
+  #      on origin/PROD_BRANCH (covers manual hotfixes that didn't go through
+  #      the skill).
+  #
+  # Conservative: in squash-only repos, hotfix commits and their backported
+  # versions on RC have different SHAs even if content is identical. This check
+  # treats SHA-not-ancestor as missing — a false positive is preferable to
+  # silently overwriting production. The user resolves via Reconcile/Force/Abort.
+  #
+  # Stdout (KV format with heredoc framing for multi-line fields):
+  #   LAST_CLEAN_TAG=<latest clean release tag, e.g., V0.1.26>  (empty if none)
+  #   HOTFIX_TAGS<<EOF / TAG SHA SUBJECT / ... / EOF            (or HOTFIX_TAGS=)
+  #   HOTFIX_COMMITS<<EOF / SHA SUBJECT / ... / EOF             (untagged fallback hits)
+  #   MISSING_HOTFIXES<<EOF / TAG SHA SUBJECT / ... / EOF       (TAG="(untagged)" for fallbacks)
+  #   STATUS=clean | missing | no-prior-release
+  #
+  # Exit 0 in all cases — caller decides what to do based on STATUS field.
+
+  local rc_branch="${1:-}" prod_branch="${2:-}" prefix="${3:-}"
+  if [ -z "$rc_branch" ] || [ -z "$prod_branch" ] || [ -z "$prefix" ]; then
+    echo "ERROR: hotfix-divergence-check requires RC_BRANCH PROD_BRANCH VERSION_PREFIX" >&2
+    exit 1
+  fi
+
+  git fetch --tags origin "$rc_branch" "$prod_branch" 2>/dev/null || true
+
+  # 1. Find last CLEAN release tag (no -hotfix.M suffix).
+  local prefix_re last_clean_tag
+  prefix_re=$(echo "$prefix" | sed 's/[.[\*^$()+?{|\\]/\\&/g')
+  last_clean_tag=$(git tag -l "${prefix}.*" --sort=-v:refname \
+    | grep -E "^${prefix_re}\.[0-9]+$" \
+    | head -1) || true
+
+  if [ -z "$last_clean_tag" ]; then
+    echo "LAST_CLEAN_TAG="
+    echo "HOTFIX_TAGS="
+    echo "HOTFIX_COMMITS="
+    echo "MISSING_HOTFIXES="
+    echo "STATUS=no-prior-release"
+    return 0
+  fi
+
+  echo "LAST_CLEAN_TAG=$last_clean_tag"
+
+  # Use last_clean_tag's commit time as the cutoff for "this hotfix happened
+  # AFTER the last release". Squash-only repos break SHA ancestry, so time-based
+  # filter is the only reliable way to scope to "current cycle's hotfixes".
+  local last_clean_time
+  last_clean_time=$(git log -1 --format=%ct "$last_clean_tag" 2>/dev/null) || last_clean_time=0
+
+  # 2. Hotfix tags (primary signal) — newer than LAST_CLEAN_TAG.
+  local hotfix_tag_lines=""
+  local -a hotfix_tag_shas=()
+  local hotfix_tags
+  hotfix_tags=$(git tag -l "${prefix}.*-hotfix.*" --sort=v:refname \
+    | grep -E "^${prefix_re}\.[0-9]+-hotfix\.[0-9]+$") || true
+  if [ -n "$hotfix_tags" ]; then
+    while IFS= read -r tag; do
+      [ -z "$tag" ] && continue
+      local sha subj tag_time
+      sha=$(git rev-parse "$tag^{commit}" 2>/dev/null) || continue
+      tag_time=$(git log -1 --format=%ct "$sha" 2>/dev/null) || tag_time=0
+      # Skip hotfixes that predate the last clean release (already merged in).
+      if [ "$tag_time" -le "$last_clean_time" ]; then
+        continue
+      fi
+      subj=$(git log -1 --pretty='%s' "$sha" 2>/dev/null) || subj=""
+      hotfix_tag_lines+="$tag $sha $subj"$'\n'
+      hotfix_tag_shas+=("$sha")
+    done <<< "$hotfix_tags"
+  fi
+
+  if [ -n "$hotfix_tag_lines" ]; then
+    echo "HOTFIX_TAGS<<EOF"
+    printf '%s' "$hotfix_tag_lines"
+    echo "EOF"
+  else
+    echo "HOTFIX_TAGS="
+  fi
+
+  # 3. Fallback grep — commits in (last_clean_tag..origin/prod] with "hotfix("
+  # subject prefix, excluding SHAs already covered by tags.
+  local fallback_lines=""
+  local commit_log
+  commit_log=$(git log --pretty='%H %s' --grep='^hotfix(' \
+    "${last_clean_tag}..origin/${prod_branch}" 2>/dev/null || true)
+  if [ -n "$commit_log" ]; then
+    while IFS= read -r line; do
+      [ -z "$line" ] && continue
+      local sha="${line%% *}" subj="${line#* }"
+      local already=0
+      if [ ${#hotfix_tag_shas[@]} -gt 0 ]; then
+        local t
+        for t in "${hotfix_tag_shas[@]}"; do
+          if [ "$t" = "$sha" ]; then
+            already=1
+            break
+          fi
+        done
+      fi
+      [ $already -eq 1 ] && continue
+      fallback_lines+="$sha $subj"$'\n'
+    done <<< "$commit_log"
+  fi
+
+  if [ -n "$fallback_lines" ]; then
+    echo "HOTFIX_COMMITS<<EOF"
+    printf '%s' "$fallback_lines"
+    echo "EOF"
+  else
+    echo "HOTFIX_COMMITS="
+  fi
+
+  # 4. MISSING — hotfixes whose SHA isn't an ancestor of RC.
+  local rc_ref="origin/$rc_branch"
+  if ! git rev-parse --verify "$rc_ref" >/dev/null 2>&1; then
+    rc_ref=""
+  fi
+
+  local missing_lines=""
+  if [ -n "$hotfix_tag_lines" ]; then
+    while IFS= read -r line; do
+      [ -z "$line" ] && continue
+      local tag sha subj
+      read -r tag sha subj <<< "$line"
+      if [ -z "$rc_ref" ] || ! git merge-base --is-ancestor "$sha" "$rc_ref" 2>/dev/null; then
+        missing_lines+="$tag $sha $subj"$'\n'
+      fi
+    done <<< "$hotfix_tag_lines"
+  fi
+
+  if [ -n "$fallback_lines" ]; then
+    while IFS= read -r line; do
+      [ -z "$line" ] && continue
+      local sha subj
+      read -r sha subj <<< "$line"
+      if [ -z "$rc_ref" ] || ! git merge-base --is-ancestor "$sha" "$rc_ref" 2>/dev/null; then
+        missing_lines+="(untagged) $sha $subj"$'\n'
+      fi
+    done <<< "$fallback_lines"
+  fi
+
+  if [ -n "$missing_lines" ]; then
+    echo "MISSING_HOTFIXES<<EOF"
+    printf '%s' "$missing_lines"
+    echo "EOF"
+    echo "STATUS=missing"
+  else
+    echo "MISSING_HOTFIXES="
+    echo "STATUS=clean"
   fi
 }
 
@@ -806,6 +988,7 @@ case "$SUBCOMMAND" in
   log-since)              cmd_log_since "$@" ;;
   cut-release)            cmd_cut_release "$@" ;;
   rebuild-rc-on-prod)     cmd_rebuild_rc_on_prod "$@" ;;
+  hotfix-divergence-check) cmd_hotfix_divergence_check "$@" ;;
   slugify)                cmd_slugify "$@" ;;
   find-rc)                cmd_find_rc ;;
   next-version)           cmd_next_version "$@" ;;
