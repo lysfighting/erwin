@@ -2,6 +2,34 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.17.1] — 2026-04-28
+
+### Fixed — 3.17.0 post-release audit
+
+Round-2 adversarial audit (5 scout angles + hands-on integration test) found 6 issues missed by the 3.17.0 ship review. All fixed:
+
+1. **🔴 `$REBUILD_STRATEGY` undefined at Step P4.4** (regression). The variable was bound only at P4.5 (L1013) but referenced at P4.4 (L957). Result: in dual-branch + `release.strategy: rebuild-on-prod` mode (the exact mode the guard exists for), the guard silently skipped itself because `[ "$REBUILD_STRATEGY" != "rebuild-on-prod" ]` evaluated to true on an empty string. **Fix**: bind `REBUILD_STRATEGY` at top of P4.4. P4.5 retains its read for defense-in-depth (idempotent if P4.4 already set it; works standalone after session restart).
+
+2. **🔴 P4.4 + P4.5 undocumented in `/team-rc help` and `/team-rc promote help`**. Users hitting the new safety gates had no help-text context. **Fix**: top-level help and promote-help now list 10 promote steps (was 7), with a SAFETY GATES block summarizing P4.4/P4.5 prompts and choices.
+
+3. **🔴 §Hotfix Divergence Guard step 4 misleading "doesn't need to exist yet" claim**. `git fetch origin <nonexistent-rc> <prod>` exits non-zero; the function tolerated it via `2>/dev/null || true` + degraded-rc handling, but the doc oversold the resilience. **Fix**: rewrote to pass `$BASE_BRANCH` itself as the probe target — after the reconciliation merge lands, every prod hotfix SHA is reachable from `$BASE_BRANCH`, so verification is direct and uses an actually-existing ref.
+
+4. **🟡 P4.4 `HOTFIX_COMMITS` field declared but unrouted**. LLM saw the field parsed but no instruction what to do with it. **Fix**: instruction now explicitly says "informational only — every actionable entry is also in MISSING_HOTFIXES with TAG=(untagged)".
+
+5. **🟡 Option A recipe used unsubstituted `${VARS}`** that aren't bound in the user's terminal. **Fix**: added explicit substitution callout with concrete example values (`V0.1`, `pre-launch`, `main`).
+
+6. **🟡 3 test coverage gaps**: `STATUS=no-prior-release` (no clean tag), `HOTFIX_COMMITS` grep-fallback (untagged hotfix commit on prod), and time-filter (hotfix tag predating `LAST_CLEAN_TAG` should be filtered out as already-incorporated). **Fix**: added 3 unit tests covering each scenario. Test count: 63 → 66, all passing.
+
+### Why this got past 3.17.0 ship review
+
+The first audit had 3 narrow-brief scouts (bash logic / contract drift / test coverage). They covered breadth within their lanes but not the SEAMS between layers — variable scope across markdown sections (P4.4 reads, P4.5 writes), help-text completeness, and reconciliation-recipe usability for human readers. Round-2 added end-to-end-trace and cross-skill-ripple scouts plus a hands-on integration test on a synthesized repo, which surfaced #1 #2 #3 immediately. **Memory rule** added: end-to-end trace scout is mandatory for any change that adds a new step into an existing flow.
+
+### Known remaining limitations (from 3.17.0, unchanged)
+
+- Conservative by design — cherry-pick-x and equivalent-content paths still trigger `STATUS=missing`. Force option resolves.
+- `/team doctor` does not yet proactively surface RC-vs-prod hotfix divergence — guard remains reactive at promote time only. Follow-up.
+- vi_agent NOT auto-synced — install via `./install.sh --copy` from `vi_agent/` after pulling 3.17.1.
+
 ## [3.17.0] — 2026-04-27
 
 ### Fixed — Hotfix Divergence Guard for `/team-rc promote` (HIGH severity)

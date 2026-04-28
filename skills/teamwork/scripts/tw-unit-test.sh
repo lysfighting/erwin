@@ -1085,11 +1085,124 @@ test_hotfix_divergence_cherry_pick_backport() {
   [ "$ok" -eq 1 ] && pass "hotfix-divergence: cherry-pick -x backport → STATUS=missing (conservative; user resolves via Force)"
 }
 
+test_hotfix_divergence_no_prior_release() {
+  # No clean release tag exists yet (only bootstrap commit). STATUS=no-prior-release.
+  local repo="$TMPDIR_ROOT/hotfix-npr-$$-$RANDOM"
+  local bare="$repo.git"
+  rm -rf "$repo" "$bare"
+  git init --quiet --bare "$bare"
+  git init --quiet "$repo"
+  (
+    cd "$repo"
+    git config user.email "test@test.test"
+    git config user.name "test"
+    git config commit.gpgsign false
+    git remote add origin "$bare"
+    echo "v0" > app.txt
+    git add app.txt
+    git commit --quiet -m "init"
+    git branch -M main
+    git push --quiet -u origin main
+  )
+
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-git.sh" hotfix-divergence-check main main V0.1 2>&1)
+
+  local ok=1
+  echo "$out" | grep -q "^LAST_CLEAN_TAG=$"        || { fail "hotfix-divergence: no-prior-release — LAST_CLEAN_TAG should be empty"; ok=0; }
+  echo "$out" | grep -q "^STATUS=no-prior-release$" || { fail "hotfix-divergence: no-prior-release — wrong STATUS"; ok=0; }
+  echo "$out" | grep -q "^HOTFIX_TAGS=$"            || { fail "hotfix-divergence: no-prior-release — HOTFIX_TAGS should be empty"; ok=0; }
+  echo "$out" | grep -q "^MISSING_HOTFIXES=$"       || { fail "hotfix-divergence: no-prior-release — MISSING_HOTFIXES should be empty"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "hotfix-divergence: no clean release tag → STATUS=no-prior-release"
+}
+
+test_hotfix_divergence_fallback_grep() {
+  # Untagged hotfix commit on prod (didn't go through /team-rc hotfix flow).
+  # Expected: HOTFIX_TAGS empty, HOTFIX_COMMITS populated, MISSING_HOTFIXES has (untagged) entry.
+  local repo
+  repo=$(_setup_hotfix_repo)
+  (
+    cd "$repo"
+    sleep 1
+    # Manual hotfix commit on prod — NOT tagged.
+    echo "v0-untagged-hotfix" > app.txt
+    git add app.txt
+    git commit --quiet -m "hotfix(app): manual untagged fix"
+    git push --quiet origin main
+  )
+
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-git.sh" hotfix-divergence-check rc/V0.1.99 main V0.1 2>&1)
+
+  local ok=1
+  echo "$out" | grep -q "^STATUS=missing$"                              || { fail "hotfix-divergence: fallback — wrong STATUS"; ok=0; }
+  echo "$out" | grep -q "^HOTFIX_TAGS=$"                                || { fail "hotfix-divergence: fallback — HOTFIX_TAGS should be empty (no tag created)"; ok=0; }
+  echo "$out" | grep -q "^HOTFIX_COMMITS<<EOF$"                         || { fail "hotfix-divergence: fallback — HOTFIX_COMMITS should be heredoc"; ok=0; }
+  echo "$out" | grep -q "hotfix(app): manual untagged fix"              || { fail "hotfix-divergence: fallback — expected fallback subject not found"; ok=0; }
+  echo "$out" | grep -q "^(untagged) [0-9a-f]\{40\} hotfix(app):"       || { fail "hotfix-divergence: fallback — MISSING_HOTFIXES should contain '(untagged) SHA hotfix(...)' entry"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "hotfix-divergence: untagged 'hotfix(...)' commit → grep fallback fires, MISSING includes (untagged) entry"
+}
+
+test_hotfix_divergence_old_hotfix_filtered() {
+  # Hotfix tag PREDATING last_clean_tag should be filtered by time check
+  # (already incorporated via subsequent release). STATUS=clean.
+  local repo="$TMPDIR_ROOT/hotfix-old-$$-$RANDOM"
+  local bare="$repo.git"
+  rm -rf "$repo" "$bare"
+  git init --quiet --bare "$bare"
+  git init --quiet "$repo"
+  (
+    cd "$repo"
+    git config user.email "test@test.test"
+    git config user.name "test"
+    git config commit.gpgsign false
+    git remote add origin "$bare"
+
+    echo "v0" > app.txt
+    git add app.txt
+    git commit --quiet -m "init"
+    git branch -M main
+    git push --quiet -u origin main
+
+    # Older hotfix tag (predates the current cycle's release).
+    git tag V0.1.20-hotfix.1
+    git push --quiet origin V0.1.20-hotfix.1
+    sleep 1
+
+    # Subsequent clean release that "incorporated" the hotfix.
+    echo "v0-superseded" > app.txt
+    git add app.txt
+    git commit --quiet -m "release: V0.1.27"
+    git tag V0.1.27
+    git push --quiet origin main V0.1.27
+
+    # Cut RC from current main — does NOT contain V0.1.20-hotfix.1's SHA.
+    git checkout --quiet -b rc/V0.1.99
+    git push --quiet -u origin rc/V0.1.99
+    git checkout --quiet main
+  )
+
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-git.sh" hotfix-divergence-check rc/V0.1.99 main V0.1 2>&1)
+
+  local ok=1
+  echo "$out" | grep -q "^LAST_CLEAN_TAG=V0.1.27$"   || { fail "hotfix-divergence: old-hotfix-filter — wrong LAST_CLEAN_TAG"; ok=0; }
+  echo "$out" | grep -q "^STATUS=clean$"              || { fail "hotfix-divergence: old-hotfix-filter — old hotfix should be filtered out (STATUS should be clean, got: $(echo "$out" | grep '^STATUS='))"; ok=0; }
+  echo "$out" | grep -q "^HOTFIX_TAGS=$"              || { fail "hotfix-divergence: old-hotfix-filter — HOTFIX_TAGS should be empty (V0.1.20-hotfix.1 predates V0.1.27)"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "hotfix-divergence: hotfix tag predating last_clean_tag → time-filtered out"
+}
+
 section "GIT — HOTFIX-DIVERGENCE-CHECK"
 test_hotfix_divergence_clean_path
 test_hotfix_divergence_no_backport
 test_hotfix_divergence_manual_backport_different_content
 test_hotfix_divergence_cherry_pick_backport
+test_hotfix_divergence_no_prior_release
+test_hotfix_divergence_fallback_grep
+test_hotfix_divergence_old_hotfix_filtered
 
 # ─── Summary ────────────────────────────────────────────
 section "SUMMARY"

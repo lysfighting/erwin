@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.17.0"
+version: "3.17.1"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -57,11 +57,14 @@ Parse `$ARGUMENTS`:
 **PROMOTE** (`/team-rc promote`)
   1. Find active rc branch on remote
   2. Check staging status
-  3. Create PR: rc → *main* (squash merge via GitHub)
-  4. Tag squash commit on *main*
-  5. Create GitHub Release
-  6. Close milestone if complete
-  7. Delete rc branch
+  3. Confirm promote (P4)
+  4. **Hotfix divergence guard** (P4.4, dual-branch + `rebuild-on-prod` only) — detect prod hotfixes missing from RC; STOP if user picks Reconcile/Abort, see §Hotfix Divergence Guard
+  5. **Rebuild RC on prod** (P4.5, dual-branch + `rebuild-on-prod` only) — `git commit-tree` so PR fast-forwards; confirm before deletes/overwrites
+  6. Create PR: rc → *main* (squash merge via GitHub)
+  7. Tag squash commit on *main*
+  8. Create GitHub Release
+  9. Close milestone if complete
+  10. Delete rc branch
 
 **FIX** (`/team-rc fix`)
   Cherry-pick a specific commit from *develop* to active RC.
@@ -954,8 +957,12 @@ If "中止" → **STOP**
 **When this runs**: Same trigger as P4.5 (dual-branch + `release.strategy: rebuild-on-prod`). For single-branch or `cut-only` repos, this step is a no-op.
 
 ```bash
+# Bind REBUILD_STRATEGY here — first use is in this step. P4.5 re-reads idempotently
+# for defense-in-depth (works if step is run standalone after a session restart).
+REBUILD_STRATEGY=$(bash ~/.claude/commands/scripts/tw-config.sh release.strategy "cut-only")
+
 if [ "$BASE_BRANCH" = "$PROD_BRANCH" ] || [ "$REBUILD_STRATEGY" != "rebuild-on-prod" ]; then
-  echo "Hotfix divergence check skipped (single-branch or cut-only strategy)"
+  echo "Hotfix divergence check skipped (strategy=$REBUILD_STRATEGY, single-branch or cut-only)"
   # Jump to Step P4.5
 else
   HOTFIX_OUTPUT=$(bash ~/.claude/commands/scripts/tw-git.sh hotfix-divergence-check \
@@ -967,8 +974,8 @@ fi
 
 - `LAST_CLEAN_TAG=<tag>` — most recent clean release tag (e.g., `V0.1.27`); empty if no prior release
 - `HOTFIX_TAGS<<EOF ... EOF` — heredoc list of `TAG SHA SUBJECT` for hotfix tags newer than `LAST_CLEAN_TAG` (or `HOTFIX_TAGS=` if none)
-- `HOTFIX_COMMITS<<EOF ... EOF` — heredoc list of `SHA SUBJECT` for untagged hotfix-prefixed commits in `(LAST_CLEAN_TAG..origin/$PROD_BRANCH]` (fallback signal; or `HOTFIX_COMMITS=` if none)
-- `MISSING_HOTFIXES<<EOF ... EOF` — heredoc list of `TAG SHA SUBJECT` for hotfixes whose SHA is NOT an ancestor of `origin/$RC_BRANCH` (TAG=`(untagged)` for fallback hits; or `MISSING_HOTFIXES=` if none)
+- `HOTFIX_COMMITS<<EOF ... EOF` — heredoc list of `SHA SUBJECT` for untagged hotfix-prefixed commits (fallback signal; or `HOTFIX_COMMITS=` if none). **Informational only** — every entry that's also missing on RC already appears in `MISSING_HOTFIXES` with `TAG=(untagged)`. Don't display this field separately.
+- `MISSING_HOTFIXES<<EOF ... EOF` — heredoc list of `TAG SHA SUBJECT` for hotfixes whose SHA is NOT an ancestor of `origin/$RC_BRANCH` (TAG=`(untagged)` for fallback hits; or `MISSING_HOTFIXES=` if none). **This is the actionable list.**
 - `STATUS=clean | missing | no-prior-release`
 
 **If `STATUS=clean` or `STATUS=no-prior-release`**: No divergence detected — skip to Step P4.5.
@@ -1351,11 +1358,14 @@ Output the following and **STOP**:
 **WHAT IT DOES**
   1. Verify RC branch exists and CI is green
   2. Verify staging deployment succeeded (if configured)
-  3. Squash merge RC → *main* (production branch)
-  4. Create git tag with version
-  5. Create GitHub Release with auto-generated notes
-  6. Clean up RC branch
-  7. Trigger production deploy (if `deploy.production_workflow` configured), or guide manual deploy
+  3. Confirm promote intent
+  4. **Hotfix divergence guard** *(dual-branch + `release.strategy: rebuild-on-prod`)* — detect prod hotfixes missing from RC; STOP if user picks Reconcile/Abort
+  5. **Rebuild RC on prod via `commit-tree`** *(same precondition)* — make PR a clean fast-forward; ask before delete/overwrite
+  6. Squash merge RC → *main* (production branch)
+  7. Create git tag with version
+  8. Create GitHub Release with auto-generated notes
+  9. Clean up RC branch
+  10. Trigger production deploy (if `deploy.production_workflow` configured), or guide manual deploy
 
 **WHEN TO USE**
   After RC has been tested on staging and approved.
@@ -1365,6 +1375,13 @@ Output the following and **STOP**:
   RC branch must exist (created by `/team-rc`)
   CI must be green on RC branch
   Staging deploy must be successful (if `deploy.staging_workflow` configured)
+  *(Squash-only repos)* `release.strategy: rebuild-on-prod` in `config.yml` enables P4.4 + P4.5 safety gates
+
+**SAFETY GATES (P4.4, P4.5)**
+  P4.4 fires when prod hotfixes are missing from RC (would be silently overwritten by rebuild).
+    Pick: **Reconcile** (run §Hotfix Divergence Guard Option A), **Force** (verified equivalent), or **Abort**.
+  P4.5 fires when files diverge between RC and prod (added on prod or modified content).
+    Pick: **执行 rebuild** (overwrite with RC tree), **先 cherry-pick 再来** (manual backport), or **中止**.
 
 **TROUBLESHOOTING**
   "No RC branch found" → Run `/team-rc` first to cut an RC
@@ -1486,6 +1503,8 @@ Pick friction over regression.
 
 When `STATUS=missing` and you choose "Reconcile", do this:
 
+> **Variable substitution**: the bash blocks below reference `$VERSION_PREFIX`, `$BASE_BRANCH`, `$PROD_BRANCH` — these are bound INSIDE the skill, NOT in your shell. Either set them yourself before running (`export VERSION_PREFIX=V0.1 BASE_BRANCH=pre-launch PROD_BRANCH=main`), or replace each occurrence with your literal value. Concrete example: `${VERSION_PREFIX}=V0.1`, `${BASE_BRANCH}=pre-launch`, `${PROD_BRANCH}=main`.
+
 **1. Cancel the current RC** (do NOT promote):
 ```bash
 /team-rc cancel
@@ -1510,10 +1529,13 @@ gh pr create --base "$BASE_BRANCH" --title "merge: reconcile ${PROD_BRANCH} hotf
 **4. Verify reconciliation took**:
 ```bash
 git fetch --tags origin "$BASE_BRANCH"
+# Pass $BASE_BRANCH as the "rc" arg — the function only needs an existing ref to
+# probe ancestry against. After the reconciliation merge lands on $BASE_BRANCH,
+# every prod hotfix SHA is reachable from it.
 bash ~/.claude/commands/scripts/tw-git.sh hotfix-divergence-check \
-  "(any rc branch name; doesn't need to exist yet — just probes prod tags)" \
-  "$PROD_BRANCH" "$VERSION_PREFIX"
-# STATUS should now be 'clean' for any RC cut from $BASE_BRANCH.
+  "$BASE_BRANCH" "$PROD_BRANCH" "$VERSION_PREFIX"
+# STATUS should now be 'clean' — every prod hotfix is now an ancestor of $BASE_BRANCH,
+# so any RC cut from $BASE_BRANCH inherits them.
 ```
 
 **5. Re-cut RC and resume promote**:
