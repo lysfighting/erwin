@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.17.1"
+version: "3.18.0"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -839,6 +839,115 @@ After resolution (or if no conflict):
 git push origin "$BASE_BRANCH"
 ```
 
+### Step H7.5: RC-rebuild Sub-chain (config-gated, 3.18.0)
+
+**Why this exists**: Some release pipelines (e.g., vi_agent's `build.yml on rc/**` + `promote-prod.yml` staging-tag-copy semantics) require hotfix tags to go through an RC build cycle before prod deploy actually picks up the fix. Without this sub-chain, the hotfix tag pushes correctly but the production-deploy workflow no-ops because the staging artifact tag hasn't been refreshed. Real incident: vi_agent V0.1.27-hotfix.1 burned 12 min of CI on a no-op promote before the team realized the pattern.
+
+**When this runs**: Only if `release.hotfix_needs_rc_rebuild: true` in `config.yml`. Default OFF — preserves current single-step "backport + done" behavior for repos whose CI builds artifacts directly from tag push.
+
+```bash
+HOTFIX_NEEDS_RC_REBUILD=$(bash ~/.claude/commands/scripts/tw-config.sh release.hotfix_needs_rc_rebuild "false")
+
+if [ "$HOTFIX_NEEDS_RC_REBUILD" != "true" ]; then
+  echo "RC-rebuild sub-chain skipped (release.hotfix_needs_rc_rebuild=$HOTFIX_NEEDS_RC_REBUILD)"
+  # Jump to Step H8
+else
+  BUILD_WORKFLOW=$(bash ~/.claude/commands/scripts/tw-config.sh release.build_workflow "" 2>/dev/null)
+  if [ -z "$BUILD_WORKFLOW" ]; then
+    echo "ERROR: release.hotfix_needs_rc_rebuild=true requires release.build_workflow to be set."
+    echo "Add to $TEAMWORK_DIR/config.yml:"
+    echo "  release:"
+    echo "    hotfix_needs_rc_rebuild: true"
+    echo "    build_workflow: \"build.yml\"  # workflow that builds artifacts on rc/** push"
+    # STOP
+  fi
+fi
+```
+
+**Step H7.5a: Cut rc/{hotfix-version} from main HEAD**
+
+```bash
+RC_HOTFIX_BRANCH="rc/${HOTFIX_VERSION}"
+
+# Use main HEAD which is the squash commit of the hotfix PR.
+git fetch origin "$PROD_BRANCH" 2>/dev/null
+git push origin "origin/$PROD_BRANCH:refs/heads/$RC_HOTFIX_BRANCH" || {
+  echo "ERROR: Failed to cut $RC_HOTFIX_BRANCH from origin/$PROD_BRANCH"
+  # STOP
+}
+echo "  ✓ Cut $RC_HOTFIX_BRANCH from $PROD_BRANCH HEAD"
+```
+
+**Step H7.5b: Dispatch build workflow** (avoids `on: push: branches:` path-filter races for first-push)
+
+```bash
+# workflow_dispatch is reliable for new branches; on:push path filters often
+# don't trigger consistently for newly-created refs.
+gh workflow run "$BUILD_WORKFLOW" --ref "$RC_HOTFIX_BRANCH" || {
+  echo "ERROR: Failed to dispatch $BUILD_WORKFLOW on $RC_HOTFIX_BRANCH"
+  echo "Manual fallback: gh workflow run $BUILD_WORKFLOW --ref $RC_HOTFIX_BRANCH"
+  # STOP
+}
+
+# Capture the run ID for watching.
+sleep 3  # gh API takes a moment to register the dispatch
+BUILD_RUN_ID=$(gh run list --workflow "$BUILD_WORKFLOW" --branch "$RC_HOTFIX_BRANCH" \
+  --limit 1 --json databaseId --jq '.[0].databaseId' 2>/dev/null)
+echo "  ✓ Dispatched $BUILD_WORKFLOW on $RC_HOTFIX_BRANCH (run #$BUILD_RUN_ID)"
+```
+
+**Step H7.5c: Wait for build to complete**
+
+```bash
+echo "  Waiting for $BUILD_WORKFLOW (run #$BUILD_RUN_ID) — typically 6-15min..."
+gh run watch "$BUILD_RUN_ID" --exit-status || {
+  echo "ERROR: Build workflow failed. Inspect: gh run view $BUILD_RUN_ID"
+  # STOP
+}
+echo "  ✓ Build complete"
+```
+
+**Step H7.5d: Re-push tag (re-trigger production-deploy with refreshed staging artifact)**
+
+The production-deploy workflow is bound to tag-push events. Pushing the same-named tag a second time is the only way to re-trigger it. But that orphans the GitHub Release. Use `repush-tag-and-release` to handle both atomically:
+
+```bash
+# Build release notes file for recreation. Same body as H6 (link the hotfix PR).
+NOTES_FILE=$(mktemp)
+cat > "$NOTES_FILE" <<EOF
+Hotfix release ${HOTFIX_VERSION}.
+
+PR: #${PR_NUMBER}
+Backport: ${BASE_BRANCH} (cherry-picked)
+EOF
+
+REPUSH_OUTPUT=$(bash ~/.claude/commands/scripts/tw-git.sh repush-tag-and-release \
+  "$HOTFIX_VERSION" "$MERGE_SHA" "$HOTFIX_VERSION" "$NOTES_FILE")
+
+rm -f "$NOTES_FILE"
+
+if ! echo "$REPUSH_OUTPUT" | grep -q "^STATUS=ok$"; then
+  echo "ERROR: repush-tag-and-release failed"
+  echo "$REPUSH_OUTPUT"
+  # STOP
+fi
+
+# Capture new release URL.
+NEW_RELEASE_URL=$(echo "$REPUSH_OUTPUT" | grep '^RELEASE_URL=' | sed 's/^RELEASE_URL=//')
+echo "  ✓ Tag $HOTFIX_VERSION re-pushed; release recreated at $NEW_RELEASE_URL"
+```
+
+**Step H7.5e: Cleanup the temporary RC branch**
+
+```bash
+# Production-deploy workflow has now been re-triggered by tag re-push. The
+# rc/$HOTFIX_VERSION branch was a one-shot dispatch target — remove it.
+git push origin --delete "$RC_HOTFIX_BRANCH" 2>/dev/null || true
+echo "  ✓ Cleaned up $RC_HOTFIX_BRANCH"
+```
+
+> **Why this is config-gated**: Most CI pipelines (build directly on tag, no staging-copy) don't need this. Adding it unconditionally would make hotfix flow ~10 minutes slower for no benefit. vi_agent and similar architectures opt-in by setting `release.hotfix_needs_rc_rebuild: true` + `release.build_workflow: "build.yml"` in their config.
+
 ### Step H8: Cleanup + Summary
 
 ```bash
@@ -1034,21 +1143,29 @@ fi
 - `OLD_SHA=<sha>` — current `origin/$RC_BRANCH` sha
 - `NEW_SHA=<sha>` — sha of the rebuilt commit
 - `ADDED_ON_PROD<<EOF ... EOF` — heredoc list of files present on `$PROD_BRANCH` but not on `$RC_BRANCH`; rebuild deletes them from RC (empty line `ADDED_ON_PROD=` if none)
+- `ADDED_BLAME<<EOF ... EOF` — **3.18.0 addition**: per-file last-touch info on prod (`PATH|HASH|ISO_DATE|EMAIL|SUBJECT`). Use this to spot orphan hotfixes — if the last-touch subject matches `^hotfix(` or the date is recent (post `LAST_CLEAN_TAG`), the file is a candidate for "missed backport" and should NOT be silently deleted.
 - `MODIFIED_ON_PROD<<EOF ... EOF` — heredoc list of files with **different content** on prod vs RC; rebuild overwrites prod's version with RC's (empty line `MODIFIED_ON_PROD=` if none) — **3.17.0 fix**: this case is the silent hotfix-overwrite class. Step P4.4 should have already gated obvious cases; this is the file-level safety net.
+- `MODIFIED_BLAME<<EOF ... EOF` — **3.18.0 addition**: same `PATH|HASH|ISO_DATE|EMAIL|SUBJECT` format for modified files. Same `^hotfix(` heuristic applies.
 - `STATUS=<dry-run|already-fast-forwardable>`
 
 **If `STATUS=already-fast-forwardable`**: No rebuild needed — skip to Step P5.
 
-**Display preview**:
+**Display preview** (with 3.18.0 blame annotations to spot orphan hotfixes):
 
 **REBUILD RC** ── *{RC_BRANCH}* → *{PROD_BRANCH}* ────────────
   Old rc SHA: `{OLD_SHA[0:12]}`
   New rc SHA: `{NEW_SHA[0:12]}`
   Files prod-only (will be deleted): `{added_count}`
-{if ADDED_ON_PROD non-empty, list each on its own indented line wrapped in backticks}
+{for each line in ADDED_ON_PROD:}
+  `{path}` — last touched: `{HASH[0:8]}` *{ISO_DATE}* by *{EMAIL}* — "*{SUBJECT}*"
+  {⚠️ hint if SUBJECT starts with `hotfix(` OR ISO_DATE > LAST_CLEAN_TAG date — "ORPHAN HOTFIX RISK — verify before delete"}
   Files diverged (RC content wins, prod content lost): `{modified_count}`
-{if MODIFIED_ON_PROD non-empty, list each on its own indented line wrapped in backticks}
+{for each line in MODIFIED_ON_PROD:}
+  `{path}` — last touched: `{HASH[0:8]}` *{ISO_DATE}* by *{EMAIL}* — "*{SUBJECT}*"
+  {⚠️ hint if SUBJECT starts with `hotfix(` OR ISO_DATE > LAST_CLEAN_TAG date — "ORPHAN HOTFIX RISK — verify before overwrite"}
 ────────────────────────────────────────────────────────────
+
+> **3.18.0 blame heuristic**: files last-touched by a `hotfix(...)` commit (or recently, post `LAST_CLEAN_TAG`) are flagged as orphan-hotfix candidates. The user should verify each `⚠️` flag before confirming rebuild — these are the cases where the rebuild would silently undo a production fix.
 
 **If `ADDED_ON_PROD` is non-empty OR `MODIFIED_ON_PROD` is non-empty**, use `AskUserQuestion`:
 ```
@@ -1296,6 +1413,41 @@ gh workflow run "$PROD_WORKFLOW" --ref "$VERSION" -f environment=production -f v
 🚀 **Deploy to production** — code is on *{PROD_BRANCH}*, tagged **{VERSION}**.
   Trigger your deploy pipeline for **{VERSION}**, or configure auto-deploy:
   `deploy.production_workflow: "deploy.yml"` in `$TEAMWORK_DIR/config.yml`
+
+### Step P10c: Post-promote Checklist (3.18.0)
+
+> **Why this exists**: 在 `git tag` 之后，typical release pipeline 还有 5 步：(1) prod-deploy workflow 跑完 (2) artifact PR (e.g., gitops repo) review/merge (3) 集群 sync trigger (4) 等 healthy (5) in-cluster smoke。Skill 不强自动化（每个 repo 的 toolchain 不一样），但要让用户有 checklist 不卡住。Real incident: vi_agent V0.1.28 第一次 promote 在 P11 显示 ✅ 后 user 不知道还有 5 步，后来主动喊"引导我继续，别停下来"才接住。
+
+Display the following checklist with conditional items based on configured deploy infra:
+
+**═════ POST-PROMOTE CHECKLIST ═════**
+
+**1. Production-deploy workflow** *{if $PROD_WORKFLOW set}*
+   `gh run watch $(gh run list --workflow $PROD_WORKFLOW --branch $VERSION --limit 1 --jq '.[0].databaseId') --exit-status`
+   Typical duration: depends on your build matrix. Block here until green.
+
+**2. Artifact-promote PR** *{if config has `deploy.gitops_repo` set, e.g., for gitops/argocd flows}*
+   `gh pr list --repo {GITOPS_REPO} --head "promote/prod-{VERSION}" --state open`
+   Review the diff, then squash-merge.
+
+**3. Cluster sync** *{if config has `deploy.argocd_apps` set, OR inline mention if using ArgoCD/Flux}*
+   For ArgoCD prod (no auto-sync, manual gate): `kubectl -n argocd patch application <APP> --type merge -p '{"operation":{"initiatedBy":{"username":"team-rc-promote"},"sync":{"syncStrategy":{"hook":{}},"prune":false}}}'`
+   Repeat for each affected app. (`argocd app sync` CLI may fail in-pod due to RBAC; patch is the universal path.)
+
+**4. Wait Synced/Healthy**
+   Poll until `.status.sync.status=Synced` AND `.status.health.status=Healthy` for each app. Migration jobs (PreSync hooks) may add 1-2min — that's expected.
+
+**5. In-cluster smoke** *(NOT optional)*
+   Local `curl` cannot validate prod ingress for many setups (corp ZTNA / NAT / NetworkPolicy). Exec from a pod with proper service-account + NetworkPolicy:
+   ```
+   POD=$(kubectl -n {NS} get pods -l app={SOME_APP} -o jsonpath='{.items[0].metadata.name}')
+   kubectl -n {NS} exec "$POD" -- sh -c 'curl -sS http://{INTERNAL_SVC}/api/config'
+   ```
+   **Inspect the response body** — not just `-w "%{http_code}"`. Cosmetic bugs (e.g., conflict markers in version strings, wrong feature flags) still return HTTP 200; only body inspection catches them. Real incident: vi_agent V0.1.28 shipped `service_version` containing literal `<<<<<<<` conflict markers; `/api/config` body inspection caught it post-deploy.
+
+**═════════════════════════════════**
+
+> **Hint**: If your deploy chain is fully automated (single tag-push → green), steps 1-4 collapse to "wait for prod_workflow green". If it's manual (typical for high-stakes prod), steps 2-4 are sequential gates each requiring human review. Steps 5 is **always** required — automated smoke runs on staging; in-cluster prod smoke is what catches the cosmetic class.
 
 ### Step P11: Summary
 

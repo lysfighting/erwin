@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.17.1"
+version: "3.18.0"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -60,7 +60,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.17.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.18.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -143,7 +143,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.17.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.18.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -538,7 +538,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.17.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.18.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1098,7 +1098,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.17.1` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.18.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ✅ Config updated (merge mode — existing config preserved)
    schema_version → `3`
@@ -1423,6 +1423,59 @@ jobs:
 ```
 
 For other languages or if language not detected, generate a minimal workflow with just checkout and a comment explaining what to add.
+
+### 4d.5: Write `.github/workflows/conflict-marker-check.yml` (anti-cosmetic-bug gate)
+
+**Why this exists**: Unresolved git conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) silently committed to source files cause two harms: (1) any value containing the marker text breaks downstream consumers expecting clean format (e.g., a `service_version` shipped as `<<<<<<< branch / 2026.04.27.7 / ======= / 2026.04.27.8 / >>>>>>> pre-launch` breaks observability label cardinality and any client parser); (2) such bugs ship with HTTP 200 (function still works), so they hide for days until manually inspected. CI gate prevents 100% of this class.
+
+**First, check if conflict-marker-check workflow already exists:**
+
+```bash
+ls .github/workflows/conflict-marker-check.yml 2>/dev/null
+```
+
+If exists → read, ask "Keep existing? Or regenerate?" (same pattern as ci.yml). Otherwise, write:
+
+```yaml
+name: Conflict Marker Check
+on:
+  pull_request:
+    branches: [{BASE_BRANCH}]
+  push:
+    branches: [{BASE_BRANCH}]  # add {PROD_BRANCH} if dual-branch mode
+
+jobs:
+  conflict-marker-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Scan for unresolved conflict markers
+        run: |
+          # Anchor markers to start of line + require 7 chars + trailing space-or-EOL
+          # to avoid matching legitimate code patterns like `<<<<<<<<` (8+ chars) or
+          # markdown bold runs in prose. Common code/config extensions only.
+          if git grep -nE '^(<{7}|={7}|>{7})( |$)' -- \
+              '*.txt' '*.md' '*.py' '*.js' '*.ts' '*.tsx' '*.jsx' \
+              '*.go' '*.rs' '*.java' '*.kt' '*.swift' '*.dart' \
+              '*.yaml' '*.yml' '*.json' '*.toml' '*.ini' \
+              '*.sh' '*.bash' '*.zsh' '*.fish' \
+              '*.sql' '*.html' '*.css' '*.scss' \
+              ':!**/test_conflict_marker_*' ':!**/*conflict-marker-fixture*'; then
+            echo "::error::Unresolved git merge conflict markers detected — resolve before merging."
+            exit 1
+          fi
+          echo "✓ No conflict markers found."
+```
+
+> **Why anchored regex**: `^<{7}` (start-of-line + exactly 7 `<`) + trailing `( |$)` ensures we only match real conflict markers, not legitimate code. Without anchoring, `<<<<<<<<` (8+) would false-positive on syntax like operator overloading, and `<<<<<<< abc` mid-line in prose would false-positive on rare markdown.
+
+> **Why fetch-depth: 1**: conflict markers either exist in the working tree or don't — historical search would balloon the run. Single-commit checkout suffices.
+
+> **Test fixture exclusion**: paths matching `test_conflict_marker_*` or `*conflict-marker-fixture*` are excluded so projects can ship deliberate marker fixtures for their own conflict-handling tests.
+
+After write, output: "Wrote `.github/workflows/conflict-marker-check.yml` — every PR + push to {BASE_BRANCH} now blocked if unresolved conflict markers detected."
 
 ### 4e: Write `.github/workflows/post-merge.yml`
 
@@ -2285,7 +2338,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.17.1"
+SKILL_VERSION="3.18.0"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):

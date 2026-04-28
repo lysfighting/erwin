@@ -22,6 +22,7 @@
 #   bash tw-git.sh cut-release VERSION                  # Cut rc/VERSION from base (remote-only, no checkout)
 #   bash tw-git.sh rebuild-rc-on-prod RC PROD VERSION [--dry-run]  # Rebuild rc/VERSION on top of PROD via commit-tree
 #   bash tw-git.sh hotfix-divergence-check RC PROD PREFIX  # Detect prod hotfixes missing from RC (run before rebuild)
+#   bash tw-git.sh repush-tag-and-release TAG SHA TITLE NOTES_FILE  # Atomic: delete+repush tag + recreate GH release
 #   bash tw-git.sh slugify TITLE                         # Slugify title for branch names
 #   bash tw-git.sh find-rc                               # Find active RC branch (exit 1=none, 3=multiple)
 #   bash tw-git.sh next-version PREFIX                   # Derive next patch version from tags
@@ -77,7 +78,7 @@ usage() {
   echo "             worktree-add, worktree-remove," >&2
   echo "             worktree-main-repo, worktree-find-by-branch, log-since," >&2
   echo "             cut-release, rebuild-rc-on-prod, hotfix-divergence-check," >&2
-  echo "             slugify, find-rc, next-version," >&2
+  echo "             repush-tag-and-release, slugify, find-rc, next-version," >&2
   echo "             list-merged-branches, milestone-resolve" >&2
   exit 1
 }
@@ -334,11 +335,13 @@ cmd_rebuild_rc_on_prod() {
   # can confirm before pushing — modify-only divergence (typically hotfix vs
   # backport) is the silent-overwrite class fixed in 3.17.0.
   #
-  # Stdout (key=value, newline-separated; ADDED_ON_PROD/MODIFIED_ON_PROD use heredoc framing):
+  # Stdout (key=value, newline-separated; ADDED_ON_PROD/MODIFIED_ON_PROD/ADDED_BLAME/MODIFIED_BLAME use heredoc framing):
   #   OLD_SHA=<previous origin/RC_BRANCH sha>
   #   NEW_SHA=<commit-tree result>
   #   ADDED_ON_PROD<<EOF / ...paths.../ EOF      (files present on prod but not rc)
+  #   ADDED_BLAME<<EOF / PATH|HASH|ISO_DATE|EMAIL|SUBJECT.../EOF   (last touch on prod for each ADDED file — 3.18.0)
   #   MODIFIED_ON_PROD<<EOF / ...paths.../ EOF   (files with different content on prod vs rc)
+  #   MODIFIED_BLAME<<EOF / PATH|HASH|ISO_DATE|EMAIL|SUBJECT.../EOF (last touch on prod for each MODIFIED file — 3.18.0)
   #   STATUS=dry-run | pushed | already-fast-forwardable
   #
   # Progress/errors go to stderr.
@@ -374,7 +377,9 @@ cmd_rebuild_rc_on_prod() {
     echo "OLD_SHA=$old_sha"
     echo "NEW_SHA=$old_sha"
     echo "ADDED_ON_PROD="
+    echo "ADDED_BLAME="
     echo "MODIFIED_ON_PROD="
+    echo "MODIFIED_BLAME="
     echo "STATUS=already-fast-forwardable"
     return 0
   fi
@@ -397,6 +402,29 @@ cmd_rebuild_rc_on_prod() {
     exit 2
   }
 
+  # Per-file blame on prod side: when did each diverged file last change on
+  # PROD_BRANCH? Helps caller spot orphan hotfixes — if a file was last touched
+  # by a recent hotfix commit, blanket-rebuild would delete that fix silently.
+  # Format: PATH|HASH|ISO_DATE|EMAIL|SUBJECT (pipe-delimited; subject may contain spaces).
+  _blame_for_paths() {
+    local paths="$1"
+    [ -z "$paths" ] && return 0
+    while IFS= read -r path; do
+      [ -z "$path" ] && continue
+      local entry
+      entry=$(git log -1 --format='%h|%ai|%ae|%s' "origin/$prod_branch" -- "$path" 2>/dev/null) || entry=""
+      if [ -n "$entry" ]; then
+        printf '%s|%s\n' "$path" "$entry"
+      else
+        printf '%s|||(no history)|\n' "$path"
+      fi
+    done <<< "$paths"
+  }
+
+  local added_blame modified_blame
+  added_blame=$(_blame_for_paths "$added_on_prod")
+  modified_blame=$(_blame_for_paths "$modified_on_prod")
+
   echo "OLD_SHA=$old_sha"
   echo "NEW_SHA=$new_sha"
   if [ -n "$added_on_prod" ]; then
@@ -406,12 +434,26 @@ cmd_rebuild_rc_on_prod() {
   else
     echo "ADDED_ON_PROD="
   fi
+  if [ -n "$added_blame" ]; then
+    echo "ADDED_BLAME<<EOF"
+    printf '%s\n' "$added_blame"
+    echo "EOF"
+  else
+    echo "ADDED_BLAME="
+  fi
   if [ -n "$modified_on_prod" ]; then
     echo "MODIFIED_ON_PROD<<EOF"
     printf '%s\n' "$modified_on_prod"
     echo "EOF"
   else
     echo "MODIFIED_ON_PROD="
+  fi
+  if [ -n "$modified_blame" ]; then
+    echo "MODIFIED_BLAME<<EOF"
+    printf '%s\n' "$modified_blame"
+    echo "EOF"
+  else
+    echo "MODIFIED_BLAME="
   fi
 
   if [ $dry_run -eq 1 ]; then
@@ -593,6 +635,108 @@ cmd_hotfix_divergence_check() {
     echo "MISSING_HOTFIXES="
     echo "STATUS=clean"
   fi
+}
+
+cmd_repush_tag_and_release() {
+  # USAGE: repush-tag-and-release TAG SHA TITLE NOTES_FILE
+  #
+  # Atomic operation: delete tag (local + remote), delete GH release if it
+  # references that tag, push tag fresh at SHA, recreate GH release pointing at
+  # SHA with TITLE and notes from NOTES_FILE.
+  #
+  # Why this exists: GitHub binds Releases to tags by name AT CREATION TIME.
+  # `git push origin --delete TAG && git push origin TAG` (the only way to
+  # re-trigger workflows on `on: push: tags:`) leaves the original Release
+  # orphaned with a `releases/tag/untagged-<hash>` URL. Re-pushing a same-named
+  # tag does NOT re-bind the existing release. This helper handles the
+  # delete-and-recreate-cleanly pattern in one call.
+  #
+  # Idempotent: safe to re-run. Tolerates tag-doesn't-exist and
+  # release-doesn't-exist on the way in. Leaves the tag pushed and the release
+  # created on the way out (assuming SHA is reachable on origin).
+  #
+  # Stdout (key=value):
+  #   TAG=<tag>
+  #   SHA=<sha>
+  #   STATUS=ok | error
+  #   RELEASE_URL=<url>           (only on STATUS=ok)
+  #
+  # Errors go to stderr; exits non-zero on hard failure.
+
+  local tag="${1:-}" sha="${2:-}" title="${3:-}" notes_file="${4:-}"
+  if [ -z "$tag" ] || [ -z "$sha" ] || [ -z "$title" ] || [ -z "$notes_file" ]; then
+    echo "ERROR: repush-tag-and-release requires TAG SHA TITLE NOTES_FILE" >&2
+    exit 1
+  fi
+  if [ ! -r "$notes_file" ]; then
+    echo "ERROR: notes file not readable: $notes_file" >&2
+    exit 1
+  fi
+
+  echo "TAG=$tag"
+  echo "SHA=$sha"
+
+  # 1. Delete the GitHub Release if one exists for this tag.
+  # gh release view exits non-zero if release doesn't exist — we tolerate it.
+  if gh release view "$tag" >/dev/null 2>&1; then
+    gh release delete "$tag" --yes 2>&1 >/dev/null || {
+      echo "ERROR: failed to delete existing release for tag $tag" >&2
+      echo "STATUS=error"
+      exit 2
+    }
+    echo "  [info] deleted existing release for $tag" >&2
+  fi
+
+  # 2. Delete the tag on origin (if it exists). Tolerate missing.
+  if git ls-remote --tags origin "refs/tags/$tag" 2>/dev/null | grep -qF "refs/tags/$tag"; then
+    git push origin --delete "refs/tags/$tag" 2>&1 >/dev/null || {
+      echo "ERROR: failed to delete remote tag $tag" >&2
+      echo "STATUS=error"
+      exit 2
+    }
+    echo "  [info] deleted remote tag $tag" >&2
+  fi
+
+  # 3. Delete the local tag (if it exists). Tolerate missing.
+  if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
+    git tag -d "$tag" 2>&1 >/dev/null || true
+  fi
+
+  # 4. Verify SHA is reachable on origin before tagging.
+  # If SHA is local-only, the tag push will fail at refs/tags layer.
+  git fetch origin 2>/dev/null || true
+  if ! git cat-file -e "$sha^{commit}" 2>/dev/null; then
+    echo "ERROR: commit $sha not found locally — fetch may have failed" >&2
+    echo "STATUS=error"
+    exit 2
+  fi
+
+  # 5. Create local tag at SHA, push to origin.
+  git tag "$tag" "$sha" || {
+    echo "ERROR: failed to create local tag $tag at $sha" >&2
+    echo "STATUS=error"
+    exit 2
+  }
+  git push origin "refs/tags/$tag" 2>&1 >/dev/null || {
+    echo "ERROR: failed to push tag $tag to origin" >&2
+    echo "STATUS=error"
+    exit 2
+  }
+
+  # 6. Recreate the GitHub Release.
+  local release_url
+  release_url=$(gh release create "$tag" \
+    --target "$sha" \
+    --title "$title" \
+    --notes-file "$notes_file" 2>&1) || {
+    echo "ERROR: failed to create release for $tag" >&2
+    echo "  gh output: $release_url" >&2
+    echo "STATUS=error"
+    exit 2
+  }
+
+  echo "STATUS=ok"
+  echo "RELEASE_URL=$release_url"
 }
 
 cmd_slugify() {
@@ -989,6 +1133,7 @@ case "$SUBCOMMAND" in
   cut-release)            cmd_cut_release "$@" ;;
   rebuild-rc-on-prod)     cmd_rebuild_rc_on_prod "$@" ;;
   hotfix-divergence-check) cmd_hotfix_divergence_check "$@" ;;
+  repush-tag-and-release) cmd_repush_tag_and_release "$@" ;;
   slugify)                cmd_slugify "$@" ;;
   find-rc)                cmd_find_rc ;;
   next-version)           cmd_next_version "$@" ;;

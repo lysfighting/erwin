@@ -2,6 +2,61 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.18.0] — 2026-04-28
+
+### Added — Release lifecycle completion (vi_agent V0.1.28 retro)
+
+Real-world ship retro from `flair-home-stylist/vi_agent` V0.1.28 release exposed 4 skill gaps + 1 anti-bug-class. All addressed so downstream installs (vi_agent + similar squash-only/dual-branch repos) get end-to-end automation rather than stopping at git-level operations.
+
+**1. `/team` init now writes `conflict-marker-check.yml` CI gate** (Section 4d.5 in `team.md`)
+
+Generic anti-cosmetic-bug guard. CI scans common code/config extensions for unresolved `<<<<<<<`/`=======`/`>>>>>>>` markers and fails any PR/push that contains them. Anchored regex `^(<{7}|={7}|>{7})( |$)` to avoid false positives on legitimate code (8+ char operator runs, mid-line markdown). **Real bug class caught**: vi_agent V0.1.28 shipped a `service_version` field containing literal conflict markers; HTTP 200 response, observability label cardinality blow-up. Init's CI scaffold now blocks this at PR-merge time for any new repo.
+
+**2. `tw-git.sh repush-tag-and-release TAG SHA TITLE NOTES_FILE`** (new subcommand)
+
+Atomic delete-tag + delete-orphan-release + push-tag + recreate-release. Solves the GitHub-binds-Release-to-tag-by-name-at-creation trap: when you must re-push a tag (e.g., to re-fire `on: push: tags:` workflows), `git push origin --delete TAG && git push origin TAG` orphans the original Release with `releases/tag/untagged-<hash>` URL, breaking all release links. This helper does the correct delete-and-recreate dance idempotently. Used internally by hotfix sub-chain (#3); also callable standalone for any "I need to re-push a tag" scenario.
+
+**3. `/team-rc hotfix` config-gated rc-rebuild sub-chain** (new Step H7.5 in `team-rc.md`, opt-in via `release.hotfix_needs_rc_rebuild: true`)
+
+Some pipelines (vi_agent's `build.yml on rc/**` + `promote-prod.yml` staging-tag-copy) require hotfix tags to go through an RC build cycle before prod-deploy actually picks up the artifact. Without this, the hotfix tag pushes correctly but production-deploy no-ops because staging artifact tag hasn't refreshed.
+
+New flow when config flag set:
+- H7.5a: Cut `rc/{HOTFIX_VERSION}` from `$PROD_BRANCH` HEAD
+- H7.5b: `gh workflow run $BUILD_WORKFLOW --ref rc/{HOTFIX_VERSION}` (workflow_dispatch reliable for new branches; on-push path-filter races for first-push)
+- H7.5c: `gh run watch $BUILD_RUN_ID --exit-status`
+- H7.5d: `tw-git.sh repush-tag-and-release` to atomically re-fire production-deploy + recreate release
+- H7.5e: cleanup the temporary `rc/$HOTFIX_VERSION`
+
+Default OFF preserves existing single-step "backport + done" behavior for repos whose CI builds directly on tag push. Config opt-in: `release.hotfix_needs_rc_rebuild: true` + `release.build_workflow: "build.yml"`.
+
+Real cost avoided: vi_agent V0.1.27-hotfix.1 + V0.1.28-hotfix.1 each burned ~12 min CI on no-op promotes before manual recovery. Skill now handles automatically.
+
+**4. `/team-rc promote` Step P10c — Post-promote checklist** (new step in `team-rc.md`)
+
+Replaces the post-`git tag`/`gh release create` cliff where users (especially first-timers) didn't know there were 5 more manual steps before "actually deployed." Step P10c renders a 5-item checklist: prod-deploy-workflow watch, gitops/artifact-PR review, cluster sync (e.g., ArgoCD `kubectl patch operation`), wait Synced/Healthy, in-cluster smoke. Educational, not auto-execute — each repo's chain is too repo-specific to safely automate, but the checklist removes the "I don't know what to do next" cliff.
+
+**5. `cmd_rebuild_rc_on_prod` ADDED_BLAME / MODIFIED_BLAME fields** (extended `tw-git.sh` output)
+
+For every diverged file, emit a per-file blame line (`PATH|HASH|ISO_DATE|EMAIL|SUBJECT`) showing last touch on `$PROD_BRANCH`. Step P4.5 displays this so users can spot orphan hotfixes — if a file's last-touch subject matches `^hotfix(`, blanket-rebuild would silently delete a production fix. Mark such files with `⚠️ ORPHAN HOTFIX RISK` for explicit user attention before confirming rebuild.
+
+### Tests
+- `tw-unit-test.sh` 70/70 (was 66 in 3.17.1; +4 new)
+- `tw-fleet-smoke-test.sh` 40/40 (no fleet impact)
+
+### Memory
+- 3 new memories from vi_agent retro: `feedback_hotfix_rc_build_tag_republish.md`, `feedback_smoke_must_inspect_response_body.md`, `feedback_tag_delete_orphans_release.md`. Indexed in `MEMORY.md`.
+
+### Out of scope (vi_agent's own CI evolution)
+- Adding `branches: ['hotfix/**']` to `vi_agent/.github/workflows/build.yml` — vi_agent's CI evolution; recommended but not erwin's territory.
+- Adding `workflow_dispatch:` to `vi_agent/.github/workflows/promote-prod.yml` — same. Recommended in Gap-3 docs.
+
+Skill ships `repush-tag-and-release` and config-gated H7.5 sub-chain to make the skill work end-to-end **even when downstream CI hasn't been refactored yet**. Downstream repos can still adopt the root-cause CI fixes; both paths converge.
+
+### Known limitations
+- Step P10c is educational, not auto-execute. Auto-syncing ArgoCD prod is risky enough to require explicit user intent every time (per memory `merge-requires-explicit-yes`). Step renders a checklist; doesn't run kubectl.
+- `repush-tag-and-release` integration with real `gh release` not unit-tested (gh stubbing is fragile). Tested in vi_agent's actual hotfix flow.
+- `release.hotfix_needs_rc_rebuild` is repo-side opt-in. `/team init` doesn't auto-detect "this repo needs the sub-chain" because detection requires reading `build.yml`'s trigger config. Docs in §Operation Hotfix Help guide users to enable it manually.
+
 ## [3.17.1] — 2026-04-28
 
 ### Fixed — 3.17.0 post-release audit

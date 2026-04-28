@@ -1204,6 +1204,82 @@ test_hotfix_divergence_no_prior_release
 test_hotfix_divergence_fallback_grep
 test_hotfix_divergence_old_hotfix_filtered
 
+# ─── GIT — REBUILD-RC-ON-PROD BLAME (3.18.0) ────────────
+test_rebuild_blame_populated_for_modified() {
+  # Synthesize: prod has hotfix that modified a file. RC has the older version.
+  # Expected: MODIFIED_BLAME contains the file with hotfix subject.
+  local repo
+  repo=$(_setup_hotfix_repo)
+  (
+    cd "$repo"
+    sleep 1
+    echo "v0-prod-hotfix" > app.txt
+    git add app.txt
+    git commit --quiet -m "hotfix(app): orphan candidate"
+    git push --quiet origin main
+  )
+
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-git.sh" rebuild-rc-on-prod rc/V0.1.99 main V0.1.99 --dry-run 2>&1)
+
+  local ok=1
+  echo "$out" | grep -q "^MODIFIED_BLAME<<EOF$"                                   || { fail "rebuild-blame: MODIFIED_BLAME missing heredoc"; ok=0; }
+  echo "$out" | grep -qE "^app.txt\|[0-9a-f]{7,}\|.*\|.*\|hotfix\(app\): orphan"  || { fail "rebuild-blame: MODIFIED_BLAME entry malformed (expected pipe-delimited path|hash|date|email|subject)"; ok=0; }
+  echo "$out" | grep -q "^ADDED_BLAME=$"                                          || { fail "rebuild-blame: ADDED_BLAME should be empty (no added files)"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "rebuild-rc-on-prod: MODIFIED_BLAME populated with last-touch info (orphan-hotfix detection signal)"
+}
+
+test_rebuild_blame_empty_when_fast_forwardable() {
+  # Sanity: when rebuild is no-op (prod is ancestor of rc), all BLAME fields should be empty.
+  local repo
+  repo=$(_setup_hotfix_repo)
+  # No divergence: rc and main both at the same commit.
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-git.sh" rebuild-rc-on-prod rc/V0.1.99 main V0.1.99 --dry-run 2>&1)
+
+  local ok=1
+  echo "$out" | grep -q "^STATUS=already-fast-forwardable$" || { fail "rebuild-blame: expected fast-forwardable on no-divergence repo"; ok=0; }
+  echo "$out" | grep -q "^ADDED_BLAME=$"                    || { fail "rebuild-blame: ADDED_BLAME should be empty in fast-forward path"; ok=0; }
+  echo "$out" | grep -q "^MODIFIED_BLAME=$"                 || { fail "rebuild-blame: MODIFIED_BLAME should be empty in fast-forward path"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "rebuild-rc-on-prod: blame fields empty in already-fast-forwardable short-circuit"
+}
+
+section "GIT — REBUILD-RC-ON-PROD BLAME"
+test_rebuild_blame_populated_for_modified
+test_rebuild_blame_empty_when_fast_forwardable
+
+# ─── GIT — REPUSH-TAG-AND-RELEASE (3.18.0) ──────────────
+# Note: `repush-tag-and-release` calls `gh release` which requires GitHub auth +
+# real remote. Unit-testable parts: arg validation + early-exit on missing notes
+# file. End-to-end gh integration is exercised manually / in /team-rc hotfix
+# real run; we don't stub `gh` here because gh stubbing is fragile.
+
+test_repush_tag_release_rejects_missing_args() {
+  local exit_code=0
+  bash "$SCRIPT_DIR/tw-git.sh" repush-tag-and-release V0.1.0 abc123 "Title" >/dev/null 2>&1 || exit_code=$?
+  if [ "$exit_code" -ne 0 ]; then
+    pass "repush-tag-and-release: rejects 3 args (needs 4) — exit $exit_code"
+  else
+    fail "repush-tag-and-release: should reject missing NOTES_FILE arg"
+  fi
+}
+
+test_repush_tag_release_rejects_unreadable_notes() {
+  local out exit_code=0
+  out=$(bash "$SCRIPT_DIR/tw-git.sh" repush-tag-and-release V0.1.0 abc123 "Title" "/no/such/file/anywhere.md" 2>&1) || exit_code=$?
+  if [ "$exit_code" -ne 0 ] && echo "$out" | grep -q "notes file not readable"; then
+    pass "repush-tag-and-release: rejects unreadable notes file with clear error"
+  else
+    fail "repush-tag-and-release: should reject unreadable notes file (got exit=$exit_code, out: $out)"
+  fi
+}
+
+section "GIT — REPUSH-TAG-AND-RELEASE"
+test_repush_tag_release_rejects_missing_args
+test_repush_tag_release_rejects_unreadable_notes
+
 # ─── Summary ────────────────────────────────────────────
 section "SUMMARY"
 TOTAL=$((PASS + FAIL + SKIP))
