@@ -1,28 +1,35 @@
-# GitHub Trending - 2026-04-28
+# GitHub Trending - 2026-04-30
 
-Source: [GitHub Trending](https://github.com/trending) as checked on **2026-04-28** from the default global repositories page with no extra filters. The board remains a mixed developer-interest surface rather than a clean AI-only feed.
+Source: [GitHub Trending](https://github.com/trending) as checked on **2026-04-30** from the default global repositories page with no extra filters. The board is still a mixed developer-interest feed, not a clean AI-only ranking.
 
 ## Trending Snapshot
 
-The default global board still mixes coding-agent infrastructure with broader systems, tooling, and general developer-interest projects. The clearest AI/agent-adjacent theme remains execution-layer tooling: projects around frontier-model wrappers, computer-use infrastructure, and memory for coding agents continue to surface alongside older broad-interest repositories.
+The current default board leans unusually hard toward developer-tooling and agent-adjacent projects. Agentic terminals, reusable skills, coding-agent harnesses, browser-side code intelligence, and open voice systems are all present, but they sit beside broader programming staples and unrelated utility projects. The important read is not that the whole board is "about agents"; it is that agent workflow tooling is now common enough to show up repeatedly on the unfiltered global board.
 
 ## Notable Projects
 
-- [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code) - a Claude-adjacent wrapper/access project surfacing because demand for cheaper or alternative coding-model access remains intense.
-- [trycua/cua](https://github.com/trycua/cua) - computer-use-agent infrastructure with sandboxes, SDKs, and benchmarks; one of the clearest execution-layer agent projects on the board.
-- [gastownhall/beads](https://github.com/gastownhall/beads) - memory augmentation for coding agents, reinforcing that persistent context remains a practical user need.
-- [PostHog/posthog](https://github.com/PostHog/posthog) - product analytics and developer tooling platform that remains relevant as observability and AI-assistant surfaces converge.
-- [codecrafters-io/build-your-own-x](https://github.com/codecrafters-io/build-your-own-x) - not an AI project, but a strong signal that the default global board still includes broad programming education and developer-interest staples.
+- [warpdotdev/warp](https://github.com/warpdotdev/warp) - an agentic development environment built around the terminal; one of the clearest board-level signals that the shell is turning into an AI operating surface.
+- [mattpocock/skills](https://github.com/mattpocock/skills) - packaged skills for coding workflows, surfacing because specialization layers for coding agents are becoming concrete and reusable.
+- [ComposioHQ/awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills) - a curated Codex-skill directory, notable because it treats skill composition as an ecosystem problem rather than a single-repo trick.
+- [1jehuang/jcode](https://github.com/1jehuang/jcode) - explicitly framed as a coding-agent harness, making it one of the most directly relevant repos on the board for execution-layer comparisons.
+- [abhigyanpatwari/GitNexus](https://github.com/abhigyanpatwari/GitNexus) - a zero-server code-intelligence and knowledge-graph project, notable because codebase navigation plus Graph RAG remains a persistent operator need.
+- [microsoft/VibeVoice](https://github.com/microsoft/VibeVoice) - open-source voice AI, included here because the board is not purely coding-agent focused and still rewards frontier multimodal tooling.
+- [obra/superpowers](https://github.com/obra/superpowers) - an agentic skills framework and methodology, relevant because it combines workflow doctrine with reusable execution primitives.
+- [lukilabs/craft-agents-oss](https://github.com/lukilabs/craft-agents-oss) - another agent framework signal showing continued appetite for open agent runtime patterns.
+- [EbookFoundation/free-programming-books](https://github.com/EbookFoundation/free-programming-books) - a reminder that the default board still includes long-lived general-interest repositories alongside the faster agent wave.
 
 ## Why They May Be Surfacing
 
-- Execution-layer agent tooling is still resonating more than abstract agent discourse. [free-claude-code](https://github.com/Alishahryar1/free-claude-code), [cua](https://github.com/trycua/cua), and [beads](https://github.com/gastownhall/beads) all sit close to real usage: access, action, and memory.
-- Computer use remains sticky. [cua](https://github.com/trycua/cua) keeps the focus on sandboxes, SDKs, and benchmarkable interaction with real environments.
-- Memory remains sticky as well. [beads](https://github.com/gastownhall/beads) reinforces that users still want an upgrade layer above the base coding model.
-- The board is still broader than AI alone. [PostHog](https://github.com/PostHog/posthog) and [build-your-own-x](https://github.com/codecrafters-io/build-your-own-x) show that observability, learning resources, and mainstream developer tooling continue to share the same top-level visibility.
+- Agentic development environments are becoming a category, not a niche. [Warp](https://github.com/warpdotdev/warp) leads that pattern directly.
+- Skills have become a distribution unit. [skills](https://github.com/mattpocock/skills) and [awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills) both benefit from demand for portable workflow augmentation.
+- Explicit harnesses are now legible to the broader open-source audience. [jcode](https://github.com/1jehuang/jcode), [superpowers](https://github.com/obra/superpowers), and [craft-agents-oss](https://github.com/lukilabs/craft-agents-oss) all sit near the "how do I actually run this work" layer.
+- Code understanding remains a bottleneck. [GitNexus](https://github.com/abhigyanpatwari/GitNexus) surfacing suggests continued demand for repo-native mapping, retrieval, and visualization.
+- The board is still broad. [VibeVoice](https://github.com/microsoft/VibeVoice) and [free-programming-books](https://github.com/EbookFoundation/free-programming-books) show that AI tooling is sharing space with general developer-interest projects rather than replacing them.
 
 ## Watchlist
 
-- Watch whether [free-claude-code](https://github.com/Alishahryar1/free-claude-code), [cua](https://github.com/trycua/cua), and [beads](https://github.com/gastownhall/beads) stay visible across multiple days, because that would reinforce persistent demand for access, computer use, and memory layers around coding agents.
-- Keep [PostHog](https://github.com/PostHog/posthog) on the watchlist as a reminder that observability and AI-assistant workflows are converging inside mainstream product tooling.
-- Treat [build-your-own-x](https://github.com/codecrafters-io/build-your-own-x) as a calibration point: the default global board is still a mixed developer-interest surface, so it should stay clearly separated from first-party radar conclusions.
+- Watch whether [Warp](https://github.com/warpdotdev/warp) stays visible across multiple days, because that would reinforce the terminal-as-agent-control-surface trend.
+- Watch whether [skills](https://github.com/mattpocock/skills) and [awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills) keep climbing, because persistent skill packaging would indicate a more mature agent-customization ecosystem.
+- Watch [jcode](https://github.com/1jehuang/jcode), [superpowers](https://github.com/obra/superpowers), and [craft-agents-oss](https://github.com/lukilabs/craft-agents-oss) as open harness-design references rather than as roadmap authority.
+- Keep [GitNexus](https://github.com/abhigyanpatwari/GitNexus) on the list as a signal that knowledge-graph and RAG-assisted code exploration are still unresolved workflow demand.
+- Keep [free-programming-books](https://github.com/EbookFoundation/free-programming-books) as a calibration point so the trending stream stays faithful to the real mixed board instead of being forced into a pure AI narrative.

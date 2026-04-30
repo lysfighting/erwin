@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `45` durable notes are currently indexed across `3` recurring streams.
-- `108` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `47` durable notes are currently indexed across `3` recurring streams.
+- `110` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-04-28
+### AI Agent Daily Radar - 2026-04-30
 
-- Metadata: `Window: 2026-04-21 to 2026-04-28`
-- **Anthropic's official platform surface added memory to Claude Managed Agents, while Claude Code stayed quiet in-window.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) published **April 23, 2026** added **memory for Claude Managed Agents** in public beta under the `managed-agents-2026-04-01` header. The required Anthropic surfaces were rechecked on this run: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/), [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). Meaningful in-window Anthropic movement came from Platform and Managed Agents; the advisor tool remained beta with no newer dated in-window doc change surfaced, and the Claude Code changelog did not show a new in-window release.
-- **OpenAI paired a frontier model launch with a concrete Codex enterprise expansion.** [Introducing GPT-5.5](https://openai.com/index/introducing-gpt-5-5/) was published on **April 23, 2026**, and [Scaling Codex to enterprises worldwide](https://openai.com/index/scaling-codex-to-enterprises-worldwide) followed on **April 21, 2026** with Codex Labs plus GSI rollout. Collapsed takeaway: OpenAI is still bundling model capability gains with adoption and deployment machinery.
-- **OpenAI also shipped privacy infrastructure that is directly usable around agent logs and pipelines.** [Introducing OpenAI Privacy Filter](https://openai.com/index/introducing-openai-privacy-filter/) was published on **April 22, 2026** as an open-weight, locally runnable PII-masking model with up to 128k context. Collapsed takeaway: privacy-preserving preprocessing is becoming a first-class part of the agent stack, not a side utility.
+- Metadata: `Window: 2026-04-23 to 2026-04-30`
+- **Anthropic's official technical surface moved Claude Platform forward, while Claude Code stayed quiet in-window.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) published **April 23, 2026** that **memory for Claude Managed Agents** is now in public beta, and published **April 24, 2026** that the **Rate Limits API** is now available. Required Anthropic surfaces were explicitly checked on this run: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/), [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). The [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) still show beta availability, but no newer dated in-window update surfaced there, and the [Claude Code changelog](https://code.claude.com/docs/en/changelog) still shows its latest visible entry on **April 15, 2026**, so there is no fresh Claude Code release to elevate this week.
+- **OpenAI shipped a stronger coding model directly into Codex.** [Introducing GPT-5.5](https://openai.com/index/introducing-gpt-5-5/) was published on **April 23, 2026**. OpenAI positions it as its strongest agentic coding model to date, with a reported **82.7% on Terminal-Bench 2.0**, **58.6% on SWE-Bench Pro**, and rollout into **ChatGPT and Codex**.
+- **OpenAI also published a concrete orchestration pattern for ticket-driven coding agents.** [An open-source spec for Codex orchestration: Symphony](https://openai.com/index/open-source-codex-orchestration-symphony/) was published on **April 27, 2026**. Its core framing is that the issue tracker becomes the control plane and that any open task should be picked up and completed by an agent, which is a stronger public statement about persistent multi-agent execution than a generic model launch post.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-04-28
+### GitHub Trending - 2026-04-30
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending) as checked on **2026-04-28** from the default global repositories page with no extra filters. The board remains a mixed developer-interest surface rather than a clean AI-only feed.`
-- [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code) - a Claude-adjacent wrapper/access project surfacing because demand for cheaper or alternative coding-model access remains intense.
-- [trycua/cua](https://github.com/trycua/cua) - computer-use-agent infrastructure with sandboxes, SDKs, and benchmarks; one of the clearest execution-layer agent projects on the board.
-- [gastownhall/beads](https://github.com/gastownhall/beads) - memory augmentation for coding agents, reinforcing that persistent context remains a practical user need.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as checked on **2026-04-30** from the default global repositories page with no extra filters. The board is still a mixed developer-interest feed, not a clean AI-only ranking.`
+- [warpdotdev/warp](https://github.com/warpdotdev/warp) - an agentic development environment built around the terminal; one of the clearest board-level signals that the shell is turning into an AI operating surface.
+- [mattpocock/skills](https://github.com/mattpocock/skills) - packaged skills for coding workflows, surfacing because specialization layers for coding agents are becoming concrete and reusable.
+- [ComposioHQ/awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills) - a curated Codex-skill directory, notable because it treats skill composition as an ecosystem problem rather than a single-repo trick.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-04-30](../radar/daily/2026-04-30.md)
 - [2026-04-28](../radar/daily/2026-04-28.md)
 - [2026-04-27](../radar/daily/2026-04-27.md)
 - [2026-04-26](../radar/daily/2026-04-26.md)
 - [2026-04-24](../radar/daily/2026-04-24.md)
 - [2026-04-23](../radar/daily/2026-04-23.md)
-- [2026-04-22](../radar/daily/2026-04-22.md)
 
 ### Weekly Synthesis
 
@@ -83,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-04-30](../radar/trending/2026-04-30.md)
 - [2026-04-28](../radar/trending/2026-04-28.md)
 - [2026-04-27](../radar/trending/2026-04-27.md)
 - [2026-04-26](../radar/trending/2026-04-26.md)
 - [2026-04-24](../radar/trending/2026-04-24.md)
 - [2026-04-23](../radar/trending/2026-04-23.md)
-- [2026-04-22](../radar/trending/2026-04-22.md)
