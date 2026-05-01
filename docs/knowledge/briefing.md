@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `47` durable notes are currently indexed across `3` recurring streams.
-- `110` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `49` durable notes are currently indexed across `3` recurring streams.
+- `112` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-04-30
+### AI Agent Daily Radar - 2026-05-01
 
-- Metadata: `Window: 2026-04-23 to 2026-04-30`
-- **Anthropic's official technical surface moved Claude Platform forward, while Claude Code stayed quiet in-window.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) published **April 23, 2026** that **memory for Claude Managed Agents** is now in public beta, and published **April 24, 2026** that the **Rate Limits API** is now available. Required Anthropic surfaces were explicitly checked on this run: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/), [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). The [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) still show beta availability, but no newer dated in-window update surfaced there, and the [Claude Code changelog](https://code.claude.com/docs/en/changelog) still shows its latest visible entry on **April 15, 2026**, so there is no fresh Claude Code release to elevate this week.
-- **OpenAI shipped a stronger coding model directly into Codex.** [Introducing GPT-5.5](https://openai.com/index/introducing-gpt-5-5/) was published on **April 23, 2026**. OpenAI positions it as its strongest agentic coding model to date, with a reported **82.7% on Terminal-Bench 2.0**, **58.6% on SWE-Bench Pro**, and rollout into **ChatGPT and Codex**.
-- **OpenAI also published a concrete orchestration pattern for ticket-driven coding agents.** [An open-source spec for Codex orchestration: Symphony](https://openai.com/index/open-source-codex-orchestration-symphony/) was published on **April 27, 2026**. Its core framing is that the issue tracker becomes the control plane and that any open task should be picked up and completed by an agent, which is a stronger public statement about persistent multi-agent execution than a generic model launch post.
+- Metadata: `Window: 2026-04-24 to 2026-05-01`
+- **Anthropic's freshest in-window movement was distribution and operating guidance rather than a new dated platform release.** [Claude API skill now in CodeRabbit, JetBrains, Resolve AI, and Warp](https://claude.com/blog/claude-api-skill) was published on **April 29, 2026**, positioning Anthropic's `claude-api` skill as a reusable migration and agent-pattern layer across external developer tools. [Onboarding Claude Code like a new developer: Lessons from 17 years of development](https://claude.com/blog/onboarding-claude-code-like-a-new-developer-lessons-from-17-years-of-development) was published on **April 28, 2026**, framing codebase onboarding and test-rich project context as durable Claude Code operating practice. Required Anthropic surfaces were explicitly checked on this run: [Anthropic News](https://www.anthropic.com/news), [Claude Blog](https://claude.com/blog/), [docs.anthropic.com](https://docs.anthropic.com/), [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). No newer dated in-window platform-runtime release surfaced there: the release notes still point to **Managed Agents memory public beta on April 23, 2026**, the advisor tool docs still show beta availability, and the Claude Code changelog still shows its latest visible release on **April 10, 2026**.
+- **OpenAI published a concrete always-on orchestration pattern for coding agents.** [An open-source spec for Codex orchestration: Symphony](https://openai.com/index/open-source-codex-orchestration-symphony/) was published on **April 27, 2026**. The important shift is not just "more Codex," but a public reference pattern where the issue tracker becomes the control plane, every open task gets an isolated agent workspace, and execution continues until the task reaches a workflow handoff state.
+- **DeepSeek shipped a high-context coding and agent update through its official API docs.** [DeepSeek V4 Preview Release](https://api-docs.deepseek.com/news/news260424) was published on **April 24, 2026**. DeepSeek is claiming a **1M context window**, stronger agentic coding, open weights, and OpenAI- and Anthropic-compatible API surfaces, which raises direct pressure on comparative coding-agent harness experiments.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-04-30
+### GitHub Trending - 2026-05-01
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending) as checked on **2026-04-30** from the default global repositories page with no extra filters. The board is still a mixed developer-interest feed, not a clean AI-only ranking.`
-- [warpdotdev/warp](https://github.com/warpdotdev/warp) - an agentic development environment built around the terminal; one of the clearest board-level signals that the shell is turning into an AI operating surface.
-- [mattpocock/skills](https://github.com/mattpocock/skills) - packaged skills for coding workflows, surfacing because specialization layers for coding agents are becoming concrete and reusable.
-- [ComposioHQ/awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills) - a curated Codex-skill directory, notable because it treats skill composition as an ecosystem problem rather than a single-repo trick.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-01** from the default global repositories page with no extra filters. The board remains a mixed developer-interest feed rather than a pure AI ranking.`
+- [warpdotdev/warp](https://github.com/warpdotdev/warp) - an agentic development environment built around the terminal and still one of the clearest signs that the shell is becoming a primary AI operating surface.
+- [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) - a multi-agent financial trading framework, notable because multi-agent orchestration patterns are spreading into domain-specific execution systems.
+- [mattpocock/skills](https://github.com/mattpocock/skills) - packaged skills for real engineering workflows, surfacing because specialization layers for coding agents are becoming concrete and reusable.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-01](../radar/daily/2026-05-01.md)
 - [2026-04-30](../radar/daily/2026-04-30.md)
 - [2026-04-28](../radar/daily/2026-04-28.md)
 - [2026-04-27](../radar/daily/2026-04-27.md)
 - [2026-04-26](../radar/daily/2026-04-26.md)
 - [2026-04-24](../radar/daily/2026-04-24.md)
-- [2026-04-23](../radar/daily/2026-04-23.md)
 
 ### Weekly Synthesis
 
@@ -83,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-01](../radar/trending/2026-05-01.md)
 - [2026-04-30](../radar/trending/2026-04-30.md)
 - [2026-04-28](../radar/trending/2026-04-28.md)
 - [2026-04-27](../radar/trending/2026-04-27.md)
 - [2026-04-26](../radar/trending/2026-04-26.md)
 - [2026-04-24](../radar/trending/2026-04-24.md)
-- [2026-04-23](../radar/trending/2026-04-23.md)

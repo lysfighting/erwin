@@ -1,35 +1,34 @@
-# GitHub Trending - 2026-04-30
+# GitHub Trending - 2026-05-01
 
-Source: [GitHub Trending](https://github.com/trending) as checked on **2026-04-30** from the default global repositories page with no extra filters. The board is still a mixed developer-interest feed, not a clean AI-only ranking.
+Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-01** from the default global repositories page with no extra filters. The board remains a mixed developer-interest feed rather than a pure AI ranking.
 
 ## Trending Snapshot
 
-The current default board leans unusually hard toward developer-tooling and agent-adjacent projects. Agentic terminals, reusable skills, coding-agent harnesses, browser-side code intelligence, and open voice systems are all present, but they sit beside broader programming staples and unrelated utility projects. The important read is not that the whole board is "about agents"; it is that agent workflow tooling is now common enough to show up repeatedly on the unfiltered global board.
+The current default board is unusually heavy on agentic developer tooling without becoming an AI-only list. The top portion includes an agentic terminal, a multi-agent trading framework, packaged skills, agent methodology frameworks, and a coding-agent harness, but those sit beside broad utility repositories, OSINT tools, terminal infrastructure, and Markdown publishing tools. The right read is not that "GitHub Trending is now about agents"; it is that agent workflow tooling is common enough to show up repeatedly on the unfiltered global board.
 
 ## Notable Projects
 
-- [warpdotdev/warp](https://github.com/warpdotdev/warp) - an agentic development environment built around the terminal; one of the clearest board-level signals that the shell is turning into an AI operating surface.
-- [mattpocock/skills](https://github.com/mattpocock/skills) - packaged skills for coding workflows, surfacing because specialization layers for coding agents are becoming concrete and reusable.
-- [ComposioHQ/awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills) - a curated Codex-skill directory, notable because it treats skill composition as an ecosystem problem rather than a single-repo trick.
+- [warpdotdev/warp](https://github.com/warpdotdev/warp) - an agentic development environment built around the terminal and still one of the clearest signs that the shell is becoming a primary AI operating surface.
+- [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) - a multi-agent financial trading framework, notable because multi-agent orchestration patterns are spreading into domain-specific execution systems.
+- [mattpocock/skills](https://github.com/mattpocock/skills) - packaged skills for real engineering workflows, surfacing because specialization layers for coding agents are becoming concrete and reusable.
+- [obra/superpowers](https://github.com/obra/superpowers) - an agentic skills framework and software-development methodology, notable because it combines workflow doctrine with packaged execution primitives.
+- [lukilabs/craft-agents-oss](https://github.com/lukilabs/craft-agents-oss) - another open agent runtime reference, relevant as part of the continuing appetite for practical agent frameworks.
 - [1jehuang/jcode](https://github.com/1jehuang/jcode) - explicitly framed as a coding-agent harness, making it one of the most directly relevant repos on the board for execution-layer comparisons.
-- [abhigyanpatwari/GitNexus](https://github.com/abhigyanpatwari/GitNexus) - a zero-server code-intelligence and knowledge-graph project, notable because codebase navigation plus Graph RAG remains a persistent operator need.
-- [microsoft/VibeVoice](https://github.com/microsoft/VibeVoice) - open-source voice AI, included here because the board is not purely coding-agent focused and still rewards frontier multimodal tooling.
-- [obra/superpowers](https://github.com/obra/superpowers) - an agentic skills framework and methodology, relevant because it combines workflow doctrine with reusable execution primitives.
-- [lukilabs/craft-agents-oss](https://github.com/lukilabs/craft-agents-oss) - another agent framework signal showing continued appetite for open agent runtime patterns.
-- [EbookFoundation/free-programming-books](https://github.com/EbookFoundation/free-programming-books) - a reminder that the default board still includes long-lived general-interest repositories alongside the faster agent wave.
+- [public-apis/public-apis](https://github.com/public-apis/public-apis) - a reminder that the board still includes broad, durable developer infrastructure and discovery utilities.
+- [iamgio/quarkdown](https://github.com/iamgio/quarkdown) - Markdown-to-papers/presentations/websites tooling, notable because the board is also rewarding publishing and documentation workflows.
+- [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty) - a fast terminal emulator, relevant because terminal infrastructure still rises alongside more explicitly agentic terminal products.
 
 ## Why They May Be Surfacing
 
-- Agentic development environments are becoming a category, not a niche. [Warp](https://github.com/warpdotdev/warp) leads that pattern directly.
-- Skills have become a distribution unit. [skills](https://github.com/mattpocock/skills) and [awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills) both benefit from demand for portable workflow augmentation.
-- Explicit harnesses are now legible to the broader open-source audience. [jcode](https://github.com/1jehuang/jcode), [superpowers](https://github.com/obra/superpowers), and [craft-agents-oss](https://github.com/lukilabs/craft-agents-oss) all sit near the "how do I actually run this work" layer.
-- Code understanding remains a bottleneck. [GitNexus](https://github.com/abhigyanpatwari/GitNexus) surfacing suggests continued demand for repo-native mapping, retrieval, and visualization.
-- The board is still broad. [VibeVoice](https://github.com/microsoft/VibeVoice) and [free-programming-books](https://github.com/EbookFoundation/free-programming-books) show that AI tooling is sharing space with general developer-interest projects rather than replacing them.
+- Agentic development environments are now a visible category. [Warp](https://github.com/warpdotdev/warp) anchors that pattern directly, while [Ghostty](https://github.com/ghostty-org/ghostty) shows that the underlying terminal layer is still hot.
+- Skills have become a distribution unit. [skills](https://github.com/mattpocock/skills) and [superpowers](https://github.com/obra/superpowers) both benefit from demand for portable workflow augmentation rather than one-off prompt craft.
+- Explicit harnesses and runtimes are legible to a broader open-source audience. [TradingAgents](https://github.com/TauricResearch/TradingAgents), [craft-agents-oss](https://github.com/lukilabs/craft-agents-oss), and [jcode](https://github.com/1jehuang/jcode) all sit close to the "how do I actually run this work" layer.
+- The board is still broad and somewhat chaotic. [public-apis](https://github.com/public-apis/public-apis) and [quarkdown](https://github.com/iamgio/quarkdown) are a useful reminder not to overfit the stream into a pure AI narrative.
 
 ## Watchlist
 
-- Watch whether [Warp](https://github.com/warpdotdev/warp) stays visible across multiple days, because that would reinforce the terminal-as-agent-control-surface trend.
-- Watch whether [skills](https://github.com/mattpocock/skills) and [awesome-codex-skills](https://github.com/ComposioHQ/awesome-codex-skills) keep climbing, because persistent skill packaging would indicate a more mature agent-customization ecosystem.
-- Watch [jcode](https://github.com/1jehuang/jcode), [superpowers](https://github.com/obra/superpowers), and [craft-agents-oss](https://github.com/lukilabs/craft-agents-oss) as open harness-design references rather than as roadmap authority.
-- Keep [GitNexus](https://github.com/abhigyanpatwari/GitNexus) on the list as a signal that knowledge-graph and RAG-assisted code exploration are still unresolved workflow demand.
-- Keep [free-programming-books](https://github.com/EbookFoundation/free-programming-books) as a calibration point so the trending stream stays faithful to the real mixed board instead of being forced into a pure AI narrative.
+- Watch whether [Warp](https://github.com/warpdotdev/warp) stays visible across multiple days, because that would reinforce terminal-as-agent-control-surface momentum.
+- Watch whether [TradingAgents](https://github.com/TauricResearch/TradingAgents) holds position, because persistent visibility would suggest multi-agent orchestration is broadening beyond coding into applied operating stacks.
+- Watch whether [skills](https://github.com/mattpocock/skills) and [superpowers](https://github.com/obra/superpowers) keep climbing, because sustained interest would indicate a maturing ecosystem for portable agent customization.
+- Watch [craft-agents-oss](https://github.com/lukilabs/craft-agents-oss) and [jcode](https://github.com/1jehuang/jcode) as open harness-design references rather than roadmap authority.
+- Keep [Ghostty](https://github.com/ghostty-org/ghostty) and [public-apis](https://github.com/public-apis/public-apis) on the list as calibration points so the trending stream stays faithful to the real mixed board instead of being forced into an AI-only framing.
