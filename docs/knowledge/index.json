@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 49,
+    "total_notes": 51,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 112,
+    "artifact_count": 114,
     "link_count": 267,
     "thread_count": 5
   },
@@ -106,16 +106,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-05-01",
-      "meta": "Window: 2026-04-24 to 2026-05-01",
+      "title": "AI Agent Daily Radar - 2026-05-02",
+      "meta": "Window: 2026-04-25 to 2026-05-02",
       "highlights": [
-        "**Anthropic's freshest in-window movement was distribution and operating guidance rather than a new dated platform release.** [Claude API skill now in CodeRabbit, JetBrains, Resolve AI, and Warp](https://claude.com/blog/claude-api-skill) was published on **April 29, 2026**, positioning Anthropic's `claude-api` skill as a reusable migration and agent-pattern layer across external developer tools. [Onboarding Claude Code like a new developer: Lessons from 17 years of development](https://claude.com/blog/onboarding-claude-code-like-a-new-developer-lessons-from-17-years-of-development) was published on **April 28, 2026**, framing codebase onboarding and test-rich project context as durable Claude Code operating practice. Required Anthropic surfaces were explicitly checked on this run: [Anthropic News](https://www.anthropic.com/news), [Claude Blog](https://claude.com/blog/), [docs.anthropic.com](https://docs.anthropic.com/), [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). No newer dated in-window platform-runtime release surfaced there: the release notes still point to **Managed Agents memory public beta on April 23, 2026**, the advisor tool docs still show beta availability, and the Claude Code changelog still shows its latest visible release on **April 10, 2026**.",
-        "**OpenAI published a concrete always-on orchestration pattern for coding agents.** [An open-source spec for Codex orchestration: Symphony](https://openai.com/index/open-source-codex-orchestration-symphony/) was published on **April 27, 2026**. The important shift is not just \"more Codex,\" but a public reference pattern where the issue tracker becomes the control plane, every open task gets an isolated agent workspace, and execution continues until the task reaches a workflow handoff state.",
-        "**DeepSeek shipped a high-context coding and agent update through its official API docs.** [DeepSeek V4 Preview Release](https://api-docs.deepseek.com/news/news260424) was published on **April 24, 2026**. DeepSeek is claiming a **1M context window**, stronger agentic coding, open weights, and OpenAI- and Anthropic-compatible API surfaces, which raises direct pressure on comparative coding-agent harness experiments."
+        "**Anthropic updated the Claude Platform release notes with an in-window migration signal.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) were updated on **April 30, 2026** to retire the 1M-token beta header for Claude Sonnet 4 and 4.5, pushing long-context users onto Sonnet 4.6 or Opus 4.6 where 1M context is generally available. This is the strongest in-window Anthropic runtime/platform change across the required technical surfaces.",
+        "**Anthropic is exporting API operating doctrine into external developer tools.** [Claude API skill now in CodeRabbit, JetBrains, Resolve AI, and Warp](https://claude.com/blog/claude-api-skill) was published on **April 29, 2026**. The key move is not just distribution: Anthropic is packaging model-migration, prompt-caching, and agent-pattern knowledge as a portable skill layer that can ride across third-party tools.",
+        "**Anthropic published a concrete large-codebase onboarding pattern for Claude Code.** [Onboarding Claude Code like a new developer: Lessons from 17 years of development](https://claude.com/blog/onboarding-claude-code-like-a-new-developer-lessons-from-17-years-of-development) was published on **April 28, 2026** and argues for test-rich onboarding, narrower repo entrypoints, and durable project context when aiming Claude Code at mature codebases."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-05-02",
+          "path": "radar/daily/2026-05-02.md"
+        },
         {
           "name": "2026-05-01",
           "path": "radar/daily/2026-05-01.md"
@@ -135,26 +139,26 @@
         {
           "name": "2026-04-26",
           "path": "radar/daily/2026-04-26.md"
-        },
-        {
-          "name": "2026-04-24",
-          "path": "radar/daily/2026-04-24.md"
         }
       ],
-      "count": 22
+      "count": 23
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-05-01",
-      "meta": "Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-01** from the default global repositories page with no extra filters. The board remains a mixed developer-interest feed rather than a pure AI ranking.",
+      "title": "GitHub Trending - 2026-05-02",
+      "meta": "Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-02** from the default global repositories page with no extra filters. This remains a mixed developer-interest board rather than an AI-only ranking.",
       "highlights": [
-        "[warpdotdev/warp](https://github.com/warpdotdev/warp) - an agentic development environment built around the terminal and still one of the clearest signs that the shell is becoming a primary AI operating surface.",
-        "[TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) - a multi-agent financial trading framework, notable because multi-agent orchestration patterns are spreading into domain-specific execution systems.",
-        "[mattpocock/skills](https://github.com/mattpocock/skills) - packaged skills for real engineering workflows, surfacing because specialization layers for coding agents are becoming concrete and reusable."
+        "[TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) - a multi-agent LLM financial trading framework, notable because agent orchestration patterns are spreading into applied domain stacks.",
+        "[warpdotdev/warp](https://github.com/warpdotdev/warp) - an agentic development environment built around the terminal, reinforcing the shell as a primary AI operating surface.",
+        "[1jehuang/jcode](https://github.com/1jehuang/jcode) - explicitly framed as a coding-agent harness, making it one of the cleanest execution-layer references on the board."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-05-02",
+          "path": "radar/trending/2026-05-02.md"
+        },
         {
           "name": "2026-05-01",
           "path": "radar/trending/2026-05-01.md"
@@ -174,13 +178,9 @@
         {
           "name": "2026-04-26",
           "path": "radar/trending/2026-04-26.md"
-        },
-        {
-          "name": "2026-04-24",
-          "path": "radar/trending/2026-04-24.md"
         }
       ],
-      "count": 23
+      "count": 24
     }
   },
   "deep_dive": "The theme this week is **agent execution becoming a governed workspace contract**.",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 112,
+      "artifact_count": 114,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 59,
+        "radar": 61,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2218,6 +2218,38 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-05-02.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-05-02.md",
+        "title": "AI Agent Daily Radar - 2026-05-02",
+        "date": "2026-05-02",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-25 to 2026-05-02",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://claude.com/blog/claude-api-skill",
+          "https://claude.com/blog/onboarding-claude-code-like-a-new-developer-lessons-from-17-years-of-development",
+          "https://openai.com/index/open-source-codex-orchestration-symphony/",
+          "https://github.com/trending",
+          "https://github.com/TauricResearch/TradingAgents",
+          "https://github.com/warpdotdev/warp",
+          "https://github.com/1jehuang/jcode",
+          "https://github.com/mattpocock/skills",
+          "https://github.com/browserbase/skills",
+          "https://www.anthropic.com/news",
+          "https://claude.com/blog/"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -3020,6 +3052,32 @@
           "https://github.com/public-apis/public-apis",
           "https://github.com/iamgio/quarkdown",
           "https://github.com/ghostty-org/ghostty"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-05-02.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-05-02.md",
+        "title": "GitHub Trending - 2026-05-02",
+        "date": "2026-05-02",
+        "status": "",
+        "themes": [
+          "harness",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-02** from the default global repositories page with no extra filters. This remains a mixed developer-interest board rather than an AI-only...",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/TauricResearch/TradingAgents",
+          "https://github.com/warpdotdev/warp",
+          "https://github.com/1jehuang/jcode",
+          "https://github.com/mattpocock/skills",
+          "https://github.com/browserbase/skills",
+          "https://github.com/simstudioai/sim",
+          "https://github.com/soxoj/maigret"
         ],
         "local_refs": []
       },
