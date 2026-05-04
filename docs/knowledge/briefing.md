@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `51` durable notes are currently indexed across `3` recurring streams.
-- `114` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `53` durable notes are currently indexed across `3` recurring streams.
+- `116` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-02
+### AI Agent Daily Radar - 2026-05-04
 
-- Metadata: `Window: 2026-04-25 to 2026-05-02`
-- **Anthropic updated the Claude Platform release notes with an in-window migration signal.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) were updated on **April 30, 2026** to retire the 1M-token beta header for Claude Sonnet 4 and 4.5, pushing long-context users onto Sonnet 4.6 or Opus 4.6 where 1M context is generally available. This is the strongest in-window Anthropic runtime/platform change across the required technical surfaces.
-- **Anthropic is exporting API operating doctrine into external developer tools.** [Claude API skill now in CodeRabbit, JetBrains, Resolve AI, and Warp](https://claude.com/blog/claude-api-skill) was published on **April 29, 2026**. The key move is not just distribution: Anthropic is packaging model-migration, prompt-caching, and agent-pattern knowledge as a portable skill layer that can ride across third-party tools.
-- **Anthropic published a concrete large-codebase onboarding pattern for Claude Code.** [Onboarding Claude Code like a new developer: Lessons from 17 years of development](https://claude.com/blog/onboarding-claude-code-like-a-new-developer-lessons-from-17-years-of-development) was published on **April 28, 2026** and argues for test-rich onboarding, narrower repo entrypoints, and durable project context when aiming Claude Code at mature codebases.
+- Metadata: `Window: 2026-04-27 to 2026-05-04`
+- **Anthropic changed the practical long-context routing rule on Claude Platform.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) were updated on **April 30, 2026** to retire the 1M-token beta header for Claude Sonnet 4 and 4.5. Long-context traffic now needs to move to [Claude Sonnet 4.6 / Claude Opus 4.6](https://platform.claude.com/docs/en/release-notes/overview) instead of relying on the old header path.
+- **Anthropic published a concrete Claude Code operator doctrine around prompt caching.** [Lessons from building Claude Code: Prompt caching is everything](https://claude.com/blog/lessons-from-building-claude-code-prompt-caching-is-everything) was published on **April 30, 2026**. The strongest takeaway is that Anthropic is now documenting cache-safe agent architecture as a first-class systems concern: stable prompt prefixes, no mid-session tool churn, cache-safe compaction, and explicit monitoring of cache hit rates.
+- **Anthropic is exporting Claude API operating knowledge as a portable skill layer.** [Claude API skill now in CodeRabbit, JetBrains, Resolve AI, and Warp](https://claude.com/blog/claude-api-skill) was published on **April 29, 2026**. The notable move is not just distribution; it is Anthropic treating migration rules, managed-agent onboarding, and prompt-caching practice as reusable productized doctrine.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-02
+### GitHub Trending - 2026-05-04
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-02** from the default global repositories page with no extra filters. This remains a mixed developer-interest board rather than an AI-only ranking.`
-- [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) - a multi-agent LLM financial trading framework, notable because agent orchestration patterns are spreading into applied domain stacks.
-- [warpdotdev/warp](https://github.com/warpdotdev/warp) - an agentic development environment built around the terminal, reinforcing the shell as a primary AI operating surface.
-- [1jehuang/jcode](https://github.com/1jehuang/jcode) - explicitly framed as a coding-agent harness, making it one of the cleanest execution-layer references on the board.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-04** from the default global repositories page with no extra filters. This remains a mixed developer-interest board rather than an AI-only ranking.`
+- [ruvnet/ruflo](https://github.com/ruvnet/ruflo) - a Claude-oriented orchestration platform that is surfacing because multi-agent coordination itself is becoming a product category.
+- [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) - a multi-agent LLM financial trading framework, notable because agent runtimes are continuing to expand into applied domain stacks.
+- [soxoj/maigret](https://github.com/soxoj/maigret) - a large OSINT utility, included because it keeps the summary faithful to the mixed board rather than pretending everything is AI infrastructure.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-04](../radar/daily/2026-05-04.md)
 - [2026-05-02](../radar/daily/2026-05-02.md)
 - [2026-05-01](../radar/daily/2026-05-01.md)
 - [2026-04-30](../radar/daily/2026-04-30.md)
 - [2026-04-28](../radar/daily/2026-04-28.md)
 - [2026-04-27](../radar/daily/2026-04-27.md)
-- [2026-04-26](../radar/daily/2026-04-26.md)
 
 ### Weekly Synthesis
 
@@ -83,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-04](../radar/trending/2026-05-04.md)
 - [2026-05-02](../radar/trending/2026-05-02.md)
 - [2026-05-01](../radar/trending/2026-05-01.md)
 - [2026-04-30](../radar/trending/2026-04-30.md)
 - [2026-04-28](../radar/trending/2026-04-28.md)
 - [2026-04-27](../radar/trending/2026-04-27.md)
-- [2026-04-26](../radar/trending/2026-04-26.md)
