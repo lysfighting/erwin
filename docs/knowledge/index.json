@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 53,
+    "total_notes": 55,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 116,
+    "artifact_count": 118,
     "link_count": 267,
     "thread_count": 5
   },
@@ -106,16 +106,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-05-04",
-      "meta": "Window: 2026-04-27 to 2026-05-04",
+      "title": "AI Agent Daily Radar - 2026-05-06",
+      "meta": "Window: 2026-04-29 to 2026-05-06",
       "highlights": [
-        "**Anthropic changed the practical long-context routing rule on Claude Platform.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) were updated on **April 30, 2026** to retire the 1M-token beta header for Claude Sonnet 4 and 4.5. Long-context traffic now needs to move to [Claude Sonnet 4.6 / Claude Opus 4.6](https://platform.claude.com/docs/en/release-notes/overview) instead of relying on the old header path.",
-        "**Anthropic published a concrete Claude Code operator doctrine around prompt caching.** [Lessons from building Claude Code: Prompt caching is everything](https://claude.com/blog/lessons-from-building-claude-code-prompt-caching-is-everything) was published on **April 30, 2026**. The strongest takeaway is that Anthropic is now documenting cache-safe agent architecture as a first-class systems concern: stable prompt prefixes, no mid-session tool churn, cache-safe compaction, and explicit monitoring of cache hit rates.",
-        "**Anthropic is exporting Claude API operating knowledge as a portable skill layer.** [Claude API skill now in CodeRabbit, JetBrains, Resolve AI, and Warp](https://claude.com/blog/claude-api-skill) was published on **April 29, 2026**. The notable move is not just distribution; it is Anthropic treating migration rules, managed-agent onboarding, and prompt-caching practice as reusable productized doctrine."
+        "**Anthropic shipped fresh Claude Code runtime updates at the start of the week.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **2.1.128 on 2026-05-04** and **2.1.129 on 2026-05-06**, with changes including easier subagent access in custom commands, a redesigned status line, and more resilient model resume behavior. This is the strongest in-window Anthropic execution-surface signal.",
+        "**Google expanded Gemini API File Search into a more agent-ready retrieval surface.** Google published [Expanded Gemini API with File Search across all modalities](https://blog.google/innovation-and-ai/technology/developers-tools/expanded-gemini-api-file-search-multimodal-rag/) on **2026-05-05**. The notable shift is that Google is positioning multimodal retrieval as a default building block for production Gemini systems rather than a narrow document-RAG feature.",
+        "**OpenAI made GPT-5.5 Instant the default tradeoff model for fast production use.** OpenAI published [GPT-5.5 Instant: the fast, intelligent model for builders](https://openai.com/index/gpt-5-5-instant/) on **2026-05-05**. The key signal is that OpenAI is still actively tuning the cheap-fast model tier rather than treating agent quality improvements as limited to frontier-priced models."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-05-06",
+          "path": "radar/daily/2026-05-06.md"
+        },
         {
           "name": "2026-05-04",
           "path": "radar/daily/2026-05-04.md"
@@ -135,26 +139,26 @@
         {
           "name": "2026-04-28",
           "path": "radar/daily/2026-04-28.md"
-        },
-        {
-          "name": "2026-04-27",
-          "path": "radar/daily/2026-04-27.md"
         }
       ],
-      "count": 24
+      "count": 25
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-05-04",
-      "meta": "Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-04** from the default global repositories page with no extra filters. This remains a mixed developer-interest board rather than an AI-only ranking.",
+      "title": "GitHub Trending - 2026-05-06",
+      "meta": "Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-06** from the default global repositories page with no extra filters. This remains a mixed developer-interest board rather than an AI-only ranking.",
       "highlights": [
-        "[ruvnet/ruflo](https://github.com/ruvnet/ruflo) - a Claude-oriented orchestration platform that is surfacing because multi-agent coordination itself is becoming a product category.",
-        "[TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) - a multi-agent LLM financial trading framework, notable because agent runtimes are continuing to expand into applied domain stacks.",
-        "[soxoj/maigret](https://github.com/soxoj/maigret) - a large OSINT utility, included because it keeps the summary faithful to the mixed board rather than pretending everything is AI infrastructure."
+        "[OpenBB-finance/OpenBB](https://github.com/OpenBB-finance/OpenBB) - a finance and research platform that stands out because AI-assisted analyst workflows keep converging with data-terminal expectations.",
+        "[public-apis/public-apis](https://github.com/public-apis/public-apis) - not an AI repo, but important because tool and API discovery is still the substrate for many agent systems.",
+        "[Lissy93/web-check](https://github.com/Lissy93/web-check) - a website OSINT and inspection toolkit, notable because diagnostic/probing workflows overlap cleanly with agent/operator use cases."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-05-06",
+          "path": "radar/trending/2026-05-06.md"
+        },
         {
           "name": "2026-05-04",
           "path": "radar/trending/2026-05-04.md"
@@ -174,13 +178,9 @@
         {
           "name": "2026-04-28",
           "path": "radar/trending/2026-04-28.md"
-        },
-        {
-          "name": "2026-04-27",
-          "path": "radar/trending/2026-04-27.md"
         }
       ],
-      "count": 25
+      "count": 26
     }
   },
   "deep_dive": "The theme this week is **agent execution becoming a governed workspace contract**.",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 116,
+      "artifact_count": 118,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 63,
+        "radar": 65,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2281,6 +2281,39 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-05-06.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-05-06.md",
+        "title": "AI Agent Daily Radar - 2026-05-06",
+        "date": "2026-05-06",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-04-29 to 2026-05-06",
+        "external_refs": [
+          "https://code.claude.com/docs/en/changelog",
+          "https://blog.google/innovation-and-ai/technology/developers-tools/expanded-gemini-api-file-search-multimodal-rag/",
+          "https://openai.com/index/gpt-5-5-instant/",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://claude.com/blog/lessons-from-building-claude-code-prompt-caching-is-everything",
+          "https://github.com/trending",
+          "https://github.com/OpenBB-finance/OpenBB",
+          "https://github.com/public-apis/public-apis",
+          "https://github.com/Lissy93/web-check",
+          "https://github.com/HarbourMasters/Starship",
+          "https://github.com/unclecode/crawl4ai",
+          "https://www.anthropic.com/news"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -3136,6 +3169,30 @@
           "https://github.com/czlonkowski/n8n-mcp",
           "https://github.com/1jehuang/jcode",
           "https://github.com/openwrt/openwrt"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-05-06.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-05-06.md",
+        "title": "GitHub Trending - 2026-05-06",
+        "date": "2026-05-06",
+        "status": "",
+        "themes": [
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-06** from the default global repositories page with no extra filters. This remains a mixed developer-interest board rather than an AI-only...",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/OpenBB-finance/OpenBB",
+          "https://github.com/public-apis/public-apis",
+          "https://github.com/Lissy93/web-check",
+          "https://github.com/unclecode/crawl4ai",
+          "https://github.com/Byaidu/PDFMathTranslate",
+          "https://github.com/HarbourMasters/Starship",
+          "https://github.com/unionlabs/union"
         ],
         "local_refs": []
       },
