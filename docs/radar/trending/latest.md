@@ -1,30 +1,31 @@
-# GitHub Trending - 2026-05-06
+# GitHub Trending - 2026-05-09
 
-Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-06** from the default global repositories page with no extra filters. This remains a mixed developer-interest board rather than an AI-only ranking.
+Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-09** from the default global repositories page with no extra filters. The currently accessible GitHub Trending/Explore snapshot leaned heavily toward agents, coding tools, browser control, voice, and observability rather than a broadly mixed utility board.
 
 ## Trending Snapshot
 
-The global board is mixed. AI, agents, web tooling, finance tooling, public API catalogs, game projects, and infrastructure all share the page at once. The useful read is not "everything is AI" but "developer attention is still clustering around execution, tooling, and data-access surfaces, with AI projects competing inside a broader general-purpose board."
+The visible board slice was unusually agent-heavy. Instead of one or two AI repos mixed into general developer traffic, the accessible snapshot surfaced multiple projects around coding agents, browser MCP, autonomous desktop control, AI-SRE, and voice tooling. That does not make GitHub Trending a strategy source, but it does make it a useful pressure gauge for what kinds of execution layers developers are actively testing.
 
 ## Notable Projects
 
-- [OpenBB-finance/OpenBB](https://github.com/OpenBB-finance/OpenBB) - a finance and research platform that stands out because AI-assisted analyst workflows keep converging with data-terminal expectations.
-- [public-apis/public-apis](https://github.com/public-apis/public-apis) - not an AI repo, but important because tool and API discovery is still the substrate for many agent systems.
-- [Lissy93/web-check](https://github.com/Lissy93/web-check) - a website OSINT and inspection toolkit, notable because diagnostic/probing workflows overlap cleanly with agent/operator use cases.
-- [unclecode/crawl4ai](https://github.com/unclecode/crawl4ai) - the clearest direct AI-agent project on the board because acquisition and crawling remain core primitives for agent stacks.
-- [Byaidu/PDFMathTranslate](https://github.com/Byaidu/PDFMathTranslate) - relevant because document transformation remains a durable applied-LLM category.
-- [HarbourMasters/Starship](https://github.com/HarbourMasters/Starship) - included to keep the note faithful to the mixed board rather than forcing an AI-only lens.
-- [unionlabs/union](https://github.com/unionlabs/union) - an infra project that helps show the board still includes deep systems work alongside application-layer tooling.
+- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) - browser inspection and automation for coding agents through Chrome DevTools.
+- [openai/openai-agents-python](https://github.com/openai/openai-agents-python) - a lightweight framework for multi-agent workflows.
+- [EvoMap/evolver](https://github.com/EvoMap/evolver) - a self-evolving AI-agent project centered on a genome-evolution protocol.
+- [lsdefine/GenericAgent](https://github.com/lsdefine/GenericAgent) - an autonomous agent project emphasizing desktop and browser control plus skill growth.
+- [Tracer-Cloud/opensre](https://github.com/Tracer-Cloud/opensre) - an open-source toolkit for AI SRE agents.
+- [BasedHardware/omi](https://github.com/BasedHardware/omi) - a multimodal assistant project built around screen, audio, and wearable-style inputs.
+- [jamiepine/voicebox](https://github.com/jamiepine/voicebox) - an open-source voice synthesis studio that helps explain why voice tooling is part of the current board.
 
 ## Why They May Be Surfacing
 
-- Tool-access remains central. [public-apis](https://github.com/public-apis/public-apis), [web-check](https://github.com/Lissy93/web-check), and [crawl4ai](https://github.com/unclecode/crawl4ai) all align with the broader demand for systems that can discover, inspect, fetch, and operate on external resources.
-- Applied AI is still strongest when it binds to a concrete workflow. [OpenBB](https://github.com/OpenBB-finance/OpenBB) and [PDFMathTranslate](https://github.com/Byaidu/PDFMathTranslate) are both easier to explain as workflow tools than as generic model demos.
-- The board is genuinely mixed. [Starship](https://github.com/HarbourMasters/Starship) and [union](https://github.com/unionlabs/union) are a useful correction against overstating an AI monoculture.
+- Browser control is now a default agent primitive. [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) is the cleanest example of the market standardizing around inspectable browser execution rather than opaque screenshot loops.
+- Multi-agent orchestration still has strong mindshare. [openai-agents-python](https://github.com/openai/openai-agents-python), [evolver](https://github.com/EvoMap/evolver), and [GenericAgent](https://github.com/lsdefine/GenericAgent) all point to continued demand for reusable coordination and self-improving agent patterns.
+- Operational agents are moving closer to production concerns. [opensre](https://github.com/Tracer-Cloud/opensre) shows ongoing interest in incident response, observability, and remediation loops rather than just demo-grade chat agents.
+- Voice remains part of the same broader agent stack. [voicebox](https://github.com/jamiepine/voicebox) and [omi](https://github.com/BasedHardware/omi) fit the same execution trend toward richer multimodal interfaces.
 
 ## Watchlist
 
-- Watch whether [crawl4ai](https://github.com/unclecode/crawl4ai) keeps recurring, because repeated visibility would reinforce web acquisition as one of the most durable open-source agent primitives.
-- Watch whether [OpenBB](https://github.com/OpenBB-finance/OpenBB) holds momentum, because sustained attention there would suggest that AI-assisted analyst surfaces are still broadening beyond niche quant audiences.
-- Watch whether [public-apis](https://github.com/public-apis/public-apis) and [web-check](https://github.com/Lissy93/web-check) stay visible, because recurring interest there would confirm that external-tool wiring and inspection remain hot even outside explicitly AI-branded repos.
-- Watch whether the board stays mixed on the next run. If general infra and utility projects continue to share space with AI repos, that is a stronger signal of broad developer curiosity than a narrow single-theme surge.
+- Watch whether [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) keeps recurring, because repeated visibility would confirm browser-native agent tooling as a durable infrastructure layer.
+- Watch whether [openai-agents-python](https://github.com/openai/openai-agents-python) stays visible, because that would suggest the framework layer is consolidating around a few recognizable patterns.
+- Watch whether [opensre](https://github.com/Tracer-Cloud/opensre) or similar observability-agent repos recur, because that would strengthen the case that AI operator tooling is becoming a real category rather than a niche experiment.
+- Watch whether the board remains this agent-heavy on the next run. If it swings back to a more mixed utility board, this snapshot should be read as a temporary momentum spike rather than a stable baseline.

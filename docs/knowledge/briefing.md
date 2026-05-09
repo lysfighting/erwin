@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `56` durable notes are currently indexed across `3` recurring streams.
-- `119` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `58` durable notes are currently indexed across `3` recurring streams.
+- `121` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-06
+### AI Agent Daily Radar - 2026-05-09
 
-- Metadata: `Window: 2026-04-29 to 2026-05-06`
-- **Anthropic shipped fresh Claude Code runtime updates at the start of the week.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **2.1.128 on 2026-05-04** and **2.1.129 on 2026-05-06**, with changes including easier subagent access in custom commands, a redesigned status line, and more resilient model resume behavior. This is the strongest in-window Anthropic execution-surface signal.
-- **Google expanded Gemini API File Search into a more agent-ready retrieval surface.** Google published [Expanded Gemini API with File Search across all modalities](https://blog.google/innovation-and-ai/technology/developers-tools/expanded-gemini-api-file-search-multimodal-rag/) on **2026-05-05**. The notable shift is that Google is positioning multimodal retrieval as a default building block for production Gemini systems rather than a narrow document-RAG feature.
-- **OpenAI made GPT-5.5 Instant the default tradeoff model for fast production use.** OpenAI published [GPT-5.5 Instant: the fast, intelligent model for builders](https://openai.com/index/gpt-5-5-instant/) on **2026-05-05**. The key signal is that OpenAI is still actively tuning the cheap-fast model tier rather than treating agent quality improvements as limited to frontier-priced models.
+- Metadata: `Window: 2026-05-02 to 2026-05-09`
+- **Anthropic materially expanded the Claude Platform managed-agents surface on 2026-05-06.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **multiagent sessions and Outcomes in public beta**, plus **webhooks for Claude Managed Agents**, all under the standard `managed-agents-2026-04-01` beta header. This is the strongest in-window Anthropic technical update because it changes the practical orchestration surface rather than just model marketing.
+- **OpenAI shipped new voice models into the API on 2026-05-07.** OpenAI’s official release index lists [Advancing voice intelligence with new models in the API](https://openai.com/research/index/release/) on **2026-05-07**. The signal is not just better speech I/O; it is a clearer push toward voice-capable agent runtimes that can reason, translate, and transcribe inside the API boundary.
+- **OpenAI refreshed the fast-default model tier on 2026-05-05.** OpenAI published [GPT-5.5 Instant: smarter, clearer, and more personalized](https://openai.com/index/gpt-5-5-instant/) on **2026-05-05**. For Harness-style workloads, the important point is that the cheap-fast default tier is still moving materially on factuality and response quality, which usually matters more operationally than another frontier-only showcase.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-06
+### GitHub Trending - 2026-05-09
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-06** from the default global repositories page with no extra filters. This remains a mixed developer-interest board rather than an AI-only ranking.`
-- [OpenBB-finance/OpenBB](https://github.com/OpenBB-finance/OpenBB) - a finance and research platform that stands out because AI-assisted analyst workflows keep converging with data-terminal expectations.
-- [public-apis/public-apis](https://github.com/public-apis/public-apis) - not an AI repo, but important because tool and API discovery is still the substrate for many agent systems.
-- [Lissy93/web-check](https://github.com/Lissy93/web-check) - a website OSINT and inspection toolkit, notable because diagnostic/probing workflows overlap cleanly with agent/operator use cases.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-09** from the default global repositories page with no extra filters. The currently accessible GitHub Trending/Explore snapshot leaned heavily toward agents, coding tools, browser control, voice, and observability rather than a broadly mixed utility board.`
+- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) - browser inspection and automation for coding agents through Chrome DevTools.
+- [openai/openai-agents-python](https://github.com/openai/openai-agents-python) - a lightweight framework for multi-agent workflows.
+- [EvoMap/evolver](https://github.com/EvoMap/evolver) - a self-evolving AI-agent project centered on a genome-evolution protocol.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-09](../radar/daily/2026-05-09.md)
 - [2026-05-06](../radar/daily/2026-05-06.md)
 - [2026-05-04](../radar/daily/2026-05-04.md)
 - [2026-05-02](../radar/daily/2026-05-02.md)
 - [2026-05-01](../radar/daily/2026-05-01.md)
 - [2026-04-30](../radar/daily/2026-04-30.md)
-- [2026-04-28](../radar/daily/2026-04-28.md)
 
 ### Weekly Synthesis
 
@@ -84,9 +84,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-09](../radar/trending/2026-05-09.md)
 - [2026-05-06](../radar/trending/2026-05-06.md)
 - [2026-05-04](../radar/trending/2026-05-04.md)
 - [2026-05-02](../radar/trending/2026-05-02.md)
 - [2026-05-01](../radar/trending/2026-05-01.md)
 - [2026-04-30](../radar/trending/2026-04-30.md)
-- [2026-04-28](../radar/trending/2026-04-28.md)

@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 56,
+    "total_notes": 58,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 119,
+    "artifact_count": 121,
     "link_count": 267,
     "thread_count": 5
   },
@@ -110,16 +110,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-05-06",
-      "meta": "Window: 2026-04-29 to 2026-05-06",
+      "title": "AI Agent Daily Radar - 2026-05-09",
+      "meta": "Window: 2026-05-02 to 2026-05-09",
       "highlights": [
-        "**Anthropic shipped fresh Claude Code runtime updates at the start of the week.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **2.1.128 on 2026-05-04** and **2.1.129 on 2026-05-06**, with changes including easier subagent access in custom commands, a redesigned status line, and more resilient model resume behavior. This is the strongest in-window Anthropic execution-surface signal.",
-        "**Google expanded Gemini API File Search into a more agent-ready retrieval surface.** Google published [Expanded Gemini API with File Search across all modalities](https://blog.google/innovation-and-ai/technology/developers-tools/expanded-gemini-api-file-search-multimodal-rag/) on **2026-05-05**. The notable shift is that Google is positioning multimodal retrieval as a default building block for production Gemini systems rather than a narrow document-RAG feature.",
-        "**OpenAI made GPT-5.5 Instant the default tradeoff model for fast production use.** OpenAI published [GPT-5.5 Instant: the fast, intelligent model for builders](https://openai.com/index/gpt-5-5-instant/) on **2026-05-05**. The key signal is that OpenAI is still actively tuning the cheap-fast model tier rather than treating agent quality improvements as limited to frontier-priced models."
+        "**Anthropic materially expanded the Claude Platform managed-agents surface on 2026-05-06.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **multiagent sessions and Outcomes in public beta**, plus **webhooks for Claude Managed Agents**, all under the standard `managed-agents-2026-04-01` beta header. This is the strongest in-window Anthropic technical update because it changes the practical orchestration surface rather than just model marketing.",
+        "**OpenAI shipped new voice models into the API on 2026-05-07.** OpenAI’s official release index lists [Advancing voice intelligence with new models in the API](https://openai.com/research/index/release/) on **2026-05-07**. The signal is not just better speech I/O; it is a clearer push toward voice-capable agent runtimes that can reason, translate, and transcribe inside the API boundary.",
+        "**OpenAI refreshed the fast-default model tier on 2026-05-05.** OpenAI published [GPT-5.5 Instant: smarter, clearer, and more personalized](https://openai.com/index/gpt-5-5-instant/) on **2026-05-05**. For Harness-style workloads, the important point is that the cheap-fast default tier is still moving materially on factuality and response quality, which usually matters more operationally than another frontier-only showcase."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-05-09",
+          "path": "radar/daily/2026-05-09.md"
+        },
         {
           "name": "2026-05-06",
           "path": "radar/daily/2026-05-06.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-04-30",
           "path": "radar/daily/2026-04-30.md"
-        },
-        {
-          "name": "2026-04-28",
-          "path": "radar/daily/2026-04-28.md"
         }
       ],
-      "count": 25
+      "count": 26
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-05-06",
-      "meta": "Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-06** from the default global repositories page with no extra filters. This remains a mixed developer-interest board rather than an AI-only ranking.",
+      "title": "GitHub Trending - 2026-05-09",
+      "meta": "Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-09** from the default global repositories page with no extra filters. The currently accessible GitHub Trending/Explore snapshot leaned heavily toward agents, coding tools, browser control, voice, and observability rather than a broadly mixed utility board.",
       "highlights": [
-        "[OpenBB-finance/OpenBB](https://github.com/OpenBB-finance/OpenBB) - a finance and research platform that stands out because AI-assisted analyst workflows keep converging with data-terminal expectations.",
-        "[public-apis/public-apis](https://github.com/public-apis/public-apis) - not an AI repo, but important because tool and API discovery is still the substrate for many agent systems.",
-        "[Lissy93/web-check](https://github.com/Lissy93/web-check) - a website OSINT and inspection toolkit, notable because diagnostic/probing workflows overlap cleanly with agent/operator use cases."
+        "[ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) - browser inspection and automation for coding agents through Chrome DevTools.",
+        "[openai/openai-agents-python](https://github.com/openai/openai-agents-python) - a lightweight framework for multi-agent workflows.",
+        "[EvoMap/evolver](https://github.com/EvoMap/evolver) - a self-evolving AI-agent project centered on a genome-evolution protocol."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-05-09",
+          "path": "radar/trending/2026-05-09.md"
+        },
         {
           "name": "2026-05-06",
           "path": "radar/trending/2026-05-06.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-04-30",
           "path": "radar/trending/2026-04-30.md"
-        },
-        {
-          "name": "2026-04-28",
-          "path": "radar/trending/2026-04-28.md"
         }
       ],
-      "count": 26
+      "count": 27
     }
   },
   "deep_dive": "This week’s theme is **agents becoming governed operating systems, not just smart tool callers**.",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 119,
+      "artifact_count": 121,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 66,
+        "radar": 68,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2318,6 +2318,38 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-05-09.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-05-09.md",
+        "title": "AI Agent Daily Radar - 2026-05-09",
+        "date": "2026-05-09",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-05-02 to 2026-05-09",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://openai.com/research/index/release/",
+          "https://openai.com/index/gpt-5-5-instant/",
+          "https://github.com/trending",
+          "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+          "https://github.com/openai/openai-agents-python",
+          "https://github.com/EvoMap/evolver",
+          "https://github.com/lsdefine/GenericAgent",
+          "https://github.com/Tracer-Cloud/opensre",
+          "https://www.anthropic.com/news",
+          "https://claude.com/blog/",
+          "https://platform.claude.com/docs/en/managed-agents/overview"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -3197,6 +3229,32 @@
           "https://github.com/Byaidu/PDFMathTranslate",
           "https://github.com/HarbourMasters/Starship",
           "https://github.com/unionlabs/union"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-05-09.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-05-09.md",
+        "title": "GitHub Trending - 2026-05-09",
+        "date": "2026-05-09",
+        "status": "",
+        "themes": [
+          "tracing/observability",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-09** from the default global repositories page with no extra filters. The currently accessible GitHub Trending/Explore snapshot leaned hea...",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+          "https://github.com/openai/openai-agents-python",
+          "https://github.com/EvoMap/evolver",
+          "https://github.com/lsdefine/GenericAgent",
+          "https://github.com/Tracer-Cloud/opensre",
+          "https://github.com/BasedHardware/omi",
+          "https://github.com/jamiepine/voicebox"
         ],
         "local_refs": []
       },

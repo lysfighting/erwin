@@ -434,10 +434,10 @@
         This page is the human-facing front door for the repository&#x27;s knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.
       </p>
       <div class="hero-stats">
-        <div class="stat-chip"><strong>56</strong><span>Durable notes indexed</span></div>
+        <div class="stat-chip"><strong>58</strong><span>Durable notes indexed</span></div>
         <div class="stat-chip"><strong>3 streams</strong><span>Daily, weekly, trending</span></div>
         <div class="stat-chip"><strong>5 layers</strong><span>Radar to implementation</span></div>
-        <div class="stat-chip"><strong>119</strong><span>Network artifacts</span></div>
+        <div class="stat-chip"><strong>121</strong><span>Network artifacts</span></div>
         <div class="stat-chip"><strong>267</strong><span>Typed local links</span></div>
       </div>
       <div class="hero-grid">
@@ -487,9 +487,9 @@
 
     <article class="brief-card cool">
       <div class="eyebrow">Daily</div>
-      <h3>AI Agent Daily Radar - 2026-05-06</h3>
-      <p class="meta">Window: 2026-04-29 to 2026-05-06</p>
-      <ul><li><strong>Anthropic shipped fresh Claude Code runtime updates at the start of the week.</strong> The official <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a> shows <strong>2.1.128 on 2026-05-04</strong> and <strong>2.1.129 on 2026-05-06</strong>, with changes including easier subagent access in custom commands, a redesigned status line, and more resilient model resume behavior. This is the strongest in-window Anthropic execution-surface signal.</li><li><strong>Google expanded Gemini API File Search into a more agent-ready retrieval surface.</strong> Google published <a href="https://blog.google/innovation-and-ai/technology/developers-tools/expanded-gemini-api-file-search-multimodal-rag/">Expanded Gemini API with File Search across all modalities</a> on <strong>2026-05-05</strong>. The notable shift is that Google is positioning multimodal retrieval as a default building block for production Gemini systems rather than a narrow document-RAG feature.</li><li><strong>OpenAI made GPT-5.5 Instant the default tradeoff model for fast production use.</strong> OpenAI published <a href="https://openai.com/index/gpt-5-5-instant/">GPT-5.5 Instant: the fast, intelligent model for builders</a> on <strong>2026-05-05</strong>. The key signal is that OpenAI is still actively tuning the cheap-fast model tier rather than treating agent quality improvements as limited to frontier-priced models.</li></ul>
+      <h3>AI Agent Daily Radar - 2026-05-09</h3>
+      <p class="meta">Window: 2026-05-02 to 2026-05-09</p>
+      <ul><li><strong>Anthropic materially expanded the Claude Platform managed-agents surface on 2026-05-06.</strong> The official <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a> added <strong>multiagent sessions and Outcomes in public beta</strong>, plus <strong>webhooks for Claude Managed Agents</strong>, all under the standard <code>managed-agents-2026-04-01</code> beta header. This is the strongest in-window Anthropic technical update because it changes the practical orchestration surface rather than just model marketing.</li><li><strong>OpenAI shipped new voice models into the API on 2026-05-07.</strong> OpenAI’s official release index lists <a href="https://openai.com/research/index/release/">Advancing voice intelligence with new models in the API</a> on <strong>2026-05-07</strong>. The signal is not just better speech I/O; it is a clearer push toward voice-capable agent runtimes that can reason, translate, and transcribe inside the API boundary.</li><li><strong>OpenAI refreshed the fast-default model tier on 2026-05-05.</strong> OpenAI published <a href="https://openai.com/index/gpt-5-5-instant/">GPT-5.5 Instant: smarter, clearer, and more personalized</a> on <strong>2026-05-05</strong>. For Harness-style workloads, the important point is that the cheap-fast default tier is still moving materially on factuality and response quality, which usually matters more operationally than another frontier-only showcase.</li></ul>
       <div class="card-actions">
         <a class="primary-link" href="radar/daily/latest.md">Open latest</a>
         <a class="secondary-link" href="radar/daily/">Browse archive</a>
@@ -499,9 +499,9 @@
 
     <article class="brief-card violet">
       <div class="eyebrow">Trending</div>
-      <h3>GitHub Trending - 2026-05-06</h3>
-      <p class="meta">Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-06** from the default global repositories page with no extra filters. This remains a mixed developer-interest board rather than an AI-only ranking.</p>
-      <ul><li><a href="https://github.com/OpenBB-finance/OpenBB">OpenBB-finance/OpenBB</a> - a finance and research platform that stands out because AI-assisted analyst workflows keep converging with data-terminal expectations.</li><li><a href="https://github.com/public-apis/public-apis">public-apis/public-apis</a> - not an AI repo, but important because tool and API discovery is still the substrate for many agent systems.</li><li><a href="https://github.com/Lissy93/web-check">Lissy93/web-check</a> - a website OSINT and inspection toolkit, notable because diagnostic/probing workflows overlap cleanly with agent/operator use cases.</li></ul>
+      <h3>GitHub Trending - 2026-05-09</h3>
+      <p class="meta">Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-09** from the default global repositories page with no extra filters. The currently accessible GitHub Trending/Explore snapshot leaned heavily toward agents, coding tools, browser control, voice, and observability rather than a broadly mixed utility board.</p>
+      <ul><li><a href="https://github.com/ChromeDevTools/chrome-devtools-mcp">ChromeDevTools/chrome-devtools-mcp</a> - browser inspection and automation for coding agents through Chrome DevTools.</li><li><a href="https://github.com/openai/openai-agents-python">openai/openai-agents-python</a> - a lightweight framework for multi-agent workflows.</li><li><a href="https://github.com/EvoMap/evolver">EvoMap/evolver</a> - a self-evolving AI-agent project centered on a genome-evolution protocol.</li></ul>
       <div class="card-actions">
         <a class="primary-link" href="radar/trending/latest.md">Open latest</a>
         <a class="secondary-link" href="radar/trending/">Browse archive</a>
@@ -560,7 +560,7 @@
         <article class="network-card">
           <h3>Network snapshot</h3>
           <p>The graph is rebuilt from Markdown and selected implementation entrypoints. It is not a database; Markdown remains the source of truth.</p>
-          <div class="metric-line"><span>Artifacts</span><strong>119</strong></div>
+          <div class="metric-line"><span>Artifacts</span><strong>121</strong></div>
           <div class="metric-line"><span>Typed links</span><strong>267</strong></div>
           <div class="metric-line"><span>Active threads</span><strong>5</strong></div>
           <div class="metric-line"><span>Proposal records</span><strong>5</strong></div>
@@ -589,7 +589,7 @@
 
     <section class="archive-column">
       <h4>Daily Radar</h4>
-      <ul><li><a href="radar/daily/2026-05-06.md">2026-05-06</a></li><li><a href="radar/daily/2026-05-04.md">2026-05-04</a></li><li><a href="radar/daily/2026-05-02.md">2026-05-02</a></li><li><a href="radar/daily/2026-05-01.md">2026-05-01</a></li><li><a href="radar/daily/2026-04-30.md">2026-04-30</a></li><li><a href="radar/daily/2026-04-28.md">2026-04-28</a></li></ul>
+      <ul><li><a href="radar/daily/2026-05-09.md">2026-05-09</a></li><li><a href="radar/daily/2026-05-06.md">2026-05-06</a></li><li><a href="radar/daily/2026-05-04.md">2026-05-04</a></li><li><a href="radar/daily/2026-05-02.md">2026-05-02</a></li><li><a href="radar/daily/2026-05-01.md">2026-05-01</a></li><li><a href="radar/daily/2026-04-30.md">2026-04-30</a></li></ul>
     </section>
 
 
@@ -601,7 +601,7 @@
 
     <section class="archive-column">
       <h4>GitHub Trending</h4>
-      <ul><li><a href="radar/trending/2026-05-06.md">2026-05-06</a></li><li><a href="radar/trending/2026-05-04.md">2026-05-04</a></li><li><a href="radar/trending/2026-05-02.md">2026-05-02</a></li><li><a href="radar/trending/2026-05-01.md">2026-05-01</a></li><li><a href="radar/trending/2026-04-30.md">2026-04-30</a></li><li><a href="radar/trending/2026-04-28.md">2026-04-28</a></li></ul>
+      <ul><li><a href="radar/trending/2026-05-09.md">2026-05-09</a></li><li><a href="radar/trending/2026-05-06.md">2026-05-06</a></li><li><a href="radar/trending/2026-05-04.md">2026-05-04</a></li><li><a href="radar/trending/2026-05-02.md">2026-05-02</a></li><li><a href="radar/trending/2026-05-01.md">2026-05-01</a></li><li><a href="radar/trending/2026-04-30.md">2026-04-30</a></li></ul>
     </section>
 
       </div>
