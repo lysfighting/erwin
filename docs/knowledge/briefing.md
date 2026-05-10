@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `58` durable notes are currently indexed across `3` recurring streams.
-- `121` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `60` durable notes are currently indexed across `3` recurring streams.
+- `123` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-09
+### AI Agent Daily Radar - 2026-05-10
 
-- Metadata: `Window: 2026-05-02 to 2026-05-09`
-- **Anthropic materially expanded the Claude Platform managed-agents surface on 2026-05-06.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **multiagent sessions and Outcomes in public beta**, plus **webhooks for Claude Managed Agents**, all under the standard `managed-agents-2026-04-01` beta header. This is the strongest in-window Anthropic technical update because it changes the practical orchestration surface rather than just model marketing.
-- **OpenAI shipped new voice models into the API on 2026-05-07.** OpenAI’s official release index lists [Advancing voice intelligence with new models in the API](https://openai.com/research/index/release/) on **2026-05-07**. The signal is not just better speech I/O; it is a clearer push toward voice-capable agent runtimes that can reason, translate, and transcribe inside the API boundary.
-- **OpenAI refreshed the fast-default model tier on 2026-05-05.** OpenAI published [GPT-5.5 Instant: smarter, clearer, and more personalized](https://openai.com/index/gpt-5-5-instant/) on **2026-05-05**. For Harness-style workloads, the important point is that the cheap-fast default tier is still moving materially on factuality and response quality, which usually matters more operationally than another frontier-only showcase.
+- Metadata: `Window: 2026-05-03 to 2026-05-10`
+- **Anthropic’s strongest in-window technical move is still the Claude Platform managed-agents expansion on 2026-05-06.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and the matching Claude blog post [New in Claude Managed Agents: dreaming, outcomes, and multiagent orchestration](https://claude.com/blog/new-in-claude-managed-agents-dreaming-outcomes-and-multiagent-orchestration) on **2026-05-06** make this the clearest Anthropic developer signal of the week. The meaningful shift is not branding; it is the surface area: multiagent orchestration, Outcomes, dreaming, webhook support, and better session filtering for managed execution.
+- **OpenAI shipped a materially stronger voice-runtime surface on 2026-05-07.** In [Advancing voice intelligence with new models in the API](https://openai.com/index/advancing-voice-intelligence-with-new-models-in-the-api/) on **2026-05-07**, OpenAI introduced GPT-Realtime-2, GPT-Realtime-Translate, and GPT-Realtime-Whisper. The practical signal is that voice is being pushed deeper into the same agent runtime boundary as reasoning, translation, transcription, and tool use.
+- **OpenAI also upgraded the fast-default tier on 2026-05-05.** [GPT-5.5 Instant: smarter, clearer, and more personalized](https://openai.com/index/gpt-5-5-instant/) was published on **2026-05-05**. For repeated eval and orchestration workloads, this matters more than another frontier-only model announcement because it moves the price-latency baseline that most real systems actually run.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-09
+### GitHub Trending - 2026-05-10
 
-- Metadata: `Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-09** from the default global repositories page with no extra filters. The currently accessible GitHub Trending/Explore snapshot leaned heavily toward agents, coding tools, browser control, voice, and observability rather than a broadly mixed utility board.`
-- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) - browser inspection and automation for coding agents through Chrome DevTools.
-- [openai/openai-agents-python](https://github.com/openai/openai-agents-python) - a lightweight framework for multi-agent workflows.
-- [EvoMap/evolver](https://github.com/EvoMap/evolver) - a self-evolving AI-agent project centered on a genome-evolution protocol.
+- Metadata: `Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-10** from the default global repositories page with no extra filters. The visible board slice still leaned toward agents, coding tools, browser control, voice, and infrastructure rather than a broadly mixed consumer or utility board.`
+- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) - browser inspection and automation through Chrome DevTools for agent workflows.
+- [openai/openai-agents-python](https://github.com/openai/openai-agents-python) - a lightweight framework for multi-agent workflows and tool-using systems.
+- [Tracer-Cloud/opensre](https://github.com/Tracer-Cloud/opensre) - AI-SRE and operator tooling for incident and observability-adjacent workflows.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-10](../radar/daily/2026-05-10.md)
 - [2026-05-09](../radar/daily/2026-05-09.md)
 - [2026-05-06](../radar/daily/2026-05-06.md)
 - [2026-05-04](../radar/daily/2026-05-04.md)
 - [2026-05-02](../radar/daily/2026-05-02.md)
 - [2026-05-01](../radar/daily/2026-05-01.md)
-- [2026-04-30](../radar/daily/2026-04-30.md)
 
 ### Weekly Synthesis
 
@@ -84,9 +84,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-10](../radar/trending/2026-05-10.md)
 - [2026-05-09](../radar/trending/2026-05-09.md)
 - [2026-05-06](../radar/trending/2026-05-06.md)
 - [2026-05-04](../radar/trending/2026-05-04.md)
 - [2026-05-02](../radar/trending/2026-05-02.md)
 - [2026-05-01](../radar/trending/2026-05-01.md)
-- [2026-04-30](../radar/trending/2026-04-30.md)
