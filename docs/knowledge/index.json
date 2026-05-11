@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 60,
+    "total_notes": 62,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 123,
+    "artifact_count": 125,
     "link_count": 267,
     "thread_count": 5
   },
@@ -110,16 +110,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-05-10",
-      "meta": "Window: 2026-05-03 to 2026-05-10",
+      "title": "AI Agent Daily Radar - 2026-05-11",
+      "meta": "Window: 2026-05-04 to 2026-05-11",
       "highlights": [
-        "**Anthropic’s strongest in-window technical move is still the Claude Platform managed-agents expansion on 2026-05-06.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and the matching Claude blog post [New in Claude Managed Agents: dreaming, outcomes, and multiagent orchestration](https://claude.com/blog/new-in-claude-managed-agents-dreaming-outcomes-and-multiagent-orchestration) on **2026-05-06** make this the clearest Anthropic developer signal of the week. The meaningful shift is not branding; it is the surface area: multiagent orchestration, Outcomes, dreaming, webhook support, and better session filtering for managed execution.",
-        "**OpenAI shipped a materially stronger voice-runtime surface on 2026-05-07.** In [Advancing voice intelligence with new models in the API](https://openai.com/index/advancing-voice-intelligence-with-new-models-in-the-api/) on **2026-05-07**, OpenAI introduced GPT-Realtime-2, GPT-Realtime-Translate, and GPT-Realtime-Whisper. The practical signal is that voice is being pushed deeper into the same agent runtime boundary as reasoning, translation, transcription, and tool use.",
-        "**OpenAI also upgraded the fast-default tier on 2026-05-05.** [GPT-5.5 Instant: smarter, clearer, and more personalized](https://openai.com/index/gpt-5-5-instant/) was published on **2026-05-05**. For repeated eval and orchestration workloads, this matters more than another frontier-only model announcement because it moves the price-latency baseline that most real systems actually run."
+        "**Anthropic’s clearest in-window developer move remains the Claude Managed Agents expansion on 2026-05-06.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and [Claude blog post](https://claude.com/blog/new-in-claude-managed-agents) published on **May 6, 2026** add public-beta multiagent sessions and Outcomes plus managed-agent webhooks and stronger session/event filtering. This is still the most important Anthropic agent-platform change in the active window.",
+        "**OpenAI materially upgraded voice as an agent runtime surface on 2026-05-07.** [Advancing voice intelligence with new models in the API](https://openai.com/index/advancing-voice-intelligence-with-new-models-in-the-api/) was published on **May 7, 2026** and introduced GPT-Realtime-2, GPT-Realtime-Translate, and GPT-Realtime-Whisper. The practical signal is that speech, translation, transcription, reasoning, and tool use are consolidating into one runtime boundary.",
+        "**OpenAI also raised the fast default tier on 2026-05-05.** [GPT-5.5 Instant: smarter, clearer, and more personalized](https://openai.com/index/gpt-5-5-instant/) was published on **May 5, 2026**. This matters for eval-heavy and orchestration-heavy systems because the cheap default layer is improving, not just the frontier tier."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-05-11",
+          "path": "radar/daily/2026-05-11.md"
+        },
         {
           "name": "2026-05-10",
           "path": "radar/daily/2026-05-10.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-05-02",
           "path": "radar/daily/2026-05-02.md"
-        },
-        {
-          "name": "2026-05-01",
-          "path": "radar/daily/2026-05-01.md"
         }
       ],
-      "count": 27
+      "count": 28
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-05-10",
-      "meta": "Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-10** from the default global repositories page with no extra filters. The visible board slice still leaned toward agents, coding tools, browser control, voice, and infrastructure rather than a broadly mixed consumer or utility board.",
+      "title": "GitHub Trending - 2026-05-11",
+      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-11** with no extra filters. In the accessible board slice from this environment, the page still leaned heavily toward AI, developer tooling, browser automation, and voice infrastructure rather than a broadly mixed board.",
       "highlights": [
-        "[ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) - browser inspection and automation through Chrome DevTools for agent workflows.",
+        "[ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) - browser inspection, debugging, and automation infrastructure for coding agents.",
         "[openai/openai-agents-python](https://github.com/openai/openai-agents-python) - a lightweight framework for multi-agent workflows and tool-using systems.",
-        "[Tracer-Cloud/opensre](https://github.com/Tracer-Cloud/opensre) - AI-SRE and operator tooling for incident and observability-adjacent workflows."
+        "[Tracer-Cloud/opensre](https://github.com/Tracer-Cloud/opensre) - AI-SRE and observability-adjacent operator tooling."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-05-11",
+          "path": "radar/trending/2026-05-11.md"
+        },
         {
           "name": "2026-05-10",
           "path": "radar/trending/2026-05-10.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-05-02",
           "path": "radar/trending/2026-05-02.md"
-        },
-        {
-          "name": "2026-05-01",
-          "path": "radar/trending/2026-05-01.md"
         }
       ],
-      "count": 28
+      "count": 29
     }
   },
   "deep_dive": "This week’s theme is **agents becoming governed operating systems, not just smart tool callers**.",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 123,
+      "artifact_count": 125,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 70,
+        "radar": 72,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2383,6 +2383,39 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-05-11.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-05-11.md",
+        "title": "AI Agent Daily Radar - 2026-05-11",
+        "date": "2026-05-11",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-05-04 to 2026-05-11",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://claude.com/blog/new-in-claude-managed-agents",
+          "https://openai.com/index/advancing-voice-intelligence-with-new-models-in-the-api/",
+          "https://openai.com/index/gpt-5-5-instant/",
+          "https://blog.google/innovation-and-ai/technology/developers-tools/expanded-gemini-api-file-search-multimodal-rag/",
+          "https://qwenlm.github.io/qwen-code-docs/en/users/overview/",
+          "https://qwenlm.github.io/qwen-code-docs/en/users/features/token-caching/",
+          "https://qwenlm.github.io/qwen-code-docs/en/users/features/skills/",
+          "https://qwenlm.github.io/qwen-code-docs/en/developers/sdk-python/",
+          "https://github.com/trending",
+          "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+          "https://github.com/openai/openai-agents-python"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -3304,6 +3337,30 @@
           "orchestration"
         ],
         "summary": "Source: [GitHub Trending](https://github.com/trending) as checked on **2026-05-10** from the default global repositories page with no extra filters. The visible board slice still leaned toward agents, coding tools, br...",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+          "https://github.com/openai/openai-agents-python",
+          "https://github.com/Tracer-Cloud/opensre",
+          "https://github.com/BasedHardware/omi",
+          "https://github.com/jamiepine/voicebox"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-05-11.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-05-11.md",
+        "title": "GitHub Trending - 2026-05-11",
+        "date": "2026-05-11",
+        "status": "",
+        "themes": [
+          "tracing/observability",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-11** with no extra filters. In the accessible board slice from this environment, the page still leaned heavily toward AI, deve...",
         "external_refs": [
           "https://github.com/trending",
           "https://github.com/ChromeDevTools/chrome-devtools-mcp",
