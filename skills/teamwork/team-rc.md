@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.19.0"
+version: "3.19.1"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -1089,12 +1089,14 @@ Mode:     *{"DRY-RUN — no actions" if dry_run else "LIVE"}*
 
 ### Step B2: Dispatch promote-beta workflow
 
-**Dry-run gate** (applies to every B2-B9 code block): if `$DRY_RUN = true`, echo each command instead of executing it. NO `gh workflow run`, NO `gh pr merge`, NO `kubectl`, NO `curl`. Skip directly to the B9 summary stub at end of flow.
+**3.19.1 — dry-run gate applies to EVERY B2-B9 code block** (3.19.0 only gated B2 — Hard Rule H3 violation when B3-B9 fired regardless). Each step below uses `if [ "$DRY_RUN" = "true" ]; then echo; else <real>; fi`. NO `gh workflow run`, NO `gh pr merge`, NO `kubectl`, NO `curl` execute in dry-run.
 
 ```bash
 if [ "$DRY_RUN" = "true" ]; then
   echo "[dry-run] gh workflow run $BETA_WORKFLOW --repo $REPO -f source=$SOURCE -f reason='$REASON' ${VERSION_TAG:+-f version_tag=$VERSION_TAG}"
-  # Skip remaining B2 actions; continue echoing through B3-B9.
+  # Stub IDs so B3-B9 echoes are coherent (no `$RUN_ID` undefined errors).
+  RUN_ID="<dry-run-run-id>"
+  RUN_URL="<dry-run-run-url>"
 else
   gh workflow run "$BETA_WORKFLOW" --repo "$REPO" \
     -f source="$SOURCE" -f reason="$REASON" \
@@ -1118,27 +1120,38 @@ fi
 ### Step B3: Watch the workflow
 
 ```bash
-gh run watch "$RUN_ID" --repo "$REPO" --exit-status || {
-  echo "⛔ Workflow run #$RUN_ID failed — $RUN_URL"
-  echo "Recent logs:"
-  gh run view "$RUN_ID" --repo "$REPO" --log-failed | tail -50
-  # STOP
-}
-echo "  ✓ Workflow run #$RUN_ID succeeded"
+if [ "$DRY_RUN" = "true" ]; then
+  echo "[dry-run] gh run watch $RUN_ID --repo $REPO --exit-status"
+else
+  gh run watch "$RUN_ID" --repo "$REPO" --exit-status || {
+    echo "⛔ Workflow run #$RUN_ID failed — $RUN_URL"
+    echo "Recent logs:"
+    gh run view "$RUN_ID" --repo "$REPO" --log-failed | tail -50
+    # STOP
+  }
+  echo "  ✓ Workflow run #$RUN_ID succeeded"
+fi
 ```
 
 ### Step B4: Surface the gitops promote PR
 
 ```bash
-GITOPS_PR_JSON=$(gh pr list --repo "$BETA_GITOPS_REPO" \
-  --search 'promote/beta in:head' --state open --limit 5 \
-  --json number,title,url,headRefName,additions,deletions,changedFiles)
-GITOPS_PR_COUNT=$(echo "$GITOPS_PR_JSON" | jq 'length')
+if [ "$DRY_RUN" = "true" ]; then
+  echo "[dry-run] gh pr list --repo $BETA_GITOPS_REPO --search 'promote/beta in:head' --state open --limit 5"
+  echo "[dry-run] would surface gitops PR diff for operator review"
+  GITOPS_PR_JSON='[]'
+  GITOPS_PR_COUNT=0
+else
+  GITOPS_PR_JSON=$(gh pr list --repo "$BETA_GITOPS_REPO" \
+    --search 'promote/beta in:head' --state open --limit 5 \
+    --json number,title,url,headRefName,additions,deletions,changedFiles)
+  GITOPS_PR_COUNT=$(echo "$GITOPS_PR_JSON" | jq 'length')
 
-if [ "$GITOPS_PR_COUNT" -eq 0 ]; then
-  echo "⛔ No open promote/beta* PR found in $BETA_GITOPS_REPO."
-  echo "Workflow $BETA_WORKFLOW completed but did not open a PR — investigate."
-  # STOP
+  if [ "$GITOPS_PR_COUNT" -eq 0 ]; then
+    echo "⛔ No open promote/beta* PR found in $BETA_GITOPS_REPO."
+    echo "Workflow $BETA_WORKFLOW completed but did not open a PR — investigate."
+    # STOP
+  fi
 fi
 ```
 
@@ -1152,7 +1165,18 @@ For each PR in `$GITOPS_PR_JSON`:
 
 ⛔ **DO NOT MERGE.** Skill MUST NOT call `gh pr merge`, MUST NOT add `auto-merge` label, MUST NOT use `--auto`. This is by design — operator review the diff manually.
 
-Use `AskUserQuestion`:
+**Dry-run behavior**: skip the AskUserQuestion + merge verification entirely; echo what would happen.
+
+```bash
+if [ "$DRY_RUN" = "true" ]; then
+  echo "[dry-run] would ask operator to merge gitops PR manually + verify state=MERGED"
+  MERGE_SHA="<dry-run-merge-sha>"
+else
+  : # AskUserQuestion + verify block below runs only in LIVE mode
+fi
+```
+
+In LIVE mode, use `AskUserQuestion`:
 ```
 question: "Beta gitops PR ready for review. Merge it manually in browser, then confirm here."
 options:
@@ -1166,6 +1190,7 @@ Loop on "Reviewing — wait" (re-ask). On "Abort" → STOP with no cleanup neede
 **After operator says "Merged"**, VERIFY before proceeding (don't trust the operator's "Merged" claim — they may have confused windows). For each PR in `$GITOPS_PR_JSON`:
 
 ```bash
+# LIVE only — block guarded by the dry-run if/else above.
 MERGE_STATE=$(gh pr view "$PR_NUMBER" --repo "$BETA_GITOPS_REPO" \
   --json mergeCommit,state --jq '{state:.state, sha:(.mergeCommit.oid // "")}')
 PR_STATE=$(echo "$MERGE_STATE" | jq -r '.state')
@@ -1181,46 +1206,57 @@ echo "  ✓ PR #$PR_NUMBER merged at $MERGE_SHA"
 ### Step B6: ArgoCD refresh + sync
 
 ```bash
-# Parse $BETA_APPS — could be YAML list or comma-separated; handle both.
-APPS=$(echo "$BETA_APPS" | tr ',\n' ' ' | tr -s ' ')
+# Parse $BETA_APPS — tw-config.sh 3.19.1+ returns YAML lists as newline-separated
+# items. `tr '\n' ' '` joins to space-separated for the for-loop.
+APPS=$(echo "$BETA_APPS" | tr '\n' ' ' | tr -s ' ')
 
-# Force refresh (avoid 3-min auto-poll wait):
-for app in $APPS; do
-  kubectl --context="$BETA_KUBE_CTX" annotate application/${app} \
-    -n argocd argocd.argoproj.io/refresh=normal --overwrite
-done
-sleep 10
+if [ "$DRY_RUN" = "true" ]; then
+  for app in $APPS; do
+    echo "[dry-run] kubectl --context=$BETA_KUBE_CTX annotate application/${app} -n argocd argocd.argoproj.io/refresh=normal --overwrite"
+  done
+  echo "[dry-run] would list applications + identify OutOfSync"
+  echo "[dry-run] would kubectl patch each OutOfSync app with sync operation"
+  echo "[dry-run] would auto-retry any phantom-Succeeded variant (Hard Rule H8)"
+  OUTOFSYNC=""  # nothing to wait on in B7
+else
+  # Force refresh (avoid 3-min auto-poll wait):
+  for app in $APPS; do
+    kubectl --context="$BETA_KUBE_CTX" annotate application/${app} \
+      -n argocd argocd.argoproj.io/refresh=normal --overwrite
+  done
+  sleep 10
 
-# Show current sync states:
-kubectl --context="$BETA_KUBE_CTX" get applications -n argocd -o json \
-  | jq -r '.items[] | "\(.metadata.name) \(.status.sync.status) \(.status.health.status)"'
+  # Show current sync states:
+  kubectl --context="$BETA_KUBE_CTX" get applications -n argocd -o json \
+    | jq -r '.items[] | "\(.metadata.name) \(.status.sync.status) \(.status.health.status)"'
 
-# Sync OutOfSync apps via kubectl patch (NOT argocd CLI — Hard Rule H4):
-OUTOFSYNC=$(kubectl --context="$BETA_KUBE_CTX" get applications -n argocd -o json \
-  | jq -r '.items[] | select(.status.sync.status=="OutOfSync") | .metadata.name')
+  # Sync OutOfSync apps via kubectl patch (NOT argocd CLI — Hard Rule H4):
+  OUTOFSYNC=$(kubectl --context="$BETA_KUBE_CTX" get applications -n argocd -o json \
+    | jq -r '.items[] | select(.status.sync.status=="OutOfSync") | .metadata.name')
 
-SYNC_PATCH='{"operation":{"sync":{"revision":"HEAD","prune":false,"syncOptions":["CreateNamespace=true","RespectIgnoreDifferences=true","ApplyOutOfSyncOnly=false"]}}}'
+  SYNC_PATCH='{"operation":{"sync":{"revision":"HEAD","prune":false,"syncOptions":["CreateNamespace=true","RespectIgnoreDifferences=true","ApplyOutOfSyncOnly=false"]}}}'
 
-for app in $OUTOFSYNC; do
-  kubectl --context="$BETA_KUBE_CTX" patch application/${app} -n argocd --type merge -p "$SYNC_PATCH"
-done
-
-# Hard Rule H8: Phantom-Succeeded variant B detection + automatic single retry.
-# Wait briefly for sync attempt to land, then check each app for the "Succeeded
-# with empty resources but still OutOfSync" pattern. If found, re-run the SAME
-# patch once. Don't escalate on first occurrence.
-sleep 20
-for app in $OUTOFSYNC; do
-  APP_JSON=$(kubectl --context="$BETA_KUBE_CTX" get application/${app} -n argocd -o json)
-  SYNC_STATUS=$(echo "$APP_JSON" | jq -r '.status.sync.status')
-  OP_PHASE=$(echo "$APP_JSON" | jq -r '.status.operationState.phase // empty')
-  RES_COUNT=$(echo "$APP_JSON" | jq -r '.status.operationState.syncResult.resources // [] | length')
-
-  if [ "$SYNC_STATUS" = "OutOfSync" ] && [ "$OP_PHASE" = "Succeeded" ] && [ "$RES_COUNT" = "0" ]; then
-    echo "  [H8] Phantom-Succeeded detected on $app — re-running same patch (auto-retry, no escalation)"
+  for app in $OUTOFSYNC; do
     kubectl --context="$BETA_KUBE_CTX" patch application/${app} -n argocd --type merge -p "$SYNC_PATCH"
-  fi
-done
+  done
+
+  # Hard Rule H8: Phantom-Succeeded variant B detection + automatic single retry.
+  # Wait briefly for sync attempt to land, then check each app for the "Succeeded
+  # with empty resources but still OutOfSync" pattern. If found, re-run the SAME
+  # patch once. Don't escalate on first occurrence.
+  sleep 20
+  for app in $OUTOFSYNC; do
+    APP_JSON=$(kubectl --context="$BETA_KUBE_CTX" get application/${app} -n argocd -o json)
+    SYNC_STATUS=$(echo "$APP_JSON" | jq -r '.status.sync.status')
+    OP_PHASE=$(echo "$APP_JSON" | jq -r '.status.operationState.phase // empty')
+    RES_COUNT=$(echo "$APP_JSON" | jq -r '.status.operationState.syncResult.resources // [] | length')
+
+    if [ "$SYNC_STATUS" = "OutOfSync" ] && [ "$OP_PHASE" = "Succeeded" ] && [ "$RES_COUNT" = "0" ]; then
+      echo "  [H8] Phantom-Succeeded detected on $app — re-running same patch (auto-retry, no escalation)"
+      kubectl --context="$BETA_KUBE_CTX" patch application/${app} -n argocd --type merge -p "$SYNC_PATCH"
+    fi
+  done
+fi
 ```
 
 > **⚠️ Phantom-Succeeded variant B (Hard Rule H8)**: Codified above. Detection signal: `sync.status=OutOfSync` AND `operationState.phase=Succeeded` AND `operationState.syncResult.resources=[]` (empty array). Observed 2× now (2026-04-20 staging-vi-api-server, 2026-05-11 beta-vi-api-server). The auto-retry is single-shot — if Step B7 polling still observes OutOfSync after the retry has been given time to land, that's a real problem (not phantom) and B7 will STOP with the operator told to escalate.
@@ -1228,31 +1264,35 @@ done
 ### Step B7: Wait for Synced/Healthy
 
 ```bash
-# Poll until all formerly-OutOfSync apps are Synced + Healthy. Timeout 10min.
-DEADLINE=$(( $(date +%s) + 600 ))
-while [ "$(date +%s)" -lt "$DEADLINE" ]; do
-  STILL_SYNCING=0
-  for app in $OUTOFSYNC; do
-    STATE=$(kubectl --context="$BETA_KUBE_CTX" get application/${app} -n argocd -o json \
-      | jq -r '"\(.status.sync.status)/\(.status.health.status)"')
-    case "$STATE" in
-      Synced/Healthy) ;;
-      */Degraded)
-        echo "⛔ App $app is Degraded — investigate."
-        # STOP
-        ;;
-      *) STILL_SYNCING=1 ;;
-    esac
+if [ "$DRY_RUN" = "true" ]; then
+  echo "[dry-run] would poll each formerly-OutOfSync app for Synced/Healthy (10min timeout)"
+else
+  # Poll until all formerly-OutOfSync apps are Synced + Healthy. Timeout 10min.
+  DEADLINE=$(( $(date +%s) + 600 ))
+  while [ "$(date +%s)" -lt "$DEADLINE" ]; do
+    STILL_SYNCING=0
+    for app in $OUTOFSYNC; do
+      STATE=$(kubectl --context="$BETA_KUBE_CTX" get application/${app} -n argocd -o json \
+        | jq -r '"\(.status.sync.status)/\(.status.health.status)"')
+      case "$STATE" in
+        Synced/Healthy) ;;
+        */Degraded)
+          echo "⛔ App $app is Degraded — investigate."
+          # STOP
+          ;;
+        *) STILL_SYNCING=1 ;;
+      esac
+    done
+    [ "$STILL_SYNCING" -eq 0 ] && break
+    sleep 15
   done
-  [ "$STILL_SYNCING" -eq 0 ] && break
-  sleep 15
-done
 
-if [ "$STILL_SYNCING" -eq 1 ]; then
-  echo "⛔ Timeout waiting for beta apps to reach Synced/Healthy. Run /team doctor or check ArgoCD UI."
-  # STOP
+  if [ "$STILL_SYNCING" -eq 1 ]; then
+    echo "⛔ Timeout waiting for beta apps to reach Synced/Healthy. Run /team doctor or check ArgoCD UI."
+    # STOP
+  fi
+  echo "  ✓ All apps Synced + Healthy"
 fi
-echo "  ✓ All apps Synced + Healthy"
 ```
 
 > **Migration jobs** (PreSync hooks) may add 1-2min — that's expected, included in the 10-min budget.
@@ -1260,36 +1300,45 @@ echo "  ✓ All apps Synced + Healthy"
 ### Step B8: Smoke — extract service_version + parity check
 
 ```bash
-# External smoke first.
-BETA_SV=$(curl -sS --max-time 10 "$BETA_SMOKE_URL" | jq -r '.service_version' 2>/dev/null) || BETA_SV=""
+if [ "$DRY_RUN" = "true" ]; then
+  echo "[dry-run] curl -sS --max-time 10 $BETA_SMOKE_URL | jq -r '.service_version'"
+  if [ "$SOURCE" = "prod" ] && [ -n "$PROD_SMOKE_URL" ]; then
+    echo "[dry-run] curl -sS --max-time 10 $PROD_SMOKE_URL | jq -r '.service_version'  # parity check"
+  fi
+  BETA_SV="<dry-run-beta-sv>"
+  PROD_SV="<dry-run-prod-sv>"
+else
+  # External smoke first.
+  BETA_SV=$(curl -sS --max-time 10 "$BETA_SMOKE_URL" | jq -r '.service_version' 2>/dev/null) || BETA_SV=""
 
-if [ -z "$BETA_SV" ] || [ "$BETA_SV" = "null" ]; then
-  # Fallback: exec into fallback pod (avoids NetworkPolicy denial on naive pods — Hard Rule H5).
-  if [ -n "$BETA_SMOKE_FALLBACK_POD" ] && [ -n "$BETA_SMOKE_FALLBACK_URL" ]; then
-    POD=$(kubectl --context="$BETA_KUBE_CTX" get pods -l app="$BETA_SMOKE_FALLBACK_POD" \
-      -o jsonpath='{.items[0].metadata.name}')
-    if [ -n "$POD" ]; then
-      BETA_SV=$(kubectl --context="$BETA_KUBE_CTX" exec "$POD" -- \
-        sh -c "curl -sS --max-time 8 '$BETA_SMOKE_FALLBACK_URL'" | jq -r '.service_version' 2>/dev/null) || BETA_SV=""
+  if [ -z "$BETA_SV" ] || [ "$BETA_SV" = "null" ]; then
+    # Fallback: exec into fallback pod (avoids NetworkPolicy denial on naive pods — Hard Rule H5).
+    if [ -n "$BETA_SMOKE_FALLBACK_POD" ] && [ -n "$BETA_SMOKE_FALLBACK_URL" ]; then
+      POD=$(kubectl --context="$BETA_KUBE_CTX" get pods -l app="$BETA_SMOKE_FALLBACK_POD" \
+        -o jsonpath='{.items[0].metadata.name}')
+      if [ -n "$POD" ]; then
+        BETA_SV=$(kubectl --context="$BETA_KUBE_CTX" exec "$POD" -- \
+          sh -c "curl -sS --max-time 8 '$BETA_SMOKE_FALLBACK_URL'" | jq -r '.service_version' 2>/dev/null) || BETA_SV=""
+      fi
     fi
   fi
-fi
 
-if [ -z "$BETA_SV" ] || [ "$BETA_SV" = "null" ]; then
-  echo "⛔ Smoke failed — could not extract .service_version from beta. (Tried external + in-cluster fallback.)"
-  # STOP
-fi
-echo "  beta service_version: $BETA_SV"
+  if [ -z "$BETA_SV" ] || [ "$BETA_SV" = "null" ]; then
+    echo "⛔ Smoke failed — could not extract .service_version from beta. (Tried external + in-cluster fallback.)"
+    # STOP
+  fi
+  echo "  beta service_version: $BETA_SV"
 
-# Parity check (only when source=prod and PROD_SMOKE_URL is set).
-if [ "$SOURCE" = "prod" ] && [ -n "$PROD_SMOKE_URL" ]; then
-  PROD_SV=$(curl -sS --max-time 10 "$PROD_SMOKE_URL" | jq -r '.service_version' 2>/dev/null) || PROD_SV=""
-  echo "  prod service_version: $PROD_SV"
-  if [ "$BETA_SV" != "$PROD_SV" ]; then
-    echo "⚠️  PARITY MISMATCH — beta($BETA_SV) ≠ prod($PROD_SV). Investigate before further promote."
-    # Do NOT STOP — operator decides; report and continue to B9.
-  else
-    echo "  ✓ Parity confirmed: beta == prod ($BETA_SV)"
+  # Parity check (only when source=prod and PROD_SMOKE_URL is set).
+  if [ "$SOURCE" = "prod" ] && [ -n "$PROD_SMOKE_URL" ]; then
+    PROD_SV=$(curl -sS --max-time 10 "$PROD_SMOKE_URL" | jq -r '.service_version' 2>/dev/null) || PROD_SV=""
+    echo "  prod service_version: $PROD_SV"
+    if [ "$BETA_SV" != "$PROD_SV" ]; then
+      echo "⚠️  PARITY MISMATCH — beta($BETA_SV) ≠ prod($PROD_SV). Investigate before further promote."
+      # Do NOT STOP — operator decides; report and continue to B9.
+    else
+      echo "  ✓ Parity confirmed: beta == prod ($BETA_SV)"
+    fi
   fi
 fi
 ```
@@ -1298,12 +1347,16 @@ fi
 
 ### Step B9: Final summary
 
-**═════ BETA PROMOTE COMPLETE ═════**
-Workflow: **{RUN_URL}** (conclusion: **{conclusion}**)
-Gitops PR: **{PR_URL}** (merge SHA: `{MERGE_SHA[0:8]}`)
-Apps synced: *{count} of {total}*
-  *(list each: APP_NAME → image_tag)*
-Smoke:  `{BETA_SV}`
+**Dry-run mode**: Render a stub summary clearly marked `[DRY-RUN]` so operator knows no actions executed. Use the same template but substitute the placeholder values bound at each step.
+
+**LIVE mode**: Render the full summary with real values from B2-B8.
+
+**═════ BETA PROMOTE COMPLETE *(or `[DRY-RUN]` if `$DRY_RUN=true`)* ═════**
+Workflow: **{RUN_URL}** (conclusion: **{conclusion}** OR `<dry-run>`)
+Gitops PR: **{PR_URL}** (merge SHA: `{MERGE_SHA[0:8]}` OR `<dry-run>`)
+Apps synced: *{count} of {total}*  *(in dry-run: list APPS as "would sync")*
+  *(list each: APP_NAME → image_tag, or `<dry-run>` when in dry-run mode)*
+Smoke:  `{BETA_SV}`  *(in dry-run: `<dry-run>`)*
   *(if parity check ran)* Prod parity: ✅ matched OR ⚠️ mismatch (prod=`{PROD_SV}`)
 ══════════════════════════════════════
 

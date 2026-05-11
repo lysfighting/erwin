@@ -2,6 +2,49 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.19.1] — 2026-05-11
+
+### Fixed — 3.19.0 post-release adversarial audit (2 scouts cross-confirmed)
+
+Round-2 audit (integration test against real vi_agent + parallel code review) found 2 🔴 skill bugs that would have broken any first-time `/team-rc beta` run regardless of config quality. Both fixed.
+
+🔴 **1. `tw-config.sh` YAML array parser** (cross-confirmed by both scouts — highest-confidence signal)
+
+`parse_simple_yaml` explicitly skipped lines starting with `-` (documented as "No arrays" in 3.18.0). When user wrote `deploy.beta_apps` as a YAML array:
+```yaml
+deploy:
+  beta_apps:
+    - vi-admin-server
+    - vi-api-server
+```
+…the parser returned the inline-comment text or empty string for the key. B6's `tr ',\n' ' '` parsing got garbage; `for app in $APPS` silently iterated zero items; B7 still reported "All apps Synced + Healthy" (silent no-op). Real cost: skill appears to succeed but no apps actually synced — operator only finds out at smoke (or worse, doesn't find out at all).
+
+**Fix**:
+- Extended `parse_simple_yaml` to recognize 2-level YAML arrays (`-` lines under a `key:` empty-value parent). Returns array as newline-separated string for unified `tw-config.sh <key>` access.
+- Fixed companion bug in `strip_val`: a line whose entire value was an inline comment (`key:    # comment`) used to return the comment text as the value; now treats `#`-at-start as empty.
+- Limited to scalar arrays (1-level deep). Arrays-of-dicts (like `notifications.channels`) still use the separate `_PYTHON_MEMBER_PARSER` and are unchanged.
+- 2 new unit tests + verified vi_agent's real config now returns `deploy.beta_apps` → 5 apps + scalar keys still resolve.
+
+🔴 **2. `/team-rc beta` dry-run gate only at B2** (Agent B finding)
+
+3.19.0 gated only Step B2's `gh workflow run`. B3 (`gh run watch $RUN_ID`) ran unconditionally — with `$RUN_ID` undefined in dry-run, it failed immediately. B4-B8 (`gh pr list`, `kubectl patch`, `curl`) all fired regardless of dry-run flag. Hard Rule H3 violated.
+
+**Fix**: every B3-B9 code block now has explicit `if [ "$DRY_RUN" = "true" ]; then echo "[dry-run] <command>"; else <real>; fi`. B2 also stubs `RUN_ID="<dry-run-run-id>"` so B3+ echoes are coherent without undefined-variable errors. B5 hard-gate (operator merge) skipped entirely in dry-run. B9 summary marks `[DRY-RUN]` clearly.
+
+### Audit findings deferred (config / docs, not skill bugs)
+
+- vi_agent's `beta_kube_context: "kbeta"` and `prod_kube_context: "kprod"` resolve to non-existent kubectl contexts on the audit machine (real contexts are GKE-style `gke_excellent-nexus-488404-c8_us-central1_...`). This is config-side — operator must either set up `kbeta`/`kprod` kubeconfig aliases or replace config values with real GKE context names depending on their machine.
+- vi_agent's `beta_workflow: "promote-beta.yml"` is correct (file exists; `gh workflow run` accepts both filename and display name "Promote to Beta"). Agent A's `grep promote-beta` failed only because workflow's display name has mixed-case "Promote to Beta" — false alarm.
+
+### Tests
+
+- `tw-unit-test.sh` 71 → **75** (+2 for YAML array parsing, +1 for inline-comment-only-value, +1 regression for scalar after/before array).
+- `tw-fleet-smoke-test.sh` 40/40 (no fleet impact).
+
+### Methodology note
+
+Cross-confirmation by 2 independently briefed scouts (integration-test + adversarial code review) flagged the YAML array bug from different angles within the same audit cycle. Per memory rule [cross-lens confirmation = strongest P0 signal](feedback_cross_lens_confirmation.md): findings flagged by ≥2 lenses ship first with less extra verification than single-lens findings. Both bugs in this patch matched that criterion.
+
 ## [3.19.0] — 2026-05-11
 
 ### Added — `/team-rc beta` (F5 brief from vi_agent Phase 2 beta-prod-parity-audit)

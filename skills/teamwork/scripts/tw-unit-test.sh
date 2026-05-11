@@ -676,6 +676,86 @@ test_config_migrate_removes_skill_version
 test_config_migrate_idempotent
 test_config_migrate_adds_schema_version
 
+test_config_yaml_array_returns_items() {
+  # 3.19.1 fix: YAML arrays (`-` lines) inside a section should return as
+  # newline-separated values, not be silently skipped.
+  local repo="$TMPDIR_ROOT/config-yaml-array"
+  _setup_config_repo "$repo"
+
+  cat > "$repo/.teamwork/config.yml" << 'EOF'
+schema_version: 3
+conventions:
+  base_branch: main
+deploy:
+  staging_workflow: "build.yml"
+  beta_apps:
+    - vi-admin-server
+    - vi-api-server
+    - vi-frontend
+  beta_kube_context: "kbeta"
+EOF
+
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-config.sh" deploy.beta_apps "")
+  local expected
+  expected="vi-admin-server
+vi-api-server
+vi-frontend"
+
+  if [ "$out" = "$expected" ]; then
+    pass "YAML array: deploy.beta_apps returns newline-separated 3 items"
+  else
+    fail "YAML array: deploy.beta_apps wrong return — got:$'\n'$out"
+  fi
+
+  # Regression: scalar AFTER the array should still resolve.
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-config.sh" deploy.beta_kube_context "")
+  if [ "$out" = "kbeta" ]; then
+    pass "YAML array: scalar after array (deploy.beta_kube_context) still resolves"
+  else
+    fail "YAML array: scalar after array broken — got: '$out'"
+  fi
+
+  # Regression: scalar BEFORE the array should still resolve.
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-config.sh" deploy.staging_workflow "")
+  if [ "$out" = "build.yml" ]; then
+    pass "YAML array: scalar before array (deploy.staging_workflow) still resolves"
+  else
+    fail "YAML array: scalar before array broken — got: '$out'"
+  fi
+}
+
+test_config_inline_comment_only_value() {
+  # 3.19.1 fix: a key whose value is entirely an inline comment (e.g.,
+  # `beta_apps:                # comment`) used to return the comment text as
+  # the value. Now returns empty (opens an array slot).
+  local repo="$TMPDIR_ROOT/config-inline-comment"
+  _setup_config_repo "$repo"
+
+  cat > "$repo/.teamwork/config.yml" << 'EOF'
+schema_version: 3
+deploy:
+  empty_with_comment:                       # this comment must NOT leak as value
+    - real-value-1
+    - real-value-2
+EOF
+
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-config.sh" deploy.empty_with_comment "")
+  local expected="real-value-1
+real-value-2"
+
+  if [ "$out" = "$expected" ]; then
+    pass "YAML inline-comment-only-value: comment doesn't leak as scalar; array still collected"
+  else
+    fail "YAML inline-comment-only-value: comment leaked or array missed — got:$'\n'$out"
+  fi
+}
+
+section "CONFIG — YAML ARRAYS (3.19.1)"
+test_config_yaml_array_returns_items
+test_config_inline_comment_only_value
+
 section "CONFIG — HAS-SECTION"
 test_config_has_section_present
 test_config_has_section_absent

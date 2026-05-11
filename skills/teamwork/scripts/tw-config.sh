@@ -66,6 +66,13 @@ def strip_val(raw):
     v = raw.strip()
     if not v:
         return ""
+    # 3.19.1 fix: a line whose entire value is just an inline comment
+    # (e.g., `beta_apps:                # comment text`) was returning the
+    # comment text as the value because the strip-inline-comment logic below
+    # only matched "  #" / " #" markers; a value that IS the comment (no
+    # leading non-comment chars before the `#`) escaped both markers.
+    if v[0] == "#":
+        return ""
     if v[0] in ("\"", "'"'"'"):
         q = v[0]
         end = v.find(q, 1)
@@ -77,16 +84,40 @@ def strip_val(raw):
     return v.strip()
 
 def parse_simple_yaml(filepath):
-    """Parse flat keys + 1-level nesting. No arrays."""
+    """Parse flat keys + 1-level nesting + 2-level scalar-arrays (3.19.1).
+
+    Supports:
+      key: value                 -> result["key"] = "value"
+      section:                   -> all sub-keys flatten as "section.sub"
+        sub: value
+      section:                   -> array values join with "\\n"
+        arr:
+          - item1
+          - item2                -> result["section.arr"] = "item1\\nitem2"
+
+    Does NOT support arrays-of-dicts (use _PYTHON_MEMBER_PARSER for those).
+    """
     result = {}
     current_section = None
+    current_list_key = None  # "section.subkey" while collecting array items
+    current_list_items = []
+
+    def flush_list():
+        nonlocal current_list_key, current_list_items
+        if current_list_key is not None and current_list_items:
+            result[current_list_key] = "\n".join(current_list_items)
+        current_list_key = None
+        current_list_items = []
+
     try:
         with open(filepath) as f:
             for line in f:
                 line = line.rstrip("\n")
                 if not line.strip() or line.strip().startswith("#"):
                     continue
+                # Top-level key (no leading whitespace).
                 if not line.startswith(" ") and not line.startswith("\t") and ":" in line:
+                    flush_list()
                     parts = line.split(":", 1)
                     section_key = parts[0].strip()
                     section_val = strip_val(parts[1])
@@ -95,24 +126,39 @@ def parse_simple_yaml(filepath):
                     else:
                         result[section_key] = section_val
                         current_section = section_key
-                elif (line.startswith("  ") or line.startswith("\t")) and ":" in line:
+                    continue
+                # Indented line (sub-key or array item).
+                if line.startswith(" ") or line.startswith("\t"):
                     if current_section is None:
                         continue
+                    stripped = line.strip()
+                    # Array item.
+                    if stripped.startswith("-"):
+                        item_val = strip_val(stripped[1:])
+                        if current_list_key is not None and item_val:
+                            current_list_items.append(item_val)
+                        continue
+                    # Sub-key.
+                    if ":" not in stripped:
+                        continue
+                    flush_list()  # close any preceding list block before new sibling key
                     indent = len(line) - len(line.lstrip())
                     if indent > 2 and not line.startswith("\t"):
                         continue
                     if line.startswith("\t") and indent > 1:
-                        continue
-                    stripped = line.strip()
-                    if stripped.startswith("-"):
                         continue
                     parts = stripped.split(":", 1)
                     sub_key = parts[0].strip()
                     sub_val = strip_val(parts[1]) if len(parts) > 1 else ""
                     if sub_val != "" and sub_val not in ("|", ">"):
                         result[current_section + "." + sub_key] = sub_val
+                    else:
+                        # Empty subkey value — could be start of array. Open list slot.
+                        current_list_key = current_section + "." + sub_key
+                        current_list_items = []
     except (IOError, OSError):
         pass
+    flush_list()
     return result
 '
 
