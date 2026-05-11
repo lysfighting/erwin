@@ -1,6 +1,6 @@
 ---
 description: "Team dashboard + init. First time? Try: /team help"
-version: "3.18.0"
+version: "3.19.0"
 ---
 
 # /team — Init + Dashboard (Teamwork v3)
@@ -60,7 +60,7 @@ Parse `$ARGUMENTS`:
 
 ## Operation Help
 
-**Version**: `3.18.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.19.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following guide directly to the user, then **STOP**:
 
@@ -76,7 +76,7 @@ Output the following guide directly to the user, then **STOP**:
   `/team` **#042**        View MC **#042** details (branch, commits, PRs)
   `/team doctor`          Local git + issue health diagnostics
   `/team doctor fix`      Interactive fix — execute actions with confirmation
-  `/team doctor help`     Doctor usage guide (12 checks explained)
+  `/team doctor help`     Doctor usage guide (13 checks explained)
   `/team-issue <desc>`    Create MC (solo: self-assign; team: prompt for assignee)
   `/team-issue <desc> @user`  Create MC + assign to @user
   `/team-issue` **#N**    View Issue details
@@ -143,7 +143,7 @@ Output the following guide directly to the user, then **STOP**:
 
 Read and present the design philosophy behind this workflow. Output the content from the manual with visual diagrams, then **STOP**.
 
-**Version**: `3.18.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.19.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output the following directly and **STOP** (no file reading needed — content is self-contained):
 
@@ -538,7 +538,7 @@ WORKTREE_ENABLED=$(git config --local teamwork.worktree 2>/dev/null || echo "not
 cat $TEAMWORK_DIR/config.yml
 ```
 
-**Version**: `3.18.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.19.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 Output formatted display:
 
@@ -1098,7 +1098,7 @@ fi
 WORKTREE_STATUS=$(git config --local teamwork.worktree 2>/dev/null || echo "not set")
 ```
 
-**Version**: `3.18.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
+**Version**: `3.19.0` (from skill frontmatter — `tw-bump-version.sh` keeps in sync)
 
 ✅ Config updated (merge mode — existing config preserved)
    schema_version → `3`
@@ -1161,9 +1161,34 @@ conventions:
   production_branch: main
   commit_format: "type(scope): description | Mission: #{issue}"
 
-# Optional: Deployment pipeline (required for staging gate in /team-rc)
+# Optional: Deployment pipeline (used by /team-rc)
 # deploy:
-#   staging_workflow: "deploy-staging.yml"  # GitHub Actions workflow name
+#   staging_workflow: "deploy-staging.yml"      # GitHub Actions workflow name (Prepare staging gate)
+#   production_workflow: "deploy-prod.yml"      # used by /team-rc promote Step P10b
+#
+#   # 3.18.0+ — post-promote checklist (Step P10c) optional decorations:
+#   gitops_repo: "owner/gitops-config"          # if set, P10c includes artifact-promote-PR step
+#   argocd_apps:                                # if set, P10c includes cluster-sync step + kubectl patch examples
+#     - app-name-1
+#     - app-name-2
+#   prod_smoke_url: "https://prod.example.com/api/config"  # P10c smoke example uses this URL
+#
+#   # 3.19.0+ — beta environment (intermediate between staging and prod). Required to use `/team-rc beta`:
+#   beta_workflow: "promote-beta.yml"           # workflow that promotes some image set into beta
+#   beta_gitops_repo: "owner/gitops-config"     # gitops PR target (often same as gitops_repo)
+#   beta_apps:                                  # ArgoCD apps to refresh + sync after gitops PR merges
+#     - app-name-1
+#     - app-name-2
+#   beta_kube_context: "kbeta"                  # kubectl context for beta cluster (use `kubectl config get-contexts`)
+#   beta_smoke_url: "https://beta.example.com/api/config"   # external smoke URL
+#   beta_smoke_fallback_pod: "vi-frontend"      # label app= selector for in-cluster fallback exec
+#   beta_smoke_fallback_url: "http://gateway:8002/api/config"  # in-cluster URL from the fallback pod
+
+# Optional: Release strategy (squash-only repos)
+# release:
+#   strategy: "rebuild-on-prod"                  # 3.13.0+ — see /team-rc promote Step P4.5
+#   hotfix_needs_rc_rebuild: false               # 3.18.0+ — true if hotfix tag alone doesn't trigger prod deploy (staging-tag-copy pipelines)
+#   build_workflow: "build.yml"                  # 3.18.0+ — only when hotfix_needs_rc_rebuild=true; dispatched on rc/<hotfix-version> branch
 
 label_prefix:
   status: "status:"
@@ -1434,15 +1459,24 @@ For other languages or if language not detected, generate a minimal workflow wit
 ls .github/workflows/conflict-marker-check.yml 2>/dev/null
 ```
 
-If exists → read, ask "Keep existing? Or regenerate?" (same pattern as ci.yml). Otherwise, write:
+If exists → read, ask "Keep existing? Or regenerate?" (same pattern as ci.yml). If user picks "Keep existing", skip the rest of 4d.5. If "Regenerate" (or file is absent), proceed below.
+
+**3.19.0 instruction**: substitute placeholder tokens BEFORE writing the file. The template below uses `{{BASE_BRANCH}}` and `{{PROD_BRANCH}}` (double-brace) explicitly to signal "must be substituted". DO NOT write literal `{{BASE_BRANCH}}` to the file. Read values from config via `$BASE_BRANCH` (already bound from Step 1 pre-flight) and `$PROD_BRANCH`; build the `push.branches` array based on dual-branch detection.
+
+**Construction rules**:
+- Replace `{{BASE_BRANCH}}` with the literal string from `$BASE_BRANCH` (e.g., `develop`, `pre-launch`, `main`).
+- For the `push.branches` array: if `$BASE_BRANCH == $PROD_BRANCH` (single-branch mode), include only that one. If different (dual-branch mode), include both: `[{{BASE_BRANCH}}, {{PROD_BRANCH}}]`.
+- The example below shows the SHAPE; you produce the substituted output yourself.
+
+**Template** (substitute, then write):
 
 ```yaml
 name: Conflict Marker Check
 on:
   pull_request:
-    branches: [{BASE_BRANCH}]
+    branches: [{{BASE_BRANCH}}]
   push:
-    branches: [{BASE_BRANCH}]  # add {PROD_BRANCH} if dual-branch mode
+    branches: [{{BASE_BRANCH}}]   # single-branch mode: just this. Dual-branch: [{{BASE_BRANCH}}, {{PROD_BRANCH}}]
 
 jobs:
   conflict-marker-check:
@@ -1469,13 +1503,24 @@ jobs:
           echo "✓ No conflict markers found."
 ```
 
+**Example substituted output** for `$BASE_BRANCH=pre-launch`, `$PROD_BRANCH=main` (dual-branch):
+
+```yaml
+name: Conflict Marker Check
+on:
+  pull_request:
+    branches: [pre-launch]
+  push:
+    branches: [pre-launch, main]
+```
+
 > **Why anchored regex**: `^<{7}` (start-of-line + exactly 7 `<`) + trailing `( |$)` ensures we only match real conflict markers, not legitimate code. Without anchoring, `<<<<<<<<` (8+) would false-positive on syntax like operator overloading, and `<<<<<<< abc` mid-line in prose would false-positive on rare markdown.
 
 > **Why fetch-depth: 1**: conflict markers either exist in the working tree or don't — historical search would balloon the run. Single-commit checkout suffices.
 
-> **Test fixture exclusion**: paths matching `test_conflict_marker_*` or `*conflict-marker-fixture*` are excluded so projects can ship deliberate marker fixtures for their own conflict-handling tests.
+> **Test fixture exclusion**: paths matching `test_conflict_marker_*` or `*conflict-marker-fixture*` are excluded so projects can ship deliberate marker fixtures for their own conflict-handling tests. Projects with other fixture-naming schemes can extend the `:!**/...` exclusion list themselves after first generation.
 
-After write, output: "Wrote `.github/workflows/conflict-marker-check.yml` — every PR + push to {BASE_BRANCH} now blocked if unresolved conflict markers detected."
+After write, output (with `$BASE_BRANCH` substituted): "Wrote `.github/workflows/conflict-marker-check.yml` — every PR + push to `$BASE_BRANCH` now blocked if unresolved conflict markers detected."
 
 ### 4e: Write `.github/workflows/post-merge.yml`
 
@@ -2338,7 +2383,7 @@ BASE_BRANCH=$(bash ~/.claude/commands/scripts/tw-config.sh conventions.base_bran
 BASE_BRANCH="${BASE_BRANCH:-main}"
 CURRENT_VERSION=$(bash ~/.claude/commands/scripts/tw-config.sh versions.current "" 2>/dev/null)
 # SKILL_VERSION: hardcoded from frontmatter, tw-bump-version.sh keeps in sync
-SKILL_VERSION="3.18.0"
+SKILL_VERSION="3.19.0"
 ```
 
 **Performance: fetch data in parallel.** Make these calls using **parallel Bash tool calls** (not sequential):
@@ -2762,7 +2807,7 @@ done
 bash ~/.claude/commands/scripts/tw-config.sh project.test_command "" 2>/dev/null
 ```
 
-### Analysis Phase — 12 Diagnostic Checks
+### Analysis Phase — 13 Diagnostic Checks
 
 Each check produces findings with a severity level:
 
@@ -3016,6 +3061,35 @@ For each open PR from data collection (Call 9):
      - 🟢 INFO "PR **#{pr}** CI pending for extended time"
   4. If no checks configured:
      - 🟢 INFO (not a problem, just noting)
+```
+
+#### Check 13: Release Config Integrity (3.19.0)
+
+Cross-key validation for the release-related config additions in 3.18.0 / 3.19.0. Catches half-configured states before they cause runtime confusion.
+
+```
+Read from config.yml:
+  HFN_NEEDS=$(release.hotfix_needs_rc_rebuild "false")
+  BUILD_WF=$(release.build_workflow "")
+  BETA_WF=$(release.beta_workflow "")
+  BETA_APPS=$(deploy.beta_apps "")
+  BETA_CTX=$(deploy.beta_kube_context "")
+  BETA_URL=$(deploy.beta_smoke_url "")
+  GITOPS=$(deploy.gitops_repo "")
+
+Validations:
+  1. If HFN_NEEDS=true AND BUILD_WF is empty:
+     - 🔴 CRITICAL "release.hotfix_needs_rc_rebuild=true but release.build_workflow not set —
+       /team-rc hotfix Step H7.5b will fail. Set release.build_workflow in config.yml."
+  2. If BETA_WF is set AND any of (BETA_APPS, BETA_CTX, BETA_URL) is empty:
+     - 🟡 WARNING "release.beta_workflow is set but {missing list} not configured —
+       /team-rc beta will prompt user at runtime or partially fail. Configure full beta block in deploy.* keys."
+  3. If GITOPS is set AND BETA_WF is set AND deploy.beta_gitops_repo is NOT set:
+     - 🟢 INFO "deploy.gitops_repo set but deploy.beta_gitops_repo not — /team-rc beta will
+       fall back to deploy.gitops_repo. Set deploy.beta_gitops_repo explicitly if your beta
+       gitops target differs from prod's."
+  4. Otherwise:
+     - 🟢 INFO release config consistent.
 ```
 
 ### Output Format — 3-Layer Visual Report

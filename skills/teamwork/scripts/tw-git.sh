@@ -339,9 +339,9 @@ cmd_rebuild_rc_on_prod() {
   #   OLD_SHA=<previous origin/RC_BRANCH sha>
   #   NEW_SHA=<commit-tree result>
   #   ADDED_ON_PROD<<EOF / ...paths.../ EOF      (files present on prod but not rc)
-  #   ADDED_BLAME<<EOF / PATH|HASH|ISO_DATE|EMAIL|SUBJECT.../EOF   (last touch on prod for each ADDED file — 3.18.0)
+  #   ADDED_BLAME<<EOF / PATH|||HASH|||ISO_DATE|||EMAIL|||SUBJECT.../EOF   (last touch on prod for each ADDED file — 3.19.0: triple-pipe delim)
   #   MODIFIED_ON_PROD<<EOF / ...paths.../ EOF   (files with different content on prod vs rc)
-  #   MODIFIED_BLAME<<EOF / PATH|HASH|ISO_DATE|EMAIL|SUBJECT.../EOF (last touch on prod for each MODIFIED file — 3.18.0)
+  #   MODIFIED_BLAME<<EOF / PATH|||HASH|||ISO_DATE|||EMAIL|||SUBJECT.../EOF (last touch on prod for each MODIFIED file — 3.19.0: triple-pipe delim)
   #   STATUS=dry-run | pushed | already-fast-forwardable
   #
   # Progress/errors go to stderr.
@@ -406,17 +406,23 @@ cmd_rebuild_rc_on_prod() {
   # PROD_BRANCH? Helps caller spot orphan hotfixes — if a file was last touched
   # by a recent hotfix commit, blanket-rebuild would delete that fix silently.
   # Format: PATH|HASH|ISO_DATE|EMAIL|SUBJECT (pipe-delimited; subject may contain spaces).
+  # Use triple-pipe `|||` as field delimiter — commit subjects can contain single
+  # `|` (e.g., "feat: support a|b syntax") which would corrupt single-pipe parsing.
+  # `|||` is vanishingly rare in real commit messages; if it does appear in a
+  # subject, only the trailing subject field over-splits — no data loss, just
+  # cosmetic display.
   _blame_for_paths() {
     local paths="$1"
     [ -z "$paths" ] && return 0
     while IFS= read -r path; do
       [ -z "$path" ] && continue
       local entry
-      entry=$(git log -1 --format='%h|%ai|%ae|%s' "origin/$prod_branch" -- "$path" 2>/dev/null) || entry=""
+      entry=$(git log -1 --format='%h|||%ai|||%ae|||%s' "origin/$prod_branch" -- "$path" 2>/dev/null) || entry=""
       if [ -n "$entry" ]; then
-        printf '%s|%s\n' "$path" "$entry"
+        printf '%s|||%s\n' "$path" "$entry"
       else
-        printf '%s|||(no history)|\n' "$path"
+        # Fallback: 5 fields total to match normal format (PATH|||HASH|||DATE|||EMAIL|||SUBJECT).
+        printf '%s|||(unknown)|||(unknown)|||(unknown)|||(no history)\n' "$path"
       fi
     done <<< "$paths"
   }
@@ -679,7 +685,7 @@ cmd_repush_tag_and_release() {
   # 1. Delete the GitHub Release if one exists for this tag.
   # gh release view exits non-zero if release doesn't exist — we tolerate it.
   if gh release view "$tag" >/dev/null 2>&1; then
-    gh release delete "$tag" --yes 2>&1 >/dev/null || {
+    gh release delete "$tag" --yes >/dev/null 2>&1 || {
       echo "ERROR: failed to delete existing release for tag $tag" >&2
       echo "STATUS=error"
       exit 2
@@ -689,7 +695,7 @@ cmd_repush_tag_and_release() {
 
   # 2. Delete the tag on origin (if it exists). Tolerate missing.
   if git ls-remote --tags origin "refs/tags/$tag" 2>/dev/null | grep -qF "refs/tags/$tag"; then
-    git push origin --delete "refs/tags/$tag" 2>&1 >/dev/null || {
+    git push origin --delete "refs/tags/$tag" >/dev/null 2>&1 || {
       echo "ERROR: failed to delete remote tag $tag" >&2
       echo "STATUS=error"
       exit 2
@@ -699,7 +705,7 @@ cmd_repush_tag_and_release() {
 
   # 3. Delete the local tag (if it exists). Tolerate missing.
   if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
-    git tag -d "$tag" 2>&1 >/dev/null || true
+    git tag -d "$tag" >/dev/null 2>&1 || true
   fi
 
   # 4. Verify SHA is reachable on origin before tagging.
@@ -717,7 +723,7 @@ cmd_repush_tag_and_release() {
     echo "STATUS=error"
     exit 2
   }
-  git push origin "refs/tags/$tag" 2>&1 >/dev/null || {
+  git push origin "refs/tags/$tag" >/dev/null 2>&1 || {
     echo "ERROR: failed to push tag $tag to origin" >&2
     echo "STATUS=error"
     exit 2

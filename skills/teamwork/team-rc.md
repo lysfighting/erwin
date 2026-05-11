@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.18.0"
+version: "3.19.0"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -23,6 +23,8 @@ version: "3.18.0"
 | `fix help` | Show fix operation usage |
 | `hotfix` | Hotfix: fix production on main + backport to develop |
 | `hotfix help` | Show hotfix operation usage |
+| `beta` | Beta: promote into the beta env (staging-prod intermediate). Source flag controls what's promoted |
+| `beta help` | Show beta operation usage |
 | `promote help` | Show promote operation usage |
 | `help` or `-h` | Show usage guide |
 
@@ -40,6 +42,7 @@ Parse `$ARGUMENTS`:
 **USAGE**
   `/team-rc`              Prepare: cut rc branch, deploy staging
   `/team-rc cancel`       Cancel: delete current rc, fix on base, re-cut
+  `/team-rc beta`         Beta: promote into beta env (intermediate between staging + prod)
   `/team-rc promote`      Promote: squash merge rc → *main*, tag, release
   `/team-rc help`         Show this guide
 
@@ -81,6 +84,15 @@ Parse `$ARGUMENTS`:
   4. Tag + GitHub Release
   5. Backport (cherry-pick) to *develop*
 
+**BETA** (`/team-rc beta`) *(requires `release.beta_workflow` + `deploy.beta_*` config)*
+  Promote an image set to the **beta environment** — an intermediate between staging and prod for teams whose staging is too churned-out by daily dev work to function as a real preprod. Operator-driven (NEVER auto-merge gitops PR).
+  Sources: `--source=prod` (parity from prod), `--source=staging` (latest staging), `--source=explicit --version-tag=Vx` (specific tag).
+  `/team-rc beta`                                    Interactive
+  `/team-rc beta --source=staging`                   Take latest staging
+  `/team-rc beta --source=prod --reason="..."`       Snapshot prod (reason mandatory)
+  `/team-rc beta --source=explicit --version-tag=V0.1.32 --reason="..."`
+  `/team-rc beta --dry-run`                          Echo commands; no actions
+
 **BUGFIX DURING RC** (upstream-first model)
   RC is a frozen snapshot. Default: fix on *develop*, cancel + re-cut.
   Found a bug on staging? →
@@ -98,6 +110,8 @@ Parse `$ARGUMENTS`:
 - If `fix` → jump to **Fix Flow**
 - If `hotfix help` → jump to **Operation Hotfix Help**
 - If `hotfix` → jump to **Hotfix Flow**
+- If `beta help` → jump to **Operation Beta Help**
+- If `beta` (with or without trailing flags) → jump to **Beta Flow**
 - If `promote help` → jump to **Operation Promote Help**
 - If `promote` → jump to **Promote Flow**
 - If `cancel` → jump to **Cancel Flow**
@@ -886,6 +900,9 @@ echo "  ✓ Cut $RC_HOTFIX_BRANCH from $PROD_BRANCH HEAD"
 gh workflow run "$BUILD_WORKFLOW" --ref "$RC_HOTFIX_BRANCH" || {
   echo "ERROR: Failed to dispatch $BUILD_WORKFLOW on $RC_HOTFIX_BRANCH"
   echo "Manual fallback: gh workflow run $BUILD_WORKFLOW --ref $RC_HOTFIX_BRANCH"
+  # CLEANUP BEFORE STOP (3.19.0 fix): H7.5a succeeded so temp branch exists on origin.
+  git push origin --delete "$RC_HOTFIX_BRANCH" >/dev/null 2>&1 || true
+  echo "  [cleanup] deleted temp $RC_HOTFIX_BRANCH before exit"
   # STOP
 }
 
@@ -902,6 +919,9 @@ echo "  ✓ Dispatched $BUILD_WORKFLOW on $RC_HOTFIX_BRANCH (run #$BUILD_RUN_ID)
 echo "  Waiting for $BUILD_WORKFLOW (run #$BUILD_RUN_ID) — typically 6-15min..."
 gh run watch "$BUILD_RUN_ID" --exit-status || {
   echo "ERROR: Build workflow failed. Inspect: gh run view $BUILD_RUN_ID"
+  # CLEANUP BEFORE STOP (3.19.0 fix): temp branch exists on origin; build was dispatched but failed.
+  git push origin --delete "$RC_HOTFIX_BRANCH" >/dev/null 2>&1 || true
+  echo "  [cleanup] deleted temp $RC_HOTFIX_BRANCH before exit"
   # STOP
 }
 echo "  ✓ Build complete"
@@ -929,6 +949,10 @@ rm -f "$NOTES_FILE"
 if ! echo "$REPUSH_OUTPUT" | grep -q "^STATUS=ok$"; then
   echo "ERROR: repush-tag-and-release failed"
   echo "$REPUSH_OUTPUT"
+  # CLEANUP BEFORE STOP (3.19.0 fix): the temp branch from H7.5a still exists on origin.
+  # Delete it now so retry of /team-rc hotfix doesn't collide on the same name.
+  git push origin --delete "$RC_HOTFIX_BRANCH" >/dev/null 2>&1 || true
+  echo "  [cleanup] deleted temp $RC_HOTFIX_BRANCH before exit"
   # STOP
 fi
 
@@ -968,6 +992,320 @@ Backport: cherry-picked to *{BASE_BRANCH}*
 ⚠️ Active RC detected: *{RC_BRANCH}*. The RC is now behind *{BASE_BRANCH}*. Consider `/team-rc fix` to include the hotfix, or `/team-rc cancel` + `/team-rc` to re-cut.
 
 ────────────────────────────────────────────
+
+💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
+
+---
+
+## Beta Flow
+
+> Triggered by `/team-rc beta` (or `beta --source=...`, `beta --dry-run`). Promotes an image set into the **beta environment** — an intermediate gate between staging and prod for teams whose staging branch sees too much dev churn to act as a real preprod. Validated end-to-end on vi_agent 2026-05-11 (F4 dossier).
+>
+> **Origin**: F5 brief from vi_agent Phase 2 beta-prod-parity-audit (Drive Mode session 2026-05-11). See `/Users/liyasong/Project/collov/vi_agent/drive-projects/v2/beta-prod-parity-audit@2.3.0/grading/evidence/f5-brief-for-erwin.md` for the canonical contract this flow implements.
+
+### ⛔ Hard Rules (apply throughout Beta Flow)
+
+| # | Rule | Why |
+|---|---|---|
+| **H1** | NEVER `gh pr merge` the gitops PR yourself | Operator manual gate by design (B5) |
+| **H2** | NEVER add `auto-merge` label to gitops PR | Same as H1 |
+| **H3** | `--dry-run` = echo-only, NO actions take effect | Operators rely on dry-run to plan |
+| **H4** | NEVER use local `argocd app sync` CLI — always `kubectl annotate` + `kubectl patch` | Port-forward + gRPC broken in many corp networks |
+| **H5** | NEVER `kubectl run smoke ...` naively against beta gateway | Default-deny NetworkPolicy + label-allowlist rejects random pods |
+| **H6** | `--source=prod` REQUIRES `--reason=...` (non-empty) | Workflow's Validate Inputs step rejects empty |
+| **H7** | Smoke MUST extract `.service_version` from body | HTTP 200 hides cosmetic bugs (V0.1.28 conflict-marker precedent) |
+| **H8** | On `phase=Succeeded` + `syncResult.resources=[]` + still OutOfSync → re-run the SAME patch (don't escalate first occurrence) | "Phantom-Succeeded variant B" — observed 2× (2026-04-20 staging, 2026-05-11 beta) |
+
+### Step B1: Pre-flight + argument parsing
+
+```bash
+# Worktree guard (same as Prepare Step 1)
+if [ -f .mission ]; then
+  MAIN_REPO=$(bash ~/.claude/commands/scripts/tw-git.sh worktree-main-repo)
+  echo "⚠️ /team-rc beta must run from the main repo, not a mission worktree."
+  echo "Switch to main repo: cd $MAIN_REPO"
+  # STOP
+fi
+
+# Config reads — these are HARD requirements; missing → STOP with actionable error.
+REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
+BETA_WORKFLOW=$(bash ~/.claude/commands/scripts/tw-config.sh release.beta_workflow "" 2>/dev/null)
+BETA_GITOPS_REPO=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.beta_gitops_repo "" 2>/dev/null)
+[ -z "$BETA_GITOPS_REPO" ] && BETA_GITOPS_REPO=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.gitops_repo "" 2>/dev/null)
+BETA_APPS=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.beta_apps "" 2>/dev/null)
+BETA_KUBE_CTX=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.beta_kube_context "" 2>/dev/null)
+BETA_SMOKE_URL=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.beta_smoke_url "" 2>/dev/null)
+PROD_SMOKE_URL=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.prod_smoke_url "" 2>/dev/null)
+BETA_SMOKE_FALLBACK_POD=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.beta_smoke_fallback_pod "" 2>/dev/null)
+BETA_SMOKE_FALLBACK_URL=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.beta_smoke_fallback_url "" 2>/dev/null)
+
+# Validate required config — abort with discoverable error message if missing.
+MISSING=()
+[ -z "$BETA_WORKFLOW" ] && MISSING+=("release.beta_workflow")
+[ -z "$BETA_APPS" ] && MISSING+=("deploy.beta_apps")
+[ -z "$BETA_KUBE_CTX" ] && MISSING+=("deploy.beta_kube_context")
+[ -z "$BETA_SMOKE_URL" ] && MISSING+=("deploy.beta_smoke_url")
+
+if [ ${#MISSING[@]} -gt 0 ]; then
+  echo "⛔ /team-rc beta requires beta config in $TEAMWORK_DIR/config.yml. Missing:"
+  printf '   - %s\n' "${MISSING[@]}"
+  echo "See `/team-rc beta help` for full template."
+  # STOP
+fi
+```
+
+**Parse `$ARGUMENTS`** for source + reason + version-tag + dry-run flags:
+
+- `$ARGUMENTS` is the raw arg string after `beta` keyword (e.g., `--source=prod --reason='snapshot'`)
+- Extract: `SOURCE`, `REASON`, `VERSION_TAG`, `DRY_RUN` (bool)
+- Validation:
+  - `SOURCE` must be one of `prod`, `staging`, `explicit`, or empty (= interactive)
+  - If `SOURCE=prod` → `REASON` must be non-empty (Hard Rule H6)
+  - If `SOURCE=explicit` → `VERSION_TAG` must match pattern `V*` and `REASON` non-empty
+  - If `DRY_RUN=true` → all subsequent steps echo only
+
+**If `SOURCE` is empty (interactive)**: Use `AskUserQuestion`:
+```
+question: "Which source to promote into beta?"
+options:
+  - label: "prod (parity snapshot — requires reason)"
+  - label: "staging (latest tested)"
+  - label: "explicit (specific version tag)"
+  - label: "abort"
+```
+Then a follow-up for `--reason` / `--version-tag` as needed.
+
+**Display planned form to operator** (always, even in dry-run):
+
+**═════ /team-rc beta plan ═════**
+Workflow: `{BETA_WORKFLOW}` in `{REPO}`
+Source:   *{SOURCE}*
+Reason:   *{REASON or "(none)"}*
+Version:  *{VERSION_TAG or "(workflow-derived)"}*
+Mode:     *{"DRY-RUN — no actions" if dry_run else "LIVE"}*
+═══════════════════════════════════
+
+`AskUserQuestion` to confirm before B2. **If dry_run=true: skip confirmation and just echo each B2-B9 step's commands.**
+
+### Step B2: Dispatch promote-beta workflow
+
+**Dry-run gate** (applies to every B2-B9 code block): if `$DRY_RUN = true`, echo each command instead of executing it. NO `gh workflow run`, NO `gh pr merge`, NO `kubectl`, NO `curl`. Skip directly to the B9 summary stub at end of flow.
+
+```bash
+if [ "$DRY_RUN" = "true" ]; then
+  echo "[dry-run] gh workflow run $BETA_WORKFLOW --repo $REPO -f source=$SOURCE -f reason='$REASON' ${VERSION_TAG:+-f version_tag=$VERSION_TAG}"
+  # Skip remaining B2 actions; continue echoing through B3-B9.
+else
+  gh workflow run "$BETA_WORKFLOW" --repo "$REPO" \
+    -f source="$SOURCE" -f reason="$REASON" \
+    ${VERSION_TAG:+-f version_tag="$VERSION_TAG"} || {
+    echo "⛔ Failed to dispatch $BETA_WORKFLOW"
+    # STOP
+  }
+
+  # Capture the freshly-dispatched run. gh API needs ~3s to register the dispatch.
+  sleep 3
+  RUN_INFO=$(gh run list --workflow="$BETA_WORKFLOW" --repo "$REPO" --limit 1 \
+    --json databaseId,url --jq '.[0]')
+  RUN_ID=$(echo "$RUN_INFO" | jq -r '.databaseId')
+  RUN_URL=$(echo "$RUN_INFO" | jq -r '.url')
+  echo "  ✓ Dispatched run #$RUN_ID → $RUN_URL"
+fi
+```
+
+> **Race-condition note**: `--limit 1` after `sleep 3` is the simplest capture. If multiple operators dispatch the same workflow simultaneously, this can grab the wrong run. For solo or low-cadence use (typical for beta promote) this is acceptable. If you observe wrong-run capture, refresh via `gh run list --limit 5` and let the user pick.
+
+### Step B3: Watch the workflow
+
+```bash
+gh run watch "$RUN_ID" --repo "$REPO" --exit-status || {
+  echo "⛔ Workflow run #$RUN_ID failed — $RUN_URL"
+  echo "Recent logs:"
+  gh run view "$RUN_ID" --repo "$REPO" --log-failed | tail -50
+  # STOP
+}
+echo "  ✓ Workflow run #$RUN_ID succeeded"
+```
+
+### Step B4: Surface the gitops promote PR
+
+```bash
+GITOPS_PR_JSON=$(gh pr list --repo "$BETA_GITOPS_REPO" \
+  --search 'promote/beta in:head' --state open --limit 5 \
+  --json number,title,url,headRefName,additions,deletions,changedFiles)
+GITOPS_PR_COUNT=$(echo "$GITOPS_PR_JSON" | jq 'length')
+
+if [ "$GITOPS_PR_COUNT" -eq 0 ]; then
+  echo "⛔ No open promote/beta* PR found in $BETA_GITOPS_REPO."
+  echo "Workflow $BETA_WORKFLOW completed but did not open a PR — investigate."
+  # STOP
+fi
+```
+
+**Display the PR(s)** with diff summary + per-app image-tag bumps:
+
+For each PR in `$GITOPS_PR_JSON`:
+- Show URL, title, headRefName, additions/deletions/changedFiles
+- Run `gh pr diff <N> --repo "$BETA_GITOPS_REPO"` and group output by overlay path (`apps/.../overlays/beta/...`) — show which apps got which image tag bumps. This is the operator's audit surface before merging.
+
+### Step B5: Operator merge — HARD GATE
+
+⛔ **DO NOT MERGE.** Skill MUST NOT call `gh pr merge`, MUST NOT add `auto-merge` label, MUST NOT use `--auto`. This is by design — operator review the diff manually.
+
+Use `AskUserQuestion`:
+```
+question: "Beta gitops PR ready for review. Merge it manually in browser, then confirm here."
+options:
+  - label: "Merged — proceed to ArgoCD sync"
+  - label: "Reviewing — wait"
+  - label: "Abort"
+```
+
+Loop on "Reviewing — wait" (re-ask). On "Abort" → STOP with no cleanup needed.
+
+**After operator says "Merged"**, VERIFY before proceeding (don't trust the operator's "Merged" claim — they may have confused windows). For each PR in `$GITOPS_PR_JSON`:
+
+```bash
+MERGE_STATE=$(gh pr view "$PR_NUMBER" --repo "$BETA_GITOPS_REPO" \
+  --json mergeCommit,state --jq '{state:.state, sha:(.mergeCommit.oid // "")}')
+PR_STATE=$(echo "$MERGE_STATE" | jq -r '.state')
+MERGE_SHA=$(echo "$MERGE_STATE" | jq -r '.sha')
+
+if [ "$PR_STATE" != "MERGED" ]; then
+  echo "⛔ PR #$PR_NUMBER state is $PR_STATE, not MERGED. Did the merge actually happen?"
+  # Loop back to AskUserQuestion above — give operator another chance to merge.
+fi
+echo "  ✓ PR #$PR_NUMBER merged at $MERGE_SHA"
+```
+
+### Step B6: ArgoCD refresh + sync
+
+```bash
+# Parse $BETA_APPS — could be YAML list or comma-separated; handle both.
+APPS=$(echo "$BETA_APPS" | tr ',\n' ' ' | tr -s ' ')
+
+# Force refresh (avoid 3-min auto-poll wait):
+for app in $APPS; do
+  kubectl --context="$BETA_KUBE_CTX" annotate application/${app} \
+    -n argocd argocd.argoproj.io/refresh=normal --overwrite
+done
+sleep 10
+
+# Show current sync states:
+kubectl --context="$BETA_KUBE_CTX" get applications -n argocd -o json \
+  | jq -r '.items[] | "\(.metadata.name) \(.status.sync.status) \(.status.health.status)"'
+
+# Sync OutOfSync apps via kubectl patch (NOT argocd CLI — Hard Rule H4):
+OUTOFSYNC=$(kubectl --context="$BETA_KUBE_CTX" get applications -n argocd -o json \
+  | jq -r '.items[] | select(.status.sync.status=="OutOfSync") | .metadata.name')
+
+SYNC_PATCH='{"operation":{"sync":{"revision":"HEAD","prune":false,"syncOptions":["CreateNamespace=true","RespectIgnoreDifferences=true","ApplyOutOfSyncOnly=false"]}}}'
+
+for app in $OUTOFSYNC; do
+  kubectl --context="$BETA_KUBE_CTX" patch application/${app} -n argocd --type merge -p "$SYNC_PATCH"
+done
+
+# Hard Rule H8: Phantom-Succeeded variant B detection + automatic single retry.
+# Wait briefly for sync attempt to land, then check each app for the "Succeeded
+# with empty resources but still OutOfSync" pattern. If found, re-run the SAME
+# patch once. Don't escalate on first occurrence.
+sleep 20
+for app in $OUTOFSYNC; do
+  APP_JSON=$(kubectl --context="$BETA_KUBE_CTX" get application/${app} -n argocd -o json)
+  SYNC_STATUS=$(echo "$APP_JSON" | jq -r '.status.sync.status')
+  OP_PHASE=$(echo "$APP_JSON" | jq -r '.status.operationState.phase // empty')
+  RES_COUNT=$(echo "$APP_JSON" | jq -r '.status.operationState.syncResult.resources // [] | length')
+
+  if [ "$SYNC_STATUS" = "OutOfSync" ] && [ "$OP_PHASE" = "Succeeded" ] && [ "$RES_COUNT" = "0" ]; then
+    echo "  [H8] Phantom-Succeeded detected on $app — re-running same patch (auto-retry, no escalation)"
+    kubectl --context="$BETA_KUBE_CTX" patch application/${app} -n argocd --type merge -p "$SYNC_PATCH"
+  fi
+done
+```
+
+> **⚠️ Phantom-Succeeded variant B (Hard Rule H8)**: Codified above. Detection signal: `sync.status=OutOfSync` AND `operationState.phase=Succeeded` AND `operationState.syncResult.resources=[]` (empty array). Observed 2× now (2026-04-20 staging-vi-api-server, 2026-05-11 beta-vi-api-server). The auto-retry is single-shot — if Step B7 polling still observes OutOfSync after the retry has been given time to land, that's a real problem (not phantom) and B7 will STOP with the operator told to escalate.
+
+### Step B7: Wait for Synced/Healthy
+
+```bash
+# Poll until all formerly-OutOfSync apps are Synced + Healthy. Timeout 10min.
+DEADLINE=$(( $(date +%s) + 600 ))
+while [ "$(date +%s)" -lt "$DEADLINE" ]; do
+  STILL_SYNCING=0
+  for app in $OUTOFSYNC; do
+    STATE=$(kubectl --context="$BETA_KUBE_CTX" get application/${app} -n argocd -o json \
+      | jq -r '"\(.status.sync.status)/\(.status.health.status)"')
+    case "$STATE" in
+      Synced/Healthy) ;;
+      */Degraded)
+        echo "⛔ App $app is Degraded — investigate."
+        # STOP
+        ;;
+      *) STILL_SYNCING=1 ;;
+    esac
+  done
+  [ "$STILL_SYNCING" -eq 0 ] && break
+  sleep 15
+done
+
+if [ "$STILL_SYNCING" -eq 1 ]; then
+  echo "⛔ Timeout waiting for beta apps to reach Synced/Healthy. Run /team doctor or check ArgoCD UI."
+  # STOP
+fi
+echo "  ✓ All apps Synced + Healthy"
+```
+
+> **Migration jobs** (PreSync hooks) may add 1-2min — that's expected, included in the 10-min budget.
+
+### Step B8: Smoke — extract service_version + parity check
+
+```bash
+# External smoke first.
+BETA_SV=$(curl -sS --max-time 10 "$BETA_SMOKE_URL" | jq -r '.service_version' 2>/dev/null) || BETA_SV=""
+
+if [ -z "$BETA_SV" ] || [ "$BETA_SV" = "null" ]; then
+  # Fallback: exec into fallback pod (avoids NetworkPolicy denial on naive pods — Hard Rule H5).
+  if [ -n "$BETA_SMOKE_FALLBACK_POD" ] && [ -n "$BETA_SMOKE_FALLBACK_URL" ]; then
+    POD=$(kubectl --context="$BETA_KUBE_CTX" get pods -l app="$BETA_SMOKE_FALLBACK_POD" \
+      -o jsonpath='{.items[0].metadata.name}')
+    if [ -n "$POD" ]; then
+      BETA_SV=$(kubectl --context="$BETA_KUBE_CTX" exec "$POD" -- \
+        sh -c "curl -sS --max-time 8 '$BETA_SMOKE_FALLBACK_URL'" | jq -r '.service_version' 2>/dev/null) || BETA_SV=""
+    fi
+  fi
+fi
+
+if [ -z "$BETA_SV" ] || [ "$BETA_SV" = "null" ]; then
+  echo "⛔ Smoke failed — could not extract .service_version from beta. (Tried external + in-cluster fallback.)"
+  # STOP
+fi
+echo "  beta service_version: $BETA_SV"
+
+# Parity check (only when source=prod and PROD_SMOKE_URL is set).
+if [ "$SOURCE" = "prod" ] && [ -n "$PROD_SMOKE_URL" ]; then
+  PROD_SV=$(curl -sS --max-time 10 "$PROD_SMOKE_URL" | jq -r '.service_version' 2>/dev/null) || PROD_SV=""
+  echo "  prod service_version: $PROD_SV"
+  if [ "$BETA_SV" != "$PROD_SV" ]; then
+    echo "⚠️  PARITY MISMATCH — beta($BETA_SV) ≠ prod($PROD_SV). Investigate before further promote."
+    # Do NOT STOP — operator decides; report and continue to B9.
+  else
+    echo "  ✓ Parity confirmed: beta == prod ($BETA_SV)"
+  fi
+fi
+```
+
+> **Hard Rule H7**: NEVER skip body extraction. HTTP 200 alone is insufficient — cosmetic bugs (conflict markers in version strings, wrong feature flags) return 200. The `jq -r '.service_version'` extraction is mandatory.
+
+### Step B9: Final summary
+
+**═════ BETA PROMOTE COMPLETE ═════**
+Workflow: **{RUN_URL}** (conclusion: **{conclusion}**)
+Gitops PR: **{PR_URL}** (merge SHA: `{MERGE_SHA[0:8]}`)
+Apps synced: *{count} of {total}*
+  *(list each: APP_NAME → image_tag)*
+Smoke:  `{BETA_SV}`
+  *(if parity check ran)* Prod parity: ✅ matched OR ⚠️ mismatch (prod=`{PROD_SV}`)
+══════════════════════════════════════
 
 💡 Tip: {random tip — read `~/.claude/commands/scripts/tw-tips.txt`, pick one non-comment line at random}
 
@@ -1143,27 +1481,35 @@ fi
 - `OLD_SHA=<sha>` — current `origin/$RC_BRANCH` sha
 - `NEW_SHA=<sha>` — sha of the rebuilt commit
 - `ADDED_ON_PROD<<EOF ... EOF` — heredoc list of files present on `$PROD_BRANCH` but not on `$RC_BRANCH`; rebuild deletes them from RC (empty line `ADDED_ON_PROD=` if none)
-- `ADDED_BLAME<<EOF ... EOF` — **3.18.0 addition**: per-file last-touch info on prod (`PATH|HASH|ISO_DATE|EMAIL|SUBJECT`). Use this to spot orphan hotfixes — if the last-touch subject matches `^hotfix(` or the date is recent (post `LAST_CLEAN_TAG`), the file is a candidate for "missed backport" and should NOT be silently deleted.
+- `ADDED_BLAME<<EOF ... EOF` — **3.18.0 addition, 3.19.0 delimiter fix**: per-file last-touch info on prod, format `PATH|||HASH|||ISO_DATE|||EMAIL|||SUBJECT` (triple-pipe delimiter to tolerate single `|` characters in commit subjects). Use this to spot orphan hotfixes — if the last-touch subject matches `^hotfix(` or the date is recent (post `LAST_CLEAN_TAG`), the file is a candidate for "missed backport" and should NOT be silently deleted.
 - `MODIFIED_ON_PROD<<EOF ... EOF` — heredoc list of files with **different content** on prod vs RC; rebuild overwrites prod's version with RC's (empty line `MODIFIED_ON_PROD=` if none) — **3.17.0 fix**: this case is the silent hotfix-overwrite class. Step P4.4 should have already gated obvious cases; this is the file-level safety net.
-- `MODIFIED_BLAME<<EOF ... EOF` — **3.18.0 addition**: same `PATH|HASH|ISO_DATE|EMAIL|SUBJECT` format for modified files. Same `^hotfix(` heuristic applies.
+- `MODIFIED_BLAME<<EOF ... EOF` — **3.18.0 addition, 3.19.0 delimiter fix**: same `PATH|||HASH|||ISO_DATE|||EMAIL|||SUBJECT` format for modified files. Same `^hotfix(` heuristic applies.
 - `STATUS=<dry-run|already-fast-forwardable>`
 
 **If `STATUS=already-fast-forwardable`**: No rebuild needed — skip to Step P5.
 
-**Display preview** (with 3.18.0 blame annotations to spot orphan hotfixes):
+**Display preview** (with blame annotations to spot orphan hotfixes):
+
+**Render this preview by reading from heredocs**:
+- For each line in `ADDED_BLAME` heredoc: split on `|||` to extract 5 fields (PATH, HASH, ISO_DATE, EMAIL, SUBJECT). Render one indented line per file using the format below.
+- Same for `MODIFIED_BLAME`.
+- Compute `LAST_CLEAN_DATE` from `git log -1 --format=%ai <LAST_CLEAN_TAG>` so you can compare ISO_DATE > LAST_CLEAN_DATE for the orphan-hotfix heuristic.
 
 **REBUILD RC** ── *{RC_BRANCH}* → *{PROD_BRANCH}* ────────────
   Old rc SHA: `{OLD_SHA[0:12]}`
   New rc SHA: `{NEW_SHA[0:12]}`
-  Files prod-only (will be deleted): `{added_count}`
-{for each line in ADDED_ON_PROD:}
-  `{path}` — last touched: `{HASH[0:8]}` *{ISO_DATE}* by *{EMAIL}* — "*{SUBJECT}*"
-  {⚠️ hint if SUBJECT starts with `hotfix(` OR ISO_DATE > LAST_CLEAN_TAG date — "ORPHAN HOTFIX RISK — verify before delete"}
-  Files diverged (RC content wins, prod content lost): `{modified_count}`
-{for each line in MODIFIED_ON_PROD:}
-  `{path}` — last touched: `{HASH[0:8]}` *{ISO_DATE}* by *{EMAIL}* — "*{SUBJECT}*"
-  {⚠️ hint if SUBJECT starts with `hotfix(` OR ISO_DATE > LAST_CLEAN_TAG date — "ORPHAN HOTFIX RISK — verify before overwrite"}
+
+  Files prod-only (will be deleted by rebuild): `{added_count}`
+  *(per file, one indented line; mark ⚠️ ORPHAN HOTFIX RISK if SUBJECT starts with `hotfix(` OR ISO_DATE > LAST_CLEAN_DATE)*
+
+   `{path}` — last touched `{HASH[0:8]}` on *{ISO_DATE}* by *{EMAIL}* — "*{SUBJECT}*"
+   ⚠️ ORPHAN HOTFIX RISK — verify before delete   *(only emit this line when heuristic matches)*
+
+  Files diverged (RC content wins, prod content overwritten): `{modified_count}`
+  *(same per-file rendering; same heuristic; phrase "verify before overwrite" instead)*
 ────────────────────────────────────────────────────────────
+
+> **3.19.0**: The blame fields use `|||` (triple-pipe) as delimiter — single `|` in commit subjects (e.g., `feat: support a|b syntax`) used to corrupt parsing. Split on `|||` not `|`.
 
 > **3.18.0 blame heuristic**: files last-touched by a `hotfix(...)` commit (or recently, post `LAST_CLEAN_TAG`) are flagged as orphan-hotfix candidates. The user should verify each `⚠️` flag before confirming rebuild — these are the cases where the rebuild would silently undo a production fix.
 
@@ -1418,36 +1764,55 @@ gh workflow run "$PROD_WORKFLOW" --ref "$VERSION" -f environment=production -f v
 
 > **Why this exists**: 在 `git tag` 之后，typical release pipeline 还有 5 步：(1) prod-deploy workflow 跑完 (2) artifact PR (e.g., gitops repo) review/merge (3) 集群 sync trigger (4) 等 healthy (5) in-cluster smoke。Skill 不强自动化（每个 repo 的 toolchain 不一样），但要让用户有 checklist 不卡住。Real incident: vi_agent V0.1.28 第一次 promote 在 P11 显示 ✅ 后 user 不知道还有 5 步，后来主动喊"引导我继续，别停下来"才接住。
 
-Display the following checklist with conditional items based on configured deploy infra:
+**3.19.0 rewrite**: previous version used inline markdown conditionals like `*{if X set}*` which LLM renders literally. This version uses explicit prose so the LLM picks which items to show.
 
-**═════ POST-PROMOTE CHECKLIST ═════**
+**First, read config and decide which items apply** (do NOT render until you've decided):
 
-**1. Production-deploy workflow** *{if $PROD_WORKFLOW set}*
-   `gh run watch $(gh run list --workflow $PROD_WORKFLOW --branch $VERSION --limit 1 --jq '.[0].databaseId') --exit-status`
-   Typical duration: depends on your build matrix. Block here until green.
+```bash
+GITOPS_REPO=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.gitops_repo "" 2>/dev/null)
+ARGOCD_APPS=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.argocd_apps "" 2>/dev/null)
+SMOKE_URL=$(bash ~/.claude/commands/scripts/tw-config.sh deploy.prod_smoke_url "" 2>/dev/null)
+# $PROD_WORKFLOW is already bound from Step P0.
+```
 
-**2. Artifact-promote PR** *{if config has `deploy.gitops_repo` set, e.g., for gitops/argocd flows}*
-   `gh pr list --repo {GITOPS_REPO} --head "promote/prod-{VERSION}" --state open`
+**Render rules**:
+- Always render the section header + step 1 (workflow watch) + step 5 (smoke). Step 1 omits the `$PROD_WORKFLOW` mention if it's not set.
+- Render step 2 (gitops PR) **only if** `GITOPS_REPO` is non-empty.
+- Render step 3 (cluster sync) **only if** `ARGOCD_APPS` is non-empty OR user's setup clearly uses ArgoCD/Flux (user can tell you).
+- Renumber whatever items you actually render — don't leave gaps like "1, 3, 5".
+- Substitute config values into the bash examples. NEVER leave a literal `{GITOPS_REPO}` / `{VERSION}` placeholder visible.
+
+**Section template** (render only the items that apply, after substitution):
+
+═════ POST-PROMOTE CHECKLIST ═════
+
+**N. Production-deploy workflow**
+   *(if `$PROD_WORKFLOW` is set)* `gh run watch $(gh run list --workflow $PROD_WORKFLOW --branch $VERSION --limit 1 --jq '.[0].databaseId') --exit-status`
+   *(if unset)* — skip this step or note manual deploy required for $VERSION
+   Block here until green; typical duration depends on your build matrix.
+
+**N. Artifact-promote PR** *(only when `deploy.gitops_repo` is set; substitute value)*
+   `gh pr list --repo <GITOPS_REPO_VALUE> --head "promote/prod-<VERSION_VALUE>" --state open`
    Review the diff, then squash-merge.
 
-**3. Cluster sync** *{if config has `deploy.argocd_apps` set, OR inline mention if using ArgoCD/Flux}*
-   For ArgoCD prod (no auto-sync, manual gate): `kubectl -n argocd patch application <APP> --type merge -p '{"operation":{"initiatedBy":{"username":"team-rc-promote"},"sync":{"syncStrategy":{"hook":{}},"prune":false}}}'`
-   Repeat for each affected app. (`argocd app sync` CLI may fail in-pod due to RBAC; patch is the universal path.)
+**N. Cluster sync** *(only when `deploy.argocd_apps` is set OR user's pipeline uses ArgoCD/Flux)*
+   For ArgoCD prod (no auto-sync, manual gate): for each app, `kubectl -n argocd patch application <APP> --type merge -p '{"operation":{"initiatedBy":{"username":"team-rc-promote"},"sync":{"syncStrategy":{"hook":{}},"prune":false}}}'`
+   (`argocd app sync` CLI may fail in-pod due to RBAC; patch is the universal path.)
 
-**4. Wait Synced/Healthy**
-   Poll until `.status.sync.status=Synced` AND `.status.health.status=Healthy` for each app. Migration jobs (PreSync hooks) may add 1-2min — that's expected.
+**N. Wait Synced/Healthy** *(only when step N-1 cluster-sync was rendered)*
+   Poll until `.status.sync.status=Synced` AND `.status.health.status=Healthy` for each app. Migration jobs (PreSync hooks) may add 1-2 min — that's expected.
 
-**5. In-cluster smoke** *(NOT optional)*
-   Local `curl` cannot validate prod ingress for many setups (corp ZTNA / NAT / NetworkPolicy). Exec from a pod with proper service-account + NetworkPolicy:
+**N. In-cluster smoke** *(ALWAYS render — not optional)*
+   Local `curl` cannot validate prod ingress for many setups (corp ZTNA / NAT / NetworkPolicy). Exec from a pod with proper service-account + NetworkPolicy. If `deploy.prod_smoke_url` is set, use it; else ask user for the URL or pod they want to exec from.
    ```
-   POD=$(kubectl -n {NS} get pods -l app={SOME_APP} -o jsonpath='{.items[0].metadata.name}')
-   kubectl -n {NS} exec "$POD" -- sh -c 'curl -sS http://{INTERNAL_SVC}/api/config'
+   POD=$(kubectl -n <NAMESPACE> get pods -l app=<LONG_RUNNING_APP> -o jsonpath='{.items[0].metadata.name}')
+   kubectl -n <NAMESPACE> exec "$POD" -- sh -c 'curl -sS <PROD_SMOKE_URL_VALUE>'
    ```
    **Inspect the response body** — not just `-w "%{http_code}"`. Cosmetic bugs (e.g., conflict markers in version strings, wrong feature flags) still return HTTP 200; only body inspection catches them. Real incident: vi_agent V0.1.28 shipped `service_version` containing literal `<<<<<<<` conflict markers; `/api/config` body inspection caught it post-deploy.
 
-**═════════════════════════════════**
+═════════════════════════════════
 
-> **Hint**: If your deploy chain is fully automated (single tag-push → green), steps 1-4 collapse to "wait for prod_workflow green". If it's manual (typical for high-stakes prod), steps 2-4 are sequential gates each requiring human review. Steps 5 is **always** required — automated smoke runs on staging; in-cluster prod smoke is what catches the cosmetic class.
+> **Hint**: If your deploy chain is fully automated (single tag-push → green), the first item collapses to "wait for prod_workflow green" and you may not need 2-4. If it's manual (typical for high-stakes prod), the middle items are sequential gates each requiring human review. The smoke is **always** required — automated smoke runs on staging; in-cluster prod smoke is what catches the cosmetic class.
 
 ### Step P11: Summary
 
@@ -1518,6 +1883,7 @@ Output the following and **STOP**:
   8. Create GitHub Release with auto-generated notes
   9. Clean up RC branch
   10. Trigger production deploy (if `deploy.production_workflow` configured), or guide manual deploy
+  11. **Post-promote checklist** (3.18.0) — config-aware: prod-workflow watch, artifact-PR review (if `deploy.gitops_repo`), cluster sync (if `deploy.argocd_apps`), wait healthy, in-cluster smoke (always). Educational; not auto-executed.
 
 **WHEN TO USE**
   After RC has been tested on staging and approved.
@@ -1609,6 +1975,7 @@ Output the following and **STOP**:
   4. Tag hotfix version on *{PROD_BRANCH}*
   5. Create GitHub Release
   6. Backport (cherry-pick) to *{BASE_BRANCH}*
+  6.5. **(optional, 3.18.0)** RC-rebuild sub-chain — cut `rc/{version}` from prod HEAD, dispatch build workflow, watch completion, atomic tag re-push (delete + recreate Release). Enables hotfix to actually land in prod for pipelines whose `promote-prod` is a staging-tag-copy operation (no rebuild on tag). **Activated by** `release.hotfix_needs_rc_rebuild: true` + `release.build_workflow: "..."` in `config.yml`. Default OFF.
   7. Clean up hotfix branch
 
 **WHEN TO USE**
@@ -1625,6 +1992,75 @@ Output the following and **STOP**:
 **BACKPORT CONFLICTS**
   If the cherry-pick to *{BASE_BRANCH}* has conflicts, you'll be guided through resolution.
   The hotfix is already on *{PROD_BRANCH}* — backport can be retried manually if needed.
+
+---
+
+## Operation Beta Help
+
+> Triggered by `/team-rc beta help`.
+
+Output the following and **STOP**:
+
+**`/team-rc beta` — Beta Environment Promote**
+────────────────────────────────────────────
+
+**USAGE**
+  `/team-rc beta`                                                      Interactive: prompt for source + reason
+  `/team-rc beta --source=staging`                                     Take latest staging artifacts
+  `/team-rc beta --source=prod --reason="<text>"`                      Snapshot current prod (parity test); reason mandatory
+  `/team-rc beta --source=explicit --version-tag=V0.1.32 --reason=...` Specific tag; version-tag + reason mandatory
+  `/team-rc beta --dry-run`                                            Echo-only — NO workflow dispatch, NO kubectl, NO curl
+
+**WHAT IT DOES** (chain validated on vi_agent 2026-05-11)
+  B1. Pre-flight: gh auth, repo lookup, arg parse + validation
+  B2. Dispatch `release.beta_workflow` with source/reason/version_tag inputs
+  B3. Watch workflow to completion (typically 5-15min)
+  B4. Surface gitops promote PR + per-app image-tag diff for operator review
+  B5. **HARD GATE**: operator merges the gitops PR manually — skill NEVER auto-merges
+  B6. ArgoCD `refresh=normal` annotation + `kubectl patch` sync (per-app, sync-options aware)
+  B7. Wait Synced/Healthy across all `deploy.beta_apps` (timeout 10min; PreSync hooks add 1-2min)
+  B8. In-cluster smoke: GET `deploy.beta_smoke_url`, extract `.service_version`. For source=prod: parity check vs `deploy.prod_smoke_url`
+  B9. Summary: workflow URL + gitops PR + app states + smoke result
+
+**WHEN TO USE**
+  Staging too churned-out to be a real preprod? Beta is the intermediate gate.
+  Three sources match three use-cases:
+    `--source=staging` — daily "promote what's tested into beta"
+    `--source=prod`    — "snapshot prod for parity testing" (e.g., reproducing a prod issue)
+    `--source=explicit` — "promote a specific tag" (e.g., picking a known-good RC)
+
+**PREREQUISITES** (config in `$TEAMWORK_DIR/config.yml`)
+  Required (skill aborts B1 if missing):
+    `release.beta_workflow: "promote-beta.yml"`
+    `deploy.beta_apps: [app-name-1, app-name-2, ...]`
+    `deploy.beta_kube_context: "kbeta"`         *(kubectl context name for beta cluster)*
+    `deploy.beta_smoke_url: "https://beta.example.com/api/config"`
+  Optional (fallback / additional features):
+    `deploy.beta_gitops_repo: "owner/gitops"`   *(falls back to deploy.gitops_repo)*
+    `deploy.prod_smoke_url: "..."`              *(enables parity check for source=prod)*
+    `deploy.beta_smoke_fallback_pod: "<label-app>"`  *(in-cluster smoke pod when external URL unreachable)*
+    `deploy.beta_smoke_fallback_url: "http://..."`   *(internal URL used from fallback pod)*
+
+**HARD RULES** (skill MUST NOT violate)
+  H1 NEVER `gh pr merge` the gitops PR — operator manual only
+  H2 NEVER add `auto-merge` label to gitops PR
+  H3 `--dry-run` = echo-only, NO actions take effect
+  H4 NEVER use local `argocd app sync` CLI — use `kubectl annotate` + `kubectl patch` instead
+  H5 NEVER `kubectl run smoke ...` naively — beta has default-deny NetworkPolicy
+  H6 `--source=prod` REQUIRES non-empty `--reason`
+  H7 Smoke MUST extract `.service_version` field — HTTP 200 alone hides cosmetic bugs
+  H8 Phantom-Succeeded variant (phase=Succeeded + empty syncResult.resources + still OutOfSync) → re-run SAME patch; don't escalate first occurrence
+
+**TROUBLESHOOTING**
+  "Required beta config missing" → fill the keys listed above
+  Workflow run fails B3 → `gh run view <id> --log-failed`; common cause is workflow's own input validation (e.g., F4.a 2026-05-11 was a missing `matplotlib` install in CI)
+  ArgoCD app still OutOfSync after patch → wait 30s; if still stuck, re-run the same patch (H8 phantom-Succeeded variant); if a 3rd attempt fails, surface to user with `kubectl describe application/<app> -n argocd`
+  Smoke `service_version=null` → check `BETA_SMOKE_URL` is correct; fall back to in-cluster pod exec (skill auto-tries this); confirm `vi-frontend` (or your fallback) is healthy
+  Parity mismatch on `source=prod` → don't auto-rollback; surface mismatch + let operator decide (could be deliberate, e.g., prod hotfix not yet in beta)
+
+**REFERENCES**
+  Validated end-to-end on `flair-home-stylist/vi_agent` 2026-05-11 (F4 dossier).
+  F5 brief (canonical contract): vi_agent's `drive-projects/v2/beta-prod-parity-audit@2.3.0/grading/evidence/f5-brief-for-erwin.md`
 
 ---
 

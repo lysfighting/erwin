@@ -2,6 +2,82 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.19.0] — 2026-05-11
+
+### Added — `/team-rc beta` (F5 brief from vi_agent Phase 2 beta-prod-parity-audit)
+
+New top-level action `beta` as peer to prepare/cancel/fix/hotfix/promote. Wraps the verified 9-step chain validated end-to-end on vi_agent 2026-05-11 (run 25657907844, gitops PR #434, beta service_version=prod parity confirmed).
+
+**Motivation**: Teams whose staging is too dev-churned to function as a preprod gate need an intermediate environment between staging and prod. Without a skill wrapper, every operator re-discovers the same rakes (NetworkPolicy denial on naive smoke pods, ArgoCD 3-min auto-refresh lag, phantom-Succeeded race, GitHub-binds-release-to-tag-at-creation trap). `/team-rc beta` codifies the validated route.
+
+**4 CLI variants**:
+- `/team-rc beta` — interactive prompt for source + reason
+- `/team-rc beta --source=staging` — latest tested artifacts
+- `/team-rc beta --source=prod --reason="..."` — parity snapshot (reason mandatory)
+- `/team-rc beta --source=explicit --version-tag=Vx --reason="..."` — specific tag
+- `--dry-run` flag — echo-only, no actions
+
+**9-step chain**:
+- B1 Pre-flight: gh auth, config validation (missing keys → abort with discoverable error), arg parse
+- B2 Dispatch `release.beta_workflow` with source/reason/version_tag inputs
+- B3 `gh run watch` to completion (typically 5-15min)
+- B4 Surface gitops promote PR + per-app image-tag diff for operator review
+- B5 **HARD GATE**: operator merges the gitops PR manually — skill NEVER auto-merges
+- B6 ArgoCD `kubectl annotate refresh=normal` + per-app `kubectl patch operation` (NOT `argocd app sync` — port-forward broken in many corp networks)
+- B7 Wait Synced/Healthy across all `deploy.beta_apps` (10min timeout)
+- B8 Smoke: GET `deploy.beta_smoke_url`, extract `.service_version`. Parity check vs `deploy.prod_smoke_url` if source=prod. In-cluster fallback if external URL blocked
+- B9 Summary: workflow URL + gitops PR + app states + smoke result
+
+**8 hard rules** embedded throughout (NEVER `gh pr merge` gitops PR / NEVER auto-merge label / `--dry-run` echo-only / NEVER `argocd app sync` CLI / NEVER naive `kubectl run smoke` / source=prod REQUIRES reason / smoke MUST extract `.service_version` / phantom-Succeeded variant → re-run same patch).
+
+**Config keys** (`release.beta_workflow`, `deploy.beta_apps`, `deploy.beta_kube_context`, `deploy.beta_smoke_url` required; `deploy.beta_gitops_repo`, `deploy.prod_smoke_url`, `deploy.beta_smoke_fallback_pod`, `deploy.beta_smoke_fallback_url` optional). Generated `config.yml` template (`/team` init Step 4b) now documents all of these with inline comments + version notes.
+
+**Phantom-Succeeded variant B codified**: After ArgoCD sync patch, some apps return `phase=Succeeded` with empty `syncResult.resources` but remain `OutOfSync`. Observed 2× now (2026-04-20 staging-vi-api-server, 2026-05-11 beta-vi-api-server). Skill re-runs the same patch — typically self-corrects on retry.
+
+### Fixed — 3.18.0 post-release audit (Round-2 findings)
+
+Adversarial audit caught 6 RED + 6 actionable YELLOW bugs in the 3.18.0 hotfix/beta surface. All fixed:
+
+🔴 RED:
+1. **`cmd_repush_tag_and_release` stderr redirect order**: 4 instances of `2>&1 >/dev/null` (leaks stderr to terminal) corrected to `>/dev/null 2>&1`.
+2. **BLAME field pipe delimiter**: Commit subjects containing single `|` (e.g., `feat: support a|b syntax`) corrupted parsing in 3.18.0. Changed delimiter to `|||` (triple-pipe) — vanishingly rare in real subjects. Output format now `PATH|||HASH|||DATE|||EMAIL|||SUBJECT`. P4.5 markdown updated to split on `|||`.
+3. **conflict-marker-check.yml template substitution**: Template used literal `{BASE_BRANCH}` placeholder; LLM could write it verbatim to file (invalid YAML). Now uses `{{BASE_BRANCH}}` double-brace + explicit prose instructions to substitute before writing, plus a worked example output for `pre-launch`/`main`.
+4. **Step P10c conditional rendering**: `*{if X set}*` were markdown-comment-style conditionals that LLM rendered literally. Rewrote with explicit prose construction rules ("First, read config and decide which items apply; then render only those, renumber whatever you render — don't leave gaps").
+5. **H7.5 cleanup-on-failure**: If H7.5b/c/d failed, the temp `rc/$HOTFIX_VERSION` branch on origin was never deleted, causing collisions on retry. Added explicit cleanup-before-STOP at each failure exit.
+6. **4 new config keys undocumented**: `deploy.gitops_repo`, `deploy.argocd_apps`, `release.hotfix_needs_rc_rebuild`, `release.build_workflow` (added in 3.17.0/3.18.0) were not in the generated `config.yml` template. Now documented with version notes in `/team` init Step 4b.
+
+🟡 actionable YELLOW:
+7. `/team-rc promote help` now lists step 11 (P10c post-promote checklist).
+8. `/team-rc hotfix help` now mentions Step 6.5 (RC-rebuild sub-chain) + `release.hotfix_needs_rc_rebuild` config key.
+9. **`/team doctor` Check 13** (new): release config integrity cross-key validation. Catches `hotfix_needs_rc_rebuild=true` without `build_workflow`, and partial beta config (workflow set but apps/context/smoke missing).
+10. `_blame_for_paths` fallback now emits 5 properly-delimited fields (`PATH|||(unknown)|||(unknown)|||(unknown)|||(no history)`) instead of 3 pipes which broke field-count assumptions.
+11. Unit test `test_repush_tag_release_rejects_unreadable_notes` now uses a `chmod 000` temp file instead of a fixed `/no/such/file/anywhere.md` path that could theoretically exist.
+12. Unit test blame regex tightened: email field `.*` → `[^|]+@[^|]+` to actually verify it looks like an email; date field tightened to ISO format.
+
+🟡 deferred (real but harder, not in 3.19.0): gh run dispatch race condition (#10), CTRL-C trap during `gh run watch` (#11), `gh release view` auth-vs-not-found conflation (#13), `gh release create` URL parsing when stdout has warnings (#14). These need deeper refactor and are noted for 3.20.
+
+### Tests
+- `tw-unit-test.sh` 70/70 → **71/71** (added pipe-in-subject test for blame delimiter robustness; updated existing blame test for `|||` format).
+- `tw-fleet-smoke-test.sh` 40/40 (no fleet impact).
+
+### Memory
+- 1 new: `feedback_beta_environment_pattern.md` — beta env pattern + 9-step chain + 8 hard rules + phantom-Succeeded variant B. Indexed in `MEMORY.md`.
+
+### Out of scope (vi_agent CI evolution)
+- `promote-beta.yml` itself is owned by vi_agent; F5 brief explicitly leaves CI workflow files alone. Skill ships as the **operator interface** wrapping whatever workflow the repo provides.
+- F4.a fix (missing `matplotlib` install in `promote-beta.yml` lines 86-91) is a vi_agent CI commit (PR #1910), already merged. Skill prevents future operators from re-discovering this class of bug by making the workflow watch + log surfacing first-class.
+
+### Known limitations (carried)
+- Conservative SHA-not-ancestor → MISSING (3.17.0 behavior, unchanged) — Force option resolves false positives for cherry-pick-x cases.
+- Beta flow `--limit 1` race window (~3s) if multiple operators dispatch the same workflow simultaneously; acceptable for typical solo / low-cadence beta promote usage.
+- vi_agent NOT auto-synced — install via `./install.sh --copy ../vi_agent` after pulling erwin's 3.19.0. After install, configure the new beta + hotfix keys in `.teamspace/config.yml`.
+
+### References
+- F5 brief (canonical contract): vi_agent's `drive-projects/v2/beta-prod-parity-audit@2.3.0/grading/evidence/f5-brief-for-erwin.md`
+- F4 dossier (every step + edge case): same dir, `f4-first-run-2026-05-11.md`
+- F4.a fix: https://github.com/flair-home-stylist/vi_agent/pull/1910
+- Real ship run validating the chain: GitHub Actions run 25657907844; gitops PR https://github.com/flair-home-stylist/gitops-config/pull/434
+
 ## [3.18.0] — 2026-04-28
 
 ### Added — Release lifecycle completion (vi_agent V0.1.28 retro)

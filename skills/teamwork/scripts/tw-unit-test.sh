@@ -1208,6 +1208,7 @@ test_hotfix_divergence_old_hotfix_filtered
 test_rebuild_blame_populated_for_modified() {
   # Synthesize: prod has hotfix that modified a file. RC has the older version.
   # Expected: MODIFIED_BLAME contains the file with hotfix subject.
+  # 3.19.0: format is now PATH|||HASH|||DATE|||EMAIL|||SUBJECT (triple-pipe).
   local repo
   repo=$(_setup_hotfix_repo)
   (
@@ -1223,11 +1224,38 @@ test_rebuild_blame_populated_for_modified() {
   out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-git.sh" rebuild-rc-on-prod rc/V0.1.99 main V0.1.99 --dry-run 2>&1)
 
   local ok=1
-  echo "$out" | grep -q "^MODIFIED_BLAME<<EOF$"                                   || { fail "rebuild-blame: MODIFIED_BLAME missing heredoc"; ok=0; }
-  echo "$out" | grep -qE "^app.txt\|[0-9a-f]{7,}\|.*\|.*\|hotfix\(app\): orphan"  || { fail "rebuild-blame: MODIFIED_BLAME entry malformed (expected pipe-delimited path|hash|date|email|subject)"; ok=0; }
-  echo "$out" | grep -q "^ADDED_BLAME=$"                                          || { fail "rebuild-blame: ADDED_BLAME should be empty (no added files)"; ok=0; }
+  echo "$out" | grep -q "^MODIFIED_BLAME<<EOF$"                                                        || { fail "rebuild-blame: MODIFIED_BLAME missing heredoc"; ok=0; }
+  # Tightened email regex: [^|]+@[^|]+ (not just .*)
+  echo "$out" | grep -qE '^app\.txt\|\|\|[0-9a-f]{7,}\|\|\|[0-9-]+ [0-9:]+ [+-][0-9]+\|\|\|[^|]+@[^|]+\|\|\|hotfix\(app\): orphan candidate' \
+                                                                                                       || { fail "rebuild-blame: MODIFIED_BLAME entry should be PATH|||HASH|||DATE|||EMAIL|||SUBJECT (triple-pipe delim, real email, date)"; ok=0; }
+  echo "$out" | grep -q "^ADDED_BLAME=$"                                                               || { fail "rebuild-blame: ADDED_BLAME should be empty (no added files)"; ok=0; }
 
-  [ "$ok" -eq 1 ] && pass "rebuild-rc-on-prod: MODIFIED_BLAME populated with last-touch info (orphan-hotfix detection signal)"
+  [ "$ok" -eq 1 ] && pass "rebuild-rc-on-prod: MODIFIED_BLAME populated with last-touch info (triple-pipe delim, orphan-hotfix detection signal)"
+}
+
+test_rebuild_blame_handles_pipe_in_subject() {
+  # 3.19.0 fix: commit subject with single `|` should NOT corrupt blame entry.
+  # With triple-pipe delim, single `|` in subject is harmless.
+  local repo
+  repo=$(_setup_hotfix_repo)
+  (
+    cd "$repo"
+    sleep 1
+    echo "v0-with-pipe" > app.txt
+    git add app.txt
+    git commit --quiet -m "feat(parser): support a|b syntax (single pipe in subject)"
+    git push --quiet origin main
+  )
+
+  local out
+  out=$(cd "$repo" && bash "$SCRIPT_DIR/tw-git.sh" rebuild-rc-on-prod rc/V0.1.99 main V0.1.99 --dry-run 2>&1)
+
+  local ok=1
+  # The entire subject (including the single pipe) should land in the SUBJECT field after the 4th `|||`.
+  echo "$out" | grep -qE '\|\|\|feat\(parser\): support a\|b syntax' \
+                                                                       || { fail "rebuild-blame: triple-pipe delim should preserve single | in commit subject (entry: $(echo "$out" | grep app.txt))"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "rebuild-rc-on-prod: triple-pipe delim survives single-pipe in commit subject (3.19.0 bug fix)"
 }
 
 test_rebuild_blame_empty_when_fast_forwardable() {
@@ -1249,6 +1277,7 @@ test_rebuild_blame_empty_when_fast_forwardable() {
 section "GIT — REBUILD-RC-ON-PROD BLAME"
 test_rebuild_blame_populated_for_modified
 test_rebuild_blame_empty_when_fast_forwardable
+test_rebuild_blame_handles_pipe_in_subject
 
 # ─── GIT — REPUSH-TAG-AND-RELEASE (3.18.0) ──────────────
 # Note: `repush-tag-and-release` calls `gh release` which requires GitHub auth +
@@ -1267,8 +1296,16 @@ test_repush_tag_release_rejects_missing_args() {
 }
 
 test_repush_tag_release_rejects_unreadable_notes() {
+  # Use a chmod 000 temp file — guaranteed unreadable, immune to fs-state collisions.
+  local notes="$TMPDIR_ROOT/unreadable-notes-$$.md"
+  echo "x" > "$notes"
+  chmod 000 "$notes"
+
   local out exit_code=0
-  out=$(bash "$SCRIPT_DIR/tw-git.sh" repush-tag-and-release V0.1.0 abc123 "Title" "/no/such/file/anywhere.md" 2>&1) || exit_code=$?
+  out=$(bash "$SCRIPT_DIR/tw-git.sh" repush-tag-and-release V0.1.0 abc123 "Title" "$notes" 2>&1) || exit_code=$?
+  chmod 644 "$notes" 2>/dev/null  # restore for cleanup
+  rm -f "$notes"
+
   if [ "$exit_code" -ne 0 ] && echo "$out" | grep -q "notes file not readable"; then
     pass "repush-tag-and-release: rejects unreadable notes file with clear error"
   else
