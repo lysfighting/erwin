@@ -70,7 +70,7 @@ Adversarial audit caught 6 RED + 6 actionable YELLOW bugs in the 3.18.0 hotfix/b
 ### Known limitations (carried)
 - Conservative SHA-not-ancestor → MISSING (3.17.0 behavior, unchanged) — Force option resolves false positives for cherry-pick-x cases.
 - Beta flow `--limit 1` race window (~3s) if multiple operators dispatch the same workflow simultaneously; acceptable for typical solo / low-cadence beta promote usage.
-- vi_agent NOT auto-synced — install via `./install.sh --copy ../vi_agent` after pulling erwin's 3.19.0. After install, configure the new beta + hotfix keys in `.teamspace/config.yml`.
+- vi_agent NOT auto-synced — install via `./install.sh --copy ../vi_agent` after pulling erwin's 3.19.0. After install, configure the new beta + hotfix keys in your project's teamwork config (vi_agent: `.teamwork/config.yml`; other repos may use `.teamspace/config.yml` — scripts auto-detect either).
 
 ### References
 - F5 brief (canonical contract): vi_agent's `drive-projects/v2/beta-prod-parity-audit@2.3.0/grading/evidence/f5-brief-for-erwin.md`
