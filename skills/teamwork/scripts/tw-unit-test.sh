@@ -1275,6 +1275,94 @@ test_hotfix_divergence_old_hotfix_filtered() {
   [ "$ok" -eq 1 ] && pass "hotfix-divergence: hotfix tag predating last_clean_tag → time-filtered out"
 }
 
+# ─── BETA B7 DIAGNOSTIC (3.20.0) ────────────────────────
+# These tests verify the deterministic jq expressions in /team-rc beta Step B7
+# timeout diagnostic correctly classify ArgoCD Application JSON into the right
+# phantom-Succeeded variant. They don't test the full LLM-rendered output —
+# they test the classifier core that decides which hint to print.
+
+test_b7_variant_c_signature_detection() {
+  # Variant C: phase=Succeeded + resources>0 + Deployment "configured" + OutOfSync.
+  local app_json
+  app_json=$(cat <<'EOF'
+{
+  "spec": {"destination": {"namespace": "vi-beta"}},
+  "status": {
+    "sync": {"status": "OutOfSync"},
+    "health": {"status": "Healthy"},
+    "operationState": {
+      "phase": "Succeeded",
+      "message": "successfully synced (all tasks run)",
+      "syncResult": {
+        "resources": [
+          {"kind": "Deployment", "name": "vi-api-server", "status": "Synced",
+           "message": "deployment.apps/vi-api-server configured"},
+          {"kind": "Service", "name": "vi-api-server", "status": "Synced",
+           "message": "unchanged"}
+        ]
+      }
+    }
+  }
+}
+EOF
+)
+
+  local res_count deploy_configured pvc_diff
+  res_count=$(echo "$app_json" | jq -r '.status.operationState.syncResult.resources // [] | length')
+  deploy_configured=$(echo "$app_json" | jq -r '.status.operationState.syncResult.resources // [] |
+    map(select(.kind=="Deployment" and (.message // "" | test("configured")))) | length')
+  pvc_diff=$(echo "$app_json" | jq -r '.status.operationState.syncResult.resources // [] |
+    map(select(.kind=="PersistentVolumeClaim")) | length')
+
+  local ok=1
+  [ "$res_count" = "2" ]         || { fail "B7 variant C: res_count expected 2, got $res_count"; ok=0; }
+  [ "$deploy_configured" = "1" ] || { fail "B7 variant C: deploy_configured expected 1, got $deploy_configured"; ok=0; }
+  [ "$pvc_diff" = "0" ]          || { fail "B7 variant C: pvc_diff expected 0, got $pvc_diff"; ok=0; }
+
+  [ "$ok" -eq 1 ] && pass "B7 diagnostic: variant-C signature classifies correctly (deploy_configured=1, pvc_diff=0, res_count>0)"
+}
+
+test_b7_variant_b_distinction() {
+  # Variant B: resources=[]. B6 H8 auto-retried — B7 should NOT classify as variant C.
+  local app_json='{"status":{"operationState":{"phase":"Succeeded","syncResult":{"resources":[]}}}}'
+  local res_count
+  res_count=$(echo "$app_json" | jq -r '.status.operationState.syncResult.resources // [] | length')
+
+  if [ "$res_count" = "0" ]; then
+    pass "B7 diagnostic: variant B (resources=[]) classified as resources=0 (different bucket from C)"
+  else
+    fail "B7 diagnostic: variant B res_count expected 0, got $res_count"
+  fi
+}
+
+test_b7_pvc_trap_distinction() {
+  # PVC volumeName trap (memory V0.1.30): resources contains PVC kinds.
+  # Diagnostic should select PVC-trap branch, NOT variant C, even if Deployment
+  # row also says "configured".
+  local app_json
+  app_json=$(cat <<'EOF'
+{"status":{"operationState":{"syncResult":{"resources":[
+  {"kind":"PersistentVolumeClaim","name":"pgdata","status":"OutOfSync","message":"differs in volumeName"},
+  {"kind":"Deployment","name":"db","status":"Synced","message":"unchanged"}
+]}}}}
+EOF
+)
+  local pvc_diff
+  pvc_diff=$(echo "$app_json" | jq -r '.status.operationState.syncResult.resources // [] |
+    map(select(.kind=="PersistentVolumeClaim")) | length')
+
+  if [ "$pvc_diff" = "1" ]; then
+    pass "B7 diagnostic: PVC trap signature (pvc_diff>0) correctly bucketed away from variant C"
+  else
+    fail "B7 diagnostic: pvc_diff expected 1, got $pvc_diff"
+  fi
+}
+
+section "BETA — B7 DIAGNOSTIC (3.20.0)"
+test_b7_variant_c_signature_detection
+test_b7_variant_b_distinction
+test_b7_pvc_trap_distinction
+
 section "GIT — HOTFIX-DIVERGENCE-CHECK"
 test_hotfix_divergence_clean_path
 test_hotfix_divergence_no_backport

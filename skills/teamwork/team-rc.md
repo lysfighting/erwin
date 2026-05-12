@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.19.1"
+version: "3.20.0"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -1288,7 +1288,102 @@ else
   done
 
   if [ "$STILL_SYNCING" -eq 1 ]; then
-    echo "⛔ Timeout waiting for beta apps to reach Synced/Healthy. Run /team doctor or check ArgoCD UI."
+    # 3.20.0: rich diagnostic snapshot + decision tree on timeout.
+    # Replaces the generic "check ArgoCD UI" hint that led fresh-session operators
+    # to mis-attribute to PVC-volumeName-trap. Per 2026-05-12 audit follow-up:
+    # erwin-3.20-followup-b7-ux.md.
+    echo ""
+    echo "⛔ B7 timeout — non-recovering app(s) after 10min. Diagnostic snapshot:"
+    echo ""
+
+    for app in $OUTOFSYNC; do
+      APP_JSON=$(kubectl --context="$BETA_KUBE_CTX" get application/${app} -n argocd -o json 2>/dev/null) || continue
+      SYNC_STATUS=$(echo "$APP_JSON" | jq -r '.status.sync.status // "-"')
+      HEALTH_STATUS=$(echo "$APP_JSON" | jq -r '.status.health.status // "-"')
+      OP_PHASE=$(echo "$APP_JSON" | jq -r '.status.operationState.phase // "-"')
+      OP_MSG=$(echo "$APP_JSON" | jq -r '.status.operationState.message // "-"')
+      RES_COUNT=$(echo "$APP_JSON" | jq -r '.status.operationState.syncResult.resources // [] | length')
+      NS=$(echo "$APP_JSON" | jq -r '.spec.destination.namespace // ""')
+
+      # Skip apps that converged to Synced/Healthy before the snapshot ran.
+      [ "$SYNC_STATUS" = "Synced" ] && [ "$HEALTH_STATUS" = "Healthy" ] && continue
+
+      echo "  ${app}:"
+      echo "    sync.status:       $SYNC_STATUS"
+      echo "    health.status:     $HEALTH_STATUS"
+      echo "    op.phase:          $OP_PHASE"
+      echo "    op.message:        \"$OP_MSG\""
+      echo "    syncResult.resources: count=$RES_COUNT"
+
+      # Per-resource detail (verbatim status + message from ArgoCD).
+      if [ "$RES_COUNT" -gt 0 ]; then
+        echo "$APP_JSON" | jq -r '.status.operationState.syncResult.resources[] |
+          "      \(.kind) \(.name): status=\(.status)  message=\"\(.message // "-")\""'
+      fi
+
+      # For Deployment kinds: live spec vs last-applied annotation vs latest RS.
+      # Variant C signature surfaces here: live image == prior-revision image,
+      # last-applied unchanged, no new RS — yet ArgoCD says "configured".
+      if [ -n "$NS" ] && [ "$RES_COUNT" -gt 0 ]; then
+        echo "$APP_JSON" | jq -r '.status.operationState.syncResult.resources[] |
+          select(.kind=="Deployment") | .name' | while IFS= read -r dep; do
+          [ -z "$dep" ] && continue
+          LIVE_IMG=$(kubectl --context="$BETA_KUBE_CTX" get deployment "$dep" -n "$NS" \
+            -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null) || LIVE_IMG="-"
+          LAST_APPLIED_IMG=$(kubectl --context="$BETA_KUBE_CTX" get deployment "$dep" -n "$NS" \
+            -o jsonpath='{.metadata.annotations.kubectl\.kubernetes\.io/last-applied-configuration}' 2>/dev/null \
+            | jq -r '.spec.template.spec.containers[0].image // "-"' 2>/dev/null) || LAST_APPLIED_IMG="-"
+          LATEST_RS=$(kubectl --context="$BETA_KUBE_CTX" get rs -n "$NS" \
+            -l app="$dep" --sort-by=.metadata.creationTimestamp -o json 2>/dev/null \
+            | jq -r '.items[-1] | "\(.metadata.creationTimestamp) image=\(.spec.template.spec.containers[0].image)"' 2>/dev/null) || LATEST_RS="-"
+          echo "    Live Deployment $dep:"
+          echo "      spec image:        $LIVE_IMG"
+          echo "      last-applied img:  $LAST_APPLIED_IMG"
+          echo "      latest ReplicaSet: $LATEST_RS"
+        done
+      fi
+
+      # Per-app signature classification + suggested next step.
+      DEPLOY_CONFIGURED=$(echo "$APP_JSON" | jq -r '.status.operationState.syncResult.resources // [] |
+        map(select(.kind=="Deployment" and (.message // "" | test("configured")))) | length')
+      PVC_DIFF=$(echo "$APP_JSON" | jq -r '.status.operationState.syncResult.resources // [] |
+        map(select(.kind=="PersistentVolumeClaim")) | length')
+
+      echo "    ▶ Suggested classification:"
+      if [ "$RES_COUNT" = "0" ]; then
+        echo "        Phantom variant B (resources=[]) — already auto-retried in B6 by Hard Rule H8."
+        echo "        If you're seeing this STILL, escalate: the variant-B retry didn't take. Check argocd-server pod state."
+      elif [ "$PVC_DIFF" -gt 0 ] && [ "$SYNC_STATUS" = "OutOfSync" ]; then
+        echo "        Probable PVC-volumeName trap (V0.1.30 memory). Check:"
+        echo "          gitops-config: argocd/applications/<env>/<app>.yaml ignoreDifferences entries"
+        echo "          syncOptions in app spec should include RespectIgnoreDifferences=true"
+      elif [ "$DEPLOY_CONFIGURED" -gt 0 ] && [ "$SYNC_STATUS" = "OutOfSync" ] && [ "$HEALTH_STATUS" = "Healthy" ]; then
+        echo "        Probable phantom-Succeeded **variant C** — repo-server kustomize cache served stale-revision"
+        echo "        manifest; kubectl-apply was no-op vs live. Try:"
+        echo ""
+        echo "          kubectl --context=$BETA_KUBE_CTX annotate application/${app} -n argocd \\"
+        echo "            argocd.argoproj.io/refresh=hard --overwrite"
+        echo "          sleep 12"
+        echo "          kubectl --context=$BETA_KUBE_CTX patch application/${app} -n argocd --type merge -p \\"
+        echo "            '{\"operation\":{\"sync\":{\"revision\":\"HEAD\",\"prune\":false,\"syncOptions\":[\"CreateNamespace=true\",\"RespectIgnoreDifferences=true\",\"ApplyOutOfSyncOnly=false\"]}}}'"
+        echo ""
+        echo "        Signature ref: 2026-05-12 erwin-3.20-followup-b7-ux.md (first confirmed sighting of variant C)."
+      elif echo "$HEALTH_STATUS" | grep -q "Degraded"; then
+        echo "        App is Degraded — real workload issue. Check pod logs:"
+        echo "          kubectl --context=$BETA_KUBE_CTX -n ${NS:-<NAMESPACE>} get pods -l app=${app}"
+        echo "          kubectl --context=$BETA_KUBE_CTX -n ${NS:-<NAMESPACE>} logs -l app=${app} --tail=200"
+      else
+        echo "        Unknown stuck state. Snapshot above is your starting point — escalate with this output."
+      fi
+      echo ""
+    done
+
+    echo "  Decision tree reference (per 2026-05-12 audit):"
+    echo "    resources=[]                                      → variant B (auto-retried in B6 H8)"
+    echo "    resources>0 + PVC diff + OutOfSync                → PVC volumeName trap (memory V0.1.30)"
+    echo "    resources>0 + Deployment 'configured' + OutOfSync → variant C (refresh=hard then re-patch)"
+    echo "    resources>0 + Degraded                            → workload issue (pod logs)"
+    echo "    none of above                                     → unknown, snapshot + escalate"
     # STOP
   fi
   echo "  ✓ All apps Synced + Healthy"
@@ -1296,6 +1391,8 @@ fi
 ```
 
 > **Migration jobs** (PreSync hooks) may add 1-2min — that's expected, included in the 10-min budget.
+>
+> **3.20.0 diagnostic** (the timeout STOP path above): triggered by 2026-05-12 audit where a fresh-session operator misattributed a stuck `vi-api-server` to the PVC-volumeName-trap memory (V0.1.30) because B7's prior generic message ("check ArgoCD UI") provided no signature info. Root cause was a NEW **phantom-Succeeded variant C** (repo-server kustomize cache served stale-revision manifest, kubectl-apply no-op vs live). The diagnostic emits per-app signature classification so operators land on the right variant directly. Variant C auto-retry deferred until second confirmed sighting (current state: n=1).
 
 ### Step B8: Smoke — extract service_version + parity check
 

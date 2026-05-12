@@ -2,6 +2,61 @@
 
 All notable changes to the Teamwork skill set.
 
+## [3.20.0] — 2026-05-12
+
+### Added — `/team-rc beta` Step B7 timeout diagnostic snapshot + decision tree
+
+Triggered by vi_agent's `beta-prod-parity-audit` 2026-05-12 validation run, where a fresh-session operator hit B7 timeout on a stuck `vi-api-server` and mis-attributed it to the `argocd-pvc-volumename-trap` memory (V0.1.30 era). Root cause was actually a NEW phantom-Succeeded variant — repo-server kustomize cache serving stale-revision manifest → kubectl-apply was no-op vs live → spec never mutated.
+
+The 3.19.x B7 timeout STOP path printed only a generic "check ArgoCD UI" hint, giving the operator no signature to disambiguate variants. 3.20.0 replaces that hint with:
+
+1. **Per-app diagnostic snapshot** (auto-captured on timeout): `sync.status`, `health.status`, `operationState.phase`, `operationState.message`, `syncResult.resources` count + per-resource `status` + verbatim `message`.
+2. **Live spec check for each Deployment resource**: spec image, last-applied-configuration image, latest ReplicaSet age + image. Surfaces variant C's signature directly (live image == prior-revision image despite ArgoCD reporting "configured").
+3. **5-branch decision tree** classifying the stuck signature:
+   - `resources=[]` → phantom variant B (already auto-retried by H8 in Step B6)
+   - `resources>0` + PVC diff + OutOfSync → PVC volumeName trap (V0.1.30 memory)
+   - `resources>0` + Deployment "configured" + OutOfSync → **phantom variant C** → suggested recipe: `kubectl annotate ... refresh=hard --overwrite` then re-issue sync patch
+   - `resources>0` + Degraded → real workload issue → pod logs
+   - none of above → unknown, escalate with snapshot
+
+### Phantom-Succeeded variant C (new in this release, codified for future skills)
+
+| Variant | Signature | Resolution |
+|---|---|---|
+| A | `phase=Running` + waiting on hook batch + Job not in ns | exec into argocd-server pod + `argocd app sync` |
+| B (H8 auto-retry in B6) | `phase=Succeeded` + `resources=[]` + `OutOfSync` | re-run same patch (codified since 3.19.0) |
+| **C (3.20.0 hint in B7)** | `phase=Succeeded` + `resources>0` + Deployment "configured" + `OutOfSync` + live image unchanged + no new RS | `refresh=hard` to purge repo-server cache, then re-issue sync patch |
+
+Variant C **NOT auto-retried** in 3.20.0. n=1 sighting only (2026-05-12). Per the validator's acceptance criteria: hint-only first; auto-retry waits for second confirmed sighting to avoid hiding real cache bugs from operator awareness. Auto-retry promotion criteria (for future 3.21+): same signature observed independently in either staging or beta cluster.
+
+### Tests
+
+- `tw-unit-test.sh` 75 → **78** (+3 new: variant-C signature classification, variant-B distinction, PVC-trap distinction). All verify the deterministic jq classifier core, not the full LLM-rendered output.
+- `tw-fleet-smoke-test.sh` 40/40.
+
+### Memory
+
+- `feedback_beta_environment_pattern.md` extended: variant C signature + resolution + distinguishing from B/PVC-trap.
+
+### Why this is 3.20.0 not 3.19.2
+
+Adds new observable output surface (diagnostic snapshot block) at a previously-information-poor stop point. Operator behavior demonstrably changes — fresh-session operators now reach correct variant identification without prior context. Per semver: backward-compatible feature addition.
+
+### Source
+
+- 3.20 follow-up brief: `/Users/liyasong/drive-projects/v2/beta-prod-parity-audit@2.3.0/grading/evidence/erwin-3.20-followup-b7-ux.md`
+- 2026-05-12 validation parent report: same dir, `f5-validation-2026-05-12.md`
+- 2026-05-12 08:20 resolution test (variant C first refresh=hard fix): same brief §"Resolution evidence"
+
+### Acceptance criteria verification
+
+| AC | Status |
+|---|---|
+| 1. B7 timeout STOP includes `phase`, `resources` count, per-Deployment message verbatim | ✅ snapshot captures all three |
+| 2. variant-C signature match → skill prints `refresh=hard` recipe hint | ✅ classifier branch + concrete command emitted |
+| 3. Backward compatible — variant B's H8 auto-retry path unchanged | ✅ B6 H8 untouched; new code only in B7 STOP path |
+| 4. Unit test against variant-C signature added | ✅ `test_b7_variant_c_signature_detection` + 2 distinguishing tests |
+
 ## [3.19.1] — 2026-05-11
 
 ### Fixed — 3.19.0 post-release adversarial audit (2 scouts cross-confirmed)
