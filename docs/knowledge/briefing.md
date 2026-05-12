@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `62` durable notes are currently indexed across `3` recurring streams.
-- `125` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `64` durable notes are currently indexed across `3` recurring streams.
+- `127` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,18 +27,18 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-11
+### AI Agent Daily Radar - 2026-05-12
 
-- Metadata: `Window: 2026-05-04 to 2026-05-11`
-- **Anthropic’s clearest in-window developer move remains the Claude Managed Agents expansion on 2026-05-06.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and [Claude blog post](https://claude.com/blog/new-in-claude-managed-agents) published on **May 6, 2026** add public-beta multiagent sessions and Outcomes plus managed-agent webhooks and stronger session/event filtering. This is still the most important Anthropic agent-platform change in the active window.
-- **OpenAI materially upgraded voice as an agent runtime surface on 2026-05-07.** [Advancing voice intelligence with new models in the API](https://openai.com/index/advancing-voice-intelligence-with-new-models-in-the-api/) was published on **May 7, 2026** and introduced GPT-Realtime-2, GPT-Realtime-Translate, and GPT-Realtime-Whisper. The practical signal is that speech, translation, transcription, reasoning, and tool use are consolidating into one runtime boundary.
-- **OpenAI also raised the fast default tier on 2026-05-05.** [GPT-5.5 Instant: smarter, clearer, and more personalized](https://openai.com/index/gpt-5-5-instant/) was published on **May 5, 2026**. This matters for eval-heavy and orchestration-heavy systems because the cheap default layer is improving, not just the frontier tier.
+- Metadata: `Window: 2026-05-05 to 2026-05-12`
+- **Anthropic put Claude Platform onto AWS on 2026-05-11.** The official [Claude blog announcement](https://claude.com/blog/claude-platform-on-aws) and the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) both landed on **May 11, 2026**. The concrete signal is not a new model but a new enterprise deployment boundary for the full API and agent stack.
+- **Claude Code had a meaningful in-window product update on 2026-05-11.** Anthropic published [Agent view in Claude Code](https://claude.com/blog/agent-view-in-claude-code) on **May 11, 2026**, while the official [Claude Code changelog](https://code.claude.com/docs/en/changelog) also shows fresh entries on **May 7, 2026** and **May 6, 2026**. Anthropic is still actively turning Claude Code into a more inspectable agent-runtime surface rather than treating it as a thin CLI wrapper.
+- **Anthropic's managed-agent runtime expansion from 2026-05-06 remains inside the active window.** The official [Claude Managed Agents announcement](https://claude.com/blog/new-in-claude-managed-agents), the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), and the [Managed Agents overview docs](https://platform.claude.com/docs/en/managed-agents/overview) all still point back to **May 6, 2026** as the meaningful official platform move in this lane: public-beta multi-agent sessions, Outcomes, managed-agent webhooks, and better session filtering.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-11
+### GitHub Trending - 2026-05-12
 
-- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-11** with no extra filters. In the accessible board slice from this environment, the page still leaned heavily toward AI, developer tooling, browser automation, and voice infrastructure rather than a broadly mixed board.`
+- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-12** with no extra filters. The unauthenticated text-accessible slice available from this environment continued to lean heavily toward agent infrastructure, browser control, observability, and multimodal tooling rather than a broadly mixed board.`
 - [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) - browser inspection, debugging, and automation infrastructure for coding agents.
 - [openai/openai-agents-python](https://github.com/openai/openai-agents-python) - a lightweight framework for multi-agent workflows and tool-using systems.
 - [Tracer-Cloud/opensre](https://github.com/Tracer-Cloud/opensre) - AI-SRE and observability-adjacent operator tooling.
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-12](../radar/daily/2026-05-12.md)
 - [2026-05-11](../radar/daily/2026-05-11.md)
 - [2026-05-10](../radar/daily/2026-05-10.md)
 - [2026-05-09](../radar/daily/2026-05-09.md)
 - [2026-05-06](../radar/daily/2026-05-06.md)
 - [2026-05-04](../radar/daily/2026-05-04.md)
-- [2026-05-02](../radar/daily/2026-05-02.md)
 
 ### Weekly Synthesis
 
@@ -84,9 +84,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-12](../radar/trending/2026-05-12.md)
 - [2026-05-11](../radar/trending/2026-05-11.md)
 - [2026-05-10](../radar/trending/2026-05-10.md)
 - [2026-05-09](../radar/trending/2026-05-09.md)
 - [2026-05-06](../radar/trending/2026-05-06.md)
 - [2026-05-04](../radar/trending/2026-05-04.md)
-- [2026-05-02](../radar/trending/2026-05-02.md)
