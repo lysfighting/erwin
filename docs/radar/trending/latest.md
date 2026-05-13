@@ -1,29 +1,31 @@
-# GitHub Trending - 2026-05-12
+# GitHub Trending - 2026-05-13
 
-Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-12** with no extra filters. The unauthenticated text-accessible slice available from this environment continued to lean heavily toward agent infrastructure, browser control, observability, and multimodal tooling rather than a broadly mixed board.
+Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-13** with no extra filters.
 
 ## Trending Snapshot
 
-The board slice is not pure AI, but the strongest visible current remains agent and developer infrastructure. Browser-native execution, multi-agent frameworks, observability tooling, and voice or multimodal projects are showing up more like shared runtime building blocks than isolated demos.
+Today's board is not narrowly AI-only, but it is still heavily skewed toward agent stacks, browser automation, coding workflows, and AI-adjacent developer tooling. Multimodal agents, stealth browser infrastructure, coding education, and verification surfaces are all visible at the same time.
 
 ## Notable Projects
 
-- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) - browser inspection, debugging, and automation infrastructure for coding agents.
-- [openai/openai-agents-python](https://github.com/openai/openai-agents-python) - a lightweight framework for multi-agent workflows and tool-using systems.
-- [Tracer-Cloud/opensre](https://github.com/Tracer-Cloud/opensre) - AI-SRE and observability-adjacent operator tooling.
-- [BasedHardware/omi](https://github.com/BasedHardware/omi) - a multimodal assistant stack with audio and screen-oriented interaction.
-- [jamiepine/voicebox](https://github.com/jamiepine/voicebox) - open-source voice tooling aligned with the broader real-time multimodal wave.
+- [bytedance/UI-TARS-desktop](https://github.com/bytedance/UI-TARS-desktop) - an open-source multimodal AI agent stack tying models to desktop-oriented agent infrastructure.
+- [CloakHQ/CloakBrowser](https://github.com/CloakHQ/CloakBrowser) - stealth Chromium automation infrastructure focused on bot-detection resistance.
+- [playcanvas/supersplat](https://github.com/playcanvas/supersplat) - a 3D Gaussian splat editor, showing graphics and 3D tooling demand on the default board.
+- [millionco/react-doctor](https://github.com/millionco/react-doctor) - React quality tooling aimed directly at AI-generated code failure modes.
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) - an agent architecture project surfacing alongside vendor-native managed-agent momentum.
+- [rohitg00/agentmemory](https://github.com/rohitg00/agentmemory) - persistent memory infrastructure for coding agents, relevant because memory is becoming a competitive runtime primitive.
+- [rasbt/LLMs-from-scratch](https://github.com/rasbt/LLMs-from-scratch) - continued educational demand for first-principles LLM implementation.
 
 ## Why They May Be Surfacing
 
-- Browser-native execution remains one of the clearest agent infrastructure layers. [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) fits the move toward inspectable browser control instead of opaque screenshot loops.
-- Reusable orchestration still has strong builder demand. [openai-agents-python](https://github.com/openai/openai-agents-python) keeps surfacing because developers want recognizable multi-agent and tool-control patterns rather than custom coordination from scratch.
-- Operational AI is staying close to production concerns. [opensre](https://github.com/Tracer-Cloud/opensre) suggests continuing interest in remediation, observability, and operator feedback loops.
-- Voice and multimodal input surfaces are traveling with the same toolchain wave as coding and infrastructure projects. [omi](https://github.com/BasedHardware/omi) and [voicebox](https://github.com/jamiepine/voicebox) fit that convergence.
+- Agent runtime infrastructure remains hot. [UI-TARS-desktop](https://github.com/bytedance/UI-TARS-desktop), [hermes-agent](https://github.com/NousResearch/hermes-agent), and [agentmemory](https://github.com/rohitg00/agentmemory) all fit the broader shift toward durable multi-step systems instead of single-turn assistants.
+- Browser control is still a contested foundation layer. [CloakBrowser](https://github.com/CloakHQ/CloakBrowser) is surfacing because browser execution remains strategically important for both agents and anti-bot-adjacent automation.
+- Verification and cleanup tooling for AI-authored code is surfacing as its own category. [react-doctor](https://github.com/millionco/react-doctor) is notable because it assumes AI coding output needs specialized review gates.
+- The board is still broader than pure AI. [supersplat](https://github.com/playcanvas/supersplat) and [LLMs-from-scratch](https://github.com/rasbt/LLMs-from-scratch) show that graphics tooling and educational repositories can still rise alongside agent infrastructure on the default global board.
 
 ## Watchlist
 
-- Watch whether [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) keeps recurring, because repeated visibility would confirm browser-native agent tooling as a durable category.
-- Watch whether [openai-agents-python](https://github.com/openai/openai-agents-python) remains a frequent trending fixture, because that would suggest framework-layer consolidation.
-- Watch whether [opensre](https://github.com/Tracer-Cloud/opensre) or similar observability-agent repos recur, because that would strengthen the case for AI operator tooling as a real segment.
-- Watch whether the next board broadens beyond agent and multimodal infrastructure. If it does, this run should be read as a momentum spike rather than a stable baseline.
+- Watch whether [UI-TARS-desktop](https://github.com/bytedance/UI-TARS-desktop) or [hermes-agent](https://github.com/NousResearch/hermes-agent) recur, because repeat appearances would confirm durable demand for open agent runtime stacks.
+- Watch whether [CloakBrowser](https://github.com/CloakHQ/CloakBrowser) persists, because that would strengthen the signal that browser resistance and stealth are becoming mainstream automation concerns.
+- Watch whether [react-doctor](https://github.com/millionco/react-doctor) keeps climbing, because AI-code verification surfaces may be becoming a stable product layer.
+- Watch whether the next board stays this AI-and-tooling heavy or broadens back toward a more mixed global open-source distribution.
