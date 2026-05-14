@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 66,
+    "total_notes": 68,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 129,
+    "artifact_count": 131,
     "link_count": 267,
     "thread_count": 5
   },
@@ -110,16 +110,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-05-13",
-      "meta": "Window: 2026-05-06 to 2026-05-13",
+      "title": "AI Agent Daily Radar - 2026-05-14",
+      "meta": "Window: 2026-05-07 to 2026-05-14",
       "highlights": [
-        "**Anthropic added fast mode for Claude Opus 4.7 on 2026-05-12.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added a **May 12, 2026** entry for `speed: \"fast\"` on `claude-opus-4-7` under the `fast-mode-2026-02-01` beta header. This is a concrete runtime tradeoff signal for long-horizon agent workloads, not just a model marketing update.",
-        "**Anthropic launched Claude Platform on AWS on 2026-05-11.** The official [Introducing the Claude Platform on AWS](https://claude.com/blog/claude-platform-on-aws) post and the **May 11, 2026** [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) position AWS as a full native surface for Messages, Files, Message Batches, Claude Managed Agents, Agent Skills, code execution, and tool use. The [Claude Code on Claude Platform on AWS docs](https://code.claude.com/docs/en/claude-platform-on-aws) also make Claude Code part of that deployment path.",
-        "**Claude Code shipped an agent-operations surface on 2026-05-11 and followed it with another changelog update on 2026-05-12.** The official [Agent view in Claude Code](https://claude.com/blog/agent-view-in-claude-code) announcement landed on **May 11, 2026**, and the [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `claude agents` in v2.1.139 on **May 11, 2026** plus v2.1.140 fixes on **May 12, 2026**. Anthropic is making background-session orchestration and supervision more first-class inside the coding surface itself."
+        "**Anthropic added fast mode for Claude Opus 4.7 on 2026-05-12.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added a **May 12, 2026** entry for `speed: \"fast\"` on `claude-opus-4-7` under the `fast-mode-2026-02-01` beta header. This is a concrete runtime-control signal for long-horizon agent workloads, not just a model marketing update.",
+        "**Anthropic launched Claude Platform on AWS on 2026-05-11.** The official [Introducing the Claude Platform on AWS](https://claude.com/blog/claude-platform-on-aws) post and the **May 11, 2026** [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) position AWS as a native surface for Messages, Files, Message Batches, Claude Managed Agents, Agent Skills, code execution, and tool use. The [Claude Code on Claude Platform on AWS docs](https://code.claude.com/docs/en/claude-platform-on-aws) make Claude Code part of that deployment path too.",
+        "**Claude Code shipped a stronger agent-operations surface on 2026-05-11 and 2026-05-12.** The official [Agent view in Claude Code](https://claude.com/blog/agent-view-in-claude-code) announcement landed on **May 11, 2026**, and the [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `claude agents` in v2.1.139 on **May 11, 2026** plus v2.1.140 fixes on **May 12, 2026**. Anthropic is making background-session orchestration and supervision more first-class inside the coding surface itself."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-05-14",
+          "path": "radar/daily/2026-05-14.md"
+        },
         {
           "name": "2026-05-13",
           "path": "radar/daily/2026-05-13.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-05-09",
           "path": "radar/daily/2026-05-09.md"
-        },
-        {
-          "name": "2026-05-06",
-          "path": "radar/daily/2026-05-06.md"
         }
       ],
-      "count": 30
+      "count": 31
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-05-13",
-      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-13** with no extra filters.",
+      "title": "GitHub Trending - 2026-05-14",
+      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-14** with no extra filters. GitHub's browserless surface remained partial, so this note stays a secondary directional snapshot rather than a precise leaderboard transcription.",
       "highlights": [
-        "[bytedance/UI-TARS-desktop](https://github.com/bytedance/UI-TARS-desktop) - an open-source multimodal AI agent stack tying models to desktop-oriented agent infrastructure.",
-        "[CloakHQ/CloakBrowser](https://github.com/CloakHQ/CloakBrowser) - stealth Chromium automation infrastructure focused on bot-detection resistance.",
-        "[playcanvas/supersplat](https://github.com/playcanvas/supersplat) - a 3D Gaussian splat editor, showing graphics and 3D tooling demand on the default board."
+        "[bytedance/UI-TARS-desktop](https://github.com/bytedance/UI-TARS-desktop) - multimodal desktop-agent stack, relevant because computer-use and multimodal execution remain a live open-source frontier.",
+        "[CloakHQ/CloakBrowser](https://github.com/CloakHQ/CloakBrowser) - stealth Chromium automation aimed at bot-detection resistance, keeping browser execution in the spotlight.",
+        "[millionco/react-doctor](https://github.com/millionco/react-doctor) - React quality tooling for AI-authored code, notable because verification is becoming its own product layer."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-05-14",
+          "path": "radar/trending/2026-05-14.md"
+        },
         {
           "name": "2026-05-13",
           "path": "radar/trending/2026-05-13.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-05-09",
           "path": "radar/trending/2026-05-09.md"
-        },
-        {
-          "name": "2026-05-06",
-          "path": "radar/trending/2026-05-06.md"
         }
       ],
-      "count": 31
+      "count": 32
     }
   },
   "deep_dive": "This week’s theme is **agents becoming governed operating systems, not just smart tool callers**.",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 129,
+      "artifact_count": 131,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 76,
+        "radar": 78,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2481,6 +2481,39 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-05-14.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-05-14.md",
+        "title": "AI Agent Daily Radar - 2026-05-14",
+        "date": "2026-05-14",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-05-07 to 2026-05-14",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://claude.com/blog/claude-platform-on-aws",
+          "https://code.claude.com/docs/en/claude-platform-on-aws",
+          "https://claude.com/blog/agent-view-in-claude-code",
+          "https://code.claude.com/docs/en/changelog",
+          "https://developers.openai.com/changelog",
+          "https://github.com/QwenLM/qwen-code/releases",
+          "https://github.com/trending",
+          "https://github.com/bytedance/UI-TARS-desktop",
+          "https://github.com/CloakHQ/CloakBrowser",
+          "https://github.com/millionco/react-doctor",
+          "https://github.com/NousResearch/hermes-agent"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -3482,6 +3515,33 @@
           "https://github.com/millionco/react-doctor",
           "https://github.com/NousResearch/hermes-agent",
           "https://github.com/rohitg00/agentmemory",
+          "https://github.com/rasbt/LLMs-from-scratch"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-05-14.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-05-14.md",
+        "title": "GitHub Trending - 2026-05-14",
+        "date": "2026-05-14",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "coding agents"
+        ],
+        "summary": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-14** with no extra filters. GitHub's browserless surface remained partial, so this note stays a secondary directional snapshot...",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/bytedance/UI-TARS-desktop",
+          "https://github.com/CloakHQ/CloakBrowser",
+          "https://github.com/millionco/react-doctor",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/rohitg00/agentmemory",
+          "https://github.com/playcanvas/supersplat",
           "https://github.com/rasbt/LLMs-from-scratch"
         ],
         "local_refs": []
