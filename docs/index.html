@@ -434,17 +434,17 @@
         This page is the human-facing front door for the repository&#x27;s knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.
       </p>
       <div class="hero-stats">
-        <div class="stat-chip"><strong>70</strong><span>Durable notes indexed</span></div>
+        <div class="stat-chip"><strong>71</strong><span>Durable notes indexed</span></div>
         <div class="stat-chip"><strong>3 streams</strong><span>Daily, weekly, trending</span></div>
         <div class="stat-chip"><strong>5 layers</strong><span>Radar to implementation</span></div>
-        <div class="stat-chip"><strong>133</strong><span>Network artifacts</span></div>
+        <div class="stat-chip"><strong>134</strong><span>Network artifacts</span></div>
         <div class="stat-chip"><strong>267</strong><span>Typed local links</span></div>
       </div>
       <div class="hero-grid">
         <div class="hero-panel">
           <div class="eyebrow">Current Lead</div>
-          <h2>AI/Agent Weekly Synthesis — 2026-05-08</h2>
-          <p>This week’s theme is <strong>agents becoming governed operating systems, not just smart tool callers</strong>.</p>
+          <h2>AI/Agent Weekly Synthesis — 2026-05-15</h2>
+          <p>This week’s theme is <strong>agent work becoming a managed session fabric rather than a single foreground conversation</strong>.</p>
         </div>
         <div class="hero-panel">
           <div class="eyebrow">At A Glance</div>
@@ -475,9 +475,9 @@
 
     <article class="brief-card warm">
       <div class="eyebrow">Weekly</div>
-      <h3>AI/Agent Weekly Synthesis — 2026-05-08</h3>
-      <p class="meta">Coverage window: 2026-05-01 to 2026-05-08</p>
-      <ul><li>Anthropic was the clearest first-party mover this week, and the required Anthropic substreams were explicitly checked: <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a>, <a href="https://platform.claude.com/docs/en/managed-agents/overview">Claude Managed Agents overview</a>, <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool">advisor tool docs</a>, <a href="https://code.claude.com/docs/en/overview">Claude Code docs overview</a>, and the <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a>. The most important platform change landed on <strong>May 6, 2026</strong>: Claude Platform moved <strong>Multiagent sessions</strong> and <strong>Outcomes</strong> into public beta for Managed Agents, added <strong>Managed Agent webhooks</strong>, added vault credential background refresh for <code>mcp_oauth</code>, and improved session/event filtering. This is not a cosmetic docs change; it materially extends Anthropic’s hosted agent runtime surface.</li><li>Anthropic’s Claude Code stream also changed materially inside the same window. The <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a> shows <code>2.1.132</code> on <strong>May 6, 2026</strong> and <code>2.1.133</code> on <strong>May 7, 2026</strong>. The changes matter operationally: Claude Code now exposes <code>CLAUDE_CODE_SESSION_ID</code> to Bash subprocesses, adds <code>worktree.baseRef</code> policy for isolation worktrees, passes effort into hooks and Bash via <code>$CLAUDE_EFFORT</code>, fixes concurrent-session effort leakage, fixes MCP OAuth proxy handling, and fixes subagents failing to discover project, user, or plugin skills.</li><li>Anthropic’s product/news surface also reinforced the same direction. On <strong>May 5, 2026</strong>, <a href="https://www.anthropic.com/news/finance-agents">Agents for financial services</a> packaged ten ready-to-run agent templates as Claude Cowork / Claude Code plugins plus Claude Managed Agent cookbooks, and connected them to Microsoft 365 add-ins, connectors, and an MCP app ecosystem. On <strong>May 6, 2026</strong>, <a href="https://www.anthropic.com/news/higher-limits-spacex">Higher usage limits for Claude and a compute deal with SpaceX</a> doubled Claude Code five-hour limits for paid tiers, removed peak-hour reduction for Pro and Max, and raised API rate limits for Claude Opus models.</li></ul>
+      <h3>AI/Agent Weekly Synthesis — 2026-05-15</h3>
+      <p class="meta">Coverage window: 2026-05-08 to 2026-05-15</p>
+      <ul><li>Anthropic again had the clearest multi-surface movement, and the required Anthropic surfaces were explicitly checked before concluding scope: <a href="https://www.anthropic.com/news">anthropic.com/news</a>, <a href="https://claude.com/">claude.com</a>, <a href="https://docs.anthropic.com/en/home">docs.anthropic.com</a>, the <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a>, the <a href="https://platform.claude.com/docs/en/managed-agents/overview">Claude Managed Agents overview</a>, the <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool">advisor tool docs</a>, the <a href="https://code.claude.com/docs/en/overview">Claude Code docs overview</a>, and the <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a>. This week did have important Anthropic platform changes.</li><li>On <strong>May 11, 2026</strong>, Anthropic’s <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a> added <strong>Claude Platform on AWS</strong>, exposing Messages, Files, Message Batches, Claude Managed Agents, Agent Skills, code execution, and tool use through Anthropic-managed AWS endpoints with AWS billing and IAM authentication. On <strong>May 12, 2026</strong>, the same surface added <strong>fast mode support for Claude Opus 4.7</strong>. These are not minor SDK notes; they extend the provider’s deployment and latency-control surfaces.</li><li>Anthropic’s hosted-agent path remains materially active. The same release-notes surface still shows the <strong>May 6, 2026</strong> launch of <strong>Managed Agent multiagent sessions, outcomes, webhooks, vault refresh, and richer session/event filtering</strong>, and the <a href="https://platform.claude.com/docs/en/managed-agents/overview">Managed Agents overview</a> now clearly presents agent, environment, session, and events as the core runtime contract. The <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool">advisor tool docs</a> remain live, but I did not find a newer in-window dated advisor launch after the <strong>April 9, 2026</strong> beta; the current doc still centers executor/advisor pairings around Opus 4.7.</li></ul>
       <div class="card-actions">
         <a class="primary-link" href="radar/weekly/latest.md">Open latest</a>
         <a class="secondary-link" href="radar/weekly/">Browse archive</a>
@@ -522,12 +522,12 @@
       <div class="split">
         <article class="insight-card">
           <h3>Theme Deep Dive</h3>
-          <p>This week’s theme is <strong>agents becoming governed operating systems, not just smart tool callers</strong>.</p>
+          <p>This week’s theme is <strong>agent work becoming a managed session fabric rather than a single foreground conversation</strong>.</p>
         </article>
         <article class="proposal-card">
           <h3>Current Proposal Candidates</h3>
           <p>The weekly synthesis can nominate proposal candidates, but proposal creation should remain selective and reviewable.</p>
-          <ul><li>Managed run webhooks and outcomes</li><li>Effort-aware hooks and wrappers</li><li>Enterprise skill and plugin provenance</li></ul>
+          <ul><li>Provider-neutral session lifecycle contract</li><li>Environment policy as executable config</li><li>Evented long-running runs with dormancy gates</li></ul>
         </article>
       </div>
     </section>
@@ -560,7 +560,7 @@
         <article class="network-card">
           <h3>Network snapshot</h3>
           <p>The graph is rebuilt from Markdown and selected implementation entrypoints. It is not a database; Markdown remains the source of truth.</p>
-          <div class="metric-line"><span>Artifacts</span><strong>133</strong></div>
+          <div class="metric-line"><span>Artifacts</span><strong>134</strong></div>
           <div class="metric-line"><span>Typed links</span><strong>267</strong></div>
           <div class="metric-line"><span>Active threads</span><strong>5</strong></div>
           <div class="metric-line"><span>Proposal records</span><strong>5</strong></div>
@@ -595,7 +595,7 @@
 
     <section class="archive-column">
       <h4>Weekly Synthesis</h4>
-      <ul><li><a href="radar/weekly/2026-05-08.md">2026-05-08</a></li><li><a href="radar/weekly/2026-04-17.md">2026-04-17</a></li><li><a href="radar/weekly/2026-04-10.md">2026-04-10</a></li><li><a href="radar/weekly/2026-04-03.md">2026-04-03</a></li><li><a href="radar/weekly/2026-03-30.md">2026-03-30</a></li></ul>
+      <ul><li><a href="radar/weekly/2026-05-15.md">2026-05-15</a></li><li><a href="radar/weekly/2026-05-08.md">2026-05-08</a></li><li><a href="radar/weekly/2026-04-17.md">2026-04-17</a></li><li><a href="radar/weekly/2026-04-10.md">2026-04-10</a></li><li><a href="radar/weekly/2026-04-03.md">2026-04-03</a></li><li><a href="radar/weekly/2026-03-30.md">2026-03-30</a></li></ul>
     </section>
 
 

@@ -1,121 +1,69 @@
-# AI/Agent Weekly Synthesis — 2026-05-08
+# AI/Agent Weekly Synthesis — 2026-05-15
 
-Coverage window: 2026-05-01 to 2026-05-08
+Coverage window: 2026-05-08 to 2026-05-15
 
 ## Field Summary
 
-- Anthropic was the clearest first-party mover this week, and the required Anthropic substreams were explicitly checked: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code docs overview](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). The most important platform change landed on **May 6, 2026**: Claude Platform moved **Multiagent sessions** and **Outcomes** into public beta for Managed Agents, added **Managed Agent webhooks**, added vault credential background refresh for `mcp_oauth`, and improved session/event filtering. This is not a cosmetic docs change; it materially extends Anthropic’s hosted agent runtime surface.
-- Anthropic’s Claude Code stream also changed materially inside the same window. The [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `2.1.132` on **May 6, 2026** and `2.1.133` on **May 7, 2026**. The changes matter operationally: Claude Code now exposes `CLAUDE_CODE_SESSION_ID` to Bash subprocesses, adds `worktree.baseRef` policy for isolation worktrees, passes effort into hooks and Bash via `$CLAUDE_EFFORT`, fixes concurrent-session effort leakage, fixes MCP OAuth proxy handling, and fixes subagents failing to discover project, user, or plugin skills.
-- Anthropic’s product/news surface also reinforced the same direction. On **May 5, 2026**, [Agents for financial services](https://www.anthropic.com/news/finance-agents) packaged ten ready-to-run agent templates as Claude Cowork / Claude Code plugins plus Claude Managed Agent cookbooks, and connected them to Microsoft 365 add-ins, connectors, and an MCP app ecosystem. On **May 6, 2026**, [Higher usage limits for Claude and a compute deal with SpaceX](https://www.anthropic.com/news/higher-limits-spacex) doubled Claude Code five-hour limits for paid tiers, removed peak-hour reduction for Pro and Max, and raised API rate limits for Claude Opus models.
-- OpenAI’s first-party in-window signal was real, but it came more from **model/interface expansion** than from a new harness/runtime launch. [GPT-5.5 Instant](https://openai.com/index/gpt-5-5-instant/) shipped on **May 5, 2026**, replacing `gpt-5.3 Instant` as `chat-latest`, while [Advancing voice intelligence with new models in the API](https://openai.com/index/advancing-voice-intelligence-with-new-models-in-the-api/) shipped on **May 7, 2026** with GPT-Realtime-2, GPT-Realtime-Translate, and GPT-Realtime-Whisper. The newest strong OpenAI agent-runtime post I found in the official surface remains [OpenAI models, Codex, and Managed Agents come to AWS](https://openai.com/index/openai-on-aws/) from **April 28, 2026**, so this week looked more like consolidation on the execution layer and fresh movement on modality and model routing.
-- GitHub’s official Copilot stream kept tightening the enterprise control plane around agent use. The [GitHub Changelog](https://github.blog/changelog/) shows three especially relevant items in-window: [Upcoming deprecation of GPT-5.2 and GPT-5.2-Codex](https://github.blog/changelog/2026-05-01-upcoming-deprecation-of-gpt-5-2-and-gpt-5-2-codex/) on **May 1, 2026**; [Enterprise-managed plugins in GitHub Copilot CLI are now in public preview](https://github.blog/changelog/2026-05-06-enterprise-managed-plugins-in-github-copilot-cli-are-now-in-public-preview/) on **May 6, 2026**; and [Rubber Duck in GitHub Copilot CLI now supports more models](https://github.blog/changelog/2026-05-07-rubber-duck-in-github-copilot-cli-now-supports-more-models/) on **May 7, 2026**. The durable pattern is that plugins, models, and agent behavior are becoming centrally governed enterprise resources.
-- Google’s first-party agent stream was quieter in this window. In one official pass across Google developer surfaces, I did not find a May 1-8 post stronger than the late-April ADK and agent-engineering material already on record. The nearest relevant official posts remain [Production-Ready AI Agents: 5 Lessons from Refactoring a Monolith](https://developers.googleblog.com/en/search/?query=agentic+systems) from **April 21, 2026** and [Build Better AI Agents: 5 Developer Tips from the Agent Bake-Off](https://developers.googleblog.com/build-better-ai-agents-5-developer-tips-from-the-agent-bake-off/) from **April 14, 2026**. That matters because weak in-window official signal is itself a signal: Google’s current public agent narrative remains architectural and educational rather than this week’s release driver.
-- The week’s most important field judgment is that frontier vendors are no longer only shipping “more agent capability.” They are shipping **agent runtime governance**: orchestration layers, multiagent control, plugin distribution, model retirement policy, effort propagation, session identity, webhooks, and higher-availability capacity surfaces.
+- Anthropic again had the clearest multi-surface movement, and the required Anthropic surfaces were explicitly checked before concluding scope: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/en/home), the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code docs overview](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). This week did have important Anthropic platform changes.
+- On **May 11, 2026**, Anthropic’s [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **Claude Platform on AWS**, exposing Messages, Files, Message Batches, Claude Managed Agents, Agent Skills, code execution, and tool use through Anthropic-managed AWS endpoints with AWS billing and IAM authentication. On **May 12, 2026**, the same surface added **fast mode support for Claude Opus 4.7**. These are not minor SDK notes; they extend the provider’s deployment and latency-control surfaces.
+- Anthropic’s hosted-agent path remains materially active. The same release-notes surface still shows the **May 6, 2026** launch of **Managed Agent multiagent sessions, outcomes, webhooks, vault refresh, and richer session/event filtering**, and the [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) now clearly presents agent, environment, session, and events as the core runtime contract. The [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) remain live, but I did not find a newer in-window dated advisor launch after the **April 9, 2026** beta; the current doc still centers executor/advisor pairings around Opus 4.7.
+- Anthropic’s Claude Code stream changed materially again across **May 8-14, 2026**. The [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `2.1.136` on **May 8**, `2.1.137` and `2.1.138` on **May 9**, `2.1.139` on **May 11**, `2.1.140` on **May 12**, `2.1.141` on **May 13**, and `2.1.142` on **May 14**. The largest shift is `2.1.139` and later: `claude agents` view, `/goal`, agent-aware headers and OTel attributes, plugin detail/provenance surfaces, background-session controls, and new dispatched-session flags such as `--model`, `--effort`, `--permission-mode`, and `--mcp-config`.
+- Anthropic’s product/news layer also moved. The [Anthropic newsroom](https://www.anthropic.com/news) shows **Introducing Claude for Small Business** on **May 13, 2026** and a **$200 million Gates Foundation partnership** on **May 14, 2026**. The current [claude.com](https://claude.com/) product surface also now presents Claude Code, Cowork, desktop extensions, Slack/Google Workspace connectors, and remote MCP-style integration as first-class plan value rather than side features. I treat that as supporting evidence that Anthropic’s app and platform surfaces are converging around “Claude as governed work environment,” even though the main dated technical changes this week came from Platform and Claude Code.
+- OpenAI’s strongest first-party signal this week was not a new base model. It was a new **Codex operating surface**. On **May 14, 2026**, [Work with Codex from anywhere](https://openai.com/index/work-with-codex-from-anywhere/) brought Codex into the ChatGPT mobile app, paired it with Remote SSH general availability, and made **Hooks** generally available while adding programmatic access tokens and HIPAA-compliant local use for eligible Enterprise workspaces. OpenAI also published [Building a safe, effective sandbox to enable Codex on Windows](https://openai.com/index/building-codex-windows-sandbox/) on **May 13, 2026** and [Running Codex safely at OpenAI](https://openai.com/index/running-codex-safely/) on **May 8, 2026**, which together make the control model unusually explicit: sandbox boundaries, managed network policy, keyring-backed credentials, requirements, rules, and OpenTelemetry-backed agent telemetry.
+- GitHub’s official Copilot stream continued moving from “assistant” toward **automation control plane**. On **May 13, 2026**, the [Agent tasks REST API](https://github.blog/changelog/2026-05-13-start-copilot-cloud-agent-tasks-via-the-rest-api/) moved Copilot cloud agent task dispatch into automations. On **May 14, 2026**, the [GitHub Copilot app technical preview](https://github.blog/changelog/2026-05-14-github-copilot-app-is-now-available-in-technical-preview/) introduced GitHub-native focused sessions with isolated branches, files, conversation, and task state. These build directly on last week’s [enterprise-managed Copilot CLI plugins](https://github.blog/changelog/2026-05-06-enterprise-managed-plugins-in-github-copilot-cli-are-now-in-public-preview/) and [Rubber Duck multi-model review expansion](https://github.blog/changelog/2026-05-07-rubber-duck-in-github-copilot-cli-now-supports-more-models/).
+- Google’s first-party developer signal was not a brand-new agent shell, but it did contribute two concrete implementation patterns this week. On **May 12, 2026**, [Build Long-running AI agents that pause, resume, and never lose context with ADK](https://developers.googleblog.com/build-long-running-ai-agents-that-pause-resume-and-never-lose-context-with-adk/) framed durable state, event-driven dormancy gates, and multi-agent delegation as the difference between demos and production agents. On **May 14, 2026**, [Announcing Genkit Middleware](https://developers.googleblog.com/announcing-genkit-middleware-intercept-extend-and-harden-your-agentic-apps/) made generation-, model-, and tool-layer middleware into a first-class governance mechanism for retries, fallbacks, tool approval, skills loading, and scoped filesystem access.
+- The week’s broad field judgment is that vendors are externalizing the **agent operating contract**. The important primitives are now background-session dispatch, mobile supervision, event/webhook surfaces, durable pause/resume, environment policy, plugin provenance, and traceable agent identity. Capability is still improving, but the center of gravity is clearly shifting toward governed execution.
 
 ## Theme Deep Dive
 
-This week’s theme is **agents becoming governed operating systems, not just smart tool callers**.
+This week’s theme is **agent work becoming a managed session fabric rather than a single foreground conversation**.
 
-Anthropic’s May 6 Claude Platform update is the strongest concrete evidence. Managed Agents now have multiagent sessions, outcomes, webhooks, vault refresh, and richer event/session filtering. That means the hosted runtime is maturing in the directions real operators need: decomposition, lifecycle signaling, credential continuity, and audit-friendly observability. The Managed Agents overview and advisor tool docs confirm that Anthropic is keeping a layered runtime model rather than collapsing everything into one abstraction: hosted autonomous sessions, strategic advisory sub-inference, and local/desktop Claude Code remain distinct but increasingly interoperable lanes.
+Anthropic’s current surface is the cleanest proof. Claude Platform now spans Anthropic-managed infrastructure on AWS, a hosted Managed Agents harness, a separate advisor lane, and a fast-mode latency tier for Opus 4.7. The [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) makes the design explicit: agents, environments, sessions, and events are separate runtime objects. That is closer to an operating substrate than to “API plus prompt.”
 
-Claude Code’s May 6-7 changelog extends the same story on the local-agent side. `worktree.baseRef` is not just a CLI convenience; it is a policy surface for isolation semantics. `$CLAUDE_EFFORT` in hooks and Bash makes reasoning class observable to downstream tooling. `CLAUDE_CODE_SESSION_ID` makes per-session provenance easier to wire into logs, traces, or wrapper scripts. Fixes around MCP OAuth proxies, concurrent effort bleed, and plugin-skill discovery show that the hard problems are now operational: how many sessions run safely, how enterprise settings merge, how subagents inherit usable capability, and how admin policies actually hold under load.
+Claude Code pushes the same direction locally. The [May 11-14 Claude Code releases](https://code.claude.com/docs/en/changelog) add agent view, background-session configuration flags, `/goal`, session scoping, better plugin/component introspection, agent-aware telemetry headers, and more reliable background behavior across sleep/wake, worktrees, and remote MCP. This matters because it reduces the conceptual gap between local coding agents and hosted agent runtimes. Anthropic is not just improving answers; it is standardizing how agent sessions are created, configured, tracked, and resumed.
 
-GitHub and OpenAI corroborate that shift from different angles. GitHub’s Copilot CLI plugin management puts skills/plugins under enterprise distribution and policy control. Model deprecations on May 1 show that agent hosts are also becoming model routers with lifecycle obligations, not neutral shells. OpenAI’s May 5 and May 7 launches emphasize model surfaces that better support agent workflows at the edge of execution: a faster default model and realtime voice models with tool use, longer context, and adjustable reasoning effort. The absence of a new OpenAI harness post during this specific week is itself informative: once the runtime contract exists, iteration pressure quickly shifts toward modality, routing, policy, and operator ergonomics.
+OpenAI and GitHub are converging from different angles. OpenAI’s Codex mobile surface and Windows sandbox/security writeups show a platform trying to make long-running coding agents operationally normal: a user can start or steer work from a phone, keep execution on trusted machines, and apply explicit sandbox/network/identity policy. GitHub is making similar moves at the repo-control layer: cloud-agent tasks can start from an API, sessions live in isolated task spaces, and enterprise admins control plugin rollout. The implementation details differ, but the control-plane direction is aligned.
 
-For `erwin`, this means the interesting comparison point is no longer “which vendor has agents.” The comparison point is: which vendor exposes the cleanest contract for session identity, run policy, effort, plugin supply chain, review lanes, webhooks, and audit surfaces.
+Google’s ADK and Genkit material is weaker as product launch news, but strong as architectural corroboration. Google’s durable-agent tutorial says production agents need explicit state and event-driven dormancy rather than giant replayed chat logs. Genkit middleware says the agent loop itself is now where governance belongs: retries, fallbacks, tool approval, filesystem boundaries, and skills injection should be expressed as composable control surfaces. That is the same problem Anthropic, OpenAI, and GitHub are solving through different product packaging.
+
+For `erwin`, the important comparison point is no longer “who has the strongest model” or even “who has agents.” It is: who exposes the cleanest contract for **session lifecycle, environment policy, human interruption, plugin/skill provenance, telemetry, and resumability**.
 
 ## Tooling Watch
 
-- Anthropic Managed Agents now have a meaningfully richer hosted-runtime surface: multiagent sessions, outcomes, webhooks, vault background refresh, and better session/event filters. This is the week’s highest-signal platform change.
-- Claude Code’s May 6-7 releases pushed several operator-facing surfaces forward at once: worktree isolation policy, session-id exposure, effort propagation into hooks, focus/memory handling, concurrent-session fixes, and subagent skill-discovery fixes.
-- Anthropic’s advisor tool docs still show no comparable fresh in-window launch item after the **April 9, 2026** beta, but the current doc surface now clearly anchors the advisor around Opus 4.7 pairings and reinforces the planner/executor split as a durable pattern rather than a one-off feature.
-- GitHub’s Copilot CLI plugin preview is a strong supply-chain signal. Enterprises can distribute baseline plugins, hooks, and MCP configuration centrally through `.github-private/.github/copilot/settings.json`, turning plugin rollout into a policy-managed surface instead of local setup drift.
-- GitHub’s May 1 model deprecation notice is also a tooling signal, not just a compatibility chore. Agent hosts now need explicit model lifecycle management because model availability changes can break prompts, review flows, and enterprise defaults.
-- OpenAI’s GPT-Realtime-2 is not a coding harness launch, but it is relevant to agent design because it combines live tool use, longer context, and configurable reasoning effort inside realtime voice. That widens the set of agent interfaces that need the same governance ideas we usually discuss only for coding agents.
-- Google’s official stream was comparatively quiet this week, so there is little reason to over-weight Google in this run. The better use of Google material remains architectural contrast, not headline chasing.
+- Anthropic Claude Platform on AWS is the week’s most important provider-deployment change. It puts Anthropic-managed agent/runtime surfaces behind AWS billing and IAM, which is a serious enterprise adoption lever rather than a documentation footnote.
+- Claude Managed Agents remain high-velocity. Even though the biggest dated Managed Agent launch in the checked surfaces was **May 6**, it is still current enough to affect this run because this week’s AWS launch explicitly carries Managed Agents forward as part of the main deployment surface.
+- Claude Code’s `claude agents` surface looks like a meaningful inflection point. The combination of agent list view, per-dispatch configuration flags, `/goal`, scoped session listing, background-state durability, and agent-aware OTel headers makes Claude Code feel less like “one REPL with extras” and more like a local session scheduler.
+- OpenAI’s Codex surface now spans mobile supervision, remote environments, hooks, programmatic access tokens, Windows sandboxing, and explicit security policy examples. The important detail is not just feature count; it is that OpenAI is publishing the operating contract in unusual detail.
+- GitHub’s cloud-agent task API and Copilot app show a split control plane: REST/API-driven fan-out on one side, focused human review sessions on the other. This is a notable pattern for repo-native agent systems.
+- Google’s Genkit middleware is a strong framework-level signal because it formalizes enforcement points around generation, model calls, and tool execution. That is a better fit for reusable governance than burying policy inside prompts.
+- Google’s ADK tutorial is worth watching even though it is instructional content. It explicitly promotes durable state machines, event-driven sleeping/waking, and sub-agent delegation, which are precisely the patterns moving from “advanced idea” to baseline expectation elsewhere.
 
 ## Implications For erwin / Harness / Skills
 
-- `erwin` radar should keep treating vendor substreams separately when they expose different operating layers. This week would be misread if “Anthropic” were summarized as one line item; Claude Platform, Claude Code, and product/news each moved differently.
-- `Harness` should treat session identity, effort class, and run policy as durable contract fields. Anthropic and GitHub are both making it harder to defend ad hoc handling here.
-- `Harness` should assume that multiagent orchestration and outcome handling are now first-class competitive primitives, not experimental extras. Anthropic moved them into the main managed runtime path.
-- `Harness` should also assume enterprise distribution of behavior modules is now table stakes. GitHub is doing this for plugins; Anthropic is doing it through plugins, cookbooks, connectors, and MCP apps; skills cannot remain prompt-only blobs with weak provenance.
-- `Skills` should move closer to installable, inspectable, policy-aware capability modules. The most important field pattern is not “more skills,” but “skills plus governed rollout plus runtime inheritance plus provenance.”
-- Claude Code’s latest worktree and hook surfaces are directly relevant to `Harness` wrapper design. They imply that local-agent environments increasingly need explicit policy about base refs, session IDs, effort, and wrapper observability.
+- `erwin` radar should continue splitting vendor families into substreams when the execution surfaces differ. Anthropic this week is not one story; it is at least four: platform deployment, hosted agents, local coding runtime, and app/business packaging.
+- `Harness` should treat session lifecycle as a first-class contract surface. The field is converging on named sessions, resumability, background execution, and explicit state transitions, not just single-turn task execution.
+- `Harness` should explicitly model environment policy. OpenAI’s Codex materials make sandbox, network rules, identity, and OTel policy concrete, while Anthropic and Google make environment selection and middleware/tool controls concrete. A future-proof harness cannot leave these as ad hoc wrapper concerns.
+- `Harness` should preserve agent identity across delegations and subagents. Both Anthropic and Claude Code are getting more explicit about agent/session boundaries, and Claude Code now emits agent-specific request headers and telemetry fields.
+- `Skills` should be treated as policy-bearing runtime assets, not only prompt snippets. Claude Code and GitHub are both strengthening plugin and skill inventory visibility, while Google’s middleware even exposes skills loading as an inspectable control surface.
+- `erwin` knowledge artifacts should keep distinguishing between hosted-agent orchestration and local-agent orchestration. The field is not collapsing toward one universal shape. Instead, vendors are aligning on control concepts while keeping different execution placements.
 
 ## Harness Evolution Proposals
 
 ### Title
 
-Managed run webhooks and outcomes
+Provider-neutral session lifecycle contract
 
 ### Source
 
-[Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) on **May 6, 2026**
+[Claude Code changelog](https://code.claude.com/docs/en/changelog) on **May 11-14, 2026** and [GitHub Copilot app technical preview](https://github.blog/changelog/2026-05-14-github-copilot-app-is-now-available-in-technical-preview/) on **May 14, 2026**
 
 ### Observed Pattern
 
-Anthropic added Managed Agent webhooks plus public-beta multiagent sessions and outcomes inside the main hosted runtime surface.
+Vendors are exposing explicit agent/session objects with pause, resume, scoped listing, isolated task state, and background completion behavior.
 
 ### Why It Matters For Harness
 
-Harness currently has weaker explicit lifecycle signaling than the field is moving toward. Long-running and delegated work needs named completion states, downstream listeners, and machine-readable outcomes.
-
-### Recommended Disposition
-
-`adopt-directionally`
-
-### What We Would Change If Adopted
-
-Define provider-neutral run outcome types, plus optional webhook-style event emission for session start, tool failure, completion, and review-required states.
-
-### Why We Should Not Cargo-Cult This
-
-Anthropic’s exact event model is shaped by its hosted platform. Harness should copy the lifecycle contract, not the vendor-specific payload schema.
-
-### Title
-
-Effort-aware hooks and wrappers
-
-### Source
-
-[Claude Code changelog](https://code.claude.com/docs/en/changelog) on **May 7, 2026**
-
-### Observed Pattern
-
-Claude Code now passes active effort into hooks and Bash via structured input and `$CLAUDE_EFFORT`.
-
-### Why It Matters For Harness
-
-If downstream wrappers, logs, and policy checks cannot see the run’s reasoning class, they cannot enforce cost/risk rules or explain why one run behaved differently from another.
-
-### Recommended Disposition
-
-`prototype`
-
-### What We Would Change If Adopted
-
-Add an explicit provider-neutral effort field to Harness run metadata and pass it through wrapper environments, audit output, and review summaries.
-
-### Why We Should Not Cargo-Cult This
-
-The important part is observability of reasoning class, not Anthropic’s exact env-var name or hook payload shape.
-
-### Title
-
-Enterprise skill and plugin provenance
-
-### Source
-
-[Enterprise-managed plugins in GitHub Copilot CLI are now in public preview](https://github.blog/changelog/2026-05-06-enterprise-managed-plugins-in-github-copilot-cli-are-now-in-public-preview/) on **May 6, 2026**
-
-### Observed Pattern
-
-GitHub is turning plugins, hooks, and MCP configuration into centrally distributed enterprise policy objects.
-
-### Why It Matters For Harness
-
-Reusable capability modules are now operational dependencies. If Harness cannot say which plugin/skill/config source affected a run, it will lag behind enterprise expectations.
+Harness already coordinates work, but its durable contract is still stronger on command surfaces than on session semantics. The field is making lifecycle state user-visible and machine-addressable.
 
 ### Recommended Disposition
 
@@ -123,27 +71,27 @@ Reusable capability modules are now operational dependencies. If Harness cannot 
 
 ### What We Would Change If Adopted
 
-Track skill/plugin provenance in run records: source, revision, install scope, policy owner, and whether scripts or MCP endpoints were enabled at execution time.
+Define first-class run/session states, interruption semantics, resumability rules, and a stable session inventory view that works across local and delegated work.
 
 ### Why We Should Not Cargo-Cult This
 
-GitHub’s settings repo layout is one implementation detail. Harness should preserve provenance and policy ownership without depending on GitHub’s repository convention.
+We should not copy any vendor’s exact UX or command names. The valuable part is the lifecycle model, not whether the surface is called `agents`, `sessions`, or `cloud agent`.
 
 ### Title
 
-Reviewable agent-template packs
+Environment policy as executable config
 
 ### Source
 
-[Agents for financial services](https://www.anthropic.com/news/finance-agents) on **May 5, 2026**
+[Running Codex safely at OpenAI](https://openai.com/index/running-codex-safely/) on **May 8, 2026** and [Building a safe, effective sandbox to enable Codex on Windows](https://openai.com/index/building-codex-windows-sandbox/) on **May 13, 2026**
 
 ### Observed Pattern
 
-Anthropic packaged domain-specific agents as plugins for local use and cookbooks for Managed Agents, combining skills, connectors, and subagents into reusable reference architectures.
+OpenAI is publishing concrete sandbox modes, network policy, identity controls, rules, and OTel logging as normal Codex operating surfaces rather than as hidden internal implementation.
 
 ### Why It Matters For Harness
 
-Harness needs a way to ship opinionated agent bundles that are more structured than one skill file but lighter than a full product subsystem.
+Harness will be harder to trust or standardize if permission and environment policy remain scattered across wrappers, prompts, and operator habit.
 
 ### Recommended Disposition
 
@@ -151,16 +99,100 @@ Harness needs a way to ship opinionated agent bundles that are more structured t
 
 ### What We Would Change If Adopted
 
-Define a reviewable template-pack format that bundles instructions, capability dependencies, approval expectations, and example run shapes for recurring domains.
+Create a provider-neutral environment-policy schema covering writable roots, allowed network classes, credential scope, approval reviewers, and audit export settings.
 
 ### Why We Should Not Cargo-Cult This
 
-The finance vertical packaging is domain-specific and sales-oriented. Harness should copy the compositional packaging idea, not the market template catalog itself.
+OpenAI’s TOML and exact policy names are product-specific. Harness should copy the separation of concerns, not the configuration format.
+
+### Title
+
+Evented long-running runs with dormancy gates
+
+### Source
+
+[Build Long-running AI agents that pause, resume, and never lose context with ADK](https://developers.googleblog.com/build-long-running-ai-agents-that-pause-resume-and-never-lose-context-with-adk/) on **May 12, 2026**
+
+### Observed Pattern
+
+Google frames durable state, idle-time sleeping, and event-driven wakeup as the foundation for real long-running workflows.
+
+### Why It Matters For Harness
+
+Long-running work today easily degrades into oversized transcripts, polling, or fragile human follow-up. A dormancy/wakeup model would make multi-day work more legible and cheaper.
+
+### Recommended Disposition
+
+`prototype`
+
+### What We Would Change If Adopted
+
+Add explicit dormancy checkpoints, wake conditions, and structured state snapshots so long runs can sleep without replaying full chat history.
+
+### Why We Should Not Cargo-Cult This
+
+The onboarding tutorial is illustrative, not a proof that Google’s exact storage model fits Harness. We want the pattern of durable state transitions, not the sample workflow.
+
+### Title
+
+Middleware-style enforcement layers
+
+### Source
+
+[Announcing Genkit Middleware](https://developers.googleblog.com/announcing-genkit-middleware-intercept-extend-and-harden-your-agentic-apps/) on **May 14, 2026**
+
+### Observed Pattern
+
+Google is making generate-, model-, and tool-layer interception first-class for retries, fallbacks, tool approval, skills loading, and scoped filesystem access.
+
+### Why It Matters For Harness
+
+Harness increasingly needs reusable enforcement points that sit above provider APIs but below task prompts.
+
+### Recommended Disposition
+
+`adopt-directionally`
+
+### What We Would Change If Adopted
+
+Define a small set of hookable control layers for run start, model call, tool call, tool result, and run completion, each with stable metadata and optional blocking/approval behavior.
+
+### Why We Should Not Cargo-Cult This
+
+Genkit is a framework with its own abstractions. Harness should preserve the layering idea without inheriting framework-specific semantics or naming.
+
+### Title
+
+Plugin and skill provenance ledger
+
+### Source
+
+[Claude Code changelog](https://code.claude.com/docs/en/changelog) on **May 11-14, 2026** and [Enterprise-managed plugins in GitHub Copilot CLI are now in public preview](https://github.blog/changelog/2026-05-06-enterprise-managed-plugins-in-github-copilot-cli-are-now-in-public-preview/) on **May 6, 2026**
+
+### Observed Pattern
+
+Vendors are making plugin/skill inventory, MCP attachments, token-cost surfaces, and enterprise rollout standards more visible and more governable.
+
+### Why It Matters For Harness
+
+If a run depends on installed skills, plugins, or MCP endpoints, Harness should be able to explain exactly which capability modules were in play and under whose policy.
+
+### Recommended Disposition
+
+`adopt`
+
+### What We Would Change If Adopted
+
+Record skill/plugin/module provenance in run metadata: source, revision, install scope, enabled hooks, MCP endpoints, and declared risk level.
+
+### Why We Should Not Cargo-Cult This
+
+The goal is not to mirror GitHub or Anthropic plugin catalogs. The goal is to make capability dependencies inspectable and auditable.
 
 ## Open Questions
 
-- Anthropic’s May 6 platform update materially changed Managed Agents, and Claude Code changed again on May 6-7. Will Anthropic keep local-agent and hosted-agent ergonomics aligned enough that a single `Harness` abstraction can target both cleanly?
-- The advisor tool did not get a fresh dated release-note item this week, but it remains strategically important. Does Anthropic eventually fold advisor behavior into Managed Agents and multiagent sessions, or keep it as a lightweight planner lane inside `/v1/messages`?
-- GitHub is centralizing plugin and model policy while Anthropic is enriching agent runtime semantics. Which control plane matters more for real enterprise adoption: runtime orchestration depth or rollout/governance simplicity?
-- OpenAI’s in-window signal emphasized voice and default-model routing rather than a new harness post. Is the frontier now entering a phase where execution environments stabilize while new modalities inherit the same agent-governance patterns?
-- Anthropic doubled Claude Code limits and raised Opus API limits on **May 6, 2026**. How much of current “agent quality” competition will actually be won by capacity, availability, and smoother operator ergonomics rather than by another jump in raw reasoning benchmarks?
+- Anthropic now has a stronger hosted-agent deployment story on AWS and a richer local-agent control plane in Claude Code. Does that eventually collapse into one coherent cross-surface contract, or do hosted and local Anthropic agents keep diverging operationally?
+- The required advisor-tool docs were explicitly checked, but there was no newer in-window advisor release note after the **April 9, 2026** beta in the surfaces reviewed. Does advisor remain a stable specialist lane, or will Anthropic subsume it into Managed Agents and multiagent orchestration?
+- OpenAI’s Codex mobile, Remote SSH, hooks, sandboxing, and telemetry materials imply that “steering from anywhere” is becoming normal. How much of Harness should assume supervision is asynchronous and mobile rather than desktop-bound?
+- GitHub is making agent tasks API-addressable while also introducing a desktop-style Copilot app. Will the durable enterprise differentiator be repo-native automation entrypoints, or richer long-running session management?
+- Google’s ADK and Genkit content is architectural rather than a single new flagship product launch. Does that signal a strategic bet on reusable agent infrastructure components rather than a monolithic end-user agent shell?
