@@ -1,6 +1,6 @@
 ---
 description: "RC lifecycle — prepare staging or promote to production. Try: /team-rc help"
-version: "3.20.0"
+version: "3.21.0"
 ---
 
 # /team-rc — Release Candidate Lifecycle
@@ -1731,7 +1731,7 @@ RELEASE_BODY=$(bash ~/.claude/commands/scripts/tw-pr.sh merged-since \
 
 Store the resulting markdown in `$RELEASE_BODY` for use in P6 and P8. `$PREV_TAG` is reused in P11 for the 飞书 announcement block.
 
-### Step P6: Create PR and Squash Merge
+### Step P6: Create PR
 
 ```bash
 # Create PR
@@ -1745,6 +1745,106 @@ gh pr create \
 # Get PR number
 PR_NUMBER=$(gh pr view "$RC_BRANCH" --json number --jq '.number' --repo "$REPO")
 ```
+
+Output: Release PR **#{PR_NUMBER}** opened — *{RC_BRANCH}* → *{PROD_BRANCH}*
+
+> **3.21.0**: P6 used to fuse create+merge in one step. Split into P6 (create) + P6.1 (M9 verdict comment) + P6.2 (squash merge) so the M9 release-gate verdict can land on the release PR as reviewer evidence BEFORE the irreversible merge fires.
+
+### Step P6.1: M9 Release-Gate Verdict Comment (review-only, optional, NEW in 3.21.0)
+
+> **Render-only. The M9 verdict comment is reviewer evidence, not an auto-action.**
+> **RED/YELLOW verdicts MUST NOT be silently downgraded; operator decides.**
+> **This step does NOT auto-approve, auto-merge, auto-tag, or auto-release based on the verdict.**
+> **Posting to GitHub is owned by /team-rc promote (this step), NOT by `release_gate`.**
+> **`release_gate` rendering is read-only and does NOT trigger prod evidence collection.**
+
+**Why this exists**: S123 Lane B (vi_agent PR #2050 / commit `9a25e054`) shipped a `python -m release_gate rc-promote-comment` renderer that turns a curated `release-gate.yaml` (M5/M6/M7/M8 evidence + verdict) into a markdown comment for the release PR. This step wires that existing renderer into `/team-rc promote` so the operator's release PR carries the M9 verdict as part of the standard promote flow.
+
+**This step is gated and safe**:
+- Skipped silently when no `release-gate.yaml` is configured or discoverable (no fabrication).
+- Skipped when the renderer module is not installed (repos that don't ship `release_gate`).
+- Render writes to a local file FIRST; posting only happens after the file is verified non-empty.
+- The operator can review the rendered file before posting; if the verdict is RED/YELLOW, the operator decides whether to proceed to P6.2 — the verdict NEVER decides on its own.
+
+**Discover the release-gate YAML**:
+
+```bash
+# Operator may set RELEASE_GATE_YAML in env for non-default locations.
+# Default convention (vi_agent S123): tmp/release-gate/<rc_tag>.yaml
+release_gate_yaml="${RELEASE_GATE_YAML:-tmp/release-gate/${VERSION}.yaml}"
+
+if [ ! -f "$release_gate_yaml" ]; then
+  echo "[team-rc] no release-gate.yaml at $release_gate_yaml; skipping M9 verdict comment"
+  # Continue to P6.2 — this is NOT an error.
+else
+  echo "[team-rc] release-gate.yaml discovered: $release_gate_yaml"
+fi
+```
+
+**Render via the existing CLI** (NOT a new tool — uses the renderer S123 Lane B shipped):
+
+```bash
+# Only proceed if release_gate_yaml was discovered above.
+if [ -f "$release_gate_yaml" ]; then
+  out_file="tmp/release-gate/${VERSION}-promote-comment.md"
+  mkdir -p "$(dirname "$out_file")"
+
+  # measured_wall_seconds is optional — pass it if the promote flow has measured
+  # the M5/M6/M7/M8 wall time; omit otherwise. The renderer handles absence.
+  if python3 -m release_gate rc-promote-comment \
+      --release-gate "$release_gate_yaml" \
+      --out-file "$out_file" \
+      --rc-tag "$VERSION" \
+      --env prod \
+      ${measured_wall_seconds:+--wall-seconds "$measured_wall_seconds"}; then
+    echo "[team-rc] rendered M9 verdict comment → $out_file"
+  else
+    rc=$?
+    echo "[team-rc] release_gate render failed (exit=$rc); skipping post. Operator may inspect $release_gate_yaml manually."
+    # Do NOT post a half-rendered file. Continue to P6.2 without comment.
+    out_file=""
+  fi
+fi
+```
+
+**Post to GitHub** via `gh pr comment` — ONLY if all gates pass:
+
+```bash
+# All gates must hold:
+#   1. out_file is set AND exists AND is non-empty (render succeeded)
+#   2. PR_NUMBER is bound (P6 succeeded)
+#   3. Operator did NOT pass a dry-run / help flag (forward-compat — promote
+#      currently has no --dry-run; if a future variant adds one, honor it here
+#      by gating on $DRY_RUN or equivalent and ONLY echoing the gh pr comment
+#      command instead of executing it)
+if [ -n "${out_file:-}" ] && [ -s "$out_file" ] && [ -n "${PR_NUMBER:-}" ]; then
+  if [ "${DRY_RUN:-false}" = "true" ]; then
+    echo "[dry-run] gh pr comment $PR_NUMBER --body-file $out_file --repo $REPO"
+  else
+    if gh pr comment "$PR_NUMBER" --body-file "$out_file" --repo "$REPO"; then
+      echo "[team-rc] M9 verdict comment posted to PR #$PR_NUMBER"
+    else
+      echo "[team-rc] WARNING: gh pr comment failed; rendered file preserved at $out_file"
+      # Non-fatal: continue to P6.2. Operator can paste the comment manually.
+    fi
+  fi
+fi
+```
+
+**Operator-facing surface** (always show, even when skipped):
+
+  M9 release-gate verdict comment
+  ────────────────────────────────
+  YAML:    {$release_gate_yaml or "(none — skipped)"}
+  Render:  {$out_file or "(skipped)"}
+  Post:    {"PR #$PR_NUMBER" or "(skipped)"}
+  Note:    Verdict is reviewer evidence, not an auto-action.
+           RED/YELLOW does NOT auto-block — operator decides whether to proceed to P6.2.
+  ────────────────────────────────
+
+If the verdict the renderer surfaces is **RED** or **YELLOW**, the operator SHOULD pause here, review the comment on the PR (or the local file), and decide whether to proceed to P6.2. **The verdict NEVER decides on its own.** No tag, no release, no merge fires from this step.
+
+### Step P6.2: Squash Merge
 
 Squash merge via GitHub (respects branch protection):
 
