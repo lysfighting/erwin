@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `68` durable notes are currently indexed across `3` recurring streams.
-- `131` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `70` durable notes are currently indexed across `3` recurring streams.
+- `133` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-14
+### AI Agent Daily Radar - 2026-05-15
 
-- Metadata: `Window: 2026-05-07 to 2026-05-14`
-- **Anthropic added fast mode for Claude Opus 4.7 on 2026-05-12.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added a **May 12, 2026** entry for `speed: "fast"` on `claude-opus-4-7` under the `fast-mode-2026-02-01` beta header. This is a concrete runtime-control signal for long-horizon agent workloads, not just a model marketing update.
-- **Anthropic launched Claude Platform on AWS on 2026-05-11.** The official [Introducing the Claude Platform on AWS](https://claude.com/blog/claude-platform-on-aws) post and the **May 11, 2026** [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) position AWS as a native surface for Messages, Files, Message Batches, Claude Managed Agents, Agent Skills, code execution, and tool use. The [Claude Code on Claude Platform on AWS docs](https://code.claude.com/docs/en/claude-platform-on-aws) make Claude Code part of that deployment path too.
-- **Claude Code shipped a stronger agent-operations surface on 2026-05-11 and 2026-05-12.** The official [Agent view in Claude Code](https://claude.com/blog/agent-view-in-claude-code) announcement landed on **May 11, 2026**, and the [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `claude agents` in v2.1.139 on **May 11, 2026** plus v2.1.140 fixes on **May 12, 2026**. Anthropic is making background-session orchestration and supervision more first-class inside the coding surface itself.
+- Metadata: `Window: 2026-05-08 to 2026-05-15`
+- **Anthropic launched Claude Platform on AWS on 2026-05-11.** The official [Claude Platform on AWS post](https://claude.com/blog/claude-platform-on-aws) and the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) position AWS as a first-class access layer for Messages, Files, Message Batches, Claude Managed Agents, Agent Skills, code execution, and the advisor tool. This is the clearest in-window managed-agent distribution signal from any first-party publisher in this run.
+- **Anthropic expanded fast-mode controls for high-end agent workloads on 2026-05-12.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added fast mode support for `claude-opus-4-7` under the `fast-mode-2026-02-01` beta header on **May 12, 2026**. That is a concrete operator knob for long-horizon runs, not just a model-quality claim.
+- **Claude Code shipped a stronger supervisor surface on 2026-05-11 and 2026-05-12.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `claude agents` and the new [agent view](https://code.claude.com/docs/en/agent-view) plus `/goal` on **May 11, 2026**, followed by **May 12, 2026** fixes for background-service stability, `/goal`, managed settings retries, and advisor-tool UX/processing failures. Claude Code is moving further toward a managed operator console instead of a thin coding shell.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-14
+### GitHub Trending - 2026-05-15
 
-- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-14** with no extra filters. GitHub's browserless surface remained partial, so this note stays a secondary directional snapshot rather than a precise leaderboard transcription.`
-- [bytedance/UI-TARS-desktop](https://github.com/bytedance/UI-TARS-desktop) - multimodal desktop-agent stack, relevant because computer-use and multimodal execution remain a live open-source frontier.
-- [CloakHQ/CloakBrowser](https://github.com/CloakHQ/CloakBrowser) - stealth Chromium automation aimed at bot-detection resistance, keeping browser execution in the spotlight.
-- [millionco/react-doctor](https://github.com/millionco/react-doctor) - React quality tooling for AI-authored code, notable because verification is becoming its own product layer.
+- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-15** with no extra filters.`
+- [ruvnet/RuView](https://github.com/ruvnet/RuView) - WiFi-based spatial intelligence and vital-sign sensing, notable because the board is still carrying hardware-adjacent sensing projects alongside software tooling.
+- [tinyhumansai/openhuman](https://github.com/tinyhumansai/openhuman) - personal AI system framing, showing continued appetite for large-scope open agent projects.
+- [rohitg00/agentmemory](https://github.com/rohitg00/agentmemory) - persistent memory layer for coding agents, directly relevant to long-running agent durability.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-15](../radar/daily/2026-05-15.md)
 - [2026-05-14](../radar/daily/2026-05-14.md)
 - [2026-05-13](../radar/daily/2026-05-13.md)
 - [2026-05-12](../radar/daily/2026-05-12.md)
 - [2026-05-11](../radar/daily/2026-05-11.md)
 - [2026-05-10](../radar/daily/2026-05-10.md)
-- [2026-05-09](../radar/daily/2026-05-09.md)
 
 ### Weekly Synthesis
 
@@ -84,9 +84,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-15](../radar/trending/2026-05-15.md)
 - [2026-05-14](../radar/trending/2026-05-14.md)
 - [2026-05-13](../radar/trending/2026-05-13.md)
 - [2026-05-12](../radar/trending/2026-05-12.md)
 - [2026-05-11](../radar/trending/2026-05-11.md)
 - [2026-05-10](../radar/trending/2026-05-10.md)
-- [2026-05-09](../radar/trending/2026-05-09.md)
