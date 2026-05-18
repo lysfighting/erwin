@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 71,
+    "total_notes": 73,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 134,
+    "artifact_count": 136,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,16 +114,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-05-15",
-      "meta": "Window: 2026-05-08 to 2026-05-15",
+      "title": "AI Agent Daily Radar - 2026-05-18",
+      "meta": "Window: 2026-05-11 to 2026-05-18",
       "highlights": [
-        "**Anthropic launched Claude Platform on AWS on 2026-05-11.** The official [Claude Platform on AWS post](https://claude.com/blog/claude-platform-on-aws) and the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) position AWS as a first-class access layer for Messages, Files, Message Batches, Claude Managed Agents, Agent Skills, code execution, and the advisor tool. This is the clearest in-window managed-agent distribution signal from any first-party publisher in this run.",
-        "**Anthropic expanded fast-mode controls for high-end agent workloads on 2026-05-12.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added fast mode support for `claude-opus-4-7` under the `fast-mode-2026-02-01` beta header on **May 12, 2026**. That is a concrete operator knob for long-horizon runs, not just a model-quality claim.",
-        "**Claude Code shipped a stronger supervisor surface on 2026-05-11 and 2026-05-12.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `claude agents` and the new [agent view](https://code.claude.com/docs/en/agent-view) plus `/goal` on **May 11, 2026**, followed by **May 12, 2026** fixes for background-service stability, `/goal`, managed settings retries, and advisor-tool UX/processing failures. Claude Code is moving further toward a managed operator console instead of a thin coding shell."
+        "**Anthropic widened the managed-agent distribution surface on May 11, 2026.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) logged [Claude Platform on AWS](https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws) on **May 11, 2026**, and the AWS guide makes the key point explicit: Anthropic now exposes the full platform surface through AWS, including Messages, Agent Skills, code execution, and beta features such as managed agents and advisor-compatible tool use.",
+        "**Anthropic added another explicit runtime-speed knob on May 12, 2026.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added fast mode support for `claude-opus-4-7` on **May 12, 2026** under the `fast-mode-2026-02-01` beta header. This is a concrete operator control for long-horizon agent runs, not just a model-quality bump.",
+        "**Claude Code pushed further into supervisor-style operation on May 11-12, 2026.** The [Claude Code changelog](https://code.claude.com/docs/en/changelog) added `claude agents`, [agent view](https://code.claude.com/docs/en/agent-view), and `/goal` on **May 11, 2026**, then followed on **May 12, 2026** with fixes for `/goal`, background-service reliability, managed-settings retry behavior, and agent/tool handling. The product direction is visibly moving beyond a thin terminal wrapper."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-05-18",
+          "path": "radar/daily/2026-05-18.md"
+        },
         {
           "name": "2026-05-15",
           "path": "radar/daily/2026-05-15.md"
@@ -143,26 +147,26 @@
         {
           "name": "2026-05-11",
           "path": "radar/daily/2026-05-11.md"
-        },
-        {
-          "name": "2026-05-10",
-          "path": "radar/daily/2026-05-10.md"
         }
       ],
-      "count": 32
+      "count": 33
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-05-15",
-      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-15** with no extra filters.",
+      "title": "GitHub Trending - 2026-05-18",
+      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-18** with no extra filters.",
       "highlights": [
-        "[ruvnet/RuView](https://github.com/ruvnet/RuView) - WiFi-based spatial intelligence and vital-sign sensing, notable because the board is still carrying hardware-adjacent sensing projects alongside software tooling.",
-        "[tinyhumansai/openhuman](https://github.com/tinyhumansai/openhuman) - personal AI system framing, showing continued appetite for large-scope open agent projects.",
-        "[rohitg00/agentmemory](https://github.com/rohitg00/agentmemory) - persistent memory layer for coding agents, directly relevant to long-running agent durability."
+        "[HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) - agent-native CLI framing for general software, notable because it treats software surfaces themselves as the target of agent adaptation.",
+        "[tech-leads-club/agent-skills](https://github.com/tech-leads-club/agent-skills) - validated skill registry for professional coding agents, directly relevant to the packaging and trust layer around agent capabilities.",
+        "[NirDiamant/agents-towards-production](https://github.com/NirDiamant/agents-towards-production) - production-grade GenAI agent tutorials, showing sustained interest in moving from demos to operational systems."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-05-18",
+          "path": "radar/trending/2026-05-18.md"
+        },
         {
           "name": "2026-05-15",
           "path": "radar/trending/2026-05-15.md"
@@ -182,13 +186,9 @@
         {
           "name": "2026-05-11",
           "path": "radar/trending/2026-05-11.md"
-        },
-        {
-          "name": "2026-05-10",
-          "path": "radar/trending/2026-05-10.md"
         }
       ],
-      "count": 33
+      "count": 34
     }
   },
   "deep_dive": "This week’s theme is **agent work becoming a managed session fabric rather than a single foreground conversation**.",
@@ -233,12 +233,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 134,
+      "artifact_count": 136,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 81,
+        "radar": 83,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2551,6 +2551,37 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-05-18.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-05-18.md",
+        "title": "AI Agent Daily Radar - 2026-05-18",
+        "date": "2026-05-18",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "tracing/observability",
+          "coding agents",
+          "tool use"
+        ],
+        "summary": "Window: 2026-05-11 to 2026-05-18",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws",
+          "https://code.claude.com/docs/en/changelog",
+          "https://code.claude.com/docs/en/agent-view",
+          "https://developers.openai.com/api/docs/changelog",
+          "https://github.com/QwenLM/qwen-code/releases",
+          "https://github.com/trending",
+          "https://github.com/HKUDS/CLI-Anything",
+          "https://github.com/tech-leads-club/agent-skills",
+          "https://github.com/NirDiamant/agents-towards-production",
+          "https://github.com/tinyhumansai/openhuman",
+          "https://github.com/oven-sh/bun"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -3612,6 +3643,30 @@
           "https://github.com/mattpocock/skills",
           "https://github.com/github/spec-kit",
           "https://github.com/garrytan/gstack"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-05-18.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-05-18.md",
+        "title": "GitHub Trending - 2026-05-18",
+        "date": "2026-05-18",
+        "status": "",
+        "themes": [
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-18** with no extra filters.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/HKUDS/CLI-Anything",
+          "https://github.com/tech-leads-club/agent-skills",
+          "https://github.com/NirDiamant/agents-towards-production",
+          "https://github.com/tinyhumansai/openhuman",
+          "https://github.com/Anil-matcha/Open-Generative-AI",
+          "https://github.com/BigBodyCobain/Shadowbroker",
+          "https://github.com/oven-sh/bun"
         ],
         "local_refs": []
       },

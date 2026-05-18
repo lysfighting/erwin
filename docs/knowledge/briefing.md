@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `71` durable notes are currently indexed across `3` recurring streams.
-- `134` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `73` durable notes are currently indexed across `3` recurring streams.
+- `136` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-15
+### AI Agent Daily Radar - 2026-05-18
 
-- Metadata: `Window: 2026-05-08 to 2026-05-15`
-- **Anthropic launched Claude Platform on AWS on 2026-05-11.** The official [Claude Platform on AWS post](https://claude.com/blog/claude-platform-on-aws) and the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) position AWS as a first-class access layer for Messages, Files, Message Batches, Claude Managed Agents, Agent Skills, code execution, and the advisor tool. This is the clearest in-window managed-agent distribution signal from any first-party publisher in this run.
-- **Anthropic expanded fast-mode controls for high-end agent workloads on 2026-05-12.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added fast mode support for `claude-opus-4-7` under the `fast-mode-2026-02-01` beta header on **May 12, 2026**. That is a concrete operator knob for long-horizon runs, not just a model-quality claim.
-- **Claude Code shipped a stronger supervisor surface on 2026-05-11 and 2026-05-12.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `claude agents` and the new [agent view](https://code.claude.com/docs/en/agent-view) plus `/goal` on **May 11, 2026**, followed by **May 12, 2026** fixes for background-service stability, `/goal`, managed settings retries, and advisor-tool UX/processing failures. Claude Code is moving further toward a managed operator console instead of a thin coding shell.
+- Metadata: `Window: 2026-05-11 to 2026-05-18`
+- **Anthropic widened the managed-agent distribution surface on May 11, 2026.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) logged [Claude Platform on AWS](https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws) on **May 11, 2026**, and the AWS guide makes the key point explicit: Anthropic now exposes the full platform surface through AWS, including Messages, Agent Skills, code execution, and beta features such as managed agents and advisor-compatible tool use.
+- **Anthropic added another explicit runtime-speed knob on May 12, 2026.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added fast mode support for `claude-opus-4-7` on **May 12, 2026** under the `fast-mode-2026-02-01` beta header. This is a concrete operator control for long-horizon agent runs, not just a model-quality bump.
+- **Claude Code pushed further into supervisor-style operation on May 11-12, 2026.** The [Claude Code changelog](https://code.claude.com/docs/en/changelog) added `claude agents`, [agent view](https://code.claude.com/docs/en/agent-view), and `/goal` on **May 11, 2026**, then followed on **May 12, 2026** with fixes for `/goal`, background-service reliability, managed-settings retry behavior, and agent/tool handling. The product direction is visibly moving beyond a thin terminal wrapper.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-15
+### GitHub Trending - 2026-05-18
 
-- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-15** with no extra filters.`
-- [ruvnet/RuView](https://github.com/ruvnet/RuView) - WiFi-based spatial intelligence and vital-sign sensing, notable because the board is still carrying hardware-adjacent sensing projects alongside software tooling.
-- [tinyhumansai/openhuman](https://github.com/tinyhumansai/openhuman) - personal AI system framing, showing continued appetite for large-scope open agent projects.
-- [rohitg00/agentmemory](https://github.com/rohitg00/agentmemory) - persistent memory layer for coding agents, directly relevant to long-running agent durability.
+- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-18** with no extra filters.`
+- [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) - agent-native CLI framing for general software, notable because it treats software surfaces themselves as the target of agent adaptation.
+- [tech-leads-club/agent-skills](https://github.com/tech-leads-club/agent-skills) - validated skill registry for professional coding agents, directly relevant to the packaging and trust layer around agent capabilities.
+- [NirDiamant/agents-towards-production](https://github.com/NirDiamant/agents-towards-production) - production-grade GenAI agent tutorials, showing sustained interest in moving from demos to operational systems.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-18](../radar/daily/2026-05-18.md)
 - [2026-05-15](../radar/daily/2026-05-15.md)
 - [2026-05-14](../radar/daily/2026-05-14.md)
 - [2026-05-13](../radar/daily/2026-05-13.md)
 - [2026-05-12](../radar/daily/2026-05-12.md)
 - [2026-05-11](../radar/daily/2026-05-11.md)
-- [2026-05-10](../radar/daily/2026-05-10.md)
 
 ### Weekly Synthesis
 
@@ -85,9 +85,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-18](../radar/trending/2026-05-18.md)
 - [2026-05-15](../radar/trending/2026-05-15.md)
 - [2026-05-14](../radar/trending/2026-05-14.md)
 - [2026-05-13](../radar/trending/2026-05-13.md)
 - [2026-05-12](../radar/trending/2026-05-12.md)
 - [2026-05-11](../radar/trending/2026-05-11.md)
-- [2026-05-10](../radar/trending/2026-05-10.md)
