@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 73,
+    "total_notes": 75,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 136,
+    "artifact_count": 138,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,16 +114,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-05-18",
-      "meta": "Window: 2026-05-11 to 2026-05-18",
+      "title": "AI Agent Daily Radar - 2026-05-19",
+      "meta": "Window: 2026-05-12 to 2026-05-19",
       "highlights": [
-        "**Anthropic widened the managed-agent distribution surface on May 11, 2026.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) logged [Claude Platform on AWS](https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws) on **May 11, 2026**, and the AWS guide makes the key point explicit: Anthropic now exposes the full platform surface through AWS, including Messages, Agent Skills, code execution, and beta features such as managed agents and advisor-compatible tool use.",
-        "**Anthropic added another explicit runtime-speed knob on May 12, 2026.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added fast mode support for `claude-opus-4-7` on **May 12, 2026** under the `fast-mode-2026-02-01` beta header. This is a concrete operator control for long-horizon agent runs, not just a model-quality bump.",
-        "**Claude Code pushed further into supervisor-style operation on May 11-12, 2026.** The [Claude Code changelog](https://code.claude.com/docs/en/changelog) added `claude agents`, [agent view](https://code.claude.com/docs/en/agent-view), and `/goal` on **May 11, 2026**, then followed on **May 12, 2026** with fixes for `/goal`, background-service reliability, managed-settings retry behavior, and agent/tool handling. The product direction is visibly moving beyond a thin terminal wrapper."
+        "**Anthropic tied developer-surface quality directly to agent connectivity on May 18, 2026.** [Anthropic acquires Stainless](https://www.anthropic.com/news/anthropic-acquires-stainless) is not just M&A news: Anthropic says Stainless already powered every official Anthropic SDK and explicitly links the deal to SDKs, CLIs, and MCP server tooling. That is a concrete signal that Anthropic sees API ergonomics and tool reach as part of the agent product itself.",
+        "**Anthropic kept shipping operator controls across Claude Platform and Claude Code on May 12-13, 2026.** The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added Opus 4.7 fast mode on **May 12, 2026**. The [Claude Code changelog](https://code.claude.com/docs/en/changelog) added `terminalSequence`, `ANTHROPIC_WORKSPACE_ID`, `claude agents --cwd <path>`, and better background-agent state handling on **May 13, 2026**. The [Claude Code desktop changelog](https://code.claude.com/docs/en/desktop-changelog) also tightened scheduled-task and session reliability on **May 12, 2026**.",
+        "**OpenAI pushed Codex toward mobile supervision on May 14, 2026.** [Work with Codex from anywhere](https://openai.com/index/work-with-codex-from-anywhere/) and the matching [Enterprise & Edu release notes](https://help.openai.com/en/articles/10128477-chatgpt-enterprise-edu-release-notes%25252525252525252525252525252525252525252525253F.csv) make the shift explicit: mobile clients can monitor threads, review diffs, approve actions, redirect execution, and stay attached to long-running work while the actual environment remains on the connected machine."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-05-19",
+          "path": "radar/daily/2026-05-19.md"
+        },
         {
           "name": "2026-05-18",
           "path": "radar/daily/2026-05-18.md"
@@ -143,26 +147,26 @@
         {
           "name": "2026-05-12",
           "path": "radar/daily/2026-05-12.md"
-        },
-        {
-          "name": "2026-05-11",
-          "path": "radar/daily/2026-05-11.md"
         }
       ],
-      "count": 33
+      "count": 34
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-05-18",
-      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-18** with no extra filters.",
+      "title": "GitHub Trending - 2026-05-19",
+      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-19** with no extra filters.",
       "highlights": [
-        "[HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) - agent-native CLI framing for general software, notable because it treats software surfaces themselves as the target of agent adaptation.",
-        "[tech-leads-club/agent-skills](https://github.com/tech-leads-club/agent-skills) - validated skill registry for professional coding agents, directly relevant to the packaging and trust layer around agent capabilities.",
-        "[NirDiamant/agents-towards-production](https://github.com/NirDiamant/agents-towards-production) - production-grade GenAI agent tutorials, showing sustained interest in moving from demos to operational systems."
+        "[tinyhumansai/openhuman](https://github.com/tinyhumansai/openhuman) - personal AI system framing with strong board momentum, notable because default-trending attention still rewards ambitious all-in-one agent claims.",
+        "[HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) - \"making all software agent-native,\" relevant because it treats the CLI and software surface itself as the adaptation target.",
+        "[tech-leads-club/agent-skills](https://github.com/tech-leads-club/agent-skills) - validated skill registry for professional AI coding agents, directly relevant to packaging, provenance, and trust."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-05-19",
+          "path": "radar/trending/2026-05-19.md"
+        },
         {
           "name": "2026-05-18",
           "path": "radar/trending/2026-05-18.md"
@@ -182,13 +186,9 @@
         {
           "name": "2026-05-12",
           "path": "radar/trending/2026-05-12.md"
-        },
-        {
-          "name": "2026-05-11",
-          "path": "radar/trending/2026-05-11.md"
         }
       ],
-      "count": 34
+      "count": 35
     }
   },
   "deep_dive": "This week’s theme is **agent work becoming a managed session fabric rather than a single foreground conversation**.",
@@ -233,12 +233,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 136,
+      "artifact_count": 138,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 83,
+        "radar": 85,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2582,6 +2582,37 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-05-19.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-05-19.md",
+        "title": "AI Agent Daily Radar - 2026-05-19",
+        "date": "2026-05-19",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "context engineering",
+          "coding agents",
+          "tool use"
+        ],
+        "summary": "Window: 2026-05-12 to 2026-05-19",
+        "external_refs": [
+          "https://www.anthropic.com/news/anthropic-acquires-stainless",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://code.claude.com/docs/en/desktop-changelog",
+          "https://openai.com/index/work-with-codex-from-anywhere/",
+          "https://help.openai.com/en/articles/10128477-chatgpt-enterprise-edu-release-notes%25252525252525252525252525252525252525252525253F.csv",
+          "https://openai.com/index/dell-codex-enterprise-partnership/",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://github.com/trending",
+          "https://github.com/tinyhumansai/openhuman",
+          "https://github.com/HKUDS/CLI-Anything"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -3667,6 +3698,30 @@
           "https://github.com/Anil-matcha/Open-Generative-AI",
           "https://github.com/BigBodyCobain/Shadowbroker",
           "https://github.com/oven-sh/bun"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-05-19.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-05-19.md",
+        "title": "GitHub Trending - 2026-05-19",
+        "date": "2026-05-19",
+        "status": "",
+        "themes": [
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-19** with no extra filters.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/tinyhumansai/openhuman",
+          "https://github.com/HKUDS/CLI-Anything",
+          "https://github.com/tech-leads-club/agent-skills",
+          "https://github.com/humanlayer/12-factor-agents",
+          "https://github.com/microsoft/ai-agents-for-beginners",
+          "https://github.com/ggml-org/llama.cpp",
+          "https://github.com/plausible/analytics"
         ],
         "local_refs": []
       },

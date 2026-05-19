@@ -1,31 +1,31 @@
-# GitHub Trending - 2026-05-18
+# GitHub Trending - 2026-05-19
 
-Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-18** with no extra filters.
+Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-19** with no extra filters.
 
 ## Trending Snapshot
 
-Today's default board is broad rather than AI-only, but the strongest through-line is still developer workflow packaging: agent-native CLIs, production-agent tutorial stacks, skill registries, personal-agent systems, and runtime infrastructure are all visible on the same page.
+Today's default board is still broad, but the strongest cluster is clearly agent-oriented developer tooling: personal-agent systems, agent-native CLIs, skill registries, production-discipline guides, and beginner agent curricula are all visible on the same unfiltered page.
 
 ## Notable Projects
 
-- [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) - agent-native CLI framing for general software, notable because it treats software surfaces themselves as the target of agent adaptation.
-- [tech-leads-club/agent-skills](https://github.com/tech-leads-club/agent-skills) - validated skill registry for professional coding agents, directly relevant to the packaging and trust layer around agent capabilities.
-- [NirDiamant/agents-towards-production](https://github.com/NirDiamant/agents-towards-production) - production-grade GenAI agent tutorials, showing sustained interest in moving from demos to operational systems.
-- [tinyhumansai/openhuman](https://github.com/tinyhumansai/openhuman) - broad personal-superintelligence framing, notable because all-in-one personal-agent systems still attract default-board attention.
-- [Anil-matcha/Open-Generative-AI](https://github.com/Anil-matcha/Open-Generative-AI) - open image and video generation studio, showing that multimodal creator tooling remains a major open-source pull.
-- [BigBodyCobain/Shadowbroker](https://github.com/BigBodyCobain/Shadowbroker) - OSINT aggregation with explicit AI-agent positioning, relevant because operators still want agents applied to real-world data fusion.
-- [oven-sh/bun](https://github.com/oven-sh/bun) - fast JavaScript runtime and package toolchain, important because general developer infrastructure still underpins agent execution stacks.
+- [tinyhumansai/openhuman](https://github.com/tinyhumansai/openhuman) - personal AI system framing with strong board momentum, notable because default-trending attention still rewards ambitious all-in-one agent claims.
+- [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) - "making all software agent-native," relevant because it treats the CLI and software surface itself as the adaptation target.
+- [tech-leads-club/agent-skills](https://github.com/tech-leads-club/agent-skills) - validated skill registry for professional AI coding agents, directly relevant to packaging, provenance, and trust.
+- [humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agents) - production principles for LLM software, notable because operational discipline is trending alongside agent capability packaging.
+- [microsoft/ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners) - broad beginner curriculum, showing continuing demand for agent onboarding and education.
+- [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) - core local inference runtime, important because infrastructure still co-trends with higher-level agent abstractions.
+- [plausible/analytics](https://github.com/plausible/analytics) - not agent-specific, but a reminder the default board remains mixed and still gives room to privacy-first infra/application projects.
 
 ## Why They May Be Surfacing
 
-- Packaging is becoming part of the product. [CLI-Anything](https://github.com/HKUDS/CLI-Anything), [agent-skills](https://github.com/tech-leads-club/agent-skills), and [agents-towards-production](https://github.com/NirDiamant/agents-towards-production) all assume developers want reusable operating systems for agents, not just prompts.
-- Trust and reuse are active demand centers. A validated registry like [agent-skills](https://github.com/tech-leads-club/agent-skills) rises when teams care about capability packaging, provenance, and repeatability.
-- The board is not narrowly "AI agents only." [Open-Generative-AI](https://github.com/Anil-matcha/Open-Generative-AI), [Shadowbroker](https://github.com/BigBodyCobain/Shadowbroker), and [bun](https://github.com/oven-sh/bun) show creator tooling, data fusion, and systems performance still compete strongly on the default page.
-- Infrastructure still matters as much as orchestration. [bun](https://github.com/oven-sh/bun) staying visible next to agent projects is a reminder that execution speed, packaging, and runtime ergonomics remain part of the same demand wave.
+- Capability packaging is becoming a product layer. [CLI-Anything](https://github.com/HKUDS/CLI-Anything), [agent-skills](https://github.com/tech-leads-club/agent-skills), and [12-factor-agents](https://github.com/humanlayer/12-factor-agents) all assume developers want reusable operating patterns rather than isolated prompt tricks.
+- Trust and repeatability are active demand centers. A validated registry like [agent-skills](https://github.com/tech-leads-club/agent-skills) trends when teams care about provenance, safe reuse, and standard capability bundles.
+- The board is not narrowly "AI only." [llama.cpp](https://github.com/ggml-org/llama.cpp) and [plausible/analytics](https://github.com/plausible/analytics) show core infrastructure and durable application software still compete strongly on the same page.
+- Education remains part of the market. [ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners) trending beside production and registry projects suggests the category is still expanding outward, not just deepening among advanced teams.
 
 ## Watchlist
 
-- Watch whether [CLI-Anything](https://github.com/HKUDS/CLI-Anything) repeats, because that would strengthen the case that agent-native software surfaces are becoming a durable category.
-- Watch whether [agent-skills](https://github.com/tech-leads-club/agent-skills) holds trend position, because repeat presence would confirm ongoing demand for trusted skill packaging rather than a one-day spike.
-- Watch whether [agents-towards-production](https://github.com/NirDiamant/agents-towards-production) persists, because that would indicate the market still wants concrete operator guidance more than novelty demos.
-- Watch whether the default board stays tooling-heavy next run or rotates back toward a more mixed consumer/open-source spread.
+- Watch whether [CLI-Anything](https://github.com/HKUDS/CLI-Anything) and [agent-skills](https://github.com/tech-leads-club/agent-skills) repeat next run, because repeated presence would strengthen the case that agent-native surfaces and skill registries are becoming durable categories.
+- Watch whether [12-factor-agents](https://github.com/humanlayer/12-factor-agents) persists, because that would show the demand wave is moving from novelty into operational doctrine.
+- Watch whether the default board stays toolchain-heavy or rotates back toward a more mixed consumer/open-source spread.
+- Watch whether local-runtime projects like [llama.cpp](https://github.com/ggml-org/llama.cpp) keep co-trending with agent orchestration repos, because that pairing matters for real deployment stacks.
