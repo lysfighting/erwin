@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `77` durable notes are currently indexed across `3` recurring streams.
-- `140` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `79` durable notes are currently indexed across `3` recurring streams.
+- `142` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-20
+### AI Agent Daily Radar - 2026-05-21
 
-- Metadata: `Window: 2026-05-13 to 2026-05-20`
-- **Google opened its managed-agent harness directly in the Gemini API on May 19, 2026.** In [Introducing Managed Agents in the Gemini API](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/) (**May 19, 2026**), Google says a single call can provision an isolated Linux environment where the Antigravity agent can reason, use tools, execute code, browse the web, and resume with persistent state. The same post explicitly uses `AGENTS.md` and `SKILL.md` as versionable agent-definition files.
-- **OpenAI pushed Codex closer to governed enterprise environments on May 18, 2026.** In [OpenAI and Dell Technologies partner to bring Codex to hybrid and on-premises enterprise environments](https://openai.com/index/dell-codex-enterprise-partnership/) (**May 18, 2026**), OpenAI frames Codex as an agent layer that should sit near codebases, docs, business systems, operational knowledge, and team workflows, not just in a cloud coding sandbox.
-- **OpenAI also expanded the operator-control surface for long-running Codex work on May 14, 2026.** [Work with Codex from anywhere](https://openai.com/index/work-with-codex-from-anywhere/) (**May 14, 2026**) and the matching [ChatGPT Enterprise & Edu release notes](https://help.openai.com/en/articles/10128477-chatgpt-enterprise-edu-release-notes%252525252525252525252525252525252525252525252525252525253F.csv) (**May 14, 2026**) add mobile supervision plus enterprise access tokens for trusted, non-interactive local workflows.
+- Metadata: `Window: 2026-05-14 to 2026-05-21`
+- **Anthropic materially widened the Claude Platform managed-agent surface on May 19, 2026.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) say **MCP tunnels** entered research preview, **self-hosted sandboxes** became available for Claude Managed Agents, active sessions can now update MCP/tool configuration, and oversized tool outputs now spill to sandbox files instead of flooding context. This is the strongest in-window Anthropic platform signal because it changes how managed agents can be deployed, connected, and kept stable.
+- **Claude Code shipped another meaningful operator-control release on May 21, 2026.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) added the `2.1.146` release on **May 21, 2026**, renaming `/simplify` to `/code-review`, restoring `AskUserQuestion` behavior in auto mode when explicitly needed, fixing pagination loss for MCP list surfaces, and tightening background-session, updater, and multi-agent reliability. This is a concrete Claude Code control-surface update, not just docs churn.
+- **Google opened its managed-agent harness directly in the Gemini API on May 19, 2026.** In [Introducing Managed Agents in the Gemini API](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/) (**May 19, 2026**), Google says a single call can provision an isolated Linux environment, resume prior state, and define custom agents with `AGENTS.md` and `SKILL.md`. Enterprise support is already in private preview on the Gemini Enterprise Agent Platform.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-20
+### GitHub Trending - 2026-05-21
 
-- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-20** with no extra filters.`
-- [tinyhumansai/openhuman](https://github.com/tinyhumansai/openhuman) - personal AI system framing with strong default-board momentum.
-- [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) - agent-native CLI/software layer thesis, still relevant because it treats software surfaces themselves as the adaptation target.
-- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills) - research workflow skill-packaging for Claude Code, notable because non-coding agent workflows are trending too.
+- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-21** with no extra filters.`
+- [colbymchenry/codegraph](https://github.com/colbymchenry/codegraph) - pre-indexed local code knowledge graph for coding agents; notable because it turns context reduction into a standalone product layer.
+- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills) - Claude Code research workflow bundle; notable because packaged skills are trending as reusable operating systems, not just prompts.
+- [tinyhumansai/openhuman](https://github.com/tinyhumansai/openhuman) - broad personal-AI-system framing with strong momentum on the default board.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-21](../radar/daily/2026-05-21.md)
 - [2026-05-20](../radar/daily/2026-05-20.md)
 - [2026-05-19](../radar/daily/2026-05-19.md)
 - [2026-05-18](../radar/daily/2026-05-18.md)
 - [2026-05-15](../radar/daily/2026-05-15.md)
 - [2026-05-14](../radar/daily/2026-05-14.md)
-- [2026-05-13](../radar/daily/2026-05-13.md)
 
 ### Weekly Synthesis
 
@@ -85,9 +85,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-21](../radar/trending/2026-05-21.md)
 - [2026-05-20](../radar/trending/2026-05-20.md)
 - [2026-05-19](../radar/trending/2026-05-19.md)
 - [2026-05-18](../radar/trending/2026-05-18.md)
 - [2026-05-15](../radar/trending/2026-05-15.md)
 - [2026-05-14](../radar/trending/2026-05-14.md)
-- [2026-05-13](../radar/trending/2026-05-13.md)
