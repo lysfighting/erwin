@@ -11,19 +11,19 @@
 
 ## At A Glance
 
-- `81` durable notes are currently indexed across `3` recurring streams.
-- `144` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `82` durable notes are currently indexed across `3` recurring streams.
+- `145` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
 ## Weekly Lead
 
-### AI/Agent Weekly Synthesis — 2026-05-15
+### AI/Agent Weekly Synthesis — 2026-05-22
 
-- Metadata: `Coverage window: 2026-05-08 to 2026-05-15`
-- Anthropic again had the clearest multi-surface movement, and the required Anthropic surfaces were explicitly checked before concluding scope: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/en/home), the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code docs overview](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). This week did have important Anthropic platform changes.
-- On **May 11, 2026**, Anthropic’s [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **Claude Platform on AWS**, exposing Messages, Files, Message Batches, Claude Managed Agents, Agent Skills, code execution, and tool use through Anthropic-managed AWS endpoints with AWS billing and IAM authentication. On **May 12, 2026**, the same surface added **fast mode support for Claude Opus 4.7**. These are not minor SDK notes; they extend the provider’s deployment and latency-control surfaces.
-- Anthropic’s hosted-agent path remains materially active. The same release-notes surface still shows the **May 6, 2026** launch of **Managed Agent multiagent sessions, outcomes, webhooks, vault refresh, and richer session/event filtering**, and the [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) now clearly presents agent, environment, session, and events as the core runtime contract. The [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) remain live, but I did not find a newer in-window dated advisor launch after the **April 9, 2026** beta; the current doc still centers executor/advisor pairings around Opus 4.7.
+- Metadata: `Coverage window: 2026-05-15 to 2026-05-22`
+- Anthropic had the clearest in-window platform movement again, and this run explicitly checked all required Anthropic surfaces before drawing that conclusion: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/en/home), the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code docs overview](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). This week did have important Anthropic platform and Claude Code changes.
+- On **May 19, 2026**, the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added four material managed-runtime upgrades at once: **MCP tunnels** in research preview for private-network servers, **self-hosted sandboxes** for Claude Managed Agents, **mid-session updates** to an agent’s MCP server and tool configuration, and **automatic large-output spillover to sandbox files** when `agent_toolset` or MCP outputs exceed 100K tokens. On **May 18, 2026**, the same surface also upgraded the **web search tool** with richer SEC filing data for grounded financial research.
+- Anthropic’s hosted-agent contract is now sharper than last week, not fuzzier. The current [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) explicitly defines **agent**, **environment**, **session**, and **events** as the runtime core, and now includes both Anthropic-managed cloud containers and **self-hosted sandboxes** as first-class environment choices. The managed surface is clearly moving toward enterprise-grade runtime configurability rather than a fixed hosted demo loop.
 
 ## Daily Signal Snapshot
 
@@ -45,13 +45,13 @@
 
 ## Durable Interpretation
 
-This week’s theme is **agent work becoming a managed session fabric rather than a single foreground conversation**.
+This week’s theme is **governed agent runtime portability**.
 
 ## Current Proposal Candidates
 
-- Provider-neutral session lifecycle contract
-- Environment policy as executable config
-- Evented long-running runs with dormancy gates
+- Portable execution-environment contract
+- Pinned run classes and dormancy policy
+- Review-to-repair handoff packets
 
 ## Knowledge Network
 
@@ -76,12 +76,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Weekly Synthesis
 
+- [2026-05-22](../radar/weekly/2026-05-22.md)
 - [2026-05-15](../radar/weekly/2026-05-15.md)
 - [2026-05-08](../radar/weekly/2026-05-08.md)
 - [2026-04-17](../radar/weekly/2026-04-17.md)
 - [2026-04-10](../radar/weekly/2026-04-10.md)
 - [2026-04-03](../radar/weekly/2026-04-03.md)
-- [2026-03-30](../radar/weekly/2026-03-30.md)
 
 ### GitHub Trending
 

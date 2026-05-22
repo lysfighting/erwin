@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 81,
+    "total_notes": 82,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 144,
+    "artifact_count": 145,
     "link_count": 267,
     "thread_count": 5
   },
@@ -75,16 +75,20 @@
   "streams": {
     "weekly": {
       "label": "Weekly",
-      "title": "AI/Agent Weekly Synthesis — 2026-05-15",
-      "meta": "Coverage window: 2026-05-08 to 2026-05-15",
+      "title": "AI/Agent Weekly Synthesis — 2026-05-22",
+      "meta": "Coverage window: 2026-05-15 to 2026-05-22",
       "highlights": [
-        "Anthropic again had the clearest multi-surface movement, and the required Anthropic surfaces were explicitly checked before concluding scope: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/en/home), the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code docs overview](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). This week did have important Anthropic platform changes.",
-        "On **May 11, 2026**, Anthropic’s [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **Claude Platform on AWS**, exposing Messages, Files, Message Batches, Claude Managed Agents, Agent Skills, code execution, and tool use through Anthropic-managed AWS endpoints with AWS billing and IAM authentication. On **May 12, 2026**, the same surface added **fast mode support for Claude Opus 4.7**. These are not minor SDK notes; they extend the provider’s deployment and latency-control surfaces.",
-        "Anthropic’s hosted-agent path remains materially active. The same release-notes surface still shows the **May 6, 2026** launch of **Managed Agent multiagent sessions, outcomes, webhooks, vault refresh, and richer session/event filtering**, and the [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) now clearly presents agent, environment, session, and events as the core runtime contract. The [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) remain live, but I did not find a newer in-window dated advisor launch after the **April 9, 2026** beta; the current doc still centers executor/advisor pairings around Opus 4.7."
+        "Anthropic had the clearest in-window platform movement again, and this run explicitly checked all required Anthropic surfaces before drawing that conclusion: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/en/home), the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code docs overview](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). This week did have important Anthropic platform and Claude Code changes.",
+        "On **May 19, 2026**, the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added four material managed-runtime upgrades at once: **MCP tunnels** in research preview for private-network servers, **self-hosted sandboxes** for Claude Managed Agents, **mid-session updates** to an agent’s MCP server and tool configuration, and **automatic large-output spillover to sandbox files** when `agent_toolset` or MCP outputs exceed 100K tokens. On **May 18, 2026**, the same surface also upgraded the **web search tool** with richer SEC filing data for grounded financial research.",
+        "Anthropic’s hosted-agent contract is now sharper than last week, not fuzzier. The current [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) explicitly defines **agent**, **environment**, **session**, and **events** as the runtime core, and now includes both Anthropic-managed cloud containers and **self-hosted sandboxes** as first-class environment choices. The managed surface is clearly moving toward enterprise-grade runtime configurability rather than a fixed hosted demo loop."
       ],
       "latest_path": "radar/weekly/latest.md",
       "archive_path": "radar/weekly/",
       "recent": [
+        {
+          "name": "2026-05-22",
+          "path": "radar/weekly/2026-05-22.md"
+        },
         {
           "name": "2026-05-15",
           "path": "radar/weekly/2026-05-15.md"
@@ -104,13 +108,9 @@
         {
           "name": "2026-04-03",
           "path": "radar/weekly/2026-04-03.md"
-        },
-        {
-          "name": "2026-03-30",
-          "path": "radar/weekly/2026-03-30.md"
         }
       ],
-      "count": 6
+      "count": 7
     },
     "daily": {
       "label": "Daily",
@@ -191,11 +191,11 @@
       "count": 38
     }
   },
-  "deep_dive": "This week’s theme is **agent work becoming a managed session fabric rather than a single foreground conversation**.",
+  "deep_dive": "This week’s theme is **governed agent runtime portability**.",
   "proposal_candidates": [
-    "Provider-neutral session lifecycle contract",
-    "Environment policy as executable config",
-    "Evented long-running runs with dormancy gates"
+    "Portable execution-environment contract",
+    "Pinned run classes and dormancy policy",
+    "Review-to-repair handoff packets"
   ],
   "knowledge_network": {
     "schema_version": 1,
@@ -233,12 +233,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 144,
+      "artifact_count": 145,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 91,
+        "radar": 92,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4104,6 +4104,35 @@
           "https://openai.com/index/building-codex-windows-sandbox/",
           "https://openai.com/index/running-codex-safely/",
           "https://github.blog/changelog/2026-05-13-start-copilot-cloud-agent-tasks-via-the-rest-api/"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/weekly/2026-05-22.md",
+        "layer": "radar",
+        "path": "docs/radar/weekly/2026-05-22.md",
+        "title": "AI/Agent Weekly Synthesis — 2026-05-22",
+        "date": "2026-05-22",
+        "status": "",
+        "themes": [
+          "context engineering",
+          "coding agents",
+          "tool use"
+        ],
+        "summary": "Coverage window: 2026-05-15 to 2026-05-22",
+        "external_refs": [
+          "https://www.anthropic.com/news",
+          "https://claude.com/",
+          "https://docs.anthropic.com/en/home",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://code.claude.com/docs/en/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://support.claude.com/en/articles/12138966-release-notes",
+          "https://openai.com/index/work-with-codex-from-anywhere/",
+          "https://github.blog/changelog/2026-05-18-copilot-cloud-agent-fast-cost-efficient-models-for-simple-tasks/",
+          "https://github.blog/changelog/2026-05-18-one-click-fixes-for-failing-actions-with-copilot-cloud-agent/"
         ],
         "local_refs": []
       },
