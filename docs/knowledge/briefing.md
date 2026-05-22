@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `79` durable notes are currently indexed across `3` recurring streams.
-- `142` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `81` durable notes are currently indexed across `3` recurring streams.
+- `144` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-21
+### AI Agent Daily Radar - 2026-05-22
 
-- Metadata: `Window: 2026-05-14 to 2026-05-21`
-- **Anthropic materially widened the Claude Platform managed-agent surface on May 19, 2026.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) say **MCP tunnels** entered research preview, **self-hosted sandboxes** became available for Claude Managed Agents, active sessions can now update MCP/tool configuration, and oversized tool outputs now spill to sandbox files instead of flooding context. This is the strongest in-window Anthropic platform signal because it changes how managed agents can be deployed, connected, and kept stable.
-- **Claude Code shipped another meaningful operator-control release on May 21, 2026.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) added the `2.1.146` release on **May 21, 2026**, renaming `/simplify` to `/code-review`, restoring `AskUserQuestion` behavior in auto mode when explicitly needed, fixing pagination loss for MCP list surfaces, and tightening background-session, updater, and multi-agent reliability. This is a concrete Claude Code control-surface update, not just docs churn.
-- **Google opened its managed-agent harness directly in the Gemini API on May 19, 2026.** In [Introducing Managed Agents in the Gemini API](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/) (**May 19, 2026**), Google says a single call can provision an isolated Linux environment, resume prior state, and define custom agents with `AGENTS.md` and `SKILL.md`. Enterprise support is already in private preview on the Gemini Enterprise Agent Platform.
+- Metadata: `Window: 2026-05-15 to 2026-05-22`
+- **Anthropic shipped a same-day Claude Code stability fix on May 22, 2026.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `2.1.148` on **May 22, 2026**, fixing a regression where the Bash tool returned exit code `127` on every command for some users. This is small in scope but high signal for agent operators because it directly affects tool reliability in unattended coding sessions.
+- **Anthropic materially expanded Claude Managed Agents on May 19, 2026.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and matching [Claude blog post](https://claude.com/blog/new-in-claude-managed-agents-self-hosted-sandboxes-and-mcp-tunnels) added **MCP tunnels** in research preview, **self-hosted sandboxes** for Claude Managed Agents, live MCP/tool reconfiguration for active sessions, and automatic spill-to-file behavior for oversized tool outputs. This remains the strongest Anthropic platform signal in-window.
+- **Google brought managed agents directly into the Gemini API on May 19, 2026.** In [Introducing Managed Agents in the Gemini API](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/) (**May 19, 2026**), Google says a single API call can start an agent that reasons, uses tools, and executes code in an isolated Linux environment, with resumable state and custom agent definitions via `AGENTS.md` and `SKILL.md`.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-21
+### GitHub Trending - 2026-05-22
 
-- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-21** with no extra filters.`
-- [colbymchenry/codegraph](https://github.com/colbymchenry/codegraph) - pre-indexed local code knowledge graph for coding agents; notable because it turns context reduction into a standalone product layer.
-- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills) - Claude Code research workflow bundle; notable because packaged skills are trending as reusable operating systems, not just prompts.
-- [tinyhumansai/openhuman](https://github.com/tinyhumansai/openhuman) - broad personal-AI-system framing with strong momentum on the default board.
+- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-22** with no extra filters.`
+- [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) - official Anthropic-managed Claude Code plugin directory; notable because trusted capability packaging is surfacing as a product category.
+- [colbymchenry/codegraph](https://github.com/colbymchenry/codegraph) - local pre-indexed code knowledge graph for Claude Code, Codex, Cursor, and OpenCode; relevant because context reduction is being externalized into its own infrastructure layer.
+- [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) - single `CLAUDE.md` behavior pack; notable because portable agent operating overlays still attract outsized attention.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-22](../radar/daily/2026-05-22.md)
 - [2026-05-21](../radar/daily/2026-05-21.md)
 - [2026-05-20](../radar/daily/2026-05-20.md)
 - [2026-05-19](../radar/daily/2026-05-19.md)
 - [2026-05-18](../radar/daily/2026-05-18.md)
 - [2026-05-15](../radar/daily/2026-05-15.md)
-- [2026-05-14](../radar/daily/2026-05-14.md)
 
 ### Weekly Synthesis
 
@@ -85,9 +85,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-22](../radar/trending/2026-05-22.md)
 - [2026-05-21](../radar/trending/2026-05-21.md)
 - [2026-05-20](../radar/trending/2026-05-20.md)
 - [2026-05-19](../radar/trending/2026-05-19.md)
 - [2026-05-18](../radar/trending/2026-05-18.md)
 - [2026-05-15](../radar/trending/2026-05-15.md)
-- [2026-05-14](../radar/trending/2026-05-14.md)

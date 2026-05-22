@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 79,
+    "total_notes": 81,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 142,
+    "artifact_count": 144,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,16 +114,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-05-21",
-      "meta": "Window: 2026-05-14 to 2026-05-21",
+      "title": "AI Agent Daily Radar - 2026-05-22",
+      "meta": "Window: 2026-05-15 to 2026-05-22",
       "highlights": [
-        "**Anthropic materially widened the Claude Platform managed-agent surface on May 19, 2026.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) say **MCP tunnels** entered research preview, **self-hosted sandboxes** became available for Claude Managed Agents, active sessions can now update MCP/tool configuration, and oversized tool outputs now spill to sandbox files instead of flooding context. This is the strongest in-window Anthropic platform signal because it changes how managed agents can be deployed, connected, and kept stable.",
-        "**Claude Code shipped another meaningful operator-control release on May 21, 2026.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) added the `2.1.146` release on **May 21, 2026**, renaming `/simplify` to `/code-review`, restoring `AskUserQuestion` behavior in auto mode when explicitly needed, fixing pagination loss for MCP list surfaces, and tightening background-session, updater, and multi-agent reliability. This is a concrete Claude Code control-surface update, not just docs churn.",
-        "**Google opened its managed-agent harness directly in the Gemini API on May 19, 2026.** In [Introducing Managed Agents in the Gemini API](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/) (**May 19, 2026**), Google says a single call can provision an isolated Linux environment, resume prior state, and define custom agents with `AGENTS.md` and `SKILL.md`. Enterprise support is already in private preview on the Gemini Enterprise Agent Platform."
+        "**Anthropic shipped a same-day Claude Code stability fix on May 22, 2026.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `2.1.148` on **May 22, 2026**, fixing a regression where the Bash tool returned exit code `127` on every command for some users. This is small in scope but high signal for agent operators because it directly affects tool reliability in unattended coding sessions.",
+        "**Anthropic materially expanded Claude Managed Agents on May 19, 2026.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and matching [Claude blog post](https://claude.com/blog/new-in-claude-managed-agents-self-hosted-sandboxes-and-mcp-tunnels) added **MCP tunnels** in research preview, **self-hosted sandboxes** for Claude Managed Agents, live MCP/tool reconfiguration for active sessions, and automatic spill-to-file behavior for oversized tool outputs. This remains the strongest Anthropic platform signal in-window.",
+        "**Google brought managed agents directly into the Gemini API on May 19, 2026.** In [Introducing Managed Agents in the Gemini API](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/) (**May 19, 2026**), Google says a single API call can start an agent that reasons, uses tools, and executes code in an isolated Linux environment, with resumable state and custom agent definitions via `AGENTS.md` and `SKILL.md`."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-05-22",
+          "path": "radar/daily/2026-05-22.md"
+        },
         {
           "name": "2026-05-21",
           "path": "radar/daily/2026-05-21.md"
@@ -143,26 +147,26 @@
         {
           "name": "2026-05-15",
           "path": "radar/daily/2026-05-15.md"
-        },
-        {
-          "name": "2026-05-14",
-          "path": "radar/daily/2026-05-14.md"
         }
       ],
-      "count": 36
+      "count": 37
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-05-21",
-      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-21** with no extra filters.",
+      "title": "GitHub Trending - 2026-05-22",
+      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-22** with no extra filters.",
       "highlights": [
-        "[colbymchenry/codegraph](https://github.com/colbymchenry/codegraph) - pre-indexed local code knowledge graph for coding agents; notable because it turns context reduction into a standalone product layer.",
-        "[Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills) - Claude Code research workflow bundle; notable because packaged skills are trending as reusable operating systems, not just prompts.",
-        "[tinyhumansai/openhuman](https://github.com/tinyhumansai/openhuman) - broad personal-AI-system framing with strong momentum on the default board."
+        "[anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) - official Anthropic-managed Claude Code plugin directory; notable because trusted capability packaging is surfacing as a product category.",
+        "[colbymchenry/codegraph](https://github.com/colbymchenry/codegraph) - local pre-indexed code knowledge graph for Claude Code, Codex, Cursor, and OpenCode; relevant because context reduction is being externalized into its own infrastructure layer.",
+        "[multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) - single `CLAUDE.md` behavior pack; notable because portable agent operating overlays still attract outsized attention."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-05-22",
+          "path": "radar/trending/2026-05-22.md"
+        },
         {
           "name": "2026-05-21",
           "path": "radar/trending/2026-05-21.md"
@@ -182,13 +186,9 @@
         {
           "name": "2026-05-15",
           "path": "radar/trending/2026-05-15.md"
-        },
-        {
-          "name": "2026-05-14",
-          "path": "radar/trending/2026-05-14.md"
         }
       ],
-      "count": 37
+      "count": 38
     }
   },
   "deep_dive": "This week’s theme is **agent work becoming a managed session fabric rather than a single foreground conversation**.",
@@ -233,12 +233,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 142,
+      "artifact_count": 144,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 89,
+        "radar": 91,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2677,6 +2677,38 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-05-22.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-05-22.md",
+        "title": "AI Agent Daily Radar - 2026-05-22",
+        "date": "2026-05-22",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-05-15 to 2026-05-22",
+        "external_refs": [
+          "https://code.claude.com/docs/en/changelog",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://claude.com/blog/new-in-claude-managed-agents-self-hosted-sandboxes-and-mcp-tunnels",
+          "https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/",
+          "https://openai.com/index/dell-codex-enterprise-partnership/",
+          "https://github.com/trending",
+          "https://github.com/anthropics/claude-plugins-official",
+          "https://github.com/colbymchenry/codegraph",
+          "https://github.com/dotnet/skills",
+          "https://github.com/obra/superpowers",
+          "https://github.com/HKUDS/CLI-Anything",
+          "https://github.com/ChromeDevTools/chrome-devtools-mcp"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -3845,6 +3877,33 @@
           "https://github.com/msitarzewski/agency-agents",
           "https://github.com/rohitg00/agentmemory",
           "https://github.com/rmyndharis/OpenWA"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-05-22.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-05-22.md",
+        "title": "GitHub Trending - 2026-05-22",
+        "date": "2026-05-22",
+        "status": "",
+        "themes": [
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-22** with no extra filters.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/anthropics/claude-plugins-official",
+          "https://github.com/colbymchenry/codegraph",
+          "https://github.com/multica-ai/andrej-karpathy-skills",
+          "https://github.com/dotnet/skills",
+          "https://github.com/obra/superpowers",
+          "https://github.com/HKUDS/CLI-Anything",
+          "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+          "https://github.com/teng-lin/notebooklm-py"
         ],
         "local_refs": []
       },
