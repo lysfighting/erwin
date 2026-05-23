@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `82` durable notes are currently indexed across `3` recurring streams.
-- `145` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `84` durable notes are currently indexed across `3` recurring streams.
+- `147` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,18 +27,18 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-22
+### AI Agent Daily Radar - 2026-05-23
 
-- Metadata: `Window: 2026-05-15 to 2026-05-22`
-- **Anthropic shipped a same-day Claude Code stability fix on May 22, 2026.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `2.1.148` on **May 22, 2026**, fixing a regression where the Bash tool returned exit code `127` on every command for some users. This is small in scope but high signal for agent operators because it directly affects tool reliability in unattended coding sessions.
-- **Anthropic materially expanded Claude Managed Agents on May 19, 2026.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and matching [Claude blog post](https://claude.com/blog/new-in-claude-managed-agents-self-hosted-sandboxes-and-mcp-tunnels) added **MCP tunnels** in research preview, **self-hosted sandboxes** for Claude Managed Agents, live MCP/tool reconfiguration for active sessions, and automatic spill-to-file behavior for oversized tool outputs. This remains the strongest Anthropic platform signal in-window.
-- **Google brought managed agents directly into the Gemini API on May 19, 2026.** In [Introducing Managed Agents in the Gemini API](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/) (**May 19, 2026**), Google says a single API call can start an agent that reasons, uses tools, and executes code in an isolated Linux environment, with resumable state and custom agent definitions via `AGENTS.md` and `SKILL.md`.
+- Metadata: `Window: 2026-05-16 to 2026-05-23`
+- **Anthropic expanded Claude Managed Agents on 2026-05-19.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and matching [Claude blog post](https://claude.com/blog/new-in-claude-managed-agents-self-hosted-sandboxes-and-mcp-tunnels) added research-preview MCP tunnels, self-hosted sandboxes, live tool and MCP reconfiguration for active sessions, and automatic spill-to-file handling for oversized tool output. This is the strongest first-party agent-runtime move in-window.
+- **Anthropic shipped two Claude Code updates on 2026-05-22 and 2026-05-23.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `2.1.149` on **2026-05-22** with a crash fix for interrupted `/compact`, and `2.1.150` on **2026-05-23** with internal fixes and no user-facing changes. Small release, but still high signal because this surface directly affects unattended coding sessions.
+- **Google introduced Managed Agents in the Gemini API on 2026-05-19.** In [Introducing Managed Agents in the Gemini API](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/), Google positioned a single API call as an entrypoint for reasoning, tool use, and isolated code execution, with resumable state and repo-local agent contracts such as `AGENTS.md` and `SKILL.md`.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-22
+### GitHub Trending - 2026-05-23
 
-- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-22** with no extra filters.`
+- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-23** with no extra filters.`
 - [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) - official Anthropic-managed Claude Code plugin directory; notable because trusted capability packaging is surfacing as a product category.
 - [colbymchenry/codegraph](https://github.com/colbymchenry/codegraph) - local pre-indexed code knowledge graph for Claude Code, Codex, Cursor, and OpenCode; relevant because context reduction is being externalized into its own infrastructure layer.
 - [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) - single `CLAUDE.md` behavior pack; notable because portable agent operating overlays still attract outsized attention.
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-23](../radar/daily/2026-05-23.md)
 - [2026-05-22](../radar/daily/2026-05-22.md)
 - [2026-05-21](../radar/daily/2026-05-21.md)
 - [2026-05-20](../radar/daily/2026-05-20.md)
 - [2026-05-19](../radar/daily/2026-05-19.md)
 - [2026-05-18](../radar/daily/2026-05-18.md)
-- [2026-05-15](../radar/daily/2026-05-15.md)
 
 ### Weekly Synthesis
 
@@ -85,9 +85,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-23](../radar/trending/2026-05-23.md)
 - [2026-05-22](../radar/trending/2026-05-22.md)
 - [2026-05-21](../radar/trending/2026-05-21.md)
 - [2026-05-20](../radar/trending/2026-05-20.md)
 - [2026-05-19](../radar/trending/2026-05-19.md)
 - [2026-05-18](../radar/trending/2026-05-18.md)
-- [2026-05-15](../radar/trending/2026-05-15.md)

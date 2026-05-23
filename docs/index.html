@@ -434,10 +434,10 @@
         This page is the human-facing front door for the repository&#x27;s knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.
       </p>
       <div class="hero-stats">
-        <div class="stat-chip"><strong>82</strong><span>Durable notes indexed</span></div>
+        <div class="stat-chip"><strong>84</strong><span>Durable notes indexed</span></div>
         <div class="stat-chip"><strong>3 streams</strong><span>Daily, weekly, trending</span></div>
         <div class="stat-chip"><strong>5 layers</strong><span>Radar to implementation</span></div>
-        <div class="stat-chip"><strong>145</strong><span>Network artifacts</span></div>
+        <div class="stat-chip"><strong>147</strong><span>Network artifacts</span></div>
         <div class="stat-chip"><strong>267</strong><span>Typed local links</span></div>
       </div>
       <div class="hero-grid">
@@ -487,9 +487,9 @@
 
     <article class="brief-card cool">
       <div class="eyebrow">Daily</div>
-      <h3>AI Agent Daily Radar - 2026-05-22</h3>
-      <p class="meta">Window: 2026-05-15 to 2026-05-22</p>
-      <ul><li><strong>Anthropic shipped a same-day Claude Code stability fix on May 22, 2026.</strong> The official <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a> shows <code>2.1.148</code> on <strong>May 22, 2026</strong>, fixing a regression where the Bash tool returned exit code <code>127</code> on every command for some users. This is small in scope but high signal for agent operators because it directly affects tool reliability in unattended coding sessions.</li><li><strong>Anthropic materially expanded Claude Managed Agents on May 19, 2026.</strong> The official <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a> and matching <a href="https://claude.com/blog/new-in-claude-managed-agents-self-hosted-sandboxes-and-mcp-tunnels">Claude blog post</a> added <strong>MCP tunnels</strong> in research preview, <strong>self-hosted sandboxes</strong> for Claude Managed Agents, live MCP/tool reconfiguration for active sessions, and automatic spill-to-file behavior for oversized tool outputs. This remains the strongest Anthropic platform signal in-window.</li><li><strong>Google brought managed agents directly into the Gemini API on May 19, 2026.</strong> In <a href="https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/">Introducing Managed Agents in the Gemini API</a> (<strong>May 19, 2026</strong>), Google says a single API call can start an agent that reasons, uses tools, and executes code in an isolated Linux environment, with resumable state and custom agent definitions via <code>AGENTS.md</code> and <code>SKILL.md</code>.</li></ul>
+      <h3>AI Agent Daily Radar - 2026-05-23</h3>
+      <p class="meta">Window: 2026-05-16 to 2026-05-23</p>
+      <ul><li><strong>Anthropic expanded Claude Managed Agents on 2026-05-19.</strong> The official <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a> and matching <a href="https://claude.com/blog/new-in-claude-managed-agents-self-hosted-sandboxes-and-mcp-tunnels">Claude blog post</a> added research-preview MCP tunnels, self-hosted sandboxes, live tool and MCP reconfiguration for active sessions, and automatic spill-to-file handling for oversized tool output. This is the strongest first-party agent-runtime move in-window.</li><li><strong>Anthropic shipped two Claude Code updates on 2026-05-22 and 2026-05-23.</strong> The official <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a> shows <code>2.1.149</code> on <strong>2026-05-22</strong> with a crash fix for interrupted <code>/compact</code>, and <code>2.1.150</code> on <strong>2026-05-23</strong> with internal fixes and no user-facing changes. Small release, but still high signal because this surface directly affects unattended coding sessions.</li><li><strong>Google introduced Managed Agents in the Gemini API on 2026-05-19.</strong> In <a href="https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/">Introducing Managed Agents in the Gemini API</a>, Google positioned a single API call as an entrypoint for reasoning, tool use, and isolated code execution, with resumable state and repo-local agent contracts such as <code>AGENTS.md</code> and <code>SKILL.md</code>.</li></ul>
       <div class="card-actions">
         <a class="primary-link" href="radar/daily/latest.md">Open latest</a>
         <a class="secondary-link" href="radar/daily/">Browse archive</a>
@@ -499,8 +499,8 @@
 
     <article class="brief-card violet">
       <div class="eyebrow">Trending</div>
-      <h3>GitHub Trending - 2026-05-22</h3>
-      <p class="meta">Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-22** with no extra filters.</p>
+      <h3>GitHub Trending - 2026-05-23</h3>
+      <p class="meta">Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-23** with no extra filters.</p>
       <ul><li><a href="https://github.com/anthropics/claude-plugins-official">anthropics/claude-plugins-official</a> - official Anthropic-managed Claude Code plugin directory; notable because trusted capability packaging is surfacing as a product category.</li><li><a href="https://github.com/colbymchenry/codegraph">colbymchenry/codegraph</a> - local pre-indexed code knowledge graph for Claude Code, Codex, Cursor, and OpenCode; relevant because context reduction is being externalized into its own infrastructure layer.</li><li><a href="https://github.com/multica-ai/andrej-karpathy-skills">multica-ai/andrej-karpathy-skills</a> - single <code>CLAUDE.md</code> behavior pack; notable because portable agent operating overlays still attract outsized attention.</li></ul>
       <div class="card-actions">
         <a class="primary-link" href="radar/trending/latest.md">Open latest</a>
@@ -560,7 +560,7 @@
         <article class="network-card">
           <h3>Network snapshot</h3>
           <p>The graph is rebuilt from Markdown and selected implementation entrypoints. It is not a database; Markdown remains the source of truth.</p>
-          <div class="metric-line"><span>Artifacts</span><strong>145</strong></div>
+          <div class="metric-line"><span>Artifacts</span><strong>147</strong></div>
           <div class="metric-line"><span>Typed links</span><strong>267</strong></div>
           <div class="metric-line"><span>Active threads</span><strong>5</strong></div>
           <div class="metric-line"><span>Proposal records</span><strong>5</strong></div>
@@ -589,7 +589,7 @@
 
     <section class="archive-column">
       <h4>Daily Radar</h4>
-      <ul><li><a href="radar/daily/2026-05-22.md">2026-05-22</a></li><li><a href="radar/daily/2026-05-21.md">2026-05-21</a></li><li><a href="radar/daily/2026-05-20.md">2026-05-20</a></li><li><a href="radar/daily/2026-05-19.md">2026-05-19</a></li><li><a href="radar/daily/2026-05-18.md">2026-05-18</a></li><li><a href="radar/daily/2026-05-15.md">2026-05-15</a></li></ul>
+      <ul><li><a href="radar/daily/2026-05-23.md">2026-05-23</a></li><li><a href="radar/daily/2026-05-22.md">2026-05-22</a></li><li><a href="radar/daily/2026-05-21.md">2026-05-21</a></li><li><a href="radar/daily/2026-05-20.md">2026-05-20</a></li><li><a href="radar/daily/2026-05-19.md">2026-05-19</a></li><li><a href="radar/daily/2026-05-18.md">2026-05-18</a></li></ul>
     </section>
 
 
@@ -601,7 +601,7 @@
 
     <section class="archive-column">
       <h4>GitHub Trending</h4>
-      <ul><li><a href="radar/trending/2026-05-22.md">2026-05-22</a></li><li><a href="radar/trending/2026-05-21.md">2026-05-21</a></li><li><a href="radar/trending/2026-05-20.md">2026-05-20</a></li><li><a href="radar/trending/2026-05-19.md">2026-05-19</a></li><li><a href="radar/trending/2026-05-18.md">2026-05-18</a></li><li><a href="radar/trending/2026-05-15.md">2026-05-15</a></li></ul>
+      <ul><li><a href="radar/trending/2026-05-23.md">2026-05-23</a></li><li><a href="radar/trending/2026-05-22.md">2026-05-22</a></li><li><a href="radar/trending/2026-05-21.md">2026-05-21</a></li><li><a href="radar/trending/2026-05-20.md">2026-05-20</a></li><li><a href="radar/trending/2026-05-19.md">2026-05-19</a></li><li><a href="radar/trending/2026-05-18.md">2026-05-18</a></li></ul>
     </section>
 
       </div>
