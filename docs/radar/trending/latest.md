@@ -1,30 +1,33 @@
-# GitHub Trending - 2026-05-25
+# GitHub Trending - 2026-05-28
 
-Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-25** with no extra filters.
+Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-28** with no extra filters.
 
 ## Trending Snapshot
 
-The unfiltered board is still mixed rather than AI-only. The clearest pattern today is a blend of agent tooling, plugin and skill packaging, code-intelligence infrastructure, and a few broader developer or infra projects that keep the page from collapsing into a single theme.
+Today’s unfiltered board is mixed rather than AI-only. The strongest pattern is a blend of AI-video tooling, explainer or learning agents, agent operating overlays, Claude-adjacent harnesses, and a few broader developer projects that keep the board from collapsing into one narrow theme.
 
 ## Notable Projects
 
-- [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) - notable because Anthropic-adjacent plugin packaging is surfacing directly on the default board rather than only on niche agent lists.
-- [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) - a portable behavior overlay; relevant because installable agent operating packs continue to attract broad attention.
-- [dotnet/skills](https://github.com/dotnet/skills) - first-party .NET skill repository for AI coding agents; notable because a major platform vendor is treating skills as a product surface.
-- [colbymchenry/codegraph](https://github.com/colbymchenry/codegraph) - relevant because code-graph and code-intelligence infrastructure remain adjacent to the agent stack.
-- [blakeblackshear/frigate](https://github.com/blakeblackshear/frigate) - a reminder that the default board is broader than AI; surveillance and edge-compute infrastructure still surfaces when it has real operator pull.
-- [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills) - notable because domain-specific security skill catalogs are showing up as reusable agent infrastructure.
+- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) - AI-video generation workflow tooling; notable because it is leading the default board rather than a niche AI list.
+- [Lum1104/Understand-Anything](https://github.com/Lum1104/Understand-Anything) - explain-anything and study-agent framing; relevant because knowledge-assistance products are still pulling broad attention.
+- [hardikpandya/stop-slop](https://github.com/hardikpandya/stop-slop) - quality-control or anti-slop positioning; notable because model-output quality pressure is becoming a recognizable product category.
+- [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) - plugin packaging around knowledge work; directly relevant because Anthropic-flavored operator packaging is still visible on the default board.
+- [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) - installable skill packaging; notable because reusable agent capability packs remain a demand center.
+- [p-e-w/heretic](https://github.com/p-e-w/heretic) - not obviously AI-first, but still useful as a reminder that the default board remains mixed and operator-driven.
+- [Chachamaru127/claude-code-harness](https://github.com/Chachamaru127/claude-code-harness) - directly relevant because Claude Code execution scaffolds are surfacing as a reusable community layer.
+- [obra/superpowers](https://github.com/obra/superpowers) - execution, planning, and development overlays for agents; notable because behavior and process packs remain sticky.
+- [iii-hq/iii](https://github.com/iii-hq/iii) - developer-tooling or infra-adjacent project; notable mainly because the default board is broader than the AI stack alone.
+- [moeru-ai/airi](https://github.com/moeru-ai/airi) - AI-assistant project; relevant as another sign that end-user agent shells still attract attention on the global board.
 
 ## Why They May Be Surfacing
 
-- Capability packaging is still a live demand center. `knowledge-work-plugins`, `andrej-karpathy-skills`, `dotnet/skills`, and `Anthropic-Cybersecurity-Skills` all point to operators wanting reusable packs rather than one-off prompt fragments.
-- Code understanding remains part of the stack around coding agents. `codegraph` suggests that navigation, indexing, and structural code context are still viewed as leverage points.
-- The board is not AI-monoculture. `frigate` surfacing alongside agent projects is a useful reminder that the default global board still rewards practical infra and operator tools.
-- Anthropic-flavored tooling is unusually visible today. That does not make it roadmap truth, but it does suggest current community attention is clustering around Anthropic-adjacent plugins and skills.
+- Packaging is still a live category. `knowledge-work-plugins`, `taste-skill`, `claude-code-harness`, and `superpowers` all point to demand for reusable operating layers around models.
+- Outcome quality is becoming a product surface. `stop-slop` suggests users are explicitly seeking tooling that constrains or improves model output quality.
+- AI video and explainer workflows remain broad-interest use cases. `MoneyPrinterTurbo` and `Understand-Anything` both fit that pattern.
+- The board is still not pure AI monoculture. Repos like `heretic` and `iii` are a useful reminder that the default global page still rewards general developer or operator pull.
 
 ## Watchlist
 
-- Watch whether [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) and [dotnet/skills](https://github.com/dotnet/skills) repeat, because repeated presence would strengthen plugin and skill packaging as a durable category rather than a one-day spike.
-- Watch whether [colbymchenry/codegraph](https://github.com/colbymchenry/codegraph) holds, because sustained interest would reinforce code-graph infrastructure as part of the coding-agent stack.
-- Watch whether [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills) persists, because that would suggest domain-specialized skill inventories are moving from niche to mainstream.
-- Watch whether tomorrow’s board stays tooling-heavy or rotates back toward a more mixed spread of consumer, infra, and creative projects.
+- Watch whether [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins), [Chachamaru127/claude-code-harness](https://github.com/Chachamaru127/claude-code-harness), and [obra/superpowers](https://github.com/obra/superpowers) repeat, because repeated presence would strengthen harnesses and execution overlays as a durable operator category.
+- Watch whether [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) holds, because sustained attention would keep AI-video workflow automation on the main board rather than as a short spike.
+- Watch whether [hardikpandya/stop-slop](https://github.com/hardikpandya/stop-slop) persists, because that would suggest output-quality guardrails are becoming a mainstream developer concern.

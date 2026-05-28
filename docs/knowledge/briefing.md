@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `88` durable notes are currently indexed across `3` recurring streams.
-- `151` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `90` durable notes are currently indexed across `3` recurring streams.
+- `153` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-25
+### AI Agent Daily Radar - 2026-05-28
 
-- Metadata: `Window: 2026-05-18 to 2026-05-25`
-- **Anthropic expanded Claude Managed Agents on 2026-05-19.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and matching [Claude blog post](https://claude.com/blog/new-in-claude-managed-agents-self-hosted-sandboxes-and-mcp-tunnels) added MCP tunnels in research preview, self-hosted sandboxes, live MCP and tool reconfiguration for active sessions, and automatic spill-to-file handling for outputs above 100K tokens.
-- **OpenAI sharpened the Codex operator surface on 2026-05-21.** The official [ChatGPT release notes](https://help.openai.com/en/articles/6825453-chatgpt-release-notes%252525252525252525252525252525252525252525252525252525252525252525252525252523.doc) added Appshots, general-availability Goal mode, in-app browser annotations, locked computer use, and broader browser-use improvements for longer-running coding workflows.
-- **Google launched Managed Agents in the Gemini API on 2026-05-19.** In [Introducing Managed Agents in the Gemini API](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/), Google exposed a single-call agent runtime with isolated Linux execution, resumable state, web access, and repo-local agent contracts via `AGENTS.md` and `SKILL.md`.
+- Metadata: `Window: 2026-05-21 to 2026-05-28`
+- **OpenAI expanded the Codex operator surface on 2026-05-21.** The official [ChatGPT Enterprise & Edu release notes](https://help.openai.com/en/articles/10128477) added Appshots in the macOS app, general-availability Goal mode, in-app browser annotations, and locked remote computer use. This is the clearest in-window first-party agent-workflow update across the covered publishers.
+- **Anthropic’s required technical surfaces were checked, but no newer in-window dated launch displaced the current Managed Agents state.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code docs](https://code.claude.com/docs/en/overview) were all checked this run. The strongest recent Anthropic platform move remains the [2026-05-19 Managed Agents update](https://claude.com/blog/claude-managed-agents-updates), which is now just outside this run window; the advisor tool still requires the `advisor-tool-2026-03-01` beta header and Managed Agents still require `managed-agents-2026-04-01`.
+- **No stronger dated first-party technical item surfaced in-window for Google, Moonshot, MiniMax, Qwen, or DeepSeek after one official pass each.** Google’s [Managed Agents in the Gemini API launch](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/) is dated **2026-05-19**, Qwen’s [Qwen3.7: The Agent Frontier](https://qwen.ai/research) release is dated **2026-05-20**, and DeepSeek’s latest visible API changelog item remains [DeepSeek-V4](https://api-docs.deepseek.com/updates/) on **2026-04-24**. Those are still relevant context, but not fresh enough to count as new in this 2026-05-21 to 2026-05-28 window.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-25
+### GitHub Trending - 2026-05-28
 
-- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-25** with no extra filters.`
-- [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) - notable because Anthropic-adjacent plugin packaging is surfacing directly on the default board rather than only on niche agent lists.
-- [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) - a portable behavior overlay; relevant because installable agent operating packs continue to attract broad attention.
-- [dotnet/skills](https://github.com/dotnet/skills) - first-party .NET skill repository for AI coding agents; notable because a major platform vendor is treating skills as a product surface.
+- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-28** with no extra filters.`
+- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) - AI-video generation workflow tooling; notable because it is leading the default board rather than a niche AI list.
+- [Lum1104/Understand-Anything](https://github.com/Lum1104/Understand-Anything) - explain-anything and study-agent framing; relevant because knowledge-assistance products are still pulling broad attention.
+- [hardikpandya/stop-slop](https://github.com/hardikpandya/stop-slop) - quality-control or anti-slop positioning; notable because model-output quality pressure is becoming a recognizable product category.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-28](../radar/daily/2026-05-28.md)
 - [2026-05-25](../radar/daily/2026-05-25.md)
 - [2026-05-24](../radar/daily/2026-05-24.md)
 - [2026-05-23](../radar/daily/2026-05-23.md)
 - [2026-05-22](../radar/daily/2026-05-22.md)
 - [2026-05-21](../radar/daily/2026-05-21.md)
-- [2026-05-20](../radar/daily/2026-05-20.md)
 
 ### Weekly Synthesis
 
@@ -85,9 +85,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-28](../radar/trending/2026-05-28.md)
 - [2026-05-25](../radar/trending/2026-05-25.md)
 - [2026-05-24](../radar/trending/2026-05-24.md)
 - [2026-05-23](../radar/trending/2026-05-23.md)
 - [2026-05-22](../radar/trending/2026-05-22.md)
 - [2026-05-21](../radar/trending/2026-05-21.md)
-- [2026-05-20](../radar/trending/2026-05-20.md)

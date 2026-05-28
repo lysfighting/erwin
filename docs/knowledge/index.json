@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 88,
+    "total_notes": 90,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 151,
+    "artifact_count": 153,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,16 +114,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-05-25",
-      "meta": "Window: 2026-05-18 to 2026-05-25",
+      "title": "AI Agent Daily Radar - 2026-05-28",
+      "meta": "Window: 2026-05-21 to 2026-05-28",
       "highlights": [
-        "**Anthropic expanded Claude Managed Agents on 2026-05-19.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and matching [Claude blog post](https://claude.com/blog/new-in-claude-managed-agents-self-hosted-sandboxes-and-mcp-tunnels) added MCP tunnels in research preview, self-hosted sandboxes, live MCP and tool reconfiguration for active sessions, and automatic spill-to-file handling for outputs above 100K tokens.",
-        "**OpenAI sharpened the Codex operator surface on 2026-05-21.** The official [ChatGPT release notes](https://help.openai.com/en/articles/6825453-chatgpt-release-notes%252525252525252525252525252525252525252525252525252525252525252525252525252523.doc) added Appshots, general-availability Goal mode, in-app browser annotations, locked computer use, and broader browser-use improvements for longer-running coding workflows.",
-        "**Google launched Managed Agents in the Gemini API on 2026-05-19.** In [Introducing Managed Agents in the Gemini API](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/), Google exposed a single-call agent runtime with isolated Linux execution, resumable state, web access, and repo-local agent contracts via `AGENTS.md` and `SKILL.md`."
+        "**OpenAI expanded the Codex operator surface on 2026-05-21.** The official [ChatGPT Enterprise & Edu release notes](https://help.openai.com/en/articles/10128477) added Appshots in the macOS app, general-availability Goal mode, in-app browser annotations, and locked remote computer use. This is the clearest in-window first-party agent-workflow update across the covered publishers.",
+        "**Anthropic’s required technical surfaces were checked, but no newer in-window dated launch displaced the current Managed Agents state.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code docs](https://code.claude.com/docs/en/overview) were all checked this run. The strongest recent Anthropic platform move remains the [2026-05-19 Managed Agents update](https://claude.com/blog/claude-managed-agents-updates), which is now just outside this run window; the advisor tool still requires the `advisor-tool-2026-03-01` beta header and Managed Agents still require `managed-agents-2026-04-01`.",
+        "**No stronger dated first-party technical item surfaced in-window for Google, Moonshot, MiniMax, Qwen, or DeepSeek after one official pass each.** Google’s [Managed Agents in the Gemini API launch](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/) is dated **2026-05-19**, Qwen’s [Qwen3.7: The Agent Frontier](https://qwen.ai/research) release is dated **2026-05-20**, and DeepSeek’s latest visible API changelog item remains [DeepSeek-V4](https://api-docs.deepseek.com/updates/) on **2026-04-24**. Those are still relevant context, but not fresh enough to count as new in this 2026-05-21 to 2026-05-28 window."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-05-28",
+          "path": "radar/daily/2026-05-28.md"
+        },
         {
           "name": "2026-05-25",
           "path": "radar/daily/2026-05-25.md"
@@ -143,26 +147,26 @@
         {
           "name": "2026-05-21",
           "path": "radar/daily/2026-05-21.md"
-        },
-        {
-          "name": "2026-05-20",
-          "path": "radar/daily/2026-05-20.md"
         }
       ],
-      "count": 40
+      "count": 41
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-05-25",
-      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-25** with no extra filters.",
+      "title": "GitHub Trending - 2026-05-28",
+      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-28** with no extra filters.",
       "highlights": [
-        "[anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) - notable because Anthropic-adjacent plugin packaging is surfacing directly on the default board rather than only on niche agent lists.",
-        "[multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) - a portable behavior overlay; relevant because installable agent operating packs continue to attract broad attention.",
-        "[dotnet/skills](https://github.com/dotnet/skills) - first-party .NET skill repository for AI coding agents; notable because a major platform vendor is treating skills as a product surface."
+        "[harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) - AI-video generation workflow tooling; notable because it is leading the default board rather than a niche AI list.",
+        "[Lum1104/Understand-Anything](https://github.com/Lum1104/Understand-Anything) - explain-anything and study-agent framing; relevant because knowledge-assistance products are still pulling broad attention.",
+        "[hardikpandya/stop-slop](https://github.com/hardikpandya/stop-slop) - quality-control or anti-slop positioning; notable because model-output quality pressure is becoming a recognizable product category."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-05-28",
+          "path": "radar/trending/2026-05-28.md"
+        },
         {
           "name": "2026-05-25",
           "path": "radar/trending/2026-05-25.md"
@@ -182,13 +186,9 @@
         {
           "name": "2026-05-21",
           "path": "radar/trending/2026-05-21.md"
-        },
-        {
-          "name": "2026-05-20",
-          "path": "radar/trending/2026-05-20.md"
         }
       ],
-      "count": 41
+      "count": 42
     }
   },
   "deep_dive": "This week’s theme is **governed agent runtime portability**.",
@@ -233,12 +233,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 151,
+      "artifact_count": 153,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 98,
+        "radar": 100,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2801,6 +2801,37 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-05-28.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-05-28.md",
+        "title": "AI Agent Daily Radar - 2026-05-28",
+        "date": "2026-05-28",
+        "status": "",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-05-21 to 2026-05-28",
+        "external_refs": [
+          "https://help.openai.com/en/articles/10128477",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://code.claude.com/docs/en/changelog",
+          "https://code.claude.com/docs/en/overview",
+          "https://claude.com/blog/claude-managed-agents-updates",
+          "https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/",
+          "https://qwen.ai/research",
+          "https://api-docs.deepseek.com/updates/",
+          "https://github.com/trending",
+          "https://github.com/harry0703/MoneyPrinterTurbo"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -4068,6 +4099,34 @@
           "https://github.com/colbymchenry/codegraph",
           "https://github.com/blakeblackshear/frigate",
           "https://github.com/mukul975/Anthropic-Cybersecurity-Skills"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-05-28.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-05-28.md",
+        "title": "GitHub Trending - 2026-05-28",
+        "date": "2026-05-28",
+        "status": "",
+        "themes": [
+          "harness",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-28** with no extra filters.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/harry0703/MoneyPrinterTurbo",
+          "https://github.com/Lum1104/Understand-Anything",
+          "https://github.com/hardikpandya/stop-slop",
+          "https://github.com/anthropics/knowledge-work-plugins",
+          "https://github.com/Leonxlnx/taste-skill",
+          "https://github.com/p-e-w/heretic",
+          "https://github.com/Chachamaru127/claude-code-harness",
+          "https://github.com/obra/superpowers",
+          "https://github.com/iii-hq/iii",
+          "https://github.com/moeru-ai/airi"
         ],
         "local_refs": []
       },
