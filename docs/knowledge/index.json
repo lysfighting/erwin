@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 90,
+    "total_notes": 92,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 153,
+    "artifact_count": 155,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,16 +114,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-05-28",
-      "meta": "Window: 2026-05-21 to 2026-05-28",
+      "title": "AI Agent Daily Radar - 2026-05-29",
+      "meta": "Window: 2026-05-22 to 2026-05-29",
       "highlights": [
-        "**OpenAI expanded the Codex operator surface on 2026-05-21.** The official [ChatGPT Enterprise & Edu release notes](https://help.openai.com/en/articles/10128477) added Appshots in the macOS app, general-availability Goal mode, in-app browser annotations, and locked remote computer use. This is the clearest in-window first-party agent-workflow update across the covered publishers.",
-        "**Anthropic’s required technical surfaces were checked, but no newer in-window dated launch displaced the current Managed Agents state.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code docs](https://code.claude.com/docs/en/overview) were all checked this run. The strongest recent Anthropic platform move remains the [2026-05-19 Managed Agents update](https://claude.com/blog/claude-managed-agents-updates), which is now just outside this run window; the advisor tool still requires the `advisor-tool-2026-03-01` beta header and Managed Agents still require `managed-agents-2026-04-01`.",
-        "**No stronger dated first-party technical item surfaced in-window for Google, Moonshot, MiniMax, Qwen, or DeepSeek after one official pass each.** Google’s [Managed Agents in the Gemini API launch](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/) is dated **2026-05-19**, Qwen’s [Qwen3.7: The Agent Frontier](https://qwen.ai/research) release is dated **2026-05-20**, and DeepSeek’s latest visible API changelog item remains [DeepSeek-V4](https://api-docs.deepseek.com/updates/) on **2026-04-24**. Those are still relevant context, but not fresh enough to count as new in this 2026-05-21 to 2026-05-28 window."
+        "**Anthropic shipped the clearest in-window agent-platform update on 2026-05-28.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added Claude Opus 4.8 to the API, made [web search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool) return richer SEC filing data, and explicitly noted that the [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) now supports Opus 4.8. This matters because the same release-note surface also remains the authoritative place where Anthropic exposes platform-contract changes before broader marketing recaps.",
+        "**OpenAI published a concrete production-to-eval loop for coding agents on 2026-05-27.** In [Building self-improving tax agents with Codex](https://openai.com/index/building-self-improving-tax-agents-with-codex/), OpenAI describes a three-part loop: practitioner corrections become structured traces, repeated failures become eval targets, and Codex turns those bounded targets into scoped engineering tasks with regression validation. This is one of the strongest recent first-party descriptions of how to operationalize agent improvement instead of treating evals as a sidecar.",
+        "**Google pushed MCP and agentic commerce deeper into real developer workflows on 2026-05-28 and 2026-05-27.** The official [Google Pay & Wallet Developer MCP server](https://developers.googleblog.com/supercharge-your-integration-workflow-with-the-google-pay-wallet-developer-mcp-server/) post on **2026-05-28** introduced a grounded IDE/agent server for docs lookup, validation, integration status, and performance checks. The related [latest updates to Google Pay](https://developers.googleblog.com/) item on **2026-05-27** framed the same direction as support for \"agentic commerce\" with a Universal Commerce Protocol and MCP support."
       ],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-05-29",
+          "path": "radar/daily/2026-05-29.md"
+        },
         {
           "name": "2026-05-28",
           "path": "radar/daily/2026-05-28.md"
@@ -143,26 +147,26 @@
         {
           "name": "2026-05-22",
           "path": "radar/daily/2026-05-22.md"
-        },
-        {
-          "name": "2026-05-21",
-          "path": "radar/daily/2026-05-21.md"
         }
       ],
-      "count": 41
+      "count": 42
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-05-28",
-      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-28** with no extra filters.",
+      "title": "GitHub Trending - 2026-05-29",
+      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-29** with no extra filters.",
       "highlights": [
-        "[harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) - AI-video generation workflow tooling; notable because it is leading the default board rather than a niche AI list.",
-        "[Lum1104/Understand-Anything](https://github.com/Lum1104/Understand-Anything) - explain-anything and study-agent framing; relevant because knowledge-assistance products are still pulling broad attention.",
-        "[hardikpandya/stop-slop](https://github.com/hardikpandya/stop-slop) - quality-control or anti-slop positioning; notable because model-output quality pressure is becoming a recognizable product category."
+        "[harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo): AI-video generation workflow; leading the board with heavy daily star velocity, so this is broad demand rather than a niche tools spike.",
+        "[affaan-m/ECC](https://github.com/affaan-m/ECC): positions itself as an agent harness optimization system across Claude Code, Codex, Cursor, and related shells, which makes it directly relevant to operator-layer packaging.",
+        "[Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill): reusable skill packaging framed around improving model taste and avoiding generic outputs."
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-05-29",
+          "path": "radar/trending/2026-05-29.md"
+        },
         {
           "name": "2026-05-28",
           "path": "radar/trending/2026-05-28.md"
@@ -182,13 +186,9 @@
         {
           "name": "2026-05-22",
           "path": "radar/trending/2026-05-22.md"
-        },
-        {
-          "name": "2026-05-21",
-          "path": "radar/trending/2026-05-21.md"
         }
       ],
-      "count": 42
+      "count": 43
     }
   },
   "deep_dive": "This week’s theme is **governed agent runtime portability**.",
@@ -233,12 +233,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 153,
+      "artifact_count": 155,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 100,
+        "radar": 102,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2832,6 +2832,38 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-05-29.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-05-29.md",
+        "title": "AI Agent Daily Radar - 2026-05-29",
+        "date": "2026-05-29",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-05-22 to 2026-05-29",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://openai.com/index/building-self-improving-tax-agents-with-codex/",
+          "https://developers.googleblog.com/supercharge-your-integration-workflow-with-the-google-pay-wallet-developer-mcp-server/",
+          "https://developers.googleblog.com/",
+          "https://api-docs.deepseek.com/news/news260424",
+          "https://github.com/trending",
+          "https://github.com/harry0703/MoneyPrinterTurbo",
+          "https://github.com/affaan-m/ECC",
+          "https://github.com/microsoft/markitdown",
+          "https://github.com/obra/superpowers"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -4127,6 +4159,33 @@
           "https://github.com/obra/superpowers",
           "https://github.com/iii-hq/iii",
           "https://github.com/moeru-ai/airi"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-05-29.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-05-29.md",
+        "title": "GitHub Trending - 2026-05-29",
+        "date": "2026-05-29",
+        "status": "",
+        "themes": [
+          "harness",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-29** with no extra filters.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/harry0703/MoneyPrinterTurbo",
+          "https://github.com/affaan-m/ECC",
+          "https://github.com/Leonxlnx/taste-skill",
+          "https://github.com/hardikpandya/stop-slop",
+          "https://github.com/twentyhq/twenty",
+          "https://github.com/microsoft/markitdown",
+          "https://github.com/obra/superpowers",
+          "https://github.com/revfactory/harness"
         ],
         "local_refs": []
       },

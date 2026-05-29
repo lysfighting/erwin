@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `90` durable notes are currently indexed across `3` recurring streams.
-- `153` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `92` durable notes are currently indexed across `3` recurring streams.
+- `155` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,21 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-28
+### AI Agent Daily Radar - 2026-05-29
 
-- Metadata: `Window: 2026-05-21 to 2026-05-28`
-- **OpenAI expanded the Codex operator surface on 2026-05-21.** The official [ChatGPT Enterprise & Edu release notes](https://help.openai.com/en/articles/10128477) added Appshots in the macOS app, general-availability Goal mode, in-app browser annotations, and locked remote computer use. This is the clearest in-window first-party agent-workflow update across the covered publishers.
-- **Anthropic’s required technical surfaces were checked, but no newer in-window dated launch displaced the current Managed Agents state.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code docs](https://code.claude.com/docs/en/overview) were all checked this run. The strongest recent Anthropic platform move remains the [2026-05-19 Managed Agents update](https://claude.com/blog/claude-managed-agents-updates), which is now just outside this run window; the advisor tool still requires the `advisor-tool-2026-03-01` beta header and Managed Agents still require `managed-agents-2026-04-01`.
-- **No stronger dated first-party technical item surfaced in-window for Google, Moonshot, MiniMax, Qwen, or DeepSeek after one official pass each.** Google’s [Managed Agents in the Gemini API launch](https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/) is dated **2026-05-19**, Qwen’s [Qwen3.7: The Agent Frontier](https://qwen.ai/research) release is dated **2026-05-20**, and DeepSeek’s latest visible API changelog item remains [DeepSeek-V4](https://api-docs.deepseek.com/updates/) on **2026-04-24**. Those are still relevant context, but not fresh enough to count as new in this 2026-05-21 to 2026-05-28 window.
+- Metadata: `Window: 2026-05-22 to 2026-05-29`
+- **Anthropic shipped the clearest in-window agent-platform update on 2026-05-28.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added Claude Opus 4.8 to the API, made [web search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool) return richer SEC filing data, and explicitly noted that the [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) now supports Opus 4.8. This matters because the same release-note surface also remains the authoritative place where Anthropic exposes platform-contract changes before broader marketing recaps.
+- **OpenAI published a concrete production-to-eval loop for coding agents on 2026-05-27.** In [Building self-improving tax agents with Codex](https://openai.com/index/building-self-improving-tax-agents-with-codex/), OpenAI describes a three-part loop: practitioner corrections become structured traces, repeated failures become eval targets, and Codex turns those bounded targets into scoped engineering tasks with regression validation. This is one of the strongest recent first-party descriptions of how to operationalize agent improvement instead of treating evals as a sidecar.
+- **Google pushed MCP and agentic commerce deeper into real developer workflows on 2026-05-28 and 2026-05-27.** The official [Google Pay & Wallet Developer MCP server](https://developers.googleblog.com/supercharge-your-integration-workflow-with-the-google-pay-wallet-developer-mcp-server/) post on **2026-05-28** introduced a grounded IDE/agent server for docs lookup, validation, integration status, and performance checks. The related [latest updates to Google Pay](https://developers.googleblog.com/) item on **2026-05-27** framed the same direction as support for "agentic commerce" with a Universal Commerce Protocol and MCP support.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-28
+### GitHub Trending - 2026-05-29
 
-- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-28** with no extra filters.`
-- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) - AI-video generation workflow tooling; notable because it is leading the default board rather than a niche AI list.
-- [Lum1104/Understand-Anything](https://github.com/Lum1104/Understand-Anything) - explain-anything and study-agent framing; relevant because knowledge-assistance products are still pulling broad attention.
-- [hardikpandya/stop-slop](https://github.com/hardikpandya/stop-slop) - quality-control or anti-slop positioning; notable because model-output quality pressure is becoming a recognizable product category.
+- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-29** with no extra filters.`
+- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo): AI-video generation workflow; leading the board with heavy daily star velocity, so this is broad demand rather than a niche tools spike.
+- [affaan-m/ECC](https://github.com/affaan-m/ECC): positions itself as an agent harness optimization system across Claude Code, Codex, Cursor, and related shells, which makes it directly relevant to operator-layer packaging.
+- [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill): reusable skill packaging framed around improving model taste and avoiding generic outputs.
 
 ## Durable Interpretation
 
@@ -67,12 +67,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-29](../radar/daily/2026-05-29.md)
 - [2026-05-28](../radar/daily/2026-05-28.md)
 - [2026-05-25](../radar/daily/2026-05-25.md)
 - [2026-05-24](../radar/daily/2026-05-24.md)
 - [2026-05-23](../radar/daily/2026-05-23.md)
 - [2026-05-22](../radar/daily/2026-05-22.md)
-- [2026-05-21](../radar/daily/2026-05-21.md)
 
 ### Weekly Synthesis
 
@@ -85,9 +85,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-05-29](../radar/trending/2026-05-29.md)
 - [2026-05-28](../radar/trending/2026-05-28.md)
 - [2026-05-25](../radar/trending/2026-05-25.md)
 - [2026-05-24](../radar/trending/2026-05-24.md)
 - [2026-05-23](../radar/trending/2026-05-23.md)
 - [2026-05-22](../radar/trending/2026-05-22.md)
-- [2026-05-21](../radar/trending/2026-05-21.md)
