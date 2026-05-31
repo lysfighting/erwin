@@ -11,47 +11,47 @@
 
 ## At A Glance
 
-- `92` durable notes are currently indexed across `3` recurring streams.
-- `155` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `95` durable notes are currently indexed across `3` recurring streams.
+- `158` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
 ## Weekly Lead
 
-### AI/Agent Weekly Synthesis — 2026-05-22
+### AI/Agent Weekly Synthesis — 2026-05-29
 
-- Metadata: `Coverage window: 2026-05-15 to 2026-05-22`
-- Anthropic had the clearest in-window platform movement again, and this run explicitly checked all required Anthropic surfaces before drawing that conclusion: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/en/home), the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code docs overview](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). This week did have important Anthropic platform and Claude Code changes.
-- On **May 19, 2026**, the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added four material managed-runtime upgrades at once: **MCP tunnels** in research preview for private-network servers, **self-hosted sandboxes** for Claude Managed Agents, **mid-session updates** to an agent’s MCP server and tool configuration, and **automatic large-output spillover to sandbox files** when `agent_toolset` or MCP outputs exceed 100K tokens. On **May 18, 2026**, the same surface also upgraded the **web search tool** with richer SEC filing data for grounded financial research.
-- Anthropic’s hosted-agent contract is now sharper than last week, not fuzzier. The current [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) explicitly defines **agent**, **environment**, **session**, and **events** as the runtime core, and now includes both Anthropic-managed cloud containers and **self-hosted sandboxes** as first-class environment choices. The managed surface is clearly moving toward enterprise-grade runtime configurability rather than a fixed hosted demo loop.
+- Metadata: `Coverage window: 2026-05-22 to 2026-05-29`
+- Anthropic carried the clearest first-party technical signal this week, and this run explicitly checked the required Anthropic surfaces before reaching that conclusion: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/en/home), the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code docs overview](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog).
+- On **May 28, 2026**, Anthropic launched [Claude Opus 4.8](https://www.anthropic.com/news/claude-opus-4-8) and the same date landed in the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview). The important platform-level changes were not just the model SKU: Anthropic added **fine-grained prompt caching** controls, **1M-token context windows** on request for Claude Sonnet 4 and Opus 4.1, **fivex higher output limits** for Opus 4.1 and Sonnet 4, **global endpoint pricing for Claude Code**, and **GA status for web fetch**.
+- Anthropic’s managed-agent surface still moved even without a fresh standalone managed-agents launch post. The current [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) continues to frame **agent**, **environment**, **session**, and **events** as the runtime core, while the surrounding release-note stream keeps making that runtime more configurable. The absence of a separate managed-agents announcement this week does not mean the surface was quiet; the control plane around it changed materially.
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-29
+### AI Agent Daily Radar - 2026-05-31
 
-- Metadata: `Window: 2026-05-22 to 2026-05-29`
-- **Anthropic shipped the clearest in-window agent-platform update on 2026-05-28.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added Claude Opus 4.8 to the API, made [web search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool) return richer SEC filing data, and explicitly noted that the [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) now supports Opus 4.8. This matters because the same release-note surface also remains the authoritative place where Anthropic exposes platform-contract changes before broader marketing recaps.
-- **OpenAI published a concrete production-to-eval loop for coding agents on 2026-05-27.** In [Building self-improving tax agents with Codex](https://openai.com/index/building-self-improving-tax-agents-with-codex/), OpenAI describes a three-part loop: practitioner corrections become structured traces, repeated failures become eval targets, and Codex turns those bounded targets into scoped engineering tasks with regression validation. This is one of the strongest recent first-party descriptions of how to operationalize agent improvement instead of treating evals as a sidecar.
-- **Google pushed MCP and agentic commerce deeper into real developer workflows on 2026-05-28 and 2026-05-27.** The official [Google Pay & Wallet Developer MCP server](https://developers.googleblog.com/supercharge-your-integration-workflow-with-the-google-pay-wallet-developer-mcp-server/) post on **2026-05-28** introduced a grounded IDE/agent server for docs lookup, validation, integration status, and performance checks. The related [latest updates to Google Pay](https://developers.googleblog.com/) item on **2026-05-27** framed the same direction as support for "agentic commerce" with a Universal Commerce Protocol and MCP support.
+- Metadata: `Window: 2026-05-24 to 2026-05-31`
+- **Anthropic pushed the densest in-window agent-platform update across the required official surfaces on 2026-05-28 and 2026-05-29.** The [Claude Apps release notes](https://support.claude.com/en/articles/12138966-release-notes) added **Claude Opus 4.8** and connector-role controls on **2026-05-28**, while the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **Claude Managed Agents webhooks, multiagent orchestration, and self-hosted sandboxes on Claude Platform on AWS** on **2026-05-29**. I explicitly checked the required Anthropic surfaces this run: Claude Platform release notes, Claude Managed Agents docs, advisor tool docs, Claude Code docs, Claude Code changelog/releases, and Claude Apps release notes.
+- **OpenAI expanded both Codex control surfaces and workspace-agent governance on 2026-05-28 and 2026-05-29.** The official [ChatGPT Enterprise & Edu release notes](https://help.openai.com/en/articles/10128477-chatgpt-enterprise-ve-edu-s%C3%BCr%C3%BCm-notlar%C4%B1) added **Windows Computer Use**, **remote control for Windows hosts**, and **GitHub Enterprise app template support for Codex** on **2026-05-29**; on **2026-05-28**, the same surface added **GPT-5.5 support, reasoning-effort controls, and action safeguards for workspace agents**.
+- **Google’s I/O 2026 developer push remains the clearest Google agent-platform move still inside the 7-day window.** In [Building the agentic future: Developer highlights from I/O 2026](https://blog.google/innovation-and-ai/technology/developers-tools/google-io-2026-developer-highlights/) on **2026-05-19**, Google introduced **Gemini 3.5 Flash**, **Managed Agents in the Gemini API**, and the **Google Antigravity 2.0 desktop app** for parallel agents, scheduled tasks, and SDK/CLI-based agent workflows.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-29
+### GitHub Trending - 2026-05-31
 
-- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-29** with no extra filters.`
-- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo): AI-video generation workflow; leading the board with heavy daily star velocity, so this is broad demand rather than a niche tools spike.
-- [affaan-m/ECC](https://github.com/affaan-m/ECC): positions itself as an agent harness optimization system across Claude Code, Codex, Cursor, and related shells, which makes it directly relevant to operator-layer packaging.
-- [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill): reusable skill packaging framed around improving model taste and avoiding generic outputs.
+- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-31** with no extra filters.`
+- [microsoft/markitdown](https://github.com/microsoft/markitdown): document and Office-file conversion into Markdown; a practical ingestion primitive that keeps resurfacing.
+- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo): one-click AI short-video generation; high star velocity suggests broad creator demand, not just niche experimentation.
+- [anthropics/claude-code](https://github.com/anthropics/claude-code): flagship terminal coding agent; trending at the same time Anthropic is shipping new Claude Platform and Managed Agents changes.
 
 ## Durable Interpretation
 
-This week’s theme is **governed agent runtime portability**.
+This week’s theme is **governed scale-up of agent runtime state**.
 
 ## Current Proposal Candidates
 
-- Portable execution-environment contract
-- Pinned run classes and dormancy policy
-- Review-to-repair handoff packets
+- Run state budget contract
+- Reset versus resume lifecycle states
+- Memory-scope governance layer
 
 ## Knowledge Network
 
@@ -67,27 +67,27 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-05-31](../radar/daily/2026-05-31.md)
 - [2026-05-29](../radar/daily/2026-05-29.md)
 - [2026-05-28](../radar/daily/2026-05-28.md)
 - [2026-05-25](../radar/daily/2026-05-25.md)
 - [2026-05-24](../radar/daily/2026-05-24.md)
 - [2026-05-23](../radar/daily/2026-05-23.md)
-- [2026-05-22](../radar/daily/2026-05-22.md)
 
 ### Weekly Synthesis
 
+- [2026-05-29](../radar/weekly/2026-05-29.md)
 - [2026-05-22](../radar/weekly/2026-05-22.md)
 - [2026-05-15](../radar/weekly/2026-05-15.md)
 - [2026-05-08](../radar/weekly/2026-05-08.md)
 - [2026-04-17](../radar/weekly/2026-04-17.md)
 - [2026-04-10](../radar/weekly/2026-04-10.md)
-- [2026-04-03](../radar/weekly/2026-04-03.md)
 
 ### GitHub Trending
 
+- [2026-05-31](../radar/trending/2026-05-31.md)
 - [2026-05-29](../radar/trending/2026-05-29.md)
 - [2026-05-28](../radar/trending/2026-05-28.md)
 - [2026-05-25](../radar/trending/2026-05-25.md)
 - [2026-05-24](../radar/trending/2026-05-24.md)
 - [2026-05-23](../radar/trending/2026-05-23.md)
-- [2026-05-22](../radar/trending/2026-05-22.md)
