@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 95,
+    "total_notes": 101,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 158,
+    "artifact_count": 164,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,16 +114,24 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "AI Agent Daily Radar - 2026-05-31",
-      "meta": "Window: 2026-05-24 to 2026-05-31",
-      "highlights": [
-        "**Anthropic pushed the densest in-window agent-platform update across the required official surfaces on 2026-05-28 and 2026-05-29.** The [Claude Apps release notes](https://support.claude.com/en/articles/12138966-release-notes) added **Claude Opus 4.8** and connector-role controls on **2026-05-28**, while the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **Claude Managed Agents webhooks, multiagent orchestration, and self-hosted sandboxes on Claude Platform on AWS** on **2026-05-29**. I explicitly checked the required Anthropic surfaces this run: Claude Platform release notes, Claude Managed Agents docs, advisor tool docs, Claude Code docs, Claude Code changelog/releases, and Claude Apps release notes.",
-        "**OpenAI expanded both Codex control surfaces and workspace-agent governance on 2026-05-28 and 2026-05-29.** The official [ChatGPT Enterprise & Edu release notes](https://help.openai.com/en/articles/10128477-chatgpt-enterprise-ve-edu-s%C3%BCr%C3%BCm-notlar%C4%B1) added **Windows Computer Use**, **remote control for Windows hosts**, and **GitHub Enterprise app template support for Codex** on **2026-05-29**; on **2026-05-28**, the same surface added **GPT-5.5 support, reasoning-effort controls, and action safeguards for workspace agents**.",
-        "**Google’s I/O 2026 developer push remains the clearest Google agent-platform move still inside the 7-day window.** In [Building the agentic future: Developer highlights from I/O 2026](https://blog.google/innovation-and-ai/technology/developers-tools/google-io-2026-developer-highlights/) on **2026-05-19**, Google introduced **Gemini 3.5 Flash**, **Managed Agents in the Gemini API**, and the **Google Antigravity 2.0 desktop app** for parallel agents, scheduled tasks, and SDK/CLI-based agent workflows."
-      ],
+      "title": "Daily Radar — 2026-06-04",
+      "meta": "Window: 2026-05-29 to 2026-06-04",
+      "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-06-04",
+          "path": "radar/daily/2026-06-04.md"
+        },
+        {
+          "name": "2026-06-03",
+          "path": "radar/daily/2026-06-03.md"
+        },
+        {
+          "name": "2026-06-02",
+          "path": "radar/daily/2026-06-02.md"
+        },
         {
           "name": "2026-05-31",
           "path": "radar/daily/2026-05-31.md"
@@ -135,34 +143,34 @@
         {
           "name": "2026-05-28",
           "path": "radar/daily/2026-05-28.md"
-        },
-        {
-          "name": "2026-05-25",
-          "path": "radar/daily/2026-05-25.md"
-        },
-        {
-          "name": "2026-05-24",
-          "path": "radar/daily/2026-05-24.md"
-        },
-        {
-          "name": "2026-05-23",
-          "path": "radar/daily/2026-05-23.md"
         }
       ],
-      "count": 43
+      "count": 46
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-05-31",
-      "meta": "Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-31** with no extra filters.",
+      "title": "GitHub Trending — 2026-06-04",
+      "meta": "Latest GitHub Trending board summary",
       "highlights": [
-        "[microsoft/markitdown](https://github.com/microsoft/markitdown): document and Office-file conversion into Markdown; a practical ingestion primitive that keeps resurfacing.",
-        "[harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo): one-click AI short-video generation; high star velocity suggests broad creator demand, not just niche experimentation.",
-        "[anthropics/claude-code](https://github.com/anthropics/claude-code): flagship terminal coding agent; trending at the same time Anthropic is shipping new Claude Platform and Managed Agents changes."
+        "[chopratejas/headroom](https://github.com/chopratejas/headroom)",
+        "[affaan-m/ECC](https://github.com/affaan-m/ECC)",
+        "[NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-06-04",
+          "path": "radar/trending/2026-06-04.md"
+        },
+        {
+          "name": "2026-06-03",
+          "path": "radar/trending/2026-06-03.md"
+        },
+        {
+          "name": "2026-06-02",
+          "path": "radar/trending/2026-06-02.md"
+        },
         {
           "name": "2026-05-31",
           "path": "radar/trending/2026-05-31.md"
@@ -174,21 +182,9 @@
         {
           "name": "2026-05-28",
           "path": "radar/trending/2026-05-28.md"
-        },
-        {
-          "name": "2026-05-25",
-          "path": "radar/trending/2026-05-25.md"
-        },
-        {
-          "name": "2026-05-24",
-          "path": "radar/trending/2026-05-24.md"
-        },
-        {
-          "name": "2026-05-23",
-          "path": "radar/trending/2026-05-23.md"
         }
       ],
-      "count": 44
+      "count": 47
     }
   },
   "deep_dive": "This week’s theme is **governed scale-up of agent runtime state**.",
@@ -233,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 158,
+      "artifact_count": 164,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 105,
+        "radar": 111,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2896,6 +2892,103 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-06-02.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-06-02.md",
+        "title": "Daily Radar — 2026-06-02",
+        "date": "2026-06-02",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-05-26 to 2026-06-02",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://developers.openai.com/",
+          "https://help.openai.com/en/articles/6825453-chatgpt-release-notes",
+          "https://www.minimax.io/blog/minimax-agent-team-long-running-1779893953",
+          "https://github.com/QwenLM/qwen-code/releases",
+          "https://github.com/QwenLM/Qwen-Agent/releases",
+          "https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/",
+          "https://www.kimi.com/help/agent/agent-swarm",
+          "https://github.com/explore",
+          "https://github.com/microsoft/markitdown",
+          "https://github.com/nesquena/hermes-webui",
+          "https://github.com/supermemoryai/supermemory"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-06-03.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-06-03.md",
+        "title": "Daily Radar — 2026-06-03",
+        "date": "2026-06-03",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-05-27 to 2026-06-03",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://help.openai.com/en/articles/6825453-chatgpt-release-notes",
+          "https://www.minimax.io/blog/minimax-agent-team-long-running-1779893953",
+          "https://github.com/QwenLM/qwen-code/releases",
+          "https://github.com/QwenLM/Qwen-Agent/releases",
+          "https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/",
+          "https://www.kimi.com/help/agent/agent-swarm",
+          "https://fe-static.deepseek.com/chat/transparency/deepseek-v3.2-model-card-0414-EN.pdf",
+          "https://github.com/trending",
+          "https://github.com/chopratejas/headroom",
+          "https://github.com/microsoft/markitdown"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-06-04.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-06-04.md",
+        "title": "Daily Radar — 2026-06-04",
+        "date": "2026-06-04",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-05-29 to 2026-06-04",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://platform.claude.com/docs/en/managed-agents/quickstart",
+          "https://code.claude.com/docs/en/changelog",
+          "https://help.openai.com/en/articles/6825453-chatgpt-versionshinweise",
+          "https://github.com/QwenLM/qwen-code/releases",
+          "https://github.com/QwenLM/Qwen-Agent/releases",
+          "https://github.com/trending",
+          "https://github.com/chopratejas/headroom",
+          "https://github.com/affaan-m/ECC",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/microsoft/markitdown"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -4246,6 +4339,90 @@
           "https://github.com/OpenBMB/VoxCPM",
           "https://github.com/galilai-group/stable-worldmodel",
           "https://github.com/run-llama/liteparse"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-06-02.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-06-02.md",
+        "title": "GitHub Trending — 2026-06-02",
+        "date": "2026-06-02",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Explore / Trending](https://github.com/explore)",
+        "external_refs": [
+          "https://github.com/explore",
+          "https://github.com/microsoft/markitdown",
+          "https://github.com/nesquena/hermes-webui",
+          "https://github.com/supermemoryai/supermemory",
+          "https://github.com/D4Vinci/Scrapling",
+          "https://github.com/EveryInc/compound-engineering-plugin",
+          "https://github.com/TauricResearch/TradingAgents",
+          "https://github.com/revfactory/harness",
+          "https://github.com/can1357/oh-my-pi",
+          "https://github.com/dmtrKovalenko/fff"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-06-03.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-06-03.md",
+        "title": "GitHub Trending — 2026-06-03",
+        "date": "2026-06-03",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/chopratejas/headroom",
+          "https://github.com/microsoft/markitdown",
+          "https://github.com/affaan-m/ECC",
+          "https://github.com/D4Vinci/Scrapling",
+          "https://github.com/nesquena/hermes-webui",
+          "https://github.com/reconurge/flowsint",
+          "https://github.com/OpenBMB/VoxCPM",
+          "https://github.com/supermemoryai/supermemory"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-06-04.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-06-04.md",
+        "title": "GitHub Trending — 2026-06-04",
+        "date": "2026-06-04",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/chopratejas/headroom",
+          "https://github.com/affaan-m/ECC",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/microsoft/markitdown",
+          "https://github.com/nesquena/hermes-webui",
+          "https://github.com/D4Vinci/Scrapling",
+          "https://github.com/aquasecurity/trivy",
+          "https://github.com/supermemoryai/supermemory"
         ],
         "local_refs": []
       },

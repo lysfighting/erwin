@@ -1,32 +1,49 @@
-# GitHub Trending - 2026-05-31
+# GitHub Trending — 2026-06-04
 
-Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-31** with no extra filters.
+Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-Today’s unfiltered board is mixed but unusually saturated with AI-adjacent tooling. The top slice combines document conversion, AI short-video packaging, coding-agent runtimes, plugin ecosystems, agent harnesses, TTS, world-model research, and a few broader utility projects. It is not an AI-only board, but agent infrastructure is clearly overrepresented.
+Today’s default global board is mixed, with a visible AI/agent cluster but not an AI-only board. Agent compression, runtime, ingestion, memory, and remote-control projects are prominent, while security, ERP, interview prep, and voice projects are also pulling attention. The useful read is not “everything is agents”; it is that agent-adjacent developer infrastructure is sharing the board with broader practical software tooling.
 
 ## Notable Projects
 
-- [microsoft/markitdown](https://github.com/microsoft/markitdown): document and Office-file conversion into Markdown; a practical ingestion primitive that keeps resurfacing.
-- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo): one-click AI short-video generation; high star velocity suggests broad creator demand, not just niche experimentation.
-- [anthropics/claude-code](https://github.com/anthropics/claude-code): flagship terminal coding agent; trending at the same time Anthropic is shipping new Claude Platform and Managed Agents changes.
-- [cursor/plugins](https://github.com/cursor/plugins): official plugin specification and plugin repo; notable as extension systems become standard agent surfaces.
-- [revfactory/harness](https://github.com/revfactory/harness): directly relevant because it packages domain-specific agent teams and the skills they use.
-- [affaan-m/ECC](https://github.com/affaan-m/ECC): an explicit harness-optimization layer across multiple coding-agent shells.
-- [OpenBMB/VoxCPM](https://github.com/OpenBMB/VoxCPM): multilingual TTS and voice design, showing speech infrastructure is still competitive on the default board.
-- [galilai-group/stable-worldmodel](https://github.com/galilai-group/stable-worldmodel): reproducible world-model research platform, which is a more research-heavy contrast to the more operator-facing agent tools nearby.
-- [run-llama/liteparse](https://github.com/run-llama/liteparse): open-source document parsing, reinforcing that parsing/normalization remains high-leverage infrastructure.
+- [chopratejas/headroom](https://github.com/chopratejas/headroom)  
+  Compression middleware aimed at shrinking tool outputs, files, logs, and retrieved context before they hit the model.
+
+- [affaan-m/ECC](https://github.com/affaan-m/ECC)  
+  Agent-oriented harness/runtime project with explicit language around memory, skills, workflow, and security.
+
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)  
+  Open agent runtime stack from a model lab, useful as a signal that runtime ownership remains strategically important.
+
+- [microsoft/markitdown](https://github.com/microsoft/markitdown)  
+  Document and office-file conversion into Markdown, still showing up as baseline context-ingestion infrastructure.
+
+- [nesquena/hermes-webui](https://github.com/nesquena/hermes-webui)  
+  Web and phone UI for Hermes Agent, reinforcing operator-supervision demand beyond terminal-only interfaces.
+
+- [D4Vinci/Scrapling](https://github.com/D4Vinci/Scrapling)  
+  Adaptive scraping framework that keeps surfacing because agents still depend on reliable real-world input capture.
+
+- [aquasecurity/trivy](https://github.com/aquasecurity/trivy)  
+  Security scanning remains highly visible, which matters because agent deployment pressure keeps colliding with supply-chain and runtime trust concerns.
+
+- [supermemoryai/supermemory](https://github.com/supermemoryai/supermemory)  
+  Dedicated memory platform and API, still acting like its own category rather than a feature tucked inside one agent app.
 
 ## Why They May Be Surfacing
 
-- Operator layers are becoming reusable products. `claude-code`, `cursor/plugins`, `harness`, and `ECC` all point to growing demand for control planes, extension systems, and orchestration overlays rather than raw models alone.
-- Ingestion still matters. `markitdown` and `liteparse` both reinforce that agents remain bottlenecked by turning messy files into durable machine-usable structure.
-- Creator tooling remains hot. `MoneyPrinterTurbo` staying near the top shows AI media automation still commands broad public pull on the default board.
-- The board is mixed, not monocultural. `VoxCPM` and `stable-worldmodel` indicate ongoing interest in speech and research infrastructure even while coding-agent repos dominate discussion.
+- Compression is hot because long-running agents now pay real token, latency, and context-budget penalties.
+- Runtime and UI projects are surfacing because operators increasingly want supervision and control surfaces, not just a stronger base model.
+- Ingestion tooling remains central because Markdown, scraping, and PDF normalization still dominate the path from messy inputs to usable context.
+- Security tooling is sharing the board with agent stacks, which suggests the ecosystem is treating deployment trust as part of the same operating problem.
+- The board is broader than AI hype alone: enterprise software, interview prep, and voice tooling are also drawing attention, so the signal is practical developer demand rather than one narrow narrative.
 
 ## Watchlist
 
-- Watch whether [anthropics/claude-code](https://github.com/anthropics/claude-code), [cursor/plugins](https://github.com/cursor/plugins), [revfactory/harness](https://github.com/revfactory/harness), and [affaan-m/ECC](https://github.com/affaan-m/ECC) repeat. If they do, harnesses and plugin/control-plane layers are becoming a stable GitHub distribution category.
-- Watch whether [microsoft/markitdown](https://github.com/microsoft/markitdown) and [run-llama/liteparse](https://github.com/run-llama/liteparse) keep surfacing together, because repeated co-appearance would strengthen the case that document normalization is now core agent infrastructure.
-- Watch whether [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) remains near the top. If it does, AI media automation is still carrying mainstream demand beyond developer-only audiences.
+- [chopratejas/headroom](https://github.com/chopratejas/headroom): direct pressure signal for context-efficiency work.
+- [affaan-m/ECC](https://github.com/affaan-m/ECC): useful external pressure check on harness/runtime expectations.
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): worth tracking as an open agent-runtime reference point.
+- [nesquena/hermes-webui](https://github.com/nesquena/hermes-webui): good signal for remote supervision UX expectations.
+- [supermemoryai/supermemory](https://github.com/supermemoryai/supermemory): persistent signal that durable memory remains a standalone infra category.

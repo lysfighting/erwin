@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `95` durable notes are currently indexed across `3` recurring streams.
-- `158` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `101` durable notes are currently indexed across `3` recurring streams.
+- `164` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,21 +27,19 @@
 
 ## Daily Signal Snapshot
 
-### AI Agent Daily Radar - 2026-05-31
+### Daily Radar — 2026-06-04
 
-- Metadata: `Window: 2026-05-24 to 2026-05-31`
-- **Anthropic pushed the densest in-window agent-platform update across the required official surfaces on 2026-05-28 and 2026-05-29.** The [Claude Apps release notes](https://support.claude.com/en/articles/12138966-release-notes) added **Claude Opus 4.8** and connector-role controls on **2026-05-28**, while the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **Claude Managed Agents webhooks, multiagent orchestration, and self-hosted sandboxes on Claude Platform on AWS** on **2026-05-29**. I explicitly checked the required Anthropic surfaces this run: Claude Platform release notes, Claude Managed Agents docs, advisor tool docs, Claude Code docs, Claude Code changelog/releases, and Claude Apps release notes.
-- **OpenAI expanded both Codex control surfaces and workspace-agent governance on 2026-05-28 and 2026-05-29.** The official [ChatGPT Enterprise & Edu release notes](https://help.openai.com/en/articles/10128477-chatgpt-enterprise-ve-edu-s%C3%BCr%C3%BCm-notlar%C4%B1) added **Windows Computer Use**, **remote control for Windows hosts**, and **GitHub Enterprise app template support for Codex** on **2026-05-29**; on **2026-05-28**, the same surface added **GPT-5.5 support, reasoning-effort controls, and action safeguards for workspace agents**.
-- **Google’s I/O 2026 developer push remains the clearest Google agent-platform move still inside the 7-day window.** In [Building the agentic future: Developer highlights from I/O 2026](https://blog.google/innovation-and-ai/technology/developers-tools/google-io-2026-developer-highlights/) on **2026-05-19**, Google introduced **Gemini 3.5 Flash**, **Managed Agents in the Gemini API**, and the **Google Antigravity 2.0 desktop app** for parallel agents, scheduled tasks, and SDK/CLI-based agent workflows.
+- Metadata: `Window: 2026-05-29 to 2026-06-04`
+- Open the daily note for the full signal list.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-05-31
+### GitHub Trending — 2026-06-04
 
-- Metadata: `Source: default global [GitHub Trending](https://github.com/trending) checked on **2026-05-31** with no extra filters.`
-- [microsoft/markitdown](https://github.com/microsoft/markitdown): document and Office-file conversion into Markdown; a practical ingestion primitive that keeps resurfacing.
-- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo): one-click AI short-video generation; high star velocity suggests broad creator demand, not just niche experimentation.
-- [anthropics/claude-code](https://github.com/anthropics/claude-code): flagship terminal coding agent; trending at the same time Anthropic is shipping new Claude Platform and Managed Agents changes.
+- Metadata: `Latest GitHub Trending board summary`
+- [chopratejas/headroom](https://github.com/chopratejas/headroom)
+- [affaan-m/ECC](https://github.com/affaan-m/ECC)
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)
 
 ## Durable Interpretation
 
@@ -67,12 +65,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-06-04](../radar/daily/2026-06-04.md)
+- [2026-06-03](../radar/daily/2026-06-03.md)
+- [2026-06-02](../radar/daily/2026-06-02.md)
 - [2026-05-31](../radar/daily/2026-05-31.md)
 - [2026-05-29](../radar/daily/2026-05-29.md)
 - [2026-05-28](../radar/daily/2026-05-28.md)
-- [2026-05-25](../radar/daily/2026-05-25.md)
-- [2026-05-24](../radar/daily/2026-05-24.md)
-- [2026-05-23](../radar/daily/2026-05-23.md)
 
 ### Weekly Synthesis
 
@@ -85,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-06-04](../radar/trending/2026-06-04.md)
+- [2026-06-03](../radar/trending/2026-06-03.md)
+- [2026-06-02](../radar/trending/2026-06-02.md)
 - [2026-05-31](../radar/trending/2026-05-31.md)
 - [2026-05-29](../radar/trending/2026-05-29.md)
 - [2026-05-28](../radar/trending/2026-05-28.md)
-- [2026-05-25](../radar/trending/2026-05-25.md)
-- [2026-05-24](../radar/trending/2026-05-24.md)
-- [2026-05-23](../radar/trending/2026-05-23.md)
