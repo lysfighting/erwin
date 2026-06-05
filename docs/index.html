@@ -434,17 +434,17 @@
         This page is the human-facing front door for the repository&#x27;s knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.
       </p>
       <div class="hero-stats">
-        <div class="stat-chip"><strong>103</strong><span>Durable notes indexed</span></div>
+        <div class="stat-chip"><strong>104</strong><span>Durable notes indexed</span></div>
         <div class="stat-chip"><strong>3 streams</strong><span>Daily, weekly, trending</span></div>
         <div class="stat-chip"><strong>5 layers</strong><span>Radar to implementation</span></div>
-        <div class="stat-chip"><strong>166</strong><span>Network artifacts</span></div>
+        <div class="stat-chip"><strong>167</strong><span>Network artifacts</span></div>
         <div class="stat-chip"><strong>267</strong><span>Typed local links</span></div>
       </div>
       <div class="hero-grid">
         <div class="hero-panel">
           <div class="eyebrow">Current Lead</div>
-          <h2>AI/Agent Weekly Synthesis — 2026-05-29</h2>
-          <p>This week’s theme is <strong>governed scale-up of agent runtime state</strong>.</p>
+          <h2>AI/Agent Weekly Synthesis — 2026-06-05</h2>
+          <p>This week’s theme is <strong>agent control planes becoming explicit products</strong>.</p>
         </div>
         <div class="hero-panel">
           <div class="eyebrow">At A Glance</div>
@@ -475,9 +475,9 @@
 
     <article class="brief-card warm">
       <div class="eyebrow">Weekly</div>
-      <h3>AI/Agent Weekly Synthesis — 2026-05-29</h3>
-      <p class="meta">Coverage window: 2026-05-22 to 2026-05-29</p>
-      <ul><li>Anthropic carried the clearest first-party technical signal this week, and this run explicitly checked the required Anthropic surfaces before reaching that conclusion: <a href="https://www.anthropic.com/news">anthropic.com/news</a>, <a href="https://claude.com/">claude.com</a>, <a href="https://docs.anthropic.com/en/home">docs.anthropic.com</a>, the <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a>, the <a href="https://platform.claude.com/docs/en/managed-agents/overview">Claude Managed Agents overview</a>, the <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool">advisor tool docs</a>, the <a href="https://code.claude.com/docs/en/overview">Claude Code docs overview</a>, and the <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a>.</li><li>On <strong>May 28, 2026</strong>, Anthropic launched <a href="https://www.anthropic.com/news/claude-opus-4-8">Claude Opus 4.8</a> and the same date landed in the <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a>. The important platform-level changes were not just the model SKU: Anthropic added <strong>fine-grained prompt caching</strong> controls, <strong>1M-token context windows</strong> on request for Claude Sonnet 4 and Opus 4.1, <strong>fivex higher output limits</strong> for Opus 4.1 and Sonnet 4, <strong>global endpoint pricing for Claude Code</strong>, and <strong>GA status for web fetch</strong>.</li><li>Anthropic’s managed-agent surface still moved even without a fresh standalone managed-agents launch post. The current <a href="https://platform.claude.com/docs/en/managed-agents/overview">Claude Managed Agents overview</a> continues to frame <strong>agent</strong>, <strong>environment</strong>, <strong>session</strong>, and <strong>events</strong> as the runtime core, while the surrounding release-note stream keeps making that runtime more configurable. The absence of a separate managed-agents announcement this week does not mean the surface was quiet; the control plane around it changed materially.</li></ul>
+      <h3>AI/Agent Weekly Synthesis — 2026-06-05</h3>
+      <p class="meta">Coverage window: 2026-05-29 to 2026-06-05</p>
+      <ul><li>Anthropic again carried the strongest first-party technical signal this week, and this run explicitly checked the required Anthropic surfaces before reaching that conclusion: <a href="https://www.anthropic.com/news">anthropic.com/news</a>, <a href="https://claude.com/">claude.com</a>, <a href="https://docs.anthropic.com/en/home">docs.anthropic.com</a>, the <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a>, the <a href="https://platform.claude.com/docs/en/managed-agents/overview">Claude Managed Agents overview</a>, the <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool">advisor tool docs</a>, the <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a>, and the <a href="https://support.claude.com/en/articles/12138966-release-notes">Claude apps release notes</a>.</li><li>The most important Anthropic platform change landed on <strong>June 2, 2026</strong> in the <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a>: the <strong>advisor tool</strong> now supports a <code>max_tokens</code> parameter, turning advisor output budget into a hard control surface rather than a prompt-only soft hint. The same release also stops billing refusal-only requests that generate no output.</li><li>Anthropic also shipped a dense May 28-29 sequence. On <strong>May 28, 2026</strong>, the <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a> and <a href="https://www.anthropic.com/news/claude-opus-4-8">Anthropic launch post</a> introduced <strong>Claude Opus 4.8</strong>, plus mid-conversation system messages, documented refusal <code>stop_details</code>, lower prompt-cache minimums, adaptive thinking, and broader Claude Code auto/fast/workflow changes around the same model line. On <strong>May 29, 2026</strong>, Anthropic extended <strong>Claude Managed Agents webhooks, multiagent orchestration, and self-hosted sandboxes</strong> to Claude Platform on AWS.</li></ul>
       <div class="card-actions">
         <a class="primary-link" href="radar/weekly/latest.md">Open latest</a>
         <a class="secondary-link" href="radar/weekly/">Browse archive</a>
@@ -522,12 +522,12 @@
       <div class="split">
         <article class="insight-card">
           <h3>Theme Deep Dive</h3>
-          <p>This week’s theme is <strong>governed scale-up of agent runtime state</strong>.</p>
+          <p>This week’s theme is <strong>agent control planes becoming explicit products</strong>.</p>
         </article>
         <article class="proposal-card">
           <h3>Current Proposal Candidates</h3>
           <p>The weekly synthesis can nominate proposal candidates, but proposal creation should remain selective and reviewable.</p>
-          <ul><li>Run state budget contract</li><li>Reset versus resume lifecycle states</li><li>Memory-scope governance layer</li></ul>
+          <ul><li>Planner / executor split with explicit advisor budget</li><li>First-class runtime object model</li><li>Workflow orchestration tier above subagents</li></ul>
         </article>
       </div>
     </section>
@@ -560,7 +560,7 @@
         <article class="network-card">
           <h3>Network snapshot</h3>
           <p>The graph is rebuilt from Markdown and selected implementation entrypoints. It is not a database; Markdown remains the source of truth.</p>
-          <div class="metric-line"><span>Artifacts</span><strong>166</strong></div>
+          <div class="metric-line"><span>Artifacts</span><strong>167</strong></div>
           <div class="metric-line"><span>Typed links</span><strong>267</strong></div>
           <div class="metric-line"><span>Active threads</span><strong>5</strong></div>
           <div class="metric-line"><span>Proposal records</span><strong>5</strong></div>
@@ -595,7 +595,7 @@
 
     <section class="archive-column">
       <h4>Weekly Synthesis</h4>
-      <ul><li><a href="radar/weekly/2026-05-29.md">2026-05-29</a></li><li><a href="radar/weekly/2026-05-22.md">2026-05-22</a></li><li><a href="radar/weekly/2026-05-15.md">2026-05-15</a></li><li><a href="radar/weekly/2026-05-08.md">2026-05-08</a></li><li><a href="radar/weekly/2026-04-17.md">2026-04-17</a></li><li><a href="radar/weekly/2026-04-10.md">2026-04-10</a></li></ul>
+      <ul><li><a href="radar/weekly/2026-06-05.md">2026-06-05</a></li><li><a href="radar/weekly/2026-05-29.md">2026-05-29</a></li><li><a href="radar/weekly/2026-05-22.md">2026-05-22</a></li><li><a href="radar/weekly/2026-05-15.md">2026-05-15</a></li><li><a href="radar/weekly/2026-05-08.md">2026-05-08</a></li><li><a href="radar/weekly/2026-04-17.md">2026-04-17</a></li></ul>
     </section>
 
 
