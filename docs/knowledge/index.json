@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 101,
+    "total_notes": 103,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 164,
+    "artifact_count": 166,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar — 2026-06-04",
-      "meta": "Window: 2026-05-29 to 2026-06-04",
+      "title": "Daily Radar — 2026-06-05",
+      "meta": "Window: 2026-05-30 to 2026-06-05",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-06-05",
+          "path": "radar/daily/2026-06-05.md"
+        },
         {
           "name": "2026-06-04",
           "path": "radar/daily/2026-06-04.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-05-29",
           "path": "radar/daily/2026-05-29.md"
-        },
-        {
-          "name": "2026-05-28",
-          "path": "radar/daily/2026-05-28.md"
         }
       ],
-      "count": 46
+      "count": 47
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending — 2026-06-04",
+      "title": "GitHub Trending — 2026-06-05",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
         "[chopratejas/headroom](https://github.com/chopratejas/headroom)",
-        "[affaan-m/ECC](https://github.com/affaan-m/ECC)",
-        "[NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)"
+        "[NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)",
+        "[affaan-m/ECC](https://github.com/affaan-m/ECC)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-06-05",
+          "path": "radar/trending/2026-06-05.md"
+        },
         {
           "name": "2026-06-04",
           "path": "radar/trending/2026-06-04.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-05-29",
           "path": "radar/trending/2026-05-29.md"
-        },
-        {
-          "name": "2026-05-28",
-          "path": "radar/trending/2026-05-28.md"
         }
       ],
-      "count": 47
+      "count": 48
     }
   },
   "deep_dive": "This week’s theme is **governed scale-up of agent runtime state**.",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 164,
+      "artifact_count": 166,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 111,
+        "radar": 113,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -2989,6 +2989,39 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-06-05.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-06-05.md",
+        "title": "Daily Radar — 2026-06-05",
+        "date": "2026-06-05",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-05-30 to 2026-06-05",
+        "external_refs": [
+          "https://code.claude.com/docs/en/changelog",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://openai.com/index/openai-frontier-models-and-codex-are-now-available-on-aws/",
+          "https://github.com/trending",
+          "https://github.com/chopratejas/headroom",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/affaan-m/ECC",
+          "https://github.com/PaddlePaddle/PaddleOCR",
+          "https://github.com/github/copilot-sdk",
+          "https://github.com/aquasecurity/trivy",
+          "https://platform.claude.com/docs/en/managed-agents/quickstart"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -4423,6 +4456,35 @@
           "https://github.com/D4Vinci/Scrapling",
           "https://github.com/aquasecurity/trivy",
           "https://github.com/supermemoryai/supermemory"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-06-05.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-06-05.md",
+        "title": "GitHub Trending — 2026-06-05",
+        "date": "2026-06-05",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/chopratejas/headroom",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/affaan-m/ECC",
+          "https://github.com/PaddlePaddle/PaddleOCR",
+          "https://github.com/github/spec-kit",
+          "https://github.com/lfnovo/open-notebook",
+          "https://github.com/github/copilot-sdk",
+          "https://github.com/aquasecurity/trivy",
+          "https://github.com/Open-LLM-VTuber/Open-LLM-VTuber",
+          "https://github.com/jwasham/coding-interview-university"
         ],
         "local_refs": []
       },

@@ -1,49 +1,55 @@
-# GitHub Trending — 2026-06-04
+# GitHub Trending — 2026-06-05
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-Today’s default global board is mixed, with a visible AI/agent cluster but not an AI-only board. Agent compression, runtime, ingestion, memory, and remote-control projects are prominent, while security, ERP, interview prep, and voice projects are also pulling attention. The useful read is not “everything is agents”; it is that agent-adjacent developer infrastructure is sharing the board with broader practical software tooling.
+Today’s default global board is mixed rather than AI-only, but the AI and developer-tooling slice is still unusually practical. Compression, agent runtimes, OCR and notebook-style ingestion, agent SDKs, voice interfaces, and security tooling are all visible at once, while broader developer-interest repos such as interview prep and Windows utility tooling are also climbing. The board reads less like pure hype and more like a live demand map for usable operator substrate.
 
 ## Notable Projects
 
 - [chopratejas/headroom](https://github.com/chopratejas/headroom)  
-  Compression middleware aimed at shrinking tool outputs, files, logs, and retrieved context before they hit the model.
-
-- [affaan-m/ECC](https://github.com/affaan-m/ECC)  
-  Agent-oriented harness/runtime project with explicit language around memory, skills, workflow, and security.
+  Compression middleware for tool outputs, logs, files, and retrieval chunks before they hit the model.
 
 - [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)  
   Open agent runtime stack from a model lab, useful as a signal that runtime ownership remains strategically important.
 
-- [microsoft/markitdown](https://github.com/microsoft/markitdown)  
-  Document and office-file conversion into Markdown, still showing up as baseline context-ingestion infrastructure.
+- [affaan-m/ECC](https://github.com/affaan-m/ECC)  
+  Agent harness project centered on memory, skills, security, and workflow.
 
-- [nesquena/hermes-webui](https://github.com/nesquena/hermes-webui)  
-  Web and phone UI for Hermes Agent, reinforcing operator-supervision demand beyond terminal-only interfaces.
+- [PaddlePaddle/PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)  
+  OCR toolkit aimed at turning PDFs and images into structured data for downstream AI systems.
 
-- [D4Vinci/Scrapling](https://github.com/D4Vinci/Scrapling)  
-  Adaptive scraping framework that keeps surfacing because agents still depend on reliable real-world input capture.
+- [github/spec-kit](https://github.com/github/spec-kit)  
+  Spec-driven development toolkit, relevant because process packaging is surfacing alongside agent runtimes.
+
+- [lfnovo/open-notebook](https://github.com/lfnovo/open-notebook)  
+  Open NotebookLM-style project, showing continued attention on research and briefing interfaces.
+
+- [github/copilot-sdk](https://github.com/github/copilot-sdk)  
+  Multi-platform SDK for integrating Copilot Agent into apps and services.
 
 - [aquasecurity/trivy](https://github.com/aquasecurity/trivy)  
-  Security scanning remains highly visible, which matters because agent deployment pressure keeps colliding with supply-chain and runtime trust concerns.
+  Security scanning tooling that keeps trending because supply-chain trust is still a deployment gate.
 
-- [supermemoryai/supermemory](https://github.com/supermemoryai/supermemory)  
-  Dedicated memory platform and API, still acting like its own category rather than a feature tucked inside one agent app.
+- [Open-LLM-VTuber/Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber)  
+  Local voice-and-avatar LLM interface, notable because voice interaction remains an active applied-AI surface on the default board.
+
+- [jwasham/coding-interview-university](https://github.com/jwasham/coding-interview-university)  
+  Classic software-engineering study plan, useful here because it shows the board is still broader than AI tooling alone.
 
 ## Why They May Be Surfacing
 
-- Compression is hot because long-running agents now pay real token, latency, and context-budget penalties.
-- Runtime and UI projects are surfacing because operators increasingly want supervision and control surfaces, not just a stronger base model.
-- Ingestion tooling remains central because Markdown, scraping, and PDF normalization still dominate the path from messy inputs to usable context.
-- Security tooling is sharing the board with agent stacks, which suggests the ecosystem is treating deployment trust as part of the same operating problem.
-- The board is broader than AI hype alone: enterprise software, interview prep, and voice tooling are also drawing attention, so the signal is practical developer demand rather than one narrow narrative.
+- Compression is hot because context budgets, latency, and tool-output sprawl are now day-to-day operating costs.
+- Open runtimes and SDKs are surfacing because users want inspectable agent control planes, not just stronger closed models.
+- OCR and notebook-style projects remain visible because ingestion and synthesis are still bottlenecks in real workflows.
+- Security tooling sharing the board with agent repos suggests the ecosystem is treating deployment trust as part of the same operating problem.
+- The board is not purely AI: utility, study, and desktop-tooling projects are also trending, which makes the signal more trustworthy as practical developer demand.
 
 ## Watchlist
 
 - [chopratejas/headroom](https://github.com/chopratejas/headroom): direct pressure signal for context-efficiency work.
-- [affaan-m/ECC](https://github.com/affaan-m/ECC): useful external pressure check on harness/runtime expectations.
-- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): worth tracking as an open agent-runtime reference point.
-- [nesquena/hermes-webui](https://github.com/nesquena/hermes-webui): good signal for remote supervision UX expectations.
-- [supermemoryai/supermemory](https://github.com/supermemoryai/supermemory): persistent signal that durable memory remains a standalone infra category.
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): good open reference point for runtime design pressure.
+- [affaan-m/ECC](https://github.com/affaan-m/ECC): useful external harness pressure check around memory, skills, and security.
+- [github/copilot-sdk](https://github.com/github/copilot-sdk): worth tracking as the agent-embedding surface matures.
+- [aquasecurity/trivy](https://github.com/aquasecurity/trivy): persistent reminder that runtime trust and scanning stay attached to agent rollout reality.
