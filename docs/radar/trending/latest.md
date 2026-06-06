@@ -1,55 +1,55 @@
-# GitHub Trending — 2026-06-05
+# GitHub Trending — 2026-06-06
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-Today’s default global board is mixed rather than AI-only, but the AI and developer-tooling slice is still unusually practical. Compression, agent runtimes, OCR and notebook-style ingestion, agent SDKs, voice interfaces, and security tooling are all visible at once, while broader developer-interest repos such as interview prep and Windows utility tooling are also climbing. The board reads less like pure hype and more like a live demand map for usable operator substrate.
+Today’s default global board still leans practical rather than purely novelty-driven. The visible mix includes agent runtimes, agent UI toolkits, research and notebook surfaces, OCR ingestion, desktop companion tooling, security scanning, learning resources, and a few broader infrastructure or utility projects. The board does include clear AI and agent activity, but it is not an AI-only board; that makes it a better demand snapshot than a filtered hype feed.
 
 ## Notable Projects
 
-- [chopratejas/headroom](https://github.com/chopratejas/headroom)  
-  Compression middleware for tool outputs, logs, files, and retrieval chunks before they hit the model.
-
 - [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)  
-  Open agent runtime stack from a model lab, useful as a signal that runtime ownership remains strategically important.
+  Open agent runtime attention remains high, which keeps runtime ownership and inspectability in the foreground.
 
-- [affaan-m/ECC](https://github.com/affaan-m/ECC)  
-  Agent harness project centered on memory, skills, security, and workflow.
+- [chopratejas/headroom](https://github.com/chopratejas/headroom)  
+  Compression middleware surfacing this strongly suggests context and payload management are becoming mainstream operator concerns.
 
-- [PaddlePaddle/PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)  
-  OCR toolkit aimed at turning PDFs and images into structured data for downstream AI systems.
-
-- [github/spec-kit](https://github.com/github/spec-kit)  
-  Spec-driven development toolkit, relevant because process packaging is surfacing alongside agent runtimes.
+- [CopilotKit/CopilotKit](https://github.com/CopilotKit/CopilotKit)  
+  Agent UI and in-product copilots remain an active build surface, not just a demo category.
 
 - [lfnovo/open-notebook](https://github.com/lfnovo/open-notebook)  
-  Open NotebookLM-style project, showing continued attention on research and briefing interfaces.
+  NotebookLM-style research and synthesis interfaces are still gathering momentum.
 
-- [github/copilot-sdk](https://github.com/github/copilot-sdk)  
-  Multi-platform SDK for integrating Copilot Agent into apps and services.
+- [affaan-m/ECC](https://github.com/affaan-m/ECC)  
+  Another agent-harness style project is surfacing, which is useful as pressure evidence around memory, workflow, and system structure.
+
+- [PaddlePaddle/PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)  
+  OCR remains durable because document ingestion is still a hard dependency for many real workflows.
+
+- [openclaw/openclaw-windows-node](https://github.com/openclaw/openclaw-windows-node)  
+  Desktop companion tooling shows that local-device integration and operator ergonomics still matter.
 
 - [aquasecurity/trivy](https://github.com/aquasecurity/trivy)  
-  Security scanning tooling that keeps trending because supply-chain trust is still a deployment gate.
+  Security scanning staying on the same board as agent repos reinforces that rollout trust remains part of the same operating problem.
 
-- [Open-LLM-VTuber/Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber)  
-  Local voice-and-avatar LLM interface, notable because voice interaction remains an active applied-AI surface on the default board.
+- [github/copilot-sdk](https://github.com/github/copilot-sdk)  
+  Agent embedding and platform integration continue to mature into a first-class SDK surface.
 
 - [jwasham/coding-interview-university](https://github.com/jwasham/coding-interview-university)  
-  Classic software-engineering study plan, useful here because it shows the board is still broader than AI tooling alone.
+  A reminder that the board is broader than AI tooling; education and classic developer resources still break through.
 
 ## Why They May Be Surfacing
 
-- Compression is hot because context budgets, latency, and tool-output sprawl are now day-to-day operating costs.
-- Open runtimes and SDKs are surfacing because users want inspectable agent control planes, not just stronger closed models.
-- OCR and notebook-style projects remain visible because ingestion and synthesis are still bottlenecks in real workflows.
-- Security tooling sharing the board with agent repos suggests the ecosystem is treating deployment trust as part of the same operating problem.
-- The board is not purely AI: utility, study, and desktop-tooling projects are also trending, which makes the signal more trustworthy as practical developer demand.
+- Agent runtimes are surfacing because users still want control, inspectability, and self-hosted or semi-open execution paths.
+- Compression and OCR are surfacing because context limits and ingestion quality remain daily production bottlenecks.
+- Notebook and copilot UI projects are surfacing because teams want better research, synthesis, and action surfaces around the models they already use.
+- Security tools are surfacing alongside agent repos because deployment assurance is no longer separable from agent adoption.
+- The board’s non-AI items make the signal healthier: it reflects practical developer demand, not only AI hype.
 
 ## Watchlist
 
-- [chopratejas/headroom](https://github.com/chopratejas/headroom): direct pressure signal for context-efficiency work.
-- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): good open reference point for runtime design pressure.
-- [affaan-m/ECC](https://github.com/affaan-m/ECC): useful external harness pressure check around memory, skills, and security.
-- [github/copilot-sdk](https://github.com/github/copilot-sdk): worth tracking as the agent-embedding surface matures.
-- [aquasecurity/trivy](https://github.com/aquasecurity/trivy): persistent reminder that runtime trust and scanning stay attached to agent rollout reality.
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): useful open-runtime pressure check.
+- [chopratejas/headroom](https://github.com/chopratejas/headroom): direct signal for context-efficiency pressure.
+- [CopilotKit/CopilotKit](https://github.com/CopilotKit/CopilotKit): worth watching for agent UI and embedding patterns.
+- [lfnovo/open-notebook](https://github.com/lfnovo/open-notebook): relevant to research and briefing surface design.
+- [github/copilot-sdk](https://github.com/github/copilot-sdk): useful indicator for how agent integration APIs are being packaged.

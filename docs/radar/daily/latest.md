@@ -1,67 +1,71 @@
-# Daily Radar — 2026-06-05
+# Daily Radar — 2026-06-06
 
-Window: 2026-05-30 to 2026-06-05
+Window: 2026-05-31 to 2026-06-06
 
 ## New Signals
 
-1. **Claude Code kept shipping operator-facing controls across June 2-4, 2026.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows `2.1.161` on **2026-06-02**, `2.1.162` on **2026-06-03**, and `2.1.163` on **2026-06-04**. The meaningful cluster is not headline model quality; it is runtime control: `OTEL_RESOURCE_ATTRIBUTES` now flow into metric labels, `claude agents --json` exposes `waitingFor`, parallel tool calls stop cancelling sibling calls when one Bash command fails, managed version ranges can block out-of-policy clients, and `/plugin list` adds better plugin inventory visibility.
+1. **Anthropic kept turning Claude Code runtime controls into first-class product surface across June 2-4, 2026.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shipped `2.1.161` on **2026-06-02**, `2.1.163` on **2026-06-04**, and `2.1.165` on **2026-06-05**. The highest-signal changes were operator-facing rather than benchmark-facing: `claude agents --json` now exposes `waitingFor`, `OTEL_RESOURCE_ATTRIBUTES` can flow into metric labels, managed settings can enforce `requiredMinimumVersion` and `requiredMaximumVersion`, and `/plugin list` improves plugin inventory visibility.
 
-2. **Anthropic tightened advisor-tool cost and refusal handling on June 2, 2026.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added `tools[].max_tokens` for the [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), which caps advisor output per call, and also stopped billing Claude API requests that return `stop_reason: "refusal"` without generated output.  
+2. **Anthropic added finer planner-cost control on the Claude Platform on June 2, 2026.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) say the [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) now supports `tools[].max_tokens` to cap advisor output per call, and Claude API requests that return `stop_reason: "refusal"` without generated output are no longer billed.  
    Publish date: 2026-06-02
 
-3. **Claude Code expanded auto-mode portability on May 30, 2026.** The [Claude Code changelog](https://code.claude.com/docs/en/changelog) says Auto mode became available on Bedrock, Vertex, and Foundry for Opus 4.7 and 4.8 behind `CLAUDE_CODE_ENABLE_AUTO_MODE=1`. That matters because Anthropic is continuing to make the same long-running agent behaviors portable across first-party and third-party execution backends.  
-   Publish date: 2026-05-30
+3. **Anthropic published a clearer harness pattern for high-complexity coding work on June 2, 2026.** In [A harness for every task: dynamic workflows in Claude Code](https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code), Anthropic describes Claude Code writing and orchestrating its own task-specific multi-agent harness, with explicit guidance around worktrees, subagents, token budgets, and when not to use the pattern.  
+   Publish date: 2026-06-02
 
-4. **OpenAI moved Codex into AWS-hosted enterprise buying paths on June 1, 2026.** OpenAI’s official post, [OpenAI frontier models and Codex are now available on AWS](https://openai.com/index/openai-frontier-models-and-codex-are-now-available-on-aws/), says Codex on Amazon Bedrock is now generally available, framing Codex as an enterprise software-engineering agent that can run inside existing AWS procurement, security, and infrastructure boundaries.  
+4. **OpenAI pushed Codex deeper into enterprise cloud-governed deployment lanes on June 1, 2026.** The official post [OpenAI frontier models and Codex are now available on AWS](https://openai.com/index/openai-frontier-models-and-codex-are-now-available-on-aws/) says frontier models and Codex are generally available on AWS, with Codex on Amazon Bedrock framed as a way to keep software-engineering agent usage inside existing security, procurement, compliance, and governance workflows.  
    Publish date: 2026-06-01
 
-Google, Moonshot, MiniMax, Qwen, and DeepSeek were explicitly checked on their official developer/blog/docs surfaces for this run. I did not find a stronger dated technical item published inside **2026-05-30 to 2026-06-05** than the items above. The nearest relevant items were outside the window, so they are not promoted into today’s main signals.
+5. **MiniMax used June 1, 2026 to make an explicit open-weight bid for coding-agent relevance.** The official [MiniMax M3 release](https://www.minimax.io/blog/minimax-m3) claims frontier coding and agentic performance, a 1M-token context window, native multimodality, and desktop operation in one open-weight model, with the same post tying the launch directly to [MiniMax Code](https://code.minimax.io/).  
+   Publish date: 2026-06-01
+
+Google, Moonshot, Qwen, and DeepSeek were explicitly checked on their official developer, docs, and product surfaces for this run. I did not find a stronger dated technical item published inside **2026-05-31 to 2026-06-06** than the items above.
 
 ## GitHub Trending Snapshot
 
-Snapshot source: [GitHub Trending](https://github.com/trending) captured on 2026-06-05.
+Snapshot source: [GitHub Trending](https://github.com/trending) captured on 2026-06-06.
 
-- [chopratejas/headroom](https://github.com/chopratejas/headroom): compression middleware is surfacing because context-cost control is now an operator-layer concern, not just a prompt trick.
-- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): open agent runtimes still attract attention as reference stacks for self-hosted or inspectable execution.
-- [affaan-m/ECC](https://github.com/affaan-m/ECC): explicit harness language around skills, memory, and security keeps surfacing as demand for agent operating systems stays high.
-- [PaddlePaddle/PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR): document-to-structured-data tooling remains foundational ingestion substrate for real agent workflows.
-- [github/copilot-sdk](https://github.com/github/copilot-sdk): agent embedding and platformization are visible enough that even GitHub’s integration SDK is landing on the default board.
-- [aquasecurity/trivy](https://github.com/aquasecurity/trivy): supply-chain and runtime trust tooling is surfacing alongside agent repos, which is a useful reminder that deployment risk stays coupled to agent adoption.
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): open agent-runtime attention remains strong, which keeps self-hosted execution patterns relevant as a comparison point for Harness.
+- [CopilotKit/CopilotKit](https://github.com/CopilotKit/CopilotKit): agent UI and embedding infrastructure is surfacing again, which signals continued demand for shipping agent interfaces rather than just model backends.
+- [lfnovo/open-notebook](https://github.com/lfnovo/open-notebook): NotebookLM-style research and synthesis surfaces are still attracting attention, which matters for knowledge-layer and briefing-layer design pressure.
+- [PaddlePaddle/PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR): ingestion remains foundational; OCR keeps surfacing because real agent systems still need document-to-structured-data substrate.
+- [openclaw/openclaw-windows-node](https://github.com/openclaw/openclaw-windows-node): desktop companion tooling surfacing on the default board is a useful reminder that local operator loops and device integration remain active demand.
+- [github/copilot-sdk](https://github.com/github/copilot-sdk): agent embedding is now visible enough that SDK surface area itself is trending.
+- [aquasecurity/trivy](https://github.com/aquasecurity/trivy): runtime trust and supply-chain scanning are still rising beside agent repos, which is a healthy reminder that deployment assurance remains coupled to adoption.
 
 ## Harness-Relevant Signals
 
-- Anthropic’s strongest in-window movement is control-plane hardening: telemetry labels, waiting-state visibility, plugin inventory, managed version policy, and failure isolation.
-- The advisor tool is becoming more economically tunable, which strengthens the planner/executor split as a practical runtime control rather than a demo concept.
-- Claude Code auto mode spreading across Bedrock, Vertex, and Foundry reinforces that backend portability is becoming a baseline expectation for long-running coding agents.
-- OpenAI’s AWS move strengthens the enterprise pattern where the agent product is bought and governed through the customer’s existing cloud boundary rather than a standalone SaaS exception.
-- Trending pressure still clusters around compression, ingestion, open runtimes, and security. Those are the substrate categories to keep stress-testing against Harness assumptions.
+- Anthropic is still moving fastest on operator controls: waiting-state introspection, telemetry labeling, version policy, and plugin inventory are all runtime-surface improvements rather than abstract capability claims.
+- The advisor tool now has a more explicit planner-cost dial, which strengthens the case for measuring planner-executor splits as an operating primitive instead of a prompt anecdote.
+- Dynamic workflows sharpen the distinction between a default single-context harness and a deliberately composed multi-agent harness with budget, isolation, and verification choices.
+- OpenAI’s AWS posture reinforces that enterprise adoption increasingly depends on cloud-boundary fit as much as model quality.
+- MiniMax M3 is relevant less as a final truth claim and more as pressure: open-weight vendors are now making direct coding-agent, multimodal, and long-context bids in one release.
 
 ## Candidate Proposals
 
 ### Proposal 1
 
 - `source_type`: first-party coding-agent changelogs
-- `problem_pattern`: operator-facing runtime controls are turning into first-class product surface
-- `why_it_matters_for_harness`: Claude Code now exposes more of the session lifecycle directly through telemetry labels, blocked-state reporting, plugin inventory, and version policy
+- `problem_pattern`: runtime policy, observability, and blocked-state visibility are becoming expected operator features
+- `why_it_matters_for_harness`: the Claude Code changes are a concrete reminder that users expect agent lifecycle state and policy enforcement to be inspectable, not implicit
 - `recommended_disposition`: `encode-as-eval`
 
 ### Proposal 2
 
 - `source_type`: first-party platform release notes
-- `problem_pattern`: planner quality and execution cost are being tuned separately at call time
-- `why_it_matters_for_harness`: Anthropic’s advisor-tool token cap makes strategic guidance cheaper to meter and compare, which is directly relevant to planner or reviewer loop evaluation
+- `problem_pattern`: high-intelligence planner calls are being budgeted as a separable resource from the executor loop
+- `why_it_matters_for_harness`: advisor-tool output caps create a cleaner way to compare planning quality against token cost and latency
 - `recommended_disposition`: `watch`
 
 ### Proposal 3
 
-- `source_type`: first-party enterprise platform announcements
-- `problem_pattern`: coding agents are being repackaged to fit existing cloud governance and procurement lanes
-- `why_it_matters_for_harness`: OpenAI’s AWS posture is a reminder that deployment boundary and buying path can be as important as model or tool quality
+- `source_type`: first-party model and platform launches
+- `problem_pattern`: frontier coding claims are converging with long-context, multimodal, and deployment-boundary packaging
+- `why_it_matters_for_harness`: the comparison set for coding-agent systems is no longer just another coding model; it is a bundled runtime posture
 - `recommended_disposition`: `prototype`
 
 ## Watch Next
 
-- Anthropic: the required surfaces were explicitly checked this run: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents docs](https://platform.claude.com/docs/en/managed-agents/quickstart), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code overview](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). Today’s meaningful Anthropic updates were in the release notes and changelog. I did not find a newer separately dated in-window Managed Agents doc or advisor doc update beyond those surfaces.
-- Anthropic Managed Agents: the latest nearby release-note movement I found was **2026-05-29** for webhooks, multiagent orchestration, and self-hosted sandboxes on Claude Platform on AWS, which is just outside today’s seven-day window and should be rechecked next run.
-- OpenAI: watch whether the June 1 AWS posture gets a narrower developer-facing follow-up on runtime controls, environment policy, or observability rather than just enterprise availability framing.
-- Google, Moonshot, MiniMax, Qwen, DeepSeek: continue lightweight official checks only. No in-window item was strong enough to displace Anthropic or OpenAI today.
+- Anthropic: the required surfaces were explicitly checked this run: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents docs](https://platform.claude.com/docs/en/managed-agents/quickstart), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code overview](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). Today’s in-window movement was concentrated in the release notes, changelog, and Claude Code blog.
+- Anthropic Managed Agents: I did not find a newer separately dated in-window Managed Agents doc update. The nearest notable platform movement was **2026-05-29** in release notes for webhooks, multiagent orchestration, and self-hosted sandboxes on Claude Platform on AWS, which is now just outside the current window.
+- OpenAI: watch whether the AWS path gets a more developer-specific follow-up on observability, environment policy, or cloud-hosted agent controls rather than staying at the availability layer.
+- Google, Moonshot, Qwen, DeepSeek: continue lightweight official checks only. They were checked this run, but no dated in-window item displaced the signals above.
