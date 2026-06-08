@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 106,
+    "total_notes": 108,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 169,
+    "artifact_count": 171,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar — 2026-06-06",
-      "meta": "Window: 2026-05-31 to 2026-06-06",
+      "title": "Daily Radar — 2026-06-08",
+      "meta": "Window: 2026-06-02 to 2026-06-08",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-06-08",
+          "path": "radar/daily/2026-06-08.md"
+        },
         {
           "name": "2026-06-06",
           "path": "radar/daily/2026-06-06.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-06-02",
           "path": "radar/daily/2026-06-02.md"
-        },
-        {
-          "name": "2026-05-31",
-          "path": "radar/daily/2026-05-31.md"
         }
       ],
-      "count": 48
+      "count": 49
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending — 2026-06-06",
+      "title": "GitHub Trending — 2026-06-08",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
-        "[NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)",
-        "[chopratejas/headroom](https://github.com/chopratejas/headroom)",
-        "[CopilotKit/CopilotKit](https://github.com/CopilotKit/CopilotKit)"
+        "[mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)",
+        "[Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill)",
+        "[NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-06-08",
+          "path": "radar/trending/2026-06-08.md"
+        },
         {
           "name": "2026-06-06",
           "path": "radar/trending/2026-06-06.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-06-02",
           "path": "radar/trending/2026-06-02.md"
-        },
-        {
-          "name": "2026-05-31",
-          "path": "radar/trending/2026-05-31.md"
         }
       ],
-      "count": 49
+      "count": 50
     }
   },
   "deep_dive": "This week’s theme is **agent control planes becoming explicit products**.",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 169,
+      "artifact_count": 171,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 116,
+        "radar": 118,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -3055,6 +3055,37 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-06-08.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-06-08.md",
+        "title": "Daily Radar — 2026-06-08",
+        "date": "2026-06-08",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-06-02 to 2026-06-08",
+        "external_refs": [
+          "https://code.claude.com/docs/en/changelog",
+          "https://developers.googleblog.com/introducing-the-google-colab-cli/",
+          "https://openai.com/index/codex-for-every-role-tool-workflow/",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code",
+          "https://github.com/trending",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/aaif-goose/goose",
+          "https://github.com/lfnovo/open-notebook",
+          "https://github.com/ggml-org/llama.cpp",
+          "https://github.com/Leonxlnx/taste-skill"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -4547,6 +4578,30 @@
           "https://github.com/aquasecurity/trivy",
           "https://github.com/github/copilot-sdk",
           "https://github.com/jwasham/coding-interview-university"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-06-08.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-06-08.md",
+        "title": "GitHub Trending — 2026-06-08",
+        "date": "2026-06-08",
+        "status": "",
+        "themes": [
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/mvanhorn/last30days-skill",
+          "https://github.com/Leonxlnx/taste-skill",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/aaif-goose/goose",
+          "https://github.com/lfnovo/open-notebook",
+          "https://github.com/ggml-org/llama.cpp",
+          "https://github.com/openai/plugins",
+          "https://github.com/opencv/opencv"
         ],
         "local_refs": []
       },

@@ -1,55 +1,49 @@
-# GitHub Trending — 2026-06-06
+# GitHub Trending — 2026-06-08
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-Today’s default global board still leans practical rather than purely novelty-driven. The visible mix includes agent runtimes, agent UI toolkits, research and notebook surfaces, OCR ingestion, desktop companion tooling, security scanning, learning resources, and a few broader infrastructure or utility projects. The board does include clear AI and agent activity, but it is not an AI-only board; that makes it a better demand snapshot than a filtered hype feed.
+Today’s default global board is noticeably agent-heavy without being AI-only. The strongest cluster is around reusable agent skills, open runtimes, local inference infrastructure, and notebook-style research surfaces. Broader non-AI projects are still present, which makes the board a healthier demand snapshot than a narrowly filtered AI trend feed.
 
 ## Notable Projects
 
+- [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)  
+  A research-oriented AI skill that pulls from multiple web communities, which helps explain why grounded synthesis workflows are surfacing again.
+
+- [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill)  
+  A style-and-quality skill for AI output, signaling that prompt and skill shaping remains a major user need.
+
 - [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)  
-  Open agent runtime attention remains high, which keeps runtime ownership and inspectability in the foreground.
+  Open agent runtime interest remains strong, especially around agent systems that users can inspect and own directly.
 
-- [chopratejas/headroom](https://github.com/chopratejas/headroom)  
-  Compression middleware surfacing this strongly suggests context and payload management are becoming mainstream operator concerns.
-
-- [CopilotKit/CopilotKit](https://github.com/CopilotKit/CopilotKit)  
-  Agent UI and in-product copilots remain an active build surface, not just a demo category.
+- [aaif-goose/goose](https://github.com/aaif-goose/goose)  
+  Another open agent runtime showing up, reinforcing demand for agents that can install, execute, edit, and test in a developer loop.
 
 - [lfnovo/open-notebook](https://github.com/lfnovo/open-notebook)  
-  NotebookLM-style research and synthesis interfaces are still gathering momentum.
+  NotebookLM-style research and synthesis UX is still gathering momentum.
 
-- [affaan-m/ECC](https://github.com/affaan-m/ECC)  
-  Another agent-harness style project is surfacing, which is useful as pressure evidence around memory, workflow, and system structure.
+- [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp)  
+  Local inference infrastructure continues surfacing, which matters because many agent systems still want portable self-hosted model execution.
 
-- [PaddlePaddle/PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)  
-  OCR remains durable because document ingestion is still a hard dependency for many real workflows.
+- [openai/plugins](https://github.com/openai/plugins)  
+  Plugin and tool-integration packaging still draws attention, which is consistent with the broader shift toward governed agent workflows rather than raw chat.
 
-- [openclaw/openclaw-windows-node](https://github.com/openclaw/openclaw-windows-node)  
-  Desktop companion tooling shows that local-device integration and operator ergonomics still matter.
-
-- [aquasecurity/trivy](https://github.com/aquasecurity/trivy)  
-  Security scanning staying on the same board as agent repos reinforces that rollout trust remains part of the same operating problem.
-
-- [github/copilot-sdk](https://github.com/github/copilot-sdk)  
-  Agent embedding and platform integration continue to mature into a first-class SDK surface.
-
-- [jwasham/coding-interview-university](https://github.com/jwasham/coding-interview-university)  
-  A reminder that the board is broader than AI tooling; education and classic developer resources still break through.
+- [opencv/opencv](https://github.com/opencv/opencv)  
+  A reminder that the board is not exclusively agentic; core vision infrastructure still breaks through on its own merit.
 
 ## Why They May Be Surfacing
 
-- Agent runtimes are surfacing because users still want control, inspectability, and self-hosted or semi-open execution paths.
-- Compression and OCR are surfacing because context limits and ingestion quality remain daily production bottlenecks.
-- Notebook and copilot UI projects are surfacing because teams want better research, synthesis, and action surfaces around the models they already use.
-- Security tools are surfacing alongside agent repos because deployment assurance is no longer separable from agent adoption.
-- The board’s non-AI items make the signal healthier: it reflects practical developer demand, not only AI hype.
+- Skills are surfacing because users want repeatable behavior shaping, not only stronger base models.
+- Open runtimes are surfacing because teams still value inspectability, local control, and model/provider flexibility.
+- Notebook and research surfaces are surfacing because synthesis and review remain central workflows around AI systems.
+- Local inference infrastructure is surfacing because cost, portability, and privacy still matter for practical deployment.
+- The presence of broader infrastructure projects keeps the board grounded in real developer demand instead of pure AI novelty.
 
 ## Watchlist
 
 - [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): useful open-runtime pressure check.
-- [chopratejas/headroom](https://github.com/chopratejas/headroom): direct signal for context-efficiency pressure.
-- [CopilotKit/CopilotKit](https://github.com/CopilotKit/CopilotKit): worth watching for agent UI and embedding patterns.
-- [lfnovo/open-notebook](https://github.com/lfnovo/open-notebook): relevant to research and briefing surface design.
-- [github/copilot-sdk](https://github.com/github/copilot-sdk): useful indicator for how agent integration APIs are being packaged.
+- [aaif-goose/goose](https://github.com/aaif-goose/goose): worth watching for execution-loop expectations.
+- [lfnovo/open-notebook](https://github.com/lfnovo/open-notebook): relevant to briefing and knowledge-surface design.
+- [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp): important for local-model deployment pressure.
+- [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill): strong signal for grounded, repeatable research workflows.
