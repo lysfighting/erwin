@@ -1,45 +1,45 @@
-# GitHub Trending — 2026-06-10
+# GitHub Trending - 2026-06-11
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-Today’s default global board is still AI-heavy, but it is not an AI-only board. The dominant cluster is around agent skills, open runtimes, markdown or knowledge tooling, and reusable developer utilities. At the same time, larger general-purpose libraries like OpenCV are still breaking through, which makes the board a better demand snapshot than a topic-filtered AI feed.
+Today's default global board is still heavy on skills, AI workflows, and developer tooling, but it is not an AI-only board. The visible mix suggests that reusable behavior packs, local knowledge-base tooling, and practical infrastructure are rising together rather than one category fully dominating the board.
 
 ## Notable Projects
 
 - [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)  
-  An AI agent skill for grounded research across Reddit, X, YouTube, Hacker News, Polymarket, and the web, then synthesis into a cited summary.
-
-- [aaif-goose/goose](https://github.com/aaif-goose/goose)  
-  An extensible open-source AI agent that emphasizes install, execute, edit, and test loops rather than passive suggestion.
+  AI agent skill for grounded research across Reddit, X, YouTube, Hacker News, Polymarket, and the web, then synthesis into a cited summary.
 
 - [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)  
-  A production-grade skill pack for AI coding agents, reinforcing that agent behavior shaping is now a first-class artifact.
+  Production-grade engineering skills for AI coding agents.
+
+- [phuryn/pm-skills](https://github.com/phuryn/pm-skills)  
+  Agentic PM skills, commands, and plugins focused on discovery, strategy, execution, launch, and growth.
 
 - [refactoringhq/tolaria](https://github.com/refactoringhq/tolaria)  
-  A desktop app for managing markdown knowledge bases, relevant because knowledge-surface and local-context tooling continues to attract attention.
+  Desktop app for managing markdown knowledge bases.
+
+- [google/skills](https://github.com/google/skills)  
+  Agent skills for Google products and technologies.
 
 - [roboflow/supervision](https://github.com/roboflow/supervision)  
-  Reusable computer-vision tooling, showing the board still contains practical infrastructure beyond agent shells.
+  Reusable computer-vision tooling, reminding that practical libraries still surface alongside agent wrappers.
 
-- [openai/plugins](https://github.com/openai/plugins)  
-  Tool-integration packaging remains visible, which is consistent with the broader market move toward governed agent workflows.
-
-- [opencv/opencv](https://github.com/opencv/opencv)  
-  A reminder that core infrastructure projects still surface even when agent tooling is hot.
+- [apple/container](https://github.com/apple/container)  
+  A broader infrastructure example from the board that keeps the snapshot from collapsing into a pure AI narrative.
 
 ## Why They May Be Surfacing
 
-- Research and agent-skill projects are surfacing because users increasingly want repeatable, grounded workflows instead of raw chat output.
-- Open runtimes are surfacing because teams still value inspectability, portability, and provider flexibility in coding-agent loops.
-- Markdown and knowledge-base tools are surfacing because local knowledge organization remains a bottleneck around AI-assisted work.
-- Vision and systems libraries are still present because the global board reflects broad developer demand, not just the current AI narrative.
+- Skills and workflow packs are surfacing because teams want repeatable agent behavior encoded as reusable assets instead of fragile one-off prompts.
+- Knowledge-base tooling is surfacing because local markdown corpora and durable context management remain operational bottlenecks around AI-assisted work.
+- Vendor-backed skills repositories are surfacing because providers increasingly treat capability packaging as a product surface, not just a docs exercise.
+- Practical infrastructure projects are still present because the default global board tracks broad developer demand, not only the current AI wave.
 
 ## Watchlist
 
-- [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill): strong signal for grounded multi-source research workflows.
-- [aaif-goose/goose](https://github.com/aaif-goose/goose): useful pressure check for open agent runtime expectations.
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills): relevant to durable agent behavior encoding rather than prompt-only tuning.
+- [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill): strongest pressure signal for grounded multi-source research workflows.
+- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills): useful signal for durable behavior encoding in coding agents.
+- [phuryn/pm-skills](https://github.com/phuryn/pm-skills): worth tracking as packaged agent process grows beyond coding-only use cases.
 - [refactoringhq/tolaria](https://github.com/refactoringhq/tolaria): relevant to local knowledge-surface and markdown-corpus management.
-- [roboflow/supervision](https://github.com/roboflow/supervision): useful reminder that reusable tooling layers still compete for attention with agent wrappers.
+- [google/skills](https://github.com/google/skills): relevant because major vendors are now visibly shipping skills as distributable units.

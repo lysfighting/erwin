@@ -114,8 +114,8 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar — 2026-06-10",
-      "meta": "Window: 2026-06-04 to 2026-06-10",
+      "title": "Daily Radar - 2026-06-11",
+      "meta": "Window: 2026-06-05 to 2026-06-11",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
@@ -149,12 +149,12 @@
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending — 2026-06-10",
+      "title": "GitHub Trending - 2026-06-11",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
         "[mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)",
-        "[aaif-goose/goose](https://github.com/aaif-goose/goose)",
-        "[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)"
+        "[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)",
+        "[phuryn/pm-skills](https://github.com/phuryn/pm-skills)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",

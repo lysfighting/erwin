@@ -27,19 +27,19 @@
 
 ## Daily Signal Snapshot
 
-### Daily Radar — 2026-06-10
+### Daily Radar - 2026-06-11
 
-- Metadata: `Window: 2026-06-04 to 2026-06-10`
+- Metadata: `Window: 2026-06-05 to 2026-06-11`
 - Open the daily note for the full signal list.
 
 ## Trending Snapshot
 
-### GitHub Trending — 2026-06-10
+### GitHub Trending - 2026-06-11
 
 - Metadata: `Latest GitHub Trending board summary`
 - [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)
-- [aaif-goose/goose](https://github.com/aaif-goose/goose)
 - [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)
+- [phuryn/pm-skills](https://github.com/phuryn/pm-skills)
 
 ## Durable Interpretation
 
