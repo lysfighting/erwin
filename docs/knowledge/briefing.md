@@ -11,45 +11,45 @@
 
 ## At A Glance
 
-- `110` durable notes are currently indexed across `3` recurring streams.
-- `173` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `117` durable notes are currently indexed across `3` recurring streams.
+- `180` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
 ## Weekly Lead
 
-### AI/Agent Weekly Synthesis — 2026-06-05
+### AI/Agent Weekly Synthesis — 2026-06-12
 
-- Metadata: `Coverage window: 2026-05-29 to 2026-06-05`
-- Anthropic again carried the strongest first-party technical signal this week, and this run explicitly checked the required Anthropic surfaces before reaching that conclusion: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/en/home), the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code changelog](https://code.claude.com/docs/en/changelog), and the [Claude apps release notes](https://support.claude.com/en/articles/12138966-release-notes).
-- The most important Anthropic platform change landed on **June 2, 2026** in the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview): the **advisor tool** now supports a `max_tokens` parameter, turning advisor output budget into a hard control surface rather than a prompt-only soft hint. The same release also stops billing refusal-only requests that generate no output.
-- Anthropic also shipped a dense May 28-29 sequence. On **May 28, 2026**, the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and [Anthropic launch post](https://www.anthropic.com/news/claude-opus-4-8) introduced **Claude Opus 4.8**, plus mid-conversation system messages, documented refusal `stop_details`, lower prompt-cache minimums, adaptive thinking, and broader Claude Code auto/fast/workflow changes around the same model line. On **May 29, 2026**, Anthropic extended **Claude Managed Agents webhooks, multiagent orchestration, and self-hosted sandboxes** to Claude Platform on AWS.
+- Metadata: `Coverage window: 2026-06-05 to 2026-06-12`
+- Anthropic again carried the strongest first-party agent-platform signal this week, and this run explicitly checked the required Anthropic surfaces before reaching that conclusion: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/blog-category/announcements), [docs.anthropic.com / Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code changelog](https://code.claude.com/docs/en/changelog), and the [Claude apps release notes](https://support.claude.com/en/articles/12138966-release-notes).
+- Anthropic’s biggest in-window platform move landed on **June 9, 2026**. The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) introduced **Claude Fable 5** and **Claude Mythos 5** with default 1M context, 128k max output tokens, always-on adaptive thinking, refusal handling changes, and a new `fallbacks` parameter for re-running refusal cases on another model. The same day, the [Claude apps release notes](https://support.claude.com/en/articles/12138966-release-notes) recorded the Claude Fable 5 launch on the user-facing product surface.
+- Anthropic’s required **Claude Managed Agents** check was materially positive this week. On **June 9, 2026**, the [Claude Managed Agents announcement](https://claude.com/blog/whats-new-in-claude-managed-agents) added **scheduled deployments** and **environment variables in vaults** in public beta, giving Managed Agents a first-party recurring-run primitive and a safer way to authenticate CLIs and other tools without handing raw credentials to the model.
 
 ## Daily Signal Snapshot
 
-### Daily Radar - 2026-06-11
+### Daily Radar - 2026-06-14
 
-- Metadata: `Window: 2026-06-05 to 2026-06-11`
+- Metadata: `Window: 2026-06-08 to 2026-06-14`
 - Open the daily note for the full signal list.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-06-11
+### GitHub Trending - 2026-06-14
 
 - Metadata: `Latest GitHub Trending board summary`
-- [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)
+- [iptv-org/iptv](https://github.com/iptv-org/iptv)
 - [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)
-- [phuryn/pm-skills](https://github.com/phuryn/pm-skills)
+- [chatwoot/chatwoot](https://github.com/chatwoot/chatwoot)
 
 ## Durable Interpretation
 
-This week’s theme is **agent control planes becoming explicit products**.
+This week’s theme is **agents becoming schedulable, inspectable, and credential-safe operating systems instead of one-shot helpers**.
 
 ## Current Proposal Candidates
 
-- Planner / executor split with explicit advisor budget
-- First-class runtime object model
-- Workflow orchestration tier above subagents
+- Recurring deployment lane for autonomous runs
+- Credential-bound CLI tool lane
+- Nested orchestration lineage and pending-work introspection
 
 ## Knowledge Network
 
@@ -65,27 +65,27 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-06-14](../radar/daily/2026-06-14.md)
+- [2026-06-12](../radar/daily/2026-06-12.md)
+- [2026-06-11](../radar/daily/2026-06-11.md)
 - [2026-06-10](../radar/daily/2026-06-10.md)
 - [2026-06-08](../radar/daily/2026-06-08.md)
 - [2026-06-06](../radar/daily/2026-06-06.md)
-- [2026-06-05](../radar/daily/2026-06-05.md)
-- [2026-06-04](../radar/daily/2026-06-04.md)
-- [2026-06-03](../radar/daily/2026-06-03.md)
 
 ### Weekly Synthesis
 
+- [2026-06-12](../radar/weekly/2026-06-12.md)
 - [2026-06-05](../radar/weekly/2026-06-05.md)
 - [2026-05-29](../radar/weekly/2026-05-29.md)
 - [2026-05-22](../radar/weekly/2026-05-22.md)
 - [2026-05-15](../radar/weekly/2026-05-15.md)
 - [2026-05-08](../radar/weekly/2026-05-08.md)
-- [2026-04-17](../radar/weekly/2026-04-17.md)
 
 ### GitHub Trending
 
+- [2026-06-14](../radar/trending/2026-06-14.md)
+- [2026-06-12](../radar/trending/2026-06-12.md)
+- [2026-06-11](../radar/trending/2026-06-11.md)
 - [2026-06-10](../radar/trending/2026-06-10.md)
 - [2026-06-08](../radar/trending/2026-06-08.md)
 - [2026-06-06](../radar/trending/2026-06-06.md)
-- [2026-06-05](../radar/trending/2026-06-05.md)
-- [2026-06-04](../radar/trending/2026-06-04.md)
-- [2026-06-03](../radar/trending/2026-06-03.md)
