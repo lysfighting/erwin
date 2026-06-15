@@ -1,51 +1,60 @@
-# GitHub Trending - 2026-06-14
+# GitHub Trending - 2026-06-15
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured for this run mixed broad developer infrastructure with an unusually visible skills-and-agents cluster. It was not an AI-only board, but agent workflow packs, agent observability, and model-orchestration utilities were clearly present.
+The default global board captured for this run was broad rather than AI-dominated. Infrastructure, testing, education, media/app projects, and a smaller cluster of AI- and agent-adjacent repositories all appeared together, so the right read is "general developer demand with a visible agent tooling slice," not "an all-agent board."
 
 ## Notable Projects
 
 - [iptv-org/iptv](https://github.com/iptv-org/iptv)  
-  Collection of publicly available IPTV channels from all over the world.
+  Public IPTV channel index; a reminder that the board still includes broad consumer-scale open source.
 
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)  
-  Production-grade engineering skills for AI coding agents.
+- [freeCodeCamp/freeCodeCamp](https://github.com/freeCodeCamp/freeCodeCamp)  
+  Large education and curriculum codebase; likely surfacing because broad developer-learning demand remains strong.
+
+- [pytest-dev/pytest](https://github.com/pytest-dev/pytest)  
+  Core Python testing framework; relevant because verification tooling stays central even as agent workflows rise.
+
+- [swc-project/swc](https://github.com/swc-project/swc)  
+  Rust-based web build platform; another non-agent but high-utility infrastructure signal on the board.
 
 - [chatwoot/chatwoot](https://github.com/chatwoot/chatwoot)  
-  Open-source live chat, email support, and omnichannel customer-support desk.
-
-- [obra/superpowers](https://github.com/obra/superpowers)  
-  Agentic skills framework and software-development methodology.
-
-- [apple/container](https://github.com/apple/container)  
-  Apple tool for running Linux containers in lightweight VMs on Apple silicon Macs.
-
-- [kenn-io/agentsview](https://github.com/kenn-io/agentsview)  
-  Local-first session intelligence and analytics for coding agents.
-
-- [LMCache/LMCache](https://github.com/LMCache/LMCache)  
-  KV-cache acceleration layer for LLM serving.
-
-- [andrewyng/aisuite](https://github.com/andrewyng/aisuite)  
-  Unified interface across multiple generative-AI providers.
+  Open-source customer support platform; representative of practical app-layer demand on the board.
 
 - [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector)  
-  Security scanner for AI agent skills.
+  Security scanner for AI agent skills; the clearest direct signal that skill/package security is now its own tooling category.
+
+- [meshery/meshery](https://github.com/meshery/meshery)  
+  Cloud-native management layer; relevant because control-plane visibility and operator workflows remain a cross-cutting concern.
+
+- [cypress-io/cypress](https://github.com/cypress-io/cypress)  
+  Browser test infrastructure; still one of the most practical verification layers for agent-driven product work.
+
+- [Introduction-to-Autonomous-Robots/Introduction-to-Autonomous-Robots](https://github.com/Introduction-to-Autonomous-Robots/Introduction-to-Autonomous-Robots)  
+  Open robotics text; relevant because autonomy remains broader than coding agents alone.
+
+- [shiyu-coder/Kronos](https://github.com/shiyu-coder/Kronos)  
+  Foundation model for financial markets; part of the current AI slice on the board.
+
+- [andrewyng/aisuite](https://github.com/andrewyng/aisuite)  
+  Multi-provider AI interface; directly relevant to orchestration portability.
+
+- [puppeteer/puppeteer](https://github.com/puppeteer/puppeteer)  
+  Browser automation toolkit; durable substrate for testing and browser-acting agents.
 
 ## Why They May Be Surfacing
 
-- Skills and workflow packs are surfacing because teams want repeatable agent behavior encoded as reusable assets instead of one-off prompts.
-- Agent analytics and cache/inference infrastructure are surfacing because the operational burden of running agents and LLM systems is still rising.
-- Broader infrastructure and application projects remain visible because the default global board reflects overall developer demand rather than only the current AI cycle.
-- Vendor-backed and community-backed skill repositories showing up together suggests capability packaging is becoming a shared product pattern across the ecosystem.
+- The board is rewarding practical infrastructure and verification layers, not just model novelty.
+- AI- and agent-adjacent projects that surfaced are mostly about packaging, portability, security, or execution, which matches the broader shift from raw-model fascination toward operational tooling.
+- Non-AI projects remain prominent because the default global board is still a general software-demand signal, not a specialized AI index.
+- Browser control, testing, and distributed-systems tooling continuing to trend alongside AI repos suggests the ecosystem is converging on full-stack execution concerns rather than isolated model APIs.
 
 ## Watchlist
 
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills): strongest pure skills signal on the board.
-- [obra/superpowers](https://github.com/obra/superpowers): useful signal for structured agent execution workflows.
-- [kenn-io/agentsview](https://github.com/kenn-io/agentsview): worth tracking as observability for coding agents becomes a standalone category.
-- [LMCache/LMCache](https://github.com/LMCache/LMCache): relevant for inference efficiency and serving-cost pressure.
-- [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector): relevant because skill distribution now has an explicit security-review layer.
+- [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector): strongest pure skill-security signal on the board.
+- [andrewyng/aisuite](https://github.com/andrewyng/aisuite): useful proxy for provider-portable orchestration pressure.
+- [puppeteer/puppeteer](https://github.com/puppeteer/puppeteer): still a core execution layer for browser-acting systems.
+- [cypress-io/cypress](https://github.com/cypress-io/cypress): strong reminder that verification quality still shapes trustworthy automation.
+- [meshery/meshery](https://github.com/meshery/meshery): worth watching as control-plane, observability, and operational UX continue to intersect.

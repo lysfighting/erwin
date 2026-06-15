@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `117` durable notes are currently indexed across `3` recurring streams.
-- `180` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `119` durable notes are currently indexed across `3` recurring streams.
+- `182` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,19 +27,19 @@
 
 ## Daily Signal Snapshot
 
-### Daily Radar - 2026-06-14
+### Daily Radar - 2026-06-15
 
-- Metadata: `Window: 2026-06-08 to 2026-06-14`
+- Metadata: `Window: 2026-06-09 to 2026-06-15`
 - Open the daily note for the full signal list.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-06-14
+### GitHub Trending - 2026-06-15
 
 - Metadata: `Latest GitHub Trending board summary`
 - [iptv-org/iptv](https://github.com/iptv-org/iptv)
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)
-- [chatwoot/chatwoot](https://github.com/chatwoot/chatwoot)
+- [freeCodeCamp/freeCodeCamp](https://github.com/freeCodeCamp/freeCodeCamp)
+- [pytest-dev/pytest](https://github.com/pytest-dev/pytest)
 
 ## Durable Interpretation
 
@@ -65,12 +65,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-06-15](../radar/daily/2026-06-15.md)
 - [2026-06-14](../radar/daily/2026-06-14.md)
 - [2026-06-12](../radar/daily/2026-06-12.md)
 - [2026-06-11](../radar/daily/2026-06-11.md)
 - [2026-06-10](../radar/daily/2026-06-10.md)
 - [2026-06-08](../radar/daily/2026-06-08.md)
-- [2026-06-06](../radar/daily/2026-06-06.md)
 
 ### Weekly Synthesis
 
@@ -83,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-06-15](../radar/trending/2026-06-15.md)
 - [2026-06-14](../radar/trending/2026-06-14.md)
 - [2026-06-12](../radar/trending/2026-06-12.md)
 - [2026-06-11](../radar/trending/2026-06-11.md)
 - [2026-06-10](../radar/trending/2026-06-10.md)
 - [2026-06-08](../radar/trending/2026-06-08.md)
-- [2026-06-06](../radar/trending/2026-06-06.md)
