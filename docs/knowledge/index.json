@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 119,
+    "total_notes": 121,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 182,
+    "artifact_count": 184,
     "link_count": 267,
     "thread_count": 5
   },
@@ -75,12 +75,12 @@
   "streams": {
     "weekly": {
       "label": "Weekly",
-      "title": "AI/Agent Weekly Synthesis — 2026-06-12",
-      "meta": "Coverage window: 2026-06-05 to 2026-06-12",
+      "title": "AI/Agent Weekly Synthesis — 2026-06-05",
+      "meta": "Coverage window: 2026-05-29 to 2026-06-05",
       "highlights": [
-        "Anthropic again carried the strongest first-party agent-platform signal this week, and this run explicitly checked the required Anthropic surfaces before reaching that conclusion: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/blog-category/announcements), [docs.anthropic.com / Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code changelog](https://code.claude.com/docs/en/changelog), and the [Claude apps release notes](https://support.claude.com/en/articles/12138966-release-notes).",
-        "Anthropic’s biggest in-window platform move landed on **June 9, 2026**. The [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) introduced **Claude Fable 5** and **Claude Mythos 5** with default 1M context, 128k max output tokens, always-on adaptive thinking, refusal handling changes, and a new `fallbacks` parameter for re-running refusal cases on another model. The same day, the [Claude apps release notes](https://support.claude.com/en/articles/12138966-release-notes) recorded the Claude Fable 5 launch on the user-facing product surface.",
-        "Anthropic’s required **Claude Managed Agents** check was materially positive this week. On **June 9, 2026**, the [Claude Managed Agents announcement](https://claude.com/blog/whats-new-in-claude-managed-agents) added **scheduled deployments** and **environment variables in vaults** in public beta, giving Managed Agents a first-party recurring-run primitive and a safer way to authenticate CLIs and other tools without handing raw credentials to the model."
+        "Anthropic again carried the strongest first-party technical signal this week, and this run explicitly checked the required Anthropic surfaces before reaching that conclusion: [anthropic.com/news](https://www.anthropic.com/news), [claude.com](https://claude.com/), [docs.anthropic.com](https://docs.anthropic.com/en/home), the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code changelog](https://code.claude.com/docs/en/changelog), and the [Claude apps release notes](https://support.claude.com/en/articles/12138966-release-notes).",
+        "The most important Anthropic platform change landed on **June 2, 2026** in the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview): the **advisor tool** now supports a `max_tokens` parameter, turning advisor output budget into a hard control surface rather than a prompt-only soft hint. The same release also stops billing refusal-only requests that generate no output.",
+        "Anthropic also shipped a dense May 28-29 sequence. On **May 28, 2026**, the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) and [Anthropic launch post](https://www.anthropic.com/news/claude-opus-4-8) introduced **Claude Opus 4.8**, plus mid-conversation system messages, documented refusal `stop_details`, lower prompt-cache minimums, adaptive thinking, and broader Claude Code auto/fast/workflow changes around the same model line. On **May 29, 2026**, Anthropic extended **Claude Managed Agents webhooks, multiagent orchestration, and self-hosted sandboxes** to Claude Platform on AWS."
       ],
       "latest_path": "radar/weekly/latest.md",
       "archive_path": "radar/weekly/",
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-06-15",
-      "meta": "Window: 2026-06-09 to 2026-06-15",
+      "title": "Daily Radar - 2026-06-16",
+      "meta": "Window: 2026-06-10 to 2026-06-16",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-06-16",
+          "path": "radar/daily/2026-06-16.md"
+        },
         {
           "name": "2026-06-15",
           "path": "radar/daily/2026-06-15.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-06-10",
           "path": "radar/daily/2026-06-10.md"
-        },
-        {
-          "name": "2026-06-08",
-          "path": "radar/daily/2026-06-08.md"
         }
       ],
-      "count": 54
+      "count": 55
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-06-15",
+      "title": "GitHub Trending - 2026-06-16",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
         "[iptv-org/iptv](https://github.com/iptv-org/iptv)",
-        "[freeCodeCamp/freeCodeCamp](https://github.com/freeCodeCamp/freeCodeCamp)",
-        "[pytest-dev/pytest](https://github.com/pytest-dev/pytest)"
+        "[teslamate-org/teslamate](https://github.com/teslamate-org/teslamate)",
+        "[Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-06-16",
+          "path": "radar/trending/2026-06-16.md"
+        },
         {
           "name": "2026-06-15",
           "path": "radar/trending/2026-06-15.md"
@@ -178,20 +182,16 @@
         {
           "name": "2026-06-10",
           "path": "radar/trending/2026-06-10.md"
-        },
-        {
-          "name": "2026-06-08",
-          "path": "radar/trending/2026-06-08.md"
         }
       ],
-      "count": 55
+      "count": 56
     }
   },
-  "deep_dive": "This week’s theme is **agents becoming schedulable, inspectable, and credential-safe operating systems instead of one-shot helpers**.",
+  "deep_dive": "This week’s theme is **agent control planes becoming explicit products**.",
   "proposal_candidates": [
-    "Recurring deployment lane for autonomous runs",
-    "Credential-bound CLI tool lane",
-    "Nested orchestration lineage and pending-work introspection"
+    "Planner / executor split with explicit advisor budget",
+    "First-class runtime object model",
+    "Workflow orchestration tier above subagents"
   ],
   "knowledge_network": {
     "schema_version": 1,
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 182,
+      "artifact_count": 184,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 129,
+        "radar": 131,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -3248,6 +3248,39 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-06-16.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-06-16.md",
+        "title": "Daily Radar - 2026-06-16",
+        "date": "2026-06-16",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-06-10 to 2026-06-16",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://www.kimi.com/code/docs/en/kimi-code/whats-new.html",
+          "https://platform.openai.com/docs/changelog",
+          "https://developers.googleblog.com/en/diffusiongemma-the-developer-guide/",
+          "https://github.com/trending",
+          "https://github.com/Panniantong/Agent-Reach",
+          "https://github.com/trycua/cua",
+          "https://github.com/meshery/meshery",
+          "https://github.com/rohitg00/ai-engineering-from-scratch",
+          "https://github.com/freeCodeCamp/freeCodeCamp",
+          "https://www.anthropic.com/news"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -4896,6 +4929,35 @@
           "https://github.com/Introduction-to-Autonomous-Robots/Introduction-to-Autonomous-Robots",
           "https://github.com/shiyu-coder/Kronos",
           "https://github.com/andrewyng/aisuite"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-06-16.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-06-16.md",
+        "title": "GitHub Trending - 2026-06-16",
+        "date": "2026-06-16",
+        "status": "",
+        "themes": [
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/iptv-org/iptv",
+          "https://github.com/teslamate-org/teslamate",
+          "https://github.com/Panniantong/Agent-Reach",
+          "https://github.com/meshery/meshery",
+          "https://github.com/chatwoot/chatwoot",
+          "https://github.com/freeCodeCamp/freeCodeCamp",
+          "https://github.com/trycua/cua",
+          "https://github.com/jwasham/coding-interview-university",
+          "https://github.com/rohitg00/ai-engineering-from-scratch",
+          "https://github.com/music-assistant/server"
         ],
         "local_refs": []
       },

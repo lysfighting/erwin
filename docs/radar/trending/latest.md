@@ -1,60 +1,54 @@
-# GitHub Trending - 2026-06-15
+# GitHub Trending - 2026-06-16
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured for this run was broad rather than AI-dominated. Infrastructure, testing, education, media/app projects, and a smaller cluster of AI- and agent-adjacent repositories all appeared together, so the right read is "general developer demand with a visible agent tooling slice," not "an all-agent board."
+The default global board captured for this run was broad rather than AI-dominated. Consumer media lists, education repos, self-hosted infrastructure, support software, and a smaller but real AI-agent slice appeared together, so the correct read is "general developer demand with visible agent execution pressure," not "an AI-only board."
 
 ## Notable Projects
 
 - [iptv-org/iptv](https://github.com/iptv-org/iptv)  
-  Public IPTV channel index; a reminder that the board still includes broad consumer-scale open source.
+  Public IPTV channel index; a reminder that the global board still carries broad consumer-scale open source.
+
+- [teslamate-org/teslamate](https://github.com/teslamate-org/teslamate)  
+  Self-hosted Tesla data logger; representative of practical self-hosted operator demand.
+
+- [Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach)  
+  Agent retrieval tool that reads and searches multiple public internet surfaces; one of the clearest direct agent-execution signals on the board.
+
+- [meshery/meshery](https://github.com/meshery/meshery)  
+  Cloud-native manager; relevant because control-plane visibility and operational UX remain durable cross-cutting needs.
+
+- [chatwoot/chatwoot](https://github.com/chatwoot/chatwoot)  
+  Open-source support platform; shows continued demand for practical app-layer systems.
 
 - [freeCodeCamp/freeCodeCamp](https://github.com/freeCodeCamp/freeCodeCamp)  
   Large education and curriculum codebase; likely surfacing because broad developer-learning demand remains strong.
 
-- [pytest-dev/pytest](https://github.com/pytest-dev/pytest)  
-  Core Python testing framework; relevant because verification tooling stays central even as agent workflows rise.
+- [trycua/cua](https://github.com/trycua/cua)  
+  Computer-use agent infrastructure with sandboxes, SDKs, and benchmarks; a strong signal that desktop-acting agents now have dedicated infra stacks.
 
-- [swc-project/swc](https://github.com/swc-project/swc)  
-  Rust-based web build platform; another non-agent but high-utility infrastructure signal on the board.
+- [jwasham/coding-interview-university](https://github.com/jwasham/coding-interview-university)  
+  Long-lived study plan repo; another reminder that the default board is still general developer demand, not a specialized AI board.
 
-- [chatwoot/chatwoot](https://github.com/chatwoot/chatwoot)  
-  Open-source customer support platform; representative of practical app-layer demand on the board.
+- [rohitg00/ai-engineering-from-scratch](https://github.com/rohitg00/ai-engineering-from-scratch)  
+  AI engineering learning repo; notable because "build and ship agent systems end to end" education remains in active demand.
 
-- [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector)  
-  Security scanner for AI agent skills; the clearest direct signal that skill/package security is now its own tooling category.
-
-- [meshery/meshery](https://github.com/meshery/meshery)  
-  Cloud-native management layer; relevant because control-plane visibility and operator workflows remain a cross-cutting concern.
-
-- [cypress-io/cypress](https://github.com/cypress-io/cypress)  
-  Browser test infrastructure; still one of the most practical verification layers for agent-driven product work.
-
-- [Introduction-to-Autonomous-Robots/Introduction-to-Autonomous-Robots](https://github.com/Introduction-to-Autonomous-Robots/Introduction-to-Autonomous-Robots)  
-  Open robotics text; relevant because autonomy remains broader than coding agents alone.
-
-- [shiyu-coder/Kronos](https://github.com/shiyu-coder/Kronos)  
-  Foundation model for financial markets; part of the current AI slice on the board.
-
-- [andrewyng/aisuite](https://github.com/andrewyng/aisuite)  
-  Multi-provider AI interface; directly relevant to orchestration portability.
-
-- [puppeteer/puppeteer](https://github.com/puppeteer/puppeteer)  
-  Browser automation toolkit; durable substrate for testing and browser-acting agents.
+- [music-assistant/server](https://github.com/music-assistant/server)  
+  Home media server platform; representative of the broad self-hosted systems slice on the board.
 
 ## Why They May Be Surfacing
 
-- The board is rewarding practical infrastructure and verification layers, not just model novelty.
-- AI- and agent-adjacent projects that surfaced are mostly about packaging, portability, security, or execution, which matches the broader shift from raw-model fascination toward operational tooling.
-- Non-AI projects remain prominent because the default global board is still a general software-demand signal, not a specialized AI index.
-- Browser control, testing, and distributed-systems tooling continuing to trend alongside AI repos suggests the ecosystem is converging on full-stack execution concerns rather than isolated model APIs.
+- The board is still rewarding practical systems and self-hosted tooling, not just model novelty.
+- The AI- and agent-adjacent projects that surfaced are mostly about execution substrate, retrieval, sandboxes, and applied build workflows rather than abstract model research.
+- Education and study-plan repos remain strong, which suggests the board is reflecting continued developer skill-up demand alongside production tooling demand.
+- Infrastructure, support software, and self-hosted projects staying prominent beside agent repos suggests the ecosystem is converging on full-stack operational concerns rather than isolated model APIs.
 
 ## Watchlist
 
-- [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector): strongest pure skill-security signal on the board.
-- [andrewyng/aisuite](https://github.com/andrewyng/aisuite): useful proxy for provider-portable orchestration pressure.
-- [puppeteer/puppeteer](https://github.com/puppeteer/puppeteer): still a core execution layer for browser-acting systems.
-- [cypress-io/cypress](https://github.com/cypress-io/cypress): strong reminder that verification quality still shapes trustworthy automation.
-- [meshery/meshery](https://github.com/meshery/meshery): worth watching as control-plane, observability, and operational UX continue to intersect.
+- [Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach): strongest direct "agent retrieval over messy public surfaces" signal on the board.
+- [trycua/cua](https://github.com/trycua/cua): worth tracking as computer-use agent infra and benchmark stacks harden.
+- [meshery/meshery](https://github.com/meshery/meshery): useful secondary signal for control-plane and observability ergonomics.
+- [rohitg00/ai-engineering-from-scratch](https://github.com/rohitg00/ai-engineering-from-scratch): a good proxy for what practitioners currently want explained and operationalized.
+- [teslamate-org/teslamate](https://github.com/teslamate-org/teslamate): a reminder that self-hosted operator UX remains a broad, durable demand category.
