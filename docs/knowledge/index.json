@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 121,
+    "total_notes": 123,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 184,
+    "artifact_count": 186,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-06-16",
-      "meta": "Window: 2026-06-10 to 2026-06-16",
+      "title": "Daily Radar - 2026-06-17",
+      "meta": "Window: 2026-06-10 to 2026-06-17",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-06-17",
+          "path": "radar/daily/2026-06-17.md"
+        },
         {
           "name": "2026-06-16",
           "path": "radar/daily/2026-06-16.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-06-11",
           "path": "radar/daily/2026-06-11.md"
-        },
-        {
-          "name": "2026-06-10",
-          "path": "radar/daily/2026-06-10.md"
         }
       ],
-      "count": 55
+      "count": 56
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-06-16",
+      "title": "GitHub Trending - 2026-06-17",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
+        "[freeCodeCamp/freeCodeCamp](https://github.com/freeCodeCamp/freeCodeCamp)",
         "[iptv-org/iptv](https://github.com/iptv-org/iptv)",
-        "[teslamate-org/teslamate](https://github.com/teslamate-org/teslamate)",
-        "[Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach)"
+        "[teslamate-org/teslamate](https://github.com/teslamate-org/teslamate)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-06-17",
+          "path": "radar/trending/2026-06-17.md"
+        },
         {
           "name": "2026-06-16",
           "path": "radar/trending/2026-06-16.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-06-11",
           "path": "radar/trending/2026-06-11.md"
-        },
-        {
-          "name": "2026-06-10",
-          "path": "radar/trending/2026-06-10.md"
         }
       ],
-      "count": 56
+      "count": 57
     }
   },
   "deep_dive": "This week’s theme is **agent control planes becoming explicit products**.",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 184,
+      "artifact_count": 186,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 131,
+        "radar": 133,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -3281,6 +3281,39 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-06-17.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-06-17.md",
+        "title": "Daily Radar - 2026-06-17",
+        "date": "2026-06-17",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-06-10 to 2026-06-17",
+        "external_refs": [
+          "https://claude.com/blog/building-with-claude-managed-agents",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://www.kimi.com/code/docs/en/kimi-code/whats-new.html",
+          "https://developers.openai.com/codex/changelog",
+          "https://developers.openai.com/api/docs/deprecations",
+          "https://github.com/trending",
+          "https://github.com/puppeteer/puppeteer",
+          "https://github.com/meshery/meshery",
+          "https://github.com/OpenBMB/VoxCPM",
+          "https://github.com/alibaba/zvec",
+          "https://github.com/n0-computer/iroh",
+          "https://www.anthropic.com/engineering"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -4958,6 +4991,36 @@
           "https://github.com/jwasham/coding-interview-university",
           "https://github.com/rohitg00/ai-engineering-from-scratch",
           "https://github.com/music-assistant/server"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-06-17.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-06-17.md",
+        "title": "GitHub Trending - 2026-06-17",
+        "date": "2026-06-17",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/freeCodeCamp/freeCodeCamp",
+          "https://github.com/iptv-org/iptv",
+          "https://github.com/teslamate-org/teslamate",
+          "https://github.com/puppeteer/puppeteer",
+          "https://github.com/meshery/meshery",
+          "https://github.com/music-assistant/server",
+          "https://github.com/OpenBMB/VoxCPM",
+          "https://github.com/alibaba/zvec",
+          "https://github.com/n0-computer/iroh"
         ],
         "local_refs": []
       },
