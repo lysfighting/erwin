@@ -1,65 +1,62 @@
-# Daily Radar - 2026-06-25
+# Daily Radar - 2026-06-26
 
-Window: 2026-06-18 to 2026-06-25
+Window: 2026-06-19 to 2026-06-26
 
 ## New Signals
 
-1. **Google moved computer-use from concept to public-preview API surface.** The official [Gemini API release notes](https://ai.google.dev/gemini-api/docs/changelog) added **Computer Use** for `gemini-3.5-flash` on **2026-06-24**, with simplified intent actions, browser/mobile/desktop environment support, configurable safety policies, and prompt-injection detection.
+1. **OpenAI pushed Codex from “connected desktop” toward a real remote-work substrate.** The official [Codex changelog](https://developers.openai.com/codex/changelog) shows **Codex Remote reached general availability on 2026-06-25**, with mobile start/continue flows for connected Mac and Windows hosts, one-to-one QR pairing, and a new DigitalOcean plugin for provisioning a remote workspace.
+   Publish date: 2026-06-25
+
+2. **Google moved computer use into a broader public-preview agent surface.** The official [Gemini API release notes](https://ai.google.dev/gemini-api/docs/changelog) show **Computer Use entered public preview on 2026-06-24** for `gemini-3.5-flash`, with intent-level actions, built-in browser/mobile/desktop environments, configurable safety policies, and prompt-injection detection.
    Publish date: 2026-06-24
 
-2. **Moonshot/Kimi is hardening the coding-agent session model, not just the model weights.** The official [Kimi Code What's New](https://www.kimi.com/code/docs/en/kimi-code/whats-new.html) shows **v0.19.0** on **2026-06-22** adding extra workspace directories plus background tasks, and **v0.18.0** on **2026-06-18** adding web session filtering and lazy loading. This is direct pressure toward multi-dir, long-running agent workflows.
-   Publish dates: 2026-06-18, 2026-06-22
-
-3. **OpenAI expanded Codex’s reusable-workflow and cross-host operating surface.** The official [Codex changelog](https://developers.openai.com/codex/changelog) shows **Codex app 26.616** on **2026-06-18** adding [Record & Replay](https://developers.openai.com/codex/record-and-replay), automation bulk actions, and thread handoff between local and remote hosts.
-   Publish date: 2026-06-18
-
-4. **OpenAI also kept tightening the human control layer around long-running agent work.** The official [Codex changelog](https://developers.openai.com/codex/changelog) shows **ChatGPT for iOS 1.2026.167** on **2026-06-22** adding editable goals plus better visibility into subagents, tasks, and worktree creation. This is UI work, but it points in the same direction: persistent agent work needs operator-grade steering and status.
+3. **OpenAI also tightened long-running agent control and budget mechanics on the CLI path.** The official [Codex changelog](https://developers.openai.com/codex/changelog) shows **Codex CLI 0.142.0 on 2026-06-22** adding configurable rollout token budgets, indexed web-search mode, and thread/turn-level control over multi-agent delegation.
    Publish date: 2026-06-22
 
 ## GitHub Trending Snapshot
 
-Snapshot source: [GitHub Trending](https://github.com/trending) captured for this run on 2026-06-25.
+Snapshot source: [GitHub Trending](https://github.com/trending) captured on 2026-06-26.
 
-- [apple/container](https://github.com/apple/container): container/runtime infrastructure surfacing on the default board is relevant because agent systems keep converging on sandboxed execution rather than pure chat.
-- [interviewstreet/hiring-agent](https://github.com/interviewstreet/hiring-agent): explicit hiring-agent packaging on the default board is a useful signal that narrow workflow agents are still attracting attention beyond model-launch cycles.
-- [JCodesMore/ai-website-cloner-template](https://github.com/JCodesMore/ai-website-cloner-template): shows continued demand for turnkey AI-assisted generation workflows, especially where repo templates lower setup friction.
-- [revfactory/harness](https://github.com/revfactory/harness): worth watching because “harness” naming is appearing on the global board, even if this repo may not map directly to the `Harness` system in this repo.
-- [stablyai/orca](https://github.com/stablyai/orca): another AI-native entry surfacing on the broad board rather than only model-specific channels.
-- [google-labs-code/design.md](https://github.com/google-labs-code/design.md): notable as a design/code-adjacent repo from an official Google Labs org, suggesting continuing appetite for design-to-build workflows.
+- [google-labs-code/design.md](https://github.com/google-labs-code/design.md): surfacing because structured design-system instructions for coding agents are becoming a reusable artifact, not just prompt folklore.
+- [calesthio/OpenMontage](https://github.com/calesthio/OpenMontage): a strong momentum signal for visibly agentic, multi-tool production workflows rather than simple chat wrappers.
+- [apple/container](https://github.com/apple/container): relevant because trustworthy local execution and lightweight isolation remain core infrastructure for serious agent systems.
+- [aws/agent-toolkit-for-aws](https://github.com/aws/agent-toolkit-for-aws): notable as an official MCP/skills/plugins bundle from a hyperscaler, which reinforces the shift toward packaged agent-tool ecosystems.
+- [alibaba/page-agent](https://github.com/alibaba/page-agent): worth watching because in-page GUI control continues to emerge as a concrete interface layer for browser agents.
 
 ## Harness-Relevant Signals
 
-- Google and OpenAI are both making computer-use and reusable workflow capture look like first-class platform features, not experimental add-ons. That raises the bar for how agent systems expose execution control, replay, and safety boundaries.
-- Kimi’s June 18-22 updates matter because they focus on session continuity across directories, background work, and browser-visible history. The competitive frontier for coding agents is increasingly operational ergonomics.
-- Anthropic’s required surfaces were explicitly checked this run: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code docs](https://code.claude.com/docs/en/whats-new), [claude.com/blog](https://claude.com/blog), and [Anthropic engineering/news](https://www.anthropic.com/engineering). I did not find a stronger dated official technical item inside the 2026-06-18 to 2026-06-25 window than Anthropic’s already-known **2026-06-15** model retirement note and **2026-06-11** tool-version updates.
-- MiniMax, Qwen, and DeepSeek were also checked in one official pass each. I did not find a stronger in-window official technical item than the signals above. The latest relevant dated items I found were [MiniMax M3](https://platform.minimax.io/docs/release-notes/models) on **2026-06-01**, [Qwen-Robot Suite](https://qwen.ai/blog?id=qwen-robotsuite) on **2026-06-15**, and [DeepSeek-V4](https://api-docs.deepseek.com/updates) on **2026-04-24**.
+- OpenAI and Google are converging on the same operator model: persistent agents need remote continuity, explicit control points, and bounded execution rather than one-shot prompting.
+- The Google Computer Use release raises the evaluation bar from “can call tools” to “can act in browser/mobile/desktop environments with inspectable safety controls.”
+- OpenAI’s June 22-25 Codex updates make budgets, delegation policy, indexed search, and remote-host continuity look like baseline platform concerns for coding agents.
+- Anthropic’s required technical surfaces were explicitly checked this run: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code what's new](https://code.claude.com/docs/en/whats-new), [Claude Code changelog](https://docs.anthropic.com/en/release-notes/claude-code), [Claude blog](https://claude.com/blog), and [Anthropic news](https://www.anthropic.com/news). I did not find a stronger dated Anthropic technical item inside the 2026-06-19 to 2026-06-26 window; the newest meaningful official Anthropic items remain just outside it on **2026-06-18** ([Claude Code artifacts](https://claude.com/blog/artifacts-in-claude-code) and [managed MCP connector auth](https://claude.com/blog/enterprise-managed-auth)).
+- MiniMax, Qwen, DeepSeek, and Moonshot/Kimi were each checked once through official surfaces. I did not find a stronger in-window dated technical item from those families. The latest relevant dated items I found remain [MiniMax M3](https://platform.minimax.io/docs/release-notes/models) on **2026-06-01**, [Qwen-Robot Suite](https://qwen.ai/blog?id=qwen-robotsuite) on **2026-06-15**, [DeepSeek-V4](https://api-docs.deepseek.com/updates) on **2026-04-24**, and [Kimi K2.7 Code](https://www.kimi.com/code/docs/en/kimi-code/whats-new.html) on **2026-06-12**.
 
 ## Candidate Proposals
 
 ### Proposal 1
 
 - `source_type`: first-party API release notes
-- `problem_pattern`: computer-use is becoming an explicit product surface with safety policy controls, environment abstractions, and injection defenses
-- `why_it_matters_for_harness`: the competitive baseline is shifting from “tool calling exists” to “desktop/browser action surfaces are inspectable and governable”
+- `problem_pattern`: computer-use capabilities are shipping with explicit environment abstractions, safety policies, and injection defenses
+- `why_it_matters_for_harness`: agent evaluation pressure is moving from abstract tool use toward governed end-to-end interaction inside real execution surfaces
 - `recommended_disposition`: `encode-as-eval`
 
 ### Proposal 2
 
 - `source_type`: first-party coding-agent changelog
-- `problem_pattern`: session continuity is expanding across directories, browsers, background tasks, and remote-host handoff
-- `why_it_matters_for_harness`: long-running agent work now depends on continuity UX and operator controls, not only model quality
+- `problem_pattern`: remote-host continuity, mobile approvals, and session resumption are becoming native parts of coding-agent operation
+- `why_it_matters_for_harness`: the operator surface for long-running work is becoming a product requirement rather than an optional convenience
 - `recommended_disposition`: `prototype`
 
 ### Proposal 3
 
 - `source_type`: first-party product changelog
-- `problem_pattern`: reusable workflow capture and replay are being packaged as native agent capabilities
-- `why_it_matters_for_harness`: demonstrated-task capture could become a durable comparison axis for agent systems beyond prompt libraries
+- `problem_pattern`: token budgets, delegation policy, and indexed search are being productized as hard execution controls
+- `why_it_matters_for_harness`: governance and bounded autonomy are becoming directly comparable dimensions across agent systems
 - `recommended_disposition`: `watch`
 
 ## Watch Next
 
-- Anthropic remains the highest-priority watch even without a stronger in-window item. The required surfaces for the next run are unchanged: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code what's new](https://code.claude.com/docs/en/whats-new), [Claude Code releases](https://github.com/anthropics/claude-code/releases), [claude.com/blog](https://claude.com/blog), and [Anthropic engineering](https://www.anthropic.com/engineering).
-- Google’s next important watch point is whether the [Gemini API release notes](https://ai.google.dev/gemini-api/docs/changelog) extend Computer Use beyond preview and how quickly managed-agent and interaction APIs converge around one operator model.
-- OpenAI’s next watch point is whether [Record & Replay](https://developers.openai.com/codex/record-and-replay), remote handoff, and editable long-running goals stay app-only conveniences or become stronger code-/API-addressable workflow primitives.
-- Kimi is worth watching for whether the June 18-22 session-management changes lead to stronger team, replay, or automation surfaces in [Kimi Code What's New](https://www.kimi.com/code/docs/en/kimi-code/whats-new.html).
+- Anthropic remains high-priority next run watch even without an in-window item this time: [release notes](https://platform.claude.com/docs/en/release-notes/overview), [Managed Agents](https://platform.claude.com/docs/en/managed-agents/quickstart), [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code what's new](https://code.claude.com/docs/en/whats-new), and [Claude Code changelog](https://docs.anthropic.com/en/release-notes/claude-code).
+- OpenAI’s next important watch point is whether [Codex Remote](https://developers.openai.com/codex/changelog) and the June 22 CLI control surfaces expand into more explicit workflow primitives rather than staying app-centric.
+- Google’s next watch point is whether [Computer Use](https://ai.google.dev/gemini-api/docs/changelog) quickly converges with its managed-agent surfaces into one operator model.
+- The most relevant secondary ecosystem watch from today’s Trending board is whether [aws/agent-toolkit-for-aws](https://github.com/aws/agent-toolkit-for-aws), [alibaba/page-agent](https://github.com/alibaba/page-agent), and [google-labs-code/design.md](https://github.com/google-labs-code/design.md) keep compounding attention or fade as one-day novelty.

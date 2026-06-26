@@ -1,48 +1,54 @@
-# GitHub Trending - 2026-06-25
+# GitHub Trending - 2026-06-26
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-06-25 is eclectic and practical. It mixes Apple infrastructure, agent-shaped workflow repos, Flutter, AI templates, and a few odd but attention-grabbing utility projects. The important read is not “GitHub Trending turned into an AI board,” but “AI/agent repos now coexist with mainstream build, infra, and hobbyist demand on the same front page.”
+The default global board captured on 2026-06-26 is broad, builder-heavy, and only partly AI-shaped. It mixes agent workflows, container/runtime infrastructure, self-hosted product utilities, and practical developer tooling. The useful read is not that the board became an AI monoculture, but that agent projects are now competing on the same front page as general-purpose infrastructure and deployable software.
 
 ## Notable Projects
 
+- [google-labs-code/design.md](https://github.com/google-labs-code/design.md)  
+  A format spec for giving coding agents persistent, structured design-system context.
+
 - [calesthio/OpenMontage](https://github.com/calesthio/OpenMontage)  
-  Notable because it is leading the default board despite not being framed as an AI launch. It helps anchor the board as broad rather than AI-only.
+  Agentic video-production system with an unusually explicit multi-pipeline, multi-skill framing.
+
+- [xbtlin/ai-berkshire](https://github.com/xbtlin/ai-berkshire)  
+  Claude Code based investing research framework, notable as a concrete domain-specific multi-agent workflow.
+
+- [mauriceboe/TREK](https://github.com/mauriceboe/TREK)  
+  A self-hosted trip planner; useful here because it keeps the board grounded in ordinary product software, not just AI launches.
 
 - [apple/container](https://github.com/apple/container)  
-  Apple infrastructure surfacing on the default board is material because local/container execution keeps mattering for developer and agent runtime trust.
-
-- [interviewstreet/hiring-agent](https://github.com/interviewstreet/hiring-agent)  
-  The clearest explicit “workflow agent” repo in the current snapshot.
+  Lightweight Linux containers on Apple silicon, directly relevant to trusted local execution.
 
 - [JCodesMore/ai-website-cloner-template](https://github.com/JCodesMore/ai-website-cloner-template)  
-  Strong signal for packaged AI generation workflows that aim to reduce setup time to near-zero.
+  Packaged AI coding-agent workflow aimed at zero-friction website cloning.
 
-- [revfactory/harness](https://github.com/revfactory/harness)  
-  Worth monitoring because “harness” terminology is surfacing on the global board, even if this specific repo may not align with the `erwin`/`Harness` meaning.
+- [garrytan/gstack](https://github.com/garrytan/gstack)  
+  Opinionated Claude Code setup that packages role-specific tooling around one agent workflow.
 
-- [flutter/flutter](https://github.com/flutter/flutter)  
-  A reminder that the default board still rewards broad developer-platform gravity, not just agent novelty.
+- [aws/agent-toolkit-for-aws](https://github.com/aws/agent-toolkit-for-aws)  
+  Official AWS-supported MCP servers, skills, and plugins for agents building on AWS.
 
-- [stablyai/orca](https://github.com/stablyai/orca)  
-  One of the more direct AI-native repos in the snapshot.
+- [alibaba/page-agent](https://github.com/alibaba/page-agent)  
+  In-page GUI agent for controlling web interfaces with natural language.
 
-- [google-labs-code/design.md](https://github.com/google-labs-code/design.md)  
-  A Google Labs repo surfacing on the global board is notable in itself, and it suggests continuing demand around design-to-build workflows.
+- [IceWhaleTech/CasaOS](https://github.com/IceWhaleTech/CasaOS)  
+  Another reminder that the board still rewards broadly useful self-hosted software alongside AI-native projects.
 
 ## Why They May Be Surfacing
 
-- The board still heavily rewards things developers can run, fork, or operationalize immediately.
-- AI/agent projects that do break through are mostly workflow-shaped or tooling-shaped rather than pure research repos.
-- Infrastructure remains close to the surface: containerization, runtime trust, and platform tooling continue to travel with AI adoption.
-- The snapshot still includes broad-demand developer ecosystems, which is a useful correction against over-reading every trending board as an AI pulse alone.
+- Projects that package a runnable workflow are still outperforming projects that only present an idea.
+- Agent-related repos are clustering around execution layers: browser control, skills/toolkits, design-system instructions, and domain-specific operator setups.
+- Infrastructure remains close to the surface. Containers, self-hosting, and platform tooling still travel with AI adoption rather than being displaced by it.
+- The board’s non-AI entries are a useful correction against over-reading GitHub Trending as a pure frontier-model pulse.
 
 ## Watchlist
 
-- [apple/container](https://github.com/apple/container): strongest infrastructure watch in this snapshot.
-- [interviewstreet/hiring-agent](https://github.com/interviewstreet/hiring-agent): direct workflow-agent watch.
-- [JCodesMore/ai-website-cloner-template](https://github.com/JCodesMore/ai-website-cloner-template): useful for tracking packaged AI-productization patterns.
-- [revfactory/harness](https://github.com/revfactory/harness): name overlap alone makes it worth at least a quick sanity check in future runs.
-- [google-labs-code/design.md](https://github.com/google-labs-code/design.md): potential indicator of rising design-plus-code workflow interest.
+- [google-labs-code/design.md](https://github.com/google-labs-code/design.md): strongest “agent instructions as durable spec” signal.
+- [OpenMontage](https://github.com/calesthio/OpenMontage): strongest explicit multi-agent workflow signal.
+- [apple/container](https://github.com/apple/container): strongest execution-infrastructure signal.
+- [aws/agent-toolkit-for-aws](https://github.com/aws/agent-toolkit-for-aws): strongest official packaged-tooling signal.
+- [alibaba/page-agent](https://github.com/alibaba/page-agent): strongest browser-agent interaction signal.
