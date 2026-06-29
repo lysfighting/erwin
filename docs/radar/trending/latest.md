@@ -1,54 +1,48 @@
-# GitHub Trending - 2026-06-26
+# GitHub Trending - 2026-06-28
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-06-26 is broad, builder-heavy, and only partly AI-shaped. It mixes agent workflows, container/runtime infrastructure, self-hosted product utilities, and practical developer tooling. The useful read is not that the board became an AI monoculture, but that agent projects are now competing on the same front page as general-purpose infrastructure and deployable software.
+The default global board captured on 2026-06-28 is mixed rather than AI-monocultural. Privacy software, dev-infra utilities, robotics, agent tooling, document pipelines, and creator tooling are all sharing the same surface. The board still rewards packaged, runnable systems more than abstract AI claims.
 
 ## Notable Projects
 
-- [google-labs-code/design.md](https://github.com/google-labs-code/design.md)  
-  A format spec for giving coding agents persistent, structured design-system context.
+- [simplex-chat/simplex-chat](https://github.com/simplex-chat/simplex-chat)  
+  Privacy-first messaging infra leading the board, useful as a reminder that secure communication primitives still travel with AI-system adoption.
 
-- [calesthio/OpenMontage](https://github.com/calesthio/OpenMontage)  
-  Agentic video-production system with an unusually explicit multi-pipeline, multi-skill framing.
+- [ripienaar/free-for-dev](https://github.com/ripienaar/free-for-dev)  
+  Not an AI repo, but a durable operations/developer resource that often resurfaces when builders are actively spinning up new tooling stacks.
+
+- [commaai/openpilot](https://github.com/commaai/openpilot)  
+  Robotics/autonomy infrastructure remains visible on the default board, which helps keep "agents" grounded in real-world systems work.
 
 - [xbtlin/ai-berkshire](https://github.com/xbtlin/ai-berkshire)  
-  Claude Code based investing research framework, notable as a concrete domain-specific multi-agent workflow.
+  A concrete Claude Code / Codex multi-agent investment-research workflow, notable because it packages method plus domain rather than selling a generic shell.
 
-- [mauriceboe/TREK](https://github.com/mauriceboe/TREK)  
-  A self-hosted trip planner; useful here because it keeps the board grounded in ordinary product software, not just AI launches.
+- [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp)  
+  Persistent code memory via MCP, directly relevant to coding-agent context retention and repo-scale navigation.
 
-- [apple/container](https://github.com/apple/container)  
-  Lightweight Linux containers on Apple silicon, directly relevant to trusted local execution.
+- [opendatalab/MinerU](https://github.com/opendatalab/MinerU)  
+  Document-to-Markdown / JSON conversion pipeline for LLM workflows, still a core ingestion problem for agent systems.
 
-- [JCodesMore/ai-website-cloner-template](https://github.com/JCodesMore/ai-website-cloner-template)  
-  Packaged AI coding-agent workflow aimed at zero-friction website cloning.
+- [usestrix/strix](https://github.com/usestrix/strix)  
+  Security automation framed as AI agents that find and fix vulnerabilities.
 
-- [garrytan/gstack](https://github.com/garrytan/gstack)  
-  Opinionated Claude Code setup that packages role-specific tooling around one agent workflow.
-
-- [aws/agent-toolkit-for-aws](https://github.com/aws/agent-toolkit-for-aws)  
-  Official AWS-supported MCP servers, skills, and plugins for agents building on AWS.
-
-- [alibaba/page-agent](https://github.com/alibaba/page-agent)  
-  In-page GUI agent for controlling web interfaces with natural language.
-
-- [IceWhaleTech/CasaOS](https://github.com/IceWhaleTech/CasaOS)  
-  Another reminder that the board still rewards broadly useful self-hosted software alongside AI-native projects.
+- [browser-use/video-use](https://github.com/browser-use/video-use)  
+  Interesting because the browser-use ecosystem is bleeding into broader media-production workflows rather than staying a narrow browser-automation lane.
 
 ## Why They May Be Surfacing
 
-- Projects that package a runnable workflow are still outperforming projects that only present an idea.
-- Agent-related repos are clustering around execution layers: browser control, skills/toolkits, design-system instructions, and domain-specific operator setups.
-- Infrastructure remains close to the surface. Containers, self-hosting, and platform tooling still travel with AI adoption rather than being displaced by it.
-- The board’s non-AI entries are a useful correction against over-reading GitHub Trending as a pure frontier-model pulse.
+- Runnable systems are beating vague frameworks. The strongest repos here package a complete path: chat network, robotics stack, domain workflow, MCP server, or document pipeline.
+- AI-adjacent infra is still central. Memory, ingestion, security, and autonomy tooling are appearing alongside mainstream dev resources instead of replacing them.
+- The board is also a check against overfitting the radar to frontier labs only. Open-source momentum still rewards durable utility, not just model novelty.
+- For agent work specifically, the most relevant repos are the ones that operationalize context, execution, or domain packaging instead of just exposing a prompt wrapper.
 
 ## Watchlist
 
-- [google-labs-code/design.md](https://github.com/google-labs-code/design.md): strongest “agent instructions as durable spec” signal.
-- [OpenMontage](https://github.com/calesthio/OpenMontage): strongest explicit multi-agent workflow signal.
-- [apple/container](https://github.com/apple/container): strongest execution-infrastructure signal.
-- [aws/agent-toolkit-for-aws](https://github.com/aws/agent-toolkit-for-aws): strongest official packaged-tooling signal.
-- [alibaba/page-agent](https://github.com/alibaba/page-agent): strongest browser-agent interaction signal.
+- [xbtlin/ai-berkshire](https://github.com/xbtlin/ai-berkshire): strongest domain-specific multi-agent workflow signal.
+- [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp): strongest repo-memory / MCP context signal.
+- [opendatalab/MinerU](https://github.com/opendatalab/MinerU): strongest document-ingestion signal.
+- [usestrix/strix](https://github.com/usestrix/strix): strongest security-agent signal.
+- [browser-use/video-use](https://github.com/browser-use/video-use): strongest "agent tooling escapes its original lane" signal.
