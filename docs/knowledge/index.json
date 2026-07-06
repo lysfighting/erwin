@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 132,
+    "total_notes": 135,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 195,
+    "artifact_count": 198,
     "link_count": 267,
     "thread_count": 5
   },
@@ -75,16 +75,16 @@
   "streams": {
     "weekly": {
       "label": "Weekly",
-      "title": "AI/Agent Weekly Synthesis — 2026-06-26",
-      "meta": "Coverage window: 2026-06-19 to 2026-06-26",
-      "highlights": [
-        "Anthropic again carried the strongest first-party agent-platform signal this week, and this run explicitly checked the required Anthropic surfaces before reaching that conclusion: [anthropic.com/news](https://www.anthropic.com/news), [claude.com/blog](https://claude.com/blog), [docs.anthropic.com / Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog).",
-        "Anthropic’s biggest official platform change in-window landed on **June 18, 2026** in the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview): SDK support for `code_execution_20260120`, which adds REPL state persistence and becomes the minimum version for programmatic tool calling. That is not a cosmetic tool bump. It upgrades code execution from stateless cell running toward resumable, agent-friendly execution.",
-        "Anthropic’s required **Claude Managed Agents** check stayed materially positive this week even without a brand-new standalone launch post. The [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) still centers a durable runtime contract of **agent**, **environment**, **session**, and **events**, and explicitly positions the product for long-running, asynchronous work with persistent filesystems, server-side event history, and steering mid-execution. The June 18 code-execution change strengthens that runtime by making programmatic tool calling and REPL persistence easier to operationalize inside agent sessions."
-      ],
+      "title": "Weekly AI/Agent Synthesis - 2026-07-03",
+      "meta": "Latest durable weekly synthesis",
+      "highlights": [],
       "latest_path": "radar/weekly/latest.md",
       "archive_path": "radar/weekly/",
       "recent": [
+        {
+          "name": "2026-07-03",
+          "path": "radar/weekly/2026-07-03.md"
+        },
         {
           "name": "2026-06-26",
           "path": "radar/weekly/2026-06-26.md"
@@ -104,22 +104,22 @@
         {
           "name": "2026-05-22",
           "path": "radar/weekly/2026-05-22.md"
-        },
-        {
-          "name": "2026-05-15",
-          "path": "radar/weekly/2026-05-15.md"
         }
       ],
-      "count": 11
+      "count": 12
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-07-02",
-      "meta": "Window: 2026-06-25 to 2026-07-02",
+      "title": "Daily Radar - 2026-07-05",
+      "meta": "Window: 2026-06-28 to 2026-07-05",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-07-05",
+          "path": "radar/daily/2026-07-05.md"
+        },
         {
           "name": "2026-07-02",
           "path": "radar/daily/2026-07-02.md"
@@ -139,26 +139,26 @@
         {
           "name": "2026-06-17",
           "path": "radar/daily/2026-06-17.md"
-        },
-        {
-          "name": "2026-06-16",
-          "path": "radar/daily/2026-06-16.md"
         }
       ],
-      "count": 60
+      "count": 61
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-07-02",
+      "title": "GitHub Trending - 2026-07-05",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
-        "[usestrix/strix](https://github.com/usestrix/strix)",
-        "[HKUDS/Vibe-Trading](https://github.com/HKUDS/Vibe-Trading)",
-        "[facebook/astryx](https://github.com/facebook/astryx)"
+        "[openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)",
+        "[Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill)",
+        "[ogulcancelik/herdr](https://github.com/ogulcancelik/herdr)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-07-05",
+          "path": "radar/trending/2026-07-05.md"
+        },
         {
           "name": "2026-07-02",
           "path": "radar/trending/2026-07-02.md"
@@ -178,20 +178,16 @@
         {
           "name": "2026-06-17",
           "path": "radar/trending/2026-06-17.md"
-        },
-        {
-          "name": "2026-06-16",
-          "path": "radar/trending/2026-06-16.md"
         }
       ],
-      "count": 61
+      "count": 62
     }
   },
-  "deep_dive": "This week’s theme is **agent runtime governance moving from prompts into platform objects**.",
+  "deep_dive": "The week's durable theme is that frontier vendors are converging on the same stack shape:",
   "proposal_candidates": [
-    "Steering contract as a first-class run object",
-    "Stateful execution lane for coding and tool workflows",
-    "Identity- and auth-aware capability bundles"
+    "Model-Paired Execution Lanes",
+    "Remote Session Control Plane",
+    "Trace-Native Agent Events"
   ],
   "knowledge_network": {
     "schema_version": 1,
@@ -229,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 195,
+      "artifact_count": 198,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 142,
+        "radar": 145,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -3441,6 +3437,37 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-07-05.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-07-05.md",
+        "title": "Daily Radar - 2026-07-05",
+        "date": "2026-07-05",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-06-28 to 2026-07-05",
+        "external_refs": [
+          "https://www.anthropic.com/news/claude-sonnet-5",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://code.claude.com/docs/en/whats-new",
+          "https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md",
+          "https://www.kimi.com/code/docs/en/kimi-code/whats-new.html",
+          "https://ai.google.dev/gemini-api/docs/changelog",
+          "https://github.com/trending",
+          "https://github.com/openai/codex-plugin-cc",
+          "https://github.com/usestrix/strix",
+          "https://github.com/alibaba/page-agent",
+          "https://github.com/ogulcancelik/herdr",
+          "https://github.com/dotnet/skills"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -5257,6 +5284,34 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/trending/2026-07-05.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-07-05.md",
+        "title": "GitHub Trending - 2026-07-05",
+        "date": "2026-07-05",
+        "status": "",
+        "themes": [
+          "long-running agents",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/openai/codex-plugin-cc",
+          "https://github.com/Leonxlnx/taste-skill",
+          "https://github.com/ogulcancelik/herdr",
+          "https://github.com/alibaba/page-agent",
+          "https://github.com/usestrix/strix",
+          "https://github.com/facebook/astryx",
+          "https://github.com/gastownhall/gastown",
+          "https://github.com/dotnet/skills",
+          "https://github.com/OthmanAdi/planning-with-files",
+          "https://github.com/anthropics/claude-code"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/trending/README.md",
         "layer": "radar",
         "path": "docs/radar/trending/README.md",
@@ -5604,6 +5659,38 @@
           "https://openai.com/index/how-agents-are-transforming-work/",
           "https://ai.google.dev/gemini-api/docs/changelog",
           "https://ai.google.dev/gemini-api/docs/interactions-overview"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/weekly/2026-07-03.md",
+        "layer": "radar",
+        "path": "docs/radar/weekly/2026-07-03.md",
+        "title": "Weekly AI/Agent Synthesis - 2026-07-03",
+        "date": "2026-07-03",
+        "status": "",
+        "themes": [
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Anthropic had the highest-signal platform movement this week. On [2026-06-26](https://docs.anthropic.com/en/release-notes/api#june-26th-2026), it raised API rate limits and simplified tier semantics around burst and s...",
+        "external_refs": [
+          "https://docs.anthropic.com/en/release-notes/api#june-26th-2026",
+          "https://www.anthropic.com/news/introducing-claude-sonnet-5",
+          "https://docs.anthropic.com/en/release-notes/api",
+          "https://docs.anthropic.com/en/docs/claude-code/sdk/managed-agents",
+          "https://docs.anthropic.com/en/docs/claude-code/sdk/advisor-tool",
+          "https://code.claude.com/docs/en/whats-new",
+          "https://openai.com/index/introducing-codex-updates/",
+          "https://openai.com/index/introducing-gpt-5-6/",
+          "https://developers.googleblog.com/en/google-adk-go-2/",
+          "https://developers.googleblog.com/en/evaluating-ai-agents-as-you-deploy-them/",
+          "https://developers.googleblog.com/en/a2a-and-antigravity-for-enhancing-ai-agent-collaboration/",
+          "https://developers.openai.com/codex/changelog"
         ],
         "local_refs": []
       },

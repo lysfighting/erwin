@@ -11,45 +11,43 @@
 
 ## At A Glance
 
-- `132` durable notes are currently indexed across `3` recurring streams.
-- `195` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `135` durable notes are currently indexed across `3` recurring streams.
+- `198` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
 ## Weekly Lead
 
-### AI/Agent Weekly Synthesis — 2026-06-26
+### Weekly AI/Agent Synthesis - 2026-07-03
 
-- Metadata: `Coverage window: 2026-06-19 to 2026-06-26`
-- Anthropic again carried the strongest first-party agent-platform signal this week, and this run explicitly checked the required Anthropic surfaces before reaching that conclusion: [anthropic.com/news](https://www.anthropic.com/news), [claude.com/blog](https://claude.com/blog), [docs.anthropic.com / Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), the [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog).
-- Anthropic’s biggest official platform change in-window landed on **June 18, 2026** in the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview): SDK support for `code_execution_20260120`, which adds REPL state persistence and becomes the minimum version for programmatic tool calling. That is not a cosmetic tool bump. It upgrades code execution from stateless cell running toward resumable, agent-friendly execution.
-- Anthropic’s required **Claude Managed Agents** check stayed materially positive this week even without a brand-new standalone launch post. The [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) still centers a durable runtime contract of **agent**, **environment**, **session**, and **events**, and explicitly positions the product for long-running, asynchronous work with persistent filesystems, server-side event history, and steering mid-execution. The June 18 code-execution change strengthens that runtime by making programmatic tool calling and REPL persistence easier to operationalize inside agent sessions.
+- Metadata: `Latest durable weekly synthesis`
+- Open the weekly note for the full synthesis.
 
 ## Daily Signal Snapshot
 
-### Daily Radar - 2026-07-02
+### Daily Radar - 2026-07-05
 
-- Metadata: `Window: 2026-06-25 to 2026-07-02`
+- Metadata: `Window: 2026-06-28 to 2026-07-05`
 - Open the daily note for the full signal list.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-07-02
+### GitHub Trending - 2026-07-05
 
 - Metadata: `Latest GitHub Trending board summary`
-- [usestrix/strix](https://github.com/usestrix/strix)
-- [HKUDS/Vibe-Trading](https://github.com/HKUDS/Vibe-Trading)
-- [facebook/astryx](https://github.com/facebook/astryx)
+- [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)
+- [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill)
+- [ogulcancelik/herdr](https://github.com/ogulcancelik/herdr)
 
 ## Durable Interpretation
 
-This week’s theme is **agent runtime governance moving from prompts into platform objects**.
+The week's durable theme is that frontier vendors are converging on the same stack shape:
 
 ## Current Proposal Candidates
 
-- Steering contract as a first-class run object
-- Stateful execution lane for coding and tool workflows
-- Identity- and auth-aware capability bundles
+- Model-Paired Execution Lanes
+- Remote Session Control Plane
+- Trace-Native Agent Events
 
 ## Knowledge Network
 
@@ -65,27 +63,27 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-07-05](../radar/daily/2026-07-05.md)
 - [2026-07-02](../radar/daily/2026-07-02.md)
 - [2026-06-28](../radar/daily/2026-06-28.md)
 - [2026-06-26](../radar/daily/2026-06-26.md)
 - [2026-06-25](../radar/daily/2026-06-25.md)
 - [2026-06-17](../radar/daily/2026-06-17.md)
-- [2026-06-16](../radar/daily/2026-06-16.md)
 
 ### Weekly Synthesis
 
+- [2026-07-03](../radar/weekly/2026-07-03.md)
 - [2026-06-26](../radar/weekly/2026-06-26.md)
 - [2026-06-12](../radar/weekly/2026-06-12.md)
 - [2026-06-05](../radar/weekly/2026-06-05.md)
 - [2026-05-29](../radar/weekly/2026-05-29.md)
 - [2026-05-22](../radar/weekly/2026-05-22.md)
-- [2026-05-15](../radar/weekly/2026-05-15.md)
 
 ### GitHub Trending
 
+- [2026-07-05](../radar/trending/2026-07-05.md)
 - [2026-07-02](../radar/trending/2026-07-02.md)
 - [2026-06-28](../radar/trending/2026-06-28.md)
 - [2026-06-26](../radar/trending/2026-06-26.md)
 - [2026-06-25](../radar/trending/2026-06-25.md)
 - [2026-06-17](../radar/trending/2026-06-17.md)
-- [2026-06-16](../radar/trending/2026-06-16.md)
