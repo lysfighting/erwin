@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 139,
+    "total_notes": 143,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 202,
+    "artifact_count": 206,
     "link_count": 267,
     "thread_count": 5
   },
@@ -110,12 +110,20 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-07-07",
-      "meta": "Window: 2026-06-30 to 2026-07-07",
+      "title": "Daily Radar - 2026-07-09",
+      "meta": "Window: 2026-07-02 to 2026-07-09",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-07-09",
+          "path": "radar/daily/2026-07-09.md"
+        },
+        {
+          "name": "2026-07-08",
+          "path": "radar/daily/2026-07-08.md"
+        },
         {
           "name": "2026-07-07",
           "path": "radar/daily/2026-07-07.md"
@@ -131,30 +139,30 @@
         {
           "name": "2026-07-02",
           "path": "radar/daily/2026-07-02.md"
-        },
-        {
-          "name": "2026-06-28",
-          "path": "radar/daily/2026-06-28.md"
-        },
-        {
-          "name": "2026-06-26",
-          "path": "radar/daily/2026-06-26.md"
         }
       ],
-      "count": 63
+      "count": 65
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-07-07",
+      "title": "GitHub Trending - 2026-07-09",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
-        "[Zackriya-Solutions/meetily](https://github.com/Zackriya-Solutions/meetily)",
-        "[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)",
-        "[TencentCloud/CubeSandbox](https://github.com/TencentCloud/CubeSandbox)"
+        "[MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search)",
+        "[iOfficeAI/OfficeCLI](https://github.com/iOfficeAI/OfficeCLI)",
+        "[bradautomates/claude-video](https://github.com/bradautomates/claude-video)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-07-09",
+          "path": "radar/trending/2026-07-09.md"
+        },
+        {
+          "name": "2026-07-08",
+          "path": "radar/trending/2026-07-08.md"
+        },
         {
           "name": "2026-07-07",
           "path": "radar/trending/2026-07-07.md"
@@ -170,17 +178,9 @@
         {
           "name": "2026-07-02",
           "path": "radar/trending/2026-07-02.md"
-        },
-        {
-          "name": "2026-06-28",
-          "path": "radar/trending/2026-06-28.md"
-        },
-        {
-          "name": "2026-06-26",
-          "path": "radar/trending/2026-06-26.md"
         }
       ],
-      "count": 64
+      "count": 66
     }
   },
   "deep_dive": "The week's durable theme is that frontier vendors are converging on the same stack shape:",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 202,
+      "artifact_count": 206,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 149,
+        "radar": 153,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -3530,6 +3530,67 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-07-08.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-07-08.md",
+        "title": "Daily Radar - 2026-07-08",
+        "date": "2026-07-08",
+        "status": "",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-07-01 to 2026-07-08",
+        "external_refs": [
+          "https://code.claude.com/docs/en/changelog",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://code.claude.com/docs",
+          "https://support.claude.com/en/articles/12138966-release-notes",
+          "https://developers.openai.com/api/docs/changelog",
+          "https://developers.googleblog.com/en/why-we-built-adk-20/",
+          "https://www.kimi.com/code/docs/en/kimi-code-cli/release-notes/changelog.html",
+          "https://qwenlm.github.io/qwen-code-docs/en/users/features/skills/",
+          "https://github.com/trending",
+          "https://github.com/addyosmani/agent-skills"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/daily/2026-07-09.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-07-09.md",
+        "title": "Daily Radar - 2026-07-09",
+        "date": "2026-07-09",
+        "status": "",
+        "themes": [
+          "harness",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-07-02 to 2026-07-09",
+        "external_refs": [
+          "https://openai.com/index/introducing-gpt-live/",
+          "https://openai.com/products/release-notes/",
+          "https://platform.minimax.io/docs/guides/server-tools",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://code.claude.com/docs",
+          "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+          "https://github.com/trending",
+          "https://github.com/MadsLorentzen/ai-job-search",
+          "https://github.com/iOfficeAI/OfficeCLI",
+          "https://github.com/bradautomates/claude-video"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -5421,6 +5482,57 @@
           "https://github.com/steipete/CodexBar",
           "https://github.com/dotnet/skills",
           "https://github.com/bradautomates/claude-video"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-07-08.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-07-08.md",
+        "title": "GitHub Trending - 2026-07-08",
+        "date": "2026-07-08",
+        "status": "",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/addyosmani/agent-skills",
+          "https://github.com/ruvnet/RuView",
+          "https://github.com/TencentCloud/TencentDB-Agent-Memory",
+          "https://github.com/prisma/prisma",
+          "https://github.com/argoproj/argo-cd",
+          "https://github.com/iOfficeAI/OfficeCLI",
+          "https://github.com/obra/superpowers",
+          "https://github.com/alibaba/zvec"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-07-09.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-07-09.md",
+        "title": "GitHub Trending - 2026-07-09",
+        "date": "2026-07-09",
+        "status": "",
+        "themes": [
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/MadsLorentzen/ai-job-search",
+          "https://github.com/iOfficeAI/OfficeCLI",
+          "https://github.com/bradautomates/claude-video",
+          "https://github.com/kyutai-labs/pocket-tts",
+          "https://github.com/prisma/prisma",
+          "https://github.com/imthenachoman/How-To-Secure-A-Linux-Server"
         ],
         "local_refs": []
       },

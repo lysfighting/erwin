@@ -1,45 +1,42 @@
-# GitHub Trending - 2026-07-07
+# GitHub Trending - 2026-07-09
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-07-07 is still unusually agent-heavy without any topic filters. The strongest cluster is AI/agent developer tooling: skills, sandboxes, operator dashboards, document-automation surfaces, and local AI assistants. There are also a few broader breakout projects on the board, including `RuView` and `Website-downloader`, so this is not an AI-only board, but the center of gravity is clearly still around agent infrastructure and workflows.
+The default global board captured on 2026-07-09 is still visibly tilted toward AI-agent tooling, but it is not an AI-only board. The strongest cluster is operator-facing agent infrastructure: reusable Claude Code workflows, office-document automation, multimodal add-ons, and compact voice components. Broader developer infrastructure and security material still surface alongside that cluster, which keeps the snapshot grounded as a real global board rather than a narrowed AI filter.
 
 ## Notable Projects
 
-- [Zackriya-Solutions/meetily](https://github.com/Zackriya-Solutions/meetily)  
-  Privacy-first local AI meeting assistant with transcription, diarization, and Ollama summarization.
-
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)  
-  Production-grade engineering skills for AI coding agents.
-
-- [TencentCloud/CubeSandbox](https://github.com/TencentCloud/CubeSandbox)  
-  Lightweight sandbox infrastructure aimed directly at AI-agent execution.
+- [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search)  
+  Claude Code-based job-application workflow shell with end-to-end automation.
 
 - [iOfficeAI/OfficeCLI](https://github.com/iOfficeAI/OfficeCLI)  
-  Agent-oriented Word/Excel/PowerPoint automation surface.
-
-- [steipete/CodexBar](https://github.com/steipete/CodexBar)  
-  Usage-stats dashboard for OpenAI Codex and Claude Code.
-
-- [dotnet/skills](https://github.com/dotnet/skills)  
-  Official .NET and C# skill repository for AI coding agents.
+  Agent-oriented Word, Excel, and PowerPoint automation without a local Office install.
 
 - [bradautomates/claude-video](https://github.com/bradautomates/claude-video)  
-  Tooling that gives Claude a video-analysis workflow through frame extraction and transcription.
+  Adds video watching, frame extraction, and transcription to Claude-centered workflows.
+
+- [kyutai-labs/pocket-tts](https://github.com/kyutai-labs/pocket-tts)  
+  Small CPU-friendly text-to-speech stack, relevant to local or hybrid voice-agent builds.
+
+- [prisma/prisma](https://github.com/prisma/prisma)  
+  Mainstream data-layer infrastructure still drawing broad demand outside the agent cluster.
+
+- [imthenachoman/How-To-Secure-A-Linux-Server](https://github.com/imthenachoman/How-To-Secure-A-Linux-Server)  
+  Security hardening guide surfacing as a reminder that non-AI operational hygiene still matters on the global board.
 
 ## Why They May Be Surfacing
 
-- Local and private AI remains attractive. `meetily` shows continued demand for on-device or self-hosted agent-adjacent tools rather than cloud-only assistants.
-- Skills are stabilizing as a distribution unit. `agent-skills` and `dotnet/skills` both point to reusable instruction/tool bundles becoming more like software packages than ad hoc prompt snippets.
-- Agent runtime infrastructure is getting more concrete. `CubeSandbox` and `OfficeCLI` sit below the visible chat layer and solve execution boundaries agents keep needing in practice.
-- Operator and workflow visibility is now a distinct category. `CodexBar` and `claude-video` suggest growing interest in observability, augmentation, and peripheral-control tooling around coding agents.
+- Claude-adjacent workflow packaging is hot. `ai-job-search` and `claude-video` both package concrete operator workflows around an existing agent runtime instead of inventing a new model stack.
+- Office/document execution is becoming agent-native. `OfficeCLI` suggests that structured file automation is moving from brittle scripting toward first-class agent infrastructure.
+- Voice remains part of the same systems wave. `pocket-tts` aligns with the broader push toward richer realtime and multimodal agent surfaces.
+- The board is not just chasing agent demos. `prisma` and the Linux hardening guide show that durable developer and operational tools still win attention.
 
 ## Watchlist
 
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills): strongest signal that skills are hardening into durable ecosystem artifacts.
-- [TencentCloud/CubeSandbox](https://github.com/TencentCloud/CubeSandbox): strongest signal that sandboxing remains a core agent-runtime problem.
-- [iOfficeAI/OfficeCLI](https://github.com/iOfficeAI/OfficeCLI): strongest signal that document workflows are becoming agent-native.
-- [steipete/CodexBar](https://github.com/steipete/CodexBar): strongest signal that coding-agent usage visibility now matters enough to attract standalone tooling.
-- [Zackriya-Solutions/meetily](https://github.com/Zackriya-Solutions/meetily): strongest signal that local/private AI assistants still have real momentum.
+- [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search): strongest signal that Claude Code workflow shells are becoming reusable application templates.
+- [iOfficeAI/OfficeCLI](https://github.com/iOfficeAI/OfficeCLI): strongest signal that document workflows are becoming a stable execution lane for agents.
+- [bradautomates/claude-video](https://github.com/bradautomates/claude-video): strongest signal that multimodal extensions around coding agents keep broadening.
+- [kyutai-labs/pocket-tts](https://github.com/kyutai-labs/pocket-tts): strongest signal that lightweight local voice components are still strategically relevant beside cloud platforms.
+- [prisma/prisma](https://github.com/prisma/prisma): strongest reminder that general developer infrastructure still shapes the board and should not be misread as AI-only momentum.

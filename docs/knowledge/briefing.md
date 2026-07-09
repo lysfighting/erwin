@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `139` durable notes are currently indexed across `3` recurring streams.
-- `202` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `143` durable notes are currently indexed across `3` recurring streams.
+- `206` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -25,19 +25,19 @@
 
 ## Daily Signal Snapshot
 
-### Daily Radar - 2026-07-07
+### Daily Radar - 2026-07-09
 
-- Metadata: `Window: 2026-06-30 to 2026-07-07`
+- Metadata: `Window: 2026-07-02 to 2026-07-09`
 - Open the daily note for the full signal list.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-07-07
+### GitHub Trending - 2026-07-09
 
 - Metadata: `Latest GitHub Trending board summary`
-- [Zackriya-Solutions/meetily](https://github.com/Zackriya-Solutions/meetily)
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)
-- [TencentCloud/CubeSandbox](https://github.com/TencentCloud/CubeSandbox)
+- [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search)
+- [iOfficeAI/OfficeCLI](https://github.com/iOfficeAI/OfficeCLI)
+- [bradautomates/claude-video](https://github.com/bradautomates/claude-video)
 
 ## Durable Interpretation
 
@@ -63,12 +63,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-07-09](../radar/daily/2026-07-09.md)
+- [2026-07-08](../radar/daily/2026-07-08.md)
 - [2026-07-07](../radar/daily/2026-07-07.md)
 - [2026-07-06](../radar/daily/2026-07-06.md)
 - [2026-07-05](../radar/daily/2026-07-05.md)
 - [2026-07-02](../radar/daily/2026-07-02.md)
-- [2026-06-28](../radar/daily/2026-06-28.md)
-- [2026-06-26](../radar/daily/2026-06-26.md)
 
 ### Weekly Synthesis
 
@@ -81,9 +81,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-07-09](../radar/trending/2026-07-09.md)
+- [2026-07-08](../radar/trending/2026-07-08.md)
 - [2026-07-07](../radar/trending/2026-07-07.md)
 - [2026-07-06](../radar/trending/2026-07-06.md)
 - [2026-07-05](../radar/trending/2026-07-05.md)
 - [2026-07-02](../radar/trending/2026-07-02.md)
-- [2026-06-28](../radar/trending/2026-06-28.md)
-- [2026-06-26](../radar/trending/2026-06-26.md)
