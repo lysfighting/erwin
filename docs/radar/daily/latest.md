@@ -1,67 +1,69 @@
-# Daily Radar - 2026-07-09
+# Daily Radar - 2026-07-11
 
-Window: 2026-07-02 to 2026-07-09
+Window: 2026-07-04 to 2026-07-11
 
 ## New Signals
 
-1. **OpenAI introduced GPT-Live as a full-duplex voice stack that can keep talking while delegating deeper work to frontier models.** The official [Introducing GPT-Live](https://openai.com/index/introducing-gpt-live/) post on **2026-07-08** says GPT-Live can listen and speak at the same time, and can hand off search, reasoning, and more agentic tasks to GPT-5.5 in the background while the conversation continues.  
-   Publish date: 2026-07-08
-
-2. **OpenAI also updated the API-side realtime voice tier.** The official [OpenAI release notes](https://openai.com/products/release-notes/) on **2026-07-06** released `GPT-Realtime-2.1` and `GPT-Realtime-2.1 mini`, with improved alphanumeric recognition, silence/noise handling, and interruption behavior for realtime voice applications.  
-   Publish date: 2026-07-06
-
-3. **MiniMax quietly exposed an Anthropic-compatible server-tool surface instead of another model headline.** The official [MiniMax Server Tools](https://platform.minimax.io/docs/guides/server-tools) docs surfaced on **2026-07-09** and show built-in `web_search` executed server-side on the Anthropic Messages-compatible endpoint (`/anthropic/v1/messages`), removing the usual client-managed `tool_use` / `tool_result` loop for supported cases.  
+1. **OpenAI shipped the GPT-5.6 family with an explicit multi-agent execution tier.** The official [GPT-5.6 launch](https://openai.com/index/gpt-5-6/) on **2026-07-09** introduced Sol, Terra, and Luna, plus `ultra`, a highest-capability setting that coordinates multiple agents across parallel workstreams for faster completion of complex tasks.  
    Publish date: 2026-07-09
 
-4. **Anthropic's required technical surfaces were explicitly checked, and no new dated Jul 2-9 platform/managed-agent/advisor/Claude Code note emerged.** I re-checked the official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code docs](https://code.claude.com/docs), and the [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md). The freshest meaningful platform note is still **2026-06-30**, when Anthropic launched [Claude Sonnet 5](https://platform.claude.com/docs/en/release-notes/overview) and added Managed Agents event deltas, backward pagination, per-session agent overrides, `injection_location` for env-var credentials, and broader lifecycle webhooks.  
-   Publish dates checked: none in-window; freshest related platform note is 2026-06-30
+2. **OpenAI also launched GPT-Live as a full-duplex voice layer that can keep talking while deeper work runs in the background.** The official [Introducing GPT-Live](https://openai.com/index/introducing-gpt-live/) post on **2026-07-08** says GPT-Live listens and speaks at the same time, delegates harder work to GPT-5.5 at launch, and is planned for the API later.  
+   Publish date: 2026-07-08
+
+3. **Anthropic had a meaningful in-window platform-and-Code sweep, not a quiet week.** In the official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), Anthropic added expiring API keys on **2026-07-08** and changed Managed Agents memory-store list semantics behind the `agent-memory-2026-07-22` header on **2026-07-02**. In the official [Claude Code What's New](https://code.claude.com/docs/en/whats-new), Week 28 (**2026-07-06** to **2026-07-10**) added the in-app browser on Desktop, `/doctor`, stricter auto-mode protections, and richer `claude agents` state rows.  
+   Publish dates: 2026-07-08, 2026-07-02, 2026-07-06 to 2026-07-10
+
+4. **MiniMax exposed a server-hosted tool surface on its Anthropic-compatible API instead of only shipping another model headline.** The official [Server Tools](https://platform.minimax.io/docs/guides/server-tools) docs, surfaced in page metadata on **2026-07-08**, describe built-in server-side `web_search` on `/anthropic/v1/messages`, eliminating the usual client-managed `tool_use` / `tool_result` loop for supported cases.  
+   Publish date: 2026-07-08
+
+5. **Qwen's coding-agent stream is moving fast at the runtime layer, not just model branding.** The official [Qwen Code releases](https://github.com/QwenLM/qwen-code/releases) shipped `v0.19.9` on **2026-07-10**, with fixes for repeated subagent tool-call loops, broken history-chain detection, configurable background-memory timeouts, persisted session artifacts, and isolated scheduled-task runs.  
+   Publish date: 2026-07-10
 
 ## GitHub Trending Snapshot
 
-Snapshot source: [GitHub Trending](https://github.com/trending) captured on 2026-07-09.
+Snapshot source: [GitHub Trending](https://github.com/trending) captured on 2026-07-11.
 
-- [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search): surfacing because Claude Code-centered workflow shells are turning into reusable end-to-end agent applications, not just isolated prompts.
-- [iOfficeAI/OfficeCLI](https://github.com/iOfficeAI/OfficeCLI): notable because Word/Excel/PowerPoint automation is consolidating into an agent-native execution layer.
-- [bradautomates/claude-video](https://github.com/bradautomates/claude-video): relevant because multimodal agent workflows are expanding from text/code into video ingestion and summarization.
-- [kyutai-labs/pocket-tts](https://github.com/kyutai-labs/pocket-tts): worth watching because compact local voice components are rising alongside cloud agent stacks.
-- [prisma/prisma](https://github.com/prisma/prisma): useful as a board-shape check that mainstream developer infrastructure still rises beside the AI cluster instead of the board becoming AI-only.
+- [davila7/claude-code-templates](https://github.com/davila7/claude-code-templates): surfacing because operator-ready Claude Code workflow packaging is becoming reusable project scaffolding instead of one-off prompt craft.
+- [google-labs-code/stitch-skills](https://github.com/google-labs-code/stitch-skills): notable because skills are becoming a portable extension surface for coding agents, not just local prompt snippets.
+- [openai/plugins](https://github.com/openai/plugins): relevant because plugin and tool packaging remains a shared coordination surface across agent runtimes even as MCP keeps rising.
+- [wonderwhy-er/DesktopCommanderMCP](https://github.com/wonderwhy-er/DesktopCommanderMCP): worth watching because MCP-backed desktop control remains one of the clearest bridges from chat agents to real operator actions.
+- [hashicorp/terraform](https://github.com/hashicorp/terraform): useful board-shape reminder that infrastructure control planes still trend beside agent tooling rather than the board becoming AI-only.
 
 ## Harness-Relevant Signals
 
-- Anthropic was checked explicitly across the required official surfaces this run: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code docs](https://code.claude.com/docs), and the [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md). There was no fresh Jul 2-9 dated Anthropic technical item, but the current Managed Agents control plane still centers on `agent -> environment -> session -> events`, scheduled deployments, persistent session state, SSE streaming, and built-in web/file/bash/MCP access.
-- The official [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) still give one of the clearest first-party descriptions of a split executor/advisor runtime: a cheaper executor can call a stronger planner mid-generation for course correction. That remains a durable pattern even without a new in-window release.
-- OpenAI's [GPT-Live post](https://openai.com/index/introducing-gpt-live/) matters less for ChatGPT Voice itself than for the architecture: a low-latency interaction loop that can delegate deeper work to stronger models in the background without collapsing the user interaction surface.
-- MiniMax's [Server Tools](https://platform.minimax.io/docs/guides/server-tools) page is notable because it adopts Anthropic-style dated tool identifiers such as `web_search_20250305` and moves supported tool execution fully server-side on the Anthropic-compatible API surface.
-- DeepSeek did not publish a new in-window technical release in the official [DeepSeek API changelog](https://api-docs.deepseek.com/updates/), but its docs still show the legacy names `deepseek-chat` and `deepseek-reasoner` being discontinued on **2026-07-24**, which keeps migration pressure live even without a fresh launch.
-- I did not find a stronger dated Jul 2-9 official technical item from Google, Moonshot, or Qwen after one pass each through their official publisher surfaces, so they remain watch streams rather than New Signals this run.
+- Anthropic was checked explicitly across the required surfaces before concluding anything about its quiet or active substreams: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [Managed Agents memory docs](https://platform.claude.com/docs/en/managed-agents/memory), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code What's New](https://code.claude.com/docs/en/whats-new), and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). The important in-window takeaway is that Managed Agents memory semantics changed on **2026-07-02**, while Claude Code's Week 28 reinforced browser-native and operator-safety runtime patterns on **2026-07-06** to **2026-07-10**.
+- The official [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) still describe one of the clearest first-party executor/advisor splits: a lower-cost executor can consult a stronger model mid-generation under `advisor-tool-2026-03-01`. That remains a strong Harness pattern even without an in-window advisor-specific release.
+- OpenAI's [GPT-5.6 launch](https://openai.com/index/gpt-5-6/) and [ChatGPT Work](https://openai.com/index/chatgpt-for-your-most-ambitious-work/) together sharpen the same architectural pressure: a user-facing runtime is being paired with longer-running, multi-agent execution that can produce slides, docs, sheets, and web artifacts without collapsing back to a single synchronous chat turn.
+- MiniMax's [Server Tools](https://platform.minimax.io/docs/guides/server-tools) page is strategically relevant because it imports Anthropic-style dated tool identifiers such as `web_search_20250305` while moving supported tool execution fully server-side on the Anthropic-compatible surface.
+- Qwen Code's [v0.19.9 release](https://github.com/QwenLM/qwen-code/releases) is worth tracking as a coding-agent implementation stream because the visible fixes cluster around subagent loops, memory/runtime persistence, scheduled isolated runs, and session integrity instead of only UI polish.
+- I did not find a stronger dated **2026-07-04** to **2026-07-11** official technical item from Google, Moonshot/Kimi, or DeepSeek after one pass each through their primary publisher surfaces. DeepSeek remains operationally relevant because the official [DeepSeek API changelog](https://api-docs.deepseek.com/updates/) still says the legacy `deepseek-chat` and `deepseek-reasoner` names will be discontinued on **2026-07-24**.
 
 ## Candidate Proposals
 
 ### Proposal 1
 
-- `source_type`: first-party product release notes
-- `problem_pattern`: user-facing interaction loops are splitting from deeper reasoning or search execution instead of forcing one model surface to do both jobs
-- `why_it_matters_for_harness`: this pattern is now visible in OpenAI voice delegation, Anthropic advisor-tool framing, and Anthropic Managed Agents session steering
+- `source_type`: first-party product launch plus first-party platform docs
+- `problem_pattern`: higher-level user interaction surfaces are being separated from longer-running agent execution tiers
+- `why_it_matters_for_harness`: OpenAI's `ultra` and ChatGPT Work, plus Anthropic's Managed Agents and advisor split, all reinforce that orchestration is becoming a first-class runtime surface
 - `recommended_disposition`: `watch`
 
 ### Proposal 2
 
 - `source_type`: first-party API docs
-- `problem_pattern`: vendors are moving tool execution into hosted control planes instead of leaving orchestration entirely to client code
-- `why_it_matters_for_harness`: MiniMax's server-side `web_search` on an Anthropic-compatible endpoint and Anthropic Managed Agents both reduce round-trip orchestration burden while making runtime semantics more opinionated
+- `problem_pattern`: tool execution is moving from client-managed orchestration loops into hosted control planes
+- `why_it_matters_for_harness`: MiniMax's server-side `web_search` and Anthropic's Managed Agents memory/session model both reduce client glue while increasing vendor-defined runtime semantics
 - `recommended_disposition`: `prototype`
 
 ### Proposal 3
 
-- `source_type`: first-party docs plus ecosystem momentum
-- `problem_pattern`: agent systems keep converging on durable operator surfaces such as skills, worktrees, scheduled runs, and resumable sessions
-- `why_it_matters_for_harness`: the rising GitHub projects and Anthropic's current Managed Agents / Claude Code posture both reinforce that runtime discipline is becoming a product surface, not just internal glue
+- `source_type`: first-party coding-agent release notes
+- `problem_pattern`: coding-agent runtimes are converging on persistence, subagent coordination, scheduled isolation, and operator-state visibility
+- `why_it_matters_for_harness`: Qwen Code and Claude Code both show that session integrity and background-run ergonomics are moving into the product core
 - `recommended_disposition`: `encode-as-eval`
 
 ## Watch Next
 
-- Anthropic remains the highest-priority next-run sweep. The next meaningful item is most likely a new Managed Agents/session-control release note, an advisor-tool follow-up, or a dated Claude Code runtime change.
-- OpenAI's next watch point is whether GPT-Live gets an API release or a more explicit agent/control-plane follow-up beyond the **2026-07-08** product launch and **2026-07-06** realtime update.
-- MiniMax is now worth watching at the API-surface level, not just at the model-marketing level, to see whether server tools expand beyond `web_search`.
-- DeepSeek is quiet this week, but the **2026-07-24** legacy-name cutoff means the next run should re-check whether migration guidance becomes more explicit.
-- Google, Moonshot, and Qwen had no strong dated Jul 2-9 official technical note in this pass; keep them on the board, but do not inflate them into false novelty.
+- Anthropic stays at the top of the next-run sweep. Re-check the official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents docs](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code What's New](https://code.claude.com/docs/en/whats-new), and [Claude Code changelog](https://code.claude.com/docs/en/changelog) for follow-through on memory-store behavior, browser-native workflows, or advisor/runtime updates.
+- OpenAI's next watchpoint is whether GPT-Live and ChatGPT Work land as developer-facing API/control-plane primitives rather than remaining mostly product surfaces after the **2026-07-08** and **2026-07-09** launches.
+- DeepSeek should be re-checked before and after the **2026-07-24** legacy-model-name cutoff because migration friction can become more important than a brand-new model launch.
+- Google, Moonshot/Kimi, and DeepSeek were not inflated into false novelty this run; keep them on the board, but only promote them when a dated primary technical surface changes.

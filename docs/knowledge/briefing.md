@@ -11,43 +11,43 @@
 
 ## At A Glance
 
-- `143` durable notes are currently indexed across `3` recurring streams.
-- `206` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `146` durable notes are currently indexed across `3` recurring streams.
+- `209` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
 ## Weekly Lead
 
-### Weekly AI/Agent Synthesis - 2026-07-03
+### AI Agent Weekly Synthesis
 
-- Metadata: `Latest durable weekly synthesis`
-- Open the weekly note for the full synthesis.
+- Metadata: `Window: 2026-07-04 to 2026-07-10`
+- Anthropic's highest-signal user-facing move was in Claude Apps: [Claude Cowork on web and mobile](https://support.claude.com/en/articles/12138966-release-notes) landed on **July 7, 2026**, moving long-running remote sessions out of desktop-only mode and putting persistent agent work closer to an account-level substrate. The same release also expanded the Microsoft 365 connector from search to write actions.
+- Anthropic's Claude Platform changes during the window were more administrative than agentic: [API key expiration controls](https://platform.claude.com/docs/en/release-notes/overview) shipped on **July 8, 2026**, and CMEK preservation / access-transparency documentation expanded on **July 10, 2026**. After explicitly checking the Claude Platform release notes, Claude Managed Agents docs surface, advisor tool docs surface, and Claude Code changelog/docs surface, I did **not** find a new in-window managed-agents or advisor-tool capability release after the June 30 to July 2 burst.
+- Anthropic's Claude Code surface still mattered this week even without a headline launch: the [Claude Code changelog](https://docs.anthropic.com/en/release-notes/claude-code) shows background-session reliability work, including fixes for inherited `ANTHROPIC_*` provider environment leakage and better `claude agents --json` visibility for blocked and just-dispatched sessions.
 
 ## Daily Signal Snapshot
 
-### Daily Radar - 2026-07-09
+### Daily Radar - 2026-07-11
 
-- Metadata: `Window: 2026-07-02 to 2026-07-09`
+- Metadata: `Window: 2026-07-04 to 2026-07-11`
 - Open the daily note for the full signal list.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-07-09
+### GitHub Trending - 2026-07-11
 
 - Metadata: `Latest GitHub Trending board summary`
-- [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search)
-- [iOfficeAI/OfficeCLI](https://github.com/iOfficeAI/OfficeCLI)
-- [bradautomates/claude-video](https://github.com/bradautomates/claude-video)
+- [catchorg/Catch2](https://github.com/catchorg/Catch2)
+- [abseil/abseil-cpp](https://github.com/abseil/abseil-cpp)
+- [davila7/claude-code-templates](https://github.com/davila7/claude-code-templates)
 
 ## Durable Interpretation
 
-The week's durable theme is that frontier vendors are converging on the same stack shape:
+### The frontier is hardening around durable agent operating systems
 
 ## Current Proposal Candidates
 
-- Model-Paired Execution Lanes
-- Remote Session Control Plane
-- Trace-Native Agent Events
+- No proposal candidates extracted from the latest weekly synthesis yet.
 
 ## Knowledge Network
 
@@ -63,27 +63,27 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-07-11](../radar/daily/2026-07-11.md)
 - [2026-07-09](../radar/daily/2026-07-09.md)
 - [2026-07-08](../radar/daily/2026-07-08.md)
 - [2026-07-07](../radar/daily/2026-07-07.md)
 - [2026-07-06](../radar/daily/2026-07-06.md)
 - [2026-07-05](../radar/daily/2026-07-05.md)
-- [2026-07-02](../radar/daily/2026-07-02.md)
 
 ### Weekly Synthesis
 
+- [2026-07-10](../radar/weekly/2026-07-10.md)
 - [2026-07-03](../radar/weekly/2026-07-03.md)
 - [2026-06-26](../radar/weekly/2026-06-26.md)
 - [2026-06-12](../radar/weekly/2026-06-12.md)
 - [2026-06-05](../radar/weekly/2026-06-05.md)
 - [2026-05-29](../radar/weekly/2026-05-29.md)
-- [2026-05-22](../radar/weekly/2026-05-22.md)
 
 ### GitHub Trending
 
+- [2026-07-11](../radar/trending/2026-07-11.md)
 - [2026-07-09](../radar/trending/2026-07-09.md)
 - [2026-07-08](../radar/trending/2026-07-08.md)
 - [2026-07-07](../radar/trending/2026-07-07.md)
 - [2026-07-06](../radar/trending/2026-07-06.md)
 - [2026-07-05](../radar/trending/2026-07-05.md)
-- [2026-07-02](../radar/trending/2026-07-02.md)
