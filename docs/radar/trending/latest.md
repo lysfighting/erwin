@@ -1,48 +1,49 @@
-# GitHub Trending - 2026-07-11
+# GitHub Trending - 2026-07-12
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-07-11 is mixed rather than AI-only. Agent and coding-adjacent projects are clearly present, but the board is still anchored by mainstream C++, infrastructure, JavaScript runtime, CI, and home-automation repositories. The AI cluster is less about model repos this time and more about reusable workflow shells, skills, plugins, and MCP-style execution surfaces.
+The default global board captured on 2026-07-12 is still mixed, but it is more agent-heavy than a neutral developer day. The top slice includes agent safety rails, MCP-backed desktop control, trading agents, official Claude examples, background-agent orchestration, and a few durable automation or infrastructure projects. This is not an AI-only board, but AI execution surfaces are clearly overrepresented near the top.
 
 ## Notable Projects
 
-- [catchorg/Catch2](https://github.com/catchorg/Catch2)  
-  Longstanding C++ test framework, showing classic systems tooling still climbs the global board.
-
-- [abseil/abseil-cpp](https://github.com/abseil/abseil-cpp)  
-  Core C++ utility library, another signal that the board is not dominated by ephemeral AI demos.
-
-- [davila7/claude-code-templates](https://github.com/davila7/claude-code-templates)  
-  Reusable Claude Code workflow templates packaged as practical operator scaffolding.
-
-- [google-labs-code/stitch-skills](https://github.com/google-labs-code/stitch-skills)  
-  Skill-packaging surface from Google's coding-agent stream, relevant to extensible agent workflows.
-
-- [openai/plugins](https://github.com/openai/plugins)  
-  Plugin packaging remains a reference point for tool extensibility even as newer agent protocols evolve.
+- [Dicklesworthstone/destructive_command_guard](https://github.com/Dicklesworthstone/destructive_command_guard)  
+  Safety-focused guard for blocking dangerous shell and git commands from agents.
 
 - [wonderwhy-er/DesktopCommanderMCP](https://github.com/wonderwhy-er/DesktopCommanderMCP)  
-  Desktop control via MCP, relevant to agents that need to cross from chat into real operator actions.
+  MCP server for terminal control, filesystem search, and diff-based editing.
 
-- [hashicorp/terraform](https://github.com/hashicorp/terraform)  
-  Infrastructure control plane staying prominent alongside agent-adjacent repositories.
+- [HKUDS/Vibe-Trading](https://github.com/HKUDS/Vibe-Trading)  
+  Personal trading-agent project showing continued appetite for domain-specific autonomous workflows.
 
-- [oven-sh/bun](https://github.com/oven-sh/bun)  
-  Fast JavaScript runtime/toolchain, reinforcing that developer-performance primitives still trend strongly.
+- [PrefectHQ/prefect](https://github.com/PrefectHQ/prefect)  
+  Workflow orchestration remains relevant alongside agent-native systems, especially for background execution and retries.
+
+- [Shubhamsaboo/awesome-llm-apps](https://github.com/Shubhamsaboo/awesome-llm-apps)  
+  Curated LLM app collection, often a sign that builders are looking for reusable reference implementations.
+
+- [anthropics/claude-cookbooks](https://github.com/anthropics/claude-cookbooks)  
+  Official Anthropic examples surfacing as practical implementation guidance rather than just docs prose.
+
+- [ColeMurray/background-agents](https://github.com/ColeMurray/background-agents)  
+  Long-running asynchronous agent patterns remain a high-interest implementation theme.
+
+- [home-assistant/core](https://github.com/home-assistant/core)  
+  Strong reminder that the board is still shared with durable automation and non-LLM open-source ecosystems.
 
 ## Why They May Be Surfacing
 
-- Coding-agent packaging is becoming productized. `claude-code-templates` and `stitch-skills` both point to reusable workflow distribution rather than one-off local prompting.
-- Tool-extension surfaces are still converging. `openai/plugins` and `DesktopCommanderMCP` suggest continued demand for structured capability exposure into agent runtimes.
-- The board is balanced by durable infra and systems projects. `Catch2`, `abseil-cpp`, `terraform`, and `bun` show that foundational developer tooling still wins broad attention.
-- This mix matters because it keeps the trending board honest: the current moment favors agent execution layers, but not at the expense of core build, runtime, test, and infra primitives.
+- Agent safety and permission boundaries are getting productized. `destructive_command_guard` is the clearest example on today’s board.
+- MCP and desktop-action surfaces remain strategically hot. `DesktopCommanderMCP` shows that practical environment control is still a major integration frontier.
+- Background execution is not cooling off. `Prefect` and `background-agents` both point to interest in durable long-running work, retries, and stateful orchestration.
+- Official vendor implementation examples matter more now. `anthropics/claude-cookbooks` surfacing suggests practitioners want reference patterns, not just capability headlines.
+- The board is still broader than AI. `home-assistant/core` and other mainstream automation or infra projects prevent over-reading the board as purely model-driven.
 
 ## Watchlist
 
-- [davila7/claude-code-templates](https://github.com/davila7/claude-code-templates): strongest signal that Claude Code workflow shells are turning into reusable delivery templates.
-- [google-labs-code/stitch-skills](https://github.com/google-labs-code/stitch-skills): strongest signal that skills are stabilizing as a portable extension format.
-- [wonderwhy-er/DesktopCommanderMCP](https://github.com/wonderwhy-er/DesktopCommanderMCP): strongest signal that MCP-backed desktop control remains strategically relevant.
-- [openai/plugins](https://github.com/openai/plugins): strongest reminder that tool-packaging conventions continue to matter even as protocols shift.
-- [hashicorp/terraform](https://github.com/hashicorp/terraform): strongest non-AI reminder that infrastructure control planes still anchor the board.
+- [Dicklesworthstone/destructive_command_guard](https://github.com/Dicklesworthstone/destructive_command_guard): strongest safety-governance signal on the board.
+- [wonderwhy-er/DesktopCommanderMCP](https://github.com/wonderwhy-er/DesktopCommanderMCP): strongest MCP-and-desktop execution signal on the board.
+- [anthropics/claude-cookbooks](https://github.com/anthropics/claude-cookbooks): strongest official-vendor example-pack signal on the board.
+- [ColeMurray/background-agents](https://github.com/ColeMurray/background-agents): strongest long-running agent orchestration signal on the board.
+- [PrefectHQ/prefect](https://github.com/PrefectHQ/prefect): strongest reminder that workflow orchestration and agent orchestration are converging in builder attention.
