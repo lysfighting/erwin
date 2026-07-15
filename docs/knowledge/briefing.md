@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `148` durable notes are currently indexed across `3` recurring streams.
-- `211` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `150` durable notes are currently indexed across `3` recurring streams.
+- `213` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,19 +27,19 @@
 
 ## Daily Signal Snapshot
 
-### Daily Radar - 2026-07-12
+### Daily Radar - 2026-07-15
 
-- Metadata: `Window: 2026-07-05 to 2026-07-12`
+- Metadata: `Window: 2026-07-08 to 2026-07-15`
 - Open the daily note for the full signal list.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-07-12
+### GitHub Trending - 2026-07-15
 
 - Metadata: `Latest GitHub Trending board summary`
-- [Dicklesworthstone/destructive_command_guard](https://github.com/Dicklesworthstone/destructive_command_guard)
-- [wonderwhy-er/DesktopCommanderMCP](https://github.com/wonderwhy-er/DesktopCommanderMCP)
-- [HKUDS/Vibe-Trading](https://github.com/HKUDS/Vibe-Trading)
+- [OpenCut-app/OpenCut](https://github.com/OpenCut-app/OpenCut)
+- [Nutlope/hallmark](https://github.com/Nutlope/hallmark)
+- [mattpocock/skills](https://github.com/mattpocock/skills)
 
 ## Durable Interpretation
 
@@ -63,12 +63,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-07-15](../radar/daily/2026-07-15.md)
 - [2026-07-12](../radar/daily/2026-07-12.md)
 - [2026-07-11](../radar/daily/2026-07-11.md)
 - [2026-07-09](../radar/daily/2026-07-09.md)
 - [2026-07-08](../radar/daily/2026-07-08.md)
 - [2026-07-07](../radar/daily/2026-07-07.md)
-- [2026-07-06](../radar/daily/2026-07-06.md)
 
 ### Weekly Synthesis
 
@@ -81,9 +81,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-07-15](../radar/trending/2026-07-15.md)
 - [2026-07-12](../radar/trending/2026-07-12.md)
 - [2026-07-11](../radar/trending/2026-07-11.md)
 - [2026-07-09](../radar/trending/2026-07-09.md)
 - [2026-07-08](../radar/trending/2026-07-08.md)
 - [2026-07-07](../radar/trending/2026-07-07.md)
-- [2026-07-06](../radar/trending/2026-07-06.md)
