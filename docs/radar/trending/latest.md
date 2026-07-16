@@ -1,51 +1,49 @@
-# GitHub Trending - 2026-07-15
+# GitHub Trending - 2026-07-16
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-07-15 is mixed, but it is unusually saturated with agent-adjacent repos, prompt/skill assets, and applied-AI packages near the top. This is not an AI-only board: video tooling, independent-developer curation, and gaming or dataset projects are still present. Even so, the strongest cluster is clearly around practical agent operation, skills, safety, and domain-specific automation.
+The default global board captured on 2026-07-16 is mixed rather than AI-only, but several of the most visible repos are still tightly tied to coding agents, public skill directories, observability, and open-source automation. Creator tooling and general-purpose open source are still present, so the board should be read as an ecosystem pulse rather than a pure agent leaderboard.
 
 ## Notable Projects
 
 - [OpenCut-app/OpenCut](https://github.com/OpenCut-app/OpenCut)  
-  Open-source CapCut alternative. It is not an agent project, but it explains part of the board shape: mainstream creator tooling still competes for top attention.
+  Open-source CapCut alternative. It helps explain the board shape because creator tooling is still a major open-source attention category outside AI.
 
 - [Nutlope/hallmark](https://github.com/Nutlope/hallmark)  
-  Anti-generic design skill for Claude Code, Cursor, and Codex. This is a clean signal that prompt-and-skill packaging for coding agents is becoming a shareable artifact class.
+  Anti-AI-slop design skill for Claude Code, Cursor, and Codex. This is a direct signal that skills and operating preferences are becoming first-class shareable artifacts.
 
-- [mattpocock/skills](https://github.com/mattpocock/skills)  
-  Public `.claude` skill directory. This is one of the clearest signs that practitioners want reusable operational scaffolding, not only model access.
-
-- [moeru-ai/airi](https://github.com/moeru-ai/airi)  
-  Self-hosted realtime companion stack spanning voice and game interaction, showing continued appetite for persistent consumer-facing agent systems.
-
-- [Dicklesworthstone/destructive_command_guard](https://github.com/Dicklesworthstone/destructive_command_guard)  
-  Guardrail layer for blocking dangerous shell and git actions from agents. This is the strongest safety-governance signal on the board today.
-
-- [HKUDS/Vibe-Trading](https://github.com/HKUDS/Vibe-Trading)  
-  Personal trading agent package. It shows that autonomous workflow demand is still extending into domain-specific decision support.
+- [PostHog/posthog](https://github.com/PostHog/posthog)  
+  Product analytics and observability stack positioning itself around self-driving products, AI observability, replay, logs, and MCP access. This is one of the clearest infrastructure signals on the board.
 
 - [openinterpreter/openinterpreter](https://github.com/openinterpreter/openinterpreter)  
-  Coding agent for low-cost models. It remains a useful proxy for how the open-source market is still optimizing for runtime shape and affordability.
+  Coding agent for low-cost models. It remains a useful proxy for demand around local or cheaper agent execution.
 
 - [Shubhamsaboo/awesome-llm-apps](https://github.com/Shubhamsaboo/awesome-llm-apps)  
-  Runnable AI agent and RAG application collection. Curated reference packs still surface when builders want implementation patterns faster than vendor docs provide them.
+  Large runnable AI app and agent example set. Curated reference packs keep surfacing when developers want ready-to-run patterns.
 
-- [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills)  
-  Marketing-focused skills for Claude Code and AI agents. Another sign that skill systems are expanding beyond engineering into applied business workflows.
+- [mattpocock/skills](https://github.com/mattpocock/skills)  
+  Public `.claude` skill directory. This is strong evidence that community skill systems are still expanding.
+
+- [apache/ossie](https://github.com/apache/ossie)  
+  Apache semantic metadata exchange specification effort. It is not an agent runtime project, but it matters because interoperability and common semantics are becoming more important as AI and analytics stacks converge.
+
+- [HKUDS/DeepTutor](https://github.com/HKUDS/DeepTutor)  
+  Personalized tutoring system. It shows that application-layer AI systems continue to compete for broad open-source attention alongside developer tools.
 
 ## Why They May Be Surfacing
 
-- Skills are becoming a portable distribution format. `hallmark`, `mattpocock/skills`, and `marketingskills` all point to the same pattern: users want sharable operational behavior, not just reusable prompts inside one closed product.
-- Agent safety is visible enough to trend on its own. `destructive_command_guard` shows that shell and git mutation boundaries are now a first-class community concern.
-- Open-source attention is still rewarding concrete automation packages. `Vibe-Trading`, `airi`, and `openinterpreter` all package an end-to-end workflow or execution surface rather than only offering a library.
-- The board is broader than AI. `OpenCut` and other non-agent projects help keep the snapshot honest, which matters because GitHub Trending is secondary evidence, not a roadmap authority.
+- Skill packaging is still gaining momentum. `hallmark` and `mattpocock/skills` both point to a world where user-operating knowledge is distributed as installable or copyable artifacts.
+- Observability is moving closer to agent operations. `PostHog` surfacing here aligns with a broader market push to make AI and agent telemetry part of the normal product stack.
+- Cheap or local execution still matters. `openinterpreter` continues to attract attention because cost, control, and local runtime shape remain differentiators.
+- Reference implementations are still in demand. `awesome-llm-apps` keeps proving that many builders learn faster from runnable systems than from abstract platform docs.
+- The board is broader than AI. `OpenCut` and `apache/ossie` are good reminders that the default global Trending page reflects the whole open-source board, not a curated AI slice.
 
 ## Watchlist
 
-- [Dicklesworthstone/destructive_command_guard](https://github.com/Dicklesworthstone/destructive_command_guard): strongest safety-governance signal.
-- [Nutlope/hallmark](https://github.com/Nutlope/hallmark): strongest coding-agent design-skill signal.
-- [mattpocock/skills](https://github.com/mattpocock/skills): strongest public-skill-directory signal.
-- [openinterpreter/openinterpreter](https://github.com/openinterpreter/openinterpreter): strongest low-cost agent-runtime signal.
-- [HKUDS/Vibe-Trading](https://github.com/HKUDS/Vibe-Trading): strongest domain-specific autonomous workflow signal.
+- [Nutlope/hallmark](https://github.com/Nutlope/hallmark): strongest skills-for-coding-agents signal.
+- [PostHog/posthog](https://github.com/PostHog/posthog): strongest observability-and-control-tower signal.
+- [mattpocock/skills](https://github.com/mattpocock/skills): strongest public skill-directory signal.
+- [openinterpreter/openinterpreter](https://github.com/openinterpreter/openinterpreter): strongest low-cost runtime signal.
+- [apache/ossie](https://github.com/apache/ossie): strongest interoperability signal outside the core AI cluster.
