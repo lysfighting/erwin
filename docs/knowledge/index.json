@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 155,
+    "total_notes": 157,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 218,
+    "artifact_count": 220,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-07-17",
-      "meta": "Window: 2026-07-10 to 2026-07-17",
+      "title": "Daily Radar - 2026-07-18",
+      "meta": "Window: 2026-07-11 to 2026-07-18",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-07-18",
+          "path": "radar/daily/2026-07-18.md"
+        },
         {
           "name": "2026-07-17",
           "path": "radar/daily/2026-07-17.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-07-11",
           "path": "radar/daily/2026-07-11.md"
-        },
-        {
-          "name": "2026-07-09",
-          "path": "radar/daily/2026-07-09.md"
         }
       ],
-      "count": 70
+      "count": 71
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-07-17",
+      "title": "GitHub Trending - 2026-07-18",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
-        "[codecrafters-io/build-your-own-x](https://github.com/codecrafters-io/build-your-own-x)",
+        "[Robbyant/lingbot-map](https://github.com/Robbyant/lingbot-map)",
         "[PostHog/posthog](https://github.com/PostHog/posthog)",
-        "[github/copilot-sdk](https://github.com/github/copilot-sdk)"
+        "[MoonshotAI/kimi-cli](https://github.com/MoonshotAI/kimi-cli)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-07-18",
+          "path": "radar/trending/2026-07-18.md"
+        },
         {
           "name": "2026-07-17",
           "path": "radar/trending/2026-07-17.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-07-11",
           "path": "radar/trending/2026-07-11.md"
-        },
-        {
-          "name": "2026-07-09",
-          "path": "radar/trending/2026-07-09.md"
         }
       ],
-      "count": 71
+      "count": 72
     }
   },
   "deep_dive": "### The control plane is becoming the product",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 218,
+      "artifact_count": 220,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 165,
+        "radar": 167,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -3751,6 +3751,39 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-07-18.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-07-18.md",
+        "title": "Daily Radar - 2026-07-18",
+        "date": "2026-07-18",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "tracing/observability",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-07-11 to 2026-07-18",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/docs/agents-and-tools/claude-managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+          "https://code.claude.com/docs/en/overview",
+          "https://support.claude.com/en/articles/12138966-release-notes",
+          "https://www.kimi.com/blog/",
+          "https://www.kimi.com/code/docs/en/kimi-code-cli/release-notes/changelog.html",
+          "https://help.openai.com/en/articles/10128477-chatgpt-enterprise-edu-release-notes",
+          "https://openai.com/products/release-notes/",
+          "https://agent.minimax.io/docs/changelog",
+          "https://platform.minimaxi.com/docs/release-notes/models"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -5825,6 +5858,33 @@
           "https://github.com/Nutlope/hallmark",
           "https://github.com/HKUDS/DeepTutor",
           "https://github.com/protocolbuffers/protobuf"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-07-18.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-07-18.md",
+        "title": "GitHub Trending - 2026-07-18",
+        "date": "2026-07-18",
+        "status": "",
+        "themes": [
+          "tracing/observability",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/Robbyant/lingbot-map",
+          "https://github.com/PostHog/posthog",
+          "https://github.com/MoonshotAI/kimi-cli",
+          "https://github.com/KnockOutEZ/wigolo",
+          "https://github.com/tirth8205/code-review-graph",
+          "https://github.com/ibelick/ui-skills",
+          "https://github.com/rohitg00/ai-engineering-from-scratch",
+          "https://github.com/codecrafters-io/build-your-own-x"
         ],
         "local_refs": []
       },
