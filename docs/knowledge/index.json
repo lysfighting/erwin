@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 159,
+    "total_notes": 161,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 222,
+    "artifact_count": 224,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-07-19",
-      "meta": "Window: 2026-07-12 to 2026-07-19",
+      "title": "Daily Radar - 2026-07-20",
+      "meta": "Window: 2026-07-13 to 2026-07-20",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-07-20",
+          "path": "radar/daily/2026-07-20.md"
+        },
         {
           "name": "2026-07-19",
           "path": "radar/daily/2026-07-19.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-07-15",
           "path": "radar/daily/2026-07-15.md"
-        },
-        {
-          "name": "2026-07-12",
-          "path": "radar/daily/2026-07-12.md"
         }
       ],
-      "count": 72
+      "count": 73
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-07-19",
+      "title": "GitHub Trending - 2026-07-20",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
         "[tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph)",
-        "[github/copilot-sdk](https://github.com/github/copilot-sdk)",
-        "[KnockOutEZ/wigolo](https://github.com/KnockOutEZ/wigolo)"
+        "[1jehuang/jcode](https://github.com/1jehuang/jcode)",
+        "[diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-07-20",
+          "path": "radar/trending/2026-07-20.md"
+        },
         {
           "name": "2026-07-19",
           "path": "radar/trending/2026-07-19.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-07-15",
           "path": "radar/trending/2026-07-15.md"
-        },
-        {
-          "name": "2026-07-12",
-          "path": "radar/trending/2026-07-12.md"
         }
       ],
-      "count": 73
+      "count": 74
     }
   },
   "deep_dive": "### The control plane is becoming the product",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 222,
+      "artifact_count": 224,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 169,
+        "radar": 171,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -3818,6 +3818,37 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-07-20.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-07-20.md",
+        "title": "Daily Radar - 2026-07-20",
+        "date": "2026-07-20",
+        "status": "",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-07-13 to 2026-07-20",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md",
+          "https://code.claude.com/docs",
+          "https://developers.openai.com/api/docs/changelog",
+          "https://developers.openai.com/api/docs/api-reference/uploads",
+          "https://developers.googleblog.com/en/expanding-choice-in-gemini-enterprise-agent-platform-introducing-grounding-with-parallel-web-search/",
+          "https://platform.minimax.io/docs/release-notes/models",
+          "https://www.kimi.com/",
+          "https://qwen.ai/blog",
+          "https://api-docs.deepseek.com/updates"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -5949,6 +5980,34 @@
           "https://github.com/1jehuang/jcode",
           "https://github.com/rohitg00/ai-engineering-from-scratch",
           "https://github.com/microsoft/terminal"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-07-20.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-07-20.md",
+        "title": "GitHub Trending - 2026-07-20",
+        "date": "2026-07-20",
+        "status": "",
+        "themes": [
+          "harness",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/tirth8205/code-review-graph",
+          "https://github.com/1jehuang/jcode",
+          "https://github.com/diegosouzapw/OmniRoute",
+          "https://github.com/msitarzewski/agency-agents",
+          "https://github.com/kvcache-ai/ktransformers",
+          "https://github.com/jamiepine/voicebox",
+          "https://github.com/topoteretes/cognee",
+          "https://github.com/every-app/open-seo"
         ],
         "local_refs": []
       },
