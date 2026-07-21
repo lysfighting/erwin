@@ -1,70 +1,69 @@
-# Daily Radar - 2026-07-20
+# Daily Radar - 2026-07-21
 
-Window: 2026-07-13 to 2026-07-20
+Window: 2026-07-14 to 2026-07-21
 
 ## New Signals
 
-1. **Anthropic's strongest in-window signal was still platform control-plane expansion, and I explicitly re-checked the required Anthropic substreams before concluding that.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added Enterprise user-management APIs on **2026-07-14** and expanded mid-conversation system messages on more top-tier models on **2026-07-15**. I also explicitly checked the required [Claude Managed Agents docs surface](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md), and [Claude Code docs surface](https://code.claude.com/docs); I did not find a stronger separately dated Managed Agents, advisor-tool, or Claude Code doc launch inside this 7-day window.
-   Publish dates: 2026-07-14, 2026-07-15
+1. **Anthropic's clearest in-window signal was a control-plane and deprecation update on the Claude Platform release notes.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added Claude Enterprise user-management APIs on **2026-07-14**, expanded mid-conversation system messages on **2026-07-15**, and announced legacy Workbench sunset plus prompt-tools API retirement on **2026-07-17**. I also explicitly checked the required [Claude Managed Agents docs surface](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs surface](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md), and [Claude Code docs surface](https://code.claude.com/docs); I did not find a separately dated in-window Managed Agents, advisor-tool, or Claude Code docs launch stronger than the release-note stream.
+   Publish dates: 2026-07-14, 2026-07-15, 2026-07-17
 
-2. **OpenAI's in-window technical note was small but operationally relevant.** The official [OpenAI API changelog](https://developers.openai.com/api/docs/changelog) added [Uploads](https://developers.openai.com/api/docs/api-reference/uploads) on **2026-07-17**, giving the API a multipart large-file upload path. That is a practical control-plane improvement rather than a model announcement, but it is still the clearest official OpenAI platform update inside the window.
-   Publish date: 2026-07-17
-
-3. **Google's clearest in-window agent signal was managed grounding and orchestration, not a new Gemini base-model note.** The official Google Developers Blog announced [Grounding with Parallel Web Search for Gemini Enterprise Agent Platform](https://developers.googleblog.com/en/expanding-choice-in-gemini-enterprise-agent-platform-introducing-grounding-with-parallel-web-search/) on **2026-07-16**. This is a higher-signal agent-runtime update than the older ADK Go 2.0 post because it is in-window and directly about enterprise agent execution over live web context.
+2. **Google's strongest in-window agent signal was productized grounding infrastructure for enterprise agents.** The official Google Developers Blog announced [Grounding with Parallel Web Search for Gemini Enterprise Agent Platform](https://developers.googleblog.com/expanding-choice-in-gemini-enterprise-agent-platform-introducing-grounding-with-parallel-web-search/) on **2026-07-16**, making partner-grounded live web retrieval a first-class Agent Platform surface rather than only an integration pattern.
    Publish date: 2026-07-16
 
-4. **MiniMax did post an in-window dated first-party model update, but it landed as a narrower media/runtime surface than the operator-heavy moves from Anthropic or Google.** The official [MiniMax model release notes](https://platform.minimax.io/docs/release-notes/models) added **MiniMax-Music 3.0** on **2026-07-16**. It is not directly Harness-shaped, but it confirms MiniMax is still shipping dated first-party platform changes this week.
+3. **MiniMax shipped a dated first-party model update, but it was media-surface motion rather than a core agent-runtime change.** The official [MiniMax model release notes](https://platform.minimax.io/docs/release-notes/models) added **Music-3.0** on **2026-07-16**. It is not directly Harness-shaped, but it confirms MiniMax is still shipping weekly official platform updates.
    Publish date: 2026-07-16
 
-5. **Moonshot, Qwen, and DeepSeek were weaker this week on dated official technical surfaces than on product presence.** The official [Kimi homepage](https://www.kimi.com/) is now promoting K3 for agentic coding, `Swarm`, and `Goal` workflows, but the page did not expose an exact publish date in this pass. The official [Qwen blog surface](https://qwen.ai/blog) resolved to a generic studio page without a dated in-window release note. The official [DeepSeek API updates surface](https://api-docs.deepseek.com/updates) still highlights the **2026-07-24 15:59 UTC** retirement path for `deepseek-chat` and `deepseek-reasoner`, but I did not find a separately dated in-window official announcement on DeepSeek's technical surfaces.
-   Publish dates: not exposed on Moonshot/Qwen pages checked; DeepSeek cutoff date is 2026-07-24 15:59 UTC
+4. **OpenAI's official in-window surface was active, but not with a clear platform-control update this run.** The official [OpenAI news index](https://openai.com/news/) shows fresh posts on **2026-07-14** through **2026-07-20**, including [How to manage AI investments in the agentic era](https://openai.com/news/how-to-manage-ai-investments-in-the-agentic-era/), [GPT-Red: Unlocking Self-Improvement for Robustness](https://openai.com/news/gpt-red/), and [Safety and alignment in an era of long-horizon models](https://openai.com/news/safety-and-alignment-in-an-era-of-long-horizon-models/). I did not find a stronger in-window official API/platform release note than those essays in this pass.
+   Publish dates: 2026-07-14, 2026-07-15, 2026-07-20
+
+5. **Moonshot, Qwen, and DeepSeek stayed in watch-state rather than producing a stronger dated first-party technical launch inside the window.** The official [Kimi homepage](https://www.kimi.com/) now markets K3 for agentic coding plus `Swarm` and `Goal` workflows, but this single pass did not expose an exact publish date. The official [Qwen surface](https://qwen.ai/blog) currently resolves to a studio-style landing page rather than an easily inspectable dated blog index. The official [DeepSeek API changelog](https://api-docs.deepseek.com/updates/) still centers the **2026-07-24** retirement of `deepseek-chat` and `deepseek-reasoner`, but that cutoff was announced earlier and is now an operational watch item rather than a new in-window release.
+   Publish dates: not exposed on Moonshot/Qwen pages checked; DeepSeek cutoff date is 2026-07-24
 
 ## GitHub Trending Snapshot
 
-Snapshot source: [GitHub Trending](https://github.com/trending) captured on 2026-07-20 from the default global board.
+Snapshot source: [GitHub Trending](https://github.com/trending) captured on 2026-07-21 from the default global board.
 
-- [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph): local-first code intelligence graph for MCP and CLI, surfacing because coding agents still need explicit context selection and review compression layers.
-- [1jehuang/jcode](https://github.com/1jehuang/jcode): explicitly positions itself as an agent harness for code, which makes the "coding-agent harness" category itself newly legible on the default board.
-- [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute): a provider-routing gateway spanning many model vendors, likely surfacing because teams are normalizing multi-provider fallback and token-cost controls.
-- [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents): notable because the board is still rewarding packaged multi-agent operator patterns, not only low-level frameworks.
-- [kvcache-ai/ktransformers](https://github.com/kvcache-ai/ktransformers): relevant because heterogeneous inference and optimization infra remains part of the same agent delivery stack.
+- [koala73/worldmonitor](https://github.com/koala73/worldmonitor): trending because an AI-powered situational-awareness dashboard sits at the intersection of news aggregation, intelligence monitoring, and operational control towers.
+- [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book): notable because the board is rewarding durable agent engineering knowledge, not only frameworks and wrappers.
+- [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph): directly relevant to coding-agent context selection and review compression for large repos.
+- [1jehuang/jcode](https://github.com/1jehuang/jcode): important because it frames the harness itself as a first-class OSS product category for code agents.
+- [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute): surfacing because provider-routing, fallback, and token-compression layers are becoming standard agent infrastructure.
 
 ## Harness-Relevant Signals
 
-- Anthropic remains the highest-signal official stream because the required surfaces were all checked directly this run: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md), and [Claude Code docs](https://code.claude.com/docs). The strongest confirmed in-window movement stayed in admin/control-plane features rather than in a separately dated managed-agent or Claude Code doc launch.
-- OpenAI's practical signal was [Uploads](https://developers.openai.com/api/docs/api-reference/uploads) on **2026-07-17**. This is a small feature, but it matters because file movement and artifact packaging keep showing up as control-plane friction in agent systems.
-- Google's [Grounding with Parallel Web Search](https://developers.googleblog.com/en/expanding-choice-in-gemini-enterprise-agent-platform-introducing-grounding-with-parallel-web-search/) post on **2026-07-16** is more Harness-relevant than a raw model note because it points at managed retrieval/orchestration becoming a productized enterprise agent surface.
-- MiniMax's in-window dated update was real but peripheral: [MiniMax-Music 3.0](https://platform.minimax.io/docs/release-notes/models) on **2026-07-16**. It is useful as vendor activity evidence, but not yet a strong Harness driver.
-- Moonshot and Qwen both showed product-level motion on official surfaces, but this single-pass check did not yield a dated in-window technical note strong enough to treat as a top-tier Harness signal. Moonshot's [Kimi homepage](https://www.kimi.com/) is clearly pushing K3 + `Swarm` + `Goal`; Qwen's [official blog surface](https://qwen.ai/blog) did not expose a dated release note in this run.
-- DeepSeek still matters as a provider-drift watch. The official [API updates page](https://api-docs.deepseek.com/updates) says `deepseek-chat` and `deepseek-reasoner` move toward retirement on **2026-07-24 15:59 UTC**, even though I did not find a new separately dated post inside the strict 7-day window.
+- Anthropic is still the strongest first-party operational stream this run. The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) shifted both admin control and product-surface durability in-window, while the required [Claude Managed Agents](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md), and [Claude Code docs](https://code.claude.com/docs) checks did not reveal a separately dated stronger substream event.
+- Google's [Grounding with Parallel Web Search](https://developers.googleblog.com/expanding-choice-in-gemini-enterprise-agent-platform-introducing-grounding-with-parallel-web-search/) post on **2026-07-16** is Harness-relevant because it packages live-web grounding as managed agent infrastructure with citations, enterprise billing, and orchestration flexibility.
+- OpenAI did publish fresh official material inside the window, but this run did not surface a clear dated API/platform change on the official [news](https://openai.com/news/) or [API changelog](https://developers.openai.com/api/docs/changelog) surfaces. That makes OpenAI more of a strategic-read signal than a direct Harness implementation signal today.
+- DeepSeek remains an eval-worthy provider-drift watch even without a new in-window announcement. The official [change log](https://api-docs.deepseek.com/updates/) says `deepseek-chat` and `deepseek-reasoner` are discontinued on **2026-07-24**, which is exactly the kind of alias retirement that can break unattended routing.
+- Moonshot and Qwen both show agentic product packaging on official surfaces, but not yet with a strong, dated, easily inspectable first-party technical note from this run's single pass.
 
 ## Candidate Proposals
 
 ### Proposal 1
 
 - `source_type`: first-party platform release notes
-- `problem_pattern`: vendors are shipping more operator control-plane surfaces than model-only launches
-- `why_it_matters_for_harness`: Anthropic, OpenAI, and Google all exposed real admin, upload, or managed-grounding changes this week
+- `problem_pattern`: vendors are shipping more admin, grounding, and lifecycle controls around agents than raw model-only changes
+- `why_it_matters_for_harness`: Anthropic and Google both moved the operator surface this week, which is where Harness tends to feel integration drift first
 - `recommended_disposition`: `watch`
 
 ### Proposal 2
 
-- `source_type`: first-party documentation and release-note drift watch
-- `problem_pattern`: the highest-risk provider changes are often alias, deprecation, or routing shifts rather than headline launches
-- `why_it_matters_for_harness`: DeepSeek's **2026-07-24 15:59 UTC** retirement path is exactly the kind of backend drift that can break unattended provider routing
+- `source_type`: first-party provider changelog
+- `problem_pattern`: alias retirement and compatibility shims create silent break risk in multi-provider routing
+- `why_it_matters_for_harness`: DeepSeek's **2026-07-24** cutoff is the kind of change that should be caught by provider-routing coverage before production traffic discovers it
 - `recommended_disposition`: `encode-as-eval`
 
 ### Proposal 3
 
 - `source_type`: first-party product-surface observation
-- `problem_pattern`: some vendors are clearly moving on agentic product UX before they expose equally strong dated technical documentation
-- `why_it_matters_for_harness`: Moonshot's K3/`Swarm`/`Goal` push and Qwen's studio-first surface suggest agent workflows may appear in product packaging before formal API-note maturity
+- `problem_pattern`: agent workflow packaging is often visible on product surfaces before the docs or API release notes fully catch up
+- `why_it_matters_for_harness`: Moonshot's K3 plus `Swarm`/`Goal` framing and Qwen's studio-style surface suggest emerging operator patterns that may appear first as UX packaging
 - `recommended_disposition`: `prototype`
 
 ## Watch Next
 
-- Re-check Anthropic first on the next run, in the same order: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md), and [Claude Code docs](https://code.claude.com/docs). The next meaningful shift would be a separately dated Managed Agents, advisor-tool, or Claude Code release rather than another generic platform note.
-- Watch DeepSeek directly against the **2026-07-24 15:59 UTC** deadline on the official [API updates surface](https://api-docs.deepseek.com/updates).
-- For OpenAI, check whether the post-**2026-07-17** platform stream stays operational or returns to larger model/API launches.
-- For Google, watch whether the enterprise agent platform work pulls more of the retrieval/orchestration stack into dated official release notes.
-- For Moonshot and Qwen, look for a dated official technical note that catches up with the more visible product-level agent packaging now present on their official surfaces.
+- Re-check Anthropic first in the same order next run: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md), and [Claude Code docs](https://code.claude.com/docs). The next meaningful shift would be a separately dated Managed Agents, advisor-tool, or Claude Code event rather than another generic platform note.
+- Watch DeepSeek directly against the **2026-07-24** retirement date on the official [change log](https://api-docs.deepseek.com/updates/).
+- For OpenAI, keep checking the official [news](https://openai.com/news/) and [API changelog](https://developers.openai.com/api/docs/changelog) for a return from essay cadence to a concrete dated platform or developer release.
+- For Google, watch whether the enterprise agent platform push broadens into more dated orchestration, grounding, or ADK runtime release notes.
+- For Moonshot and Qwen, look for a dated first-party technical post that catches up with the more visible agent-product positioning now present on official surfaces.

@@ -1,48 +1,48 @@
-# GitHub Trending - 2026-07-20
+# GitHub Trending - 2026-07-21
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-07-20 is still a mixed developer board rather than an AI-only board, but agent, coding-tooling, and model-routing projects are unusually visible near the top. The overall pattern is less "one breakout model repo" and more "operators are piecing together context graphs, harnesses, provider gateways, and agent bundles."
+The default global board captured on 2026-07-21 is broad, not AI-filtered. The top of the board mixes situational-awareness dashboards, agent engineering material, coding-agent utilities, deployment platforms, developer frameworks, and a few enduring general-interest projects. AI and agent work is clearly visible, but it is sharing the page with ordinary developer and infrastructure repos rather than dominating it outright.
 
 ## Notable Projects
 
+- [koala73/worldmonitor](https://github.com/koala73/worldmonitor)  
+  Real-time global intelligence dashboard with AI-powered news aggregation and infrastructure monitoring.
+
+- [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book)  
+  Open repository for a full AI agent engineering book, including source text, PDF, and example code.
+
 - [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph)  
-  Local-first code intelligence graph for MCP and CLI workflows, directly relevant to coding-agent context shaping and reviewability.
+  Local-first code intelligence graph for MCP and CLI workflows, explicitly targeting context reduction for coding agents.
 
 - [1jehuang/jcode](https://github.com/1jehuang/jcode)  
-  Explicitly framed as an intelligent agent harness for code, which makes the harness category itself visible on the default board.
+  Positions itself directly as an agent harness for code.
+
+- [oblien/openship](https://github.com/oblien/openship)  
+  Self-hosted deployment platform, notable because general release and ops tooling is still trending alongside AI work.
+
+- [AstrBotDevs/AstrBot](https://github.com/AstrBotDevs/AstrBot)  
+  AI agent assistant and development framework spanning IM platforms, LLMs, plugins, and agent features.
 
 - [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute)  
-  A free multi-provider AI gateway emphasizing fallback, compression, model breadth, and coding-agent compatibility.
+  Multi-provider AI gateway emphasizing routing, fallback, compression, and compatibility with coding-agent tools.
 
-- [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents)  
-  A packaged multi-agent system with role-specific agents and reusable processes, notable because the board is rewarding higher-level operator packaging rather than only framework primitives.
-
-- [kvcache-ai/ktransformers](https://github.com/kvcache-ai/ktransformers)  
-  Heterogeneous LLM inference and fine-tuning optimization framework, relevant because agent delivery still rides on low-level performance engineering.
-
-- [jamiepine/voicebox](https://github.com/jamiepine/voicebox)  
-  Open-source AI voice studio, showing that applied multimodal tooling remains part of the same broader wave.
-
-- [topoteretes/cognee](https://github.com/topoteretes/cognee)  
-  Open-source long-term memory platform for agents using a self-hosted knowledge graph engine.
-
-- [every-app/open-seo](https://github.com/every-app/open-seo)  
-  A non-agent but still developer-facing open alternative to SEO suites, useful as a reminder that the board remains broadly representative.
+- [chrislgarry/Apollo-11](https://github.com/chrislgarry/Apollo-11)  
+  Original Apollo 11 Guidance Computer source code, a reminder that the default board still contains general-interest classics.
 
 ## Why They May Be Surfacing
 
-- Context-selection and review compression are getting their own products. [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) and [1jehuang/jcode](https://github.com/1jehuang/jcode) both point at a visible need for explicit structure around coding agents.
-- Provider sprawl is turning routing into infrastructure. [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute) is a strong signal that multi-model fallback and cost-aware gateway logic are now mainstream enough to trend.
-- Higher-level multi-agent packaging is surfacing alongside infra. [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents) and [topoteretes/cognee](https://github.com/topoteretes/cognee) show continued appetite for pre-assembled agent roles and memory layers.
-- The board still includes broader developer and infrastructure work. [kvcache-ai/ktransformers](https://github.com/kvcache-ai/ktransformers), [jamiepine/voicebox](https://github.com/jamiepine/voicebox), and [every-app/open-seo](https://github.com/every-app/open-seo) help keep the read honest: this is a global board, not an AI-filtered one.
+- Operator dashboards are trending with agents. [koala73/worldmonitor](https://github.com/koala73/worldmonitor) suggests appetite for AI-assisted monitoring surfaces, not only agent SDKs.
+- Durable agent knowledge is surfacing alongside tools. [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book) indicates that the audience is rewarding educational and systems-thinking artifacts, not just new wrappers.
+- Coding-agent context and harness layers remain hot. [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph), [1jehuang/jcode](https://github.com/1jehuang/jcode), and [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute) all sit in the path between base models and useful software work.
+- The board is still globally representative. [oblien/openship](https://github.com/oblien/openship) and [chrislgarry/Apollo-11](https://github.com/chrislgarry/Apollo-11) are useful checks against overstating the AI concentration.
 
 ## Watchlist
 
-- [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph): strongest context-graph and reviewability signal on the board.
-- [1jehuang/jcode](https://github.com/1jehuang/jcode): strongest signal that harnesses themselves are becoming legible OSS categories.
-- [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute): strongest provider-routing and model-gateway signal on the board.
-- [topoteretes/cognee](https://github.com/topoteretes/cognee): strongest long-term-memory platform signal on the board.
-- [kvcache-ai/ktransformers](https://github.com/kvcache-ai/ktransformers): strongest inference-optimization signal on the board.
+- [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph): strongest coding-agent context-management signal.
+- [1jehuang/jcode](https://github.com/1jehuang/jcode): strongest harness-as-product signal.
+- [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute): strongest provider-routing and gateway signal.
+- [koala73/worldmonitor](https://github.com/koala73/worldmonitor): strongest ops-dashboard and control-tower signal.
+- [AstrBotDevs/AstrBot](https://github.com/AstrBotDevs/AstrBot): strongest packaged multi-platform agent framework signal.
