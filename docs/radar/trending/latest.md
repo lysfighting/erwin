@@ -1,48 +1,45 @@
-# GitHub Trending - 2026-07-21
+# GitHub Trending - 2026-07-22
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-07-21 is broad, not AI-filtered. The top of the board mixes situational-awareness dashboards, agent engineering material, coding-agent utilities, deployment platforms, developer frameworks, and a few enduring general-interest projects. AI and agent work is clearly visible, but it is sharing the page with ordinary developer and infrastructure repos rather than dominating it outright.
+The default global board captured on 2026-07-22 is mixed rather than AI-dominated. Coding-agent projects, deployment tooling, and educational AI repos are visible near the top, but they sit alongside ordinary developer infrastructure and general software work. The board still rewards practical operator surfaces and workflow tools more than pure model repos.
 
 ## Notable Projects
 
-- [koala73/worldmonitor](https://github.com/koala73/worldmonitor)  
-  Real-time global intelligence dashboard with AI-powered news aggregation and infrastructure monitoring.
-
-- [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book)  
-  Open repository for a full AI agent engineering book, including source text, PDF, and example code.
-
-- [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph)  
-  Local-first code intelligence graph for MCP and CLI workflows, explicitly targeting context reduction for coding agents.
-
-- [1jehuang/jcode](https://github.com/1jehuang/jcode)  
-  Positions itself directly as an agent harness for code.
+- [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills)  
+  Curated catalog of Claude Skills, tools, and workflow customization resources.
 
 - [oblien/openship](https://github.com/oblien/openship)  
-  Self-hosted deployment platform, notable because general release and ops tooling is still trending alongside AI work.
+  Self-hosted deployment platform; notable because ops and release infrastructure is still trending alongside AI-native tools.
+
+- [agegr/pi-web](https://github.com/agegr/pi-web)  
+  Web UI for the pi coding agent.
+
+- [rohitg00/ai-engineering-from-scratch](https://github.com/rohitg00/ai-engineering-from-scratch)  
+  End-to-end AI engineering learning repo with code and shipping guidance.
+
+- [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph)  
+  Local-first code intelligence graph for MCP and CLI workflows, aimed at reducing context load for code review and large-repo work.
 
 - [AstrBotDevs/AstrBot](https://github.com/AstrBotDevs/AstrBot)  
-  AI agent assistant and development framework spanning IM platforms, LLMs, plugins, and agent features.
+  Multi-platform AI agent assistant and framework spanning IM platforms, plugins, and LLM integrations.
 
-- [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute)  
-  Multi-provider AI gateway emphasizing routing, fallback, compression, and compatibility with coding-agent tools.
-
-- [chrislgarry/Apollo-11](https://github.com/chrislgarry/Apollo-11)  
-  Original Apollo 11 Guidance Computer source code, a reminder that the default board still contains general-interest classics.
+- [laramies/theHarvester](https://github.com/laramies/theHarvester)  
+  Long-running OSINT tool; a reminder that security and recon utilities still surface on the default board.
 
 ## Why They May Be Surfacing
 
-- Operator dashboards are trending with agents. [koala73/worldmonitor](https://github.com/koala73/worldmonitor) suggests appetite for AI-assisted monitoring surfaces, not only agent SDKs.
-- Durable agent knowledge is surfacing alongside tools. [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book) indicates that the audience is rewarding educational and systems-thinking artifacts, not just new wrappers.
-- Coding-agent context and harness layers remain hot. [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph), [1jehuang/jcode](https://github.com/1jehuang/jcode), and [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute) all sit in the path between base models and useful software work.
-- The board is still globally representative. [oblien/openship](https://github.com/oblien/openship) and [chrislgarry/Apollo-11](https://github.com/chrislgarry/Apollo-11) are useful checks against overstating the AI concentration.
+- Skill packaging is still a distribution channel. [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) suggests users still want portable workflow extensions, not only base models.
+- Operator surfaces are hot. [agegr/pi-web](https://github.com/agegr/pi-web) and [AstrBotDevs/AstrBot](https://github.com/AstrBotDevs/AstrBot) both package agent interaction as a usable product surface, not a raw SDK.
+- Context management remains a live coding-agent pain point. [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) is trending because it attacks the expensive part of coding agents: deciding what to read.
+- The board is not AI-only. [oblien/openship](https://github.com/oblien/openship) and [laramies/theHarvester](https://github.com/laramies/theHarvester) keep the snapshot honest by showing broad developer and security demand.
 
 ## Watchlist
 
-- [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph): strongest coding-agent context-management signal.
-- [1jehuang/jcode](https://github.com/1jehuang/jcode): strongest harness-as-product signal.
-- [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute): strongest provider-routing and gateway signal.
-- [koala73/worldmonitor](https://github.com/koala73/worldmonitor): strongest ops-dashboard and control-tower signal.
-- [AstrBotDevs/AstrBot](https://github.com/AstrBotDevs/AstrBot): strongest packaged multi-platform agent framework signal.
+- [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph): strongest harness-adjacent context-selection signal.
+- [agegr/pi-web](https://github.com/agegr/pi-web): strongest agent-UI/operator-surface signal.
+- [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills): strongest skill-distribution signal.
+- [AstrBotDevs/AstrBot](https://github.com/AstrBotDevs/AstrBot): strongest packaged multi-channel agent framework signal.
+- [oblien/openship](https://github.com/oblien/openship): strongest non-AI reminder that deployment plumbing still matters on the same board.
