@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 167,
+    "total_notes": 168,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 230,
+    "artifact_count": 231,
     "link_count": 267,
     "thread_count": 5
   },
@@ -76,15 +76,19 @@
     "weekly": {
       "label": "Weekly",
       "title": "AI Agent Weekly Synthesis",
-      "meta": "Window: 2026-07-11 to 2026-07-18",
+      "meta": "Window: 2026-07-18 to 2026-07-25",
       "highlights": [
-        "**Anthropic** had the most important in-window platform signal. On **July 15, 2026**, the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **mid-conversation system messages** on Claude Fable 5, Claude Mythos 5, and Claude Opus 4.8, and expanded the **Admin API** for Claude Enterprise organization management. On the required Anthropic sub-surfaces, I explicitly checked the official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents docs](https://platform.claude.com/docs/en/agents-and-tools/managed-agents/overview), [advisor tool docs](https://docs.anthropic.com/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code docs](https://code.claude.com/docs/en/whats-new). I did **not** find a new in-window Managed Agents or advisor-tool capability launch after the large **June 2 to June 9, 2026** burst, but Claude Code itself changed materially on **July 17, 2026**.",
-        "**Claude Code** had the clearest Anthropic execution-surface movement this week. The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) and [Week 29 digest](https://code.claude.com/docs/en/whats-new/2026-w29) show that on **July 17, 2026** `/fork` changed from an in-session subagent pattern into a **new background session** with its own `claude agents` row, `/subtask` became the in-session replacement, plugins in `.claude/skills` now auto-load, and `claude plugin init` now scaffolds plugins. That is a real control-plane shift, not just bugfix noise.",
-        "**OpenAI** concentrated this week on the management and packaging layer around longer-running work. The official [ChatGPT Enterprise & Edu release notes](https://help.openai.com/en/articles/10128477-chatgpt-enterprise-edu-release-notes) added **workspace-scoped Admin keys and 120 days of analytics history** on **July 16, 2026**, plus **EKM support for apps with sync** on **July 15, 2026**. The new [Skills in ChatGPT](https://help.openai.com/en/articles/20001066-skills-in-chatgpt) page published on **July 18, 2026** makes workspace-managed skill governance explicit, while [Apps in ChatGPT](https://help.openai.com/en/articles/11487775-connectors-in-chatgpt) continues to position the **Plugin Directory** as the discovery surface across ChatGPT and Codex after the **July 9, 2026** migration."
+        "**Anthropic had the clearest in-window platform movement.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **Claude Opus 5** on **July 24, 2026**, with a 1M-token context window, 128k max output tokens, and thinking on by default. The same release added **mid-conversation tool changes** in beta, which matters more than the model launch itself because it lets long-running sessions add or remove tools without throwing away prompt-cache continuity.",
+        "**Claude Code moved in lockstep with the platform.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows that on **July 24, 2026** Claude Code made **Opus 5 the default Opus model**, added `sandbox.network.strictAllowlist`, and added a `DirectoryAdded` hook for newly registered repo roots mid-session. The [Claude Code “What’s New” surface](https://code.claude.com/docs/en/whats-new) still shows **Week 29 (July 13–17, 2026)** as the latest digest, so the changelog is the authoritative surface for this week’s Claude Code changes.",
+        "**Anthropic’s Managed Agents and advisor tool were explicitly checked and did not receive a new in-window launch.** I checked the required [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code docs surface](https://code.claude.com/docs/en/whats-new). The latest material Managed Agents change still visible on the official release notes surface is **June 9, 2026** scheduled deployments and vault env-var credentials; the latest advisor-tool change remains **June 2, 2026** `max_tokens`."
       ],
       "latest_path": "radar/weekly/latest.md",
       "archive_path": "radar/weekly/",
       "recent": [
+        {
+          "name": "2026-07-25",
+          "path": "radar/weekly/2026-07-25.md"
+        },
         {
           "name": "2026-07-18",
           "path": "radar/weekly/2026-07-18.md"
@@ -104,13 +108,9 @@
         {
           "name": "2026-06-12",
           "path": "radar/weekly/2026-06-12.md"
-        },
-        {
-          "name": "2026-06-05",
-          "path": "radar/weekly/2026-06-05.md"
         }
       ],
-      "count": 14
+      "count": 15
     },
     "daily": {
       "label": "Daily",
@@ -187,7 +187,7 @@
       "count": 77
     }
   },
-  "deep_dive": "### The control plane is becoming the product",
+  "deep_dive": "### Stateful agents are becoming governable runtime objects",
   "proposal_candidates": [],
   "knowledge_network": {
     "schema_version": 1,
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 230,
+      "artifact_count": 231,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 177,
+        "radar": 178,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -6631,6 +6631,36 @@
           "https://github.blog/changelog/label/copilot/",
           "https://developers.googleblog.com/expanding-choice-in-gemini-enterprise-agent-platform-introducing-grounding-with-parallel-web-search/",
           "https://developers.googleblog.com/building-scalable-ai-agents-with-modular-prompt-transpilation/"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/weekly/2026-07-25.md",
+        "layer": "radar",
+        "path": "docs/radar/weekly/2026-07-25.md",
+        "title": "AI Agent Weekly Synthesis",
+        "date": "2026-07-25",
+        "status": "",
+        "themes": [
+          "long-running agents",
+          "context engineering",
+          "coding agents",
+          "tool use"
+        ],
+        "summary": "Date: 2026-07-25 Window: 2026-07-18 to 2026-07-25",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://code.claude.com/docs/en/whats-new",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://github.blog/changelog/2026-07-23-copilot-cloud-agent-for-linear-is-now-generally-available/",
+          "https://github.blog/changelog/2026-07-23-agent-automation-controls-in-github-issues-in-public-preview/",
+          "https://github.blog/changelog/2026-07-23-github-mcp-server-supports-the-next-mcp-specification/",
+          "https://github.blog/changelog/2026-07-24-claude-opus-5-is-now-available-in-github-copilot/",
+          "https://developers.googleblog.com/building-scalable-ai-agents-with-modular-prompt-transpilation/",
+          "https://developers.googleblog.com/expanding-choice-in-gemini-enterprise-agent-platform-introducing-grounding-with-parallel-web-search/",
+          "https://help.openai.com/en/articles/6825453-chatgpt-release-notes"
         ],
         "local_refs": []
       },

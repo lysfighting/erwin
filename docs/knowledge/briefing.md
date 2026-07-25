@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `167` durable notes are currently indexed across `3` recurring streams.
-- `230` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `168` durable notes are currently indexed across `3` recurring streams.
+- `231` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -20,10 +20,10 @@
 
 ### AI Agent Weekly Synthesis
 
-- Metadata: `Window: 2026-07-11 to 2026-07-18`
-- **Anthropic** had the most important in-window platform signal. On **July 15, 2026**, the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **mid-conversation system messages** on Claude Fable 5, Claude Mythos 5, and Claude Opus 4.8, and expanded the **Admin API** for Claude Enterprise organization management. On the required Anthropic sub-surfaces, I explicitly checked the official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents docs](https://platform.claude.com/docs/en/agents-and-tools/managed-agents/overview), [advisor tool docs](https://docs.anthropic.com/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code docs](https://code.claude.com/docs/en/whats-new). I did **not** find a new in-window Managed Agents or advisor-tool capability launch after the large **June 2 to June 9, 2026** burst, but Claude Code itself changed materially on **July 17, 2026**.
-- **Claude Code** had the clearest Anthropic execution-surface movement this week. The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) and [Week 29 digest](https://code.claude.com/docs/en/whats-new/2026-w29) show that on **July 17, 2026** `/fork` changed from an in-session subagent pattern into a **new background session** with its own `claude agents` row, `/subtask` became the in-session replacement, plugins in `.claude/skills` now auto-load, and `claude plugin init` now scaffolds plugins. That is a real control-plane shift, not just bugfix noise.
-- **OpenAI** concentrated this week on the management and packaging layer around longer-running work. The official [ChatGPT Enterprise & Edu release notes](https://help.openai.com/en/articles/10128477-chatgpt-enterprise-edu-release-notes) added **workspace-scoped Admin keys and 120 days of analytics history** on **July 16, 2026**, plus **EKM support for apps with sync** on **July 15, 2026**. The new [Skills in ChatGPT](https://help.openai.com/en/articles/20001066-skills-in-chatgpt) page published on **July 18, 2026** makes workspace-managed skill governance explicit, while [Apps in ChatGPT](https://help.openai.com/en/articles/11487775-connectors-in-chatgpt) continues to position the **Plugin Directory** as the discovery surface across ChatGPT and Codex after the **July 9, 2026** migration.
+- Metadata: `Window: 2026-07-18 to 2026-07-25`
+- **Anthropic had the clearest in-window platform movement.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **Claude Opus 5** on **July 24, 2026**, with a 1M-token context window, 128k max output tokens, and thinking on by default. The same release added **mid-conversation tool changes** in beta, which matters more than the model launch itself because it lets long-running sessions add or remove tools without throwing away prompt-cache continuity.
+- **Claude Code moved in lockstep with the platform.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows that on **July 24, 2026** Claude Code made **Opus 5 the default Opus model**, added `sandbox.network.strictAllowlist`, and added a `DirectoryAdded` hook for newly registered repo roots mid-session. The [Claude Code “What’s New” surface](https://code.claude.com/docs/en/whats-new) still shows **Week 29 (July 13–17, 2026)** as the latest digest, so the changelog is the authoritative surface for this week’s Claude Code changes.
+- **Anthropic’s Managed Agents and advisor tool were explicitly checked and did not receive a new in-window launch.** I checked the required [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code docs surface](https://code.claude.com/docs/en/whats-new). The latest material Managed Agents change still visible on the official release notes surface is **June 9, 2026** scheduled deployments and vault env-var credentials; the latest advisor-tool change remains **June 2, 2026** `max_tokens`.
 
 ## Daily Signal Snapshot
 
@@ -43,7 +43,7 @@
 
 ## Durable Interpretation
 
-### The control plane is becoming the product
+### Stateful agents are becoming governable runtime objects
 
 ## Current Proposal Candidates
 
@@ -72,12 +72,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Weekly Synthesis
 
+- [2026-07-25](../radar/weekly/2026-07-25.md)
 - [2026-07-18](../radar/weekly/2026-07-18.md)
 - [2026-07-10](../radar/weekly/2026-07-10.md)
 - [2026-07-03](../radar/weekly/2026-07-03.md)
 - [2026-06-26](../radar/weekly/2026-06-26.md)
 - [2026-06-12](../radar/weekly/2026-06-12.md)
-- [2026-06-05](../radar/weekly/2026-06-05.md)
 
 ### GitHub Trending
 

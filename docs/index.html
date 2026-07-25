@@ -434,17 +434,17 @@
         This page is the human-facing front door for the repository&#x27;s knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.
       </p>
       <div class="hero-stats">
-        <div class="stat-chip"><strong>167</strong><span>Durable notes indexed</span></div>
+        <div class="stat-chip"><strong>168</strong><span>Durable notes indexed</span></div>
         <div class="stat-chip"><strong>3 streams</strong><span>Daily, weekly, trending</span></div>
         <div class="stat-chip"><strong>5 layers</strong><span>Radar to implementation</span></div>
-        <div class="stat-chip"><strong>230</strong><span>Network artifacts</span></div>
+        <div class="stat-chip"><strong>231</strong><span>Network artifacts</span></div>
         <div class="stat-chip"><strong>267</strong><span>Typed local links</span></div>
       </div>
       <div class="hero-grid">
         <div class="hero-panel">
           <div class="eyebrow">Current Lead</div>
           <h2>AI Agent Weekly Synthesis</h2>
-          <p>### The control plane is becoming the product</p>
+          <p>### Stateful agents are becoming governable runtime objects</p>
         </div>
         <div class="hero-panel">
           <div class="eyebrow">At A Glance</div>
@@ -476,8 +476,8 @@
     <article class="brief-card warm">
       <div class="eyebrow">Weekly</div>
       <h3>AI Agent Weekly Synthesis</h3>
-      <p class="meta">Window: 2026-07-11 to 2026-07-18</p>
-      <ul><li><strong>Anthropic</strong> had the most important in-window platform signal. On <strong>July 15, 2026</strong>, the <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a> added <strong>mid-conversation system messages</strong> on Claude Fable 5, Claude Mythos 5, and Claude Opus 4.8, and expanded the <strong>Admin API</strong> for Claude Enterprise organization management. On the required Anthropic sub-surfaces, I explicitly checked the official <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a>, <a href="https://platform.claude.com/docs/en/agents-and-tools/managed-agents/overview">Claude Managed Agents docs</a>, <a href="https://docs.anthropic.com/en/agents-and-tools/tool-use/advisor-tool">advisor tool docs</a>, <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a>, and <a href="https://code.claude.com/docs/en/whats-new">Claude Code docs</a>. I did <strong>not</strong> find a new in-window Managed Agents or advisor-tool capability launch after the large <strong>June 2 to June 9, 2026</strong> burst, but Claude Code itself changed materially on <strong>July 17, 2026</strong>.</li><li><strong>Claude Code</strong> had the clearest Anthropic execution-surface movement this week. The official <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a> and <a href="https://code.claude.com/docs/en/whats-new/2026-w29">Week 29 digest</a> show that on <strong>July 17, 2026</strong> <code>/fork</code> changed from an in-session subagent pattern into a <strong>new background session</strong> with its own <code>claude agents</code> row, <code>/subtask</code> became the in-session replacement, plugins in <code>.claude/skills</code> now auto-load, and <code>claude plugin init</code> now scaffolds plugins. That is a real control-plane shift, not just bugfix noise.</li><li><strong>OpenAI</strong> concentrated this week on the management and packaging layer around longer-running work. The official <a href="https://help.openai.com/en/articles/10128477-chatgpt-enterprise-edu-release-notes">ChatGPT Enterprise &amp; Edu release notes</a> added <strong>workspace-scoped Admin keys and 120 days of analytics history</strong> on <strong>July 16, 2026</strong>, plus <strong>EKM support for apps with sync</strong> on <strong>July 15, 2026</strong>. The new <a href="https://help.openai.com/en/articles/20001066-skills-in-chatgpt">Skills in ChatGPT</a> page published on <strong>July 18, 2026</strong> makes workspace-managed skill governance explicit, while <a href="https://help.openai.com/en/articles/11487775-connectors-in-chatgpt">Apps in ChatGPT</a> continues to position the <strong>Plugin Directory</strong> as the discovery surface across ChatGPT and Codex after the <strong>July 9, 2026</strong> migration.</li></ul>
+      <p class="meta">Window: 2026-07-18 to 2026-07-25</p>
+      <ul><li><strong>Anthropic had the clearest in-window platform movement.</strong> The official <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a> added <strong>Claude Opus 5</strong> on <strong>July 24, 2026</strong>, with a 1M-token context window, 128k max output tokens, and thinking on by default. The same release added <strong>mid-conversation tool changes</strong> in beta, which matters more than the model launch itself because it lets long-running sessions add or remove tools without throwing away prompt-cache continuity.</li><li><strong>Claude Code moved in lockstep with the platform.</strong> The official <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a> shows that on <strong>July 24, 2026</strong> Claude Code made <strong>Opus 5 the default Opus model</strong>, added <code>sandbox.network.strictAllowlist</code>, and added a <code>DirectoryAdded</code> hook for newly registered repo roots mid-session. The <a href="https://code.claude.com/docs/en/whats-new">Claude Code “What’s New” surface</a> still shows <strong>Week 29 (July 13–17, 2026)</strong> as the latest digest, so the changelog is the authoritative surface for this week’s Claude Code changes.</li><li><strong>Anthropic’s Managed Agents and advisor tool were explicitly checked and did not receive a new in-window launch.</strong> I checked the required <a href="https://platform.claude.com/docs/en/managed-agents/overview">Claude Managed Agents overview</a>, <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool">advisor tool docs</a>, <a href="https://platform.claude.com/docs/en/release-notes/overview">Claude Platform release notes</a>, <a href="https://code.claude.com/docs/en/changelog">Claude Code changelog</a>, and <a href="https://code.claude.com/docs/en/whats-new">Claude Code docs surface</a>. The latest material Managed Agents change still visible on the official release notes surface is <strong>June 9, 2026</strong> scheduled deployments and vault env-var credentials; the latest advisor-tool change remains <strong>June 2, 2026</strong> <code>max_tokens</code>.</li></ul>
       <div class="card-actions">
         <a class="primary-link" href="radar/weekly/latest.md">Open latest</a>
         <a class="secondary-link" href="radar/weekly/">Browse archive</a>
@@ -522,7 +522,7 @@
       <div class="split">
         <article class="insight-card">
           <h3>Theme Deep Dive</h3>
-          <p>### The control plane is becoming the product</p>
+          <p>### Stateful agents are becoming governable runtime objects</p>
         </article>
         <article class="proposal-card">
           <h3>Current Proposal Candidates</h3>
@@ -560,7 +560,7 @@
         <article class="network-card">
           <h3>Network snapshot</h3>
           <p>The graph is rebuilt from Markdown and selected implementation entrypoints. It is not a database; Markdown remains the source of truth.</p>
-          <div class="metric-line"><span>Artifacts</span><strong>230</strong></div>
+          <div class="metric-line"><span>Artifacts</span><strong>231</strong></div>
           <div class="metric-line"><span>Typed links</span><strong>267</strong></div>
           <div class="metric-line"><span>Active threads</span><strong>5</strong></div>
           <div class="metric-line"><span>Proposal records</span><strong>5</strong></div>
@@ -595,7 +595,7 @@
 
     <section class="archive-column">
       <h4>Weekly Synthesis</h4>
-      <ul><li><a href="radar/weekly/2026-07-18.md">2026-07-18</a></li><li><a href="radar/weekly/2026-07-10.md">2026-07-10</a></li><li><a href="radar/weekly/2026-07-03.md">2026-07-03</a></li><li><a href="radar/weekly/2026-06-26.md">2026-06-26</a></li><li><a href="radar/weekly/2026-06-12.md">2026-06-12</a></li><li><a href="radar/weekly/2026-06-05.md">2026-06-05</a></li></ul>
+      <ul><li><a href="radar/weekly/2026-07-25.md">2026-07-25</a></li><li><a href="radar/weekly/2026-07-18.md">2026-07-18</a></li><li><a href="radar/weekly/2026-07-10.md">2026-07-10</a></li><li><a href="radar/weekly/2026-07-03.md">2026-07-03</a></li><li><a href="radar/weekly/2026-06-26.md">2026-06-26</a></li><li><a href="radar/weekly/2026-06-12.md">2026-06-12</a></li></ul>
     </section>
 
 
