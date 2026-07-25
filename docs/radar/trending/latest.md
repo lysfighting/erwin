@@ -1,46 +1,49 @@
-# GitHub Trending - 2026-07-23
+# GitHub Trending - 2026-07-25
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-07-23 is mixed and infrastructure-heavy. AI, agent, and coding-tooling repos are present, but they are sharing the board with communication platforms, dashboards, finance models, CAD tooling, Minecraft infra, and older software-history curiosities. The board is not AI-only; it is rewarding usable products, operator surfaces, and pragmatic tooling.
+The default global board captured on 2026-07-25 is mixed but still strongly shaped by coordination, agent infrastructure, and practical developer tooling. AI repos are present, but they share the board with communication products, privacy tools, finance models, game-server infrastructure, and media tooling. This is a broad software-momentum board, not an AI-only board.
 
 ## Notable Projects
 
 - [block/buzz](https://github.com/block/buzz)  
-  Hive-mind communication platform in Rust; notable because coordination layers are still attracting broad attention outside narrow LLM stacks.
-
-- [koala73/worldmonitor](https://github.com/koala73/worldmonitor)  
-  Real-time intelligence dashboard with news, geopolitics, and infrastructure monitoring.
-
-- [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute)  
-  Multi-provider AI gateway with routing, fallback, compression, and agent-tool integration across Claude Code, Codex, and adjacent shells.
-
-- [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills)  
-  Curated list of Claude skills, resources, and customization tooling.
-
-- [agegr/pi-web](https://github.com/agegr/pi-web)  
-  Web UI for the pi coding agent.
+  Hive-mind communication platform in Rust; notable because coordination layers are still drawing broad attention.
 
 - [alibaba/open-code-review](https://github.com/alibaba/open-code-review)  
-  Hybrid code-review stack that combines deterministic pipelines and LLM agents with line-level review output.
+  Hybrid code-review system that combines deterministic pipelines with LLM agents and line-level comments.
 
-- [earthtojake/text-to-cad](https://github.com/earthtojake/text-to-cad)  
-  CAD, robotics, and hardware-design agent skills; interesting because the board still rewards domain-specific agent packaging, not only general copilots.
+- [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite)  
+  Browser for AI agents with logged-in browser-state sharing for agent workflows like Codex or Claude Code.
+
+- [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills)  
+  Curated Claude Skills list, relevant because skills remain a customization and distribution layer.
+
+- [anthropics/claude-cookbooks](https://github.com/anthropics/claude-cookbooks)  
+  Official notebooks and recipes from Anthropic, notable because first-party enablement material is also surfacing on the board.
+
+- [mattpocock/skills](https://github.com/mattpocock/skills)  
+  Public `.agents` skills collection, reinforcing the spread of reusable agent workflow packs.
+
+- [permissionlesstech/bitchat](https://github.com/permissionlesstech/bitchat)  
+  Bluetooth mesh chat in Swift, included because the board is broader than AI and is still rewarding communication primitives.
+
+- [Pumpkin-MC/Pumpkin](https://github.com/Pumpkin-MC/Pumpkin)  
+  Fast Minecraft server implementation, another reminder that the board includes general systems and infra momentum.
 
 ## Why They May Be Surfacing
 
-- Communication and control surfaces are hot. [block/buzz](https://github.com/block/buzz) and [agegr/pi-web](https://github.com/agegr/pi-web) both package interaction and coordination rather than just raw models.
-- Routing and interoperability remain live pain points. [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute) is trending because model/provider switching, cost control, and fallback logic are still unsolved for many teams.
-- Skill packaging is still a distribution layer. [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) shows ongoing demand for reusable workflow extensions.
-- Hybrid deterministic-plus-LLM architectures are gaining attention. [alibaba/open-code-review](https://github.com/alibaba/open-code-review) is a direct example of the "pipeline plus agent" pattern.
-- The board is broader than AI. [koala73/worldmonitor](https://github.com/koala73/worldmonitor) and [earthtojake/text-to-cad](https://github.com/earthtojake/text-to-cad) show that applied intelligence products and domain tooling are part of the same momentum snapshot.
+- Agent coordination is hot. [block/buzz](https://github.com/block/buzz) and [permissionlesstech/bitchat](https://github.com/permissionlesstech/bitchat) both package communication and shared-state interaction.
+- Production hybrid patterns are getting attention. [alibaba/open-code-review](https://github.com/alibaba/open-code-review) reflects the deterministic-pipeline-plus-agent architecture that keeps reappearing in practical coding systems.
+- Browser and session state are still unsolved for agents. [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite) is surfacing because giving agents access to authenticated web context remains painful.
+- Skills are still a delivery format. [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) and [mattpocock/skills](https://github.com/mattpocock/skills) show continued demand for reusable operating extensions.
+- The board is not narrowly AI-centric. [Pumpkin-MC/Pumpkin](https://github.com/Pumpkin-MC/Pumpkin) and broader consumer or infra projects show that general builder attention remains diverse.
 
 ## Watchlist
 
-- [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute): strongest provider-routing and agent-shell interoperability signal.
-- [alibaba/open-code-review](https://github.com/alibaba/open-code-review): strongest hybrid deterministic-plus-agent review signal.
-- [agegr/pi-web](https://github.com/agegr/pi-web): strongest agent UI/operator-surface signal.
-- [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills): strongest skills-distribution signal.
-- [block/buzz](https://github.com/block/buzz): strongest reminder that coordination UX is trending alongside pure AI repos.
+- [alibaba/open-code-review](https://github.com/alibaba/open-code-review): strongest hybrid review-pipeline signal.
+- [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite): strongest browser-state-for-agents signal.
+- [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills): strongest skill-packaging signal.
+- [mattpocock/skills](https://github.com/mattpocock/skills): strongest personal-agent-workflow-distribution signal.
+- [block/buzz](https://github.com/block/buzz): strongest coordination-surface signal.

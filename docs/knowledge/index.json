@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 168,
+    "total_notes": 170,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 231,
+    "artifact_count": 233,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-07-23",
-      "meta": "Window: 2026-07-17 to 2026-07-23",
+      "title": "Daily Radar - 2026-07-25",
+      "meta": "Window: 2026-07-19 to 2026-07-25",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-07-25",
+          "path": "radar/daily/2026-07-25.md"
+        },
         {
           "name": "2026-07-23",
           "path": "radar/daily/2026-07-23.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-07-19",
           "path": "radar/daily/2026-07-19.md"
-        },
-        {
-          "name": "2026-07-18",
-          "path": "radar/daily/2026-07-18.md"
         }
       ],
-      "count": 76
+      "count": 77
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-07-23",
+      "title": "GitHub Trending - 2026-07-25",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
         "[block/buzz](https://github.com/block/buzz)",
-        "[koala73/worldmonitor](https://github.com/koala73/worldmonitor)",
-        "[diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute)"
+        "[alibaba/open-code-review](https://github.com/alibaba/open-code-review)",
+        "[citrolabs/ego-lite](https://github.com/citrolabs/ego-lite)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-07-25",
+          "path": "radar/trending/2026-07-25.md"
+        },
         {
           "name": "2026-07-23",
           "path": "radar/trending/2026-07-23.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-07-19",
           "path": "radar/trending/2026-07-19.md"
-        },
-        {
-          "name": "2026-07-18",
-          "path": "radar/trending/2026-07-18.md"
         }
       ],
-      "count": 77
+      "count": 78
     }
   },
   "deep_dive": "### Stateful agents are becoming governable runtime objects",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 231,
+      "artifact_count": 233,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 178,
+        "radar": 180,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -3947,6 +3947,36 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-07-25.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-07-25.md",
+        "title": "Daily Radar - 2026-07-25",
+        "date": "2026-07-25",
+        "status": "",
+        "themes": [
+          "long-running agents",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-07-19 to 2026-07-25",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://code.claude.com/docs/en/whats-new",
+          "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+          "https://developers.openai.com/api/docs/changelog",
+          "https://developers.openai.com/codex/changelog",
+          "https://openai.com/index/introducing-chatgpt-agent/",
+          "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-6-flash-3-5-flash-lite-3-5-flash-cyber/",
+          "https://agent.minimax.io/docs/changelog",
+          "https://qwen.ai/blog?id=qwen-image-3.0",
+          "https://api-docs.deepseek.com/"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -6186,6 +6216,33 @@
           "https://github.com/agegr/pi-web",
           "https://github.com/alibaba/open-code-review",
           "https://github.com/earthtojake/text-to-cad"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-07-25.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-07-25.md",
+        "title": "GitHub Trending - 2026-07-25",
+        "date": "2026-07-25",
+        "status": "",
+        "themes": [
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/block/buzz",
+          "https://github.com/alibaba/open-code-review",
+          "https://github.com/citrolabs/ego-lite",
+          "https://github.com/ComposioHQ/awesome-claude-skills",
+          "https://github.com/anthropics/claude-cookbooks",
+          "https://github.com/mattpocock/skills",
+          "https://github.com/permissionlesstech/bitchat",
+          "https://github.com/Pumpkin-MC/Pumpkin"
         ],
         "local_refs": []
       },
