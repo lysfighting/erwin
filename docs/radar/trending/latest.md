@@ -1,49 +1,49 @@
-# GitHub Trending - 2026-07-25
+# GitHub Trending - 2026-07-26
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-07-25 is mixed but still strongly shaped by coordination, agent infrastructure, and practical developer tooling. AI repos are present, but they share the board with communication products, privacy tools, finance models, game-server infrastructure, and media tooling. This is a broad software-momentum board, not an AI-only board.
+The default global board captured on 2026-07-26 is broad rather than AI-only. Communication products, terminal tooling, JavaScript infrastructure, finance models, web builders, AI databases, and agent infrastructure are all represented. AI and agent repositories are clearly present, but they are sharing momentum with general developer and systems projects instead of dominating the board outright.
 
 ## Notable Projects
 
-- [block/buzz](https://github.com/block/buzz)  
-  Hive-mind communication platform in Rust; notable because coordination layers are still drawing broad attention.
-
-- [alibaba/open-code-review](https://github.com/alibaba/open-code-review)  
-  Hybrid code-review system that combines deterministic pipelines with LLM agents and line-level comments.
+- [permissionlesstech/bitchat](https://github.com/permissionlesstech/bitchat)  
+  Bluetooth mesh chat in Swift; notable because communication primitives are still drawing broad builder attention.
 
 - [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite)  
-  Browser for AI agents with logged-in browser-state sharing for agent workflows like Codex or Claude Code.
+  Browser for AI agents that shares logged-in browser state with tools like Codex or Claude Code.
 
-- [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills)  
-  Curated Claude Skills list, relevant because skills remain a customization and distribution layer.
+- [block/buzz](https://github.com/block/buzz)  
+  Rust-based hive-mind communication platform; another sign that shared coordination surfaces are hot.
 
-- [anthropics/claude-cookbooks](https://github.com/anthropics/claude-cookbooks)  
-  Official notebooks and recipes from Anthropic, notable because first-party enablement material is also surfacing on the board.
+- [CoreBunch/Instatic](https://github.com/CoreBunch/Instatic)  
+  Agentic self-hosted visual CMS and static-site builder; notable because it mixes site tooling with agentic generation.
 
-- [mattpocock/skills](https://github.com/mattpocock/skills)  
-  Public `.agents` skills collection, reinforcing the spread of reusable agent workflow packs.
+- [alibaba/open-code-review](https://github.com/alibaba/open-code-review)  
+  Hybrid review system that combines deterministic pipelines with LLM-agent comments and rule packs.
 
-- [permissionlesstech/bitchat](https://github.com/permissionlesstech/bitchat)  
-  Bluetooth mesh chat in Swift, included because the board is broader than AI and is still rewarding communication primitives.
+- [OtterMind/Chat2DB](https://github.com/OtterMind/Chat2DB)  
+  AI-driven database tool and SQL client; relevant because practical AI developer tooling keeps surfacing.
 
-- [Pumpkin-MC/Pumpkin](https://github.com/Pumpkin-MC/Pumpkin)  
-  Fast Minecraft server implementation, another reminder that the board includes general systems and infra momentum.
+- [andrewyng/aisuite](https://github.com/andrewyng/aisuite)  
+  Unified interface across multiple AI providers; relevant because provider fragmentation is now a day-to-day integration problem.
+
+- [yorukot/superfile](https://github.com/yorukot/superfile)  
+  Modern terminal file manager; included because the board is also rewarding high-quality developer ergonomics outside AI.
 
 ## Why They May Be Surfacing
 
-- Agent coordination is hot. [block/buzz](https://github.com/block/buzz) and [permissionlesstech/bitchat](https://github.com/permissionlesstech/bitchat) both package communication and shared-state interaction.
-- Production hybrid patterns are getting attention. [alibaba/open-code-review](https://github.com/alibaba/open-code-review) reflects the deterministic-pipeline-plus-agent architecture that keeps reappearing in practical coding systems.
-- Browser and session state are still unsolved for agents. [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite) is surfacing because giving agents access to authenticated web context remains painful.
-- Skills are still a delivery format. [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) and [mattpocock/skills](https://github.com/mattpocock/skills) show continued demand for reusable operating extensions.
-- The board is not narrowly AI-centric. [Pumpkin-MC/Pumpkin](https://github.com/Pumpkin-MC/Pumpkin) and broader consumer or infra projects show that general builder attention remains diverse.
+- Communication and coordination are still hot. [permissionlesstech/bitchat](https://github.com/permissionlesstech/bitchat) and [block/buzz](https://github.com/block/buzz) both package shared-state interaction and messaging.
+- Browser context for agents is still painful. [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite) is surfacing because authenticated web state remains a real blocker for production agents.
+- Hybrid deterministic-plus-agent workflows keep winning attention. [alibaba/open-code-review](https://github.com/alibaba/open-code-review) is a direct example.
+- Provider sprawl is creating demand for unification layers. [andrewyng/aisuite](https://github.com/andrewyng/aisuite) is surfacing because teams do not want every vendor integration to be bespoke.
+- The board is not narrowly AI-centric. [yorukot/superfile](https://github.com/yorukot/superfile) and other general developer tools show that broad builder momentum is still diverse.
 
 ## Watchlist
 
-- [alibaba/open-code-review](https://github.com/alibaba/open-code-review): strongest hybrid review-pipeline signal.
-- [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite): strongest browser-state-for-agents signal.
-- [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills): strongest skill-packaging signal.
-- [mattpocock/skills](https://github.com/mattpocock/skills): strongest personal-agent-workflow-distribution signal.
-- [block/buzz](https://github.com/block/buzz): strongest coordination-surface signal.
+- [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite): strongest browser-state-for-agents signal on the board.
+- [alibaba/open-code-review](https://github.com/alibaba/open-code-review): strongest hybrid review-pipeline signal on the board.
+- [andrewyng/aisuite](https://github.com/andrewyng/aisuite): strongest multi-provider routing signal on the board.
+- [block/buzz](https://github.com/block/buzz): strongest coordination-surface signal on the board.
+- [CoreBunch/Instatic](https://github.com/CoreBunch/Instatic): strongest agentic builder-tool signal on the board.
