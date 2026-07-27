@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 172,
+    "total_notes": 174,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 235,
+    "artifact_count": 237,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-07-26",
-      "meta": "Window: 2026-07-20 to 2026-07-26",
+      "title": "Daily Radar - 2026-07-27",
+      "meta": "Window: 2026-07-21 to 2026-07-27",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-07-27",
+          "path": "radar/daily/2026-07-27.md"
+        },
         {
           "name": "2026-07-26",
           "path": "radar/daily/2026-07-26.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-07-21",
           "path": "radar/daily/2026-07-21.md"
-        },
-        {
-          "name": "2026-07-20",
-          "path": "radar/daily/2026-07-20.md"
         }
       ],
-      "count": 78
+      "count": 79
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-07-26",
+      "title": "GitHub Trending - 2026-07-27",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
         "[permissionlesstech/bitchat](https://github.com/permissionlesstech/bitchat)",
-        "[citrolabs/ego-lite](https://github.com/citrolabs/ego-lite)",
-        "[block/buzz](https://github.com/block/buzz)"
+        "[amnezia-vpn/amnezia-client](https://github.com/amnezia-vpn/amnezia-client)",
+        "[moeru-ai/airi](https://github.com/moeru-ai/airi)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-07-27",
+          "path": "radar/trending/2026-07-27.md"
+        },
         {
           "name": "2026-07-26",
           "path": "radar/trending/2026-07-26.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-07-21",
           "path": "radar/trending/2026-07-21.md"
-        },
-        {
-          "name": "2026-07-20",
-          "path": "radar/trending/2026-07-20.md"
         }
       ],
-      "count": 79
+      "count": 80
     }
   },
   "deep_dive": "### Stateful agents are becoming governable runtime objects",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 235,
+      "artifact_count": 237,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 182,
+        "radar": 184,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4008,6 +4008,35 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-07-27.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-07-27.md",
+        "title": "Daily Radar - 2026-07-27",
+        "date": "2026-07-27",
+        "status": "",
+        "themes": [
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-07-21 to 2026-07-27",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://code.claude.com/docs/en/changelog",
+          "https://code.claude.com/docs/en/whats-new",
+          "https://openai.com/index/introducing-openai-presence/",
+          "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-6-flash-3-5-flash-lite-3-5-flash-cyber/",
+          "https://deepmind.google/blog/introducing-gemini-3-5-flash-cyber/",
+          "https://api-docs.deepseek.com/updates/",
+          "https://qwen.ai/blog?id=qwen-image-3.0",
+          "https://www.kimi.com/blog/",
+          "https://agent.minimax.io/docs/changelog"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -6301,6 +6330,31 @@
           "https://github.com/OtterMind/Chat2DB",
           "https://github.com/andrewyng/aisuite",
           "https://github.com/yorukot/superfile"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-07-27.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-07-27.md",
+        "title": "GitHub Trending - 2026-07-27",
+        "date": "2026-07-27",
+        "status": "",
+        "themes": [
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/permissionlesstech/bitchat",
+          "https://github.com/amnezia-vpn/amnezia-client",
+          "https://github.com/moeru-ai/airi",
+          "https://github.com/yorukot/superfile",
+          "https://github.com/alibaba/open-code-review",
+          "https://github.com/bradautomates/claude-video",
+          "https://github.com/vudovn/ag-kit"
         ],
         "local_refs": []
       },
