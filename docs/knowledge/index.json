@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 176,
+    "total_notes": 178,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 239,
+    "artifact_count": 241,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-07-28",
-      "meta": "Window: 2026-07-22 to 2026-07-28",
+      "title": "Daily Radar - 2026-07-29",
+      "meta": "Window: 2026-07-23 to 2026-07-29",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-07-29",
+          "path": "radar/daily/2026-07-29.md"
+        },
         {
           "name": "2026-07-28",
           "path": "radar/daily/2026-07-28.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-07-23",
           "path": "radar/daily/2026-07-23.md"
-        },
-        {
-          "name": "2026-07-22",
-          "path": "radar/daily/2026-07-22.md"
         }
       ],
-      "count": 80
+      "count": 81
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-07-28",
+      "title": "GitHub Trending - 2026-07-29",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
-        "[pascalorg/editor](https://github.com/pascalorg/editor)",
-        "[jenkinsci/jenkins](https://github.com/jenkinsci/jenkins)",
-        "[moeru-ai/airi](https://github.com/moeru-ai/airi)"
+        "[opengeos/GeoLibre](https://github.com/opengeos/GeoLibre)",
+        "[moeru-ai/airi](https://github.com/moeru-ai/airi)",
+        "[huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-07-29",
+          "path": "radar/trending/2026-07-29.md"
+        },
         {
           "name": "2026-07-28",
           "path": "radar/trending/2026-07-28.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-07-23",
           "path": "radar/trending/2026-07-23.md"
-        },
-        {
-          "name": "2026-07-22",
-          "path": "radar/trending/2026-07-22.md"
         }
       ],
-      "count": 81
+      "count": 82
     }
   },
   "deep_dive": "### Stateful agents are becoming governable runtime objects",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 239,
+      "artifact_count": 241,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 186,
+        "radar": 188,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4067,6 +4067,37 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-07-29.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-07-29.md",
+        "title": "Daily Radar - 2026-07-29",
+        "date": "2026-07-29",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-07-23 to 2026-07-29",
+        "external_refs": [
+          "https://docs.anthropic.com/en/release-notes/claude-apps",
+          "https://code.claude.com/docs/en/changelog",
+          "https://docs.anthropic.com/en/release-notes/api",
+          "https://docs.anthropic.com/en/docs/intro-to-claude",
+          "https://docs.anthropic.com/en/agents-and-tools/tool-use/advisor-tool",
+          "https://code.claude.com/docs/en/whats-new",
+          "https://openai.com/index/scientific-computing-agentic-ai/",
+          "https://agent.minimax.io/docs/changelog",
+          "https://api-docs.deepseek.com/updates/",
+          "https://developers.googleblog.com/en/scaling-agentic-rl-high-throughput-agentic-training-with-tunix/",
+          "https://www.moonshot.ai/",
+          "https://platform.moonshot.ai/docs/guide/kimi-k3-quickstart"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -6410,6 +6441,31 @@
           "https://github.com/microsoft/agent-governance-toolkit",
           "https://github.com/yorukot/superfile",
           "https://github.com/bradautomates/claude-video"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-07-29.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-07-29.md",
+        "title": "GitHub Trending - 2026-07-29",
+        "date": "2026-07-29",
+        "status": "",
+        "themes": [
+          "agent evals",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/opengeos/GeoLibre",
+          "https://github.com/moeru-ai/airi",
+          "https://github.com/huggingface/speech-to-speech",
+          "https://github.com/microsoft/VibeVoice",
+          "https://github.com/different-ai/openwork",
+          "https://github.com/MoonshotAI/FlashKDA",
+          "https://github.com/grokability/snipe-it",
+          "https://github.com/deepfakes/faceswap"
         ],
         "local_refs": []
       },
