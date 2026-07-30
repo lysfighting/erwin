@@ -1,69 +1,69 @@
-# Daily Radar - 2026-07-29
+# Daily Radar - 2026-07-30
 
-Window: 2026-07-23 to 2026-07-29
+Window: 2026-07-24 to 2026-07-30
 
 ## New Signals
 
-1. **Anthropic's strongest in-window move is a coordinated Claude Opus 5 push across Claude and Claude Code, while Managed Agents stayed operationally important but did not post a newer dated note inside this window.** The official [Claude release notes](https://docs.anthropic.com/en/release-notes/claude-apps) mark the **Claude Opus 5 launch** on **2026-07-24**. The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows the **2026-07-24** `2.1.219` release adding `claude-opus-5` as the default Opus model, `sandbox.network.strictAllowlist`, and the `DirectoryAdded` hook. I also explicitly checked the official [Claude Platform release notes](https://docs.anthropic.com/en/release-notes/api), [Claude Managed Agents docs](https://docs.anthropic.com/en/docs/intro-to-claude), [advisor tool docs](https://docs.anthropic.com/en/agents-and-tools/tool-use/advisor-tool), and [Claude Code What's New](https://code.claude.com/docs/en/whats-new); those surfaces did not expose a stronger separately dated in-window Managed Agents or advisor-tool update than the already-known **2026-07-22** Platform note just outside this run window.
-   Publish dates: 2026-07-24; checked-but-no-newer-in-window managed-agents/advisor surfaces against 2026-07-22 Platform notes
+1. **Anthropic's strongest in-window move is still the July 24 Claude Opus 5 rollout, paired with a same-day Claude Code update that changed the coding surface directly.** The official [Claude release notes](https://support.claude.com/en/articles/12138966-release-notes) mark **Claude Opus 5 launch** on **2026-07-24**. The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) marks **version 2.1.219** on **2026-07-24**, adding `claude-opus-5` and `sandbox.network.strictAllowlist`. I explicitly checked the official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [Claude Managed Agents memory docs](https://platform.claude.com/docs/en/managed-agents/memory), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code What's New](https://code.claude.com/docs/en/whats-new) before closing Anthropic. Those checks did not expose a newer separately dated Managed Agents or advisor-tool doc inside this window; the closest Managed Agents platform note remains **2026-07-22**, just outside the run window.
+   Publish dates: 2026-07-24; explicit checked-but-no-newer-in-window Managed Agents / advisor follow-up beyond 2026-07-22
 
-2. **OpenAI's clearest in-window agent signal is a field report that treats coding agents as real scientific software infrastructure, not just developer productivity tooling.** OpenAI's official [Scientific computing in the age of agentic AI](https://openai.com/index/scientific-computing-agentic-ai/) publication is dated **2026-07-28** and frames coding agents as a practical path for modernizing scientific software in genomics and other data-heavy domains.
+2. **OpenAI's clearest in-window agent signal is a field report that treats coding agents as infrastructure for scientific software modernization, not just developer assistance.** OpenAI's official [Scientific computing in the age of agentic AI](https://openai.com/index/scientific-computing-agentic-ai/) publication is dated **2026-07-28** and centers real case studies where coding agents help modernize genomics and other data-heavy scientific software stacks.
    Publish date: 2026-07-28
 
-3. **MiniMax kept pushing its agent shell toward longer-running operator behavior.** The official [MiniMax Code changelog](https://agent.minimax.io/docs/changelog) shows **v3.0.54** on **2026-07-27** adding continuous Browser Control plus Goal Mode for long-running work, followed by **v3.0.55** on **2026-07-28** and **v3.0.56** on **2026-07-29** with follow-up fixes. That is one of the clearest this-week examples of a vendor shipping packaged browser-using agent behavior rather than only a model update.
-   Publish dates: 2026-07-27, 2026-07-28, 2026-07-29
+3. **MiniMax shipped one of the strongest this-week packaged-agent-shell moves: built-in browser control plus explicit goal tracking.** The official [MiniMax Code changelog](https://agent.minimax.io/docs/changelog) shows **v3.0.54** on **2026-07-27** adding Browser Control and Goal Mode, followed by **v3.0.55** on **2026-07-28**, **v3.0.56** on **2026-07-29**, and **v3.0.57** on **2026-07-30** with follow-up fixes. That combination matters more than any single patch: it shows a vendor productizing long-running browser-using agent behavior as a normal app feature.
+   Publish dates: 2026-07-27, 2026-07-28, 2026-07-29, 2026-07-30
 
-4. **DeepSeek's in-window event is still a compatibility cutoff, and it remains high-signal for agent operations.** The official [DeepSeek API change log](https://api-docs.deepseek.com/updates/) ties the transition to DeepSeek V4 and sets **2026-07-24** as the discontinuation date for the legacy `deepseek-chat` and `deepseek-reasoner` aliases, with migration to `deepseek-v4-pro` and `deepseek-v4-flash`.
+4. **DeepSeek's in-window event is still an API compatibility cutoff, and it remains one of the highest-signal operational changes this week.** The official [DeepSeek API change log](https://api-docs.deepseek.com/updates/) ties the DeepSeek V4 transition to the discontinuation of the legacy `deepseek-chat` and `deepseek-reasoner` aliases on **2026-07-24**, with migration toward `deepseek-v4-pro` and `deepseek-v4-flash`.
    Cutoff date: 2026-07-24
 
-5. **Google, Moonshot/Kimi, and Qwen were explicitly checked, but none exposed a stronger dated official technical item inside this exact 7-day window.** The closest official pages were Google's [Tunix](https://developers.googleblog.com/en/scaling-agentic-rl-high-throughput-agentic-training-with-tunix/) post on **2026-07-21**, Moonshot's official [Kimi K3](https://www.moonshot.ai/) research/home surface on **2026-07-16** plus the current [Kimi K3 quickstart](https://platform.moonshot.ai/docs/guide/kimi-k3-quickstart), and Qwen's official [Qwen-Image-3.0](https://qwen.ai/blog?id=qwen-image-3.0) release on **2026-07-20**. The useful signal this week is concentration, not uniform movement: Anthropic, OpenAI, MiniMax, and DeepSeek moved the live edge more than Google, Moonshot, or Qwen.
-   Dates checked: 2026-07-21, 2026-07-20, 2026-07-16
+5. **Google, Moonshot, and Qwen were explicitly checked, but none exposed a stronger dated official technical item inside the 2026-07-24 to 2026-07-30 window.** The closest official technical items I found were Google's [Scaling Agentic RL: High-Throughput Agentic Training with Tunix](https://developers.googleblog.com/scaling-agentic-rl-high-throughput-agentic-training-with-tunix/) on **2026-07-21**, Moonshot's official [Kimi K3 quickstart](https://platform.kimi.ai/docs/guide/kimi-k3-quickstart) plus related K3 platform docs with an open-weights milestone dated **2026-07-27** inside the content but no stronger in-window release note, and Qwen's official [Qwen-Image-3.0](https://qwen.ai/blog?id=qwen-image-3.0) announcement surfaced by search as **2026-07-21**. The useful read for this run is concentration: Anthropic, OpenAI, MiniMax, and DeepSeek moved the operational edge more than Google, Moonshot, or Qwen this week.
+   Dates checked: 2026-07-21 and 2026-07-27 reference points; no stronger dated official item found in-window
 
 ## GitHub Trending Snapshot
 
-Snapshot source: [GitHub Trending](https://github.com/trending) captured from the default global board on 2026-07-29.
+Snapshot source: [GitHub Trending](https://github.com/trending) captured from the default global board on 2026-07-30.
 
-- [moeru-ai/airi](https://github.com/moeru-ai/airi): a self-hosted realtime AI companion shell with voice and game integrations; surfacing because consumer-facing agent packaging is still pulling broad interest.
-- [huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech): notable because local voice-agent construction remains a practical builder workflow, not just a research demo.
-- [microsoft/VibeVoice](https://github.com/microsoft/VibeVoice): strong signal that frontier voice stacks remain a hot open-source surface.
-- [different-ai/openwork](https://github.com/different-ai/openwork): relevant because open-source alternatives to remote cowork / autonomous work shells are still attracting attention.
-- [MoonshotAI/FlashKDA](https://github.com/MoonshotAI/FlashKDA): worth separating from first-party product news because it shows ecosystem attention around Kimi K3's attention kernel and inference path.
+- [different-ai/openwork](https://github.com/different-ai/openwork): the most directly relevant agent-work-shell repo on today's board; it is surfacing because open alternatives to managed cowork / autonomous work products are attracting attention.
+- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp): notably harness-adjacent because browser control for coding agents is crossing from vendor feature into open infrastructure.
+- [huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech): relevant because local voice-agent construction remains a practical builder workflow rather than a pure demo category.
+- [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill): worth tracking because it packages a research-and-synthesis skill for agent workflows rather than a raw model or benchmark.
+- [microsoft/AI-For-Beginners](https://github.com/microsoft/AI-For-Beginners): a reminder that broad educational repos still climb the default board alongside newer agent-native projects, so the board is mixed rather than fully frontier-coding dominated.
 
 ## Harness-Relevant Signals
 
-- Anthropic's July 24 surfaces continue the pattern that agent vendors are shipping control-plane and policy features alongside model launches, not after them.
-- OpenAI's July 28 field report strengthens the case that long-running coding agents are becoming domain tooling for regulated and research-heavy workflows, not only general software engineering helpers.
-- MiniMax's Browser Control and Goal Mode sharpen the packaged-agent-shell pattern: sustained objective tracking plus bounded approvals is becoming table stakes.
-- DeepSeek's July 24 alias cutoff is a clean reminder that runtime drift often arrives as naming and routing changes before anyone notices a capability regression.
-- Google, Moonshot, and Qwen being quieter in-window is itself a useful read: the field's practical agent pressure this week came more from operational shells and compatibility surfaces than from a synchronized model-launch wave.
+- Anthropic and MiniMax both reinforced that the field's differentiation layer is increasingly the agent control plane: browser use, sandbox policy, long-running goals, and session/runtime management.
+- OpenAI's scientific-software report strengthens the idea that long-running coding agents are becoming domain workflow infrastructure with stronger stewardship and audit expectations.
+- DeepSeek's July 24 alias retirement is a clean example of provider drift arriving as naming and routing breakage before obvious capability regressions.
+- ChromeDevTools MCP appearing on the default trending board on the same day that browser-using agent shells remain active across vendors is a useful cross-check that agent-browser control is no longer niche.
+- Google, Moonshot, and Qwen being quieter in this exact window is itself signal: this week favored operational shells and compatibility surfaces more than a synchronized frontier-model announcement cycle.
 
 ## Candidate Proposals
 
 ### Proposal 1
 
 - `source_type`: first-party product release notes and changelogs
-- `problem_pattern`: browser-using and goal-tracking agent shells are being productized quickly across vendors
-- `why_it_matters_for_harness`: Anthropic and MiniMax both reinforced the need to watch operational guardrails, session flow, and permission boundaries rather than focusing only on headline model quality
+- `problem_pattern`: browser-using and goal-tracking agent shells are becoming baseline product features across vendor stacks
+- `why_it_matters_for_harness`: Anthropic and MiniMax are both emphasizing runtime guardrails, session lifecycle, and permission boundaries rather than just raw model capability
 - `recommended_disposition`: `watch`
 
 ### Proposal 2
 
 - `source_type`: first-party API change logs
-- `problem_pattern`: model aliases, headers, and route names can break silently even when capability branding stays stable
-- `why_it_matters_for_harness`: DeepSeek's July 24 alias retirement is exactly the kind of provider drift that should be caught before runtime failures are discovered manually
+- `problem_pattern`: provider aliases and compatibility routes can expire on short notice while the surrounding product branding looks stable
+- `why_it_matters_for_harness`: DeepSeek's July 24 retirement pattern is exactly the sort of drift that should be caught by provider-compatibility checks before runtime failures show up manually
 - `recommended_disposition`: `encode-as-eval`
 
 ### Proposal 3
 
 - `source_type`: first-party research publication plus product release notes
-- `problem_pattern`: long-running coding agents are shifting from generic copilots toward domain-specific work engines with stronger evidence and audit expectations
-- `why_it_matters_for_harness`: OpenAI's scientific-computing report and Anthropic's / MiniMax's operational surfaces both point toward agent tasks that need better observability and bounded autonomy
+- `problem_pattern`: coding agents are moving into regulated, research-heavy, or evidence-sensitive domains that require better operational visibility
+- `why_it_matters_for_harness`: OpenAI's scientific-computing field report and the Anthropic / MiniMax control-plane updates both point toward agent loops that need stronger observability and bounded autonomy review
 - `recommended_disposition`: `prototype`
 
 ## Watch Next
 
-- Re-check Anthropic in the same required order next run: [Claude Platform release notes](https://docs.anthropic.com/en/release-notes/api), [Claude Managed Agents docs](https://docs.anthropic.com/en/docs/intro-to-claude), [advisor tool docs](https://docs.anthropic.com/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code What's New](https://code.claude.com/docs/en/whats-new).
-- Watch for a separately dated Anthropic Managed Agents or advisor-tool note inside the next window; this run's explicit checks found no newer in-window item on those surfaces beyond the July 22 Platform note.
-- Track whether OpenAI follows the July 28 scientific-computing publication with a more operational developer surface, eval surface, or Codex-specific implementation note.
-- Re-check Moonshot's official K3 docs for a post-launch technical report or a dated platform change tied to the K3 rollout and Moonshot V1 sunset path.
-- Re-check Google's AI developer surface and Qwen's official research/blog pages for fresh dated technical movement rather than carrying the July 21 and July 20 items forward indefinitely.
+- Re-check Anthropic in the same required order next run: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents docs](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code What's New](https://code.claude.com/docs/en/whats-new).
+- Watch specifically for an Anthropic Managed Agents or advisor-tool item that gets its own in-window date rather than relying on the July 22 platform note staying relevant by inertia.
+- Track whether OpenAI follows the July 28 scientific-computing report with a more operational developer, eval, or coding-surface announcement.
+- Re-check Moonshot's Kimi K3 platform/docs surfaces for a dated technical report or post-launch operational note rather than carrying forward the current quickstart context.
+- Re-check DeepSeek for post-cutoff migration guidance, and watch whether browser-control or MCP-adjacent repos stay on the default GitHub Trending board.

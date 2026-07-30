@@ -1,49 +1,49 @@
-# GitHub Trending - 2026-07-29
+# GitHub Trending - 2026-07-30
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-07-29 is broad and mixed rather than narrowly AI-led. Geospatial tooling, self-hosted companions, voice AI, IT management, open-source workflow layers, and legacy infrastructure all coexist on the page. AI is clearly present, especially around voice and agent shells, but it is sharing space with ordinary developer and systems software instead of overwhelming the board.
+The default global board captured on 2026-07-30 is broad rather than AI-monoculture. Agent and voice tooling are present, but they share the page with trading lists, web frameworks, Windows utilities, WhatsApp infrastructure, CI automation, and general education. That makes this board more useful as a developer-interest snapshot than as a pure frontier-model leaderboard.
 
 ## Notable Projects
 
-- [opengeos/GeoLibre](https://github.com/opengeos/GeoLibre)  
-  Geospatial software project at the top of the default board; notable because the board is not currently dominated by AI repos alone.
+- [different-ai/openwork](https://github.com/different-ai/openwork)  
+  Open-source alternative to Claude Cowork; the clearest agent-work-shell repo on the board.
 
-- [moeru-ai/airi](https://github.com/moeru-ai/airi)  
-  Self-hosted AI companion and realtime voice agent shell; one of the clearest agent-native projects on the board.
+- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp)  
+  Browser-control infrastructure for coding agents; especially relevant because MCP and browser-operation layers are becoming core agent tooling.
 
 - [huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech)  
-  Local voice-agent build stack; notable because practical multimodal agent construction remains active.
+  Local voice-agent stack; a strong signal that open multimodal agent workflows remain active.
 
-- [microsoft/VibeVoice](https://github.com/microsoft/VibeVoice)  
-  Open-source frontier voice AI; relevant because voice remains one of the hottest open model/application layers.
+- [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)  
+  Agent skill for researching and synthesizing signals across multiple public sources; notable as workflow packaging rather than raw model release.
 
-- [different-ai/openwork](https://github.com/different-ai/openwork)  
-  Open-source alternative to Claude Cowork; notable because autonomous work shells are becoming a recognizable product category.
+- [microsoft/AI-For-Beginners](https://github.com/microsoft/AI-For-Beginners)  
+  Educational AI repo still drawing broad attention, which helps show the board is not only frontier-operator software.
 
-- [MoonshotAI/FlashKDA](https://github.com/MoonshotAI/FlashKDA)  
-  Kimi Delta Attention kernels; relevant because inference infrastructure around frontier open models is surfacing directly on the default board.
+- [paperswithbacktest/awesome-systematic-trading](https://github.com/paperswithbacktest/awesome-systematic-trading)  
+  Non-AI curation repo surfacing strongly, reinforcing that the default board remains mixed.
 
-- [grokability/snipe-it](https://github.com/grokability/snipe-it)  
-  IT asset management system; included because durable operational tooling is still competitive with newer AI repositories on the same board.
+- [ansible/ansible](https://github.com/ansible/ansible)  
+  Durable automation infrastructure still climbing alongside newer AI projects.
 
-- [deepfakes/faceswap](https://github.com/deepfakes/faceswap)  
-  Longstanding media-generation tooling; notable because older multimodal tooling continues to resurface when the broader board turns creator-heavy.
+- [jenkinsci/jenkins](https://github.com/jenkinsci/jenkins)  
+  Legacy-but-still-relevant CI infrastructure on the same board as newer agent tooling.
 
 ## Why They May Be Surfacing
 
-- The board is rewarding AI projects that feel usable as products, not only papers or benchmark repos. [moeru-ai/airi](https://github.com/moeru-ai/airi), [microsoft/VibeVoice](https://github.com/microsoft/VibeVoice), and [different-ai/openwork](https://github.com/different-ai/openwork) fit that pattern directly.
-- Voice remains an active open-source frontier. [huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech) and [microsoft/VibeVoice](https://github.com/microsoft/VibeVoice) make that visible.
-- Infrastructure around frontier model architectures is getting attention, not just end-user apps. [MoonshotAI/FlashKDA](https://github.com/MoonshotAI/FlashKDA) is the clearest example.
-- The default board still leaves room for non-AI software with concrete operational value. [opengeos/GeoLibre](https://github.com/opengeos/GeoLibre) and [grokability/snipe-it](https://github.com/grokability/snipe-it) show that clearly.
-- AI is present, but the page is not monocultural. That makes this capture more useful as a general developer-interest snapshot than as an AI-only heatmap.
+- Agent projects that package concrete operator workflows are getting attention, not only model demos. [different-ai/openwork](https://github.com/different-ai/openwork) and [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill) fit that pattern directly.
+- Browser-control infrastructure is becoming a shared layer for coding agents. [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) is the clearest example on today's board.
+- Voice remains an active open-source frontier. [huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech) keeps that visible.
+- The board still rewards practical automation and platform software, not just AI novelty. [ansible/ansible](https://github.com/ansible/ansible) and [jenkinsci/jenkins](https://github.com/jenkinsci/jenkins) show that clearly.
+- The overall page is mixed enough that any AI/agent conclusions should be treated as directional rather than dominant market consensus.
 
 ## Watchlist
 
-- [moeru-ai/airi](https://github.com/moeru-ai/airi): strongest consumer-facing agent-shell signal on the board.
-- [different-ai/openwork](https://github.com/different-ai/openwork): strongest open cowork / autonomous work-shell signal.
+- [different-ai/openwork](https://github.com/different-ai/openwork): strongest open autonomous-work-shell signal on the board.
+- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp): strongest browser-control / harness-adjacent infrastructure signal.
 - [huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech): strongest local voice-agent builder signal.
-- [microsoft/VibeVoice](https://github.com/microsoft/VibeVoice): strongest frontier open voice-model signal.
-- [MoonshotAI/FlashKDA](https://github.com/MoonshotAI/FlashKDA): strongest model-inference infrastructure signal tied to a live publisher family.
+- [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill): strongest research-packaging skill signal.
+- [ansible/ansible](https://github.com/ansible/ansible): strongest reminder that automation infrastructure still competes with AI repos for broad developer attention.
