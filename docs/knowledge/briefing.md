@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `180` durable notes are currently indexed across `3` recurring streams.
-- `243` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `181` durable notes are currently indexed across `3` recurring streams.
+- `244` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -20,10 +20,10 @@
 
 ### AI Agent Weekly Synthesis
 
-- Metadata: `Window: 2026-07-18 to 2026-07-25`
-- **Anthropic had the clearest in-window platform movement.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **Claude Opus 5** on **July 24, 2026**, with a 1M-token context window, 128k max output tokens, and thinking on by default. The same release added **mid-conversation tool changes** in beta, which matters more than the model launch itself because it lets long-running sessions add or remove tools without throwing away prompt-cache continuity.
-- **Claude Code moved in lockstep with the platform.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows that on **July 24, 2026** Claude Code made **Opus 5 the default Opus model**, added `sandbox.network.strictAllowlist`, and added a `DirectoryAdded` hook for newly registered repo roots mid-session. The [Claude Code “What’s New” surface](https://code.claude.com/docs/en/whats-new) still shows **Week 29 (July 13–17, 2026)** as the latest digest, so the changelog is the authoritative surface for this week’s Claude Code changes.
-- **Anthropic’s Managed Agents and advisor tool were explicitly checked and did not receive a new in-window launch.** I checked the required [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code docs surface](https://code.claude.com/docs/en/whats-new). The latest material Managed Agents change still visible on the official release notes surface is **June 9, 2026** scheduled deployments and vault env-var credentials; the latest advisor-tool change remains **June 2, 2026** `max_tokens`.
+- Metadata: `Window: 2026-07-25 to 2026-08-01`
+- **Anthropic was quiet this week after its July 24 wave, and that absence is confirmed rather than assumed.** I explicitly checked the official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code What’s New](https://code.claude.com/docs/en/whats-new). No newer in-window Anthropic platform, Managed Agents, advisor-tool, or Claude Code launch surfaced after **July 24, 2026**. The latest still-relevant official Anthropic changes remain **July 24, 2026** Claude Opus 5 plus mid-conversation tool changes on the Platform release notes, **June 9, 2026** Managed Agents scheduled deployments / vault env-var credentials / `session_thread_id`, and **June 2, 2026** advisor tool `max_tokens`.
+- **GitHub had the strongest in-window execution-layer movement.** On **July 29, 2026**, GitHub announced [Copilot code review: agent skills and MCP now generally available](https://github.blog/changelog/2026-07-29-copilot-code-review-agent-skills-and-mcp-now-generally-available/) and [auto model selection in GitHub Copilot](https://github.blog/changelog/2026-07-29-auto-model-selection-in-github-copilot-for-vs-code-is-now-in-public-preview/). On **July 30, 2026**, it added [knowledge bases for the Copilot coding agent](https://github.blog/changelog/2026-07-30-github-copilot-coding-agent-now-supports-knowledge-bases/) and [custom instructions support for secret scanning](https://github.blog/changelog/2026-07-30-custom-instructions-support-for-secret-scanning-is-now-generally-available/). On **July 31, 2026**, it launched [Issue forms with GitHub Copilot](https://github.blog/changelog/2026-07-31-issue-forms-with-github-copilot-now-in-public-preview/) and [GitHub Models public preview](https://github.blog/changelog/2026-07-31-github-models-are-now-available-in-public-preview/).
+- **Google’s official signal was about evals and grounded retrieval inside its enterprise agent platform.** On **July 31, 2026**, Google published [Adding grading and safety evaluation capabilities in Gemini Enterprise Agent Platform](https://developers.googleblog.com/adding-grading-and-safety-evaluation-capabilities-in-gemini-enterprise-agent-platform/) and [Grounding with Parallel Web Search in Gemini Enterprise Agent Platform](https://developers.googleblog.com/expanding-choice-in-gemini-enterprise-agent-platform-introducing-grounding-with-parallel-web-search/). The first matters because it productizes agent-eval loops in the platform itself; the second matters because grounding-provider choice is being exposed as an explicit operator surface rather than hidden infrastructure.
 
 ## Daily Signal Snapshot
 
@@ -43,7 +43,7 @@
 
 ## Durable Interpretation
 
-### Stateful agents are becoming governable runtime objects
+### The control plane is moving upward: from model access to governed agent product surfaces
 
 ## Current Proposal Candidates
 
@@ -72,12 +72,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Weekly Synthesis
 
+- [2026-08-01](../radar/weekly/2026-08-01.md)
 - [2026-07-25](../radar/weekly/2026-07-25.md)
 - [2026-07-18](../radar/weekly/2026-07-18.md)
 - [2026-07-10](../radar/weekly/2026-07-10.md)
 - [2026-07-03](../radar/weekly/2026-07-03.md)
 - [2026-06-26](../radar/weekly/2026-06-26.md)
-- [2026-06-12](../radar/weekly/2026-06-12.md)
 
 ### GitHub Trending
 
