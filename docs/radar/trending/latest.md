@@ -1,49 +1,46 @@
-# GitHub Trending - 2026-07-30
+# GitHub Trending - 2026-08-01
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-07-30 is broad rather than AI-monoculture. Agent and voice tooling are present, but they share the page with trading lists, web frameworks, Windows utilities, WhatsApp infrastructure, CI automation, and general education. That makes this board more useful as a developer-interest snapshot than as a pure frontier-model leaderboard.
+The default global board captured on 2026-08-01 is broad, with AI education, agent skills, project management, SDKs, voice tooling, classic automation, and a few non-AI curation projects all appearing together. The useful read is not “AI dominated GitHub today”; it is that agent-adjacent developer tooling is competing on the same front page as durable automation and general developer infrastructure.
 
 ## Notable Projects
 
-- [different-ai/openwork](https://github.com/different-ai/openwork)  
-  Open-source alternative to Claude Cowork; the clearest agent-work-shell repo on the board.
+- [microsoft/AI-For-Beginners](https://github.com/microsoft/AI-For-Beginners)  
+  Large educational AI curriculum still pulling major attention on the default board.
 
-- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp)  
-  Browser-control infrastructure for coding agents; especially relevant because MCP and browser-operation layers are becoming core agent tooling.
+- [usekaneo/kaneo](https://github.com/usekaneo/kaneo)  
+  Open-source project management product surfacing as a broader productivity signal, not an AI-only one.
+
+- [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill)  
+  Agent skill-router pack built for Claude Code, Cursor, Cline, and related coding clients.
+
+- [github/copilot-sdk](https://github.com/github/copilot-sdk)  
+  GitHub’s SDK for integrating Copilot Agent into apps and services; one of the most directly relevant agent-platform repos on the page.
 
 - [huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech)  
-  Local voice-agent stack; a strong signal that open multimodal agent workflows remain active.
+  Local voice-agent stack; strong signal that open multimodal workflows remain active.
 
-- [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)  
-  Agent skill for researching and synthesizing signals across multiple public sources; notable as workflow packaging rather than raw model release.
-
-- [microsoft/AI-For-Beginners](https://github.com/microsoft/AI-For-Beginners)  
-  Educational AI repo still drawing broad attention, which helps show the board is not only frontier-operator software.
-
-- [paperswithbacktest/awesome-systematic-trading](https://github.com/paperswithbacktest/awesome-systematic-trading)  
-  Non-AI curation repo surfacing strongly, reinforcing that the default board remains mixed.
+- [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory)  
+  Team-level memory infrastructure for agents, with shared memory assets across conversations, docs, and code.
 
 - [ansible/ansible](https://github.com/ansible/ansible)  
-  Durable automation infrastructure still climbing alongside newer AI projects.
-
-- [jenkinsci/jenkins](https://github.com/jenkinsci/jenkins)  
-  Legacy-but-still-relevant CI infrastructure on the same board as newer agent tooling.
+  Classic automation platform still earning default-board attention alongside newer agent-native repos.
 
 ## Why They May Be Surfacing
 
-- Agent projects that package concrete operator workflows are getting attention, not only model demos. [different-ai/openwork](https://github.com/different-ai/openwork) and [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill) fit that pattern directly.
-- Browser-control infrastructure is becoming a shared layer for coding agents. [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) is the clearest example on today's board.
-- Voice remains an active open-source frontier. [huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech) keeps that visible.
-- The board still rewards practical automation and platform software, not just AI novelty. [ansible/ansible](https://github.com/ansible/ansible) and [jenkinsci/jenkins](https://github.com/jenkinsci/jenkins) show that clearly.
-- The overall page is mixed enough that any AI/agent conclusions should be treated as directional rather than dominant market consensus.
+- AI education remains mainstream enough to dominate general developer attention, not just specialist model-builder circles. [microsoft/AI-For-Beginners](https://github.com/microsoft/AI-For-Beginners) is the clearest example.
+- Reusable agent workflow packaging is gaining traction. [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill) and [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory) both frame agent capability as transferable infrastructure.
+- Platform vendors are turning copilots into embeddable products. [github/copilot-sdk](https://github.com/github/copilot-sdk) is the strongest board-level signal there.
+- Voice and multimodal local builds remain an active builder frontier. [huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech) makes that visible.
+- The board is still mixed enough that AI/agent repos should be read as directional momentum, not as the whole market. [ansible/ansible](https://github.com/ansible/ansible) and [usekaneo/kaneo](https://github.com/usekaneo/kaneo) keep that grounded.
 
 ## Watchlist
 
-- [different-ai/openwork](https://github.com/different-ai/openwork): strongest open autonomous-work-shell signal on the board.
-- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp): strongest browser-control / harness-adjacent infrastructure signal.
+- [github/copilot-sdk](https://github.com/github/copilot-sdk): strongest SDK signal for embedded agent products.
+- [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill): strongest skill-router signal for coding-agent operators.
 - [huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech): strongest local voice-agent builder signal.
-- [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill): strongest research-packaging skill signal.
-- [ansible/ansible](https://github.com/ansible/ansible): strongest reminder that automation infrastructure still competes with AI repos for broad developer attention.
+- [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory): strongest shared-memory infrastructure signal.
+- [ansible/ansible](https://github.com/ansible/ansible): strongest reminder that traditional automation still sets the baseline.

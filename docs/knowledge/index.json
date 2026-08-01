@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 181,
+    "total_notes": 183,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 244,
+    "artifact_count": 246,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-07-30",
-      "meta": "Window: 2026-07-24 to 2026-07-30",
+      "title": "Daily Radar - 2026-08-01",
+      "meta": "Window: 2026-07-26 to 2026-08-01",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-08-01",
+          "path": "radar/daily/2026-08-01.md"
+        },
         {
           "name": "2026-07-30",
           "path": "radar/daily/2026-07-30.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-07-26",
           "path": "radar/daily/2026-07-26.md"
-        },
-        {
-          "name": "2026-07-25",
-          "path": "radar/daily/2026-07-25.md"
         }
       ],
-      "count": 82
+      "count": 83
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-07-30",
+      "title": "GitHub Trending - 2026-08-01",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
-        "[different-ai/openwork](https://github.com/different-ai/openwork)",
-        "[ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp)",
-        "[huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech)"
+        "[microsoft/AI-For-Beginners](https://github.com/microsoft/AI-For-Beginners)",
+        "[usekaneo/kaneo](https://github.com/usekaneo/kaneo)",
+        "[zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-08-01",
+          "path": "radar/trending/2026-08-01.md"
+        },
         {
           "name": "2026-07-30",
           "path": "radar/trending/2026-07-30.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-07-26",
           "path": "radar/trending/2026-07-26.md"
-        },
-        {
-          "name": "2026-07-25",
-          "path": "radar/trending/2026-07-25.md"
         }
       ],
-      "count": 83
+      "count": 84
     }
   },
   "deep_dive": "### The control plane is moving upward: from model access to governed agent product surfaces",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 244,
+      "artifact_count": 246,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 191,
+        "radar": 193,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4130,6 +4130,37 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-08-01.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-08-01.md",
+        "title": "Daily Radar - 2026-08-01",
+        "date": "2026-08-01",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "context engineering",
+          "coding agents",
+          "tool use"
+        ],
+        "summary": "Window: 2026-07-26 to 2026-08-01",
+        "external_refs": [
+          "https://developers.openai.com/api/docs/changelog",
+          "https://openai.com/index/introducing-gpt-live/",
+          "https://agent.minimax.io/docs/changelog",
+          "https://api-docs.deepseek.com/updates/",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/managed-agents/memory",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://code.claude.com/docs/en/changelog",
+          "https://code.claude.com/docs/en/whats-new",
+          "https://support.claude.com/en/articles/12138966-release-notes",
+          "https://www.kimi.com/blog/kimi-k3"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -6525,6 +6556,31 @@
           "https://github.com/paperswithbacktest/awesome-systematic-trading",
           "https://github.com/ansible/ansible",
           "https://github.com/jenkinsci/jenkins"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-08-01.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-08-01.md",
+        "title": "GitHub Trending - 2026-08-01",
+        "date": "2026-08-01",
+        "status": "",
+        "themes": [
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/microsoft/AI-For-Beginners",
+          "https://github.com/usekaneo/kaneo",
+          "https://github.com/zhaoxuya520/reverse-skill",
+          "https://github.com/github/copilot-sdk",
+          "https://github.com/huggingface/speech-to-speech",
+          "https://github.com/TencentCloud/TencentDB-Agent-Memory",
+          "https://github.com/ansible/ansible"
         ],
         "local_refs": []
       },
