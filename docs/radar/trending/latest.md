@@ -1,46 +1,46 @@
-# GitHub Trending - 2026-08-02
+# GitHub Trending - 2026-08-03
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-08-02 is mixed rather than narrowly AI-shaped. AI education, open project-management products, video tooling, agent workspace experiments, memory infrastructure, and classic builder repos are all sharing the same front page. The useful read is that agent-adjacent tooling remains visible, but it is competing inside a broader developer-interest market instead of fully dominating it.
+The default global board captured on 2026-08-03 is still mixed rather than narrowly AI-shaped. AI education, security tooling, agent utilities, document infrastructure, and classic developer-study repos are all sharing the same page. The useful read is that agent-adjacent projects remain visible, but they are competing inside a broader developer-interest market rather than owning the whole board.
 
 ## Notable Projects
 
-- [microsoft/AI-For-Beginners](https://github.com/microsoft/AI-For-Beginners)  
-  Large AI education curriculum still pulling major attention on the default board.
-
-- [usekaneo/kaneo](https://github.com/usekaneo/kaneo)  
-  Open-source project management product surfacing as a broad productivity signal, not an AI-only one.
-
-- [different-ai/openwork](https://github.com/different-ai/openwork)  
-  Open-source alternative to Claude Cowork, making collaborative agent workspaces a visible open-source theme.
-
-- [Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach)  
-  Agent-web reach package surfacing because builders still want broad internet access for agents without expensive vendor lock-in.
+- [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill)  
+  Security and reverse-engineering skill router pack for Claude Code, Cursor, Cline, and related coding clients. It is one of the clearest “skills as operator infrastructure” signals on the board.
 
 - [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory)  
-  Team-level memory hub for agents, directly relevant to shared memory and reusable context infrastructure.
+  Team-level memory hub for agents across chat, docs, code, and shared knowledge assets.
 
-- [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill)  
-  Skill-router pack for Claude Code, Cursor, Cline, and related coding agents; strong signal that operator-grade skill packaging is attracting attention.
+- [Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach)  
+  Web-reach package for AI agents across Twitter, Reddit, YouTube, GitHub, Bilibili, and XiaoHongShu without API-fee positioning.
 
 - [esengine/DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix)  
-  Worth noting because it packages DeepSeek-oriented agent runtime behavior into a dedicated project rather than treating the model as the whole product.
+  Terminal coding agent built specifically around DeepSeek behavior and prefix-cache stability.
+
+- [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector)  
+  Fast PDF inspection and routing library, relevant because document triage keeps showing up as agent plumbing.
+
+- [microsoft/AI-For-Beginners](https://github.com/microsoft/AI-For-Beginners)  
+  Large AI curriculum still pulling major attention, which is a reminder that broad learning content remains competitive with newer agent tooling.
+
+- [lyogavin/airllm](https://github.com/lyogavin/airllm)  
+  Local-inference efficiency project surfacing because low-footprint model execution is still a durable developer interest.
 
 ## Why They May Be Surfacing
 
-- AI education is still broad enough to win default-board attention, not just specialist AI-builder attention. [microsoft/AI-For-Beginners](https://github.com/microsoft/AI-For-Beginners) is the clearest example.
-- Open agent workspaces are becoming legible as their own product category. [different-ai/openwork](https://github.com/different-ai/openwork) makes that explicit.
-- Shared agent context is still a hot infrastructure theme. [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory) is the strongest signal there.
-- Builders still want agents that can see more of the public web and operate with reusable skills. [Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach) and [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill) point in that direction.
-- The board remains broad enough that non-agent developer interests still matter. [usekaneo/kaneo](https://github.com/usekaneo/kaneo) keeps that grounded.
+- Agent operators still want reusable **skills**, not just raw models. [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill) is the clearest example.
+- Shared **memory infrastructure** remains a live theme. [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory) stands out there.
+- Broad **internet reach** is still being packaged as an open utility layer for agents. [Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach) makes that explicit.
+- Model-specific agent runtimes are becoming products in their own right. [esengine/DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix) is the cleanest example on this board.
+- The board is still broad enough that non-agent infrastructure and learning repos can win attention beside the agent projects. [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector), [microsoft/AI-For-Beginners](https://github.com/microsoft/AI-For-Beginners), and [lyogavin/airllm](https://github.com/lyogavin/airllm) keep that grounded.
 
 ## Watchlist
 
-- [different-ai/openwork](https://github.com/different-ai/openwork): strongest open collaborative-agent workspace signal.
-- [Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach): strongest broad-web-access signal for agents.
 - [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory): strongest shared-memory infrastructure signal.
-- [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill): strongest operator-skill packaging signal for coding agents.
-- [usekaneo/kaneo](https://github.com/usekaneo/kaneo): strongest reminder that general developer productivity products still compete for attention on the same board.
+- [Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach): strongest broad-web-access signal for agents.
+- [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill): strongest skill-packaging signal for coding-agent operators.
+- [esengine/DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix): strongest model-specific terminal-agent signal.
+- [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector): strongest document-routing utility signal.
