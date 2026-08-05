@@ -1,46 +1,46 @@
-# GitHub Trending - 2026-08-04
+# GitHub Trending - 2026-08-05
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-08-04 is mixed rather than narrowly AI-shaped. Agent infrastructure, security tooling, document utilities, educational repos, and classic developer-platform projects are all sharing the same page. The useful read is that AI- and agent-adjacent repositories remain visible, but they are competing inside a broader software-interest market rather than dominating the entire board.
+The default global board captured on 2026-08-05 is broad rather than AI-only. Agent infrastructure, classic web tooling, document utilities, computer vision, and system-design learning material are all coexisting on the same page. The practical read is that agent projects are still surfacing, but they are competing inside a wider developer-interest market rather than fully dominating it.
 
 ## Notable Projects
 
-- [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory)  
-  Team-level memory hub for agents across chat, docs, code, and shared knowledge assets.
+- [cloudflare/computer](https://github.com/cloudflare/computer)  
+  Direct “computer for agents” infrastructure, which is one of the clearest operator-surface signals on the board.
 
-- [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill)  
-  Reverse-engineering and security skill router pack for Claude Code, Cursor, Cline, and related coding clients. This is one of the clearest “skills as operator infrastructure” signals on the board.
+- [huangruiteng/loopx](https://github.com/huangruiteng/loopx)  
+  Long-running agent loop kernel focused on durable goals, auto-wake behavior, and handoffs across coding-agent clients.
+
+- [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory)  
+  Team memory hub packaging chat memory, skills, wiki memory, and code graph as reusable shared assets.
 
 - [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector)  
-  Fast PDF inspection, classification, and text-extraction library for routing document workflows.
+  PDF inspection and routing utility, relevant because file triage is still a recurrent bottleneck in real agent systems.
+
+- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)  
+  Production-oriented engineering skills for AI coding agents, surfacing because reusable operator playbooks remain high demand.
 
 - [uber/ADR](https://github.com/uber/ADR)  
-  Enterprise-agent observability, security benchmarking, and threat-detection project.
+  Enterprise AI-agent observability, security benchmarking, and threat-detection project.
 
-- [obra/superpowers](https://github.com/obra/superpowers)  
-  Agentic skills framework and software-development methodology project, surfacing as lightweight operating-system glue for coding agents.
-
-- [microsoft/generative-ai-for-beginners](https://github.com/microsoft/generative-ai-for-beginners)  
-  Large AI curriculum still pulling major attention, which is a reminder that broad learning content remains competitive with newer agent tooling.
-
-- [lyogavin/airllm](https://github.com/lyogavin/airllm)  
-  Local-inference efficiency project surfacing because low-footprint model execution remains a durable developer interest.
+- [vercel/next.js](https://github.com/vercel/next.js)  
+  A reminder that broad platform frameworks still share the board with newer AI-agent infrastructure, which keeps the trending mix grounded.
 
 ## Why They May Be Surfacing
 
-- Shared **agent memory** is still being treated as reusable infrastructure, not just an app feature. [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory) is the clearest example.
-- Developers still want reusable **skill packs and operator workflows** around coding agents. [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill) and [obra/superpowers](https://github.com/obra/superpowers) both fit that pattern.
-- **Document routing and inspection** continues to matter because real agent systems still spend time deciding how to handle files before they can reason over them. [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector) stands out there.
-- Enterprise teams are still foregrounding **agent observability and security** as first-class concerns. [uber/ADR](https://github.com/uber/ADR) makes that explicit.
-- The board is broad enough that **education and efficient local execution** can still win attention alongside newer agent projects. [microsoft/generative-ai-for-beginners](https://github.com/microsoft/generative-ai-for-beginners) and [lyogavin/airllm](https://github.com/lyogavin/airllm) keep that grounded.
+- **Computer-use infrastructure** is still attracting attention because agents that can act need execution environments, not just stronger models. [cloudflare/computer](https://github.com/cloudflare/computer) is the clearest example.
+- **Loop durability and handoff mechanics** are becoming their own product category. [huangruiteng/loopx](https://github.com/huangruiteng/loopx) fits that pattern directly.
+- **Shared memory systems** remain a live systems problem, not a solved app feature. [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory) stands out there.
+- **Document inspection and routing** is still operationally important because agents regularly need to decide what kind of file they are holding before they can reason over it. [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector) shows that clearly.
+- **Skills and governance infrastructure** continue to matter alongside models. [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) and [uber/ADR](https://github.com/uber/ADR) both fit that operator-oriented layer.
 
 ## Watchlist
 
+- [cloudflare/computer](https://github.com/cloudflare/computer): strongest computer-use infrastructure signal.
+- [huangruiteng/loopx](https://github.com/huangruiteng/loopx): strongest long-running loop-state signal.
 - [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory): strongest shared-memory infrastructure signal.
-- [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill): strongest coding-agent skill-packaging signal.
 - [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector): strongest document-routing utility signal.
-- [uber/ADR](https://github.com/uber/ADR): strongest enterprise observability-and-security signal for agents.
-- [obra/superpowers](https://github.com/obra/superpowers): strongest lightweight skills-framework signal.
+- [uber/ADR](https://github.com/uber/ADR): strongest enterprise observability-and-security signal.
