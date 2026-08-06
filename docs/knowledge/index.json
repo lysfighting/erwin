@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 191,
+    "total_notes": 193,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 254,
+    "artifact_count": 256,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-08-05",
-      "meta": "Window: 2026-07-29 to 2026-08-05",
+      "title": "Daily Radar - 2026-08-06",
+      "meta": "Window: 2026-07-30 to 2026-08-06",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-08-06",
+          "path": "radar/daily/2026-08-06.md"
+        },
         {
           "name": "2026-08-05",
           "path": "radar/daily/2026-08-05.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-08-01",
           "path": "radar/daily/2026-08-01.md"
-        },
-        {
-          "name": "2026-07-30",
-          "path": "radar/daily/2026-07-30.md"
         }
       ],
-      "count": 87
+      "count": 88
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-08-05",
+      "title": "GitHub Trending - 2026-08-06",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
-        "[cloudflare/computer](https://github.com/cloudflare/computer)",
-        "[huangruiteng/loopx](https://github.com/huangruiteng/loopx)",
-        "[TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory)"
+        "[TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory)",
+        "[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)",
+        "[cloudflare/computer](https://github.com/cloudflare/computer)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-08-06",
+          "path": "radar/trending/2026-08-06.md"
+        },
         {
           "name": "2026-08-05",
           "path": "radar/trending/2026-08-05.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-08-01",
           "path": "radar/trending/2026-08-01.md"
-        },
-        {
-          "name": "2026-07-30",
-          "path": "radar/trending/2026-07-30.md"
         }
       ],
-      "count": 88
+      "count": 89
     }
   },
   "deep_dive": "### The control plane is moving upward: from model access to governed agent product surfaces",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 254,
+      "artifact_count": 256,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 201,
+        "radar": 203,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4294,6 +4294,39 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-08-06.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-08-06.md",
+        "title": "Daily Radar - 2026-08-06",
+        "date": "2026-08-06",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-07-30 to 2026-08-06",
+        "external_refs": [
+          "https://docs.anthropic.com/en/release-notes/api",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://openai.com/index/gpt-5-6/",
+          "https://developers.googleblog.com/en/gemini-2-5-thinking-model-updates/",
+          "https://www.kimi.com/blog/kimi-k3",
+          "https://www.kimi.com/code/docs/en/kimi-code/whats-new.html",
+          "https://api-docs.deepseek.com/updates/",
+          "https://api-docs.deepseek.com/guides/responses_api/",
+          "https://github.com/trending",
+          "https://github.com/TencentCloud/TencentDB-Agent-Memory",
+          "https://github.com/addyosmani/agent-skills",
+          "https://github.com/cloudflare/computer"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -6816,6 +6849,31 @@
           "https://github.com/addyosmani/agent-skills",
           "https://github.com/uber/ADR",
           "https://github.com/vercel/next.js"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-08-06.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-08-06.md",
+        "title": "GitHub Trending - 2026-08-06",
+        "date": "2026-08-06",
+        "status": "",
+        "themes": [
+          "long-running agents",
+          "context engineering",
+          "coding agents"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/TencentCloud/TencentDB-Agent-Memory",
+          "https://github.com/addyosmani/agent-skills",
+          "https://github.com/cloudflare/computer",
+          "https://github.com/huangruiteng/loopx",
+          "https://github.com/esengine/DeepSeek-Reasonix",
+          "https://github.com/google/guava",
+          "https://github.com/TapXWorld/ChinaTextbook"
         ],
         "local_refs": []
       },
