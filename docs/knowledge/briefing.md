@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `195` durable notes are currently indexed across `3` recurring streams.
-- `258` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `196` durable notes are currently indexed across `3` recurring streams.
+- `259` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -20,10 +20,10 @@
 
 ### AI Agent Weekly Synthesis
 
-- Metadata: `Window: 2026-07-25 to 2026-08-01`
-- **Anthropic was quiet this week after its July 24 wave, and that absence is confirmed rather than assumed.** I explicitly checked the official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code What’s New](https://code.claude.com/docs/en/whats-new). No newer in-window Anthropic platform, Managed Agents, advisor-tool, or Claude Code launch surfaced after **July 24, 2026**. The latest still-relevant official Anthropic changes remain **July 24, 2026** Claude Opus 5 plus mid-conversation tool changes on the Platform release notes, **June 9, 2026** Managed Agents scheduled deployments / vault env-var credentials / `session_thread_id`, and **June 2, 2026** advisor tool `max_tokens`.
-- **GitHub had the strongest in-window execution-layer movement.** On **July 29, 2026**, GitHub announced [Copilot code review: agent skills and MCP now generally available](https://github.blog/changelog/2026-07-29-copilot-code-review-agent-skills-and-mcp-now-generally-available/) and [auto model selection in GitHub Copilot](https://github.blog/changelog/2026-07-29-auto-model-selection-in-github-copilot-for-vs-code-is-now-in-public-preview/). On **July 30, 2026**, it added [knowledge bases for the Copilot coding agent](https://github.blog/changelog/2026-07-30-github-copilot-coding-agent-now-supports-knowledge-bases/) and [custom instructions support for secret scanning](https://github.blog/changelog/2026-07-30-custom-instructions-support-for-secret-scanning-is-now-generally-available/). On **July 31, 2026**, it launched [Issue forms with GitHub Copilot](https://github.blog/changelog/2026-07-31-issue-forms-with-github-copilot-now-in-public-preview/) and [GitHub Models public preview](https://github.blog/changelog/2026-07-31-github-models-are-now-available-in-public-preview/).
-- **Google’s official signal was about evals and grounded retrieval inside its enterprise agent platform.** On **July 31, 2026**, Google published [Adding grading and safety evaluation capabilities in Gemini Enterprise Agent Platform](https://developers.googleblog.com/adding-grading-and-safety-evaluation-capabilities-in-gemini-enterprise-agent-platform/) and [Grounding with Parallel Web Search in Gemini Enterprise Agent Platform](https://developers.googleblog.com/expanding-choice-in-gemini-enterprise-agent-platform-introducing-grounding-with-parallel-web-search/). The first matters because it productizes agent-eval loops in the platform itself; the second matters because grounding-provider choice is being exposed as an explicit operator surface rather than hidden infrastructure.
+- Metadata: `Window: 2026-08-01 to 2026-08-08`
+- **Anthropic had a checked, bounded week rather than a broad new launch wave.** On **August 1, 2026**, Anthropic added [Dreams support for Claude Opus 5 on Claude API](https://platform.claude.com/docs/en/release-notes/overview) in the Claude Platform release notes. I also explicitly checked the official [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code What's New](https://code.claude.com/docs/en/whats-new); no newer in-window Managed Agents, advisor-tool, or Claude Code change surfaced on those official pages as of **August 8, 2026**.
+- **GitHub’s strongest official movement was around invocation structure, reasoning control, and repository knowledge.** On **August 3, 2026**, GitHub announced [trigger Copilot automations with comments](https://github.blog/changelog/2026-08-03-github-copilot-coding-agent-automations-trigger-with-comments/) and [reasoning effort in GitHub Models](https://github.blog/changelog/2026-08-03-reasoning-effort-now-available-in-github-models/). On **August 6, 2026**, it added [repository custom instructions for the coding agent](https://github.blog/changelog/2026-08-06-repository-custom-instructions-for-the-github-copilot-coding-agent-are-now-generally-available/) and [a weekly releases view in GitHub Models](https://github.blog/changelog/2026-08-06-weekly-releases-are-now-available-in-github-models/). On **August 7, 2026**, it added [high reasoning effort for code review](https://github.blog/changelog/2026-08-07-high-reasoning-effort-is-now-generally-available-for-code-review/).
+- **Google’s official signal was about giving operators more explicit control over agent retrieval, tools, and quality loops.** On **August 4, 2026**, Google published [expanding NotebookLM's open agentic ecosystem](https://developers.googleblog.com/expanding-notebooklms-open-agentic-ecosystem/) and [Computer Use in Gemini API and Vertex AI](https://developers.googleblog.com/computer-use-in-gemini-api-and-vertex-ai/). On **August 5, 2026**, it published [Grounding with the Google Maps API](https://developers.googleblog.com/introducing-grounding-with-google-maps-in-gemini/) and [Gemini Embedding support in Gemini Enterprise Agent Platform](https://developers.googleblog.com/gemini-embedding-support-in-gemini-enterprise-agent-platform/). On **August 6, 2026**, it published [MCP toolkit support in Gemini Enterprise Agent Platform](https://developers.googleblog.com/build-and-test-mcp-toolkit-agents-in-gemini-enterprise-agent-platform/).
 
 ## Daily Signal Snapshot
 
@@ -43,11 +43,13 @@
 
 ## Durable Interpretation
 
-### The control plane is moving upward: from model access to governed agent product surfaces
+### The frontier is shifting from "agent can act" to "operator can shape the action surface"
 
 ## Current Proposal Candidates
 
-- No proposal candidates extracted from the latest weekly synthesis yet.
+- Reasoning Budget As A First-Class Run Control
+- Attached Knowledge Packs With Explicit Scope And Provenance
+- Execution-Surface Eval Hooks For Tool and Computer Use
 
 ## Knowledge Network
 
@@ -72,12 +74,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Weekly Synthesis
 
+- [2026-08-08](../radar/weekly/2026-08-08.md)
 - [2026-08-01](../radar/weekly/2026-08-01.md)
 - [2026-07-25](../radar/weekly/2026-07-25.md)
 - [2026-07-18](../radar/weekly/2026-07-18.md)
 - [2026-07-10](../radar/weekly/2026-07-10.md)
 - [2026-07-03](../radar/weekly/2026-07-03.md)
-- [2026-06-26](../radar/weekly/2026-06-26.md)
 
 ### GitHub Trending
 
