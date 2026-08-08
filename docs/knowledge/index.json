@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 196,
+    "total_notes": 198,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 259,
+    "artifact_count": 261,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-08-07",
-      "meta": "Window: 2026-07-31 to 2026-08-07",
+      "title": "Daily Radar - 2026-08-08",
+      "meta": "Window: 2026-08-02 to 2026-08-08",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-08-08",
+          "path": "radar/daily/2026-08-08.md"
+        },
         {
           "name": "2026-08-07",
           "path": "radar/daily/2026-08-07.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-08-03",
           "path": "radar/daily/2026-08-03.md"
-        },
-        {
-          "name": "2026-08-02",
-          "path": "radar/daily/2026-08-02.md"
         }
       ],
-      "count": 89
+      "count": 90
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-08-07",
+      "title": "GitHub Trending - 2026-08-08",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
         "[PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent)",
         "[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)",
-        "[cloudflare/computer](https://github.com/cloudflare/computer)"
+        "[google/skills](https://github.com/google/skills)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-08-08",
+          "path": "radar/trending/2026-08-08.md"
+        },
         {
           "name": "2026-08-07",
           "path": "radar/trending/2026-08-07.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-08-03",
           "path": "radar/trending/2026-08-03.md"
-        },
-        {
-          "name": "2026-08-02",
-          "path": "radar/trending/2026-08-02.md"
         }
       ],
-      "count": 90
+      "count": 91
     }
   },
   "deep_dive": "### The frontier is shifting from \"agent can act\" to \"operator can shape the action surface\"",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 259,
+      "artifact_count": 261,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 206,
+        "radar": 208,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4362,6 +4362,38 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-08-08.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-08-08.md",
+        "title": "Daily Radar - 2026-08-08",
+        "date": "2026-08-08",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-08-02 to 2026-08-08",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/claude-managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://docs.anthropic.com/en/release-notes/claude-code",
+          "https://openai.com/index/improving-gpt-5-6-sol-in-chatgpt/",
+          "https://openai.com/index/learn-teach-chatgpt-work-codex/",
+          "https://www.kimi.com/code/docs/en/kimi-code-cli/release-notes/changelog.html",
+          "https://www.kimi.com/resources/kimi-code-introduction",
+          "https://www.minimax.io/news/minimax-h3-open-source",
+          "https://qwen.ai/blog?id=qwen3.8",
+          "https://github.com/trending",
+          "https://github.com/PrimeIntellect-ai/prime-agent"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -6936,6 +6968,32 @@
           "https://github.com/semantica-agi/semantica",
           "https://github.com/goauthentik/authentik",
           "https://github.com/jdx/mise"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-08-08.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-08-08.md",
+        "title": "GitHub Trending - 2026-08-08",
+        "date": "2026-08-08",
+        "status": "",
+        "themes": [
+          "long-running agents",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/PrimeIntellect-ai/prime-agent",
+          "https://github.com/addyosmani/agent-skills",
+          "https://github.com/google/skills",
+          "https://github.com/mattpocock/skills",
+          "https://github.com/TauricResearch/TradingAgents",
+          "https://github.com/goauthentik/authentik",
+          "https://github.com/LadybirdBrowser/ladybird",
+          "https://github.com/TapXWorld/ChinaTextbook"
         ],
         "local_refs": []
       },
