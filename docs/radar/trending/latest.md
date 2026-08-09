@@ -1,48 +1,48 @@
-# GitHub Trending - 2026-08-08
+# GitHub Trending - 2026-08-09
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-08-08 mixes a visible cluster of agent and skill-pack projects with a broader spread of education content, browser/runtime work, security infrastructure, JVM libraries, and general developer study material. AI is prominent, but the board is not narrowly AI-only.
+The default global board captured on 2026-08-09 is a mixed board, not an AI-only board. Agent repos and skill-pack collections are prominent, but the current page also includes climate modeling, visual workflow tooling, authentication infrastructure, and some GitHub app or sponsor rows mixed into the default feed.
 
 ## Notable Projects
 
 - [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent)  
-  Coding-agent project centered on long-running autonomous execution.
+  Long-running coding-agent repository and the strongest pure agent signal on the board.
 
 - [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)  
-  Practical skill collection for AI coding agents.
+  Practical skill collection for AI coding agents and operator workflows.
 
 - [google/skills](https://github.com/google/skills)  
-  Vendor-backed skill-pack surface, notable because it treats skills as a durable developer product.
+  Vendor-backed skill-pack repository that lines up with the broader push toward portable skills.
 
-- [mattpocock/skills](https://github.com/mattpocock/skills)  
-  Public skill collection aimed at pragmatic software-engineering workflows.
+- [google-deepmind/weathernext](https://github.com/google-deepmind/weathernext)  
+  Non-agent but still important: a visible frontier-model application repo surfacing on the general board.
 
-- [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents)  
-  Multi-agent trading stack, showing continued interest in domain-specific agent orchestration.
+- [Comfy-Org/ComfyUI](https://github.com/Comfy-Org/ComfyUI)  
+  A reminder that creator and workflow orchestration tooling still has broad pull outside pure coding agents.
 
 - [goauthentik/authentik](https://github.com/goauthentik/authentik)  
-  Authentication platform; useful evidence that mainstream infrastructure still shares the board with agent projects.
+  Identity infrastructure staying visible alongside AI-heavy repos.
 
-- [LadybirdBrowser/ladybird](https://github.com/LadybirdBrowser/ladybird)  
-  Independent browser-engine effort, a reminder that foundational systems work still draws broad attention.
+- [harveyai/harvey-labs](https://github.com/harveyai/harvey-labs)  
+  Another vendor-published AI tooling repo surfacing in the open-source attention loop.
 
-- [TapXWorld/ChinaTextbook](https://github.com/TapXWorld/ChinaTextbook)  
-  Large educational-content repository, showing the default board also includes non-tooling projects with strong community momentum.
+- [pingdotgg/t3code](https://github.com/pingdotgg/t3code)  
+  Terminal and code-generation tooling signal with a more pragmatic developer-workflow angle.
 
 ## Why They May Be Surfacing
 
-- **Agent skills are becoming a shared layer.** [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills), [google/skills](https://github.com/google/skills), and [mattpocock/skills](https://github.com/mattpocock/skills) all point to reusable instructions and operator playbooks becoming standard developer artifacts.
-- **Long-running agents remain a live open-source category.** [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent) and [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) both fit the pattern of sustained autonomous or multi-agent execution.
-- **The board still rewards broad utility infra.** [goauthentik/authentik](https://github.com/goauthentik/authentik) and [LadybirdBrowser/ladybird](https://github.com/LadybirdBrowser/ladybird) show that identity, platform, and systems work remain highly visible alongside AI.
-- **GitHub Trending is still a community momentum feed, not a pure product map.** [TapXWorld/ChinaTextbook](https://github.com/TapXWorld/ChinaTextbook) is a good reminder that general-interest knowledge repositories can surface beside deep technical tooling.
+- **Skills are becoming a standard packaging layer.** [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) and [google/skills](https://github.com/google/skills) both reinforce that reusable skill packs are becoming mainstream workflow artifacts.
+- **Long-running agents still pull attention.** [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent) is the clearest sign that open-source interest remains strong for persistent autonomous coding work.
+- **The board still mixes AI with durable infra.** [goauthentik/authentik](https://github.com/goauthentik/authentik) and [Comfy-Org/ComfyUI](https://github.com/Comfy-Org/ComfyUI) show that the default board rewards practical ecosystem tools, not just frontier-agent demos.
+- **The current board shape includes some feed noise.** GitHub app and sponsor rows appeared in the default capture, which is useful to note so the board is not misread as a clean repo-only ranking.
 
 ## Watchlist
 
 - [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent): strongest autonomous coding-agent signal on the board today.
-- [google/skills](https://github.com/google/skills): strongest signal that major vendors are formalizing skills as a product surface.
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills): strongest practical skill-pack signal for coding-agent workflows.
-- [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents): strongest domain-specific multi-agent orchestration signal.
-- [goauthentik/authentik](https://github.com/goauthentik/authentik): strongest reminder that the default board still mixes mainstream infra with AI momentum.
+- [google/skills](https://github.com/google/skills): strongest vendor-aligned skills packaging signal.
+- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills): strongest practical playbook/skills signal for day-to-day coding-agent work.
+- [harveyai/harvey-labs](https://github.com/harveyai/harvey-labs): strongest vendor-to-open-repo crossover signal in the current snapshot.
+- [google-deepmind/weathernext](https://github.com/google-deepmind/weathernext): strongest reminder that the default board still surfaces broad frontier-model applications, not only agent tooling.
