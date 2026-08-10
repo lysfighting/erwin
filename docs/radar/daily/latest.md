@@ -1,68 +1,67 @@
-# Daily Radar - 2026-08-09
+# Daily Radar - 2026-08-10
 
-Window: 2026-08-03 to 2026-08-09
+Window: 2026-08-04 to 2026-08-10
 
 ## New Signals
 
-1. **Anthropic expanded the Claude agent control plane across Managed Agents and Claude Code.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added Claude Managed Agents session budgets, advisor support, `inference_geo`, and GitHub-root skill loading on **August 7, 2026**, after adding Enterprise-only [inference hooks](https://claude.com/blog/inference-hooks-inline-data-loss-prevention-for-claude-enterprise) on **August 5, 2026**. Anthropic’s required substreams were explicitly checked this run: the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents docs surface](https://platform.claude.com/docs/en/managed-agents/quickstart), the [advisor tool docs surface](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code overview](https://code.claude.com/docs/en/overview), the [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md), the [Anthropic engineering surface](https://www.anthropic.com/engineering), and the [Claude blog](https://claude.com/blog/).
-   Publish dates: August 7, 2026 and August 5, 2026
+1. **Anthropic expanded both managed-agent controls and Claude Code operating modes.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added Claude Managed Agents session budgets, advisor support, `inference_geo`, and GitHub-root skill loading on **August 7, 2026**. Anthropic’s required surfaces were explicitly checked this run: the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), the [Claude Managed Agents docs surface](https://platform.claude.com/docs/en/managed-agents/quickstart), the [advisor tool docs surface](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), the [Claude Code overview](https://code.claude.com/docs/en/overview), the [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md), the [Claude Code blog surface](https://claude.com/blog-category/claude-code), the [Anthropic engineering surface](https://www.anthropic.com/engineering), and the [Claude blog](https://claude.com/blog/). In the same window Anthropic also published [Run Claude Code sessions on your own compute](https://claude.com/blog/run-claude-code-sessions-on-your-own-compute) on **August 6, 2026** and [Auto mode is now the default in Claude Code for Pro, Max, and Team plans](https://claude.com/blog/auto-mode-default-in-claude-code) on **August 7, 2026**.
+   Publish dates: August 6, 2026 and August 7, 2026
 
-2. **Google pushed both stateless agent infrastructure and portable skill packaging.** The official [Scaling AI Agent Infrastructure with the MCP Stateless updates](https://developers.googleblog.com/scaling-ai-agent-infrastructure-with-the-mcp-stateless-updates/) post published on **August 5, 2026** framed the new MCP core around horizontal scaling, standard routing, and long-running tasks, while [Agent Plugins package your skills, tools, and more](https://developers.googleblog.com/agent-plugins-package-your-skills-tools-and-more/) published on **August 6, 2026** pushed a vendor-neutral packaging format for skills plus MCP servers.
+2. **Google pushed open agent runtime infrastructure and portable packaging at the same time.** [Scaling AI Agent Infrastructure with the MCP Stateless updates](https://developers.googleblog.com/scaling-ai-agent-infrastructure-with-the-mcp-stateless-updates/) published on **August 5, 2026** reframed MCP around stateless routing and cloud-native scaling, and [Agent Plugins package your skills, tools, and more](https://developers.googleblog.com/agent-plugins-package-your-skills-tools-and-more/) published on **August 6, 2026** introduced a vendor-neutral plugin layout for Agent Skills plus MCP servers.
    Publish dates: August 5, 2026 and August 6, 2026
 
-3. **OpenAI kept packaging Codex as workflow infrastructure, not only model access.** The official [New ways to learn and teach with ChatGPT Work and Codex](https://openai.com/news/new-ways-to-learn-and-teach-with-chatgpt-work-and-codex/) post published on **August 4, 2026** kept Codex in the productized workflow lane, while [Improving GPT-5.6 Sol in ChatGPT-and expanding access to GPT-5.6 Luna for free users](https://openai.com/news/improving-gpt-5-6-sol-in-chatgpt/) published on **August 6, 2026** continued the access-shaping side of OpenAI’s rollout strategy.
-   Publish dates: August 4, 2026 and August 6, 2026
+3. **OpenAI kept turning Codex into a packaged workflow surface rather than a raw model endpoint.** [New ways to learn and teach with ChatGPT Work and Codex](https://openai.com/index/learn-teach-chatgpt-work-codex/) published on **August 4, 2026** introduced education plugins for Work and Codex, and [Improving GPT-5.6 Sol in ChatGPT—and expanding access to GPT-5.6 Luna for free users](https://openai.com/index/improving-gpt-5-6-sol-in-chatgpt/) published on **August 5, 2026** extended the product-side access and interaction shaping around the latest model family.
+   Publish dates: August 4, 2026 and August 5, 2026
 
-4. **Moonshot’s strongest in-window signal stayed on the Kimi Code operating surface.** The official [Kimi Code: Next-Gen AI Coding Agent for Terminal & IDE](https://www.kimi.com/resources/kimi-code-introduction) page published on **August 6, 2026** positioned Kimi Code around terminal-first, agent-led software work, and the official [Kimi Code CLI changelog](https://www.kimi.com/code/docs/en/kimi-code-cli/release-notes/changelog.html) logged **v0.34.0** the same day with workflow-facing fixes and UI/session improvements.
-   Publish date: August 6, 2026
+4. **Moonshot’s strongest in-window technical signal was a fast-moving Kimi Code release cadence.** The official [Kimi Code CLI changelog](https://www.kimi.com/code/docs/en/kimi-code-cli/release-notes/changelog.html) logged **v0.34.0** on **August 6, 2026**, following **v0.33.0** on **August 5, 2026** and **v0.32.0** on **August 4, 2026**. The changes emphasized background-task durability, hooks, plugins, Anthropic-compatible routing, and computer-use/web-bridge operating surfaces.
+   Publish dates: August 4, 2026, August 5, 2026, and August 6, 2026
 
-5. **Qwen leaned hard into coding, cowork, and long-horizon execution positioning.** The official [Qwen3.8-Max: A New Bar for Coding and Cowork](https://qwen.ai/blog?id=qwen3.8) launch published on **August 3, 2026** framed Qwen’s newest flagship around coding, work, research, and multi-day execution rather than a narrow benchmark-only message.
-   Publish date: August 3, 2026
+5. **OpenAI also reinforced the API-side price/performance path for background agents.** [Advancing the price-performance frontier with GPT-5.6](https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/) published on **August 5, 2026** introduced API Fast mode and highlighted customer references using GPT-5.6 Luna for background or agentic automation workloads.
+   Publish date: August 5, 2026
 
 ## GitHub Trending Snapshot
 
-Snapshot source: [GitHub Trending](https://github.com/trending) captured from the default global board on 2026-08-09.
+Snapshot source: [GitHub Trending](https://github.com/trending) captured from the default global board on 2026-08-10.
 
-- [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent): the clearest long-running coding-agent signal on today’s board.
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills): notable because operator playbooks and reusable skills remain high-demand coding-agent scaffolding.
-- [google/skills](https://github.com/google/skills): relevant because it aligns with Google’s own push toward portable skills and plugin packaging.
-- [pingdotgg/t3code](https://github.com/pingdotgg/t3code): useful because terminal-native code tooling is still surfacing alongside broader agent stacks.
-- [harveyai/harvey-labs](https://github.com/harveyai/harvey-labs): worth watching as another example of vendor-published agent tooling entering the open repo layer.
+- [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent): still the clearest long-running coding-agent signal on the default board.
+- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills): relevant because practical skill-pack conventions remain one of the most portable workflow layers.
+- [pingdotgg/t3code](https://github.com/pingdotgg/t3code): worth tracking because terminal-native coding workflows are still surfacing beside fuller agent stacks.
+- [firecrawl/firecrawl](https://github.com/firecrawl/firecrawl): relevant because web-grounding and extraction infra remain foundational for agent loops.
+- [google-deepmind/weathernext](https://github.com/google-deepmind/weathernext): not a harness repo, but a reminder that the default board remains mixed and still surfaces frontier-model application work outside coding agents.
 
 ## Harness-Relevant Signals
 
-- The sharpest cross-vendor pattern this run is **agent runtime standardization**: Anthropic added budgets, advisors, and repository-root skills to managed execution; Google pushed stateless MCP infrastructure plus portable plugin packaging; OpenAI kept reinforcing productized workflow surfaces; Moonshot kept shipping coding-agent operational improvements; Qwen kept escalating the coding/cowork framing.
-- Anthropic’s must-check surfaces were all reviewed explicitly. The in-window substance was concentrated in the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) plus Claude blog posts such as [Run Claude Code sessions on your own compute](https://claude.com/blog/run-claude-code-sessions-on-your-own-compute) and [Auto mode is now the default in Claude Code for Pro, Max, and Team plans](https://claude.com/blog/auto-mode-is-now-the-default-in-claude-code-for-pro-max-and-team-plans), both published on **August 6-7, 2026**.
-- Google’s strongest just-outside-window agent-quality item remains [Agent and Model Evaluations in Gemini Enterprise Agent Platform are now GA](https://developers.googleblog.com/agent-and-model-evaluations-in-gemini-enterprise-agent-platform-are-now-ga/) published on **July 31, 2026**. It stayed out of `New Signals` because it is outside the strict window, but it still matters for eval/watch pressure.
-- MiniMax’s strongest in-window official item was [Open General Intelligence: MiniMax H3 Is Now Open Source](https://www.minimax.io/news/minimax-h3-open-source) published on **August 3, 2026**. It is strategically relevant, but less immediately Harness-adjacent than this run’s Anthropic, Google, OpenAI, Moonshot, and Qwen items.
-- DeepSeek’s official surfaces were checked. The strongest relevant technical change is still the [DeepSeek-V4-Flash Update](https://api-docs.deepseek.com/updates/) dated **July 31, 2026**, plus DeepSeek’s Codex integration guidance. Because that is outside the strict window, it stayed out of `New Signals`.
+- The strongest cross-vendor pattern this run is **agent runtime standardization**: Anthropic added session budgets, advisors, geo controls, and GitHub-root skills to Managed Agents; Google pushed stateless MCP routing plus portable Agent Plugins; OpenAI kept packaging Codex into workflow-specific plugin and pricing surfaces; Moonshot kept tightening operational behavior in Kimi Code.
+- Anthropic’s required substreams were checked explicitly. The meaningful in-window changes were concentrated in the [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Code blog posts](https://claude.com/blog-category/claude-code), and the [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md), not in a separate new managed-agents or advisor-tool article.
+- Google’s most harness-adjacent takeaway is that **packaging and routing assumptions are becoming product surfaces**, not just implementation details. That raises the importance of evaluating portability, resume behavior, and tool-graph control separately from model quality.
+- Qwen, MiniMax, and DeepSeek were checked once each on official surfaces. No strong newly published official technical item landed inside the strict **2026-08-04 to 2026-08-10** window. The nearest relevant items were [Qwen3.8-Max: A New Bar for Coding and Cowork](https://qwen.ai/blog?id=qwen3.8) on **August 2, 2026**, [Open General Intelligence: MiniMax H3 Is Now Open Source](https://www.minimax.io/news/minimax-h3-open-source) on **August 3, 2026**, and DeepSeek’s [Integrate with Codex](https://api-docs.deepseek.com/quick_start/agent_integrations/codex/) plus [Change Log](https://api-docs.deepseek.com/updates/), which still point back to the **July 31, 2026** V4-Flash update and an expected early-August V4-Pro Codex compatibility change that had not been formally posted by August 10.
 
 ## Candidate Proposals
 
 ### Proposal 1
 
-- `source_type`: first-party release notes and developer posts
-- `problem_pattern`: vendors are baking governance controls, transport assumptions, and packaging standards directly into agent runtimes
-- `why_it_matters_for_harness`: Harness comparisons need to separate model quality from runtime-governance quality and transport/packaging assumptions
+- `source_type`: first-party release notes and docs
+- `problem_pattern`: agent vendors are exposing budgets, advisor roles, runtime geography, and self-hosted execution as first-class controls
+- `why_it_matters_for_harness`: Harness needs a cleaner way to separate model performance from runtime-governance and execution-environment effects
 - `recommended_disposition`: `watch`
 
 ### Proposal 2
 
-- `source_type`: first-party coding-agent docs and changelogs
-- `problem_pattern`: coding-agent quality is increasingly determined by resume, background tasking, session durability, and operator-facing control surfaces
-- `why_it_matters_for_harness`: Harness should compare interrupted and resumed task completion instead of only clean single-pass success
+- `source_type`: first-party product posts and changelogs
+- `problem_pattern`: packaging standards for skills, plugins, and MCP servers are converging faster than evaluation conventions
+- `why_it_matters_for_harness`: Harness comparisons will drift if packaging and portability assumptions remain implicit
 - `recommended_disposition`: `encode-as-eval`
 
 ### Proposal 3
 
-- `source_type`: first-party open packaging and open-weight distribution signals
-- `problem_pattern`: the ecosystem is converging on portable skill/plugin units and mixed delivery modes rather than a single hosted-agent assumption
-- `why_it_matters_for_harness`: Harness needs a lightweight way to observe how packaging and deployment shape agent behavior without implying direct productization work
+- `source_type`: first-party coding-agent changelogs
+- `problem_pattern`: background task durability, resume semantics, and subagent visibility are becoming core product differentiators
+- `why_it_matters_for_harness`: Harness can learn more from interrupted, resumed, or delegated workflows than from only clean one-shot runs
 - `recommended_disposition`: `prototype`
 
 ## Watch Next
 
-- Watch whether Anthropic turns the August 7 Managed Agents and advisor changes into separately dated deep dives on the managed-agents or advisor-tool docs surfaces, instead of leaving the key change only in release notes.
-- Watch whether Claude Code’s August 6-8 release cadence resolves into a clearly documented workflow capability change rather than a rapid sequence of incremental fixes.
-- Watch whether Google follows the August 5-6 MCP and Agent Plugins posts with a fresh August agent-operations or eval-control release on the Gemini Enterprise Agent Platform surface.
-- Watch whether DeepSeek’s promised V4-Pro compatibility updates land in August on the official [change log](https://api-docs.deepseek.com/updates/) or [Codex integration guide](https://api-docs.deepseek.com/quick_start/agent_integrations/codex/).
+- Watch whether Anthropic follows the **August 7, 2026** Managed Agents and advisor release-note changes with separately dated deep dives on the managed-agents or advisor-tool docs surfaces.
+- Watch whether Claude Code’s **August 4-7, 2026** release burst settles into a stable public contract around hooks, background tasks, and self-hosted session behavior.
+- Watch whether Google extends the **August 5-6, 2026** MCP Stateless and Agent Plugins push with a new August eval, registry, or production-operations post on the Gemini Enterprise Agent Platform surface.
+- Watch whether DeepSeek actually posts the promised early-August `deepseek-v4-pro` Codex compatibility update on the official [Codex integration guide](https://api-docs.deepseek.com/quick_start/agent_integrations/codex/) or [change log](https://api-docs.deepseek.com/updates/).
