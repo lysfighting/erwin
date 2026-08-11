@@ -1,48 +1,47 @@
-# GitHub Trending - 2026-08-10
+# GitHub Trending - 2026-08-11
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-08-10 is mixed rather than AI-only. Coding agents, skill packs, developer workflow tools, and infrastructure repos are all present, alongside consumer jailbreak tooling and broader applied-model projects.
+The default global board captured on 2026-08-11 is mixed rather than AI-only. Agent repos, coding workflow tools, skills collections, infrastructure, education, and general developer utilities are all present at the same time, so the board still needs interpretation rather than direct adoption.
 
 ## Notable Projects
 
 - [semantica-agi/semantica](https://github.com/semantica-agi/semantica)  
-  Current board leader with an AGI/agent framing.
-
-- [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent)  
-  The strongest long-running coding-agent signal on the page.
+  The most visible agent/AGI-framed project on the board today.
 
 - [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)  
-  Practical skill-pack collection for coding-agent workflows.
+  Practical skill-pack collection surfacing while first-party vendors are also formalizing skill and plugin packaging.
 
-- [firecrawl/firecrawl](https://github.com/firecrawl/firecrawl)  
-  Developer-facing crawling and web extraction infrastructure that often feeds agent loops.
+- [anthropics/skills](https://github.com/anthropics/skills)  
+  First-party Anthropic skills repo appearing directly on the default board.
 
-- [pingdotgg/t3code](https://github.com/pingdotgg/t3code)  
-  Terminal-first coding workflow tooling.
+- [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent)  
+  Persistent coding-agent signal rather than a one-off novelty repo.
 
-- [google-deepmind/weathernext](https://github.com/google-deepmind/weathernext)  
-  A broader frontier-model application repo, showing the board is not dominated only by agent tooling.
-
-- [Comfy-Org/ComfyUI](https://github.com/Comfy-Org/ComfyUI)  
-  Creator workflow infrastructure continuing to hold broad interest.
+- [vitali87/code-graph-rag](https://github.com/vitali87/code-graph-rag)  
+  Code-grounding and graph-RAG pressure for developer-agent workflows.
 
 - [paperclipai/paperclip](https://github.com/paperclipai/paperclip)  
-  Another agent or automation-oriented project surfacing on the default board.
+  Another automation or agent-oriented project surfacing on the general board.
+
+- [huggingface/transformers](https://github.com/huggingface/transformers)  
+  Broad foundation-model ecosystem gravity is still strong enough to trend on the default page.
+
+- [3b1b/manim](https://github.com/3b1b/manim)  
+  A reminder that the board remains broad and not dominated only by AI agents.
 
 ## Why They May Be Surfacing
 
-- **Skill packaging and reuse still have attention.** [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) is surfacing while first-party vendors are simultaneously pushing more formal skill and plugin packaging models.
-- **Persistent coding-agent interest remains high.** [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent), [pingdotgg/t3code](https://github.com/pingdotgg/t3code), and [paperclipai/paperclip](https://github.com/paperclipai/paperclip) all point to sustained interest in automated developer workflows.
-- **Agent stacks still depend on web and data plumbing.** [firecrawl/firecrawl](https://github.com/firecrawl/firecrawl) surfacing alongside agent repos is a reminder that retrieval, crawling, and grounding infrastructure remain hot.
-- **The board is broader than the current AI narrative.** [google-deepmind/weathernext](https://github.com/google-deepmind/weathernext) and [Comfy-Org/ComfyUI](https://github.com/Comfy-Org/ComfyUI) show the default board still rewards practical applications and creator ecosystems, not only coding agents.
+- **Skill packaging is visibly hot.** [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) and [anthropics/skills](https://github.com/anthropics/skills) are surfacing while Google is simultaneously pushing Agent Plugins as a portable package boundary.
+- **Coding-agent interest remains durable.** [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent), [paperclipai/paperclip](https://github.com/paperclipai/paperclip), and [vitali87/code-graph-rag](https://github.com/vitali87/code-graph-rag) all point toward continuing demand for repo-aware developer automation.
+- **The board is still mixed by default.** [huggingface/transformers](https://github.com/huggingface/transformers), [3b1b/manim](https://github.com/3b1b/manim), and even non-AI utilities on the page are a useful reminder not to force an AI-only narrative onto the default global board.
 
 ## Watchlist
 
-- [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent): strongest coding-agent repo on the board today.
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills): strongest skill-pack standardization signal.
-- [firecrawl/firecrawl](https://github.com/firecrawl/firecrawl): strongest web-grounding infrastructure signal.
-- [pingdotgg/t3code](https://github.com/pingdotgg/t3code): strongest terminal-native coding workflow signal.
-- [google-deepmind/weathernext](https://github.com/google-deepmind/weathernext): strongest reminder that the default board is mixed, not agent-exclusive.
+- [semantica-agi/semantica](https://github.com/semantica-agi/semantica): highest-visibility agent repo on the board today.
+- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills): strongest reusable-skill packaging signal.
+- [anthropics/skills](https://github.com/anthropics/skills): strongest first-party skills-pack signal.
+- [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent): strongest persistent coding-agent signal.
+- [vitali87/code-graph-rag](https://github.com/vitali87/code-graph-rag): strongest code-grounding and retrieval-adjacent signal.
