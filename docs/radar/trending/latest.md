@@ -1,47 +1,45 @@
-# GitHub Trending - 2026-08-11
+# GitHub Trending - 2026-08-12
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on 2026-08-11 is mixed rather than AI-only. Agent repos, coding workflow tools, skills collections, infrastructure, education, and general developer utilities are all present at the same time, so the board still needs interpretation rather than direct adoption.
+The default global board captured on **2026-08-12** is mixed rather than AI-only. Agent repos, developer automation, retrieval systems, security tooling, media or design utilities, and general open-source infrastructure are all visible at once, so the board is useful as momentum context but not as roadmap authority.
 
 ## Notable Projects
 
 - [semantica-agi/semantica](https://github.com/semantica-agi/semantica)  
-  The most visible agent/AGI-framed project on the board today.
-
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)  
-  Practical skill-pack collection surfacing while first-party vendors are also formalizing skill and plugin packaging.
-
-- [anthropics/skills](https://github.com/anthropics/skills)  
-  First-party Anthropic skills repo appearing directly on the default board.
-
-- [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent)  
-  Persistent coding-agent signal rather than a one-off novelty repo.
-
-- [vitali87/code-graph-rag](https://github.com/vitali87/code-graph-rag)  
-  Code-grounding and graph-RAG pressure for developer-agent workflows.
+  The clearest agent or AGI-framed project on the default board today.
 
 - [paperclipai/paperclip](https://github.com/paperclipai/paperclip)  
-  Another automation or agent-oriented project surfacing on the general board.
+  Developer automation or agent-assistant demand continues to surface on the broad board.
 
-- [huggingface/transformers](https://github.com/huggingface/transformers)  
-  Broad foundation-model ecosystem gravity is still strong enough to trend on the default page.
+- [infiniflow/ragflow](https://github.com/infiniflow/ragflow)  
+  Retrieval, orchestration, and workflow composition remain relevant to production AI systems.
 
-- [3b1b/manim](https://github.com/3b1b/manim)  
-  A reminder that the board remains broad and not dominated only by AI agents.
+- [embabel/embabel-agent](https://github.com/embabel/embabel-agent)  
+  Another agent-framework signal appearing without any topic filter.
+
+- [smicallef/spiderfoot](https://github.com/smicallef/spiderfoot)  
+  Security automation is trending at the same time OpenAI is pushing Daybreak and GPT-5.6-Cyber.
+
+- [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design)  
+  A reminder that the default board still includes broader maker and design tooling.
+
+- [localsend/localsend](https://github.com/localsend/localsend)  
+  General utility software is still part of the board shape and should not be filtered out of the summary.
 
 ## Why They May Be Surfacing
 
-- **Skill packaging is visibly hot.** [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) and [anthropics/skills](https://github.com/anthropics/skills) are surfacing while Google is simultaneously pushing Agent Plugins as a portable package boundary.
-- **Coding-agent interest remains durable.** [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent), [paperclipai/paperclip](https://github.com/paperclipai/paperclip), and [vitali87/code-graph-rag](https://github.com/vitali87/code-graph-rag) all point toward continuing demand for repo-aware developer automation.
-- **The board is still mixed by default.** [huggingface/transformers](https://github.com/huggingface/transformers), [3b1b/manim](https://github.com/3b1b/manim), and even non-AI utilities on the page are a useful reminder not to force an AI-only narrative onto the default global board.
+- **Agent frameworks still have broad attention.** [semantica-agi/semantica](https://github.com/semantica-agi/semantica) and [embabel/embabel-agent](https://github.com/embabel/embabel-agent) show that agent runtime and orchestration interest remains durable.
+- **Developer automation and retrieval continue to matter.** [paperclipai/paperclip](https://github.com/paperclipai/paperclip) and [infiniflow/ragflow](https://github.com/infiniflow/ragflow) fit the same repo-aware automation and grounding pressure visible in vendor product updates.
+- **Security tooling is rising alongside model-provider security programs.** [smicallef/spiderfoot](https://github.com/smicallef/spiderfoot) is notable because it surfaces in the same week OpenAI published Daybreak and GPT-5.6-Cyber updates.
+- **The board remains broader than an AI feed.** [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) and [localsend/localsend](https://github.com/localsend/localsend) are useful evidence that the default board still mixes many developer and maker interests together.
 
 ## Watchlist
 
-- [semantica-agi/semantica](https://github.com/semantica-agi/semantica): highest-visibility agent repo on the board today.
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills): strongest reusable-skill packaging signal.
-- [anthropics/skills](https://github.com/anthropics/skills): strongest first-party skills-pack signal.
-- [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent): strongest persistent coding-agent signal.
-- [vitali87/code-graph-rag](https://github.com/vitali87/code-graph-rag): strongest code-grounding and retrieval-adjacent signal.
+- [semantica-agi/semantica](https://github.com/semantica-agi/semantica): strongest agent-native board signal.
+- [paperclipai/paperclip](https://github.com/paperclipai/paperclip): strongest developer-automation signal.
+- [infiniflow/ragflow](https://github.com/infiniflow/ragflow): strongest retrieval and workflow signal.
+- [embabel/embabel-agent](https://github.com/embabel/embabel-agent): strongest agent-framework follow-up candidate.
+- [smicallef/spiderfoot](https://github.com/smicallef/spiderfoot): strongest security-automation signal.
