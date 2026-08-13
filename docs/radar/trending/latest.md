@@ -1,45 +1,45 @@
-# GitHub Trending - 2026-08-12
+# GitHub Trending - 2026-08-13
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-08-12** is mixed rather than AI-only. Agent repos, developer automation, retrieval systems, security tooling, media or design utilities, and general open-source infrastructure are all visible at once, so the board is useful as momentum context but not as roadmap authority.
+The default global board captured on **2026-08-13** is mixed rather than AI-only. Agent or coding repos are visible, but they share the page with security tools, graphics or design projects, and broader systems infrastructure. The useful read is momentum shape: skills, coding workflows, and runtime infrastructure are still surfacing, but they do not dominate the full board.
 
 ## Notable Projects
 
+- [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design)  
+  A non-AI visual or design repo leading the board, which helps keep the summary faithful to the default global page rather than forcing an AI-only lens.
+
 - [semantica-agi/semantica](https://github.com/semantica-agi/semantica)  
-  The clearest agent or AGI-framed project on the default board today.
+  The clearest agent-native project on the board today.
 
-- [paperclipai/paperclip](https://github.com/paperclipai/paperclip)  
-  Developer automation or agent-assistant demand continues to surface on the broad board.
+- [anthropics/skills](https://github.com/anthropics/skills)  
+  Directly relevant to agent packaging and reusable capability distribution.
 
-- [infiniflow/ragflow](https://github.com/infiniflow/ragflow)  
-  Retrieval, orchestration, and workflow composition remain relevant to production AI systems.
+- [macro-inc/macro](https://github.com/macro-inc/macro)  
+  A developer-tooling and coding-agent signal surfacing on the broad board.
 
-- [embabel/embabel-agent](https://github.com/embabel/embabel-agent)  
-  Another agent-framework signal appearing without any topic filter.
+- [NVIDIA-NeMo/Switchyard](https://github.com/NVIDIA-NeMo/Switchyard)  
+  Infrastructure-oriented project that points toward large-scale routing or execution concerns.
+
+- [cactus-compute/needle](https://github.com/cactus-compute/needle)  
+  Fast execution infrastructure for LLM workloads, relevant to practical agent runtime cost and latency.
 
 - [smicallef/spiderfoot](https://github.com/smicallef/spiderfoot)  
-  Security automation is trending at the same time OpenAI is pushing Daybreak and GPT-5.6-Cyber.
-
-- [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design)  
-  A reminder that the default board still includes broader maker and design tooling.
-
-- [localsend/localsend](https://github.com/localsend/localsend)  
-  General utility software is still part of the board shape and should not be filtered out of the summary.
+  Security automation still shares board space with agent repos, not just traditional AI projects.
 
 ## Why They May Be Surfacing
 
-- **Agent frameworks still have broad attention.** [semantica-agi/semantica](https://github.com/semantica-agi/semantica) and [embabel/embabel-agent](https://github.com/embabel/embabel-agent) show that agent runtime and orchestration interest remains durable.
-- **Developer automation and retrieval continue to matter.** [paperclipai/paperclip](https://github.com/paperclipai/paperclip) and [infiniflow/ragflow](https://github.com/infiniflow/ragflow) fit the same repo-aware automation and grounding pressure visible in vendor product updates.
-- **Security tooling is rising alongside model-provider security programs.** [smicallef/spiderfoot](https://github.com/smicallef/spiderfoot) is notable because it surfaces in the same week OpenAI published Daybreak and GPT-5.6-Cyber updates.
-- **The board remains broader than an AI feed.** [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) and [localsend/localsend](https://github.com/localsend/localsend) are useful evidence that the default board still mixes many developer and maker interests together.
+- **Skills and reusable capability packs remain a live operator concern.** [anthropics/skills](https://github.com/anthropics/skills) is the cleanest example.
+- **Coding-agent and developer-workflow demand is still visible on the unfiltered board.** [macro-inc/macro](https://github.com/macro-inc/macro) carries that signal.
+- **Runtime performance and routing infrastructure are still winning attention.** [cactus-compute/needle](https://github.com/cactus-compute/needle) and [NVIDIA-NeMo/Switchyard](https://github.com/NVIDIA-NeMo/Switchyard) make that clear.
+- **The board is broader than agent hype.** [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) and [smicallef/spiderfoot](https://github.com/smicallef/spiderfoot) keep the snapshot grounded in the full default page.
 
 ## Watchlist
 
 - [semantica-agi/semantica](https://github.com/semantica-agi/semantica): strongest agent-native board signal.
-- [paperclipai/paperclip](https://github.com/paperclipai/paperclip): strongest developer-automation signal.
-- [infiniflow/ragflow](https://github.com/infiniflow/ragflow): strongest retrieval and workflow signal.
-- [embabel/embabel-agent](https://github.com/embabel/embabel-agent): strongest agent-framework follow-up candidate.
-- [smicallef/spiderfoot](https://github.com/smicallef/spiderfoot): strongest security-automation signal.
+- [anthropics/skills](https://github.com/anthropics/skills): strongest skill-packaging signal.
+- [macro-inc/macro](https://github.com/macro-inc/macro): strongest coding-workflow signal.
+- [NVIDIA-NeMo/Switchyard](https://github.com/NVIDIA-NeMo/Switchyard): strongest routing or infrastructure follow-up candidate.
+- [cactus-compute/needle](https://github.com/cactus-compute/needle): strongest execution-efficiency signal.

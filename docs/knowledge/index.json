@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 206,
+    "total_notes": 208,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 269,
+    "artifact_count": 271,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-08-12",
-      "meta": "Window: 2026-08-06 to 2026-08-12",
+      "title": "Daily Radar - 2026-08-13",
+      "meta": "Window: 2026-08-07 to 2026-08-13",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-08-13",
+          "path": "radar/daily/2026-08-13.md"
+        },
         {
           "name": "2026-08-12",
           "path": "radar/daily/2026-08-12.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-08-08",
           "path": "radar/daily/2026-08-08.md"
-        },
-        {
-          "name": "2026-08-07",
-          "path": "radar/daily/2026-08-07.md"
         }
       ],
-      "count": 94
+      "count": 95
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-08-12",
+      "title": "GitHub Trending - 2026-08-13",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
+        "[cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design)",
         "[semantica-agi/semantica](https://github.com/semantica-agi/semantica)",
-        "[paperclipai/paperclip](https://github.com/paperclipai/paperclip)",
-        "[infiniflow/ragflow](https://github.com/infiniflow/ragflow)"
+        "[anthropics/skills](https://github.com/anthropics/skills)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-08-13",
+          "path": "radar/trending/2026-08-13.md"
+        },
         {
           "name": "2026-08-12",
           "path": "radar/trending/2026-08-12.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-08-08",
           "path": "radar/trending/2026-08-08.md"
-        },
-        {
-          "name": "2026-08-07",
-          "path": "radar/trending/2026-08-07.md"
         }
       ],
-      "count": 95
+      "count": 96
     }
   },
   "deep_dive": "### The frontier is shifting from \"agent can act\" to \"operator can shape the action surface\"",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 269,
+      "artifact_count": 271,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 216,
+        "radar": 218,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4520,6 +4520,38 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-08-13.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-08-13.md",
+        "title": "Daily Radar - 2026-08-13",
+        "date": "2026-08-13",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-08-07 to 2026-08-13",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+          "https://developers.openai.com/api/docs/changelog",
+          "https://platform.claude.com/docs/en/managed-agents/quickstart",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://code.claude.com/docs/en/overview",
+          "https://www.minimax.io/news/minimax-h3-open-source",
+          "https://qwen.ai/research",
+          "https://platform.moonshot.ai/blog/posts/changelog",
+          "https://api-docs.deepseek.com/news/",
+          "https://github.com/trending",
+          "https://github.com/semantica-agi/semantica"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -7229,6 +7261,30 @@
           "https://github.com/smicallef/spiderfoot",
           "https://github.com/cathrynlavery/diagram-design",
           "https://github.com/localsend/localsend"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-08-13.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-08-13.md",
+        "title": "GitHub Trending - 2026-08-13",
+        "date": "2026-08-13",
+        "status": "",
+        "themes": [
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/cathrynlavery/diagram-design",
+          "https://github.com/semantica-agi/semantica",
+          "https://github.com/anthropics/skills",
+          "https://github.com/macro-inc/macro",
+          "https://github.com/NVIDIA-NeMo/Switchyard",
+          "https://github.com/cactus-compute/needle",
+          "https://github.com/smicallef/spiderfoot"
         ],
         "local_refs": []
       },
