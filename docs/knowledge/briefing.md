@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `208` durable notes are currently indexed across `3` recurring streams.
-- `271` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `209` durable notes are currently indexed across `3` recurring streams.
+- `272` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -20,10 +20,10 @@
 
 ### AI Agent Weekly Synthesis
 
-- Metadata: `Window: 2026-08-01 to 2026-08-08`
-- **Anthropic had a checked, bounded week rather than a broad new launch wave.** On **August 1, 2026**, Anthropic added [Dreams support for Claude Opus 5 on Claude API](https://platform.claude.com/docs/en/release-notes/overview) in the Claude Platform release notes. I also explicitly checked the official [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and [Claude Code What's New](https://code.claude.com/docs/en/whats-new); no newer in-window Managed Agents, advisor-tool, or Claude Code change surfaced on those official pages as of **August 8, 2026**.
-- **GitHub’s strongest official movement was around invocation structure, reasoning control, and repository knowledge.** On **August 3, 2026**, GitHub announced [trigger Copilot automations with comments](https://github.blog/changelog/2026-08-03-github-copilot-coding-agent-automations-trigger-with-comments/) and [reasoning effort in GitHub Models](https://github.blog/changelog/2026-08-03-reasoning-effort-now-available-in-github-models/). On **August 6, 2026**, it added [repository custom instructions for the coding agent](https://github.blog/changelog/2026-08-06-repository-custom-instructions-for-the-github-copilot-coding-agent-are-now-generally-available/) and [a weekly releases view in GitHub Models](https://github.blog/changelog/2026-08-06-weekly-releases-are-now-available-in-github-models/). On **August 7, 2026**, it added [high reasoning effort for code review](https://github.blog/changelog/2026-08-07-high-reasoning-effort-is-now-generally-available-for-code-review/).
-- **Google’s official signal was about giving operators more explicit control over agent retrieval, tools, and quality loops.** On **August 4, 2026**, Google published [expanding NotebookLM's open agentic ecosystem](https://developers.googleblog.com/expanding-notebooklms-open-agentic-ecosystem/) and [Computer Use in Gemini API and Vertex AI](https://developers.googleblog.com/computer-use-in-gemini-api-and-vertex-ai/). On **August 5, 2026**, it published [Grounding with the Google Maps API](https://developers.googleblog.com/introducing-grounding-with-google-maps-in-gemini/) and [Gemini Embedding support in Gemini Enterprise Agent Platform](https://developers.googleblog.com/gemini-embedding-support-in-gemini-enterprise-agent-platform/). On **August 6, 2026**, it published [MCP toolkit support in Gemini Enterprise Agent Platform](https://developers.googleblog.com/build-and-test-mcp-toolkit-agents-in-gemini-enterprise-agent-platform/).
+- Metadata: `Window: 2026-08-08 to 2026-08-15`
+- **Anthropic had a materially active week across Claude Platform and Claude Code, even though the Managed Agents and advisor-tool docs themselves stayed quiet.** On **August 11, 2026**, Anthropic’s official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added Compliance API access to transcripts from Cowork and Claude Code sessions that run on users’ machines, plus the `anthropic-workspace-id` response header. On **August 10, 2026**, the same release notes locked in [Claude Sonnet 5 pricing](https://platform.claude.com/docs/en/release-notes/overview) instead of allowing the planned September increase. I also explicitly checked the official [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) and [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) on **August 15, 2026**; no separate in-window Managed Agents or advisor-tool documentation change surfaced there.
+- **Claude Code changed repeatedly inside the same window and should be treated as a first-class Anthropic substream, not folded into generic Anthropic coverage.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) recorded in-window updates on **August 12, 2026**, **August 13, 2026**, and **August 14, 2026**. Those changes included self-hosted runner hook support, SSE keepalive pings for long thinking pauses, plugin marketplace command sources, default-on subagent forking, cross-session mentions and direct session messaging, GitLab plugin marketplace support, `forward_user_identity` gateway settings, and Bash memory cgroup controls.
+- **GitHub’s strongest official signal was packaging and state continuity for coding agents.** On **August 11, 2026**, GitHub published [Copilot memory and Ollama in GitHub Copilot for JetBrains](https://github.blog/changelog/2026-08-11-copilot-memory-and-ollama-in-github-copilot-for-jetbrains/). On **August 12, 2026**, it published [Agent Plugins 1.0 in VS Code, Copilot CLI, and the Copilot app](https://github.blog/changelog/2026-08-12-agent-plugins-1-0-in-vs-code-copilot-cli-and-the-copilot-app/). On **August 13, 2026**, it published [GitHub Copilot weekly releases — August 10](https://github.blog/changelog/2026-08-13-github-copilot-weekly-releases-august-10/), reinforcing that the coding-agent surface is now a managed release stream rather than a one-off feature bucket.
 
 ## Daily Signal Snapshot
 
@@ -43,13 +43,13 @@
 
 ## Durable Interpretation
 
-### The frontier is shifting from "agent can act" to "operator can shape the action surface"
+### The frontier is converging on execution governance, not just model capability
 
 ## Current Proposal Candidates
 
-- Reasoning Budget As A First-Class Run Control
-- Attached Knowledge Packs With Explicit Scope And Provenance
-- Execution-Surface Eval Hooks For Tool and Computer Use
+- Session Governance Packets For Local and Remote Agent Work
+- Portable Skill and Plugin Bundles With Runtime Trust Boundaries
+- Speed Class and Reasoning Continuity As Separate Run Controls
 
 ## Knowledge Network
 
@@ -74,12 +74,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Weekly Synthesis
 
+- [2026-08-15](../radar/weekly/2026-08-15.md)
 - [2026-08-08](../radar/weekly/2026-08-08.md)
 - [2026-08-01](../radar/weekly/2026-08-01.md)
 - [2026-07-25](../radar/weekly/2026-07-25.md)
 - [2026-07-18](../radar/weekly/2026-07-18.md)
 - [2026-07-10](../radar/weekly/2026-07-10.md)
-- [2026-07-03](../radar/weekly/2026-07-03.md)
 
 ### GitHub Trending
 
