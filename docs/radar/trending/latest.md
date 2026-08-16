@@ -1,45 +1,48 @@
-# GitHub Trending - 2026-08-13
+# GitHub Trending - 2026-08-16
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-08-13** is mixed rather than AI-only. Agent or coding repos are visible, but they share the page with security tools, graphics or design projects, and broader systems infrastructure. The useful read is momentum shape: skills, coding workflows, and runtime infrastructure are still surfacing, but they do not dominate the full board.
+The default global board captured on **2026-08-16** is broad rather than AI-only. It mixes design assets, security utilities, API catalogs, no-code or app-building tooling, and a smaller but still meaningful cluster of AI, inference, and coding-agent adjacent projects. The useful read is not that AI owns the board, but that agent packaging, low-latency inference, and CLI-centric workflows are still competitive enough to surface on an unfiltered page.
 
 ## Notable Projects
 
+- [cordiverse/cordis](https://github.com/cordiverse/cordis)  
+  A general software project leading the board, useful as a reminder that the default page is not narrowly tuned to AI.
+
 - [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design)  
-  A non-AI visual or design repo leading the board, which helps keep the summary faithful to the default global page rather than forcing an AI-only lens.
+  A design-focused repository surfacing high on the board and keeping the snapshot faithful to the broader community mix.
 
-- [semantica-agi/semantica](https://github.com/semantica-agi/semantica)  
-  The clearest agent-native project on the board today.
-
-- [anthropics/skills](https://github.com/anthropics/skills)  
-  Directly relevant to agent packaging and reusable capability distribution.
-
-- [macro-inc/macro](https://github.com/macro-inc/macro)  
-  A developer-tooling and coding-agent signal surfacing on the broad board.
-
-- [NVIDIA-NeMo/Switchyard](https://github.com/NVIDIA-NeMo/Switchyard)  
-  Infrastructure-oriented project that points toward large-scale routing or execution concerns.
+- [cursor/plugins](https://github.com/cursor/plugins)  
+  The clearest agent-packaging or extension-distribution signal on the board today.
 
 - [cactus-compute/needle](https://github.com/cactus-compute/needle)  
-  Fast execution infrastructure for LLM workloads, relevant to practical agent runtime cost and latency.
+  Relevant infrastructure signal for fast LLM execution and runtime efficiency.
 
-- [smicallef/spiderfoot](https://github.com/smicallef/spiderfoot)  
-  Security automation still shares board space with agent repos, not just traditional AI projects.
+- [unslothai/unsloth](https://github.com/unslothai/unsloth)  
+  A familiar AI workflow repo still drawing broad attention around efficient fine-tuning and deployment.
+
+- [github/spec-kit](https://github.com/github/spec-kit)  
+  Developer-workflow and specification discipline are still surfacing alongside agent tooling.
+
+- [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything)  
+  A CLI-native automation or agent workflow signal worth watching.
+
+- [megadose/holehe](https://github.com/megadose/holehe)  
+  Security and OSINT-style tooling still shares the board with AI repos, which keeps the snapshot grounded in the full default page.
 
 ## Why They May Be Surfacing
 
-- **Skills and reusable capability packs remain a live operator concern.** [anthropics/skills](https://github.com/anthropics/skills) is the cleanest example.
-- **Coding-agent and developer-workflow demand is still visible on the unfiltered board.** [macro-inc/macro](https://github.com/macro-inc/macro) carries that signal.
-- **Runtime performance and routing infrastructure are still winning attention.** [cactus-compute/needle](https://github.com/cactus-compute/needle) and [NVIDIA-NeMo/Switchyard](https://github.com/NVIDIA-NeMo/Switchyard) make that clear.
-- **The board is broader than agent hype.** [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) and [smicallef/spiderfoot](https://github.com/smicallef/spiderfoot) keep the snapshot grounded in the full default page.
+- **Portable extension and plugin layers remain hot.** [cursor/plugins](https://github.com/cursor/plugins) is the strongest sign that users still want reusable capability packaging around coding agents.
+- **Inference efficiency remains a first-order practical concern.** [cactus-compute/needle](https://github.com/cactus-compute/needle) and [unslothai/unsloth](https://github.com/unslothai/unsloth) fit the continuing push toward cheaper, faster real workloads.
+- **Process and workflow structure still matters.** [github/spec-kit](https://github.com/github/spec-kit) and [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) suggest that teams still want better repo-native or terminal-native operating patterns, not just better models.
+- **The board is not monocultural.** [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design), [cordiverse/cordis](https://github.com/cordiverse/cordis), and [megadose/holehe](https://github.com/megadose/holehe) show that today’s global board is shared by design, general software, and security demand as well.
 
 ## Watchlist
 
-- [semantica-agi/semantica](https://github.com/semantica-agi/semantica): strongest agent-native board signal.
-- [anthropics/skills](https://github.com/anthropics/skills): strongest skill-packaging signal.
-- [macro-inc/macro](https://github.com/macro-inc/macro): strongest coding-workflow signal.
-- [NVIDIA-NeMo/Switchyard](https://github.com/NVIDIA-NeMo/Switchyard): strongest routing or infrastructure follow-up candidate.
-- [cactus-compute/needle](https://github.com/cactus-compute/needle): strongest execution-efficiency signal.
+- [cursor/plugins](https://github.com/cursor/plugins): strongest packaging and extension signal.
+- [cactus-compute/needle](https://github.com/cactus-compute/needle): strongest inference-efficiency signal.
+- [unslothai/unsloth](https://github.com/unslothai/unsloth): strongest practical model-workflow signal.
+- [github/spec-kit](https://github.com/github/spec-kit): strongest workflow-discipline signal.
+- [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything): strongest CLI-agent experimentation signal.

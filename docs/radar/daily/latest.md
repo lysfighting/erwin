@@ -1,63 +1,71 @@
-# Daily Radar - 2026-08-13
+# Daily Radar - 2026-08-16
 
-Window: 2026-08-07 to 2026-08-13
+Window: 2026-08-10 to 2026-08-16
 
 ## New Signals
 
-1. **Anthropic shipped the clearest in-window admin and audit expansion on the Claude Platform surface.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added local Claude Code and Cowork session retrieval to the Compliance API in beta on **August 11, 2026**, with new endpoints for listing and fetching local-session metadata and transcripts across Claude Enterprise organizations.
+1. **Anthropic expanded Claude Platform auditability for local Claude Code and Cowork sessions.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added local-session Compliance API retrieval on **August 11, 2026**, including organization-wide listing, per-session metadata fetches, and transcript retrieval for sessions that ran on users' machines.
    Publish date: 2026-08-11
 
-2. **Claude Code kept moving as a first-class Anthropic substream, with fresh operational changes on August 12-13.** The official [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md) advanced to **2.1.229** on **August 12, 2026** and **2.1.231** on **August 13, 2026**. The notable changes are self-hosted runner hook support, SSE keepalive pings for long pauses, plugin marketplace command sources, stricter auto-approval boundaries for dangerous git or gh flags, and an MCP OAuth redirect fix.
-   Publish dates: 2026-08-12 and 2026-08-13
+2. **Claude Code kept moving as a first-class Anthropic substream even without a separately dated blog post.** The official [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md) inspected on **August 16, 2026** now shows the 2.1.231, 2.1.232, and 2.1.233 line advancing cross-session messaging, default subagent forking, self-hosted runner hook support, SSE keepalive behavior, and MCP OAuth fixes.
+   Publish date: official changelog inspected 2026-08-16; individual version-entry dates not exposed in the raw changelog
 
-3. **OpenAI's strongest in-window technical signal is governed cyber access rather than a broad new agent-runtime surface.** The official [OpenAI API changelog](https://developers.openai.com/api/docs/changelog) added **Daybreak Blue** and **Daybreak Red** on **August 7, 2026**, exposing a two-tier access model for approved defensive and red-team security workflows through `daybreak-blue-latest`, `daybreak-red-latest`, and `gpt-5.6-cyber`.
-   Publish date: 2026-08-07
+3. **OpenAI's strongest in-window technical change is a new speed tier rather than a new agent-control surface.** The official [OpenAI API changelog](https://developers.openai.com/api/docs/changelog) announced **Ultrafast mode** on **August 13, 2026**, a limited-preview service tier for GPT-5.6 Sol that runs up to 14x faster than Standard processing.
+   Publish date: 2026-08-13
 
-Anthropic's required technical substreams were explicitly checked before concluding the rest of the window was comparatively quiet: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents docs](https://platform.claude.com/docs/en/managed-agents/quickstart), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code docs](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md). In one official pass each, no stronger dated in-window technical item surfaced for Google, Moonshot, MiniMax, Qwen, or DeepSeek. Google's most relevant recent agent posts remain **August 5-6**, just outside this run window; MiniMax's strongest dated official item seen was [Open General Intelligence: MiniMax H3 Is Now Open Source](https://www.minimax.io/news/minimax-h3-open-source) on **August 3, 2026**; Qwen's current [research front page](https://qwen.ai/research) is active but did not expose a reliable in-window publish date in this pass; Moonshot's public [Kimi Open Platform release log](https://platform.moonshot.ai/blog/posts/changelog) still shows older dated entries; and DeepSeek's official [news surface](https://api-docs.deepseek.com/news/) did not expose a newer dated technical item in this window.
+4. **DeepSeek shipped a materially stronger agent-runtime story and explicit Codex compatibility.** The official [DeepSeek-V4-Pro GA release](https://api-docs.deepseek.com/news/news260813) launched on **August 13, 2026** with stronger agent-oriented reasoning modes, native OpenAI Responses API support, and explicit Codex setup guidance, with new peak and off-peak pricing taking effect on **August 16, 2026**.
+   Publish date: 2026-08-13
+
+5. **Qwen surfaced a fresh flagship coding and cowork model on its official research front page.** The official [Qwen research surface](https://qwen.ai/research) exposed **“Qwen3.8-Max: A New Bar for Coding and Cowork”** in this run on **August 16, 2026**. The landing page fetch did not expose a stable per-post permalink or inline publish stamp, so the date here is inferred from the official page state captured on the run date.
+   Publish date: inferred official page state 2026-08-16
+
+Anthropic's required technical substreams were explicitly checked before concluding the rest of the Anthropic window: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Claude Managed Agents docs](https://platform.claude.com/docs/en/managed-agents/quickstart), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Claude Code docs](https://code.claude.com/docs/en/overview), and the [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md). The Managed Agents and advisor-tool pages were checked directly, but they did not expose a separately dated in-window doc drop beyond the broader Anthropic release-note and changelog movement. In one official pass each, no stronger dated in-window technical item surfaced for Google, Moonshot, or MiniMax. Google's clearest agent packaging post remains [Agent Plugins package your skills, tools, and more](https://developers.googleblog.com/agent-plugins-package-your-skills-tools-and-more/) on **August 6, 2026**, just outside this window. Moonshot's official [Kimi Open Platform release log](https://platform.kimi.ai/blog/posts/changelog) still tops out at **November 6, 2025**. MiniMax's official [model release notes](https://platform.minimax.io/docs/release-notes/models) still top out at **July 31, 2026**.
 
 ## GitHub Trending Snapshot
 
-Snapshot source: [GitHub Trending](https://github.com/trending) captured from the default global board on **2026-08-13**.
+Snapshot source: [GitHub Trending](https://github.com/trending) captured from the default global board on **2026-08-16**.
 
-- [semantica-agi/semantica](https://github.com/semantica-agi/semantica): clearest agent-native repo on the default board today.
-- [anthropics/skills](https://github.com/anthropics/skills): directly relevant because portable skills and agent packaging remain an active operator surface.
-- [cactus-compute/needle](https://github.com/cactus-compute/needle): notable as infrastructure for fast, hardware-aware LLM execution rather than pure model hype.
-- [macro-inc/macro](https://github.com/macro-inc/macro): coding-agent and developer-tooling pressure remains visible on the broad board.
-- [NVIDIA-NeMo/Switchyard](https://github.com/NVIDIA-NeMo/Switchyard): worth watching because large-scale agent or inference routing infrastructure is still attracting attention.
+- [cursor/plugins](https://github.com/cursor/plugins): directly relevant because portable agent packaging and client-specific extension points are surfacing on the unfiltered board.
+- [cactus-compute/needle](https://github.com/cactus-compute/needle): notable for low-latency LLM inference infrastructure rather than model branding alone.
+- [unslothai/unsloth](https://github.com/unslothai/unsloth): still a strong practical signal for efficient model tuning and deployment workflows.
+- [github/spec-kit](https://github.com/github/spec-kit): relevant to repo-native specification and workflow discipline around coding-agent work.
+- [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything): worth tracking because CLI-native agent workflows remain an active experimentation surface.
 
 ## Harness-Relevant Signals
 
-- The strongest fresh first-party movement this run is **control-plane and governance surface area**, not a new benchmark cycle: Anthropic is expanding compliance visibility and Claude Code operational controls, while OpenAI is segmenting specialist access through Daybreak.
-- Anthropic's meaningful in-window movement came from the **Claude Platform release-notes surface** and the **Claude Code changelog**, not from a separately dated Managed Agents or advisor-tool doc drop. That distinction matters because those substreams still had to be checked explicitly.
-- The default Trending board is reinforcing adjacent demand around **skills, coding-agent workflows, and routing or execution infrastructure**, which lines up more with operational agent systems than with pure chat-model novelty.
-- No strong in-window dated technical note surfaced from Google, Moonshot, MiniMax, Qwen, or DeepSeek in this pass. That is a checked result, not a skipped publisher.
+- Anthropic and DeepSeek both pushed on **operator-facing control planes**, not only on raw model quality: audit surfaces, session controls, reasoning effort controls, and explicit coding-agent integration paths.
+- OpenAI's clearest in-window move was **latency-tier segmentation**, which reinforces that runtime shape and access mode are becoming product differentiators alongside benchmark claims.
+- Qwen's fresh coding and cowork positioning keeps pressure on **developer-agent specialization**, even though this run could only verify it at the official research-front-page level.
+- GitHub Trending is reinforcing adjacent demand around **plugin packaging, CLI-native workflows, spec discipline, and inference efficiency**, which is closer to real agent operations than to generic chatbot novelty.
+- The Anthropic Managed Agents and advisor-tool surfaces were checked directly and matter strategically, but they did not show a separately dated **2026-08-10 to 2026-08-16** doc event in this pass.
 
 ## Candidate Proposals
 
 ### Proposal 1
 
 - `source_type`: first-party release notes and changelog
-- `problem_pattern`: vendor agent stacks are exposing governance and runtime-control features through product surfaces faster than evaluation habits are catching up
-- `why_it_matters_for_harness`: Harness comparisons can drift if auditability, resume behavior, and operator-control assumptions stay implicit
+- `problem_pattern`: agent vendors are shipping auditability, session control, and cross-session coordination features faster than comparable evaluation habits
+- `why_it_matters_for_harness`: Harness comparisons can drift if runtime-governance assumptions stay implicit instead of being tested as part of agent behavior
 - `recommended_disposition`: `encode-as-eval`
 
 ### Proposal 2
 
-- `source_type`: first-party security-program changelog
-- `problem_pattern`: specialist access programs are becoming the delivery path for high-risk or high-capability workflows instead of broad default availability
-- `why_it_matters_for_harness`: governed-access boundaries may become a bigger interoperability variable than raw model quality
-- `recommended_disposition`: `watch`
+- `source_type`: first-party runtime and model launch notes
+- `problem_pattern`: vendors are converging on explicit speed or reasoning tiers instead of one default serving mode
+- `why_it_matters_for_harness`: speed, effort, and routing mode can change agent workflow quality as much as base-model capability
+- `recommended_disposition`: `prototype`
 
 ### Proposal 3
 
-- `source_type`: first-party changelog plus secondary trending context
-- `problem_pattern`: skill packaging, self-hosted execution, and long-running session ergonomics are becoming visible product differentiators
-- `why_it_matters_for_harness`: these surfaces are closer to real operator workflows than one-shot prompt demos
-- `recommended_disposition`: `prototype`
+- `source_type`: first-party product surfaces plus GitHub Trending
+- `problem_pattern`: packaging skills, MCP servers, plugins, and CLI workflows into portable repo-native units is becoming a visible operator expectation
+- `why_it_matters_for_harness`: the surrounding portability layer may matter as much as any single model API when teams operationalize coding agents
+- `recommended_disposition`: `watch`
 
 ## Watch Next
 
-- Re-check Anthropic next run in the same required order, especially for a separately dated **Managed Agents** or **advisor tool** update that would move those substreams from checked-quiet to active.
-- Watch whether OpenAI extends the **August 7, 2026** Daybreak split into a broader long-running agent or governed-runtime pattern beyond cyber workflows.
-- Re-check Google because its most relevant official agent infrastructure posts landed just outside this window on **August 5-6, 2026**.
-- Watch whether Qwen, MiniMax, Moonshot, or DeepSeek publish a clearly dated official technical item that moves beyond the currently visible carryover surfaces.
+- Re-check Anthropic in the same required order next run, especially for a separately dated **Claude Managed Agents** or **advisor tool** update that would move those substreams from checked-quiet to active.
+- Watch whether DeepSeek's **August 13, 2026** V4-Pro release drives visible third-party coding-agent adoption beyond its own compatibility claims.
+- Watch whether OpenAI extends **Ultrafast mode** into a broader governed-runtime pattern rather than a narrow premium speed lane.
+- Re-check Google because the clearest official agent packaging and MCP-related posts remain clustered just outside this run window.
+- Re-check Qwen for a stable permalink or richer technical write-up behind the **Qwen3.8-Max** front-page launch signal.
