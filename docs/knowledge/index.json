@@ -153,8 +153,8 @@
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
         "[cordiverse/cordis](https://github.com/cordiverse/cordis)",
-        "[cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design)",
-        "[cursor/plugins](https://github.com/cursor/plugins)"
+        "[basecamp/omarchy](https://github.com/basecamp/omarchy)",
+        "[unslothai/unsloth](https://github.com/unslothai/unsloth)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
@@ -4559,7 +4559,6 @@
         "date": "2026-08-16",
         "status": "",
         "themes": [
-          "harness",
           "agent evals",
           "context engineering",
           "coding agents",
@@ -4569,17 +4568,17 @@
         "summary": "Window: 2026-08-10 to 2026-08-16",
         "external_refs": [
           "https://platform.claude.com/docs/en/release-notes/overview",
-          "https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md",
-          "https://developers.openai.com/api/docs/changelog",
-          "https://api-docs.deepseek.com/news/news260813",
-          "https://qwen.ai/research",
+          "https://openai.com/news/applied-ai/",
+          "https://openai.com/news/product-releases/",
+          "https://api-docs.deepseek.com/news/news260813/",
+          "https://api-docs.deepseek.com/quick_start/agent_integrations/codex/",
+          "https://api-docs.deepseek.com/quick_start/pricing",
+          "https://qwenlm.github.io/qwen-code-docs/en/blog/updates/weekly-update-2026-08-13/",
           "https://platform.claude.com/docs/en/managed-agents/quickstart",
           "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
           "https://code.claude.com/docs/en/overview",
-          "https://developers.googleblog.com/agent-plugins-package-your-skills-tools-and-more/",
-          "https://platform.kimi.ai/blog/posts/changelog",
-          "https://platform.minimax.io/docs/release-notes/models",
-          "https://github.com/trending"
+          "https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md",
+          "https://developers.googleblog.com/agent-plugins-package-your-skills-tools-and-more/"
         ],
         "local_refs": []
       },
@@ -7328,6 +7327,8 @@
         "date": "2026-08-16",
         "status": "",
         "themes": [
+          "agent evals",
+          "context engineering",
           "coding agents",
           "orchestration"
         ],
@@ -7335,13 +7336,13 @@
         "external_refs": [
           "https://github.com/trending",
           "https://github.com/cordiverse/cordis",
-          "https://github.com/cathrynlavery/diagram-design",
-          "https://github.com/cursor/plugins",
-          "https://github.com/cactus-compute/needle",
+          "https://github.com/basecamp/omarchy",
           "https://github.com/unslothai/unsloth",
-          "https://github.com/github/spec-kit",
-          "https://github.com/HKUDS/CLI-Anything",
-          "https://github.com/megadose/holehe"
+          "https://github.com/OpenCut-app/OpenCut",
+          "https://github.com/akitaonrails/ai-memory",
+          "https://github.com/public-apis/public-apis",
+          "https://github.com/ToolJet/ToolJet",
+          "https://github.com/cactus-compute/needle"
         ],
         "local_refs": []
       },

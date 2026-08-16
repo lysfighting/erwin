@@ -38,8 +38,8 @@
 
 - Metadata: `Latest GitHub Trending board summary`
 - [cordiverse/cordis](https://github.com/cordiverse/cordis)
-- [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design)
-- [cursor/plugins](https://github.com/cursor/plugins)
+- [basecamp/omarchy](https://github.com/basecamp/omarchy)
+- [unslothai/unsloth](https://github.com/unslothai/unsloth)
 
 ## Durable Interpretation
 
