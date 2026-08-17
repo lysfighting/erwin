@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 211,
+    "total_notes": 213,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 274,
+    "artifact_count": 276,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-08-16",
-      "meta": "Window: 2026-08-10 to 2026-08-16",
+      "title": "Daily Radar - 2026-08-17",
+      "meta": "Window: 2026-08-11 to 2026-08-17",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-08-17",
+          "path": "radar/daily/2026-08-17.md"
+        },
         {
           "name": "2026-08-16",
           "path": "radar/daily/2026-08-16.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-08-10",
           "path": "radar/daily/2026-08-10.md"
-        },
-        {
-          "name": "2026-08-09",
-          "path": "radar/daily/2026-08-09.md"
         }
       ],
-      "count": 96
+      "count": 97
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-08-16",
+      "title": "GitHub Trending - 2026-08-17",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
-        "[cordiverse/cordis](https://github.com/cordiverse/cordis)",
-        "[basecamp/omarchy](https://github.com/basecamp/omarchy)",
-        "[unslothai/unsloth](https://github.com/unslothai/unsloth)"
+        "[harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo)",
+        "[usestrix/strix](https://github.com/usestrix/strix)",
+        "[nautechsystems/nautilus_trader](https://github.com/nautechsystems/nautilus_trader)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-08-17",
+          "path": "radar/trending/2026-08-17.md"
+        },
         {
           "name": "2026-08-16",
           "path": "radar/trending/2026-08-16.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-08-10",
           "path": "radar/trending/2026-08-10.md"
-        },
-        {
-          "name": "2026-08-09",
-          "path": "radar/trending/2026-08-09.md"
         }
       ],
-      "count": 97
+      "count": 98
     }
   },
   "deep_dive": "### The frontier is converging on execution governance, not just model capability",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 274,
+      "artifact_count": 276,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 221,
+        "radar": 223,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4583,6 +4583,39 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-08-17.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-08-17.md",
+        "title": "Daily Radar - 2026-08-17",
+        "date": "2026-08-17",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-08-11 to 2026-08-17",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://claude.com/blog/compliance-api-coverage-extends-to-claude-cowork-and-claude-code",
+          "https://claude.com/blog/maximizing-the-value-of-your-claude-code-sessions",
+          "https://platform.claude.com/docs/en/managed-agents/quickstart",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://code.claude.com/docs/en/overview",
+          "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+          "https://openai.com/index/builders-guide-to-gpt-5-6/",
+          "https://openai.com/index/previewing-ultrafast/",
+          "https://qwenlm.github.io/qwen-code-docs/en/blog/updates/weekly-update-2026-08-13/",
+          "https://api-docs.deepseek.com/updates/",
+          "https://api-docs.deepseek.com/news/news260813"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -7343,6 +7376,35 @@
           "https://github.com/public-apis/public-apis",
           "https://github.com/ToolJet/ToolJet",
           "https://github.com/cactus-compute/needle"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-08-17.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-08-17.md",
+        "title": "GitHub Trending - 2026-08-17",
+        "date": "2026-08-17",
+        "status": "",
+        "themes": [
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/harry0703/MoneyPrinterTurbo",
+          "https://github.com/usestrix/strix",
+          "https://github.com/nautechsystems/nautilus_trader",
+          "https://github.com/akitaonrails/ai-memory",
+          "https://github.com/mukul975/Anthropic-Cybersecurity-Skills",
+          "https://github.com/AlexsJones/llmfit",
+          "https://github.com/santifer/career-ops",
+          "https://github.com/jundot/omlx",
+          "https://github.com/immich-app/immich",
+          "https://github.com/cordiverse/cordis",
+          "https://github.com/agalwood/Motrix"
         ],
         "local_refs": []
       },

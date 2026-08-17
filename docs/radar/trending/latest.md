@@ -1,47 +1,56 @@
-# GitHub Trending - 2026-08-16
+# GitHub Trending - 2026-08-17
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-08-16** is not AI-dominated. It mixes a general software framework, a Linux environment stack, a video editor, a public API catalog, app-building tooling, and a smaller cluster of AI or agent-adjacent projects. The useful read is that AI remains present, but the unfiltered board still reflects broader developer demand rather than a single frontier-model wave.
+The default global board captured on **2026-08-17** is mixed rather than purely AI-led. AI repos are present and some are strong, but the board also includes general developer utilities, a trading engine, a self-hosted media product, and a framework entry that is not obviously tied to frontier-model workflows. The faithful read is that agent and AI demand remains active, while open-source attention is still broad.
 
 ## Notable Projects
 
-- [cordiverse/cordis](https://github.com/cordiverse/cordis)  
-  A general software framework sitting high on the board, useful mainly to keep the snapshot faithful to the default global page.
+- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo)  
+  AI-generated short-video workflow automation, and the single biggest attention magnet on today's board.
 
-- [basecamp/omarchy](https://github.com/basecamp/omarchy)  
-  A "Beautiful, Modern & Opinionated Linux" stack that signals developer-environment interest rather than model hype.
+- [usestrix/strix](https://github.com/usestrix/strix)  
+  Open-source AI penetration-testing tooling, notable because it sits at the intersection of agents, security, and practical workflow automation.
 
-- [unslothai/unsloth](https://github.com/unslothai/unsloth)  
-  Still a practical AI workflow repo, centered on local training and running of current model families.
-
-- [OpenCut-app/OpenCut](https://github.com/OpenCut-app/OpenCut)  
-  An open-source CapCut alternative, showing that creator tooling remains strong on the default board.
+- [nautechsystems/nautilus_trader](https://github.com/nautechsystems/nautilus_trader)  
+  Production-grade Rust trading engine, a strong non-AI signal that keeps the board shape honest.
 
 - [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory)  
-  One of the clearest agent-specific repos on the board, focused on long-term memory and cross-vendor coding-agent handoff.
+  One of the clearest direct coding-agent repos on the board, focused on long-term memory and cross-vendor handoff.
 
-- [public-apis/public-apis](https://github.com/public-apis/public-apis)  
-  Not new to GitHub, but still a broad signal that API discovery remains a durable developer need.
+- [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills)  
+  A large structured skills collection for AI agents, relevant because skills packaging is becoming operational infrastructure.
 
-- [ToolJet/ToolJet](https://github.com/ToolJet/ToolJet)  
-  Internal-tool generation and AI-agent-adjacent app building continue to pull open-source interest.
+- [AlexsJones/llmfit](https://github.com/AlexsJones/llmfit)  
+  Hardware-fit model/provider chooser, which maps to the growing practical need to decide what can run where.
 
-- [cactus-compute/needle](https://github.com/cactus-compute/needle)  
-  A compact model/runtime project for tiny devices, relevant as an infrastructure-efficiency signal even though it is not a coding-agent repo.
+- [santifer/career-ops](https://github.com/santifer/career-ops)  
+  Local AI workflow for job search and application operations inside coding CLIs.
+
+- [jundot/omlx](https://github.com/jundot/omlx)  
+  Apple Silicon inference server with SSD caching, a notable local-runtime efficiency signal.
+
+- [immich-app/immich](https://github.com/immich-app/immich)  
+  Self-hosted photo and video management, useful as a reminder that the board is not collapsing into an AI-only popularity chart.
+
+- [cordiverse/cordis](https://github.com/cordiverse/cordis)  
+  A high-momentum framework entry whose surfacing looks broader than today's AI wave alone.
+
+- [agalwood/Motrix](https://github.com/agalwood/Motrix)  
+  General-purpose download manager, another non-agent popularity signal on the default page.
 
 ## Why They May Be Surfacing
 
-- **Environment and workflow surfaces are active again.** [basecamp/omarchy](https://github.com/basecamp/omarchy) and [ToolJet/ToolJet](https://github.com/ToolJet/ToolJet) suggest developers still reward operational convenience and usable platforms, not just model benchmarks.
-- **AI interest is skewing toward practical workflows.** [unslothai/unsloth](https://github.com/unslothai/unsloth), [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory), and [cactus-compute/needle](https://github.com/cactus-compute/needle) all map to deployability, continuity, or efficient runtime constraints.
-- **The board is visibly mixed.** [cordiverse/cordis](https://github.com/cordiverse/cordis), [OpenCut-app/OpenCut](https://github.com/OpenCut-app/OpenCut), and [public-apis/public-apis](https://github.com/public-apis/public-apis) keep the page from collapsing into an AI-only popularity read.
+- **Applied AI automation is still strong.** [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo), [usestrix/strix](https://github.com/usestrix/strix), and [santifer/career-ops](https://github.com/santifer/career-ops) all turn AI into a concrete workflow rather than a general-purpose demo.
+- **Coding-agent infrastructure is getting more specific.** [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory), [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills), [AlexsJones/llmfit](https://github.com/AlexsJones/llmfit), and [jundot/omlx](https://github.com/jundot/omlx) map to memory, skill packaging, hardware fit, and local inference operations.
+- **The board is still genuinely mixed.** [nautechsystems/nautilus_trader](https://github.com/nautechsystems/nautilus_trader), [immich-app/immich](https://github.com/immich-app/immich), [cordiverse/cordis](https://github.com/cordiverse/cordis), and [agalwood/Motrix](https://github.com/agalwood/Motrix) show that the default global page remains broader than an AI trendline.
 
 ## Watchlist
 
 - [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory): strongest direct memory-continuity signal for coding agents.
-- [unslothai/unsloth](https://github.com/unslothai/unsloth): strongest practical local model-workflow signal.
-- [ToolJet/ToolJet](https://github.com/ToolJet/ToolJet): strongest internal-tool and AI-wrapper platform signal.
-- [cactus-compute/needle](https://github.com/cactus-compute/needle): strongest compact-runtime efficiency signal.
-- [basecamp/omarchy](https://github.com/basecamp/omarchy): strongest non-AI environment signal on the default board.
+- [usestrix/strix](https://github.com/usestrix/strix): strongest agent-security operations signal on today's board.
+- [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills): strongest skills-packaging and reusable-agent-capability signal.
+- [AlexsJones/llmfit](https://github.com/AlexsJones/llmfit): strongest runtime-selection and hardware-fit signal.
+- [jundot/omlx](https://github.com/jundot/omlx): strongest local inference-efficiency signal.
