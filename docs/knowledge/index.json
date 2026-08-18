@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 213,
+    "total_notes": 215,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 276,
+    "artifact_count": 278,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-08-17",
-      "meta": "Window: 2026-08-11 to 2026-08-17",
+      "title": "Daily Radar - 2026-08-18",
+      "meta": "Window: 2026-08-12 to 2026-08-18",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-08-18",
+          "path": "radar/daily/2026-08-18.md"
+        },
         {
           "name": "2026-08-17",
           "path": "radar/daily/2026-08-17.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-08-11",
           "path": "radar/daily/2026-08-11.md"
-        },
-        {
-          "name": "2026-08-10",
-          "path": "radar/daily/2026-08-10.md"
         }
       ],
-      "count": 97
+      "count": 98
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-08-17",
+      "title": "GitHub Trending - 2026-08-18",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
         "[harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo)",
-        "[usestrix/strix](https://github.com/usestrix/strix)",
-        "[nautechsystems/nautilus_trader](https://github.com/nautechsystems/nautilus_trader)"
+        "[chaitanyagiri/munder-difflin](https://github.com/chaitanyagiri/munder-difflin)",
+        "[akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-08-18",
+          "path": "radar/trending/2026-08-18.md"
+        },
         {
           "name": "2026-08-17",
           "path": "radar/trending/2026-08-17.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-08-11",
           "path": "radar/trending/2026-08-11.md"
-        },
-        {
-          "name": "2026-08-10",
-          "path": "radar/trending/2026-08-10.md"
         }
       ],
-      "count": 98
+      "count": 99
     }
   },
   "deep_dive": "### The frontier is converging on execution governance, not just model capability",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 276,
+      "artifact_count": 278,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 223,
+        "radar": 225,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4616,6 +4616,37 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-08-18.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-08-18.md",
+        "title": "Daily Radar - 2026-08-18",
+        "date": "2026-08-18",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-08-12 to 2026-08-18",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://claude.com/blog/maximizing-the-value-of-your-claude-code-sessions",
+          "https://openai.com/index/previewing-ultrafast/",
+          "https://openai.com/index/builders-guide-to-gpt-5-6/",
+          "https://developers.googleblog.com/build-zero-trust-ai-agents-with-googles-agent-development-kit/",
+          "https://qwenlm.github.io/qwen-code-docs/en/blog/updates/weekly-update-2026-08-13/",
+          "https://api-docs.deepseek.com/updates/",
+          "https://api-docs.deepseek.com/news/news260813",
+          "https://platform.kimi.ai/docs/models",
+          "https://platform.minimax.io/docs/release-notes/models",
+          "https://github.com/trending",
+          "https://github.com/harry0703/MoneyPrinterTurbo"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -7404,6 +7435,34 @@
           "https://github.com/jundot/omlx",
           "https://github.com/immich-app/immich",
           "https://github.com/cordiverse/cordis",
+          "https://github.com/agalwood/Motrix"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-08-18.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-08-18.md",
+        "title": "GitHub Trending - 2026-08-18",
+        "date": "2026-08-18",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/harry0703/MoneyPrinterTurbo",
+          "https://github.com/chaitanyagiri/munder-difflin",
+          "https://github.com/akitaonrails/ai-memory",
+          "https://github.com/volcengine/OpenViking",
+          "https://github.com/mukul975/Anthropic-Cybersecurity-Skills",
+          "https://github.com/jundot/omlx",
+          "https://github.com/OpenCut-app/OpenCut",
+          "https://github.com/public-apis/public-apis",
           "https://github.com/agalwood/Motrix"
         ],
         "local_refs": []
