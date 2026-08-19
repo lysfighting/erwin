@@ -1,52 +1,48 @@
-# GitHub Trending - 2026-08-18
+# GitHub Trending - 2026-08-19
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-08-18** is mixed but still clearly AI-tinted. Agent and AI repos are prominent near the top, especially around workflow automation, memory, and multi-agent infrastructure, but the page still includes general developer utilities, open media tooling, and broad reference repos. The faithful read is that AI is strong on the board without fully owning it.
+The default global board captured on **2026-08-19** is still AI-tilted, but not AI-only. Agent memory, multi-agent orchestration, AI workflow automation, and reusable agent-skill packaging are prominent near the top, while the board still includes broad developer utilities, desktop tools, and general-interest open-source projects. The faithful read is that AI remains strong on the board without fully dominating it.
 
 ## Notable Projects
 
-- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo)  
-  Applied AI short-video generation workflow; still the biggest broad-attention AI repo on today's board.
+- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo)
+  Applied AI short-video generation workflow with broad appeal and obvious end-user output.
 
-- [chaitanyagiri/munder-difflin](https://github.com/chaitanyagiri/munder-difflin)  
-  Local multi-agent harness, one of the clearest direct agent-orchestration repos surfacing today.
+- [chaitanyagiri/munder-difflin](https://github.com/chaitanyagiri/munder-difflin)
+  Local multi-agent harness and one of today's clearest direct orchestration repos.
 
-- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory)  
-  Long-term memory plus cross-vendor handoff for coding-agent CLIs.
+- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory)
+  Long-term memory and handoff layer for agent coding CLIs across vendors.
 
-- [volcengine/OpenViking](https://github.com/volcengine/OpenViking)  
-  "Context database" positioning for agent memory, knowledge retrieval, and skills in one stack.
+- [volcengine/OpenViking](https://github.com/volcengine/OpenViking)
+  Context database framing for unifying agent memory, knowledge RAG, and skills.
 
-- [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills)  
-  Large structured skill pack for AI agents, notable because packaging and reuse are turning into operational primitives.
+- [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills)
+  Large structured skill pack showing continued demand for reusable operational agent capabilities.
 
-- [jundot/omlx](https://github.com/jundot/omlx)  
-  Apple Silicon inference server with continuous batching and SSD caching; a strong local-runtime efficiency signal.
+- [public-apis/public-apis](https://github.com/public-apis/public-apis)
+  Broad developer reference repo that keeps the page grounded in general utility.
 
-- [OpenCut-app/OpenCut](https://github.com/OpenCut-app/OpenCut)  
-  Open-source CapCut alternative; useful as a reminder that today's board is not purely agent infrastructure.
+- [basecamp/omarchy](https://github.com/basecamp/omarchy)
+  General computing and developer-environment momentum, useful as a reminder that the board is still mixed.
 
-- [public-apis/public-apis](https://github.com/public-apis/public-apis)  
-  Broad developer reference repo, showing the board still rewards general utility and discoverability.
-
-- [agalwood/Motrix](https://github.com/agalwood/Motrix)  
-  General-purpose desktop utility momentum, again keeping the board shape honest.
+- [agalwood/Motrix](https://github.com/agalwood/Motrix)
+  Desktop utility momentum that again prevents an overly AI-only read of the board.
 
 ## Why They May Be Surfacing
 
-- **Applied AI remains the easiest story to spread.** [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) turns current model capability into an obvious end-user workflow.
-- **Agent infrastructure is getting more concrete.** [chaitanyagiri/munder-difflin](https://github.com/chaitanyagiri/munder-difflin), [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory), and [volcengine/OpenViking](https://github.com/volcengine/OpenViking) all map to durable orchestration or context-management problems rather than shallow wrappers.
-- **Reusable capability packaging is becoming its own category.** [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills) shows continuing attention on agent skills as deployable operational assets.
-- **Local runtime practicality still matters.** [jundot/omlx](https://github.com/jundot/omlx) surfacing alongside agent repos suggests that model-serving efficiency remains part of the open-source conversation.
-- **The board is still broadly mixed.** [OpenCut-app/OpenCut](https://github.com/OpenCut-app/OpenCut), [public-apis/public-apis](https://github.com/public-apis/public-apis), and [agalwood/Motrix](https://github.com/agalwood/Motrix) keep the global page from collapsing into an AI-only signal.
+- **Applied AI remains the easiest story to spread.** [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) turns model capability into an immediately understandable workflow.
+- **Agent infrastructure is getting more concrete.** [chaitanyagiri/munder-difflin](https://github.com/chaitanyagiri/munder-difflin), [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory), and [volcengine/OpenViking](https://github.com/volcengine/OpenViking) all map to durable orchestration or context-management problems rather than thin wrappers.
+- **Reusable capability packaging is becoming its own category.** [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills) is notable because agent skills are showing up as deployable operational assets.
+- **The board is still broadly mixed.** [public-apis/public-apis](https://github.com/public-apis/public-apis), [basecamp/omarchy](https://github.com/basecamp/omarchy), and [agalwood/Motrix](https://github.com/agalwood/Motrix) keep the default board from collapsing into a pure agent leaderboard.
 
 ## Watchlist
 
 - [chaitanyagiri/munder-difflin](https://github.com/chaitanyagiri/munder-difflin): strongest direct harness-style multi-agent orchestration signal on today's board.
-- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory): strongest memory continuity and cross-vendor handoff signal.
-- [volcengine/OpenViking](https://github.com/volcengine/OpenViking): strongest "context database" signal for agent memory plus knowledge plus skills.
+- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory): strongest continuity and cross-vendor handoff signal.
+- [volcengine/OpenViking](https://github.com/volcengine/OpenViking): strongest context-database signal for memory plus knowledge plus skills.
 - [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills): strongest reusable security-skill packaging signal.
-- [jundot/omlx](https://github.com/jundot/omlx): strongest local inference-efficiency signal.
+- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo): strongest broad-adoption applied-AI workflow signal.
