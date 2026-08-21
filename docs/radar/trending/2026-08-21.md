@@ -4,45 +4,51 @@ Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-08-21** is mixed rather than purely AI. AI and coding-agent infrastructure are still prominent, but the board also includes creator automation, analytics, developer productivity, planning software, and general utilities. The faithful read is that AI remains strong on the board without fully crowding out broader developer interest.
+The default global board captured on **2026-08-21** is mixed, not AI-only. Coding-agent infrastructure is prominent, but the board also includes local-first hardware tooling, job-search automation, short-video generation, analytics, and personal-data visualization. The faithful read is that AI remains strong without fully crowding out broader developer interest.
 
 ## Notable Projects
 
 - [modular/modular](https://github.com/modular/modular)
-  Mojo and model-systems stack work; still one of the clearest runtime/compiler signals on the board.
+  Model-systems and compiler/runtime stack signal; still one of the clearest lower-layer AI infrastructure repos on the board.
 
 - [mattpocock/skills](https://github.com/mattpocock/skills)
-  Reusable coding workflow and skill-pack format with obvious agent-tooling overlap.
+  Reusable coding-agent workflow and skill-pack format with obvious operator overlap.
 
-- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory)
-  Agent memory and restart continuity layer across coding-agent environments.
+- [AprilNEA/OpenLogi](https://github.com/AprilNEA/OpenLogi)
+  Local-first Logitech control alternative; useful as a reminder that the board is not purely AI and that privacy-oriented desktop tooling is also breaking out.
+
+- [obra/superpowers](https://github.com/obra/superpowers)
+  Explicit agentic skills framework and development methodology signal.
 
 - [cursor/plugins](https://github.com/cursor/plugins)
-  Plugin surface for a mainstream coding-agent environment; relevant because ecosystems are becoming product moats.
+  Plugin surface for a mainstream coding-agent environment; ecosystems remain a practical moat.
+
+- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory)
+  Long-term memory and cross-vendor handoff layer for coding-agent CLIs.
 
 - [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo)
-  Applied AI video workflow with broad reach and clear remixability.
+  Applied AI short-video automation with broad consumer reach.
+
+- [agent-substrate/substrate](https://github.com/agent-substrate/substrate)
+  Runtime substrate signal for agent systems.
+
+- [chaitanyagiri/munder-difflin](https://github.com/chaitanyagiri/munder-difflin)
+  Local multi-agent harness signal.
 
 - [PostHog/posthog](https://github.com/PostHog/posthog)
-  Product analytics and observability remain visible on the board, which matters for agent runtime measurement too.
-
-- [makeplane/plane](https://github.com/makeplane/plane)
-  General dev-productivity and planning software signal; useful to keep the board read honest rather than AI-only.
-
-- [Tencent/AI-Infra-Guard](https://github.com/Tencent/AI-Infra-Guard)
-  Explicit AI infrastructure guardrail project; one of the stronger policy and safety signals on the board.
+  Analytics and observability remain visible on the board, which matters for agent runtime measurement too.
 
 ## Why They May Be Surfacing
 
-- **AI utility with visible output still spreads fastest.** [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) fits the pattern of immediate end-user payoff.
-- **Operator surfaces are becoming ecosystems.** [mattpocock/skills](https://github.com/mattpocock/skills) and [cursor/plugins](https://github.com/cursor/plugins) both point to packaging, reuse, and marketplace-like discoverability as practical leverage points.
-- **Continuity and runtime substrate work is maturing.** [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory), [modular/modular](https://github.com/modular/modular), and [Tencent/AI-Infra-Guard](https://github.com/Tencent/AI-Infra-Guard) all map to deeper infra concerns rather than thin wrappers.
-- **The board is still broadly mixed.** [PostHog/posthog](https://github.com/PostHog/posthog) and [makeplane/plane](https://github.com/makeplane/plane) help show that trending remains a general developer-interest surface, not an AI leaderboard.
+- **Packaging and reuse are still winning distribution.** [mattpocock/skills](https://github.com/mattpocock/skills), [obra/superpowers](https://github.com/obra/superpowers), and [cursor/plugins](https://github.com/cursor/plugins) all point to agent capability bundles as practical leverage.
+- **Memory and local harness patterns are becoming explicit repo categories.** [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory), [agent-substrate/substrate](https://github.com/agent-substrate/substrate), and [chaitanyagiri/munder-difflin](https://github.com/chaitanyagiri/munder-difflin) all map to deeper execution and continuity concerns rather than thin wrappers.
+- **Visible end-user payoff still spreads quickly.** [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) fits the pattern of AI utility with immediate output value.
+- **The board remains broadly mixed.** [AprilNEA/OpenLogi](https://github.com/AprilNEA/OpenLogi) and [PostHog/posthog](https://github.com/PostHog/posthog) help keep the reading honest: GitHub Trending is still a general developer-interest surface, not an AI leaderboard.
 
 ## Watchlist
 
 - [mattpocock/skills](https://github.com/mattpocock/skills): strongest packaging and reusable workflow signal.
-- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory): strongest continuity and handoff signal.
+- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory): strongest continuity and cross-vendor handoff signal.
 - [cursor/plugins](https://github.com/cursor/plugins): strongest plugin-ecosystem signal around coding agents.
-- [Tencent/AI-Infra-Guard](https://github.com/Tencent/AI-Infra-Guard): strongest explicit AI guardrail signal.
-- [modular/modular](https://github.com/modular/modular): strongest lower-layer runtime/compiler signal.
+- [agent-substrate/substrate](https://github.com/agent-substrate/substrate): strongest runtime-substrate signal.
+- [PostHog/posthog](https://github.com/PostHog/posthog): strongest observability-adjacent infrastructure signal.

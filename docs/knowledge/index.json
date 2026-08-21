@@ -154,7 +154,7 @@
       "highlights": [
         "[modular/modular](https://github.com/modular/modular)",
         "[mattpocock/skills](https://github.com/mattpocock/skills)",
-        "[akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory)"
+        "[AprilNEA/OpenLogi](https://github.com/AprilNEA/OpenLogi)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
@@ -4686,6 +4686,7 @@
         "status": "",
         "themes": [
           "harness",
+          "agent evals",
           "tracing/observability",
           "context engineering",
           "coding agents",
@@ -4694,18 +4695,18 @@
         ],
         "summary": "Window: 2026-08-14 to 2026-08-21",
         "external_refs": [
-          "https://docs.anthropic.com/en/release-notes/api",
+          "https://platform.claude.com/docs/en/release-notes/overview",
           "https://docs.anthropic.com/en/docs/agents-and-tools/managed-agents",
           "https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/advisor-tool",
           "https://code.claude.com/docs/en/changelog",
+          "https://api-docs.deepseek.com/news/news260821/",
           "https://developers.openai.com/api/docs/changelog",
           "https://developers.openai.com/api/docs/models/chatgpt-4o-latest",
-          "https://developers.googleblog.com/en/build-zero-trust-ai-agents-with-googles-agent-development-kit/",
+          "https://developers.googleblog.com/build-zero-trust-ai-agents-with-googles-agent-development-kit/",
           "https://github.com/trending",
           "https://github.com/mattpocock/skills",
           "https://github.com/akitaonrails/ai-memory",
-          "https://github.com/cursor/plugins",
-          "https://github.com/agent-substrate/substrate"
+          "https://github.com/cursor/plugins"
         ],
         "local_refs": []
       },
@@ -7576,12 +7577,14 @@
           "https://github.com/trending",
           "https://github.com/modular/modular",
           "https://github.com/mattpocock/skills",
-          "https://github.com/akitaonrails/ai-memory",
+          "https://github.com/AprilNEA/OpenLogi",
+          "https://github.com/obra/superpowers",
           "https://github.com/cursor/plugins",
+          "https://github.com/akitaonrails/ai-memory",
           "https://github.com/harry0703/MoneyPrinterTurbo",
-          "https://github.com/PostHog/posthog",
-          "https://github.com/makeplane/plane",
-          "https://github.com/Tencent/AI-Infra-Guard"
+          "https://github.com/agent-substrate/substrate",
+          "https://github.com/chaitanyagiri/munder-difflin",
+          "https://github.com/PostHog/posthog"
         ],
         "local_refs": []
       },

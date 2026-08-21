@@ -39,7 +39,7 @@
 - Metadata: `Latest GitHub Trending board summary`
 - [modular/modular](https://github.com/modular/modular)
 - [mattpocock/skills](https://github.com/mattpocock/skills)
-- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory)
+- [AprilNEA/OpenLogi](https://github.com/AprilNEA/OpenLogi)
 
 ## Durable Interpretation
 
