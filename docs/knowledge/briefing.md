@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `219` durable notes are currently indexed across `3` recurring streams.
-- `282` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `220` durable notes are currently indexed across `3` recurring streams.
+- `283` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -20,10 +20,10 @@
 
 ### AI Agent Weekly Synthesis
 
-- Metadata: `Window: 2026-08-08 to 2026-08-15`
-- **Anthropic had a materially active week across Claude Platform and Claude Code, even though the Managed Agents and advisor-tool docs themselves stayed quiet.** On **August 11, 2026**, Anthropic’s official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added Compliance API access to transcripts from Cowork and Claude Code sessions that run on users’ machines, plus the `anthropic-workspace-id` response header. On **August 10, 2026**, the same release notes locked in [Claude Sonnet 5 pricing](https://platform.claude.com/docs/en/release-notes/overview) instead of allowing the planned September increase. I also explicitly checked the official [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview) and [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) on **August 15, 2026**; no separate in-window Managed Agents or advisor-tool documentation change surfaced there.
-- **Claude Code changed repeatedly inside the same window and should be treated as a first-class Anthropic substream, not folded into generic Anthropic coverage.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) recorded in-window updates on **August 12, 2026**, **August 13, 2026**, and **August 14, 2026**. Those changes included self-hosted runner hook support, SSE keepalive pings for long thinking pauses, plugin marketplace command sources, default-on subagent forking, cross-session mentions and direct session messaging, GitLab plugin marketplace support, `forward_user_identity` gateway settings, and Bash memory cgroup controls.
-- **GitHub’s strongest official signal was packaging and state continuity for coding agents.** On **August 11, 2026**, GitHub published [Copilot memory and Ollama in GitHub Copilot for JetBrains](https://github.blog/changelog/2026-08-11-copilot-memory-and-ollama-in-github-copilot-for-jetbrains/). On **August 12, 2026**, it published [Agent Plugins 1.0 in VS Code, Copilot CLI, and the Copilot app](https://github.blog/changelog/2026-08-12-agent-plugins-1-0-in-vs-code-copilot-cli-and-the-copilot-app/). On **August 13, 2026**, it published [GitHub Copilot weekly releases — August 10](https://github.blog/changelog/2026-08-13-github-copilot-weekly-releases-august-10/), reinforcing that the coding-agent surface is now a managed release stream rather than a one-off feature bucket.
+- Metadata: `Window: 2026-08-15 to 2026-08-22`
+- **Anthropic’s main story was control-plane widening across Claude Platform, Managed Agents, and Claude Code.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added dated entries on **August 19, 2026** for GA computer use, a new browser use tool, Files API and Skills API GA, Admin API user-management GA, Claude Managed Agents domain restrictions, self-hosted sandbox memory stores, and a redesigned session viewer. On **August 20, 2026**, the same release notes shipped the Python SDK v1.0 migration surface.
+- **Claude Managed Agents changed materially this week even though the standalone quickstart page did not expose a separate dated changelog entry.** I explicitly checked the official [Managed Agents quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart) on **August 22, 2026**. The durable in-window managed-agent changes surfaced through the **August 19, 2026** release notes, not through a separate quickstart post.
+- **The advisor tool docs surface was explicitly checked and did not show a separate in-window dated release marker, but it remains strategically important.** I checked the official [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) on **August 22, 2026**. No separate August 15 to August 22 dated advisor-doc release note was visible there, so the week’s Anthropic platform signal came mainly from release notes plus Claude Code.
 
 ## Daily Signal Snapshot
 
@@ -43,13 +43,13 @@
 
 ## Durable Interpretation
 
-### The frontier is converging on execution governance, not just model capability
+### Agent systems are converging on explicit execution governance
 
 ## Current Proposal Candidates
 
-- Session Governance Packets For Local and Remote Agent Work
-- Portable Skill and Plugin Bundles With Runtime Trust Boundaries
-- Speed Class and Reasoning Continuity As Separate Run Controls
+- Run Policy Packets For Reachability, Memory, and Trust
+- Portable Capability Bundles With Explicit Host Contracts
+- Concise Operator Views As A Tested Runtime Mode
 
 ## Knowledge Network
 
@@ -74,12 +74,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Weekly Synthesis
 
+- [2026-08-22](../radar/weekly/2026-08-22.md)
 - [2026-08-15](../radar/weekly/2026-08-15.md)
 - [2026-08-08](../radar/weekly/2026-08-08.md)
 - [2026-08-01](../radar/weekly/2026-08-01.md)
 - [2026-07-25](../radar/weekly/2026-07-25.md)
 - [2026-07-18](../radar/weekly/2026-07-18.md)
-- [2026-07-10](../radar/weekly/2026-07-10.md)
 
 ### GitHub Trending
 
