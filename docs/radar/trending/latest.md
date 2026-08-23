@@ -1,54 +1,52 @@
-# GitHub Trending - 2026-08-21
+# GitHub Trending - 2026-08-23
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-08-21** is mixed, not AI-only. Coding-agent infrastructure is prominent, but the board also includes local-first hardware tooling, job-search automation, short-video generation, analytics, and personal-data visualization. The faithful read is that AI remains strong without fully crowding out broader developer interest.
+The default global board captured on **2026-08-23** is still mixed rather than AI-only, but AI coding, agent packaging, and infrastructure security are unusually prominent together. The cleanest read is that developer attention is clustering around practical agent execution surfaces, while general-purpose developer tooling and local-first utilities still hold visible slots on the same board.
 
 ## Notable Projects
 
-- [modular/modular](https://github.com/modular/modular)
-  Model-systems and compiler/runtime stack signal; still one of the clearest lower-layer AI infrastructure repos on the board.
+- [openai/codex](https://github.com/openai/codex)
+  Terminal-native coding agent infrastructure from a first-party publisher; easily the strongest direct agent signal on the board.
+
+- [anthropics/claude-code](https://github.com/anthropics/claude-code)
+  Anthropic's coding-agent repo is surfacing at the same time its official changelog is active, which makes the board signal harder to dismiss as stale hype.
 
 - [mattpocock/skills](https://github.com/mattpocock/skills)
-  Reusable coding-agent workflow and skill-pack format with obvious operator overlap.
-
-- [AprilNEA/OpenLogi](https://github.com/AprilNEA/OpenLogi)
-  Local-first Logitech control alternative; useful as a reminder that the board is not purely AI and that privacy-oriented desktop tooling is also breaking out.
+  Reusable skills packaging remains one of the most legible operator patterns around coding agents.
 
 - [obra/superpowers](https://github.com/obra/superpowers)
-  Explicit agentic skills framework and development methodology signal.
+  Another explicit skills-and-methodology repo, reinforcing that workflow packaging is a durable category rather than a one-off novelty.
 
 - [cursor/plugins](https://github.com/cursor/plugins)
-  Plugin surface for a mainstream coding-agent environment; ecosystems remain a practical moat.
+  Plugin extension surfaces remain central to how coding-agent ecosystems expand in practice.
 
-- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory)
-  Long-term memory and cross-vendor handoff layer for coding-agent CLIs.
+- [Tencent/AI-Infra-Guard](https://github.com/Tencent/AI-Infra-Guard)
+  AI red-teaming, MCP scanning, jailbreak evaluation, and infra security are prominent enough to trend on the default board.
 
-- [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo)
-  Applied AI short-video automation with broad consumer reach.
-
-- [agent-substrate/substrate](https://github.com/agent-substrate/substrate)
-  Runtime substrate signal for agent systems.
-
-- [chaitanyagiri/munder-difflin](https://github.com/chaitanyagiri/munder-difflin)
-  Local multi-agent harness signal.
+- [n8n-io/n8n](https://github.com/n8n-io/n8n)
+  Workflow automation with native AI keeps surfacing as adjacent execution infrastructure rather than just back-office plumbing.
 
 - [PostHog/posthog](https://github.com/PostHog/posthog)
-  Analytics and observability remain visible on the board, which matters for agent runtime measurement too.
+  Strong observability and analytics signal; still relevant because agent systems need richer runtime diagnostics, not just better prompts.
+
+- [AprilNEA/OpenLogi](https://github.com/AprilNEA/OpenLogi)
+  Local-first hardware tooling reminder that the board is not an AI leaderboard and still rewards privacy-oriented desktop software.
 
 ## Why They May Be Surfacing
 
-- **Packaging and reuse are still winning distribution.** [mattpocock/skills](https://github.com/mattpocock/skills), [obra/superpowers](https://github.com/obra/superpowers), and [cursor/plugins](https://github.com/cursor/plugins) all point to agent capability bundles as practical leverage.
-- **Memory and local harness patterns are becoming explicit repo categories.** [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory), [agent-substrate/substrate](https://github.com/agent-substrate/substrate), and [chaitanyagiri/munder-difflin](https://github.com/chaitanyagiri/munder-difflin) all map to deeper execution and continuity concerns rather than thin wrappers.
-- **Visible end-user payoff still spreads quickly.** [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) fits the pattern of AI utility with immediate output value.
-- **The board remains broadly mixed.** [AprilNEA/OpenLogi](https://github.com/AprilNEA/OpenLogi) and [PostHog/posthog](https://github.com/PostHog/posthog) help keep the reading honest: GitHub Trending is still a general developer-interest surface, not an AI leaderboard.
+- **First-party coding agents are now competing in the open.** [openai/codex](https://github.com/openai/codex) and [anthropics/claude-code](https://github.com/anthropics/claude-code) appearing together is a stronger board signal than a single vendor repo surfacing alone.
+- **Packaging is still leverage.** [mattpocock/skills](https://github.com/mattpocock/skills), [obra/superpowers](https://github.com/obra/superpowers), and [cursor/plugins](https://github.com/cursor/plugins) all point to portable extension bundles as a practical adoption path.
+- **Security is moving closer to the mainstream agent toolchain.** [Tencent/AI-Infra-Guard](https://github.com/Tencent/AI-Infra-Guard) suggests red-teaming and MCP-surface scanning are becoming front-line concerns instead of specialist side topics.
+- **Automation and observability remain part of the same stack.** [n8n-io/n8n](https://github.com/n8n-io/n8n) and [PostHog/posthog](https://github.com/PostHog/posthog) fit the pattern that deployment plumbing and runtime measurement still travel with agent adoption.
+- **The board remains honestly mixed.** [AprilNEA/OpenLogi](https://github.com/AprilNEA/OpenLogi) and projects like [microsoft/TypeScript](https://github.com/microsoft/TypeScript) keep the snapshot grounded as a general developer-interest surface.
 
 ## Watchlist
 
-- [mattpocock/skills](https://github.com/mattpocock/skills): strongest packaging and reusable workflow signal.
-- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory): strongest continuity and cross-vendor handoff signal.
-- [cursor/plugins](https://github.com/cursor/plugins): strongest plugin-ecosystem signal around coding agents.
-- [agent-substrate/substrate](https://github.com/agent-substrate/substrate): strongest runtime-substrate signal.
-- [PostHog/posthog](https://github.com/PostHog/posthog): strongest observability-adjacent infrastructure signal.
+- [openai/codex](https://github.com/openai/codex): strongest first-party terminal-agent signal.
+- [anthropics/claude-code](https://github.com/anthropics/claude-code): strongest first-party Anthropic coding-agent signal.
+- [mattpocock/skills](https://github.com/mattpocock/skills): strongest reusable workflow-packaging signal.
+- [cursor/plugins](https://github.com/cursor/plugins): strongest plugin-ecosystem signal.
+- [Tencent/AI-Infra-Guard](https://github.com/Tencent/AI-Infra-Guard): strongest agent-security and MCP-surface signal.

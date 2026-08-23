@@ -1,68 +1,71 @@
-# Daily Radar - 2026-08-21
+# Daily Radar - 2026-08-23
 
-Window: 2026-08-14 to 2026-08-21
+Window: 2026-08-17 to 2026-08-23
 
 ## New Signals
 
-1. **Anthropic shipped the strongest in-window control-plane update set across Claude Platform on 2026-08-19, and the required Anthropic substreams were checked directly.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added **computer use GA**, launched the **browser use tool**, moved the **Files API** and **Skills API** to GA, and added new **Claude Managed Agents** controls for `allowed_domains` / `blocked_domains` plus self-hosted sandbox **memory stores** on **2026-08-19**. The same release notes renamed Workbench to **Playground** on **2026-08-18** with fuller request/response inspection in the console. The required [Managed Agents docs](https://docs.anthropic.com/en/docs/agents-and-tools/managed-agents), [advisor tool docs](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), and Anthropic first-party `anthropic.com` / `claude.com` surfaces were also checked; no separate newer in-window Managed Agents or advisor-tool launch was surfaced beyond the platform notes.
-   Publish dates: 2026-08-19, 2026-08-18
+1. **Anthropic shipped the strongest in-window platform-control update on 2026-08-20, and the required Anthropic substreams were checked directly.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) moved the **computer use tool** out of beta, launched the **browser use tool**, moved the **Files API** and **Skills API** to GA, and added Claude Managed Agents controls for `allowed_domains`, `blocked_domains`, and self-hosted sandbox **memory stores** on **2026-08-20**. The required Anthropic surfaces were checked directly: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [advisor tool docs](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/advisor-tool), [Claude Code changelog](https://code.claude.com/docs/en/changelog), plus the Anthropic docs navigation that exposes the current Managed Agents surface (`/docs/en/managed-agents/...`). No separately dated in-window advisor-tool or standalone Managed Agents launch surfaced beyond the platform release notes.
+   Publish date: 2026-08-20
 
-2. **DeepSeek added an in-window multimodal agent release on 2026-08-21.** The official [DeepSeek-V4-Flash-Vision-Exp release](https://api-docs.deepseek.com/news/news260821/) launched an experimental multimodal API model with **Chat Completions, Messages, and Responses** support, mixed text+image input, and a new **Files API** for reusable uploaded images. DeepSeek positions it as matching `deepseek-v4-flash` on text capabilities while materially improving multimodal agent benchmarks.
+2. **Claude Code continued moving as a first-class Anthropic substream through 2026-08-23.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows **2.1.241** on **2026-08-23** with reliability fixes, while **2.1.238** on **2026-08-20** updated the bundled `claude-api` skill for the Managed Agents August 20 release and tightened MCP trust and `headersHelper` behavior. This is smaller than the platform bundle, but it is real operator-surface follow-through rather than marketing noise.
+   Publish dates: 2026-08-23, 2026-08-20
+
+3. **OpenAI's clearest in-window developer control-plane move was regional processing on 2026-08-21.** The official [OpenAI API changelog](https://developers.openai.com/api/docs/changelog) added **per-request regional processing selection** on **2026-08-21** for eligible projects using prefixed domains, and added the **Prompt Caching dashboard** on **2026-08-20**. The combined signal is that OpenAI keeps making production controls and telemetry more explicit without needing a flagship model launch every week.
+   Publish dates: 2026-08-21, 2026-08-20
+
+4. **DeepSeek added a meaningful multimodal agent transport release on 2026-08-21.** The official [DeepSeek-V4-Flash-Vision-Exp release](https://api-docs.deepseek.com/news/news260821/) launched an experimental multimodal API model with support across **Chat Completions**, **Messages**, and **Responses**, plus a **Files API** path for reusable uploaded images. That makes the signal more about reusable multimodal workflow plumbing than about a one-off vision demo.
    Publish date: 2026-08-21
 
-3. **OpenAI's clearest in-window developer signal was still operator telemetry, not a flagship model drop.** The official [OpenAI API changelog](https://developers.openai.com/api/docs/changelog) added the **Prompt Caching dashboard** on **2026-08-20**, exposing cache hit rate, reads-per-write, and cached-versus-uncached token breakdown by model and service tier. The same changelog also updated the dynamic [`chatgpt-4o-latest`](https://developers.openai.com/api/docs/models/chatgpt-4o-latest) pointer on **2026-08-15**, reinforcing that moving aliases are part of the production contract.
-   Publish dates: 2026-08-20, 2026-08-15
-
-4. **Google's highest-signal first-party post in-window was a zero-trust execution pattern for agents.** Google published [Build zero-trust AI agents with Google's Agent Development Kit](https://developers.googleblog.com/build-zero-trust-ai-agents-with-googles-agent-development-kit/) on **2026-08-17**. The concrete emphasis is hardware-backed signatures for writes, gVisor sandboxing for dynamic code, and deterministic validation gateways for tool I/O.
+5. **Google's highest-signal first-party item in-window remained execution safety, not raw model novelty.** Google published [Build zero-trust AI agents with Google's Agent Development Kit](https://developers.googleblog.com/build-zero-trust-ai-agents-with-googles-agent-development-kit/) on **2026-08-17**, emphasizing hardware-backed signatures, gVisor sandboxing, and semantic validation gateways around tool execution.
    Publish date: 2026-08-17
 
 ## GitHub Trending Snapshot
 
-Snapshot source: [GitHub Trending](https://github.com/trending) captured on **2026-08-21** from the default global board.
+Snapshot source: [GitHub Trending](https://github.com/trending) captured on **2026-08-23** from the default global board.
 
-- [mattpocock/skills](https://github.com/mattpocock/skills): strongest reusable coding-agent workflow signal; agent skills are still packaging as portable operator assets.
-- [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory): relevant because memory continuity and cross-vendor handoff are now a visible repo category, not just an internal pattern.
-- [cursor/plugins](https://github.com/cursor/plugins): plugin ecosystems continue to define the practical tool surface around coding agents.
-- [agent-substrate/substrate](https://github.com/agent-substrate/substrate): direct harness-adjacent runtime substrate signal.
-- [munder-difflin](https://github.com/chaitanyagiri/munder-difflin): explicit local multi-agent harness signal.
-- [PostHog/posthog](https://github.com/PostHog/posthog): observability and analytics remain active adjacent infrastructure for agent runtime diagnosis.
+- [openai/codex](https://github.com/openai/codex): strongest live proof that terminal-native coding agents are still pulling broad developer attention.
+- [anthropics/claude-code](https://github.com/anthropics/claude-code): Anthropic's coding-agent surface is now visible both in official changelogs and in community pull on the board.
+- [mattpocock/skills](https://github.com/mattpocock/skills): reusable skill-packaging remains one of the clearest coding-agent operator patterns.
+- [cursor/plugins](https://github.com/cursor/plugins): plugin ecosystems continue to define the practical extension surface around coding agents.
+- [Tencent/AI-Infra-Guard](https://github.com/Tencent/AI-Infra-Guard): notable because AI red-teaming, MCP scanning, and infrastructure security are trending as first-class repos rather than niche research.
+- [n8n-io/n8n](https://github.com/n8n-io/n8n): workflow automation with native AI remains strong adjacent infrastructure for agent deployment and integration.
 
 ## Harness-Relevant Signals
 
-- Anthropic, OpenAI, Google, and DeepSeek all reinforced the same deeper pattern this week: **execution surface quality is product surface**. Tool contracts, cache telemetry, Files APIs, sandboxing, and domain restrictions are now first-class platform capabilities.
-- Anthropic's most important movement was **not** a new model announcement. It was a broader operator surface change across Claude Platform: computer/browser tools, Files API GA, Skills API GA, Managed Agents domain controls, and memory-store support.
-- DeepSeek's **2026-08-21** release is the cleanest evidence in this window that multimodal agent workflows are shifting from "vision demo" toward reusable production plumbing such as shared uploaded files and multi-interface support.
-- Claude Code was checked explicitly as a first-class Anthropic substream. The latest in-window [Claude Code changelog](https://code.claude.com/docs/en/changelog) entry is **2.1.238** on **2026-08-20**, adding `keybindingFlavor` and marketplace `headersHelper`. That is real operator-surface movement, but materially smaller than the Claude Platform release-note bundle this week.
-- Moonshot / Kimi were checked directly on [platform.moonshot.ai docs](https://platform.moonshot.ai/docs/guide/kimi-k3-quickstart), [kimi.com/news](https://kimi.com/news), and Moonshot official surfaces. No stronger newly dated official technical item surfaced inside this window; the nearest visible Kimi technical milestone remains **Kimi K3** around **2026-07-27** to **2026-07-28**.
-- [MiniMax official news](https://www.minimax.io/news/minimax-h3-open-source) was checked. The nearest visible technical release remains **MiniMax H3 open source** on **2026-08-03**, outside this run's strict window.
-- [Qwen official blog](https://qwen.ai/blog?id=qwen3.8) was checked. The nearest visible dated technical post remains **Qwen3.8-Max** on **2026-08-02**, outside this run's strict window.
+- Anthropic, OpenAI, Google, and DeepSeek all pushed the same deeper pattern this week: **control-plane maturity is part of the product, not just an implementation detail**.
+- Anthropic's most important movement was the Claude Platform bundle on **2026-08-20**. Claude Code then echoed that movement on **2026-08-20** and **2026-08-23**, which makes the Anthropic surface look more coordinated than a single isolated release-note drop.
+- OpenAI's **2026-08-21** regional-processing control plus the **2026-08-20** Prompt Caching dashboard reinforce that deployment geography, governance, and operator telemetry are still expanding faster than “headline model” announcements.
+- DeepSeek's **2026-08-21** release is still the cleanest in-window sign that multimodal agent workflows are becoming reusable API plumbing with file reuse and multi-interface support.
+- Moonshot/Kimi were checked directly on [Kimi News](https://kimi.com/news) and [Kimi API Platform docs](https://platform.moonshot.ai/docs/guide/kimi-k3-quickstart). The visible Kimi K3 docs page shows `dateModified` **2026-08-16**, just outside this run's strict window, so there is no stronger clearly dated in-window technical release to promote.
+- [MiniMax official news](https://www.minimax.io/news/minimax-h3-open-source) was checked directly. The nearest visible technical release remains **MiniMax H3 open source** on **2026-08-03**, outside the current window.
+- [Qwen official blog](https://qwen.ai/blog?id=qwen3.8) was checked directly. The nearest visible dated technical post remains **Qwen3.8-Max** on **2026-08-02**, outside the current window.
 
 ## Candidate Proposals
 
 ### Proposal 1
 
-- `source_type`: first-party release notes and API changelogs
-- `problem_pattern`: agent comparisons hide meaningful vendor differences in tool contracts, cache behavior, alias movement, and file/memory primitives
-- `why_it_matters_for_harness`: Harness can overfit to model-output quality while missing control-plane maturity that changes real operator outcomes
+- `source_type`: first-party platform release notes and API changelogs
+- `problem_pattern`: vendor comparisons still overweight model-output quality and underweight operator controls like region routing, domain fences, cache visibility, and file/memory primitives
+- `why_it_matters_for_harness`: Harness risks missing the production-shape differences that actually change deployment, observability, and safety behavior
 - `recommended_disposition`: `encode-as-eval`
 
 ### Proposal 2
 
-- `source_type`: first-party platform releases plus security architecture guidance
-- `problem_pattern`: serious agent vendors are converging on hard execution boundaries rather than prompt-only safety claims
-- `why_it_matters_for_harness`: sandboxing, deterministic gateways, and constrained tool reach are becoming a baseline evaluation dimension for agent systems
+- `source_type`: first-party coding-agent and managed-agent control surfaces
+- `problem_pattern`: coding-agent products are converging on trust-gated tool access, explicit extension packaging, and bounded remote execution contracts
+- `why_it_matters_for_harness`: this changes how Harness should compare coding-agent ecosystems and what counts as real maturity versus a thin wrapper
 - `recommended_disposition`: `watch`
 
 ### Proposal 3
 
-- `source_type`: first-party multimodal platform releases
-- `problem_pattern`: multimodal agent support is increasingly defined by transport and reusable asset plumbing, not just raw model capability
-- `why_it_matters_for_harness`: file reuse, multi-interface parity, and mixed-modality tool invocation will affect how future agent workflows should be prototyped and stress-tested
+- `source_type`: first-party multimodal API releases
+- `problem_pattern`: multimodal capability is increasingly defined by reusable transport and asset plumbing instead of raw benchmark claims
+- `why_it_matters_for_harness`: future prototypes should stress file reuse, modality handoff, and multi-endpoint parity rather than only single-turn quality
 - `recommended_disposition`: `prototype`
 
 ## Watch Next
 
-- Re-check Anthropic's required substreams next run: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Managed Agents docs](https://docs.anthropic.com/en/docs/agents-and-tools/managed-agents), [advisor tool docs](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/advisor-tool), and [Claude Code changelog/docs](https://code.claude.com/docs/en/changelog). This run found major platform movement plus a smaller Claude Code **2026-08-20** update, but no separately dated in-window Managed Agents or advisor-tool launch.
-- Watch whether OpenAI extends the **2026-08-20** Prompt Caching dashboard into stronger eval, routing, or cost-governance guidance on the developer surface.
-- Watch whether DeepSeek's **2026-08-21** multimodal release and Files API stabilize into a broader production contract rather than remaining an experimental branch.
-- Re-check Moonshot/Kimi, MiniMax, and Qwen for the next clearly dated official technical drop instead of inferring momentum from stale landing pages or search snippets.
+- Re-check Anthropic's required substreams next run: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [advisor tool docs](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/advisor-tool), the Managed Agents docs surface under `docs.anthropic.com/en/docs/managed-agents/...`, and the [Claude Code changelog](https://code.claude.com/docs/en/changelog). This run found a major platform bundle plus in-window Claude Code follow-through, but no separately dated advisor-tool or standalone Managed Agents release.
+- Watch whether OpenAI extends the **2026-08-21** regional-processing control into a broader enterprise deployment and eval-governance story on the developer surface.
+- Watch whether DeepSeek turns the **2026-08-21** multimodal experimental release into a stable production contract rather than leaving it as a fast-moving branch.
+- Re-check Moonshot/Kimi, MiniMax, and Qwen only for the next clearly dated official technical drop instead of inferring momentum from stale landing pages or undated marketing surfaces.
