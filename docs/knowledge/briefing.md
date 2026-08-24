@@ -37,9 +37,9 @@
 ### GitHub Trending - 2026-08-24
 
 - Metadata: `Latest GitHub Trending board summary`
+- [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code)
 - [openai/codex](https://github.com/openai/codex)
-- [freestylefly/awesome-gpt-image-2](https://github.com/freestylefly/awesome-gpt-image-2)
-- [mattpocock/skills](https://github.com/mattpocock/skills)
+- [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search)
 
 ## Durable Interpretation
 

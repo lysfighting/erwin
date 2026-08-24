@@ -4,46 +4,52 @@ Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-08-24** is mixed rather than AI-only, but coding agents, reusable skill packs, multimodal tooling, and open agent runtimes are unusually visible together. The cleanest read is that developer attention is clustering around practical agent execution and extension surfaces while general developer utilities still keep meaningful slots on the same board.
+The default global board captured on **2026-08-24** is not AI-only. It mixes coding-agent utilities, local-first AI workspaces, analytics and observability, project management, and general developer tooling. The strongest honest read is that agent-adjacent repositories are prominent, but they are sharing the board with broader developer-interest software rather than fully taking it over.
 
 ## Notable Projects
+
+- [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code)
+  Cost-access wrapper around Claude Code, Codex, Pi, and OpenCode; clearly surfacing because demand for low-friction coding-agent access remains intense.
 
 - [openai/codex](https://github.com/openai/codex)
   Strongest direct first-party coding-agent signal on the board.
 
-- [freestylefly/awesome-gpt-image-2](https://github.com/freestylefly/awesome-gpt-image-2)
-  Shows continued pull around packaging and examples for current image-generation workflows.
+- [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search)
+  Personal-job-search automation built on Claude Code, showing end-user agent workflows still resonate when they are concrete and local-first.
 
-- [mattpocock/skills](https://github.com/mattpocock/skills)
-  Reusable skill packaging remains one of the most legible operator patterns around coding agents.
-
-- [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills)
-  Reinforces that agent capability bundles are becoming their own ecosystem layer.
-
-- [anthropics/claude-plugins-community](https://github.com/anthropics/claude-plugins-community)
-  Relevant because extension ecosystems are surfacing alongside official Anthropic platform movement.
+- [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills)
+  A single `CLAUDE.md` behavior pack surfacing as a reusable artifact, reinforcing the market pull around portable operating guidance.
 
 - [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)
-  Open agent runtime signal that remains directly relevant to agent execution design.
+  Open agent runtime still drawing broad attention beside first-party coding agents.
 
-- [Comfy-Org/ComfyUI](https://github.com/Comfy-Org/ComfyUI)
-  Multimodal workflow tooling is still trending as a practical builder surface, not just a research topic.
+- [anthropics/claude-plugins-community](https://github.com/anthropics/claude-plugins-community)
+  Extension ecosystem signal directly tied to Anthropic's current Claude Platform and Claude Code movement.
+
+- [apache/maka](https://github.com/apache/maka)
+  Local-first AI agent workspace with append-only logs for messages, tool calls, results, permissions, and termination events; highly relevant to runtime evidence and harness design.
+
+- [PostHog/posthog](https://github.com/PostHog/posthog)
+  Board-level reminder that observability, analytics, replay, and experiment tooling remain part of the same operating stack.
+
+- [makeplane/plane](https://github.com/makeplane/plane)
+  General project-management infrastructure still holds space on the board, which keeps the snapshot grounded as a broad developer-interest surface.
 
 - [AprilNEA/OpenLogi](https://github.com/AprilNEA/OpenLogi)
-  Useful reminder that the board is still a general developer-interest surface, not an AI leaderboard.
+  Local-first hardware utility that helps show the board is still globally mixed, not an AI leaderboard.
 
 ## Why They May Be Surfacing
 
-- **First-party coding agents remain central.** [openai/codex](https://github.com/openai/codex) is still the strongest board-level proof that terminal-native coding agents have durable attention.
-- **Packaging keeps compounding.** [mattpocock/skills](https://github.com/mattpocock/skills), [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills), and [anthropics/claude-plugins-community](https://github.com/anthropics/claude-plugins-community) all point to portable extension bundles as a practical adoption path.
-- **Multimodal builders are part of the same wave.** [freestylefly/awesome-gpt-image-2](https://github.com/freestylefly/awesome-gpt-image-2) and [Comfy-Org/ComfyUI](https://github.com/Comfy-Org/ComfyUI) suggest image and workflow tooling still travel with the broader agent stack.
-- **Open runtimes still compete with first-party products.** [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) shows the board is not collapsing into vendor-only attention.
-- **The board remains honestly mixed.** [AprilNEA/OpenLogi](https://github.com/AprilNEA/OpenLogi) and other non-AI repos keep the snapshot grounded as a default global developer board.
+- **Coding agents are mainstream enough to spawn both first-party and wrapper ecosystems.** [openai/codex](https://github.com/openai/codex) and [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code) surfacing together is a direct sign of demand across both official and workaround paths.
+- **Behavior packs and extension surfaces are compounding.** [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) and [anthropics/claude-plugins-community](https://github.com/anthropics/claude-plugins-community) show that reusable operating guidance and plugin catalogs are now first-class artifacts.
+- **Open runtimes still matter.** [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) and [apache/maka](https://github.com/apache/maka) keep open execution environments and local-first agent workspaces in the conversation.
+- **Runtime evidence is part of the product surface.** [PostHog/posthog](https://github.com/PostHog/posthog) surfacing alongside agent repos reinforces that analytics and observability are not secondary concerns.
+- **The board remains honestly mixed.** [makeplane/plane](https://github.com/makeplane/plane) and [AprilNEA/OpenLogi](https://github.com/AprilNEA/OpenLogi) are strong reminders that the default Trending board still reflects general developer demand, not a curated AI list.
 
 ## Watchlist
 
 - [openai/codex](https://github.com/openai/codex): strongest first-party terminal-agent signal.
-- [mattpocock/skills](https://github.com/mattpocock/skills): strongest reusable skill-packaging signal.
-- [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills): strongest catalog-style agent-skills signal.
-- [anthropics/claude-plugins-community](https://github.com/anthropics/claude-plugins-community): strongest Anthropic extension-ecosystem signal.
-- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): strongest open agent-runtime signal.
+- [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code): strongest wrapper-and-access signal around coding agents.
+- [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills): strongest portable behavior-pack signal.
+- [apache/maka](https://github.com/apache/maka): strongest local-first agent-workspace and append-only-log signal.
+- [PostHog/posthog](https://github.com/PostHog/posthog): strongest observability-and-analytics signal adjacent to agent operations.
