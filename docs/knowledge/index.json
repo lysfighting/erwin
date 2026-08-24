@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 222,
+    "total_notes": 224,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 285,
+    "artifact_count": 287,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-08-23",
-      "meta": "Window: 2026-08-17 to 2026-08-23",
+      "title": "Daily Radar - 2026-08-24",
+      "meta": "Window: 2026-08-18 to 2026-08-24",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-08-24",
+          "path": "radar/daily/2026-08-24.md"
+        },
         {
           "name": "2026-08-23",
           "path": "radar/daily/2026-08-23.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-08-17",
           "path": "radar/daily/2026-08-17.md"
-        },
-        {
-          "name": "2026-08-16",
-          "path": "radar/daily/2026-08-16.md"
         }
       ],
-      "count": 101
+      "count": 102
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-08-23",
+      "title": "GitHub Trending - 2026-08-24",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
         "[openai/codex](https://github.com/openai/codex)",
-        "[anthropics/claude-code](https://github.com/anthropics/claude-code)",
+        "[freestylefly/awesome-gpt-image-2](https://github.com/freestylefly/awesome-gpt-image-2)",
         "[mattpocock/skills](https://github.com/mattpocock/skills)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-08-24",
+          "path": "radar/trending/2026-08-24.md"
+        },
         {
           "name": "2026-08-23",
           "path": "radar/trending/2026-08-23.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-08-17",
           "path": "radar/trending/2026-08-17.md"
-        },
-        {
-          "name": "2026-08-16",
-          "path": "radar/trending/2026-08-16.md"
         }
       ],
-      "count": 102
+      "count": 103
     }
   },
   "deep_dive": "### Agent systems are converging on explicit execution governance",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 285,
+      "artifact_count": 287,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 232,
+        "radar": 234,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4743,6 +4743,38 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-08-24.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-08-24.md",
+        "title": "Daily Radar - 2026-08-24",
+        "date": "2026-08-24",
+        "status": "",
+        "themes": [
+          "harness",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-08-18 to 2026-08-24",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://developers.openai.com/api/docs/changelog",
+          "https://platform.openai.com/usage?usage_section=prompt-caching",
+          "https://api-docs.deepseek.com/news/news260821/",
+          "https://github.com/trending",
+          "https://github.com/openai/codex",
+          "https://github.com/mattpocock/skills",
+          "https://github.com/VoltAgent/awesome-agent-skills",
+          "https://github.com/anthropics/claude-plugins-community",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/Comfy-Org/ComfyUI"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -7648,6 +7680,32 @@
           "https://github.com/PostHog/posthog",
           "https://github.com/AprilNEA/OpenLogi",
           "https://github.com/microsoft/TypeScript"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-08-24.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-08-24.md",
+        "title": "GitHub Trending - 2026-08-24",
+        "date": "2026-08-24",
+        "status": "",
+        "themes": [
+          "harness",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/openai/codex",
+          "https://github.com/freestylefly/awesome-gpt-image-2",
+          "https://github.com/mattpocock/skills",
+          "https://github.com/VoltAgent/awesome-agent-skills",
+          "https://github.com/anthropics/claude-plugins-community",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/Comfy-Org/ComfyUI",
+          "https://github.com/AprilNEA/OpenLogi"
         ],
         "local_refs": []
       },
