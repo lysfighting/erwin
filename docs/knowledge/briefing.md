@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `224` durable notes are currently indexed across `3` recurring streams.
-- `287` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `226` durable notes are currently indexed across `3` recurring streams.
+- `289` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,18 +27,18 @@
 
 ## Daily Signal Snapshot
 
-### Daily Radar - 2026-08-24
+### Daily Radar - 2026-08-25
 
-- Metadata: `Window: 2026-08-18 to 2026-08-24`
+- Metadata: `Window: 2026-08-19 to 2026-08-25`
 - Open the daily note for the full signal list.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-08-24
+### GitHub Trending - 2026-08-25
 
 - Metadata: `Latest GitHub Trending board summary`
-- [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code)
-- [openai/codex](https://github.com/openai/codex)
+- [freestylefly/awesome-gpt-image-2](https://github.com/freestylefly/awesome-gpt-image-2)
+- [anthropics/claude-plugins-community](https://github.com/anthropics/claude-plugins-community)
 - [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search)
 
 ## Durable Interpretation
@@ -65,12 +65,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-08-25](../radar/daily/2026-08-25.md)
 - [2026-08-24](../radar/daily/2026-08-24.md)
 - [2026-08-23](../radar/daily/2026-08-23.md)
 - [2026-08-21](../radar/daily/2026-08-21.md)
 - [2026-08-19](../radar/daily/2026-08-19.md)
 - [2026-08-18](../radar/daily/2026-08-18.md)
-- [2026-08-17](../radar/daily/2026-08-17.md)
 
 ### Weekly Synthesis
 
@@ -83,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-08-25](../radar/trending/2026-08-25.md)
 - [2026-08-24](../radar/trending/2026-08-24.md)
 - [2026-08-23](../radar/trending/2026-08-23.md)
 - [2026-08-21](../radar/trending/2026-08-21.md)
 - [2026-08-19](../radar/trending/2026-08-19.md)
 - [2026-08-18](../radar/trending/2026-08-18.md)
-- [2026-08-17](../radar/trending/2026-08-17.md)
