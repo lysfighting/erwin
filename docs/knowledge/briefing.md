@@ -37,9 +37,9 @@
 ### GitHub Trending - 2026-08-27
 
 - Metadata: `Latest GitHub Trending board summary`
-- [tt-a1i/archify](https://github.com/tt-a1i/archify)
+- [zedeus/nitter](https://github.com/zedeus/nitter)
 - [freestylefly/awesome-gpt-image-2](https://github.com/freestylefly/awesome-gpt-image-2)
-- [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official)
+- [tt-a1i/archify](https://github.com/tt-a1i/archify)
 
 ## Durable Interpretation
 

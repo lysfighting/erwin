@@ -4,49 +4,49 @@ Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-08-27** is broader than an AI-only feed, but the visible top slice is heavily shaped by **Claude Code plugins, agent skills, browser automation, and local-first AI workflows**. The board does not read like a pure model-news leaderboard; it reads like developers are packaging workflows, extensions, and reusable operating layers around agents.
+The default global board captured on **2026-08-27** is not an AI-only board, but the visible top slice is still heavily shaped by **agent skills, Claude-centric extensions, AI coding guidance, and prompt-packaging projects**. The board reads less like a model-news feed and more like a workflow-and-distribution layer forming around coding agents.
 
 ## Notable Projects
 
-- [tt-a1i/archify](https://github.com/tt-a1i/archify)
-  Agent skill for architecture, workflow, and lifecycle diagrams with verification-friendly output.
+- [zedeus/nitter](https://github.com/zedeus/nitter)
+  General developer-interest project high on the board, useful as a reminder that the default Trending page is still mixed rather than AI-exclusive.
 
 - [freestylefly/awesome-gpt-image-2](https://github.com/freestylefly/awesome-gpt-image-2)
-  Prompt and template collection around GPT-Image-2, showing prompt-packaging still attracts broad developer attention.
+  Prompt-as-code and template library around GPT-Image-2, showing that packaged prompt systems still attract broad attention.
+
+- [tt-a1i/archify](https://github.com/tt-a1i/archify)
+  Agent skill for verifiable architecture, workflow, sequence, and lifecycle diagrams.
+
+- [JetBrains/go-modern-guidelines](https://github.com/JetBrains/go-modern-guidelines)
+  Coding guidance package explicitly aimed at helping AI coding agents write modern Go.
 
 - [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official)
-  Official Anthropic-managed directory of Claude Code plugins.
+  Official Anthropic-managed directory for Claude Code plugins.
 
-- [anthropics/claude-plugins-community](https://github.com/anthropics/claude-plugins-community)
-  Community plugin marketplace mirror for Claude Cowork and Claude Code.
-
-- [browser-use/browser-use](https://github.com/browser-use/browser-use)
-  Browser automation surface built specifically to make websites accessible to AI agents.
-
-- [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search)
-  Local-first AI job-search workflow built on Claude Code.
+- [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)
+  Skill-packaging surface aimed at scientific agent workflows.
 
 - [AgriciDaniel/claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian)
-  Obsidian plus Claude Code knowledge-graph workflow emphasizing plain-Markdown ownership.
+  Local knowledge-graph workflow tying Claude Code into Obsidian.
 
-- [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills)
-  Large cross-tool collection of agent skills spanning Claude Code, Codex, Gemini CLI, Cursor, and more.
+- [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills)
+  Broad curated collection of Claude-oriented skills and extensions.
 
-- [basecamp/omarchy](https://github.com/basecamp/omarchy)
-  General developer-interest project, useful as a reminder that the board is still not an AI-only list.
+- [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents)
+  Domain-specific multi-agent workflow project showing that verticalized agent stacks continue to surface.
 
 ## Why They May Be Surfacing
 
-- **Agent ecosystems are shifting from frameworks toward packaged operating layers.** `archify`, Claude plugin directories, and `awesome-agent-skills` all turn reusable guidance or extensions into distributable artifacts.
-- **Claude Code is producing visible downstream workflow systems.** The combination of plugin directories, `ai-job-search`, and `claude-obsidian` shows an ecosystem moving beyond toy demos into owned local workflows.
-- **Execution surfaces still matter more than abstract orchestration language.** `browser-use` surfacing strongly suggests that concrete browser action remains one of the clearest agent utility layers.
-- **Prompt and skill curation remain durable demand categories.** `awesome-gpt-image-2` and `awesome-agent-skills` show that developers still want tested patterns, not just raw model endpoints.
-- **The global board still includes broad developer software.** `omarchy` keeps the snapshot honest by showing that AI is dominant on the top slice without fully replacing general-interest tooling.
+- **Skill and plugin distribution is becoming a product category of its own.** `archify`, `scientific-agent-skills`, `claude-plugins-official`, and `awesome-claude-skills` all package reusable operating layers rather than raw models.
+- **AI coding guidance is moving closer to repo policy.** `go-modern-guidelines` surfacing strongly suggests demand for language- and repo-specific instruction packs that coding agents can follow directly.
+- **Claude-centered downstream workflows remain highly visible.** `claude-plugins-official` and `claude-obsidian` point to an ecosystem where operational surfaces matter as much as model headlines.
+- **Prompt and template libraries still scale socially.** `awesome-gpt-image-2` shows prompt systems remain a major distribution primitive even as agent stacks get more sophisticated.
+- **The board is still genuinely mixed.** `nitter` sitting high on the page keeps the snapshot honest: AI is prominent, but not the only driver on the global board.
 
 ## Watchlist
 
-- [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official): strongest official extension-surface signal on the board.
-- [browser-use/browser-use](https://github.com/browser-use/browser-use): strongest browser-action signal for agent execution.
-- [tt-a1i/archify](https://github.com/tt-a1i/archify): strongest diagram-plus-verification artifact signal.
-- [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search): strongest concrete end-user Claude Code workflow signal.
-- [AgriciDaniel/claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian): strongest local knowledge-ownership signal.
+- [tt-a1i/archify](https://github.com/tt-a1i/archify): strongest verifiable-artifact signal.
+- [JetBrains/go-modern-guidelines](https://github.com/JetBrains/go-modern-guidelines): strongest repo-policy-for-agents signal.
+- [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official): strongest official Claude extension-surface signal.
+- [AgriciDaniel/claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian): strongest local knowledge-ownership workflow signal.
+- [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents): strongest vertical multi-agent application signal in the current visible slice.

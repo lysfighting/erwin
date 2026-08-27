@@ -152,9 +152,9 @@
       "title": "GitHub Trending - 2026-08-27",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
-        "[tt-a1i/archify](https://github.com/tt-a1i/archify)",
+        "[zedeus/nitter](https://github.com/zedeus/nitter)",
         "[freestylefly/awesome-gpt-image-2](https://github.com/freestylefly/awesome-gpt-image-2)",
-        "[anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official)"
+        "[tt-a1i/archify](https://github.com/tt-a1i/archify)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
@@ -4815,8 +4815,6 @@
         "status": "",
         "themes": [
           "harness",
-          "tracing/observability",
-          "context engineering",
           "coding agents",
           "tool use",
           "orchestration"
@@ -4825,15 +4823,15 @@
         "external_refs": [
           "https://platform.claude.com/docs/en/release-notes/overview",
           "https://code.claude.com/docs/en/changelog",
+          "https://qwen.ai/blog?id=qwen3.8-flash-next",
           "https://developers.openai.com/api/docs/changelog",
           "https://cloud.google.com/blog/products/ai-machine-learning/how-agents-can-delegate-better",
           "https://api-docs.deepseek.com/news/news260821/",
           "https://github.com/trending",
           "https://github.com/tt-a1i/archify",
+          "https://github.com/JetBrains/go-modern-guidelines",
           "https://github.com/anthropics/claude-plugins-official",
-          "https://github.com/anthropics/claude-plugins-community",
-          "https://github.com/browser-use/browser-use",
-          "https://github.com/MadsLorentzen/ai-job-search",
+          "https://github.com/K-Dense-AI/scientific-agent-skills",
           "https://github.com/AgriciDaniel/claude-obsidian"
         ],
         "local_refs": []
@@ -7812,22 +7810,21 @@
         "date": "2026-08-27",
         "status": "",
         "themes": [
-          "harness",
           "coding agents",
           "orchestration"
         ],
         "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
         "external_refs": [
           "https://github.com/trending",
-          "https://github.com/tt-a1i/archify",
+          "https://github.com/zedeus/nitter",
           "https://github.com/freestylefly/awesome-gpt-image-2",
+          "https://github.com/tt-a1i/archify",
+          "https://github.com/JetBrains/go-modern-guidelines",
           "https://github.com/anthropics/claude-plugins-official",
-          "https://github.com/anthropics/claude-plugins-community",
-          "https://github.com/browser-use/browser-use",
-          "https://github.com/MadsLorentzen/ai-job-search",
+          "https://github.com/K-Dense-AI/scientific-agent-skills",
           "https://github.com/AgriciDaniel/claude-obsidian",
-          "https://github.com/VoltAgent/awesome-agent-skills",
-          "https://github.com/basecamp/omarchy"
+          "https://github.com/ComposioHQ/awesome-claude-skills",
+          "https://github.com/TauricResearch/TradingAgents"
         ],
         "local_refs": []
       },
