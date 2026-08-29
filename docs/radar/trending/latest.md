@@ -4,52 +4,58 @@ Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-08-29** is still mixed rather than AI-only. The visible slice combines **agent skills, plugin ecosystems, coding-policy packs, spatial-intelligence demos, networking utilities, reverse-engineering tooling, and testing infrastructure**. AI and coding-agent projects are prominent, but they are sharing the page with broader developer and systems work rather than dominating it outright.
+The default global board captured on **2026-08-29** is mixed rather than AI-only. The visible slice combines **agent skills, plugin ecosystems, repo knowledge-graph tooling, video-generation systems, screenshot-to-code tools, networking utilities, reverse-engineering infrastructure, and realtime voice-agent frameworks**. AI and coding-agent projects are prominent, but the board is still visibly shared with broader developer and systems work.
 
 ## Notable Projects
 
 - [tt-a1i/archify](https://github.com/tt-a1i/archify)
-  Verifiable architecture and workflow diagrams packaged as an agent skill.
+  Agent skill for verifiable architecture and workflow diagrams.
 
 - [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)
-  Skill library aimed at turning general agents into scientific-workflow agents.
+  Large validated skill library for science-focused agent workflows.
 
 - [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official)
   Official Anthropic-managed plugin directory for Claude Code.
 
 - [bilawalsidhu/gods-eye-view](https://github.com/bilawalsidhu/gods-eye-view)
-  Real-data browser-based spatial-intelligence simulator, useful as a reminder that the board is not just model tooling.
+  Real-data spatial-intelligence simulator in the browser.
+
+- [abhigyanpatwari/GitNexus](https://github.com/abhigyanpatwari/GitNexus)
+  Client-side repo knowledge graph with a built-in Graph RAG agent.
 
 - [JetBrains/go-modern-guidelines](https://github.com/JetBrains/go-modern-guidelines)
-  Modern Go guidance explicitly written to help AI coding agents.
+  Modern Go guidance explicitly targeted at AI coding agents.
+
+- [calesthio/OpenMontage](https://github.com/calesthio/OpenMontage)
+  Agentic video-production stack with many tools and skill files.
+
+- [abi/screenshot-to-code](https://github.com/abi/screenshot-to-code)
+  Screenshot-to-UI code generation across common frontend stacks.
 
 - [cursor/plugins](https://github.com/cursor/plugins)
-  Plugin specification and official plugins for another coding-agent ecosystem.
-
-- [freestylefly/awesome-gpt-image-2](https://github.com/freestylefly/awesome-gpt-image-2)
-  Prompt-as-code and template packaging around GPT-Image-2.
-
-- [tailscale/tailcat](https://github.com/tailscale/tailcat)
-  Networking utility that surfaced on the same board, keeping the snapshot honest about broader developer interest.
+  Official plugin specification and plugin set for another coding-agent ecosystem.
 
 - [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp)
-  MCP surface connecting Chrome DevTools to coding agents.
+  Chrome DevTools exposed as an MCP surface for coding agents.
 
 - [livekit/agents](https://github.com/livekit/agents)
-  Framework for realtime voice AI agents, representing the applied agent-runtime slice.
+  Framework for realtime voice AI agents.
+
+- [tailscale/tailcat](https://github.com/tailscale/tailcat)
+  Networking utility that keeps the board honest about broader systems interest beyond AI.
 
 ## Why They May Be Surfacing
 
-- **Skills and plugins are consolidating into product surfaces.** `archify`, `scientific-agent-skills`, `claude-plugins-official`, and `cursor/plugins` all package reusable operating layers rather than standalone demos.
-- **Repo policy for coding agents is becoming explicit.** `go-modern-guidelines` surfacing strongly suggests demand for language-specific instruction packs that agents can follow directly.
-- **MCP and browser-control tooling remain hot.** `chrome-devtools-mcp` shows that tool connectivity is still a live frontier, especially for coding and debugging workflows.
-- **The board remains genuinely mixed.** `gods-eye-view`, `tailcat`, `ghidra`, and `googletest` style projects keep the global page from collapsing into a single AI narrative.
-- **Prompt/template packaging still travels well socially.** `awesome-gpt-image-2` is a reminder that prompt systems remain a distribution primitive even while agent ecosystems mature.
+- **Skills and plugins are becoming packaging defaults.** `archify`, `scientific-agent-skills`, `claude-plugins-official`, and `cursor/plugins` all treat reusable agent capability bundles as the product surface.
+- **Codebase understanding is getting productized.** `GitNexus` and `chrome-devtools-mcp` both turn developer context into direct machine-usable interfaces for agents.
+- **Agentic creation stacks are widening beyond text.** `OpenMontage`, `screenshot-to-code`, and `livekit/agents` cover video, UI generation, and realtime voice instead of just prompt wrappers.
+- **The board is still genuinely mixed.** `gods-eye-view`, `tailcat`, and `ghidra`-class tooling show that the default global page is broader than a pure AI trend line.
+- **Repo policy is surfacing as a reusable artifact.** `go-modern-guidelines` suggests teams want AI-agent behavior encoded directly in repo-owned instructions.
 
 ## Watchlist
 
-- [tt-a1i/archify](https://github.com/tt-a1i/archify): strongest verifiable-artifact signal.
-- [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official): strongest official Claude extension-surface signal.
-- [JetBrains/go-modern-guidelines](https://github.com/JetBrains/go-modern-guidelines): strongest repo-policy-for-agents signal.
+- [tt-a1i/archify](https://github.com/tt-a1i/archify): strongest verifiable-artifact skill signal.
+- [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official): strongest official plugin-surface signal.
+- [abhigyanpatwari/GitNexus](https://github.com/abhigyanpatwari/GitNexus): strongest code-knowledge-graph signal.
 - [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp): strongest MCP-for-debugging signal.
-- [livekit/agents](https://github.com/livekit/agents): strongest realtime applied-agent runtime signal in the current visible slice.
+- [livekit/agents](https://github.com/livekit/agents): strongest realtime applied-agent runtime signal.
