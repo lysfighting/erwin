@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `228` durable notes are currently indexed across `3` recurring streams.
-- `291` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `229` durable notes are currently indexed across `3` recurring streams.
+- `292` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -20,10 +20,10 @@
 
 ### AI Agent Weekly Synthesis
 
-- Metadata: `Window: 2026-08-15 to 2026-08-22`
-- **Anthropic’s main story was control-plane widening across Claude Platform, Managed Agents, and Claude Code.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added dated entries on **August 19, 2026** for GA computer use, a new browser use tool, Files API and Skills API GA, Admin API user-management GA, Claude Managed Agents domain restrictions, self-hosted sandbox memory stores, and a redesigned session viewer. On **August 20, 2026**, the same release notes shipped the Python SDK v1.0 migration surface.
-- **Claude Managed Agents changed materially this week even though the standalone quickstart page did not expose a separate dated changelog entry.** I explicitly checked the official [Managed Agents quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart) on **August 22, 2026**. The durable in-window managed-agent changes surfaced through the **August 19, 2026** release notes, not through a separate quickstart post.
-- **The advisor tool docs surface was explicitly checked and did not show a separate in-window dated release marker, but it remains strategically important.** I checked the official [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) on **August 22, 2026**. No separate August 15 to August 22 dated advisor-doc release note was visible there, so the week’s Anthropic platform signal came mainly from release notes plus Claude Code.
+- Metadata: `Window: 2026-08-22 to 2026-08-28`
+- **Anthropic had the clearest in-window platform movement.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added material entries on **August 26, 2026** and **August 27, 2026**: Compliance API transcripts for Claude Code and Cowork, broader Admin API SDK / CLI availability, post-beta `files` and `skills` client shape normalization, and new personal / service-account key flows in the Claude Console.
+- **Claude Managed Agents remains a first-class substream and changed materially this week through release-note-visible platform work.** I explicitly checked the official [Managed Agents quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart) on **August 28, 2026**. The page did not show a separate dated in-window changelog entry, but the platform release notes introduced directly relevant agent-surface changes this week, especially around compliance, admin controls, and key management.
+- **The advisor tool docs surface was explicitly checked and remained strategically important, but it did not expose a separate dated in-window release marker.** I checked the official [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) on **August 28, 2026**. The page still documents the executor-plus-advisor pattern and its beta header, but this week’s material Anthropic movement came from release notes and Claude Code rather than a new dated advisor doc revision.
 
 ## Daily Signal Snapshot
 
@@ -43,13 +43,13 @@
 
 ## Durable Interpretation
 
-### Agent systems are converging on explicit execution governance
+### Agent platforms are becoming inspectable operating environments, not just tool-enabled models
 
 ## Current Proposal Candidates
 
-- Run Policy Packets For Reachability, Memory, and Trust
-- Portable Capability Bundles With Explicit Host Contracts
-- Concise Operator Views As A Tested Runtime Mode
+- Runtime Identity And Policy Envelope
+- Foreground And Background Subagent Observability Modes
+- Operator-Cost Review As A First-Class Eval
 
 ## Knowledge Network
 
@@ -74,12 +74,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Weekly Synthesis
 
+- [2026-08-28](../radar/weekly/2026-08-28.md)
 - [2026-08-22](../radar/weekly/2026-08-22.md)
 - [2026-08-15](../radar/weekly/2026-08-15.md)
 - [2026-08-08](../radar/weekly/2026-08-08.md)
 - [2026-08-01](../radar/weekly/2026-08-01.md)
 - [2026-07-25](../radar/weekly/2026-07-25.md)
-- [2026-07-18](../radar/weekly/2026-07-18.md)
 
 ### GitHub Trending
 

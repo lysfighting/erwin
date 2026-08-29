@@ -1,116 +1,120 @@
 # AI Agent Weekly Synthesis
 
-Date: 2026-08-22
-Window: 2026-08-15 to 2026-08-22
+Date: 2026-08-28
+Window: 2026-08-22 to 2026-08-28
 
 ## Field Summary
 
-The week of **August 15 to August 22, 2026** was dominated by a sharper split between **execution-plane productization** and **governance-plane hardening**. **Anthropic** had the strongest official technical signal by far: its Claude Platform release notes on **August 19, 2026** materially expanded the platform surface for computer use, browser use, files, skills, admin controls, managed-agent domain restrictions, memory stores, and console observability, then on **August 20, 2026** pushed the Python SDK to v1.0. **Claude Code** also changed materially on **August 19, 2026**, **August 20, 2026**, and **August 21, 2026**, which means the Claude Code substream remains a first-class weekly read and cannot be collapsed into generic Anthropic coverage.
+The week of **August 22 to August 28, 2026** reinforced a durable frontier shift: the leading agent builders are spending more of their visible product energy on **runtime governance, trust boundaries, operator controls, and shared coordination surfaces** than on “new model” messaging alone. **Anthropic** again carried the strongest official technical signal in-window, and the signal was not confined to one page. I explicitly checked the official **Claude Platform release notes**, **Claude Managed Agents docs surface**, **advisor tool docs surface**, and **Claude Code changelog / docs surface** before drawing that conclusion.
 
-- **Anthropic’s main story was control-plane widening across Claude Platform, Managed Agents, and Claude Code.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added dated entries on **August 19, 2026** for GA computer use, a new browser use tool, Files API and Skills API GA, Admin API user-management GA, Claude Managed Agents domain restrictions, self-hosted sandbox memory stores, and a redesigned session viewer. On **August 20, 2026**, the same release notes shipped the Python SDK v1.0 migration surface.
-- **Claude Managed Agents changed materially this week even though the standalone quickstart page did not expose a separate dated changelog entry.** I explicitly checked the official [Managed Agents quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart) on **August 22, 2026**. The durable in-window managed-agent changes surfaced through the **August 19, 2026** release notes, not through a separate quickstart post.
-- **The advisor tool docs surface was explicitly checked and did not show a separate in-window dated release marker, but it remains strategically important.** I checked the official [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) on **August 22, 2026**. No separate August 15 to August 22 dated advisor-doc release note was visible there, so the week’s Anthropic platform signal came mainly from release notes plus Claude Code.
-- **Claude Code changed materially on three consecutive days.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) recorded updates on **August 19, 2026**, **August 20, 2026**, and **August 21, 2026**. Those included a new `ANTHROPIC_DEFAULT_MODEL` env var, idle notifications for cross-session `SendMessage`, stricter sandbox deny precedence, a built-in Concise output style, and trust / credential-boundary tightening around MCP `headersHelper`.
-- **OpenAI’s dated in-window official signal leaned toward security and operational governance more than new agent surface area.** OpenAI published [Pacing model development in an era of cyber-critical capabilities](https://openai.com/index/pacing-model-development-cyber-capabilities/) on **August 18, 2026**, and updated [GPT-5.6](https://openai.com/index/gpt-5-6/) on **August 21, 2026** to cut GPT-5.6 Sol pricing by more than 20% for three months. That is weaker as a direct agent-platform signal than Anthropic’s week, but still important for control, safety, and operator-visible cost policy.
-- **GitHub’s strongest in-window official signal was that agentic work is moving into shared coordination channels, not just IDEs and CLIs.** On **August 21, 2026**, GitHub published [The new GitHub Copilot experience in Slack](https://github.blog/changelog/2026-08-21-the-new-github-copilot-experience-in-slack/) and [Shared agentic work with GitHub Copilot in Microsoft Teams](https://github.blog/changelog/2026-08-21-shared-agentic-work-with-github-copilot-in-microsoft-teams/). That extends the coding-agent surface into multiplayer work coordination rather than only solo execution.
-- **Google did not surface a comparably strong official in-window agent-platform post in a bounded pass of Google Developers Blog, Google Cloud Blog, and Vertex AI docs.** As of the **August 22, 2026** check, Google was not a lead signal for this week.
+- **Anthropic had the clearest in-window platform movement.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added material entries on **August 26, 2026** and **August 27, 2026**: Compliance API transcripts for Claude Code and Cowork, broader Admin API SDK / CLI availability, post-beta `files` and `skills` client shape normalization, and new personal / service-account key flows in the Claude Console.
+- **Claude Managed Agents remains a first-class substream and changed materially this week through release-note-visible platform work.** I explicitly checked the official [Managed Agents quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart) on **August 28, 2026**. The page did not show a separate dated in-window changelog entry, but the platform release notes introduced directly relevant agent-surface changes this week, especially around compliance, admin controls, and key management.
+- **The advisor tool docs surface was explicitly checked and remained strategically important, but it did not expose a separate dated in-window release marker.** I checked the official [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) on **August 28, 2026**. The page still documents the executor-plus-advisor pattern and its beta header, but this week’s material Anthropic movement came from release notes and Claude Code rather than a new dated advisor doc revision.
+- **Claude Code changed materially again, and more sharply than last week.** The official [Claude Code changelog](https://code.claude.com/docs/en/changelog) shows substantive entries on **August 26, 2026** and **August 28, 2026**. Those changes touched feedback capture, permission ergonomics, admin coverage, spend profiling, trust and policy visibility, subagent streaming, hook coverage, prompt-cache visibility, and several security / path-boundary fixes. The [Claude Code overview](https://docs.anthropic.com/en/docs/claude-code/overview) was also explicitly checked on **August 28, 2026**.
+- **OpenAI’s in-window official signal was more about migration and security than net-new agent UI surface.** The official OpenAI developer docs now state that the [Assistants API was officially sunset on August 26, 2026](https://developers.openai.com/api/docs/deprecations), with matching [migration guidance](https://developers.openai.com/api/docs/assistants/migration) and [Responses migration framing](https://developers.openai.com/api/docs/guides/migrate-to-responses). OpenAI also published [The Hugging Face incident and the road ahead](https://openai.com/index/hugging-face-incident-and-the-road-ahead/) on **August 26, 2026**, pushing security and alignment for long-horizon agents into the week’s core field discussion.
+- **OpenAI also continued pushing site-native agent surfaces.** The official OpenAI developer resources surfaced [Build agent-ready sites with WebMCP](https://developers.openai.com/codex/webmcp) on **August 25, 2026**, which is a smaller signal than Anthropic’s week but still relevant to how first-party products are exposing toolable web environments.
+- **GitHub’s official signal was a strong shared-control and enterprise-governance week.** The official GitHub changelog shipped [GitHub Copilot weekly releases — August 24](https://github.blog/changelog/2026-08-28-github-copilot-weekly-releases-august-24/) and [Upcoming changes to GitHub Copilot policies and billing](https://github.blog/changelog/2026-08-28-upcoming-changes-to-github-copilot-policies-and-billing/) on **August 28, 2026**, plus [Copilot code review: Resolution reasons and expanded capabilities](https://github.blog/changelog/2026-08-27-copilot-code-review-resolution-reasons-and-expanded-capabilities/) on **August 27, 2026**. The core pattern is more policy, more review instrumentation, and more shared agent surfaces rather than just raw coding assistance.
+- **Google remained quiet in a bounded first-party pass.** I checked the official Google Developers Blog and Google Cloud AI / ML blog surfaces on **August 28, 2026** and did not find a comparably strong in-window post that changed the weekly frontier interpretation.
 
 ## Theme Deep Dive
 
-### Agent systems are converging on explicit execution governance
+### Agent platforms are becoming inspectable operating environments, not just tool-enabled models
 
-This week’s strongest durable theme was not “better models” in the abstract. It was that leading vendors kept exposing more of the **execution operating layer** as an explicit product contract.
+This week’s strongest frontier pattern was not “who shipped the biggest model feature.” It was that the most credible agent vendors kept making the **operating environment** more explicit.
 
-Anthropic’s **August 19, 2026** Claude Platform release notes are the clearest example. Computer use graduating out of beta matters, but the more important signal is the cluster around it: browser use as a separate client toolset, per-tool domain restrictions for managed-agent web search and fetch, self-hosted memory-store attachment, GA Skills API, and a richer session viewer with per-tool and per-thread observability. This is a platform saying that agents are no longer just model-plus-tools. They are now governed runtime objects with attachable memory, constrained reach, inspectable activity, and portable capability bundles.
+Anthropic’s **August 26-27, 2026** platform notes matter because they normalize a previously blurry boundary: the agent platform is not just prompts plus tools, it is also **organization keys, service-account identity, compliance transcript access, SDK-admin reach, and durable API-shape contracts**. That is an operationalization story. It turns the agent plane into something admins, security teams, and runtime operators can actually reason about.
 
-The same pattern shows up on the Claude Code side. The **August 19 to August 21, 2026** changelog entries are small individually, but together they describe a maturing execution environment: a default-model policy surface, cross-session idle notifications, stronger sandbox deny semantics, a concise operator-facing response mode, and tighter trust boundaries for project-level MCP helpers. That is not cosmetic polish. It is an attempt to make long-lived, multi-session, extensible agent work operationally safer and easier to steer.
+Claude Code sharpened the same pattern from the workstation side. The **August 26, 2026** entry expanded operator tooling with `/claude-api cost-optimize`, feedback draft support, permission-mode nudges, managed connector visibility, and clearer subagent model reporting. The **August 28, 2026** entry then pushed further into runtime control and observability with model-switch hooks, foreground subagent live streaming, spend-limit visibility, prompt-cache accounting, and path-traversal / symlink hardening. This is a coding-agent environment maturing into a governed runtime instead of a thin CLI wrapper around a model.
 
-GitHub’s **August 21, 2026** Slack and Teams launches rhyme with that same shift. Copilot is being repositioned from “agent in a dev tool” toward “agentic worker inside the coordination loop,” where planning, handoff, progress monitoring, and PR review all happen in the same shared thread. The key change is not just surface area expansion; it is that the communication substrate itself becomes part of the agent runtime.
+OpenAI’s week rhymed with the same direction from a different angle. The **August 26, 2026** Assistants sunset makes the migration line to Responses fully real, which is an ecosystem forcing function toward a more unified agent substrate. The **August 26, 2026** Hugging Face incident write-up pushes even harder on the governance point: long-horizon agents are now powerful, persistent, and collaborative enough that the core differentiator is not just capability, but how well the runtime can be isolated, monitored, and interrupted.
 
-OpenAI’s dated week was quieter on new agent control surfaces, but its **August 18, 2026** pacing post and **August 21, 2026** GPT-5.6 Sol price cut still reinforce the same broader frontier pressure: operators need explicit safety posture and explicit cost posture as capabilities rise. That is a governance signal, even when it is not packaged as a new agent SDK or runtime tool.
+GitHub’s late-week changelog makes the collaboration layer part of the runtime too. Slack and Teams carried into the weekly-release summary, while policy and billing changes became more central. That is a product telling users that agent work now lives across **shared sessions, enterprise controls, review loops, and budget-aware operation**, not only inside an editor.
 
-For `erwin`, the practical synthesis is that the frontier is not merely standardizing on “agents with tools.” It is standardizing on **agents with inspectable runtime boundaries, attachable memory, packaging contracts, and collaboration-aware control planes**.
+For `erwin`, the durable read is that the frontier is standardizing on **agent systems with visible control planes**: identity, trust, cost posture, transcript visibility, runtime hooks, and collaboration-aware session management.
 
 ## Tooling Watch
 
 - **Anthropic**
-  - **August 19, 2026**: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) moved the computer use tool out of beta, launched the browser use tool, took the Files API and Skills API out of beta, took Claude Enterprise user-management Admin API endpoints out of beta, added Claude Managed Agents domain restrictions for `web_search` / `web_fetch`, added self-hosted sandbox memory stores, and expanded console observability.
-  - **August 20, 2026**: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) released the Python SDK v1.0 and documented the migration breakpoints.
-  - **August 19, 2026**: [Claude Code changelog](https://code.claude.com/docs/en/changelog) added `ANTHROPIC_DEFAULT_MODEL`, cross-session `notify_when_idle`, and stricter macOS sandbox deny precedence.
-  - **August 20, 2026**: [Claude Code changelog](https://code.claude.com/docs/en/changelog) added a built-in Concise output style and fixed prompt caching for gateway / custom base URL sessions.
-  - **August 21, 2026**: [Claude Code changelog](https://code.claude.com/docs/en/changelog) tightened project-trust handling for MCP `headersHelper` and project / `--add-dir` inline MCP servers.
-  - Checked on **August 22, 2026**: [Managed Agents quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart), [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), and [Claude Code overview](https://docs.anthropic.com/en/docs/claude-code/overview).
-  - Result: **Claude Platform, Managed Agents, and Claude Code all changed materially in-window; the standalone advisor-tool docs surface did not show a separate dated in-window doc release.**
+  - **August 26, 2026**: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) took Compliance API session endpoints out of beta for Cowork and Claude Code sessions, expanded local-session transcript coverage, and brought more of the Admin API into the `ant` CLI and official SDKs.
+  - **August 27, 2026**: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) normalized post-beta `files` and `skills` SDK behavior and introduced Claude Console personal keys plus service-account keys with clearer organizational scoping.
+  - Checked on **August 28, 2026**: [Managed Agents quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart).
+  - Checked on **August 28, 2026**: [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool).
+  - **August 26, 2026**: [Claude Code changelog](https://code.claude.com/docs/en/changelog) added `SendFeedback`, `/claude-api cost-optimize`, Admin API coverage in the Claude API skill, better managed-connector visibility, and a large cluster of permission, session, worktree, and telemetry fixes.
+  - **August 28, 2026**: [Claude Code changelog](https://code.claude.com/docs/en/changelog) added `PreModelSwitch` and `PostModelSwitch` hooks, live streaming of foreground subagent tool activity to Remote Control clients, spend-limit and prompt-cache reporting, and several path-boundary / tracing hardening fixes.
+  - Checked on **August 28, 2026**: [Claude Code overview](https://docs.anthropic.com/en/docs/claude-code/overview).
+  - Result: **Anthropic’s Claude Platform and Claude Code both changed materially in-window; Managed Agents remained materially affected through release-note-visible platform changes; the advisor docs surface remained important but did not show a separate in-window dated release marker.**
 - **OpenAI**
-  - **August 18, 2026**: [Pacing model development in an era of cyber-critical capabilities](https://openai.com/index/pacing-model-development-cyber-capabilities/).
-  - **August 21, 2026**: [GPT-5.6](https://openai.com/index/gpt-5-6/) update cut GPT-5.6 Sol API and credit pricing by more than 20% for three months.
-  - Context from the prior weekly window still matters: [From assistance to execution: How enterprises put AI to work](https://openai.com/index/how-enterprises-put-ai-to-work/) on **August 12, 2026** remains the clearest recent OpenAI articulation of the move from assistance to delegated execution, but it is outside this week’s strict window.
+  - **August 25, 2026**: [Build agent-ready sites with WebMCP](https://developers.openai.com/codex/webmcp) surfaced on the official OpenAI developer resources as a product update for site-native tool exposure.
+  - **August 26, 2026**: [Deprecations](https://developers.openai.com/api/docs/deprecations), [Assistants migration guide](https://developers.openai.com/api/docs/assistants/migration), and [Migrate to the Responses API](https://developers.openai.com/api/docs/guides/migrate-to-responses) all now state that the Assistants API was officially sunset on **August 26, 2026**.
+  - **August 26, 2026**: [The Hugging Face incident and the road ahead](https://openai.com/index/hugging-face-incident-and-the-road-ahead/) reframed advanced agent work around stronger isolation, monitoring, and alignment requirements.
+  - Result: **OpenAI’s week was strategically important, but more in security, migration, and web-native tooling than in brand-new agent-runtime primitives.**
 - **GitHub**
-  - **August 21, 2026**: [The new GitHub Copilot experience in Slack](https://github.blog/changelog/2026-08-21-the-new-github-copilot-experience-in-slack/).
-  - **August 21, 2026**: [Shared agentic work with GitHub Copilot in Microsoft Teams](https://github.blog/changelog/2026-08-21-shared-agentic-work-with-github-copilot-in-microsoft-teams/).
-  - **August 18, 2026**: [Enterprise managed settings in GitHub Copilot for JetBrains](https://github.blog/changelog/label/copilot/) surfaced in the official August changelog rollup as part of the same management / governance trend, though the Slack and Teams launches were the stronger signal.
+  - **August 27, 2026**: [Copilot code review: Resolution reasons and expanded capabilities](https://github.blog/changelog/2026-08-27-copilot-code-review-resolution-reasons-and-expanded-capabilities/) expanded review coverage to bot-authored and very large PRs and added structured resolution reasons.
+  - **August 28, 2026**: [GitHub Copilot weekly releases — August 24](https://github.blog/changelog/2026-08-28-github-copilot-weekly-releases-august-24/) highlighted shared Slack / Teams sessions, app customization, CLI default execution policy, and stronger enterprise controls across IDEs.
+  - **August 28, 2026**: [Upcoming changes to GitHub Copilot policies and billing](https://github.blog/changelog/2026-08-28-upcoming-changes-to-github-copilot-policies-and-billing/) kept governance and budget visibility on the critical path.
+  - Result: **GitHub is making shared sessions, policy control, and review feedback loops more central to the Copilot operating model.**
 - **Google**
-  - Checked on **August 22, 2026** via the official Google Developers Blog, Google Cloud Blog, and Vertex AI docs surfaces.
-  - Result: **no comparably strong August 15 to August 22 first-party agent-platform post surfaced in the bounded pass**.
+  - Checked on **August 28, 2026** via the official Google Developers Blog and Google Cloud AI / ML blog surfaces.
+  - Result: **no comparably strong August 22 to August 28 first-party agent-platform post surfaced in the bounded pass.**
 
 ## Implications For erwin / Harness / Skills
 
-- `erwin` should continue to treat **agent runtime governance** as more durable than any single model release. The week’s strongest signals were about runtime boundaries, policy surfaces, observability, and packaging.
-- Harness should model **memory attachment and runtime reachability policy** as first-class run metadata. Anthropic’s managed-agent memory stores and per-tool domain controls are exactly the sort of explicit contract that should not remain implicit in Harness.
-- Harness should separate **capability bundle portability** from marketplace strategy. Anthropic Skills API GA and GitHub’s plugin portability both point toward a stable packaging layer that can travel across hosts while preserving trust semantics.
-- Skills should carry clearer **host constraints and trust prerequisites**. Claude Code’s August 21 project-trust tightening is a direct warning that capability packaging without explicit trust boundaries will become operationally fragile.
-- Harness should keep improving **operator-facing response modes** rather than assuming one default narration style. Claude Code adding a built-in Concise mode is a small but real signal that execution products are differentiating operator ergonomics as part of the runtime contract.
+- `erwin` should keep treating **runtime governance** as a top-level field theme rather than an implementation detail. This week’s strongest sources all reinforced policy, trust, visibility, and interruption surfaces.
+- Harness should represent **identity and trust posture** more explicitly. Anthropic’s personal keys, service-account keys, Admin API spread, and Claude Code trust / policy fixes all point to the same need: the runtime should know who is acting, under what scope, and with what policy boundary.
+- Harness should treat **operator visibility** as part of the product contract. Spend-limit bars, prompt-cache counters, transcript retrieval, and subagent live-stream visibility are all examples of execution becoming more diagnosable.
+- Skills should advertise **host prerequisites, trust requirements, and observability hooks** more concretely. Capability portability is becoming stronger, but only when the environment contract is explicit.
+- `erwin` should keep a separate watch on **shared-session collaboration surfaces**. GitHub’s late-week work suggests that the social coordination layer is becoming part of the agent surface, not merely an integration afterthought.
 
 ## Harness Evolution Proposals
 
 ### Title
-Run Policy Packets For Reachability, Memory, and Trust
+Runtime Identity And Policy Envelope
 
-Source: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) on **August 19, 2026** and [Claude Code changelog](https://code.claude.com/docs/en/changelog) on **August 21, 2026**
+Source: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) on **August 26, 2026** and **August 27, 2026**
 
-Observed Pattern: The leading Anthropic surfaces are exposing agent reachability policy, memory attachment, and project-trust boundaries as explicit runtime configuration rather than hidden implementation detail.
+Observed Pattern: Anthropic is making keys, service-account identity, admin reach, and compliance transcript access more explicit and more portable across SDK, CLI, and console surfaces.
 
-Why It Matters For Harness: Harness already governs runs, teammates, and councils, but it does not yet expose a compact policy object for allowed domains, mounted memory, trust prerequisites, and boundary-specific constraints that remain visible across execution surfaces.
+Why It Matters For Harness: Harness can govern work more reliably if run identity, credential scope, admin authority, and audit visibility are explicit fields rather than mixed into environment assumptions.
 
 Recommended Disposition: `adopt`
 
-What We Would Change If Adopted: Add a run-policy packet that records network / domain policy, mounted memory stores, trust prerequisites for capability activation, and operator-visible observability flags, then thread that packet through run creation, subagent assignment, and verification output.
+What We Would Change If Adopted: Add a runtime identity / policy envelope to run metadata that records actor type, credential scope, trust level, compliance visibility, and any admin-only capabilities before execution starts.
 
-Why We Should Not Cargo-Cult This: We should not clone vendor-specific config names or assume every run needs maximal restriction and maximal state. The value is a portable governance contract, not a direct mirror of Claude Platform object schemas.
+Why We Should Not Cargo-Cult This: We should not mirror Anthropic key taxonomy or admin APIs one-for-one. The point is to expose a portable governance contract, not to clone a vendor console model.
 
 ### Title
-Portable Capability Bundles With Explicit Host Contracts
+Foreground And Background Subagent Observability Modes
 
-Source: [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) on **August 19, 2026** and [The new GitHub Copilot experience in Slack](https://github.blog/changelog/2026-08-21-the-new-github-copilot-experience-in-slack/) on **August 21, 2026**
+Source: [Claude Code changelog](https://code.claude.com/docs/en/changelog) on **August 28, 2026**
 
-Observed Pattern: Agent capabilities are being packaged to survive movement across API, IDE, CLI, and collaboration surfaces, but portability only works when the host contract is explicit.
+Observed Pattern: Claude Code now distinguishes between background subagents that expose status only and foreground subagents whose tool calls and results can stream live to Remote Control clients.
 
-Why It Matters For Harness: `erwin` skills are repo-owned and useful, but they still assume too much about host environment, trust state, and interaction model when moved between coding, background, and collaborative surfaces.
+Why It Matters For Harness: Harness currently has weaker explicit control over when delegated work should stay quiet versus when operators should see step-level activity. That weakens both trust and review ergonomics.
 
 Recommended Disposition: `prototype`
 
-What We Would Change If Adopted: Define a Harness bundle manifest that declares capability identity, supported hosts, required trust state, optional collaboration surfaces, memory assumptions, and verification hooks for activation.
+What We Would Change If Adopted: Define delegation visibility modes for Harness tasks so callers can choose status-only, summarized trace, or live tool-stream behavior per subtask, then verify the choice in output contracts.
 
-Why We Should Not Cargo-Cult This: We do not need a marketplace or a vendor-specific plugin UX. We need a reviewable capability contract that keeps skill reuse honest across environments.
+Why We Should Not Cargo-Cult This: We should not assume more streaming is always better. Too much live trace can drown the operator or leak low-value internal churn. The useful abstraction is selectable visibility, not maximal verbosity.
 
 ### Title
-Concise Operator Views As A Tested Runtime Mode
+Operator-Cost Review As A First-Class Eval
 
-Source: [Claude Code changelog](https://code.claude.com/docs/en/changelog) on **August 20, 2026**
+Source: [Claude Code changelog](https://code.claude.com/docs/en/changelog) on **August 26, 2026** and **August 28, 2026**, plus OpenAI’s [Migrate to the Responses API](https://developers.openai.com/api/docs/guides/migrate-to-responses) and [Deprecations](https://developers.openai.com/api/docs/deprecations) surfaces on **August 26, 2026**
 
-Observed Pattern: Operator-facing output style is becoming part of the product surface, with concise execution summaries treated as a deliberate mode rather than an incidental prompt preference.
+Observed Pattern: The leading surfaces now expose spend limits, prompt-cache behavior, cost-optimization flows, and hard migration boundaries as operator-visible product concerns.
 
-Why It Matters For Harness: Harness currently depends heavily on prompt discipline and repo instructions to shape terse operator-visible reporting. That leaves the response contract more fragile than it should be.
+Why It Matters For Harness: Harness still treats cost mostly as a downstream operational concern, but the field is moving toward cost posture as part of the primary execution contract.
 
 Recommended Disposition: `encode-as-eval`
 
-What We Would Change If Adopted: Add eval scenarios that compare the same run under default and concise leader-briefing modes, measuring whether the terse view preserves decision-critical evidence, blockers, and next actions without increasing ambiguity.
+What We Would Change If Adopted: Add eval scenarios that measure whether a Harness run makes cost posture legible enough for an operator to predict budget risk, caching payoff, and migration breakage before scale amplifies them.
 
-Why We Should Not Cargo-Cult This: A “concise mode” can easily become a cosmetic truncation layer that hides risk. The point is to preserve operator control with less narration, not to optimize for brevity alone.
+Why We Should Not Cargo-Cult This: We should not build dashboards for their own sake or overfit to vendor-specific usage pages. The goal is decision-quality cost visibility, not cosmetic metering.
 
 ## Open Questions
 
-- Anthropic’s **August 19, 2026** managed-agent updates make memory stores and domain restrictions explicit, but the standalone Managed Agents and advisor pages did not show separate dated updates this week. Should `erwin` track “release-note-visible surface change” and “doc-page-visible change” as different evidence classes instead of merging them?
-- Claude Code changed materially on **August 19**, **August 20**, and **August 21, 2026**. Should Harness treat multi-session messaging, idle notifications, and host trust checks as part of the same execution-governance model, or keep them split between runtime policy and operator ergonomics?
-- GitHub is moving agentic work into Slack and Teams. Does Harness need a first-class shared-thread or shared-room abstraction, or is it enough to keep coordination in repo-native councils and reports?
-- OpenAI’s strongest dated in-window signals were governance and pricing, not a new agent SDK surface. Is that a temporary quiet week, or a sign that cost / safety posture is becoming as strategically important as raw capability launches for operator decisions?
+- Anthropic’s mandatory checked surfaces split this week into two evidence classes: release-note-visible changes versus stable doc pages without fresh date markers. Should `erwin` formalize those as separate weekly signals instead of compressing them into one “Anthropic changed” statement?
+- Claude Code changed materially on **August 26, 2026** and **August 28, 2026**. Should Harness treat hook events, subagent visibility, and path-boundary hardening as one runtime-governance thread, or separate operator ergonomics from security posture?
+- OpenAI’s **August 26, 2026** week was dominated by migration and security. Is that best read as a quiet product week, or as evidence that mature agent platforms now differentiate as much on runtime containment and migration clarity as on new agent primitives?
+- GitHub is moving shared sessions, policy controls, and review semantics toward the center of Copilot. Does Harness need a first-class shared-room abstraction, or is a repo-native council/report model still enough?
