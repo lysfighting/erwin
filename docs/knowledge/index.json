@@ -4877,23 +4877,22 @@
           "agent evals",
           "context engineering",
           "coding agents",
-          "tool use",
           "orchestration"
         ],
         "summary": "Window: 2026-08-25 to 2026-08-31",
         "external_refs": [
           "https://platform.claude.com/docs/en/release-notes/overview",
           "https://code.claude.com/docs/en/changelog",
-          "https://www.anthropic.com/",
-          "https://claude.com/",
-          "https://platform.claude.com/docs/en/managed-agents/sessions",
-          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
-          "https://code.claude.com/docs/en/overview",
-          "https://www.kimi.com/code/docs/en/kimi-code/whats-new.html",
-          "https://www.kimi.ai/help/kimi-work/release-notes",
           "https://openai.com/index/introducing-admin-plugin/",
           "https://openai.com/index/hugging-face-incident-and-the-road-ahead/",
-          "https://developers.googleblog.com/how-to-evaluate-live-voice-agents-in-adk/"
+          "https://www.kimi.com/code/docs/en/kimi-code/whats-new.html",
+          "https://www.kimi.ai/help/kimi-work/release-notes",
+          "https://cloud.google.com/blog/products/ai-machine-learning/flexible-billing-and-cost-controls-for-agents-on-google-cloud",
+          "https://developers.googleblog.com/how-to-evaluate-live-voice-agents-in-adk/",
+          "https://help.aliyun.com/en/model-studio/newly-released-models",
+          "https://agent.minimax.io/docs/changelog",
+          "https://platform.minimax.io/docs/release-notes/models",
+          "https://api-docs.deepseek.com/updates/"
         ],
         "local_refs": []
       },
@@ -7927,7 +7926,7 @@
         "date": "2026-08-31",
         "status": "",
         "themes": [
-          "tool use",
+          "harness",
           "orchestration"
         ],
         "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
@@ -7936,10 +7935,10 @@
           "https://github.com/THU-MAIC/OpenMAIC",
           "https://github.com/tt-a1i/archify",
           "https://github.com/K-Dense-AI/scientific-agent-skills",
-          "https://github.com/abhigyanpatwari/GitNexus",
-          "https://github.com/livekit/agents",
-          "https://github.com/punkpeye/awesome-mcp-servers",
-          "https://github.com/NationalSecurityAgency/ghidra"
+          "https://github.com/Osmantic/ODS",
+          "https://github.com/zhaoxuya520/reverse-skill",
+          "https://github.com/firecrawl/pdf-inspector",
+          "https://github.com/majd/ipatool"
         ],
         "local_refs": []
       },

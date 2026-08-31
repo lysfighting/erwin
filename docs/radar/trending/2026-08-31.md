@@ -4,43 +4,43 @@ Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-08-31** is mixed rather than AI-only. Agent skills, MCP infrastructure, repo intelligence, realtime voice-agent runtimes, reverse-engineering tooling, mobile utilities, and general developer libraries all share the same page. AI and coding-agent projects are prominent, but they are still competing inside a broader developer-interest market rather than fully owning the board.
+The default global board captured on **2026-08-31** is broad rather than AI-only. Multi-agent learning, diagramming skills, scientific skill libraries, app-store tooling, local AI servers, code-quality tooling, security research packs, and document-inspection infrastructure all appear on the same page. AI and agent projects are prominent near the top, but today's board is still a mixed developer-interest signal rather than a pure model or agent leaderboard.
 
 ## Notable Projects
 
 - [THU-MAIC/OpenMAIC](https://github.com/THU-MAIC/OpenMAIC)
-  Open multi-agent interactive classroom project, notable because multi-agent coordination is being productized in domain-specific learning experiences.
+  Open multi-agent interactive classroom project, notable because applied multi-agent coordination is surfacing in a concrete product setting.
 
 - [tt-a1i/archify](https://github.com/tt-a1i/archify)
-  Agent skill for verifiable architecture, workflow, sequence, and lifecycle diagrams.
+  Agent skill for verifiable architecture, workflow, sequence, data-flow, and lifecycle diagrams.
 
 - [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)
   Large validated skill library for science-focused agent workflows and tool access.
 
-- [abhigyanpatwari/GitNexus](https://github.com/abhigyanpatwari/GitNexus)
-  Client-side repo knowledge graph creator with a built-in Graph RAG agent for code exploration.
+- [Osmantic/ODS](https://github.com/Osmantic/ODS)
+  Local AI-server stack that bundles inference, chat UI, voice, agents, workflows, RAG, and image generation.
 
-- [livekit/agents](https://github.com/livekit/agents)
-  Framework for realtime voice AI agents, still one of the clearest infrastructure plays on the board.
+- [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill)
+  Security-research and reverse-engineering skill router pack for coding-agent clients.
 
-- [punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers)
-  Large MCP server collection, relevant because connector and tool-surface packaging continues to spread across agent ecosystems.
+- [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector)
+  Fast Rust library for PDF inspection, classification, and text extraction, relevant because document routing remains an important low-level substrate.
 
-- [NationalSecurityAgency/ghidra](https://github.com/NationalSecurityAgency/ghidra)
-  Major reverse-engineering framework, included here because the default board is still broad and not reducible to AI alone.
+- [majd/ipatool](https://github.com/majd/ipatool)
+  Command-line App Store package downloader, included here because the default board is still genuinely broad and not reducible to AI alone.
 
 ## Why They May Be Surfacing
 
-- **Skills are still a packaging default.** `archify` and `scientific-agent-skills` both treat reusable capability bundles as the product surface.
-- **Codebase understanding is getting productized.** `GitNexus` turns repository structure into a direct machine-usable graph plus agent interface.
-- **Multi-agent runtimes are being specialized.** `OpenMAIC` and `livekit/agents` show multi-agent and voice-agent systems surfacing as applied frameworks, not just research demos.
-- **MCP remains a compounding ecosystem layer.** `awesome-mcp-servers` suggests tool and connector discovery is still growing fast enough to stay highly visible.
-- **The board is still genuinely mixed.** `ghidra`, `vphone-cli`, `zod`, and other non-agent projects keep the default trending page broader than a pure AI trend line.
+- **Skills are still a packaging default.** `archify`, `scientific-agent-skills`, and `reverse-skill` all treat reusable capability bundles as the product surface.
+- **Applied multi-agent systems are getting more concrete.** `OpenMAIC` packages multi-agent coordination into a specific end-user workflow instead of abstract orchestration alone.
+- **Local full-stack AI environments remain attractive.** `ODS` suggests developers still want one-box packaging for inference, voice, agents, and workflow execution.
+- **Infrastructure underneath agent workflows still matters.** `pdf-inspector` is not a flashy assistant, but it supports the routing and extraction layers that real agents depend on.
+- **The board is mixed by design.** `ipatool`, `checkstyle`, and other non-agent projects keep the default trending page wider than an AI-only trend narrative.
 
 ## Watchlist
 
+- [THU-MAIC/OpenMAIC](https://github.com/THU-MAIC/OpenMAIC): strongest applied multi-agent product signal on today's board.
 - [tt-a1i/archify](https://github.com/tt-a1i/archify): strongest verifiable-artifact skill signal.
 - [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills): strongest large skill-library signal.
-- [abhigyanpatwari/GitNexus](https://github.com/abhigyanpatwari/GitNexus): strongest repo knowledge-graph signal.
-- [livekit/agents](https://github.com/livekit/agents): strongest realtime applied-agent runtime signal.
-- [punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers): strongest MCP ecosystem packaging signal.
+- [Osmantic/ODS](https://github.com/Osmantic/ODS): strongest local AI-server packaging signal.
+- [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector): strongest document-routing infrastructure signal.
