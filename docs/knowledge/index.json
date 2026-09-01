@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 233,
+    "total_notes": 235,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 296,
+    "artifact_count": 298,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-08-31",
-      "meta": "Window: 2026-08-25 to 2026-08-31",
+      "title": "Daily Radar - 2026-09-01",
+      "meta": "Window: 2026-08-26 to 2026-09-01",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-09-01",
+          "path": "radar/daily/2026-09-01.md"
+        },
         {
           "name": "2026-08-31",
           "path": "radar/daily/2026-08-31.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-08-24",
           "path": "radar/daily/2026-08-24.md"
-        },
-        {
-          "name": "2026-08-23",
-          "path": "radar/daily/2026-08-23.md"
         }
       ],
-      "count": 106
+      "count": 107
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-08-31",
+      "title": "GitHub Trending - 2026-09-01",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
-        "[THU-MAIC/OpenMAIC](https://github.com/THU-MAIC/OpenMAIC)",
-        "[tt-a1i/archify](https://github.com/tt-a1i/archify)",
-        "[K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)"
+        "[Gitlawb/openclaude](https://github.com/Gitlawb/openclaude)",
+        "[Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills)",
+        "[THU-MAIC/OpenMAIC](https://github.com/THU-MAIC/OpenMAIC)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-09-01",
+          "path": "radar/trending/2026-09-01.md"
+        },
         {
           "name": "2026-08-31",
           "path": "radar/trending/2026-08-31.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-08-24",
           "path": "radar/trending/2026-08-24.md"
-        },
-        {
-          "name": "2026-08-23",
-          "path": "radar/trending/2026-08-23.md"
         }
       ],
-      "count": 107
+      "count": 108
     }
   },
   "deep_dive": "### Agent platforms are becoming inspectable operating environments, not just tool-enabled models",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 296,
+      "artifact_count": 298,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 243,
+        "radar": 245,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4897,6 +4897,36 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-09-01.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-09-01.md",
+        "title": "Daily Radar - 2026-09-01",
+        "date": "2026-09-01",
+        "status": "",
+        "themes": [
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-08-26 to 2026-09-01",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://www.kimi.ai/help/kimi-work/release-notes",
+          "https://www.kimi.com/code/docs/en/kimi-code/whats-new.html",
+          "https://platform.moonshot.ai/docs/introduction/changelog",
+          "https://agent.minimax.io/docs/changelog",
+          "https://openai.com/index/hugging-face-incident-and-the-road-ahead/",
+          "https://cloud.google.com/blog/products/ai-machine-learning/flexible-billing-and-cost-controls-for-agents-on-google-cloud",
+          "https://help.aliyun.com/en/model-studio/newly-released-models",
+          "https://api-docs.deepseek.com/updates/",
+          "https://api-docs.deepseek.com/news/",
+          "https://github.com/trending"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -7939,6 +7969,31 @@
           "https://github.com/zhaoxuya520/reverse-skill",
           "https://github.com/firecrawl/pdf-inspector",
           "https://github.com/majd/ipatool"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-09-01.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-09-01.md",
+        "title": "GitHub Trending - 2026-09-01",
+        "date": "2026-09-01",
+        "status": "",
+        "themes": [
+          "harness",
+          "coding agents",
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/Gitlawb/openclaude",
+          "https://github.com/Imbad0202/academic-research-skills",
+          "https://github.com/THU-MAIC/OpenMAIC",
+          "https://github.com/jingyaogong/minimind",
+          "https://github.com/firecrawl/pdf-inspector",
+          "https://github.com/browser-use/video-use",
+          "https://github.com/K-Dense-AI/scientific-agent-skills"
         ],
         "local_refs": []
       },

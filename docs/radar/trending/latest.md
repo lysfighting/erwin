@@ -1,46 +1,46 @@
-# GitHub Trending - 2026-08-31
+# GitHub Trending - 2026-09-01
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-08-31** is broad rather than AI-only. Multi-agent learning, diagramming skills, scientific skill libraries, app-store tooling, local AI servers, code-quality tooling, security research packs, and document-inspection infrastructure all appear on the same page. AI and agent projects are prominent near the top, but today's board is still a mixed developer-interest signal rather than a pure model or agent leaderboard.
+The default global board captured on **2026-09-01** is still mixed rather than AI-only. The visible slice combines portable coding-agent shells, academic research skill packs, applied multi-agent products, small-model training projects, document-inspection infrastructure, and agentic media tooling. AI and agent repos are prominent, but the board still reflects a broader developer-interest surface rather than a clean model leaderboard.
 
 ## Notable Projects
 
+- [Gitlawb/openclaude](https://github.com/Gitlawb/openclaude)
+  Portable coding-agent shell positioned as "runs anywhere, uses anything."
+
+- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills)
+  Research workflow skill system spanning research, writing, review, revision, and finalization.
+
 - [THU-MAIC/OpenMAIC](https://github.com/THU-MAIC/OpenMAIC)
-  Open multi-agent interactive classroom project, notable because applied multi-agent coordination is surfacing in a concrete product setting.
+  Open multi-agent interactive classroom product with one-click deployment framing.
 
-- [tt-a1i/archify](https://github.com/tt-a1i/archify)
-  Agent skill for verifiable architecture, workflow, sequence, data-flow, and lifecycle diagrams.
-
-- [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)
-  Large validated skill library for science-focused agent workflows and tool access.
-
-- [Osmantic/ODS](https://github.com/Osmantic/ODS)
-  Local AI-server stack that bundles inference, chat UI, voice, agents, workflows, RAG, and image generation.
-
-- [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill)
-  Security-research and reverse-engineering skill router pack for coding-agent clients.
+- [jingyaogong/minimind](https://github.com/jingyaogong/minimind)
+  Compact LLM training project focused on training a 64M-parameter model from scratch quickly.
 
 - [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector)
-  Fast Rust library for PDF inspection, classification, and text extraction, relevant because document routing remains an important low-level substrate.
+  Fast Rust library for PDF inspection, classification, and text extraction.
 
-- [majd/ipatool](https://github.com/majd/ipatool)
-  Command-line App Store package downloader, included here because the default board is still genuinely broad and not reducible to AI alone.
+- [browser-use/video-use](https://github.com/browser-use/video-use)
+  Agentic video-editing stack aimed at controlling video operations with coding agents.
+
+- [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)
+  Large validated skill library for science-focused agent workflows and database access.
 
 ## Why They May Be Surfacing
 
-- **Skills are still a packaging default.** `archify`, `scientific-agent-skills`, and `reverse-skill` all treat reusable capability bundles as the product surface.
+- **Portable agent shells are still in demand.** `openclaude` suggests developers still want flexible local or self-hosted agent entrypoints rather than a single hosted operating model.
+- **Skills remain a packaging default.** `academic-research-skills` and `scientific-agent-skills` both present reusable capability bundles as the product surface.
 - **Applied multi-agent systems are getting more concrete.** `OpenMAIC` packages multi-agent coordination into a specific end-user workflow instead of abstract orchestration alone.
-- **Local full-stack AI environments remain attractive.** `ODS` suggests developers still want one-box packaging for inference, voice, agents, and workflow execution.
-- **Infrastructure underneath agent workflows still matters.** `pdf-inspector` is not a flashy assistant, but it supports the routing and extraction layers that real agents depend on.
-- **The board is mixed by design.** `ipatool`, `checkstyle`, and other non-agent projects keep the default trending page wider than an AI-only trend narrative.
+- **The board still rewards low-level infrastructure.** `pdf-inspector` is not a flashy assistant surface, but it supports routing and extraction layers that real agents depend on.
+- **Agentic creation stacks are widening.** `video-use` shows the agent surface continuing to move into media operations, while `minimind` keeps the board grounded in model-building and developer experimentation.
 
 ## Watchlist
 
-- [THU-MAIC/OpenMAIC](https://github.com/THU-MAIC/OpenMAIC): strongest applied multi-agent product signal on today's board.
-- [tt-a1i/archify](https://github.com/tt-a1i/archify): strongest verifiable-artifact skill signal.
-- [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills): strongest large skill-library signal.
-- [Osmantic/ODS](https://github.com/Osmantic/ODS): strongest local AI-server packaging signal.
+- [Gitlawb/openclaude](https://github.com/Gitlawb/openclaude): strongest portable coding-agent shell signal on today's board.
+- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills): strongest research-skill packaging signal.
+- [THU-MAIC/OpenMAIC](https://github.com/THU-MAIC/OpenMAIC): strongest applied multi-agent product signal.
 - [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector): strongest document-routing infrastructure signal.
+- [browser-use/video-use](https://github.com/browser-use/video-use): strongest agentic-media workflow signal.
