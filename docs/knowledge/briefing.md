@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `235` durable notes are currently indexed across `3` recurring streams.
-- `298` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
+- `237` durable notes are currently indexed across `3` recurring streams.
+- `300` knowledge-network artifacts, `267` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,19 +27,19 @@
 
 ## Daily Signal Snapshot
 
-### Daily Radar - 2026-09-01
+### Daily Radar - 2026-09-02
 
-- Metadata: `Window: 2026-08-26 to 2026-09-01`
+- Metadata: `Window: 2026-08-27 to 2026-09-02`
 - Open the daily note for the full signal list.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-09-01
+### GitHub Trending - 2026-09-02
 
 - Metadata: `Latest GitHub Trending board summary`
-- [Gitlawb/openclaude](https://github.com/Gitlawb/openclaude)
-- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills)
-- [THU-MAIC/OpenMAIC](https://github.com/THU-MAIC/OpenMAIC)
+- [fmtlib/fmt](https://github.com/fmtlib/fmt)
+- [google-research/timesfm](https://github.com/google-research/timesfm)
+- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp)
 
 ## Durable Interpretation
 
@@ -65,12 +65,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-09-02](../radar/daily/2026-09-02.md)
 - [2026-09-01](../radar/daily/2026-09-01.md)
 - [2026-08-31](../radar/daily/2026-08-31.md)
 - [2026-08-29](../radar/daily/2026-08-29.md)
 - [2026-08-27](../radar/daily/2026-08-27.md)
 - [2026-08-25](../radar/daily/2026-08-25.md)
-- [2026-08-24](../radar/daily/2026-08-24.md)
 
 ### Weekly Synthesis
 
@@ -83,9 +83,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-09-02](../radar/trending/2026-09-02.md)
 - [2026-09-01](../radar/trending/2026-09-01.md)
 - [2026-08-31](../radar/trending/2026-08-31.md)
 - [2026-08-29](../radar/trending/2026-08-29.md)
 - [2026-08-27](../radar/trending/2026-08-27.md)
 - [2026-08-25](../radar/trending/2026-08-25.md)
-- [2026-08-24](../radar/trending/2026-08-24.md)

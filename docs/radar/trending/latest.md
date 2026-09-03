@@ -1,46 +1,46 @@
-# GitHub Trending - 2026-09-01
+# GitHub Trending - 2026-09-02
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-09-01** is still mixed rather than AI-only. The visible slice combines portable coding-agent shells, academic research skill packs, applied multi-agent products, small-model training projects, document-inspection infrastructure, and agentic media tooling. AI and agent repos are prominent, but the board still reflects a broader developer-interest surface rather than a clean model leaderboard.
+The default global board captured on **2026-09-02** is mixed in the way the board is supposed to be mixed: core developer infrastructure, time-series modeling, voice tooling, agent shells, MCP browser tooling, and agent-control infrastructure all appear together. AI and agent repositories are prominent, but the board is not a pure AI leaderboard.
 
 ## Notable Projects
 
-- [Gitlawb/openclaude](https://github.com/Gitlawb/openclaude)
-  Portable coding-agent shell positioned as "runs anywhere, uses anything."
+- [fmtlib/fmt](https://github.com/fmtlib/fmt)
+  Classic C++ formatting infrastructure still surfacing, which keeps the board grounded in mainstream developer tooling rather than only new AI wrappers.
+
+- [google-research/timesfm](https://github.com/google-research/timesfm)
+  Google Research time-series foundation model, showing continued interest in domain foundation models beyond chat and coding.
+
+- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp)
+  Browser debugging and inspection exposed directly for coding agents through MCP.
+
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)
+  Personal agent framing that emphasizes growth and adaptation over one-shot assistant behavior.
+
+- [pacifio/atlas](https://github.com/pacifio/atlas)
+  Explicit "source control for agents" positioning, relevant to multi-agent coding coordination.
 
 - [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills)
-  Research workflow skill system spanning research, writing, review, revision, and finalization.
+  Reusable research-skill packaging for coding-agent workflows.
 
-- [THU-MAIC/OpenMAIC](https://github.com/THU-MAIC/OpenMAIC)
-  Open multi-agent interactive classroom product with one-click deployment framing.
-
-- [jingyaogong/minimind](https://github.com/jingyaogong/minimind)
-  Compact LLM training project focused on training a 64M-parameter model from scratch quickly.
-
-- [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector)
-  Fast Rust library for PDF inspection, classification, and text extraction.
-
-- [browser-use/video-use](https://github.com/browser-use/video-use)
-  Agentic video-editing stack aimed at controlling video operations with coding agents.
-
-- [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)
-  Large validated skill library for science-focused agent workflows and database access.
+- [affaan-m/ECC](https://github.com/affaan-m/ECC)
+  Agent harness optimization stack bundling skills, memory, security, and research-first development.
 
 ## Why They May Be Surfacing
 
-- **Portable agent shells are still in demand.** `openclaude` suggests developers still want flexible local or self-hosted agent entrypoints rather than a single hosted operating model.
-- **Skills remain a packaging default.** `academic-research-skills` and `scientific-agent-skills` both present reusable capability bundles as the product surface.
-- **Applied multi-agent systems are getting more concrete.** `OpenMAIC` packages multi-agent coordination into a specific end-user workflow instead of abstract orchestration alone.
-- **The board still rewards low-level infrastructure.** `pdf-inspector` is not a flashy assistant surface, but it supports routing and extraction layers that real agents depend on.
-- **Agentic creation stacks are widening.** `video-use` shows the agent surface continuing to move into media operations, while `minimind` keeps the board grounded in model-building and developer experimentation.
+- **The board still rewards durable tooling, not just novelty.** `fmt` surfacing beside agent repos is a reminder that mainstream developer infrastructure still shares attention with AI systems.
+- **MCP remains one of the clearest agent-tool integration surfaces.** `chrome-devtools-mcp` is a direct signal that browser tooling and agents are being wired together at the protocol layer.
+- **Agent control and coordination are becoming product categories.** `hermes-agent` and `atlas` both package the agent itself as the system, not just as a thin wrapper over a model API.
+- **Skills remain a default distribution unit.** `academic-research-skills` and `ECC` both show workflow capability bundles continuing to matter.
+- **The board is broader than coding agents alone.** `timesfm` shows that domain modeling still competes for attention even while agent infrastructure is rising.
 
 ## Watchlist
 
-- [Gitlawb/openclaude](https://github.com/Gitlawb/openclaude): strongest portable coding-agent shell signal on today's board.
-- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills): strongest research-skill packaging signal.
-- [THU-MAIC/OpenMAIC](https://github.com/THU-MAIC/OpenMAIC): strongest applied multi-agent product signal.
-- [firecrawl/pdf-inspector](https://github.com/firecrawl/pdf-inspector): strongest document-routing infrastructure signal.
-- [browser-use/video-use](https://github.com/browser-use/video-use): strongest agentic-media workflow signal.
+- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp): strongest browser-tooling and MCP signal on today's board.
+- [pacifio/atlas](https://github.com/pacifio/atlas): strongest agent-coordination and provenance signal.
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): strongest evolving-agent packaging signal.
+- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills): strongest workflow-skill packaging signal.
+- [google-research/timesfm](https://github.com/google-research/timesfm): strongest non-agent foundation-model signal in the visible slice.
