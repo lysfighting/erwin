@@ -4,10 +4,10 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 237,
+    "total_notes": 239,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 300,
+    "artifact_count": 302,
     "link_count": 267,
     "thread_count": 5
   },
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-09-02",
-      "meta": "Window: 2026-08-27 to 2026-09-02",
+      "title": "Daily Radar - 2026-09-03",
+      "meta": "Window: 2026-08-28 to 2026-09-03",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-09-03",
+          "path": "radar/daily/2026-09-03.md"
+        },
         {
           "name": "2026-09-02",
           "path": "radar/daily/2026-09-02.md"
@@ -139,26 +143,26 @@
         {
           "name": "2026-08-27",
           "path": "radar/daily/2026-08-27.md"
-        },
-        {
-          "name": "2026-08-25",
-          "path": "radar/daily/2026-08-25.md"
         }
       ],
-      "count": 108
+      "count": 109
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-09-02",
+      "title": "GitHub Trending - 2026-09-03",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [
         "[fmtlib/fmt](https://github.com/fmtlib/fmt)",
-        "[google-research/timesfm](https://github.com/google-research/timesfm)",
-        "[ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp)"
+        "[mattpocock/skills](https://github.com/mattpocock/skills)",
+        "[NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)"
       ],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-09-03",
+          "path": "radar/trending/2026-09-03.md"
+        },
         {
           "name": "2026-09-02",
           "path": "radar/trending/2026-09-02.md"
@@ -178,13 +182,9 @@
         {
           "name": "2026-08-27",
           "path": "radar/trending/2026-08-27.md"
-        },
-        {
-          "name": "2026-08-25",
-          "path": "radar/trending/2026-08-25.md"
         }
       ],
-      "count": 109
+      "count": 110
     }
   },
   "deep_dive": "### Agent platforms are becoming inspectable operating environments, not just tool-enabled models",
@@ -229,12 +229,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 300,
+      "artifact_count": 302,
       "link_count": 267,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 247,
+        "radar": 249,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -4959,6 +4959,38 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/daily/2026-09-03.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-09-03.md",
+        "title": "Daily Radar - 2026-09-03",
+        "date": "2026-09-03",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-08-28 to 2026-09-03",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://openai.com/index/safety-overview-gpt-6-astra/",
+          "https://help.aliyun.com/en/model-studio/newly-released-models",
+          "https://cloud.google.com/blog/products/ai-machine-learning/what-google-cloud-announced-in-ai-this-month",
+          "https://openai.com/index/daybreak-for-frontline-defenders/",
+          "https://github.com/trending",
+          "https://github.com/fmtlib/fmt",
+          "https://github.com/mattpocock/skills",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/anthropics/skills",
+          "https://github.com/google-research/timesfm",
+          "https://github.com/Gitlawb/openclaude"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -8053,6 +8085,30 @@
           "https://github.com/pacifio/atlas",
           "https://github.com/Imbad0202/academic-research-skills",
           "https://github.com/affaan-m/ECC"
+        ],
+        "local_refs": []
+      },
+      {
+        "id": "radar:docs/radar/trending/2026-09-03.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-09-03.md",
+        "title": "GitHub Trending - 2026-09-03",
+        "date": "2026-09-03",
+        "status": "",
+        "themes": [
+          "orchestration"
+        ],
+        "summary": "Capture source: [GitHub Trending](https://github.com/trending)",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/fmtlib/fmt",
+          "https://github.com/mattpocock/skills",
+          "https://github.com/NousResearch/hermes-agent",
+          "https://github.com/anthropics/skills",
+          "https://github.com/google-research/timesfm",
+          "https://github.com/addyosmani/agent-skills",
+          "https://github.com/Imbad0202/academic-research-skills",
+          "https://github.com/Gitlawb/openclaude"
         ],
         "local_refs": []
       },

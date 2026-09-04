@@ -1,46 +1,49 @@
-# GitHub Trending - 2026-09-02
+# GitHub Trending - 2026-09-03
 
 Capture source: [GitHub Trending](https://github.com/trending)
 
 ## Trending Snapshot
 
-The default global board captured on **2026-09-02** is mixed in the way the board is supposed to be mixed: core developer infrastructure, time-series modeling, voice tooling, agent shells, MCP browser tooling, and agent-control infrastructure all appear together. AI and agent repositories are prominent, but the board is not a pure AI leaderboard.
+The default global board captured on **2026-09-03** is unusually explicit about skills, agent shells, and open workflow packaging. The board is still mixed with mainstream developer infrastructure and non-agent foundation-model work, but reusable skill bundles and agent wrappers are now a large visible slice rather than edge noise.
 
 ## Notable Projects
 
 - [fmtlib/fmt](https://github.com/fmtlib/fmt)
   Classic C++ formatting infrastructure still surfacing, which keeps the board grounded in mainstream developer tooling rather than only new AI wrappers.
 
-- [google-research/timesfm](https://github.com/google-research/timesfm)
-  Google Research time-series foundation model, showing continued interest in domain foundation models beyond chat and coding.
-
-- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp)
-  Browser debugging and inspection exposed directly for coding agents through MCP.
+- [mattpocock/skills](https://github.com/mattpocock/skills)
+  Strong signal that reusable skill-pack distribution remains a first-class workflow pattern.
 
 - [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)
-  Personal agent framing that emphasizes growth and adaptation over one-shot assistant behavior.
+  Persistent/evolving-agent framing is still attractive in open-source packaging.
 
-- [pacifio/atlas](https://github.com/pacifio/atlas)
-  Explicit "source control for agents" positioning, relevant to multi-agent coding coordination.
+- [anthropics/skills](https://github.com/anthropics/skills)
+  Official vendor skill bundles are now part of the visible public workflow surface, not only private docs or examples.
+
+- [google-research/timesfm](https://github.com/google-research/timesfm)
+  Domain foundation models continue to break through even while agent infrastructure dominates discussion.
+
+- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)
+  Another clear sign that skills remain the packaging layer people can understand, share, and fork quickly.
 
 - [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills)
-  Reusable research-skill packaging for coding-agent workflows.
+  Research workflow capability packs continue to travel well on public boards.
 
-- [affaan-m/ECC](https://github.com/affaan-m/ECC)
-  Agent harness optimization stack bundling skills, memory, security, and research-first development.
+- [Gitlawb/openclaude](https://github.com/Gitlawb/openclaude)
+  Claude-adjacent open wrappers and reimplementations remain culturally visible enough to trend.
 
 ## Why They May Be Surfacing
 
-- **The board still rewards durable tooling, not just novelty.** `fmt` surfacing beside agent repos is a reminder that mainstream developer infrastructure still shares attention with AI systems.
-- **MCP remains one of the clearest agent-tool integration surfaces.** `chrome-devtools-mcp` is a direct signal that browser tooling and agents are being wired together at the protocol layer.
-- **Agent control and coordination are becoming product categories.** `hermes-agent` and `atlas` both package the agent itself as the system, not just as a thin wrapper over a model API.
-- **Skills remain a default distribution unit.** `academic-research-skills` and `ECC` both show workflow capability bundles continuing to matter.
-- **The board is broader than coding agents alone.** `timesfm` shows that domain modeling still competes for attention even while agent infrastructure is rising.
+- **Skills are still the easiest unit to share.** `mattpocock/skills`, `anthropics/skills`, `agent-skills`, and `academic-research-skills` all point to the same packaging pressure.
+- **Agent shells still attract attention when they imply persistence or autonomy.** `hermes-agent` and `openclaude` package the agent itself as the product surface.
+- **The board still rewards durable infrastructure.** `fmt` trending beside agent repos is a reminder that real developer demand is not limited to AI wrappers.
+- **Non-agent model work can still cut through.** `timesfm` shows specialized foundation-model work remains competitive on attention.
 
 ## Watchlist
 
-- [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp): strongest browser-tooling and MCP signal on today's board.
-- [pacifio/atlas](https://github.com/pacifio/atlas): strongest agent-coordination and provenance signal.
-- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): strongest evolving-agent packaging signal.
-- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills): strongest workflow-skill packaging signal.
+- [mattpocock/skills](https://github.com/mattpocock/skills): strongest general-purpose skills packaging signal on today's board.
+- [anthropics/skills](https://github.com/anthropics/skills): strongest official-vendor skills packaging signal.
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): strongest persistent-agent packaging signal.
+- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills): strongest research-workflow skills signal.
 - [google-research/timesfm](https://github.com/google-research/timesfm): strongest non-agent foundation-model signal in the visible slice.
+- [Gitlawb/openclaude](https://github.com/Gitlawb/openclaude): strongest Claude-adjacent open wrapper signal on today's board.
