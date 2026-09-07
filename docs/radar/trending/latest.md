@@ -1,49 +1,30 @@
-# GitHub Trending - 2026-09-03
-
-Capture source: [GitHub Trending](https://github.com/trending)
+# GitHub Trending - 2026-09-06
 
 ## Trending Snapshot
 
-The default global board captured on **2026-09-03** is unusually explicit about skills, agent shells, and open workflow packaging. The board is still mixed with mainstream developer infrastructure and non-agent foundation-model work, but reusable skill bundles and agent wrappers are now a large visible slice rather than edge noise.
+Captured 2026-09-06 from [GitHub Trending](https://github.com/trending), global defaults: Today, all languages, no topic filters. The 12-entry board is agent-heavy, with compiler infrastructure and signup-free browser utilities also represented. Counts are transient; rank is not quality evidence.
 
 ## Notable Projects
 
-- [fmtlib/fmt](https://github.com/fmtlib/fmt)
-  Classic C++ formatting infrastructure still surfacing, which keeps the board grounded in mainstream developer tooling rather than only new AI wrappers.
-
-- [mattpocock/skills](https://github.com/mattpocock/skills)
-  Strong signal that reusable skill-pack distribution remains a first-class workflow pattern.
-
-- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)
-  Persistent/evolving-agent framing is still attractive in open-source packaging.
-
-- [anthropics/skills](https://github.com/anthropics/skills)
-  Official vendor skill bundles are now part of the visible public workflow surface, not only private docs or examples.
-
-- [google-research/timesfm](https://github.com/google-research/timesfm)
-  Domain foundation models continue to break through even while agent infrastructure dominates discussion.
-
-- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)
-  Another clear sign that skills remain the packaging layer people can understand, share, and fork quickly.
-
-- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills)
-  Research workflow capability packs continue to travel well on public boards.
-
-- [Gitlawb/openclaude](https://github.com/Gitlawb/openclaude)
-  Claude-adjacent open wrappers and reimplementations remain culturally visible enough to trend.
+| Project | Focus | Stars today |
+|---|---|---:|
+| [affaan-m/ECC](https://github.com/affaan-m/ECC) | Harness optimization | 1,486 |
+| [mattpocock/skills](https://github.com/mattpocock/skills) | Engineering skills | 2,206 |
+| [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) | Diagram generation | 621 |
+| [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) | Personal agent | 520 |
+| [openai/skills](https://github.com/openai/skills) | Codex catalog | 44 |
+| [anomalyco/opencode](https://github.com/anomalyco/opencode) | Coding agent | 552 |
+| [blader/humanizer](https://github.com/blader/humanizer) | Writing skill | 748 |
+| [llvm/llvm-project](https://github.com/llvm/llvm-project) | Compiler toolchain | 35 |
+| [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | Coding guidance | 1,539 |
+| [ruvnet/ruflo](https://github.com/ruvnet/ruflo) | Agent orchestration | 276 |
+| [magnitudedev/magnitude](https://github.com/magnitudedev/magnitude) | Local inference | 604 |
+| [BraveOPotato/FckSignups](https://github.com/BraveOPotato/FckSignups) | Browser utilities | 436 |
 
 ## Why They May Be Surfacing
 
-- **Skills are still the easiest unit to share.** `mattpocock/skills`, `anthropics/skills`, `agent-skills`, and `academic-research-skills` all point to the same packaging pressure.
-- **Agent shells still attract attention when they imply persistence or autonomy.** `hermes-agent` and `openclaude` package the agent itself as the product surface.
-- **The board still rewards durable infrastructure.** `fmt` trending beside agent repos is a reminder that real developer demand is not limited to AI wrappers.
-- **Non-agent model work can still cut through.** `timesfm` shows specialized foundation-model work remains competitive on attention.
+Inference: portable skills, controllable coding agents, and local inference offer accessible adoption paths. LLVM and browser utilities reflect broader developer demand. No specific promotional trigger was verified.
 
 ## Watchlist
 
-- [mattpocock/skills](https://github.com/mattpocock/skills): strongest general-purpose skills packaging signal on today's board.
-- [anthropics/skills](https://github.com/anthropics/skills): strongest official-vendor skills packaging signal.
-- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): strongest persistent-agent packaging signal.
-- [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills): strongest research-workflow skills signal.
-- [google-research/timesfm](https://github.com/google-research/timesfm): strongest non-agent foundation-model signal in the visible slice.
-- [Gitlawb/openclaude](https://github.com/Gitlawb/openclaude): strongest Claude-adjacent open wrapper signal on today's board.
+Watch persistence across future boards, reproducible evaluations, maintenance, and security boundaries before adoption.
