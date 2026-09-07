@@ -4,11 +4,11 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 241,
+    "total_notes": 243,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 304,
-    "link_count": 268,
+    "artifact_count": 306,
+    "link_count": 269,
     "thread_count": 5
   },
   "canonical_paths": {
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-09-06",
-      "meta": "Window: 2026-08-31 to 2026-09-06 (America/Los_Angeles). Live first-party checks; one search pass per publisher family, followed by direct official pages. Findings describe vendor evidence, not locally validated Harness behavior. The previous available daily note is 2026-09-03; the scheduler's 2026-09-05 last-run timestamp alone does not establish completed artifacts.",
+      "title": "Daily Radar - 2026-09-07",
+      "meta": "Window: 2026-09-01 to 2026-09-07 (America/Los_Angeles). Checked 2026-09-07. One search pass per publisher family, followed by direct official pages. Compared with the September 6 note, newly captured evidence includes Google's individually dated launches and MiniMax 0.3.3–0.3.4; other entries are explicitly retained weekly signals, not September 7 launches. Vendor claims are not local Harness validation.",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-09-07",
+          "path": "radar/daily/2026-09-07.md"
+        },
         {
           "name": "2026-09-06",
           "path": "radar/daily/2026-09-06.md"
@@ -139,22 +143,22 @@
         {
           "name": "2026-08-31",
           "path": "radar/daily/2026-08-31.md"
-        },
-        {
-          "name": "2026-08-29",
-          "path": "radar/daily/2026-08-29.md"
         }
       ],
-      "count": 110
+      "count": 111
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-09-06",
+      "title": "GitHub Trending - 2026-09-07",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-09-07",
+          "path": "radar/trending/2026-09-07.md"
+        },
         {
           "name": "2026-09-06",
           "path": "radar/trending/2026-09-06.md"
@@ -174,13 +178,9 @@
         {
           "name": "2026-08-31",
           "path": "radar/trending/2026-08-31.md"
-        },
-        {
-          "name": "2026-08-29",
-          "path": "radar/trending/2026-08-29.md"
         }
       ],
-      "count": 111
+      "count": 112
     }
   },
   "deep_dive": "### Agent platforms are becoming inspectable operating environments, not just tool-enabled models",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 304,
-      "link_count": 268,
+      "artifact_count": 306,
+      "link_count": 269,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 251,
+        "radar": 253,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -5022,6 +5022,41 @@
         ]
       },
       {
+        "id": "radar:docs/radar/daily/2026-09-07.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-09-07.md",
+        "title": "Daily Radar - 2026-09-07",
+        "date": "2026-09-07",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-09-01 to 2026-09-07 (America/Los_Angeles). Checked 2026-09-07. One search pass per publisher family, followed by direct official pages. Compared with the September 6 note, newly captured evidence includes...",
+        "external_refs": [
+          "https://blog.google/innovation-and-ai/models-and-research/gemini-models/3-8-flash-and-3-8-flash-cyber/",
+          "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-agentic-video-in-gemini/",
+          "https://agent.minimax.io/docs/changelog",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://openai.com/index/research-acceleration-view-inside-openai/",
+          "https://www.kimi.com/code/docs/en/kimi-code/whats-new.html",
+          "https://github.com/trending",
+          "https://github.com/mksglu/context-mode",
+          "https://github.com/affaan-m/ECC",
+          "https://github.com/bytedance/deer-flow",
+          "https://github.com/microsoft/markitdown"
+        ],
+        "local_refs": [
+          "docs/radar/trending/2026-09-07.md"
+        ]
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -8174,6 +8209,36 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/trending/2026-09-07.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-09-07.md",
+        "title": "GitHub Trending - 2026-09-07",
+        "date": "2026-09-07",
+        "status": "",
+        "themes": [
+          "harness",
+          "long-running agents",
+          "agent evals",
+          "context engineering",
+          "orchestration"
+        ],
+        "summary": "Captured **2026-09-07** from [GitHub Trending](https://github.com/trending): global defaults, Today, all languages, no topic filters. Ten visible projects mix agents, media, documents, marketing, finance, and browser...",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/heygen-com/hyperframes",
+          "https://github.com/microsoft/markitdown",
+          "https://github.com/mksglu/context-mode",
+          "https://github.com/jo-inc/camofox-browser",
+          "https://github.com/MoonTechLab/LunaTV",
+          "https://github.com/affaan-m/ECC",
+          "https://github.com/coreyhaines31/marketingskills",
+          "https://github.com/The-Swarm-Corporation/AutoHedge",
+          "https://github.com/BraveOPotato/FckSignups",
+          "https://github.com/bytedance/deer-flow"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/trending/README.md",
         "layer": "radar",
         "path": "docs/radar/trending/README.md",
@@ -10677,6 +10742,13 @@
         "type": "references",
         "source_path": "docs/radar/daily/2026-09-06.md",
         "target_path": "docs/radar/trending/2026-09-06.md"
+      },
+      {
+        "source": "radar:docs/radar/daily/2026-09-07.md",
+        "target": "radar:docs/radar/trending/2026-09-07.md",
+        "type": "references",
+        "source_path": "docs/radar/daily/2026-09-07.md",
+        "target_path": "docs/radar/trending/2026-09-07.md"
       },
       {
         "source": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",

@@ -11,8 +11,8 @@
 
 ## At A Glance
 
-- `241` durable notes are currently indexed across `3` recurring streams.
-- `304` knowledge-network artifacts, `268` typed local links, and `5` active threads are available in `index.json`.
+- `243` durable notes are currently indexed across `3` recurring streams.
+- `306` knowledge-network artifacts, `269` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
@@ -27,14 +27,14 @@
 
 ## Daily Signal Snapshot
 
-### Daily Radar - 2026-09-06
+### Daily Radar - 2026-09-07
 
-- Metadata: `Window: 2026-08-31 to 2026-09-06 (America/Los_Angeles). Live first-party checks; one search pass per publisher family, followed by direct official pages. Findings describe vendor evidence, not locally validated Harness behavior. The previous available daily note is 2026-09-03; the scheduler's 2026-09-05 last-run timestamp alone does not establish completed artifacts.`
+- Metadata: `Window: 2026-09-01 to 2026-09-07 (America/Los_Angeles). Checked 2026-09-07. One search pass per publisher family, followed by direct official pages. Compared with the September 6 note, newly captured evidence includes Google's individually dated launches and MiniMax 0.3.3–0.3.4; other entries are explicitly retained weekly signals, not September 7 launches. Vendor claims are not local Harness validation.`
 - Open the daily note for the full signal list.
 
 ## Trending Snapshot
 
-### GitHub Trending - 2026-09-06
+### GitHub Trending - 2026-09-07
 
 - Metadata: `Latest GitHub Trending board summary`
 - Open the trending note for the full board summary.
@@ -63,12 +63,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Daily Radar
 
+- [2026-09-07](../radar/daily/2026-09-07.md)
 - [2026-09-06](../radar/daily/2026-09-06.md)
 - [2026-09-03](../radar/daily/2026-09-03.md)
 - [2026-09-02](../radar/daily/2026-09-02.md)
 - [2026-09-01](../radar/daily/2026-09-01.md)
 - [2026-08-31](../radar/daily/2026-08-31.md)
-- [2026-08-29](../radar/daily/2026-08-29.md)
 
 ### Weekly Synthesis
 
@@ -81,9 +81,9 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### GitHub Trending
 
+- [2026-09-07](../radar/trending/2026-09-07.md)
 - [2026-09-06](../radar/trending/2026-09-06.md)
 - [2026-09-03](../radar/trending/2026-09-03.md)
 - [2026-09-02](../radar/trending/2026-09-02.md)
 - [2026-09-01](../radar/trending/2026-09-01.md)
 - [2026-08-31](../radar/trending/2026-08-31.md)
-- [2026-08-29](../radar/trending/2026-08-29.md)
