@@ -4,11 +4,11 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 249,
+    "total_notes": 251,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 312,
-    "link_count": 272,
+    "artifact_count": 314,
+    "link_count": 273,
     "thread_count": 5
   },
   "canonical_paths": {
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-09-10",
-      "meta": "Window: 2026-09-04 to 2026-09-10 (America/Los_Angeles). Checked 2026-09-10. One search pass per publisher family, followed by direct official pages. New versus yesterday: DeepSeek V4.1 Flash and alias migration, OpenAI's Astra work overview and GPT-Live-1 API, Claude Code 2.1.267, and MiniMax Desktop login repair. Vendor claims are not local validation.",
+      "title": "Daily Radar - 2026-09-11",
+      "meta": "Window: 2026-09-05 to 2026-09-11 (America/Los_Angeles). Checked 2026-09-11. One search pass per publisher family, followed by direct official pages. Material changes versus the September 10 note: Managed Agents auto permissions, Claude Code 2.1.268, Kimi Work 3.2.7, and a corrected DeepSeek V4 Pro continuity notice. Vendor claims are not local validation.",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-09-11",
+          "path": "radar/daily/2026-09-11.md"
+        },
         {
           "name": "2026-09-10",
           "path": "radar/daily/2026-09-10.md"
@@ -139,22 +143,22 @@
         {
           "name": "2026-09-06",
           "path": "radar/daily/2026-09-06.md"
-        },
-        {
-          "name": "2026-09-03",
-          "path": "radar/daily/2026-09-03.md"
         }
       ],
-      "count": 114
+      "count": 115
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-09-10",
+      "title": "GitHub Trending - 2026-09-11",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-09-11",
+          "path": "radar/trending/2026-09-11.md"
+        },
         {
           "name": "2026-09-10",
           "path": "radar/trending/2026-09-10.md"
@@ -174,13 +178,9 @@
         {
           "name": "2026-09-06",
           "path": "radar/trending/2026-09-06.md"
-        },
-        {
-          "name": "2026-09-03",
-          "path": "radar/trending/2026-09-03.md"
         }
       ],
-      "count": 115
+      "count": 116
     }
   },
   "deep_dive": "### Agent platforms are becoming inspectable operating environments, not just tool-enabled models",
@@ -225,12 +225,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 312,
-      "link_count": 272,
+      "artifact_count": 314,
+      "link_count": 273,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 259,
+        "radar": 261,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -5159,6 +5159,41 @@
         ]
       },
       {
+        "id": "radar:docs/radar/daily/2026-09-11.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-09-11.md",
+        "title": "Daily Radar - 2026-09-11",
+        "date": "2026-09-11",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-09-05 to 2026-09-11 (America/Los_Angeles). Checked 2026-09-11. One search pass per publisher family, followed by direct official pages. Material changes versus the September 10 note: Managed Agents auto p...",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://platform.claude.com/docs/en/managed-agents/permission-policies",
+          "https://code.claude.com/docs/en/changelog",
+          "https://api-docs.deepseek.com/updates/",
+          "https://www.kimi.com/en/help/kimi-work/release-notes",
+          "https://openai.com/index/introducing-gpt-live-1-in-the-api/",
+          "https://openai.com/products/release-notes/",
+          "https://github.com/trending",
+          "https://github.com/vastsa/PI-Desktop",
+          "https://github.com/nashsu/llm_wiki",
+          "https://github.com/jordan-gibbs/hyperresearch",
+          "https://github.com/github/spec-kit"
+        ],
+        "local_refs": [
+          "docs/radar/trending/2026-09-11.md"
+        ]
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -8428,6 +8463,34 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/trending/2026-09-11.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-09-11.md",
+        "title": "GitHub Trending - 2026-09-11",
+        "date": "2026-09-11",
+        "status": "",
+        "themes": [
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "[Default global board](https://github.com/trending), captured **2026-09-11**: Today, all languages, no filters. Sixteen entries; agent workflows and knowledge tools coexist with graphics, media, sideloading, and netwo...",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/ayghri/i-have-adhd",
+          "https://github.com/bilawalsidhu/gods-eye-view",
+          "https://github.com/nab138/iloader",
+          "https://github.com/melgarafael/DeskcommCRM",
+          "https://github.com/vastsa/PI-Desktop",
+          "https://github.com/armory3d/armorpaint",
+          "https://github.com/alsk1992/CloddsBot",
+          "https://github.com/nashsu/llm_wiki",
+          "https://github.com/obra/superpowers",
+          "https://github.com/Sonarr/Sonarr",
+          "https://github.com/jihe520/MathModelAgent"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/trending/README.md",
         "layer": "radar",
         "path": "docs/radar/trending/README.md",
@@ -10959,6 +11022,13 @@
         "type": "references",
         "source_path": "docs/radar/daily/2026-09-10.md",
         "target_path": "docs/radar/trending/2026-09-10.md"
+      },
+      {
+        "source": "radar:docs/radar/daily/2026-09-11.md",
+        "target": "radar:docs/radar/trending/2026-09-11.md",
+        "type": "references",
+        "source_path": "docs/radar/daily/2026-09-11.md",
+        "target_path": "docs/radar/trending/2026-09-11.md"
       },
       {
         "source": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",

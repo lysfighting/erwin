@@ -1,34 +1,34 @@
-# GitHub Trending - 2026-09-10
+# GitHub Trending - 2026-09-11
 
 ## Trending Snapshot
 
-[Default global board](https://github.com/trending), captured **2026-09-10**: Today, all languages, no filters. Sixteen visible entries; AI tooling leads, with spatial visualization, graphics, and interview study also represented. Order below follows the board.
+[Default global board](https://github.com/trending), captured **2026-09-11**: Today, all languages, no filters. Sixteen entries; agent workflows and knowledge tools coexist with graphics, media, sideloading, and networking. Board order follows.
 
 ## Notable Projects
 
 | Project | Focus |
 |---|---|
-| [i-have-adhd](https://github.com/ayghri/i-have-adhd) | Concise agent output |
+| [i-have-adhd](https://github.com/ayghri/i-have-adhd) | Concise answers |
 | [gods-eye-view](https://github.com/bilawalsidhu/gods-eye-view) | Spatial globe |
-| [superpowers](https://github.com/obra/superpowers) | Agent methodology |
-| [CloddsBot](https://github.com/alsk1992/CloddsBot) | Trading agent |
-| [teamai-cli](https://github.com/Tencent/teamai-cli) | Team AI |
-| [llmfit](https://github.com/AlexsJones/llmfit) | Hardware matching |
-| [system-design-notes](https://github.com/liquidslr/system-design-notes) | Interview study |
-| [diagram-design](https://github.com/cathrynlavery/diagram-design) | Diagram skills |
-| [awesome-gpt-image-2](https://github.com/freestylefly/awesome-gpt-image-2) | Image examples |
-| [armorpaint](https://github.com/armory3d/armorpaint) | Graphics tools |
-| [OmniRoute](https://github.com/diegosouzapw/OmniRoute) | AI gateway |
-| [colibri](https://github.com/JustVugg/colibri) | Local inference |
-| [OpenMAIC](https://github.com/THU-MAIC/OpenMAIC) | Agent classroom |
-| [llm_wiki](https://github.com/nashsu/llm_wiki) | Persistent knowledge |
-| [skills](https://github.com/vercel-labs/skills) | Skill tooling |
+| [iloader](https://github.com/nab138/iloader) | Sideloading |
+| [DeskcommCRM](https://github.com/melgarafael/DeskcommCRM) | AI sales |
 | [PI-Desktop](https://github.com/vastsa/PI-Desktop) | Agent desktop |
+| [armorpaint](https://github.com/armory3d/armorpaint) | Graphics |
+| [CloddsBot](https://github.com/alsk1992/CloddsBot) | Trading agent |
+| [llm_wiki](https://github.com/nashsu/llm_wiki) | Persistent wiki |
+| [superpowers](https://github.com/obra/superpowers) | Agent methodology |
+| [Sonarr](https://github.com/Sonarr/Sonarr) | Media automation |
+| [MathModelAgent](https://github.com/jihe520/MathModelAgent) | Mathematical modeling |
+| [OpenFlux](https://github.com/p1neappleXpress/OpenFlux) | Network transport |
+| [hyperresearch](https://github.com/jordan-gibbs/hyperresearch) | Research wiki |
+| [OpenResearch](https://github.com/alphaXiv/OpenResearch) | Parallel research |
+| [spec-kit](https://github.com/github/spec-kit) | Specification workflow |
+| [editor](https://github.com/pascalorg/editor) | 3D architecture |
 
 ## Why They May Be Surfacing
 
-Inference: reusable workflows, local compute, and visual outputs offer accessible demonstrations. The board establishes attention, not its cause, adoption, or reliability.
+Inference: reusable workflows, persistent research, and tangible visual outputs may attract interest. Ranking proves attention, not adoption, quality, or its cause.
 
 ## Watchlist
 
-Watch routing reproducibility, local-inference constraints, and source traceability. Preserve graphics and study projects as independent interests; no adoption decision follows from ranking.
+Track research provenance and workflow reproducibility. Preserve non-AI projects as independent interests. No adoption decision follows from ranking.
