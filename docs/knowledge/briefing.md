@@ -11,19 +11,19 @@
 
 ## At A Glance
 
-- `251` durable notes are currently indexed across `3` recurring streams.
-- `314` knowledge-network artifacts, `273` typed local links, and `5` active threads are available in `index.json`.
+- `252` durable notes are currently indexed across `3` recurring streams.
+- `315` knowledge-network artifacts, `278` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
 ## Weekly Lead
 
-### AI Agent Weekly Synthesis
+### AI Agent Weekly Synthesis — 2026-09-11
 
-- Metadata: `Window: 2026-08-22 to 2026-08-28`
-- **Anthropic had the clearest in-window platform movement.** The official [Claude Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) added material entries on **August 26, 2026** and **August 27, 2026**: Compliance API transcripts for Claude Code and Cowork, broader Admin API SDK / CLI availability, post-beta `files` and `skills` client shape normalization, and new personal / service-account key flows in the Claude Console.
-- **Claude Managed Agents remains a first-class substream and changed materially this week through release-note-visible platform work.** I explicitly checked the official [Managed Agents quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart) on **August 28, 2026**. The page did not show a separate dated in-window changelog entry, but the platform release notes introduced directly relevant agent-surface changes this week, especially around compliance, admin controls, and key management.
-- **The advisor tool docs surface was explicitly checked and remained strategically important, but it did not expose a separate dated in-window release marker.** I checked the official [advisor tool docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) on **August 28, 2026**. The page still documents the executor-plus-advisor pattern and its beta header, but this week’s material Anthropic movement came from release notes and Claude Code rather than a new dated advisor doc revision.
+- Metadata: `Window: 2026-09-05 to 2026-09-11 (America/Los_Angeles)`
+- **Anthropic Platform / Managed Agents — September 10:** the [Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) introduce per-call `auto` permission evaluation and terminal session attachment. This is a material Managed Agents change, not generic Anthropic news. Tool events expose permission outcomes and evaluation metadata; `ant beta:sessions connect` supports live interaction and approval handling.
+- **Claude Code — September 11, version 2.1.269:** the [official changelog](https://code.claude.com/docs/en/changelog) adds plugin evals with JSON/HTML results and repository telemetry attributes, and fixes stale post-compaction Git status, misleading background-task status, missing path-denial records, and Bash `tee` write-boundary enforcement. The convergence is reproducibility plus truthful state reporting.
+- **Google — September 9:** [The Anatomy of Harness Engineering](https://developers.googleblog.com/the-anatomy-of-harness-engineering-how-to-evaluate-iterate-and-guard-ai-coding-agents/) argues for observable behavioral checks alongside end-to-end evaluation. This supplies a method for turning the week's concrete failure boundaries into regression evidence.
 
 ## Daily Signal Snapshot
 
@@ -41,13 +41,11 @@
 
 ## Durable Interpretation
 
-### Agent platforms are becoming inspectable operating environments, not just tool-enabled models
+### Authorization is a typed boundary
 
 ## Current Proposal Candidates
 
-- Runtime Identity And Policy Envelope
-- Foreground And Background Subagent Observability Modes
-- Operator-Cost Review As A First-Class Eval
+- No proposal candidates extracted from the latest weekly synthesis yet.
 
 ## Knowledge Network
 
@@ -72,12 +70,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Weekly Synthesis
 
+- [2026-09-11](../radar/weekly/2026-09-11.md)
 - [2026-08-28](../radar/weekly/2026-08-28.md)
 - [2026-08-22](../radar/weekly/2026-08-22.md)
 - [2026-08-15](../radar/weekly/2026-08-15.md)
 - [2026-08-08](../radar/weekly/2026-08-08.md)
 - [2026-08-01](../radar/weekly/2026-08-01.md)
-- [2026-07-25](../radar/weekly/2026-07-25.md)
 
 ### GitHub Trending
 
