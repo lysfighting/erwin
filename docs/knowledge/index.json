@@ -4,11 +4,11 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 254,
+    "total_notes": 256,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 317,
-    "link_count": 279,
+    "artifact_count": 319,
+    "link_count": 280,
     "thread_count": 5
   },
   "canonical_paths": {
@@ -114,12 +114,16 @@
     },
     "daily": {
       "label": "Daily",
-      "title": "Daily Radar - 2026-09-13",
-      "meta": "Window: 2026-09-07 to 2026-09-13 (America/Los_Angeles). Checked 2026-09-13. One search pass per publisher family, followed by direct official pages. Compared with the latest persisted September 11 note, new intake is Claude Code 2.1.269–270, Kimi K2.8 Preview, and Kimi Work 3.2.8. Vendor claims are not local validation.",
+      "title": "Daily Radar - 2026-09-14",
+      "meta": "Window: 2026-09-08 to 2026-09-14 (America/Los_Angeles). Checked 2026-09-14. One search pass per publisher family, followed by direct official pages. Compared with September 13, the confirmed new intake is MiniMax Desktop 3.0.72; other selected releases remain relevant weekly signals. Vendor claims are not local validation.",
       "highlights": [],
       "latest_path": "radar/daily/latest.md",
       "archive_path": "radar/daily/",
       "recent": [
+        {
+          "name": "2026-09-14",
+          "path": "radar/daily/2026-09-14.md"
+        },
         {
           "name": "2026-09-13",
           "path": "radar/daily/2026-09-13.md"
@@ -139,22 +143,22 @@
         {
           "name": "2026-09-08",
           "path": "radar/daily/2026-09-08.md"
-        },
-        {
-          "name": "2026-09-07",
-          "path": "radar/daily/2026-09-07.md"
         }
       ],
-      "count": 116
+      "count": 117
     },
     "trending": {
       "label": "Trending",
-      "title": "GitHub Trending - 2026-09-13",
+      "title": "GitHub Trending - 2026-09-14",
       "meta": "Latest GitHub Trending board summary",
       "highlights": [],
       "latest_path": "radar/trending/latest.md",
       "archive_path": "radar/trending/",
       "recent": [
+        {
+          "name": "2026-09-14",
+          "path": "radar/trending/2026-09-14.md"
+        },
         {
           "name": "2026-09-13",
           "path": "radar/trending/2026-09-13.md"
@@ -174,13 +178,9 @@
         {
           "name": "2026-09-08",
           "path": "radar/trending/2026-09-08.md"
-        },
-        {
-          "name": "2026-09-07",
-          "path": "radar/trending/2026-09-07.md"
         }
       ],
-      "count": 117
+      "count": 118
     }
   },
   "deep_dive": "### Authorization is a typed boundary",
@@ -221,12 +221,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 317,
-      "link_count": 279,
+      "artifact_count": 319,
+      "link_count": 280,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 264,
+        "radar": 266,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -5225,6 +5225,41 @@
         ]
       },
       {
+        "id": "radar:docs/radar/daily/2026-09-14.md",
+        "layer": "radar",
+        "path": "docs/radar/daily/2026-09-14.md",
+        "title": "Daily Radar - 2026-09-14",
+        "date": "2026-09-14",
+        "status": "",
+        "themes": [
+          "harness",
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use",
+          "orchestration"
+        ],
+        "summary": "Window: 2026-09-08 to 2026-09-14 (America/Los_Angeles). Checked 2026-09-14. One search pass per publisher family, followed by direct official pages. Compared with September 13, the confirmed new intake is MiniMax Desk...",
+        "external_refs": [
+          "https://agent.minimax.io/docs/changelog",
+          "https://code.claude.com/docs/en/changelog",
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://www.kimi.com/code/docs/en/kimi-code/whats-new.html",
+          "https://api-docs.deepseek.com/updates/",
+          "https://github.com/trending",
+          "https://github.com/alibaba/open-code-review",
+          "https://github.com/rlaope/oh-my-hermes",
+          "https://github.com/tech-leads-club/agent-skills",
+          "https://developers.googleblog.com/the-anatomy-of-harness-engineering-how-to-evaluate-iterate-and-guard-ai-coding-agents/",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool"
+        ],
+        "local_refs": [
+          "docs/radar/trending/2026-09-14.md"
+        ]
+      },
+      {
         "id": "radar:docs/radar/daily/README.md",
         "layer": "radar",
         "path": "docs/radar/daily/README.md",
@@ -8549,6 +8584,34 @@
         "local_refs": []
       },
       {
+        "id": "radar:docs/radar/trending/2026-09-14.md",
+        "layer": "radar",
+        "path": "docs/radar/trending/2026-09-14.md",
+        "title": "GitHub Trending - 2026-09-14",
+        "date": "2026-09-14",
+        "status": "",
+        "themes": [
+          "agent evals",
+          "context engineering"
+        ],
+        "summary": "[Global board](https://github.com/trending), checked **2026-09-14**: Today, all languages, no filters. Twenty entries in board order; AI, media, utilities, business software, and infrastructure coexist.",
+        "external_refs": [
+          "https://github.com/trending",
+          "https://github.com/JustVugg/colibri",
+          "https://github.com/alibaba/open-code-review",
+          "https://github.com/multimodal-art-projection/YuE",
+          "https://github.com/debpalash/VoiceStudio",
+          "https://github.com/666ghj/MiroFish",
+          "https://github.com/Panniantong/Agent-Reach",
+          "https://github.com/asgeirtj/system_prompts_leaks",
+          "https://github.com/rlaope/oh-my-hermes",
+          "https://github.com/localsend/localsend",
+          "https://github.com/dani-garcia/vaultwarden",
+          "https://github.com/TauricResearch/TradingAgents"
+        ],
+        "local_refs": []
+      },
+      {
         "id": "radar:docs/radar/trending/README.md",
         "layer": "radar",
         "path": "docs/radar/trending/README.md",
@@ -11132,6 +11195,13 @@
         "type": "references",
         "source_path": "docs/radar/daily/2026-09-13.md",
         "target_path": "docs/radar/trending/2026-09-13.md"
+      },
+      {
+        "source": "radar:docs/radar/daily/2026-09-14.md",
+        "target": "radar:docs/radar/trending/2026-09-14.md",
+        "type": "references",
+        "source_path": "docs/radar/daily/2026-09-14.md",
+        "target_path": "docs/radar/trending/2026-09-14.md"
       },
       {
         "source": "radar:docs/radar/papers/2026-04-02-coding-agent-self-iteration-watch.md",
