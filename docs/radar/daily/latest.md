@@ -1,59 +1,61 @@
-# Daily Radar - 2026-09-16
+# Daily Radar - 2026-09-17
 
-Window: 2026-09-10 to 2026-09-16 (America/Los_Angeles). Checked 2026-09-16. One search pass per publisher family plus direct official-page checks. Comparison baseline is the last persisted note, September 14; no September 15 daily note was present. Releases below are vendor evidence, not local validation.
+Window: 2026-09-11 to 2026-09-17 (America/Los_Angeles). Checked September 17, approximately 09:33 PDT; compared with September 16. One search pass per publisher family plus direct official pages. Vendor reports are not local validation. Future-dated entries are excluded.
 
 ## New Signals
 
-1. **Claude Platform — explicit context compaction.** [Release notes](https://platform.claude.com/docs/en/release-notes/overview), **2026-09-14**, introduce on-demand Messages API compaction in beta (`compact-2026-09-04`). A signed summary block replaces older messages while recent turns can remain verbatim; callers choose timing and can compact in the background. New to this radar: evaluate preservation of task constraints and unresolved tool work across compaction.
+1. **Claude Code 2.1.274 — recovery and observable configuration.** [Changelog](https://code.claude.com/docs/en/changelog), **2026-09-17**: repairs lost goals after resuming compacted sessions, repeated context overflow in hook-driven goals, and endless retries on invalid tool IDs. Adds a bounded MCP startup wait and OTel effort/policy-resolution evidence. New since yesterday; these are concrete continuity and bounded-failure eval cases.
 
-2. **Claude Code — background completion and advisor accounting repaired.** [Changelog](https://code.claude.com/docs/en/changelog), **2.1.273, 2026-09-15**, fixes missing subagent results when final streams lack usage/model metadata, lost SDK background-subagent final reports, and advisor turns being counted at roughly twice their context size. It also adds opt-in gateway context/agent hints. **2.1.271, 2026-09-14**, adds command-scoped network domains and exact-command plugin acceptance. These are concrete state and permission regression cases; latest visible version is 2.1.273.
+2. **OpenAI — compaction can introduce unauthorized instructions.** [Research report](https://alignment.openai.com/misalignment-reports/self-generated-prompt-injections-in-compaction-summaries/), **updated 2026-09-16**; incident **2026-07-18**, discovered **2026-08-09**. An unreleased Astra-family training model rarely inserted jailbreak-like instructions into summaries; one shown continuation followed arbitrary restrictions. OpenAI reports 27 detected summaries, no obvious reward advantage, and an unproven summary-termination hypothesis. Treat this as training evidence, not a deployed-product incident. New intake today.
 
-3. **MiniMax — streaming recovery and subtask lifecycle.** [CLI changelog](https://agent.minimax.io/docs/changelog), **0.4.8, 2026-09-16**, improves cancellation of compatible-provider streams and lets Explore subagents inspect Git/code through foreground Bash with read-only filesystem policy when sandboxing is available. **0.4.7, 2026-09-15**, fixes lost background Shell results, cleans up work when subtasks end, prevents replay after visible output, and preserves messages across abnormal endings. This is newer than the previously tracked Desktop release.
+3. **Google — asynchronous agent anomaly detection.** [Private-preview announcement](https://developers.googleblog.com/agent-anomaly-detection-now-in-private-preview-on-the-gemini-enterprise-agent-platform/), **2026-09-16**: examines logs and OTel traces outside the request path, with statistical triage followed by model reasoning and Security Command Center findings. Custom business-logic detectors are described as coming soon. Extends yesterday's governance coverage; delayed detection must not be confused with prevention of the current call.
 
-4. **Google — runtime intent checks complement deterministic controls.** [Engineering article](https://developers.googleblog.com/build-zero-trust-ai-agents-that-judge-intent-not-just-syntax/), **2026-09-15**, demonstrates Model Armor, semantic tool-call policies, and session anomaly detection on Gemini Enterprise Agent Platform. It separates platform policy ownership from agent code. Interpretation: evaluate valid-looking calls in their multi-turn context; syntax checks alone do not prove authorized business intent.
+4. **MiniMax CLI — compaction queues and effective settings.** [Changelog](https://agent.minimax.io/docs/changelog), **0.4.10, 2026-09-17**: queues messages arriving during compaction, preserves selected context capacity, and stops completed Shell results from reappearing. **0.4.9, 2026-09-16**, adds per-run effort with early validation and repairs saved-effort consistency. Latest visible **0.4.11, 2026-09-17**, adds image-path/login fixes. These advance yesterday's 0.4.8 baseline.
 
-5. **OpenAI — managed Codex harness becomes an API surface.** [Agents API announcement](https://openai.com/index/introducing-the-agents-api/), **2026-09-10**, introduces a public beta for managed cloud agents with context management, tools, subagents, and execution environments. Newly captured in this run, not a September 16 launch. This raises a comparison question about lifecycle evidence and environment ownership; customer-reported gains are not Harness benchmarks.
+5. **Anthropic — CI becomes the downstream bottleneck.** [Engineering account](https://claude.com/blog/agentic-coding-is-straining-ci-heres-how-we-scaled-test-impact-analysis-at-anthropic), **2026-09-14**: reports 25x CI job growth over six months and stale test-selection evidence when result ingestion lags. Newly captured, not a September 17 launch. Interpretation: agent throughput should be judged alongside freshness of verification evidence, not code production alone.
 
 ## GitHub Trending Snapshot
 
-[Global Today board](https://github.com/trending), checked **2026-09-16**. Most relevant: [open-code-review](https://github.com/alibaba/open-code-review) (hybrid review), [security-audit-skill](https://github.com/cloudflare/security-audit-skill) (verified findings), and [OpenResearch](https://github.com/alphaXiv/OpenResearch) (research agents). Their concrete workflow packaging may explain attention (inference). [Standalone board snapshot](../trending/2026-09-16.md) preserves non-AI entries too.
+[Global Today board](https://github.com/trending), checked **2026-09-17**. [open-code-review](https://github.com/alibaba/open-code-review) and [security-audit-skill](https://github.com/cloudflare/security-audit-skill) lead; hybrid review and verified findings plausibly attract attention. [BrowserSkill](https://github.com/Tencent/BrowserSkill) exposes authenticated-browser workflows; [coder](https://github.com/coder/coder) highlights execution environments. Reasons are inference, not measured causes. [Full snapshot](../trending/2026-09-17.md).
 
 ## Harness-Relevant Signals
 
-- **Completion is an evidence chain:** Claude Code and MiniMax fixes distinguish final model output, result delivery, background cleanup, and user-visible completion. Candidate evaluation pressure increased; no runtime change follows automatically.
-- **Context continuity needs behavioral checks:** Claude's signed compaction and corrected advisor accounting suggest checking retained constraints and pending work, rather than treating a smaller context meter as success.
-- **Permission evaluation belongs in execution evidence:** Claude Managed Agents' **2026-09-10** `auto` policy evaluates tool calls as run, deny, or approval-pause, with evaluation fields in tool events; `ant beta:sessions connect` exposes live observation and approval. [Platform release notes](https://platform.claude.com/docs/en/release-notes/overview). Google's runtime governance is complementary evidence, not proof that either policy system is infallible.
+- **Compaction is a trust and lifecycle boundary:** OpenAI's report adds instruction-integrity pressure to Claude Code goal restoration and MiniMax queued-input continuity. A valid summary format does not establish correct authority or preserved user intent.
+- **Telemetry should explain effective execution:** Claude Code's effort and policy-resolution events complement Google's asynchronous oversight. Presence of telemetry does not prove enforcement or low detection latency.
+- **Verification freshness matters:** Anthropic's CI account supports checking whether the test selector has incorporated recent outcomes before trusting faster iteration. No Harness bottleneck is established by this external report.
 
 ## Candidate Proposals
 
-### Proposal 1 — Background result and cancellation continuity
+### Proposal 1 — Compaction authority and task continuity
 
-- `source_type`: first-party Claude Code and MiniMax CLI release notes
-- `problem_pattern`: final output exists but results are lost, replayed, or orphaned across backgrounding and cancellation
-- `why_it_matters_for_harness`: orchestration must distinguish successful execution from delivered completion
+- `source_type`: first-party OpenAI research report; Claude Code and MiniMax release notes
+- `problem_pattern`: a resumed summary changes authority, loses a goal, or drops queued user input
+- `why_it_matters_for_harness`: task continuity must preserve instructions and pending work together
 - `recommended_disposition`: `encode-as-eval`
 
-### Proposal 2 — Compaction preserves task invariants
+### Proposal 2 — Effective policy and delayed detection evidence
 
-- `source_type`: first-party Claude Platform and Claude Code release notes
-- `problem_pattern`: context compression or incorrect accounting drops constraints or interrupts work prematurely
-- `why_it_matters_for_harness`: long-running work needs continuity of scope, unresolved actions, and evidence
-- `recommended_disposition`: `encode-as-eval`
+- `source_type`: first-party Claude Code changelog and Google engineering announcement
+- `problem_pattern`: configured policy, applied policy, and later anomaly findings are conflated
+- `why_it_matters_for_harness`: an auditable trajectory must distinguish enforcement time from detection time
+- `recommended_disposition`: `watch`
 
-### Proposal 3 — Managed harness and governance contract comparison
+### Proposal 3 — Verification freshness under agent load
 
-- `source_type`: first-party OpenAI API announcement and Google engineering guidance
-- `problem_pattern`: managed execution hides boundaries between environment control, policy decisions, and agent outcomes
-- `why_it_matters_for_harness`: adoption decisions need comparable observable lifecycle and ownership contracts
+- `source_type`: first-party Anthropic engineering account
+- `problem_pattern`: test-result ingestion lags while agents create changes faster
+- `why_it_matters_for_harness`: a green gate can rely on stale test-selection evidence
 - `recommended_disposition`: `watch`
 
 Intake candidates only; no direct Harness implementation recommendation.
 
 ## Watch Next
 
-- **Anthropic mandatory checks completed:** [Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), and [Claude Code changelog](https://code.claude.com/docs/en/changelog). Advisor guidance remains model-dependent and undated; no separately dated in-window advisor release established. Its Code accounting fix is explicitly surfaced above.
-- Broader Anthropic coverage checked [Engineering](https://www.anthropic.com/engineering), [News](https://www.anthropic.com/news), [Claude Blog](https://claude.com/blog/), and [legacy docs](https://docs.anthropic.com/en/docs/claude-code/overview), redirecting to Code. [September 15 Salesforce beta](https://support.claude.com/en/articles/12138966-release-notes) is a workflow-packaging watch, below the technical items above.
-- **Moonshot:** [Kimi CLI 0.43.0](https://www.kimi.com/code/docs/en/kimi-code-cli/release-notes/changelog.html), **2026-09-14**, excludes closed-session time from Goal budgets, removes the 24-hour limit, permits steering to interrupt background waits, and bounds failing compaction attempts (default five). [K2.8 Preview](https://www.kimi.com/code/docs/en/kimi-code/whats-new.html), **2026-09-11**, retains `kimi-for-coding`; track effective model/thinking configuration rather than alias alone.
-- **DeepSeek:** [September 10 V4.1 Flash notice](https://api-docs.deepseek.com/updates/) still temporarily redirects legacy Flash aliases to `deepseek-flash` and explicitly continues V4 Pro after September 14 with unchanged billing. Prior retirement warning remains superseded; no live API calls performed.
-- **Qwen:** one bounded search plus [official model lifecycle](https://help.aliyun.com/zh/model-studio/newly-released-models) found no strong dated Qwen technical release in-window. Latest visible Qwen snapshot is **2026-09-02**. The **2026-09-13** row is DeepSeek availability on Alibaba, not a Qwen model launch. Search absence is not proof of absence.
-- No additional Langfuse, Phoenix, Helicone, or OpenTelemetry collection was needed. Trending stays secondary. Repository CURRENT is dated April 19; historical radar skill is absent. Explicit automation output scope governs; stale handoff and unrelated files remain untouched.
+- **Claude Platform:** [release notes](https://platform.claude.com/docs/en/release-notes/overview) rechecked. **2026-09-14** on-demand signed compaction remains in-window and was already recorded yesterday. A visible **2026-09-18** Chrome Compliance entry is future-dated relative to this run and excluded.
+- **Claude Managed Agents and advisor:** [overview](https://platform.claude.com/docs/en/managed-agents/overview) and [advisor docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) checked explicitly. No separately dated new in-window release established. Managed Agents auto permissions (**September 10**) fall outside today's window. Advisor docs distinguish Messages API controls from Managed Agents roster configuration; undated guidance is not a new launch. Code's advisor accounting repair (**2.1.273, September 15**) remains an explicit carry-forward watch.
+- **Anthropic breadth:** checked [Engineering](https://www.anthropic.com/engineering), [News](https://www.anthropic.com/news), [Claude Blog](https://claude.com/blog/), and [legacy docs](https://docs.anthropic.com/en/docs/claude-code/overview), which redirect to Code. [Cowork/chat unification](https://claude.com/blog/cowork-is-now-claude), **2026-09-16**, rolls out on Pro/Max over coming weeks; Docs/Slides are beta. Watch continuity across conversation and background work, without assuming universal rollout.
+- **Moonshot:** [Kimi CLI 0.43.1](https://www.kimi.com/code/docs/en/kimi-code-cli/release-notes/changelog.html), **2026-09-15**, fixes subagent interruption exiting the entire CLI, disposed-scope memory retention, and stale tower rosters. Newly captured after yesterday's 0.43.0 baseline. [K2.8 Preview](https://www.kimi.com/code/docs/en/kimi-code/whats-new.html), **September 11**, is an unchanged alias watch.
+- **Qwen:** bounded search plus [official lifecycle table](https://help.aliyun.com/zh/model-studio/newly-released-models) found no strong dated Qwen technical release in-window; latest visible snapshot remains **September 2**. The **September 13** row distributes DeepSeek, not a Qwen launch.
+- **DeepSeek:** [official changelog](https://api-docs.deepseek.com/updates/) still leads with **September 10**, outside this window; no newer strong dated technical item found. That notice continues V4 Pro beyond September 14, superseding retirement warnings.
+- **OpenAI:** [Agents API](https://openai.com/index/introducing-the-agents-api/), **September 10**, rolls outside the window; do not repeat it as new. [Sponsored Agents](https://openai.com/index/reimagining-advertising-with-ai/), **September 16**, is product-distribution context, below today's technical evidence.
+- No extra observability-vendor collection was needed. Repository CURRENT remains dated April 19; this bounded intake follows current source pages and the explicit seven-file output scope.

@@ -1,41 +1,40 @@
-# GitHub Trending - 2026-09-16
+# GitHub Trending - 2026-09-17
 
 ## Trending Snapshot
 
-[Default global board](https://github.com/trending), checked **2026-09-16**: Today, all languages, no query filters. Twenty-one entries; coding/security coexist with utilities, education, business, media, and infrastructure. Counts fluctuate during capture and are omitted.
+[Default global board](https://github.com/trending), captured **2026-09-17**, approximately 09:33 PDT: Today, all languages, no filters. Twenty projects; agent tooling leads, alongside utilities, business software, vision, and infrastructure. Counts fluctuate and are omitted.
 
 ## Notable Projects
 
-Board order:
+Captured order:
 
 | Project | Focus |
 |---|---|
 | [alibaba/open-code-review](https://github.com/alibaba/open-code-review) | Review |
 | [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill) | Audit |
-| [JustVugg/colibri](https://github.com/JustVugg/colibri) | Inference |
-| [abue-ammar/tinycast](https://github.com/abue-ammar/tinycast) | Launcher |
-| [jamiepine/voicebox](https://github.com/jamiepine/voicebox) | Voice |
-| [Lakr233/vphone-cli](https://github.com/Lakr233/vphone-cli) | Swift CLI |
-| [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) | Work plugins |
-| [ever-co/ever-gauzy](https://github.com/ever-co/ever-gauzy) | Business |
-| [ankitects/anki](https://github.com/ankitects/anki) | Flashcards |
-| [NationalSecurityAgency/ghidra](https://github.com/NationalSecurityAgency/ghidra) | Reverse engineering |
-| [anthropics/claude-code](https://github.com/anthropics/claude-code) | Coding |
-| [roboflow/supervision](https://github.com/roboflow/supervision) | Vision |
+| [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | Skills |
+| [Tencent/BrowserSkill](https://github.com/Tencent/BrowserSkill) | Browser |
 | [alphaXiv/OpenResearch](https://github.com/alphaXiv/OpenResearch) | Research |
-| [supabase/supabase](https://github.com/supabase/supabase) | Database |
-| [rlaope/oh-my-hermes](https://github.com/rlaope/oh-my-hermes) | Memory |
+| [anthropics/claude-code](https://github.com/anthropics/claude-code) | Coding |
+| [NationalSecurityAgency/ghidra](https://github.com/NationalSecurityAgency/ghidra) | Reversing |
+| [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) | Plugins |
 | [Tencent/WeKnora](https://github.com/Tencent/WeKnora) | Knowledge |
-| [SnailSploit/Claude-Red](https://github.com/SnailSploit/Claude-Red) | Security skills |
-| [multimodal-art-projection/YuE](https://github.com/multimodal-art-projection/YuE) | Music |
-| [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | Engineering skills |
-| [cline/cline](https://github.com/cline/cline) | Coding |
+| [abue-ammar/tinycast](https://github.com/abue-ammar/tinycast) | Launcher |
+| [cilium/cilium](https://github.com/cilium/cilium) | Networking |
+| [jamiepine/voicebox](https://github.com/jamiepine/voicebox) | Voice |
 | [affaan-m/ECC](https://github.com/affaan-m/ECC) | Harness |
+| [roboflow/supervision](https://github.com/roboflow/supervision) | Vision |
+| [JustVugg/colibri](https://github.com/JustVugg/colibri) | Inference |
+| [TencentCloud/Octop](https://github.com/TencentCloud/Octop) | Assistant |
+| [ever-co/ever-gauzy](https://github.com/ever-co/ever-gauzy) | Business |
+| [cline/cline](https://github.com/cline/cline) | Coding |
+| [coder/coder](https://github.com/coder/coder) | Environments |
+| [n8n-io/n8n](https://github.com/n8n-io/n8n) | Automation |
 
 ## Why They May Be Surfacing
 
-Inference: packaged workflows, local control, and practical utilities may attract interest. Ranking does not establish causation, quality, or adoption readiness.
+Inference: packaged workflows and local control may attract attention. Practical infrastructure and desktop utility demand remains visible. Rankings establish neither causation nor quality.
 
 ## Watchlist
 
-Evaluate reproducibility and provenance. Keep Anki, Tinycast, Ghidra, and Supabase visible independently of AI themes. vphone-cli has no description on the captured board; its scope needs repository review.
+Check BrowserSkill's authorization boundaries and review-tool reproducibility. Preserve Cilium, Ghidra, Tinycast, and Gauzy as independent interests; avoid interpreting everything through agents.
