@@ -1,38 +1,41 @@
-# GitHub Trending - 2026-09-14
+# GitHub Trending - 2026-09-16
 
 ## Trending Snapshot
 
-[Global board](https://github.com/trending), checked **2026-09-14**: Today, all languages, no filters. Twenty entries in board order; AI, media, utilities, business software, and infrastructure coexist.
+[Default global board](https://github.com/trending), checked **2026-09-16**: Today, all languages, no query filters. Twenty-one entries; coding/security coexist with utilities, education, business, media, and infrastructure. Counts fluctuate during capture and are omitted.
 
 ## Notable Projects
 
+Board order:
+
 | Project | Focus |
 |---|---|
-| [colibri](https://github.com/JustVugg/colibri) | Inference |
-| [open-code-review](https://github.com/alibaba/open-code-review) | Review |
-| [YuE](https://github.com/multimodal-art-projection/YuE) | Music |
-| [VoiceStudio](https://github.com/debpalash/VoiceStudio) | Voice |
-| [MiroFish](https://github.com/666ghj/MiroFish) | Swarms |
-| [Agent-Reach](https://github.com/Panniantong/Agent-Reach) | Retrieval |
-| [system_prompts_leaks](https://github.com/asgeirtj/system_prompts_leaks) | Claimed prompts |
-| [oh-my-hermes](https://github.com/rlaope/oh-my-hermes) | Memory/plugins |
-| [localsend](https://github.com/localsend/localsend) | Transfers |
-| [vaultwarden](https://github.com/dani-garcia/vaultwarden) | Password server |
-| [TradingAgents](https://github.com/TauricResearch/TradingAgents) | Finance agents |
-| [RuView](https://github.com/ruvnet/RuView) | WiFi sensing |
-| [agent-skills](https://github.com/tech-leads-club/agent-skills) | Skills |
-| [VoxCPM](https://github.com/OpenBMB/VoxCPM) | Speech |
-| [transformers](https://github.com/huggingface/transformers) | Models |
-| [ever-gauzy](https://github.com/ever-co/ever-gauzy) | Business |
-| [project-nomad](https://github.com/Crosstalk-Solutions/project-nomad) | Offline knowledge |
-| [flowsint](https://github.com/reconurge/flowsint) | Investigations |
-| [opendisplay](https://github.com/peetzweg/opendisplay) | Second monitor |
-| [Claude-Red](https://github.com/SnailSploit/Claude-Red) | Security skills |
+| [alibaba/open-code-review](https://github.com/alibaba/open-code-review) | Review |
+| [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill) | Audit |
+| [JustVugg/colibri](https://github.com/JustVugg/colibri) | Inference |
+| [abue-ammar/tinycast](https://github.com/abue-ammar/tinycast) | Launcher |
+| [jamiepine/voicebox](https://github.com/jamiepine/voicebox) | Voice |
+| [Lakr233/vphone-cli](https://github.com/Lakr233/vphone-cli) | Swift CLI |
+| [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) | Work plugins |
+| [ever-co/ever-gauzy](https://github.com/ever-co/ever-gauzy) | Business |
+| [ankitects/anki](https://github.com/ankitects/anki) | Flashcards |
+| [NationalSecurityAgency/ghidra](https://github.com/NationalSecurityAgency/ghidra) | Reverse engineering |
+| [anthropics/claude-code](https://github.com/anthropics/claude-code) | Coding |
+| [roboflow/supervision](https://github.com/roboflow/supervision) | Vision |
+| [alphaXiv/OpenResearch](https://github.com/alphaXiv/OpenResearch) | Research |
+| [supabase/supabase](https://github.com/supabase/supabase) | Database |
+| [rlaope/oh-my-hermes](https://github.com/rlaope/oh-my-hermes) | Memory |
+| [Tencent/WeKnora](https://github.com/Tencent/WeKnora) | Knowledge |
+| [SnailSploit/Claude-Red](https://github.com/SnailSploit/Claude-Red) | Security skills |
+| [multimodal-art-projection/YuE](https://github.com/multimodal-art-projection/YuE) | Music |
+| [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | Engineering skills |
+| [cline/cline](https://github.com/cline/cline) | Coding |
+| [affaan-m/ECC](https://github.com/affaan-m/ECC) | Harness |
 
 ## Why They May Be Surfacing
 
-Inference: local control, reusable automation, and practical utilities may attract attention. Ranking does not establish causation or quality.
+Inference: packaged workflows, local control, and practical utilities may attract interest. Ranking does not establish causation, quality, or adoption readiness.
 
 ## Watchlist
 
-Check reproducibility and provenance; prompt authenticity is unverified. Preserve non-AI interests independently. No adoption follows from ranking.
+Evaluate reproducibility and provenance. Keep Anki, Tinycast, Ghidra, and Supabase visible independently of AI themes. vphone-cli has no description on the captured board; its scope needs repository review.
