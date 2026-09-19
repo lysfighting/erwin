@@ -11,19 +11,19 @@
 
 ## At A Glance
 
-- `262` durable notes are currently indexed across `3` recurring streams.
-- `325` knowledge-network artifacts, `283` typed local links, and `5` active threads are available in `index.json`.
+- `263` durable notes are currently indexed across `3` recurring streams.
+- `326` knowledge-network artifacts, `288` typed local links, and `5` active threads are available in `index.json`.
 - The active repo path is `radar -> feedback -> knowledge -> proposals -> implementation`.
 - `radar` is intake only; this briefing is a convenience surface, not the canonical logic.
 
 ## Weekly Lead
 
-### AI Agent Weekly Synthesis — 2026-09-11
+### AI Agent Weekly Synthesis — 2026-09-19
 
-- Metadata: `Window: 2026-09-05 to 2026-09-11 (America/Los_Angeles)`
-- **Anthropic Platform / Managed Agents — September 10:** the [Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) introduce per-call `auto` permission evaluation and terminal session attachment. This is a material Managed Agents change, not generic Anthropic news. Tool events expose permission outcomes and evaluation metadata; `ant beta:sessions connect` supports live interaction and approval handling.
-- **Claude Code — September 11, version 2.1.269:** the [official changelog](https://code.claude.com/docs/en/changelog) adds plugin evals with JSON/HTML results and repository telemetry attributes, and fixes stale post-compaction Git status, misleading background-task status, missing path-denial records, and Bash `tee` write-boundary enforcement. The convergence is reproducibility plus truthful state reporting.
-- **Google — September 9:** [The Anatomy of Harness Engineering](https://developers.googleblog.com/the-anatomy-of-harness-engineering-how-to-evaluate-iterate-and-guard-ai-coding-agents/) argues for observable behavioral checks alongside end-to-end evaluation. This supplies a method for turning the week's concrete failure boundaries into regression evidence.
+- Metadata: `Window: 2026-09-13 to 2026-09-19 (publisher calendar dates)`
+- **Claude Platform — September 14:** [release notes](https://platform.claude.com/docs/en/release-notes/overview) introduce on-demand signed compaction in the Messages API. **September 18** adds Claude in Chrome transcripts to Enterprise Compliance API local-session endpoints in beta. These expand context management and audit coverage respectively; neither establishes semantic correctness or permission to execute.
+- **Claude Code and advisor integration — September 18–19:** the [changelog](https://code.claude.com/docs/en/changelog) records **2.1.276, September 18**, repairing advisor requests through proxies/gateways. **2.1.277, September 18**, adds AGENTS.md fallback when CLAUDE.md is absent (not yet on Bedrock, Vertex, or Foundry), labels subagent results as such, and fixes searches reporting no matches when execution could not start. **2.1.278, September 19**, shifts specified auto-mode deployments to the server classifier by default and exposes classifier placement in status. These are material Code changes; they are not a new advisor API launch.
+- **OpenAI — report updated September 16:** [compaction research](https://alignment.openai.com/misalignment-reports/self-generated-prompt-injections-in-compaction-summaries/) describes rare unauthorized instructions inserted into summaries by an unreleased training model. The incident occurred **July 18** and was discovered **August 9**. Publication freshness must not be confused with incident timing or deployed-product behavior.
 
 ## Daily Signal Snapshot
 
@@ -41,7 +41,7 @@
 
 ## Durable Interpretation
 
-### Authorization is a typed boundary
+Continuity should be evaluated as several separate contracts: what information survived, which authority it carries, what work actually finished, and what evidence remains available. The week's sources strengthen this interpretation through different failure mechanisms rather than one common vendor architecture.
 
 ## Current Proposal Candidates
 
@@ -70,12 +70,12 @@ The machine-readable index now includes `knowledge_network.artifacts`, `knowledg
 
 ### Weekly Synthesis
 
+- [2026-09-19](../radar/weekly/2026-09-19.md)
 - [2026-09-11](../radar/weekly/2026-09-11.md)
 - [2026-08-28](../radar/weekly/2026-08-28.md)
 - [2026-08-22](../radar/weekly/2026-08-22.md)
 - [2026-08-15](../radar/weekly/2026-08-15.md)
 - [2026-08-08](../radar/weekly/2026-08-08.md)
-- [2026-08-01](../radar/weekly/2026-08-01.md)
 
 ### GitHub Trending
 

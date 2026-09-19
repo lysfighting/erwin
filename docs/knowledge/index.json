@@ -4,11 +4,11 @@
   "hero_title": "Readable field intelligence instead of disappearing thread residue.",
   "intro": "This page is the human-facing front door for the repository's knowledge system. It turns the latest radar outputs into a stable briefing surface, keeps the five-layer operating model visible, and makes historical notes discoverable without digging through archived Codex threads.",
   "counts": {
-    "total_notes": 262,
+    "total_notes": 263,
     "stream_count": 3,
     "layer_count": 5,
-    "artifact_count": 325,
-    "link_count": 283,
+    "artifact_count": 326,
+    "link_count": 288,
     "thread_count": 5
   },
   "canonical_paths": {
@@ -75,16 +75,20 @@
   "streams": {
     "weekly": {
       "label": "Weekly",
-      "title": "AI Agent Weekly Synthesis — 2026-09-11",
-      "meta": "Window: 2026-09-05 to 2026-09-11 (America/Los_Angeles)",
+      "title": "AI Agent Weekly Synthesis — 2026-09-19",
+      "meta": "Window: 2026-09-13 to 2026-09-19 (publisher calendar dates)",
       "highlights": [
-        "**Anthropic Platform / Managed Agents — September 10:** the [Platform release notes](https://platform.claude.com/docs/en/release-notes/overview) introduce per-call `auto` permission evaluation and terminal session attachment. This is a material Managed Agents change, not generic Anthropic news. Tool events expose permission outcomes and evaluation metadata; `ant beta:sessions connect` supports live interaction and approval handling.",
-        "**Claude Code — September 11, version 2.1.269:** the [official changelog](https://code.claude.com/docs/en/changelog) adds plugin evals with JSON/HTML results and repository telemetry attributes, and fixes stale post-compaction Git status, misleading background-task status, missing path-denial records, and Bash `tee` write-boundary enforcement. The convergence is reproducibility plus truthful state reporting.",
-        "**Google — September 9:** [The Anatomy of Harness Engineering](https://developers.googleblog.com/the-anatomy-of-harness-engineering-how-to-evaluate-iterate-and-guard-ai-coding-agents/) argues for observable behavioral checks alongside end-to-end evaluation. This supplies a method for turning the week's concrete failure boundaries into regression evidence."
+        "**Claude Platform — September 14:** [release notes](https://platform.claude.com/docs/en/release-notes/overview) introduce on-demand signed compaction in the Messages API. **September 18** adds Claude in Chrome transcripts to Enterprise Compliance API local-session endpoints in beta. These expand context management and audit coverage respectively; neither establishes semantic correctness or permission to execute.",
+        "**Claude Code and advisor integration — September 18–19:** the [changelog](https://code.claude.com/docs/en/changelog) records **2.1.276, September 18**, repairing advisor requests through proxies/gateways. **2.1.277, September 18**, adds AGENTS.md fallback when CLAUDE.md is absent (not yet on Bedrock, Vertex, or Foundry), labels subagent results as such, and fixes searches reporting no matches when execution could not start. **2.1.278, September 19**, shifts specified auto-mode deployments to the server classifier by default and exposes classifier placement in status. These are material Code changes; they are not a new advisor API launch.",
+        "**OpenAI — report updated September 16:** [compaction research](https://alignment.openai.com/misalignment-reports/self-generated-prompt-injections-in-compaction-summaries/) describes rare unauthorized instructions inserted into summaries by an unreleased training model. The incident occurred **July 18** and was discovered **August 9**. Publication freshness must not be confused with incident timing or deployed-product behavior."
       ],
       "latest_path": "radar/weekly/latest.md",
       "archive_path": "radar/weekly/",
       "recent": [
+        {
+          "name": "2026-09-19",
+          "path": "radar/weekly/2026-09-19.md"
+        },
         {
           "name": "2026-09-11",
           "path": "radar/weekly/2026-09-11.md"
@@ -104,13 +108,9 @@
         {
           "name": "2026-08-08",
           "path": "radar/weekly/2026-08-08.md"
-        },
-        {
-          "name": "2026-08-01",
-          "path": "radar/weekly/2026-08-01.md"
         }
       ],
-      "count": 21
+      "count": 22
     },
     "daily": {
       "label": "Daily",
@@ -183,7 +183,7 @@
       "count": 121
     }
   },
-  "deep_dive": "### Authorization is a typed boundary",
+  "deep_dive": "Continuity should be evaluated as several separate contracts: what information survived, which authority it carries, what work actually finished, and what evidence remains available. The week's sources strengthen this interpretation through different failure mechanisms rather than one common vendor architecture.",
   "proposal_candidates": [],
   "knowledge_network": {
     "schema_version": 1,
@@ -221,12 +221,12 @@
       }
     ],
     "counts": {
-      "artifact_count": 325,
-      "link_count": 283,
+      "artifact_count": 326,
+      "link_count": 288,
       "thread_count": 5,
       "proposal_record_count": 5,
       "layer_counts": {
-        "radar": 272,
+        "radar": 273,
         "feedback": 9,
         "knowledge": 11,
         "proposals": 14,
@@ -9467,6 +9467,43 @@
         ]
       },
       {
+        "id": "radar:docs/radar/weekly/2026-09-19.md",
+        "layer": "radar",
+        "path": "docs/radar/weekly/2026-09-19.md",
+        "title": "AI Agent Weekly Synthesis — 2026-09-19",
+        "date": "2026-09-19",
+        "status": "",
+        "themes": [
+          "agent evals",
+          "tracing/observability",
+          "context engineering",
+          "coding agents",
+          "tool use"
+        ],
+        "summary": "Date: 2026-09-19 Window: 2026-09-13 to 2026-09-19 (publisher calendar dates) Run-date basis: latest supplied environment date, updated to September 19 during this run. Source retrieval began September 19 UTC. This is...",
+        "external_refs": [
+          "https://platform.claude.com/docs/en/release-notes/overview",
+          "https://code.claude.com/docs/en/changelog",
+          "https://alignment.openai.com/misalignment-reports/self-generated-prompt-injections-in-compaction-summaries/",
+          "https://developers.googleblog.com/agent-anomaly-detection-now-in-private-preview-on-the-gemini-enterprise-agent-platform/",
+          "https://cloud.google.com/blog/topics/systems/using-ai-agents-to-secure-google-infrastructure",
+          "https://learn.chatgpt.com/docs/changelog",
+          "https://platform.claude.com/docs/en/managed-agents/overview",
+          "https://platform.claude.com/docs/en/managed-agents/quickstart",
+          "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool",
+          "https://platform.claude.com/docs/en/build-with-claude/compaction",
+          "https://agent.minimax.io/docs/changelog",
+          "https://claude.com/blog/agentic-coding-is-straining-ci-heres-how-we-scaled-test-impact-analysis-at-anthropic"
+        ],
+        "local_refs": [
+          "docs/radar/weekly/2026-09-11.md",
+          "docs/agent-continuity-guide.md",
+          "docs/knowledge/active-threads.md",
+          "docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md",
+          "docs/proposals/harness-eval-candidate-ledger.md"
+        ]
+      },
+      {
         "id": "radar:docs/radar/weekly/README.md",
         "layer": "radar",
         "path": "docs/radar/weekly/README.md",
@@ -11525,6 +11562,41 @@
         "target": "proposals:docs/proposals/harness-eval-candidate-ledger.md",
         "type": "references",
         "source_path": "docs/radar/weekly/2026-09-11.md",
+        "target_path": "docs/proposals/harness-eval-candidate-ledger.md"
+      },
+      {
+        "source": "radar:docs/radar/weekly/2026-09-19.md",
+        "target": "radar:docs/radar/weekly/2026-09-11.md",
+        "type": "references",
+        "source_path": "docs/radar/weekly/2026-09-19.md",
+        "target_path": "docs/radar/weekly/2026-09-11.md"
+      },
+      {
+        "source": "radar:docs/radar/weekly/2026-09-19.md",
+        "target": "knowledge:docs/agent-continuity-guide.md",
+        "type": "feeds",
+        "source_path": "docs/radar/weekly/2026-09-19.md",
+        "target_path": "docs/agent-continuity-guide.md"
+      },
+      {
+        "source": "radar:docs/radar/weekly/2026-09-19.md",
+        "target": "knowledge:docs/knowledge/active-threads.md",
+        "type": "feeds",
+        "source_path": "docs/radar/weekly/2026-09-19.md",
+        "target_path": "docs/knowledge/active-threads.md"
+      },
+      {
+        "source": "radar:docs/radar/weekly/2026-09-19.md",
+        "target": "feedback:docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md",
+        "type": "references",
+        "source_path": "docs/radar/weekly/2026-09-19.md",
+        "target_path": "docs/feedback/cases/HU-003-session-narrative-carried-knowledge-state.md"
+      },
+      {
+        "source": "radar:docs/radar/weekly/2026-09-19.md",
+        "target": "proposals:docs/proposals/harness-eval-candidate-ledger.md",
+        "type": "references",
+        "source_path": "docs/radar/weekly/2026-09-19.md",
         "target_path": "docs/proposals/harness-eval-candidate-ledger.md"
       },
       {
