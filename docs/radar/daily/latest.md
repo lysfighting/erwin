@@ -1,59 +1,58 @@
-# Daily Radar - 2026-09-19
+# Daily Radar - 2026-09-20
 
-Window: 2026-09-13 to 2026-09-19 (America/Los_Angeles). Checked September 19 around 09:32 PDT; compared with September 18. One bounded search pass per publisher family plus direct official pages. Carry-forward is labeled; vendor results are not local validation.
+Window: 2026-09-14 to 2026-09-20 (America/Los_Angeles). Checked September 20 around 09:35 PDT; compared with September 19. Bounded collection: at most one search pass per publisher family, plus direct official surfaces. Newly highlighted means new to this daily comparison, not a September 20 launch. Vendor claims are not local validation.
 
 ## New Signals
 
-1. **Claude Code: instruction portability, permission routing, and observable failures.** [Changelog](https://code.claude.com/docs/en/changelog), **2.1.278, 2026-09-19**, defaults eligible auto-mode sessions to a server classifier without classifier overhead charges, warns on billed fallback, and exposes routing in `/status`. **2.1.277, September 18**, adds AGENTS.md fallback when CLAUDE.md is absent (not yet Bedrock/Vertex/Foundry), makes headless/SDK internal failures exit with code 1, and distinguishes failed searches from empty results. These versions are new since yesterday's 2.1.276 snapshot. Treat provider coverage and instruction precedence as explicit contracts.
+1. **Google: persistent storage becomes an explicit agent infrastructure layer.** [Filestore agent volumes](https://cloud.google.com/blog/products/storage-data-transfer/filestore-agent-volumes), **2026-09-15**, newly highlighted. Google describes isolated persistent workspaces, rapid sandbox reattachment, lifecycle tiering, and shared RWX access with POSIX locking. Availability matters: open to all customers for non-production workloads; production GA access requires an allowlist. Harness interpretation: filesystem persistence and concurrent-write ownership need separate evidence; shared storage alone does not settle semantic edit conflicts.
 
-2. **OpenAI: API key creation governance.** [API changelog](https://developers.openai.com/api/docs/changelog), **2026-09-15**: organizations/projects can restrict new keys to service accounts or user-owned project keys, or prevent creation. Organization restrictions win; existing keys remain unchanged. Newly highlighted in this run, not a September 19 launch. A creation restriction must not be mistaken for revocation of existing access.
+2. **Moonshot: subagent work is becoming visible to users.** [Kimi Work 3.2.11](https://www.kimi.com/en/help/kimi-work/release-notes), **2026-09-18**, newly highlighted: the detail panel exposes subagent execution. Complementary carry-forward: [Kimi Code Desktop / CLI 2.0](https://www.kimi.com/code/docs/kimi-code/whats-new.html), **2026-09-17**, adds visible approvals and long-running task modes; CLI requests omit oldest media with a warning above 20 MB. Visible process, retained evidence, and successful completion remain different guarantees.
 
-3. **Google: independent structural triage for security agents.** [Engineering report](https://cloud.google.com/blog/topics/systems/using-ai-agents-to-secure-google-infrastructure), **2026-09-18**, carry-forward. Local threat models guide presubmit scans; a separate triage stage checks code structure and reachability, with nightly cross-change scans and human-reviewed patches. Reported precision and latency are Google's workload-specific results. The useful pattern is independently corroborated findings.
+3. **Claude Code: permission routing and portable instructions remain the leading in-window change.** [Changelog](https://code.claude.com/docs/en/changelog), **2.1.278, 2026-09-19**, carry-forward; still the newest listed release today. Eligible auto-mode sessions default to a server classifier, warn on billed fallback, and expose classifier location in `/status`. **2.1.277, September 18**, adds AGENTS.md fallback when CLAUDE.md is absent, with Bedrock/Vertex/Foundry exclusions. Provider-specific precedence belongs in compatibility evaluation.
 
-4. **Moonshot: visible long-running work and bounded media retention.** [Kimi Code release notes](https://www.kimi.com/code/docs/en/kimi-code/whats-new.html), **2026-09-17**, carry-forward: Desktop exposes tool activity, approvals, background work and goal/plan modes. CLI 2.0 omits oldest media from requests with a warning when accumulated media exceeds 20 MB. A resumable task does not imply all earlier evidence remains available.
+4. **Claude Platform: audit coverage and compaction are separate contracts.** [Release notes](https://platform.claude.com/docs/en/release-notes/overview), carry-forward: **2026-09-18** adds Chrome transcripts to Enterprise beta Compliance API local-session endpoints; **September 14** adds on-demand signed compaction blocks. Signatures attest provenance; they do not by themselves prove preservation of task constraints. No newer Platform entry was listed at capture.
 
-5. **Claude Platform: audit exports and explicit compaction.** [Release notes](https://platform.claude.com/docs/en/release-notes/overview), carry-forward: **2026-09-18** adds Chrome transcripts to Enterprise beta Compliance API local-session endpoints; **September 14** adds on-demand signed compaction blocks. Audit visibility, summary provenance and preservation of task meaning are different guarantees.
+5. **OpenAI: creation controls do not revoke existing credentials.** [API changelog](https://developers.openai.com/api/docs/changelog), **2026-09-15**, carry-forward. Organization/project controls restrict new key types or prevent creation; organization restrictions take precedence, while existing keys are unaffected. This is a useful distinction between provisioning policy and effective runtime access. No September 20 technical launch was established by the bounded pass and [news index](https://openai.com/news/).
 
 ## GitHub Trending Snapshot
 
-[Default global Today board](https://github.com/trending), **2026-09-19**: [security-audit-skill](https://github.com/cloudflare/security-audit-skill) leads; [cua](https://github.com/trycua/cua) is second; [coder](https://github.com/coder/coder) fourth. Verified audits, computer-use evaluation and isolated workspaces plausibly explain attention; causes are inference. See the separate [full snapshot](../trending/2026-09-19.md). Trending is secondary evidence.
+[Default global Today board](https://github.com/trending): [ECC](https://github.com/affaan-m/ECC) leads (harness optimization); [agent-native](https://github.com/BuilderIO/agent-native) follows (agent apps). [security-audit-skill](https://github.com/cloudflare/security-audit-skill) and [cua](https://github.com/trycua/cua) surface audit verification and computer-use evaluation. These are relevance hypotheses, not proven causes. See [full board](../trending/2026-09-20.md); secondary evidence only.
 
 ## Harness-Relevant Signals
 
-- **Instruction loading is part of portability:** shared AGENTS.md support still has provider exclusions and fallback precedence.
-- **Errors need distinct outcomes:** resource exhaustion, empty results, and successful completion must remain distinguishable to downstream orchestration.
-- **Authority survives neither compression nor policy labels automatically:** OpenAI's [compaction research](https://alignment.openai.com/misalignment-reports/self-generated-prompt-injections-in-compaction-summaries/), updated **2026-09-16** (incident July 18; discovered August 9), remains relevant. An unreleased training model rarely inserted unauthorized instructions into summaries; summary-termination issues are a hypothesis, not established causation. Carry-forward research, not a production-model claim.
+- **Resume correctness spans several layers:** storage reattachment, instruction loading, conversation compaction, and evidence availability each need distinct checks. Google's speed claims are vendor claims, not measured Harness performance.
+- **Independent review evidence remains valuable:** Google's [security engineering report](https://cloud.google.com/blog/topics/systems/using-ai-agents-to-secure-google-infrastructure), **2026-09-18**, carry-forward, separates scanning from structural reachability triage and keeps proposed patches under human review. Different agent names alone do not establish independent evidence.
+- **Model aliases are moving contracts:** DeepSeek's official sources disagree on a previously scheduled transition; record source freshness and actual model identity before treating an alias as a stable capability boundary. No live API inference was performed.
 
 ## Candidate Proposals
 
-### Proposal 1 — Portable instruction precedence
+### Proposal 1 — Resume preserves workspace and authority
 
-- `source_type`: first-party Claude Code changelog
-- `problem_pattern`: agents or providers load different project instructions from the same repository
-- `why_it_matters_for_harness`: restart behavior depends on which file actually supplied authority
+- `source_type`: first-party Google infrastructure announcement; Claude Platform release notes
+- `problem_pattern`: a resumed task has files but loses constraints or evidence needed to continue correctly
+- `why_it_matters_for_harness`: persistence is insufficient unless the resumed task retains the right authority and state
 - `recommended_disposition`: `encode-as-eval`
 
-### Proposal 2 — Failure is not an empty result
+### Proposal 2 — Subagent visibility versus completion proof
 
-- `source_type`: first-party Claude Code changelog
-- `problem_pattern`: internal failures look like no matches or an indefinitely running task
-- `why_it_matters_for_harness`: completion and retry decisions require unambiguous terminal outcomes
-- `recommended_disposition`: `encode-as-eval`
+- `source_type`: first-party Kimi Work and Kimi Code release notes
+- `problem_pattern`: progress displays are mistaken for verified subtask completion
+- `why_it_matters_for_harness`: leader decisions need outcomes and artifacts as well as visible activity
+- `recommended_disposition`: `watch`
 
-### Proposal 3 — Independent evidence for review findings
+### Proposal 3 — Alias migration evidence drift
 
-- `source_type`: first-party Google engineering report; secondary GitHub Trending
-- `problem_pattern`: review agents repeat claims without proving reachable behavior
-- `why_it_matters_for_harness`: review confidence needs independent corroboration
+- `source_type`: first-party DeepSeek announcement, changelog search result, and current pricing documentation
+- `problem_pattern`: older migration notices contradict current model availability documentation
+- `why_it_matters_for_harness`: model routing assumptions affect reproducibility and capability evaluation
 - `recommended_disposition`: `watch`
 
 Intake candidates only; no direct Harness implementation recommendation.
 
 ## Watch Next
 
-- **Anthropic mandatory checks completed:** [Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Code changelog](https://code.claude.com/docs/en/changelog), and [Code overview via legacy docs redirect](https://docs.anthropic.com/en/docs/claude-code/overview). Also checked [Engineering](https://www.anthropic.com/engineering), [News](https://www.anthropic.com/news), and [Claude Blog](https://claude.com/blog/). No separately dated Managed Agents/advisor API update established in-window. Managed Agents auto-policy release is September 10, outside this window. The advisor gateway regression fix in Code **2.1.276, September 18**, remains a compatibility watch; it is not a new advisor API launch.
-- **MiniMax:** [CLI changelog](https://agent.minimax.io/docs/changelog), **0.4.12, September 18**, retains scrollback and clarifies context indicators; **0.4.10, September 17**, queues messages submitted during compaction. Carry-forward, lower-priority continuity evidence; no stronger dated item found in the bounded pass.
-- **Qwen:** no strong dated in-window technical item established. [Blog](https://qwen.ai/blog) returned no readable content; [Alibaba lifecycle page](https://help.aliyun.com/zh/model-studio/newly-released-models) failed to load. Coverage limited, not proof of no releases.
-- **DeepSeek:** bounded search established no strong in-window item; [updates page](https://api-docs.deepseek.com/updates/) failed to load. Yesterday's September 10 baseline was not reverified today.
-- OpenAI's [news index](https://openai.com/news/) and API changelog were checked; no September 19 technical launch established. No additional Langfuse/Phoenix/Helicone/OpenTelemetry collection needed.
-- Repository CURRENT remains dated April 19. This run follows live sources and the explicit seven-file output boundary.
+- **Anthropic mandatory surfaces checked:** [Platform release notes](https://platform.claude.com/docs/en/release-notes/overview), [Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview), [advisor tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool), [Code changelog](https://code.claude.com/docs/en/changelog), and [Code overview through legacy docs redirect](https://docs.anthropic.com/en/docs/claude-code/overview). Also checked [Engineering](https://www.anthropic.com/engineering), [News](https://www.anthropic.com/news), and [Claude Blog](https://claude.com/blog/). No separately dated in-window Managed Agents or advisor API update established. Managed Agents auto-policy entry remains September 10, outside the window. Undated advisor guidance is context, not a new release.
+- **MiniMax:** [CLI changelog](https://agent.minimax.io/docs/changelog), **0.4.12, September 18**, preserves scrollback and clarifies context status; **0.4.10, September 17**, queues messages during compaction. Carry-forward continuity evidence; no stronger in-window launch established in the bounded pass.
+- **Qwen:** bounded search found no strong dated technical item in-window; [blog](https://qwen.ai/blog) returned no readable body. Coverage limitation, not evidence of no releases.
+- **DeepSeek — current documentation conflict, not a newly dated launch:** [September 10 announcement](https://api-docs.deepseek.com/news/news260910/) schedules V4 Pro rerouting on September 14, but the [current pricing page](https://api-docs.deepseek.com/quick_start/pricing/) explicitly retains V4 Pro after September 14 with unchanged billing and lists its own model version. The [changelog](https://api-docs.deepseek.com/updates/) search result agrees with retention, though direct opening failed. Prefer the current service documentation for planning; exact revision date is unavailable and runtime routing remains untested. No strong newly published in-window technical item established.
+- No extra Langfuse/Phoenix/Helicone/OpenTelemetry collection was needed. Repository CURRENT remains April 19; this run leaves it untouched under the explicit output boundary.
